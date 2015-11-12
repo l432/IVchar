@@ -51,7 +51,7 @@ type
 
 var
   Main: TIVchar;
-  V721A:TVoltmetr;
+  V721A:TV721;
 
 Procedure VotmetrToForm(Voltmetr:TVoltmetr;Form: TIVchar);
 
@@ -154,7 +154,7 @@ begin
                RGV721ARange.Items);
 
 
- V721A:=TVoltmetr.Create(5);
+ V721A:= TV721.Create(26);
  V721A.ComPort:=ComPort1;
  V721A.fComPacket.ComPort:=ComPort1;
  try

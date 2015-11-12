@@ -9,6 +9,7 @@ type
               mV10,mV100,V1,V10,V100,V1000,DErr);
 
   TVoltmetr=class
+  {базовий клас для вольтметрів серії В7-21}
   private
    fMeasureMode:TMeasureMode;
    fValue:double;
@@ -21,9 +22,9 @@ type
    PinNumber:byte;
    fData:array of byte;
 
-   Procedure MModeDetermination(Data:byte);
-   Procedure DiapazonDetermination(Data:byte);
-   Procedure ValueDetermination(Data:array of byte);
+   Procedure MModeDetermination(Data:byte); virtual;abstract;
+   Procedure DiapazonDetermination(Data:byte); virtual;abstract;
+   Procedure ValueDetermination(Data:array of byte);virtual;
    Procedure PacketCreate();
   public
 //   fEvent:TEvent;
@@ -39,8 +40,23 @@ type
    Function Request():boolean;
    Procedure PacketReceiving(Sender: TObject; const Str: string);
    Function Measurement():double;
-
   end;
+
+  TV721A=class(TVoltmetr)
+  private
+   Procedure MModeDetermination(Data:byte);override;
+   Procedure DiapazonDetermination(Data:byte);override;
+  public
+  end;
+
+  TV721=class(TVoltmetr)
+  private
+   Procedure MModeDetermination(Data:byte);override;
+   Procedure DiapazonDetermination(Data:byte);override;
+   Procedure ValueDetermination(Data:array of byte);override;
+  public
+  end;
+
 
 const
   MeasureModeLabels:array[TMeasureMode]of string=
@@ -55,7 +71,7 @@ const
   PacketBeginChar=#10;
   PacketEndChar=#255;
 
-  V7_21ACommand=$1;
+  V7_21Command=$1;
 
 Function BCDtoDec(BCD:byte; isLow:boolean):byte;
 {виділяє з ВCD, яке містить дві десяткові
@@ -106,47 +122,7 @@ begin
  inherited;
 end;
 
-Procedure TVoltmetr.MModeDetermination(Data:byte);
-begin
- Data:=Data and $0F;
-  case Data of
-   1: fMeasureMode:=UD;
-   2: fMeasureMode:=UA;
-   4: fMeasureMode:=ID;
-   8: fMeasureMode:=IA;
-   else fMeasureMode:=MMErr;
-  end;
-end;
 
-Procedure TVoltmetr.DiapazonDetermination(Data:byte);
-begin
-  fDiapazon:=DErr;
-  case Data of
-   128:if(fMeasureMode=IA)or(fMeasureMode=ID)
-                      then fDiapazon:=mA1000
-                      else fDiapazon:=V1000;
-   64: if(fMeasureMode=IA)or(fMeasureMode=ID)
-                      then fDiapazon:=mA100
-                      else fDiapazon:=V100;
-   32: if(fMeasureMode=IA)or(fMeasureMode=ID)
-                      then fDiapazon:=mA10
-                      else fDiapazon:=V10;
-   16: if(fMeasureMode=IA)or(fMeasureMode=ID)
-                      then fDiapazon:=mA1
-                      else fDiapazon:=V1;
-   8:  if(fMeasureMode=IA)or(fMeasureMode=ID)
-                      then fDiapazon:=micA100
-                      else fDiapazon:=mV100;
-   4:  if(fMeasureMode=ID)then fDiapazon:=micA10
-                          else
-           if(fMeasureMode=UD) then  fDiapazon:=mV10
-                               else Exit;
-   2:  if(fMeasureMode=ID) then fDiapazon:=micA1
-                           else Exit;
-   1:  if(fMeasureMode=ID) then fDiapazon:=nA100
-                           else Exit;
-  end;
-end;
 
 Procedure TVoltmetr.ValueDetermination(Data:array of byte);
  var temp:double;
@@ -184,7 +160,7 @@ begin
   fPacket[5]:=0;
   fPacket[4]:=0;
   fPacket[1]:=4;
-  fPacket[2]:=V7_21ACommand;
+  fPacket[2]:=V7_21Command;
   fPacket[3]:=PinNumber;
   fPacket[4]:=FCSCalculate(fPacket);
   fPacket[0]:=PacketBegin;
@@ -261,18 +237,18 @@ begin
  for I := 0 to High(fData) do
    begin
    fData[i]:=ord(str[i+1]);
-//   tempstr:=tempstr+inttostr(fData[i])+' ';
+   tempstr:=tempstr+inttostr(fData[i])+' ';
    end;
-// showmessage(tempstr);
- if fData[0]<>Length(Str) then Exit;
- if fData[1]<>V7_21ACommand then Exit;
- if fData[2]<>PinNumber then Exit;
- if FCSCalculate(fData)<>0 then Exit;
- for I := 0 to High(fData)-4 do
-   fData[i]:=fData[i+3];
- SetLength(fData,High(fData)-3);
- fIsReceived:=True;
-// fEvent.SetEvent;
+ showmessage(tempstr);
+// if fData[0]<>Length(Str) then Exit;
+// if fData[1]<>V7_21Command then Exit;
+// if fData[2]<>PinNumber then Exit;
+// if FCSCalculate(fData)<>0 then Exit;
+// for I := 0 to High(fData)-4 do
+//   fData[i]:=fData[i+3];
+// SetLength(fData,High(fData)-3);
+// fIsReceived:=True;
+//// fEvent.SetEvent;
 end;
 
 Procedure TVoltmetr.ConvertToValue(Data:array of byte);
@@ -286,6 +262,95 @@ begin
   ValueDetermination(Data);
   if Value=ErResult then Exit;
   fIsready:=True;
+end;
+
+Procedure TV721A.MModeDetermination(Data:byte);
+begin
+ Data:=Data and $0F;
+  case Data of
+   1: fMeasureMode:=UD;
+   2: fMeasureMode:=UA;
+   4: fMeasureMode:=ID;
+   8: fMeasureMode:=IA;
+   else fMeasureMode:=MMErr;
+  end;
+end;
+
+Procedure TV721.MModeDetermination(Data:byte);
+begin
+ Data:=Data and $07;
+  case Data of
+   7: fMeasureMode:=UD;
+   5: fMeasureMode:=UA;
+   3: fMeasureMode:=ID;
+   else fMeasureMode:=MMErr;
+  end;
+end;
+
+Procedure TV721A.DiapazonDetermination(Data:byte);
+begin
+  fDiapazon:=DErr;
+  case Data of
+   128:if(fMeasureMode=IA)or(fMeasureMode=ID)
+                      then fDiapazon:=mA1000
+                      else fDiapazon:=V1000;
+   64: if(fMeasureMode=IA)or(fMeasureMode=ID)
+                      then fDiapazon:=mA100
+                      else fDiapazon:=V100;
+   32: if(fMeasureMode=IA)or(fMeasureMode=ID)
+                      then fDiapazon:=mA10
+                      else fDiapazon:=V10;
+   16: if(fMeasureMode=IA)or(fMeasureMode=ID)
+                      then fDiapazon:=mA1
+                      else fDiapazon:=V1;
+   8:  if(fMeasureMode=IA)or(fMeasureMode=ID)
+                      then fDiapazon:=micA100
+                      else fDiapazon:=mV100;
+   4:  if(fMeasureMode=ID)then fDiapazon:=micA10
+                          else
+           if(fMeasureMode=UD) then  fDiapazon:=mV10
+                               else Exit;
+   2:  if(fMeasureMode=ID) then fDiapazon:=micA1
+                           else Exit;
+   1:  if(fMeasureMode=ID) then fDiapazon:=nA100
+                           else Exit;
+  end;
+end;
+
+Procedure TV721.DiapazonDetermination(Data:byte);
+begin
+  fDiapazon:=DErr;
+  case Data of
+   127:if fMeasureMode=ID
+                      then fDiapazon:=mA1000
+                      else fDiapazon:=V1000;
+   191: if fMeasureMode=ID
+                      then fDiapazon:=mA100
+                      else fDiapazon:=V100;
+   223: if fMeasureMode=ID
+                      then fDiapazon:=mA10
+                      else fDiapazon:=V10;
+   239: if fMeasureMode=ID
+                      then fDiapazon:=mA1
+                      else fDiapazon:=V1;
+   247: if fMeasureMode=ID
+                      then fDiapazon:=micA100
+                      else fDiapazon:=mV100;
+   251: if(fMeasureMode=ID)then fDiapazon:=micA10
+                           else
+           if(fMeasureMode=UD) then  fDiapazon:=mV10
+                               else Exit;
+   253: if(fMeasureMode=ID) then fDiapazon:=micA1
+                           else Exit;
+   254: if(fMeasureMode=ID) then fDiapazon:=nA100
+                           else Exit;
+  end;
+end;
+
+Procedure TV721.ValueDetermination(Data:array of byte);
+begin
+  inherited ValueDetermination(Data);
+  if fValue<>ErResult then fValue:=-fValue;
 end;
 
 Function BCDtoDec(BCD:byte; isLow:boolean):byte;
