@@ -239,15 +239,15 @@ begin
    fData[i]:=ord(str[i+1]);
    tempstr:=tempstr+inttostr(fData[i])+' ';
    end;
- showmessage(tempstr);
-// if fData[0]<>Length(Str) then Exit;
-// if fData[1]<>V7_21Command then Exit;
-// if fData[2]<>PinNumber then Exit;
-// if FCSCalculate(fData)<>0 then Exit;
-// for I := 0 to High(fData)-4 do
-//   fData[i]:=fData[i+3];
-// SetLength(fData,High(fData)-3);
-// fIsReceived:=True;
+// showmessage(tempstr);
+ if fData[0]<>Length(Str) then Exit;
+ if fData[1]<>V7_21Command then Exit;
+ if fData[2]<>PinNumber then Exit;
+ if FCSCalculate(fData)<>0 then Exit;
+ for I := 0 to High(fData)-4 do
+   fData[i]:=fData[i+3];
+ SetLength(fData,High(fData)-3);
+ fIsReceived:=True;
 //// fEvent.SetEvent;
 end;
 
