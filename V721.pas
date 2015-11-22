@@ -1,7 +1,7 @@
 unit V721;
 
 interface
- uses OlegType,CPort,Dialogs,SysUtils,Classes,Windows,Forms,SyncObjs;
+ uses OlegType,CPort,Dialogs,SysUtils,Classes,Windows,Forms,SyncObjs,PacketParameters;
 
 type
   TMeasureMode=(IA,ID,UA,UD,MMErr);
@@ -18,20 +18,21 @@ type
    fIsReceived:boolean;
 //   fComPort:TComPort;
 //   fComPacket: TComDataPacket;
-   fPacket:array of byte;
-   PinNumber:byte;
+//   fPacket:array of byte;
+   fPinNumber:byte;
    fData:array of byte;
 
-   Procedure MModeDetermination(Data:byte); virtual;abstract;
-   Procedure DiapazonDetermination(Data:byte); virtual;abstract;
+   Procedure MModeDetermination(Data:byte); virtual;
+   Procedure DiapazonDetermination(Data:byte); virtual;
    Procedure ValueDetermination(Data:array of byte);virtual;
-   Procedure PacketCreate();
+//   Procedure PacketCreate();
   public
 //   fEvent:TEvent;
    ComPort:TComPort;
    fComPacket: TComDataPacket;
    property MeasureMode:TMeasureMode read FMeasureMode;
    property Value:double read fValue;
+   property PinNumber:byte read fPinNumber;
    property Diapazon:TDiapazons read fDiapazon;
    property isReady:boolean read fIsReady;
    Procedure ConvertToValue(Data:array of byte);
@@ -66,12 +67,12 @@ const
     '1 mA','10 mA','100 mA','1000 mA',
      '10 mV','100 mV','1 V','10 V','100 V','1000 V','Error');
 
-  PacketBegin=10;
-  PacketEnd=255;
-  PacketBeginChar=#10;
-  PacketEndChar=#255;
-
-  V7_21Command=$1;
+//  PacketBegin=10;
+//  PacketEnd=255;
+//  PacketBeginChar=#10;
+//  PacketEndChar=#255;
+//
+//  V7_21Command=$1;
 
 Function BCDtoDec(BCD:byte; isLow:boolean):byte;
 {виділяє з ВCD, яке містить дві десяткові
@@ -80,9 +81,9 @@ Function BCDtoDec(BCD:byte; isLow:boolean):byte;
 якщо  isLow=true, то виділення із
 молодшої частини байта}
 
-Function FCSCalculate(Data:array of byte):byte;
-{розраховується інвертована
-перша комплементарна сума}
+//Function FCSCalculate(Data:array of byte):byte;
+//{розраховується інвертована
+//перша комплементарна сума}
 
 Procedure DiapazonFill(Mode:TMeasureMode; Diapazons:TStrings);
 {заповнює Diapazons можливими назвами діапазонів
@@ -97,7 +98,7 @@ implementation
 Constructor TVoltmetr.Create(NumberPin:byte);
 begin
   inherited Create();
-  PinNumber:=NumberPin;
+  fPinNumber:=NumberPin;
   fIsReady:=False;
   fIsReceived:=False;
   fMeasureMode:=MMErr;
@@ -122,7 +123,15 @@ begin
  inherited;
 end;
 
+Procedure TVoltmetr.MModeDetermination(Data:byte);
+begin
 
+end;
+
+Procedure TVoltmetr.DiapazonDetermination(Data:byte);
+begin
+
+end;
 
 Procedure TVoltmetr.ValueDetermination(Data:array of byte);
  var temp:double;
@@ -153,37 +162,38 @@ begin
  end;
 end;
 
-Procedure TVoltmetr.PacketCreate();
-begin
-  SetLength(fPacket,6);
-  fPacket[0]:=0;
-  fPacket[5]:=0;
-  fPacket[4]:=0;
-  fPacket[1]:=4;
-  fPacket[2]:=V7_21Command;
-  fPacket[3]:=PinNumber;
-  fPacket[4]:=FCSCalculate(fPacket);
-  fPacket[0]:=PacketBegin;
-  fPacket[5]:=PacketEnd;
-//  showmessage(inttostr(fPacket[0])+' '+
-//              inttostr(fPacket[1])+' '+
-//              inttostr(fPacket[2])+' '+
-//              inttostr(fPacket[3])+' '+
-//              inttostr(fPacket[4])+' '+
-//              inttostr(fPacket[5])+' ');
-
-end;
+//Procedure TVoltmetr.PacketCreate();
+//begin
+//  SetLength(fPacket,6);
+//  fPacket[0]:=0;
+//  fPacket[5]:=0;
+//  fPacket[4]:=0;
+//  fPacket[1]:=4;
+//  fPacket[2]:=V7_21Command;
+//  fPacket[3]:=PinNumber;
+//  fPacket[4]:=FCSCalculate(fPacket);
+//  fPacket[0]:=PacketBegin;
+//  fPacket[5]:=PacketEnd;
+////  showmessage(inttostr(fPacket[0])+' '+
+////              inttostr(fPacket[1])+' '+
+////              inttostr(fPacket[2])+' '+
+////              inttostr(fPacket[3])+' '+
+////              inttostr(fPacket[4])+' '+
+////              inttostr(fPacket[5])+' ');
+//
+//end;
 
 Function TVoltmetr.Request():boolean;
 begin
-  PacketCreate();
-  Result:=False;
-  if ComPort.Connected then
-   begin
-    ComPort.ClearBuffer(True, True);
-    Result:=(ComPort.Write(fPacket[0], High(fPacket)+1)=
-                               (High(fPacket)+1));
-   end;
+  PacketCreate([V7_21Command,PinNumber]);
+  Result:=PacketIsSend(ComPort);
+//  Result:=False;
+//  if ComPort.Connected then
+//   begin
+//    ComPort.ClearBuffer(True, True);
+//    Result:=(ComPort.Write(fPacket[0], High(fPacket)+1)=
+//                               (High(fPacket)+1));
+//   end;
 end;
 
 Function TVoltmetr.Measurement():double;
@@ -229,21 +239,25 @@ end;
 procedure TVoltmetr.PacketReceiving(Sender: TObject; const Str: string);
  var i:integer;
 //     Data:array of byte;
-    tempstr:string;
+//    tempstr:string;
 begin
- SetLength(fData,Length(Str));
+ if PacketIsReceived(Str,@fData[Low(fData)]) then Exit;
 
- tempstr:='';
- for I := 0 to High(fData) do
-   begin
-   fData[i]:=ord(str[i+1]);
-   tempstr:=tempstr+inttostr(fData[i])+' ';
-   end;
+// SetLength(fData,Length(Str));
+// tempstr:='';
+// for I := 0 to High(fData) do
+//   begin
+//   fData[i]:=ord(str[i+1]);
+//   tempstr:=tempstr+inttostr(fData[i])+' ';
+//   end;
 // showmessage(tempstr);
- if fData[0]<>Length(Str) then Exit;
+
+// ShowData(fData);
+
+// if fData[0]<>Length(Str) then Exit;
  if fData[1]<>V7_21Command then Exit;
  if fData[2]<>PinNumber then Exit;
- if FCSCalculate(fData)<>0 then Exit;
+// if FCSCalculate(fData)<>0 then Exit;
  for I := 0 to High(fData)-4 do
    fData[i]:=fData[i+3];
  SetLength(fData,High(fData)-3);
@@ -364,23 +378,23 @@ begin
  Result:= BCD Shr 4;
 end;
 
-Function FCSCalculate(Data:array of byte):byte;
-{розраховується інвертована
-перша комплементарна сума}
- var FCS,i:integer;
-begin
- FCS:=0;
- for I := 0 to High(Data) do
-   begin
-     FCS:=FCS+Data[i];
-     while(FCS>255) do
-      begin
-        FCS:=(FCS and $FF)+((FCS shr 8)and $FF);
-      end;
-   end;
- FCS:=not(FCS);
- Result:=byte(FCS and $FF);
-end;
+//Function FCSCalculate(Data:array of byte):byte;
+//{розраховується інвертована
+//перша комплементарна сума}
+// var FCS,i:integer;
+//begin
+// FCS:=0;
+// for I := 0 to High(Data) do
+//   begin
+//     FCS:=FCS+Data[i];
+//     while(FCS>255) do
+//      begin
+//        FCS:=(FCS and $FF)+((FCS shr 8)and $FF);
+//      end;
+//   end;
+// FCS:=not(FCS);
+// Result:=byte(FCS and $FF);
+//end;
 
 Procedure DiapazonFill(Mode:TMeasureMode; Diapazons:TStrings);
 {заповнює Diapazons можливими назвами діапазонів

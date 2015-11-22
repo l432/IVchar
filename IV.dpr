@@ -3,7 +3,8 @@ program IV;
 uses
   Forms,
   IVchar_main in 'IVchar_main.pas' {IVchar},
-  V721 in 'V721.pas';
+  V721 in 'V721.pas',
+  PacketParameters in 'PacketParameters.pas';
 
 {$R *.res}
 

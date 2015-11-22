@@ -4,7 +4,7 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, CPort, ComCtrls, Buttons, V721, ExtCtrls;
+  Dialogs, StdCtrls, CPort, ComCtrls, Buttons, V721, ExtCtrls, IniFiles,PacketParameters;
 
 type
   TIVchar = class(TForm)
@@ -13,8 +13,8 @@ type
     Button1: TButton;
     Edit1: TEdit;
     PC: TPageControl;
-    TabSheet1: TTabSheet;
-    TabSheet2: TTabSheet;
+    TS_Main: TTabSheet;
+    TS_B7_21A: TTabSheet;
     BitBtn1: TBitBtn;
     LConnected: TLabel;
     BConnect: TButton;
@@ -25,6 +25,11 @@ type
     SBV721AAuto: TSpeedButton;
     Time: TTimer;
     LV721AU: TLabel;
+    TS_B7_21: TTabSheet;
+    PanelV721_I: TPanel;
+    RGV721_I: TRadioGroup;
+    ComDPacket: TComDataPacket;
+    BParamReceive: TButton;
     procedure Button1Click(Sender: TObject);
     procedure ComPort1RxChar(Sender: TObject; Count: Integer);
     procedure ComPort1RxBuf(Sender: TObject; const Buffer; Count: Integer);
@@ -41,8 +46,12 @@ type
     procedure RGV721A_MMClick(Sender: TObject);
   private
     { Private declarations }
+//   fPacket:array of byte;
   public
-    { Public declarations }
+    V721A:TV721A;
+    V721_I,V721_II:TV721;
+    procedure VoltmetrConnect(Voltmetr:TVoltmetr;PinNumber:byte);
+    Procedure VotmetrToForm({Voltmetr:TVoltmetr});
   end;
 
 //const
@@ -51,9 +60,11 @@ type
 
 var
   Main: TIVchar;
-  V721A:TV721;
+//  V721A:TV721A;
+//  V721_I,V721_II:TV721;
+  NumberPins:Array of byte; // номери пінів, які використовуються як керуючі для SPIE
 
-Procedure VotmetrToForm(Voltmetr:TVoltmetr;Form: TIVchar);
+//Procedure VotmetrToForm(Voltmetr:TVoltmetr;Form: TIVchar);
 
 implementation
 
@@ -97,7 +108,7 @@ begin
       Exit;
     end;
  V721A.Measurement();
- VotmetrToForm(V721A,Main);
+ VotmetrToForm({V721A});
 end;
 
 procedure TIVchar.ComDataPacket1Discard(Sender: TObject; const Str: string);
@@ -140,7 +151,8 @@ begin
 end;
 
 procedure TIVchar.FormCreate(Sender: TObject);
-var i:integer;
+ var i,TempPin:integer;
+     ConfigFile:TIniFile;
 begin
  DecimalSeparator:='.';
  RGV721A_MM.Items.Clear;
@@ -153,10 +165,40 @@ begin
  DiapazonFill(TMeasureMode(RGV721A_MM.ItemIndex),
                RGV721ARange.Items);
 
+ ConfigFile:=TIniFile.Create(ExtractFilePath(Application.ExeName)+'IVChar.ini');
+ SetLength(NumberPins,ConfigFile.ReadInteger('PinNumbers','PinCount',3));
+ for I := 0 to High(NumberPins) do
+    NumberPins[i]:=ConfigFile.ReadInteger('PinNumbers','Pin'+IntToStr(i),100);
 
- V721A:= TV721.Create(26);
- V721A.ComPort:=ComPort1;
- V721A.fComPacket.ComPort:=ComPort1;
+ TempPin:=ConfigFile.ReadInteger('PinNumbers','V721A',-1);
+ if (TempPin>-1)and(TempPin<High(NumberPins)) then
+     VoltmetrConnect(V721A,NumberPins[TempPin]);
+ TempPin:=ConfigFile.ReadInteger('PinNumbers','V721_I',-1);
+ if (TempPin>-1)and(TempPin<High(NumberPins)) then
+     VoltmetrConnect(V721_I,NumberPins[TempPin]);
+ TempPin:=ConfigFile.ReadInteger('PinNumbers','V721_II',-1);
+ if (TempPin>-1)and(TempPin<High(NumberPins)) then
+     VoltmetrConnect(V721_II,NumberPins[TempPin]);
+ ConfigFile.Free;
+
+// V721A:= TV721A.Create(26);
+// V721A.ComPort:=ComPort1;
+// V721A.fComPacket.ComPort:=ComPort1;
+
+ VotmetrToForm();
+
+
+// if not(assigned(V721A)) then
+//    begin
+//      BV721AMeas.Enabled:=False;
+//    end;
+
+
+
+
+ ComDPacket.StartString:=PacketBeginChar;
+ ComDPacket.StopString:=PacketEndChar;
+ ComDPacket.ComPort:=ComPort1;
  try
 //  ComPort1.ClearBuffer(True, True);
   ComPort1.Open;
@@ -168,7 +210,30 @@ begin
 end;
 
 procedure TIVchar.FormDestroy(Sender: TObject);
+ var  ConfigFile:TIniFile;
+      i:integer;
 begin
+ ConfigFile:=TIniFile.Create(ExtractFilePath(Application.ExeName)+'IVChar.ini');
+ ConfigFile.EraseSection('PinNumbers');
+ ConfigFile.WriteInteger('PinNumbers','PinCount',High(NumberPins)+1);
+ for I := 0 to High(NumberPins) do
+   begin
+    ConfigFile.WriteInteger('PinNumbers','Pin'+IntToStr(i),NumberPins[i]);
+    if assigned(V721A)and(V721A.PinNumber=NumberPins[i]) then
+         ConfigFile.WriteInteger('PinNumbers','V721A',i);
+    if assigned(V721_I)and(V721_I.PinNumber=NumberPins[i]) then
+         ConfigFile.WriteInteger('PinNumbers','V721_I',i);
+    if assigned(V721_II)and(V721_II.PinNumber=NumberPins[i]) then
+         ConfigFile.WriteInteger('PinNumbers','V721_II',i);
+   end;
+
+
+ ConfigFile.Free;
+
+ if assigned(V721A) then V721A.Free;
+ if assigned(V721_I) then V721_I.Free;
+ if assigned(V721_II) then V721_II.Free;
+
  try
   if ComPort1.Connected then
    begin
@@ -231,26 +296,59 @@ begin
  Time.Enabled:=SBV721AAuto.Down;
 end;
 
-Procedure VotmetrToForm(Voltmetr:TVoltmetr;Form: TIVchar);
+Procedure TIVchar.VoltmetrConnect(Voltmetr:TVoltmetr;PinNumber:byte);
 begin
- Form.RGV721A_MM.ItemIndex:=ord(Voltmetr.MeasureMode);
- DiapazonFill(TMeasureMode(Form.RGV721A_MM.ItemIndex),
-               Form.RGV721ARange.Items);
-
- Form.RGV721ARange.ItemIndex:=
-    DiapazonSelect(Voltmetr.MeasureMode,Voltmetr.Diapazon);
- case Voltmetr.MeasureMode of
-   IA,ID: Form.LV721AU.Caption:=' A';
-   UA,UD: Form.LV721AU.Caption:=' V';
-   MMErr: Form.LV721AU.Caption:='';
+ if assigned(Voltmetr) then Voltmetr.Free;
+ try
+  if ComPort1.Connected then
+   begin
+    Comport1.AbortAllAsync;
+    ComPort1.ClearBuffer(True, True);
+    ComPort1.Close;
+    Voltmetr:= TVoltmetr.Create(PinNumber);
+    Voltmetr.ComPort:=ComPort1;
+    Voltmetr.fComPacket.ComPort:=ComPort1;
+    ComPort1.Open;
+    Comport1.AbortAllAsync;
+    ComPort1.ClearBuffer(True, True);
+   end
+                        else
+   begin
+    Voltmetr:= TVoltmetr.Create(PinNumber);
+    Voltmetr.ComPort:=ComPort1;
+    Voltmetr.fComPacket.ComPort:=ComPort1;
+   end
+ finally
  end;
- if Voltmetr.isReady then
-    Form.LV721A.Caption:=FloatToStrF(Voltmetr.Value,ffExponent,4,2)
-                     else
-    begin
-     Form.LV721A.Caption:='    ERROR';
-     Form.LV721AU.Caption:='';
-    end;
+end;
+
+
+Procedure TIVchar.VotmetrToForm({Voltmetr:TVoltmetr});
+begin
+ BV721AMeas.Enabled:=assigned(V721A);
+ SBV721AAuto.Enabled:= assigned(V721A);
+
+ if assigned(V721A) then
+ begin
+   RGV721A_MM.ItemIndex:=ord(V721A.MeasureMode);
+   DiapazonFill(TMeasureMode(RGV721A_MM.ItemIndex),
+                 RGV721ARange.Items);
+
+   RGV721ARange.ItemIndex:=
+      DiapazonSelect(V721A.MeasureMode,V721A.Diapazon);
+   case V721A.MeasureMode of
+     IA,ID: LV721AU.Caption:=' A';
+     UA,UD: LV721AU.Caption:=' V';
+     MMErr: LV721AU.Caption:='';
+   end;
+   if V721A.isReady then
+      LV721A.Caption:=FloatToStrF(V721A.Value,ffExponent,4,2)
+                       else
+      begin
+       LV721A.Caption:='    ERROR';
+       LV721AU.Caption:='';
+      end;
+ end;
 end;
 
 end.
