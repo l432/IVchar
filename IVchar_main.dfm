@@ -1,6 +1,7 @@
 object IVchar: TIVchar
   Left = 0
   Top = 0
+  BorderIcons = [biSystemMenu, biMinimize]
   Caption = 'IVchar'
   ClientHeight = 646
   ClientWidth = 1036
@@ -34,7 +35,7 @@ object IVchar: TIVchar
     Top = 0
     Width = 1036
     Height = 577
-    ActivePage = TS_Main
+    ActivePage = TS_B7_21A
     Align = alTop
     Font.Charset = RUSSIAN_CHARSET
     Font.Color = clWindowText
@@ -103,7 +104,7 @@ object IVchar: TIVchar
         Width = 145
         Height = 43
         AllowAllUp = True
-        GroupIndex = 1
+        GroupIndex = 2
         Caption = 'AUTO'
         OnClick = SBV721AAutoClick
       end
@@ -122,6 +123,13 @@ object IVchar: TIVchar
         Font.Style = [fsBold]
         ParentColor = False
         ParentFont = False
+      end
+      object LV721APin: TLabel
+        Left = 554
+        Top = 272
+        Width = 154
+        Height = 26
+        Caption = 'LV721APin'
       end
       object RGV721A_MM: TRadioGroup
         Left = 0
@@ -174,6 +182,41 @@ object IVchar: TIVchar
         TabOrder = 2
         OnClick = BV721AMeasClick
       end
+      object CBV721A: TComboBox
+        Tag = 1
+        Left = 554
+        Top = 312
+        Width = 121
+        Height = 41
+        Font.Charset = RUSSIAN_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -28
+        Font.Name = 'Arial'
+        Font.Style = [fsBold]
+        ItemHeight = 33
+        ParentFont = False
+        TabOrder = 3
+        Text = 'Pins'
+        Items.Strings = (
+          '1'
+          '2'
+          '3')
+      end
+      object BV721ASet: TButton
+        Left = 696
+        Top = 312
+        Width = 89
+        Height = 34
+        Caption = 'set'
+        Font.Charset = RUSSIAN_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -28
+        Font.Name = 'Arial'
+        Font.Style = [fsBold]
+        ParentFont = False
+        TabOrder = 4
+        OnClick = BV721ASetClick
+      end
     end
     object TS_B7_21: TTabSheet
       Caption = 'B7_21'
@@ -185,7 +228,58 @@ object IVchar: TIVchar
         Height = 268
         Align = alTop
         TabOrder = 0
-        object RGV721_I: TRadioGroup
+        object LV721IPin: TLabel
+          Left = 731
+          Top = 110
+          Width = 282
+          Height = 68
+          AutoSize = False
+          Caption = 'LV721APin'
+          WordWrap = True
+        end
+        object LV721I: TLabel
+          Left = 344
+          Top = 0
+          Width = 559
+          Height = 104
+          AutoSize = False
+          Caption = '    ERROR'
+          Color = clWhite
+          Font.Charset = RUSSIAN_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -87
+          Font.Name = 'Verdana'
+          Font.Style = [fsBold]
+          ParentColor = False
+          ParentFont = False
+        end
+        object LV721IU: TLabel
+          Left = 915
+          Top = 0
+          Width = 98
+          Height = 104
+          AutoSize = False
+          Caption = 'a'
+          Color = clInfoText
+          Font.Charset = RUSSIAN_CHARSET
+          Font.Color = clWhite
+          Font.Height = -87
+          Font.Name = 'Arial'
+          Font.Style = [fsBold]
+          ParentColor = False
+          ParentFont = False
+        end
+        object SBV721IAuto: TSpeedButton
+          Left = 571
+          Top = 202
+          Width = 127
+          Height = 43
+          AllowAllUp = True
+          GroupIndex = 2
+          Caption = 'AUTO'
+          OnClick = SBV721AAutoClick
+        end
+        object RGV721I_MM: TRadioGroup
           Left = 0
           Top = 0
           Width = 326
@@ -205,6 +299,217 @@ object IVchar: TIVchar
           ParentFont = False
           TabOrder = 0
           OnClick = RGV721A_MMClick
+        end
+        object CBV721I: TComboBox
+          Tag = 1
+          Left = 739
+          Top = 184
+          Width = 121
+          Height = 41
+          Font.Charset = RUSSIAN_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -28
+          Font.Name = 'Arial'
+          Font.Style = [fsBold]
+          ItemHeight = 33
+          ParentFont = False
+          TabOrder = 1
+          Text = 'Pins'
+          Items.Strings = (
+            '1'
+            '2'
+            '3')
+        end
+        object BV721ISet: TButton
+          Left = 880
+          Top = 184
+          Width = 89
+          Height = 34
+          Caption = 'set'
+          Font.Charset = RUSSIAN_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -28
+          Font.Name = 'Arial'
+          Font.Style = [fsBold]
+          ParentFont = False
+          TabOrder = 2
+          OnClick = BV721ASetClick
+        end
+        object RGV721IRange: TRadioGroup
+          Left = 0
+          Top = 111
+          Width = 553
+          Height = 151
+          Caption = 'Range'
+          Color = clSkyBlue
+          Columns = 3
+          Font.Charset = RUSSIAN_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -35
+          Font.Name = 'Arial'
+          Font.Style = [fsBold]
+          Items.Strings = (
+            '1')
+          ParentBackground = False
+          ParentColor = False
+          ParentFont = False
+          TabOrder = 3
+          OnClick = RGV721ARangeClick
+        end
+        object BV721IMeas: TButton
+          Left = 571
+          Top = 127
+          Width = 127
+          Height = 51
+          Caption = 'measure'
+          TabOrder = 4
+          OnClick = BV721IMeasClick
+        end
+      end
+      object PanelV721_II: TPanel
+        Left = 0
+        Top = 268
+        Width = 1028
+        Height = 268
+        Align = alTop
+        Anchors = [akLeft, akRight, akBottom]
+        TabOrder = 1
+        object LV721IIPin: TLabel
+          Left = 6
+          Top = 118
+          Width = 307
+          Height = 62
+          AutoSize = False
+          Caption = 'LV721APin'
+          WordWrap = True
+        end
+        object LV721II: TLabel
+          Left = 0
+          Top = 0
+          Width = 559
+          Height = 104
+          AutoSize = False
+          Caption = '    ERROR'
+          Color = clWhite
+          Font.Charset = RUSSIAN_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -87
+          Font.Name = 'Verdana'
+          Font.Style = [fsBold]
+          ParentColor = False
+          ParentFont = False
+        end
+        object LV721IIU: TLabel
+          Left = 571
+          Top = 0
+          Width = 98
+          Height = 104
+          AutoSize = False
+          Caption = 'a'
+          Color = clInfoText
+          Font.Charset = RUSSIAN_CHARSET
+          Font.Color = clWhite
+          Font.Height = -87
+          Font.Name = 'Arial'
+          Font.Style = [fsBold]
+          ParentColor = False
+          ParentFont = False
+        end
+        object SBV721IIAuto: TSpeedButton
+          Left = 323
+          Top = 202
+          Width = 127
+          Height = 43
+          AllowAllUp = True
+          GroupIndex = 2
+          Caption = 'AUTO'
+          OnClick = SBV721AAutoClick
+        end
+        object RGV721II_MM: TRadioGroup
+          Left = 696
+          Top = 0
+          Width = 326
+          Height = 105
+          Caption = 'Measure Mode'
+          Color = clCream
+          Columns = 3
+          Font.Charset = RUSSIAN_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -23
+          Font.Name = 'Verdana'
+          Font.Style = [fsBold]
+          Items.Strings = (
+            '1')
+          ParentBackground = False
+          ParentColor = False
+          ParentFont = False
+          TabOrder = 0
+          OnClick = RGV721A_MMClick
+        end
+        object CBV721II: TComboBox
+          Tag = 1
+          Left = 6
+          Top = 187
+          Width = 121
+          Height = 41
+          Font.Charset = RUSSIAN_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -28
+          Font.Name = 'Arial'
+          Font.Style = [fsBold]
+          ItemHeight = 33
+          ParentFont = False
+          TabOrder = 1
+          Text = 'Pins'
+          Items.Strings = (
+            '1'
+            '2'
+            '3')
+        end
+        object BV721IISet: TButton
+          Left = 144
+          Top = 186
+          Width = 89
+          Height = 34
+          Caption = 'set'
+          Font.Charset = RUSSIAN_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -28
+          Font.Name = 'Arial'
+          Font.Style = [fsBold]
+          ParentFont = False
+          TabOrder = 2
+          OnClick = BV721ASetClick
+        end
+        object RGV721IIRange: TRadioGroup
+          Left = 472
+          Top = 111
+          Width = 550
+          Height = 151
+          Caption = 'Range'
+          Color = clSkyBlue
+          Columns = 3
+          Font.Charset = RUSSIAN_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -35
+          Font.Name = 'Arial'
+          Font.Style = [fsBold]
+          Items.Strings = (
+            '1')
+          ParentBackground = False
+          ParentColor = False
+          ParentFont = False
+          TabOrder = 3
+          OnClick = RGV721ARangeClick
+        end
+        object BV721IIMeas: TButton
+          Left = 323
+          Top = 126
+          Width = 127
+          Height = 51
+          Caption = 'measure'
+          TabOrder = 4
+          OnClick = BV721IIMeasClick
         end
       end
     end
@@ -240,6 +545,7 @@ object IVchar: TIVchar
     ParentFont = False
     TabOrder = 3
     WordWrap = True
+    OnClick = BParamReceiveClick
   end
   object ComPort1: TComPort
     BaudRate = br115200
@@ -269,6 +575,7 @@ object IVchar: TIVchar
     Top = 8
   end
   object ComDPacket: TComDataPacket
+    OnPacket = ComDPacketPacket
     Left = 472
     Top = 40
   end

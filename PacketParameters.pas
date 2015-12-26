@@ -20,13 +20,29 @@ var
   aPacket:array of byte;
 
 Procedure PacketCreate(const Args: array of byte);
+{створюється пакет (заповнюється масив aPacket), який окрім Args містить
+PacketBegin - 0-й байт
+Довжину пакету (PacketBegin та PacketEnd не враховуються) - 1-й байт
+Контрольну суму - передостанній байт
+PacketEnd - останній байт}
 Function PacketIsSend(ComPort:TComPort):boolean;
-Function PacketIsReceived(const Str: string; pData:Pointer):boolean;
-
+{спроба відіслати aPacket через ComPort}
+Function PacketIsReceived(const Str: string; pData:Pointer):boolean;overload;
+{pData має вказувати на "array of byte";
+розмір цього масиву встановлюється відповідно
+до довжини Str і в його елементи заносяться
+числа, які відповідають символам з Str;
+повертається правда, якщо
+- в 0-му елементі масиву знаходиться довжина
+- правильне значення контрольної суми}
+Function PacketIsReceived(const Str: string; pData:Pointer; Command:byte):boolean;overload;
+{див. попередню +
+- в першому елементі Command}
 Function FCSCalculate(Data:array of byte):byte;
 {розраховується інвертована
 перша комплементарна сума}
 Procedure ShowData(Data:array of byte);
+{виводиться віконечко з числами, які містить Data}
 
 implementation
 
@@ -35,10 +51,10 @@ var i:byte;
 begin
   SetLength(aPacket,Length(Args)+4);
   aPacket[0]:=0;
-  aPacket[1]:=High(Args)+2;
+  aPacket[1]:=Length(Args)+2;
   aPacket[High(aPacket)]:=0;
   aPacket[High(aPacket)-1]:=0;
-  for I := 0 to High(Args) do
+  for I :=Low(Args) to High(Args) do
         aPacket[i+2]:=Args[i];
   aPacket[High(aPacket)-1]:=FCSCalculate(aPacket);
   aPacket[0]:=PacketBegin;
@@ -67,9 +83,30 @@ begin
  Pointer(Dat):=pData;
  SetLength(Dat,Length(Str));
  for I := 0 to High(Dat) do
-   Dat[i]:=ord(str[i+1]);
+   Dat[i]:=ord(Str[i+1]);
  if Dat[0]<>Length(Str) then Result:=False;
  if FCSCalculate(Dat)<>0 then Result:=False;
+ Pointer(Dat) := nil;
+end;
+
+Function PacketIsReceived(const Str: string; pData:Pointer; Command:byte):boolean;
+ var
+//     i:integer;
+     Dat:array of byte;
+begin
+// Result:=True;
+// Pointer(Dat):=pData;
+// SetLength(Dat,Length(Str));
+// for I := 0 to High(Dat) do
+//   Dat[i]:=ord(str[i+1]);
+// if Dat[0]<>Length(Str) then Result:=False;
+// if FCSCalculate(Dat)<>0 then Result:=False;
+// if Dat[1]<>Command then Result:=False;
+ Result:=False;
+ if not(PacketIsReceived(Str,pData)) then Exit;
+ Pointer(Dat):=pData;
+ if Dat[1]=Command then Result:=True;
+
  Pointer(Dat) := nil;
 end;
 

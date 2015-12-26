@@ -5,8 +5,9 @@
 #define PacketEnd 255
 #define PacketMaxLength 15
 #define V7_21Command 1
+#define ParameterReceiveCommand 2
 
-byte DrivePins[] = {25, 26, 27};
+byte DrivePins[] = {25, 26, 27, 28, 29, 30};
 //enum { REG_LATCH = 5 };
 
 byte incomingByte = 0;
@@ -50,29 +51,12 @@ start:
       //       Serial.write(PacketEnd);
 
       if (packet[1] = V7_21Command) V721(packet[2]);
+      if (packet[1] = ParameterReceiveCommand) SendParameters();
 
     }
   }
 }
 
-void V721(byte PinNumber) {
-  digitalWrite(PinNumber, LOW);
-  digitalWrite(PinNumber, HIGH);
-  byte data[8];
-  data[0] = sizeof(data);
-  data[1] = V7_21Command;
-  data[2] = PinNumber;
-  for (byte i = 0; i < 4; i++)
-  {
-    data[i + 3] = SPI.transfer(0);
-  }
-  data[sizeof(data) - 1] = 0;
-  data[sizeof(data) - 1] = FCS(data, data[0]);
-
-  Serial.write(PacketStart);
-  Serial.write(data, sizeof(data));
-  Serial.write(PacketEnd);
-}
 
 byte FCS (byte Data[], int n)
 {
@@ -89,33 +73,46 @@ byte FCS (byte Data[], int n)
   return byte(FCS & 0xFF);
 }
 
-//
-//  digitalWrite(REG_LATCH, LOW);
-//  digitalWrite(REG_LATCH, HIGH);
-//  uint8_t states = SPI.transfer(0);
-//  uint8_t states1 = SPI.transfer(0);
+void V721(byte PinNumber) {
+  digitalWrite(PinNumber, LOW);
+  digitalWrite(PinNumber, HIGH);
+  byte data[8];
+  data[0] = sizeof(data);
+  data[1] = V7_21Command;
+  data[2] = PinNumber;
+  for (byte i = 0; i < 4; i++)
+  {
+    data[i + 3] = SPI.transfer(0);
+  }
+  data[sizeof(data) - 1] = 0;
+  data[sizeof(data) - 1] = FCS(data, data[0]);
 
+  SendPacket(data,sizeof(data));
+//  Serial.write(PacketStart);
+//  Serial.write(data, sizeof(data));
+//  Serial.write(PacketEnd);
+}
 
-// put your main code here, to run repeatedly:
-//  for (int i = 1; i < 25; i++)
-//  {
-//  Serial.println(i);
+void SendParameters() {
+  byte data[sizeof(DrivePins) + 3];
+  data[0] = sizeof(data);
+  data[1] = ParameterReceiveCommand;
+  for (byte i = 0; i < sizeof(DrivePins); i++)
+  {
+    data[i + 2] = DrivePins[i];
+  }
+  data[sizeof(data) - 1] = 0;
+  data[sizeof(data) - 1] = FCS(data, data[0]);
 
-//    Serial.write(states);
-//    delay(1000);
-//    Serial.write(states1);
-//    delay(1000);
-//    Serial.write(15);
-//    delay(1000);
+ SendPacket(data,sizeof(data));
+//  Serial.write(PacketStart);
+//  Serial.write(data, sizeof(data));
+//  Serial.write(PacketEnd);
+}
 
-//  digitalWrite(REG_LATCH+1, LOW);
-//  digitalWrite(REG_LATCH+1, HIGH);
-//  states = SPI.transfer(0);
-//   Serial.write(states);
-//   delay(1000);
-//
-//   Serial.write(25);
-//   delay(1000);
-
-//  }
+void SendPacket(byte Data[], int n){
+  Serial.write(PacketStart);
+  Serial.write(Data, n);
+  Serial.write(PacketEnd);  
+}
 

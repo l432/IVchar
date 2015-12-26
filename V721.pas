@@ -25,6 +25,7 @@ type
    Procedure MModeDetermination(Data:byte); virtual;
    Procedure DiapazonDetermination(Data:byte); virtual;
    Procedure ValueDetermination(Data:array of byte);virtual;
+   Function GetPinNumberStr():string;
 //   Procedure PacketCreate();
   public
 //   fEvent:TEvent;
@@ -32,11 +33,14 @@ type
    fComPacket: TComDataPacket;
    property MeasureMode:TMeasureMode read FMeasureMode;
    property Value:double read fValue;
-   property PinNumber:byte read fPinNumber;
+   property PinNumber:byte read fPinNumber write fPinNumber;
+   property PinNumberStr:string read GetPinNumberStr;
    property Diapazon:TDiapazons read fDiapazon;
    property isReady:boolean read fIsReady;
    Procedure ConvertToValue(Data:array of byte);
-   Constructor Create(NumberPin:byte);
+   Constructor Create(NumberPin:byte);overload;
+   Constructor Create(NumberPin:byte;CP:TComPort);overload;
+   Constructor Create(CP:TComPort);overload;
    Procedure Free;
    Function Request():boolean;
    Procedure PacketReceiving(Sender: TObject; const Str: string);
@@ -60,6 +64,7 @@ type
 
 
 const
+  UndefinedPin=255;
   MeasureModeLabels:array[TMeasureMode]of string=
    ('~ I', '= I','~ U', '= U','Error');
   DiapazonsLabels:array[TDiapazons]of string=
@@ -103,7 +108,8 @@ begin
   fIsReceived:=False;
   fMeasureMode:=MMErr;
   fDiapazon:=DErr;
-  fComPacket:=TComDataPacket.Create(ComPort);
+  fComPacket:=TComDataPacket.Create(fComPacket);
+//  fComPacket:=TComDataPacket.Create(ComPort);
   fComPacket.Size:=0;
   fComPacket.MaxBufferSize:=1024;
   fComPacket.IncludeStrings:=False;
@@ -114,6 +120,18 @@ begin
 //  fComPacket.ComPort:=ComPort;
   fComPacket.OnPacket:=PacketReceiving;
 //  fEvent:=TEvent.Create(nil,True,True,#0);
+end;
+
+Constructor TVoltmetr.Create(NumberPin:byte;CP:TComPort);
+begin
+ Create(NumberPin);
+ ComPort:=CP;
+ fComPacket.ComPort:=CP;
+end;
+
+Constructor TVoltmetr.Create(CP:TComPort);
+begin
+ Create(UndefinedPin,CP);
 end;
 
 Procedure TVoltmetr.Free;
@@ -186,7 +204,15 @@ end;
 Function TVoltmetr.Request():boolean;
 begin
   PacketCreate([V7_21Command,PinNumber]);
-  Result:=PacketIsSend(ComPort);
+
+//  ShowData(aPacket);
+//  PacketIsReceived('gg1t',@aPacket[Low(aPacket)]);
+//  ShowData(aPacket);
+//  PacketCreate([V7_21Command,PinNumber]);
+//  ShowData(aPacket);
+
+    Result:=PacketIsSend(ComPort);
+
 //  Result:=False;
 //  if ComPort.Connected then
 //   begin
@@ -241,7 +267,8 @@ procedure TVoltmetr.PacketReceiving(Sender: TObject; const Str: string);
 //     Data:array of byte;
 //    tempstr:string;
 begin
- if PacketIsReceived(Str,@fData[Low(fData)]) then Exit;
+// if PacketIsReceived(Str,@fData[Low(fData)]) then Exit;
+ if not(PacketIsReceived(Str,@fData[Low(fData)],V7_21Command)) then Exit;
 
 // SetLength(fData,Length(Str));
 // tempstr:='';
@@ -255,14 +282,24 @@ begin
 // ShowData(fData);
 
 // if fData[0]<>Length(Str) then Exit;
- if fData[1]<>V7_21Command then Exit;
+// if fData[1]<>V7_21Command then Exit;
+
  if fData[2]<>PinNumber then Exit;
 // if FCSCalculate(fData)<>0 then Exit;
+
  for I := 0 to High(fData)-4 do
    fData[i]:=fData[i+3];
  SetLength(fData,High(fData)-3);
  fIsReceived:=True;
 //// fEvent.SetEvent;
+end;
+
+Function TVoltmetr.GetPinNumberStr():string;
+begin
+  if PinNumber=UndefinedPin then
+    Result:='Control pin is undefined'
+                       else
+    Result:='Control pin number is '+IntToStr(PinNumber);
 end;
 
 Procedure TVoltmetr.ConvertToValue(Data:array of byte);
