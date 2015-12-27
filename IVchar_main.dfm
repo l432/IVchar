@@ -35,7 +35,7 @@ object IVchar: TIVchar
     Top = 0
     Width = 1036
     Height = 577
-    ActivePage = TS_B7_21A
+    ActivePage = TS_Main
     Align = alTop
     Font.Charset = RUSSIAN_CHARSET
     Font.Color = clWindowText
@@ -47,36 +47,180 @@ object IVchar: TIVchar
     OnChange = PCChange
     object TS_Main: TTabSheet
       Caption = 'Main'
-      object Label1: TLabel
-        Left = 199
-        Top = 105
-        Width = 503
-        Height = 85
-        AutoSize = False
-        Caption = 'L'
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = clWindowText
-        Font.Height = -28
-        Font.Name = 'Tahoma'
-        Font.Style = []
-        ParentFont = False
-        WordWrap = True
-      end
-      object Edit1: TEdit
-        Left = 63
-        Top = 188
-        Width = 85
-        Height = 34
+      object ChLine: TChart
+        Left = 0
+        Top = 0
+        Width = 720
+        Height = 268
+        Legend.Alignment = laTop
+        Legend.CheckBoxes = True
+        Legend.FontSeriesColor = True
+        Legend.HorizMargin = 10
+        Legend.LegendStyle = lsSeries
+        Legend.ResizeChart = False
+        Legend.Visible = False
+        MarginBottom = 0
+        MarginLeft = 0
+        MarginRight = 0
+        MarginTop = 0
+        Title.Text.Strings = (
+          'I-V linear')
+        View3D = False
+        View3DOptions.Orthogonal = False
+        Align = alCustom
         TabOrder = 0
+        PrintMargins = (
+          15
+          30
+          15
+          30)
+        object ForwLine: TPointSeries
+          Marks.Callout.Brush.Color = clBlack
+          Marks.Visible = False
+          ClickableLine = False
+          Pointer.HorizSize = 3
+          Pointer.InflateMargins = True
+          Pointer.Style = psRectangle
+          Pointer.VertSize = 3
+          Pointer.Visible = True
+          XValues.Name = 'X'
+          XValues.Order = loAscending
+          YValues.Name = 'Y'
+          YValues.Order = loNone
+        end
+        object RevLine: TPointSeries
+          Marks.Callout.Brush.Color = clBlack
+          Marks.Visible = False
+          SeriesColor = clBlue
+          ClickableLine = False
+          Pointer.InflateMargins = True
+          Pointer.Style = psCircle
+          Pointer.Visible = True
+          XValues.Name = 'X'
+          XValues.Order = loAscending
+          YValues.Name = 'Y'
+          YValues.Order = loNone
+        end
+      end
+      object ChLg: TChart
+        Left = 0
+        Top = 268
+        Width = 720
+        Height = 268
+        Legend.Visible = False
+        MarginBottom = 0
+        MarginLeft = 0
+        MarginRight = 0
+        MarginTop = 0
+        Title.Text.Strings = (
+          'I-V log')
+        LeftAxis.Logarithmic = True
+        View3D = False
+        View3DOptions.Orthogonal = False
+        Align = alCustom
+        TabOrder = 1
+        Anchors = [akLeft, akBottom]
+        PrintMargins = (
+          15
+          30
+          15
+          30)
+        object ForwLg: TPointSeries
+          Marks.Callout.Brush.Color = clBlack
+          Marks.Visible = False
+          ClickableLine = False
+          Pointer.HorizSize = 3
+          Pointer.InflateMargins = True
+          Pointer.Style = psRectangle
+          Pointer.VertSize = 3
+          Pointer.Visible = True
+          XValues.Name = 'X'
+          XValues.Order = loAscending
+          YValues.Name = 'Y'
+          YValues.Order = loNone
+        end
+        object RevLg: TPointSeries
+          Marks.Callout.Brush.Color = clBlack
+          Marks.Visible = False
+          SeriesColor = clBlue
+          ClickableLine = False
+          Pointer.InflateMargins = True
+          Pointer.Style = psCircle
+          Pointer.Visible = True
+          XValues.Name = 'X'
+          XValues.Order = loAscending
+          YValues.Name = 'Y'
+          YValues.Order = loNone
+        end
+      end
+      object GBIV: TGroupBox
+        Left = 726
+        Top = 16
+        Width = 291
+        Height = 121
+        Caption = 'I-V measurements'
+        Font.Charset = RUSSIAN_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -17
+        Font.Name = 'Arial'
+        Font.Style = [fsBold]
+        ParentFont = False
+        TabOrder = 2
+        object CBForw: TCheckBox
+          Left = 16
+          Top = 32
+          Width = 97
+          Height = 17
+          Caption = 'Forward'
+          TabOrder = 0
+        end
+        object CBRev: TCheckBox
+          Left = 16
+          Top = 72
+          Width = 97
+          Height = 17
+          Caption = 'Reverse'
+          TabOrder = 1
+        end
+        object BIVStart: TButton
+          Left = 168
+          Top = 28
+          Width = 83
+          Height = 25
+          Caption = 'Start'
+          TabOrder = 2
+        end
+        object BIVStop: TButton
+          Left = 168
+          Top = 72
+          Width = 83
+          Height = 25
+          Caption = 'Stop'
+          TabOrder = 3
+        end
       end
       object Button1: TButton
-        Left = 105
-        Top = 251
+        Left = 798
+        Top = 405
         Width = 98
         Height = 33
         Caption = 'Button1'
-        TabOrder = 1
+        TabOrder = 3
         OnClick = Button1Click
+      end
+      object GroupBox1: TGroupBox
+        Left = 726
+        Top = 160
+        Width = 291
+        Height = 121
+        Caption = 'Actual Data'
+        Font.Charset = RUSSIAN_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -17
+        Font.Name = 'Arial'
+        Font.Style = [fsBold]
+        ParentFont = False
+        TabOrder = 4
       end
     end
     object TS_B7_21A: TTabSheet
@@ -197,10 +341,6 @@ object IVchar: TIVchar
         ParentFont = False
         TabOrder = 3
         Text = 'Pins'
-        Items.Strings = (
-          '1'
-          '2'
-          '3')
       end
       object BV721ASet: TButton
         Left = 696
@@ -315,10 +455,6 @@ object IVchar: TIVchar
           ParentFont = False
           TabOrder = 1
           Text = 'Pins'
-          Items.Strings = (
-            '1'
-            '2'
-            '3')
         end
         object BV721ISet: TButton
           Left = 880
@@ -461,10 +597,6 @@ object IVchar: TIVchar
           ParentFont = False
           TabOrder = 1
           Text = 'Pins'
-          Items.Strings = (
-            '1'
-            '2'
-            '3')
         end
         object BV721IISet: TButton
           Left = 144
@@ -512,6 +644,14 @@ object IVchar: TIVchar
           OnClick = BV721IIMeasClick
         end
       end
+    end
+    object TS_DAC: TTabSheet
+      Caption = 'DAC'
+      ImageIndex = 3
+    end
+    object TS_Setting: TTabSheet
+      Caption = 'Setting'
+      ImageIndex = 4
     end
   end
   object BitBtn1: TBitBtn
@@ -566,17 +706,17 @@ object IVchar: TIVchar
     TriggersOnRxChar = False
     OnRxChar = ComPort1RxChar
     OnRxBuf = ComPort1RxBuf
-    Left = 536
-    Top = 40
+    Left = 976
+    Top = 576
   end
   object Time: TTimer
     Interval = 3000
-    Left = 608
-    Top = 8
+    Left = 1008
+    Top = 576
   end
   object ComDPacket: TComDataPacket
     OnPacket = ComDPacketPacket
-    Left = 472
-    Top = 40
+    Left = 944
+    Top = 576
   end
 end

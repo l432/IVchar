@@ -4,14 +4,13 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, CPort, ComCtrls, Buttons, V721, ExtCtrls, IniFiles,PacketParameters;
+  Dialogs, StdCtrls, CPort, ComCtrls, Buttons, V721, ExtCtrls, IniFiles,PacketParameters,
+  TeEngine, Series, TeeProcs, Chart;
 
 type
   TIVchar = class(TForm)
     ComPort1: TComPort;
-    Label1: TLabel;
     Button1: TButton;
-    Edit1: TEdit;
     PC: TPageControl;
     TS_Main: TTabSheet;
     TS_B7_21A: TTabSheet;
@@ -51,6 +50,20 @@ type
     BV721IIMeas: TButton;
     SBV721IAuto: TSpeedButton;
     SBV721IIAuto: TSpeedButton;
+    TS_DAC: TTabSheet;
+    TS_Setting: TTabSheet;
+    ChLine: TChart;
+    ForwLine: TPointSeries;
+    RevLine: TPointSeries;
+    ChLg: TChart;
+    ForwLg: TPointSeries;
+    RevLg: TPointSeries;
+    GBIV: TGroupBox;
+    CBForw: TCheckBox;
+    CBRev: TCheckBox;
+    BIVStart: TButton;
+    BIVStop: TButton;
+    GroupBox1: TGroupBox;
     procedure Button1Click(Sender: TObject);
     procedure ComPort1RxChar(Sender: TObject; Count: Integer);
     procedure ComPort1RxBuf(Sender: TObject; const Buffer; Count: Integer);
@@ -72,6 +85,7 @@ type
     procedure BV721IIMeasClick(Sender: TObject);
   private
     procedure DiapazonsBegin();
+    procedure ComponentView;
     { Private declarations }
 //   fPacket:array of byte;
   public
@@ -265,9 +279,7 @@ procedure TIVchar.FormCreate(Sender: TObject);
 begin
  DecimalSeparator:='.';
  DiapazonsBegin();
-
- PanelV721_I.Height:=round(PanelV721_I.Parent.Height/2);
- PanelV721_II.Height:=round(PanelV721_II.Parent.Height/2);
+ ComponentView();
 
  V721A:= TV721A.Create(ComPort1);
  V721_I:= TV721.Create(ComPort1);
@@ -652,6 +664,20 @@ begin
 //                       else
 //    LV721APin.Caption:='Control pin number is '+IntToStr(V721A.PinNumber);
 end;
+
+procedure TIVchar.ComponentView;
+begin
+  PanelV721_I.Height := round(PanelV721_I.Parent.Height / 2);
+  PanelV721_II.Height := round(PanelV721_II.Parent.Height / 2);
+  ChLine.Top:=0;
+  ChLine.Left:=0;
+  ChLine.Height := round(ChLine.Parent.Height / 2);
+  ChLine.Width:= round(0.7*ChLine.Parent.Width);
+  ChLg.Top:=round(ChLg.Parent.Height / 2);
+  ChLg.Left:=0;
+  ChLg.Height := round(ChLg.Parent.Height / 2);
+  ChLg.Width:= round(0.7*ChLg.Parent.Width);
+  end;
 
 procedure TIVchar.DiapazonsBegin;
 var
