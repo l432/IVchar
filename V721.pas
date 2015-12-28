@@ -20,7 +20,7 @@ type
 //   fComPacket: TComDataPacket;
 //   fPacket:array of byte;
    fPinNumber:byte;
-   fData:array of byte;
+   fData:TArrByte;
 
    Procedure MModeDetermination(Data:byte); virtual;
    Procedure DiapazonDetermination(Data:byte); virtual;
@@ -268,7 +268,9 @@ procedure TVoltmetr.PacketReceiving(Sender: TObject; const Str: string);
 //    tempstr:string;
 begin
 // if PacketIsReceived(Str,@fData[Low(fData)]) then Exit;
- if not(PacketIsReceived(Str,@fData[Low(fData)],V7_21Command)) then Exit;
+
+// if not(PacketIsReceived(Str,@fData[Low(fData)],V7_21Command)) then Exit;
+ if not(PacketIsReceived(Str,fData,V7_21Command)) then Exit;
 
 // SetLength(fData,Length(Str));
 // tempstr:='';
@@ -279,7 +281,7 @@ begin
 //   end;
 // showmessage(tempstr);
 
-// ShowData(fData);
+//  ShowData(fData);
 
 // if fData[0]<>Length(Str) then Exit;
 // if fData[1]<>V7_21Command then Exit;

@@ -50,8 +50,8 @@ start:
       //       Serial.write(packet, packet[0]);
       //       Serial.write(PacketEnd);
 
-      if (packet[1] = V7_21Command) V721(packet[2]);
-      if (packet[1] = ParameterReceiveCommand) SendParameters();
+      if (packet[1] == V7_21Command) V721(packet[2]);
+      if (packet[1] == ParameterReceiveCommand) SendParameters();
 
     }
   }
@@ -104,10 +104,10 @@ void SendParameters() {
   data[sizeof(data) - 1] = 0;
   data[sizeof(data) - 1] = FCS(data, data[0]);
 
- SendPacket(data,sizeof(data));
-//  Serial.write(PacketStart);
-//  Serial.write(data, sizeof(data));
-//  Serial.write(PacketEnd);
+// SendPacket(data,sizeof(data));
+  Serial.write(PacketStart);
+  Serial.write(data, sizeof(data));
+  Serial.write(PacketEnd);
 }
 
 void SendPacket(byte Data[], int n){

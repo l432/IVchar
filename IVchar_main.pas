@@ -131,6 +131,7 @@ end;
 procedure TIVchar.BParamReceiveClick(Sender: TObject);
 begin
  PacketCreate([ParameterReceiveCommand]);
+// showmessage(booltostr(False)+' '+booltostr(PacketIsSend(ComPort1)));
  PacketIsSend(ComPort1);
 end;
 
@@ -235,15 +236,20 @@ end;
 //end;
 
 procedure TIVchar.ComDPacketPacket(Sender: TObject; const Str: string);
- var Data:array of byte;
+ var Data:TArrByte;
+//     Data:array of byte;
      i:integer;
 begin
- if PacketIsReceived(Str,@Data[Low(Data)],ParameterReceiveCommand) then
+// if PacketIsReceived(Str,@Data[Low(Data)],ParameterReceiveCommand) then
+ if PacketIsReceived(Str,Data,ParameterReceiveCommand) then
+
+// ShowData(Data);
+// showmessage(inttostr(High(Data)));
   begin
    NumberPins.Clear;
    for I := 2 to High(Data)-1 do
     NumberPins.Add(IntToStr(Data[i]));
-   NumberPinsShow(); 
+   NumberPinsShow();
 //   SetLength(NumberPins,High(Data)-2);
 //   for I := 0 to High(NumberPins) do
 //    NumberPins[i]:=Data[i+2];
@@ -328,6 +334,7 @@ begin
 // CBV721A.Items:=NumberPins;
 
  VoltmetrNumberPinShow();
+
 // V721A.PinNumber:=26;
 
 // V721A:= TV721A.Create(26,ComPort1);
@@ -656,9 +663,12 @@ end;
 
 Procedure TIVchar.VoltmetrNumberPinShow();
 begin
- LV721APin.Caption:=V721A.PinNumberStr;
- LV721IPin.Caption:=V721_I.PinNumberStr;
- LV721IIPin.Caption:=V721_II.PinNumberStr;
+ if assigned(V721A) then
+   LV721APin.Caption:=V721A.PinNumberStr;
+ if assigned(V721_I) then
+   LV721IPin.Caption:=V721_I.PinNumberStr;
+ if assigned(V721_II) then
+   LV721IIPin.Caption:=V721_II.PinNumberStr;
 // if V721A.PinNumber=255 then
 //    LV721APin.Caption:='Control pin is undefined'
 //                       else

@@ -3,8 +3,8 @@ unit PacketParameters;
 interface
 uses CPort,Dialogs,SysUtils;
 
-//type
-//  TArrByte=array of byte;
+type
+  TArrByte=array of byte;
 //  PTArrSingle=^TArrSingle;
 
 const
@@ -27,17 +27,19 @@ PacketBegin - 0-й байт
 PacketEnd - останній байт}
 Function PacketIsSend(ComPort:TComPort):boolean;
 {спроба відіслати aPacket через ComPort}
-Function PacketIsReceived(const Str: string; pData:Pointer):boolean;overload;
-{pData має вказувати на "array of byte";
-розмір цього масиву встановлюється відповідно
+//Function PacketIsReceived(const Str: string; pData:Pointer):boolean;overload;
+Function PacketIsReceived(const Str: string; var pData:TArrByte):boolean;overload;
+{розмір pData встановлюється відповідно
 до довжини Str і в його елементи заносяться
 числа, які відповідають символам з Str;
 повертається правда, якщо
 - в 0-му елементі масиву знаходиться довжина
 - правильне значення контрольної суми}
-Function PacketIsReceived(const Str: string; pData:Pointer; Command:byte):boolean;overload;
+//Function PacketIsReceived(const Str: string; pData:Pointer; Command:byte):boolean;overload;
+Function PacketIsReceived(const Str: string; var pData:TArrByte; Command:byte):boolean;overload;
 {див. попередню +
 - в першому елементі Command}
+
 Function FCSCalculate(Data:array of byte):byte;
 {розраховується інвертована
 перша комплементарна сума}
@@ -59,6 +61,8 @@ begin
   aPacket[High(aPacket)-1]:=FCSCalculate(aPacket);
   aPacket[0]:=PacketBegin;
   aPacket[High(aPacket)]:=PacketEnd;
+
+//  ShowData(aPacket)
 end;
 
 Function PacketIsSend(ComPort:TComPort):boolean;
@@ -75,39 +79,86 @@ begin
  if not(Result) then MessageDlg('Packet is not send',mtError, [mbOK], 0);
 end;
 
-Function PacketIsReceived(const Str: string; pData:Pointer):boolean;
+Function PacketIsReceived(const Str: string; var pData:TArrByte):boolean;
  var i:integer;
-     Dat:array of byte;
+//     Dat:array of byte;
 begin
  Result:=True;
- Pointer(Dat):=pData;
- SetLength(Dat,Length(Str));
- for I := 0 to High(Dat) do
-   Dat[i]:=ord(Str[i+1]);
- if Dat[0]<>Length(Str) then Result:=False;
- if FCSCalculate(Dat)<>0 then Result:=False;
- Pointer(Dat) := nil;
-end;
 
-Function PacketIsReceived(const Str: string; pData:Pointer; Command:byte):boolean;
- var
-//     i:integer;
-     Dat:array of byte;
-begin
+ SetLength(pData,Length(Str));
+ for I := 0 to High(pData) do
+   pData[i]:=ord(str[i+1]);
+
+// ShowData(pData);
+
+ if pData[0]<>Length(Str) then Result:=False;
+ if FCSCalculate(pData)<>0 then Result:=False;
+
 // Result:=True;
 // Pointer(Dat):=pData;
 // SetLength(Dat,Length(Str));
 // for I := 0 to High(Dat) do
+//   Dat[i]:=ord(Str[i+1]);
+//// ShowData(Dat);
+//
+// if Dat[0]<>Length(Str) then Result:=False;
+// if FCSCalculate(Dat)<>0 then Result:=False;
+// Pointer(Dat) := nil;
+
+end;
+
+//Function PacketIsReceived(const Str: string; pData:Pointer; Command:byte):boolean;
+// var
+//     i:integer;
+//     Dat:array of byte;
+//begin
+// Result:=True;
+// Pointer(Dat):=pData;
+//
+// SetLength(Dat,Length(Str));
+// for I := 0 to High(Dat) do
 //   Dat[i]:=ord(str[i+1]);
+//
+// ShowData(Dat);
+//
 // if Dat[0]<>Length(Str) then Result:=False;
 // if FCSCalculate(Dat)<>0 then Result:=False;
 // if Dat[1]<>Command then Result:=False;
+//
+//// Result:=False;
+//// if not(PacketIsReceived(Str,pData)) then Exit;
+//// Pointer(Dat):=pData;
+//// if Dat[1]=Command then Result:=True;
+////
+//
+//// pData:=Pointer(Dat);
+//
+// Pointer(Dat) := nil;
+//end;
+
+Function PacketIsReceived(const Str: string; var pData:TArrByte; Command:byte):boolean;overload;
+// var
+//     i:integer;
+//     Dat:array of byte;
+begin
+// Result:=True;
+//
+// SetLength(pData,Length(Str));
+// for I := 0 to High(pData) do
+//   pData[i]:=ord(str[i+1]);
+//
+// ShowData(pData);
+//
+// if pData[0]<>Length(Str) then Result:=False;
+// if FCSCalculate(pData)<>0 then Result:=False;
+// if pData[1]<>Command then Result:=False;
+
  Result:=False;
  if not(PacketIsReceived(Str,pData)) then Exit;
- Pointer(Dat):=pData;
- if Dat[1]=Command then Result:=True;
-
- Pointer(Dat) := nil;
+// Pointer(Dat):=pData;
+ if pData[1]=Command then Result:=True;
+//
+// Pointer(Dat) := nil;
 end;
 
 Function FCSCalculate(Data:array of byte):byte;
