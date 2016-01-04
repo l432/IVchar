@@ -5,12 +5,11 @@ interface
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, StdCtrls, CPort, ComCtrls, Buttons, V721, ExtCtrls, IniFiles,PacketParameters,
-  TeEngine, Series, TeeProcs, Chart;
+  TeEngine, Series, TeeProcs, Chart, Spin, OlegType, Grids, OlegMath;
 
 type
   TIVchar = class(TForm)
     ComPort1: TComPort;
-    Button1: TButton;
     PC: TPageControl;
     TS_Main: TTabSheet;
     TS_B7_21A: TTabSheet;
@@ -63,10 +62,54 @@ type
     CBRev: TCheckBox;
     BIVStart: TButton;
     BIVStop: TButton;
-    GroupBox1: TGroupBox;
-    procedure Button1Click(Sender: TObject);
-    procedure ComPort1RxChar(Sender: TObject; Count: Integer);
-    procedure ComPort1RxBuf(Sender: TObject; const Buffer; Count: Integer);
+    GBAD: TGroupBox;
+    CBSStep: TCheckBox;
+    BIVSave: TButton;
+    LADVoltage: TLabel;
+    LADVoltageValue: TLabel;
+    LADCurrent: TLabel;
+    LADCurrentValue: TLabel;
+    LADRange: TLabel;
+    GBT: TGroupBox;
+    SBTAuto: TSpeedButton;
+    LTRunning: TLabel;
+    LTRValue: TLabel;
+    LTLast: TLabel;
+    LTLastValue: TLabel;
+    GBFB: TGroupBox;
+    ProgressBar1: TProgressBar;
+    UDFBHighLimit: TUpDown;
+    LFBHighlimitValue: TLabel;
+    STFBhighlimit: TStaticText;
+    UDFBLowLimit: TUpDown;
+    LFBLowlimitValue: TLabel;
+    STFBlowlimit: TStaticText;
+    PanelSplit: TPanel;
+    SGFBStep: TStringGrid;
+    BFBEdit: TButton;
+    BFBDelete: TButton;
+    BFBAdd: TButton;
+    STFBSteps: TStaticText;
+    STFBDelay: TStaticText;
+    LFBDelayValue: TLabel;
+    BFBDelayInput: TButton;
+    GBRB: TGroupBox;
+    LRBHighlimitValue: TLabel;
+    LRBLowlimitValue: TLabel;
+    LRBDelayValue: TLabel;
+    STRBSteps: TStaticText;
+    UDRBHighLimit: TUpDown;
+    STRBhighlimit: TStaticText;
+    UDRBLowLimit: TUpDown;
+    STRBlowlimit: TStaticText;
+    SGRBStep: TStringGrid;
+    BRBEdit: TButton;
+    BRBDelete: TButton;
+    BRBAdd: TButton;
+    STRBDelay: TStaticText;
+    BRBDelayInput: TButton;
+//    procedure ComPort1RxChar(Sender: TObject; Count: Integer);
+//    procedure ComPort1RxBuf(Sender: TObject; const Buffer; Count: Integer);
     procedure FormCreate(Sender: TObject);
     procedure PortConnected();
     procedure BConnectClick(Sender: TObject);
@@ -83,32 +126,69 @@ type
     procedure BV721ASetClick(Sender: TObject);
     procedure BV721IMeasClick(Sender: TObject);
     procedure BV721IIMeasClick(Sender: TObject);
+    procedure UDFBHighLimitClick(Sender: TObject; Button: TUDBtnType);
+    procedure CBForwClick(Sender: TObject);
+    procedure SGFBStepDrawCell(Sender: TObject; ACol, ARow: Integer;
+      Rect: TRect; State: TGridDrawState);
+    procedure SGFBStepSelectCell(Sender: TObject; ACol, ARow: Integer;
+      var CanSelect: Boolean);
+    procedure BFBAddClick(Sender: TObject);
+    procedure BFBDeleteClick(Sender: TObject);
+    procedure BFBEditClick(Sender: TObject);
+    procedure BFBDelayInputClick(Sender: TObject);
+    procedure SGRBStepDrawCell(Sender: TObject; ACol, ARow: Integer;
+      Rect: TRect; State: TGridDrawState);
+    procedure BRBDeleteClick(Sender: TObject);
+    procedure BRBEditClick(Sender: TObject);
   private
     procedure DiapazonsBegin();
+    {налаштування компонентів, пов'язаних
+    з відображенням даних від вольтметрів}
+    Procedure VotmetrToForm(Voltmetr:TVoltmetr);
+    {виведення на форму результату виміра вольтметра}    
     procedure ComponentView;
+    {початкове налаштування різних компонентів}
+    procedure PinsFromIniFile;
+    {зчитування номерів пінів, які використовуються загалом і
+    для керування вольтметрами зокрема}
+    procedure PinsWriteToIniFile;
+    Procedure NumberPinsShow();
+    {відображується вміст NumberPins в усі
+    ComboBox з Tag=1}
+    Procedure VoltmetrNumberPinShow();
+    {відображуються номери керуючих пінів
+    всіх вольтметрів у відповідні мітки на формі}
+    procedure RangeShow;
+    procedure RangeReadFromIniFile;
+    procedure RangeToForm;
+    procedure StepReadFromIniFile (A:PVector; Ident:string);
+    procedure StepsReadFromIniFile;
+    procedure StepsWriteToIniFile;
+    procedure ForwStepShow;
+    procedure RevStepShow;
+    procedure DelayTimeReadFromIniFile;
+    procedure DelayTimeShow;
+    procedure DelayTimeWriteToIniFile;
     { Private declarations }
-//   fPacket:array of byte;
   public
     V721A:TV721A;
     V721_I,V721_II:TV721;
-//    procedure VoltmetrConnect(var Voltmetr:TVoltmetr;PinNumber:byte);
-    Procedure VotmetrToForm(Voltmetr:TVoltmetr);
-    Procedure NumberPinsShow();
-    Procedure VoltmetrNumberPinShow();
+    ConfigFile:TIniFile;
+    NumberPins:TStringList; // номери пінів, які використовуються як керуючі для SPI
+    Range:TDiapazon;//межі вимірювань, Х - пряма гілка, Y - зворотня
+    ForwSteps,RevSteps:PVector;
+    ForwDelay,RevDelay:Integer;
   end;
 
-//const
-//  PacketBegin=10;
-//  PacketEnd=13;
+const
+  Undefined='NoData';
+  Vmax=8;
+  Imax=2e-2;
+  StepDefault=0.01;
+
 
 var
   Main: TIVchar;
-//  V721A:TV721A;
-//  V721_I,V721_II:TV721;
-//  NumberPins:Array of byte; // номери пінів, які використовуються як керуючі для SPI
-  NumberPins:TStringList; // номери пінів, які використовуються як керуючі для SPI
-
-//Procedure VotmetrToForm(Voltmetr:TVoltmetr;Form: TIVchar);
 
 implementation
 
@@ -128,6 +208,108 @@ begin
  end;
 end;
 
+procedure TIVchar.BFBAddClick(Sender: TObject);
+ var temp:double;
+begin
+  if (Sender as TButton).Name='BFBAdd' then
+   begin
+      temp:=round(10*StrToFloat555(InputBox(
+                                  'Voltage limit',
+                                  'Input new voltage limit.'+
+                                  #10+'The value must be greater 0 and less or equal '
+                                  +FloatToStrF(Vmax,ffGeneral,2,1),
+                                  '')))/10;
+      if (temp>0)and(temp<=Vmax)and(temp<>ErResult) then
+       begin
+         ForwSteps.Add(temp,StepDefault);
+         ForwSteps.DeleteDuplicate;
+         ForwSteps.Sorting();
+         ForwStepShow();
+       end;
+   end;
+  if (Sender as TButton).Name='BRBAdd' then
+   begin
+      temp:=round(10*StrToFloat555(InputBox(
+                                  'Voltage limit',
+                                  'Input new voltage limit.'+
+                                  #10+'The value must be less 0 and greater or equal '
+                                  +FloatToStrF(-Vmax,ffGeneral,2,1),
+                                  '')))/10;
+      if (temp<0)and(temp>=(-Vmax))and(temp<>ErResult) then
+       begin
+         RevSteps.Add(abs(temp),StepDefault);
+         RevSteps.DeleteDuplicate;
+         RevSteps.Sorting();
+         RevStepShow();
+       end;
+   end;
+end;
+
+procedure TIVchar.BFBDelayInputClick(Sender: TObject);
+ var temp:integer;
+     stTemp:string;
+begin
+ if (Sender as TButton).Name='BFBDelayInput'
+            then stTemp:=IntToStr(ForwDelay)
+            else stTemp:=IntToStr(RevDelay);
+ temp:=round(StrToInt555(InputBox(
+                                'Delay time',
+                                'Input delay time.'+
+                                #10+'The value must be greater 0 and less 10000',
+                                stTemp)));
+ if (temp>=0)and(temp<10000)and(temp<>ErResult)
+    then
+      begin
+       if (Sender as TButton).Name='BFBDelayInput'
+              then ForwDelay:=temp
+              else RevDelay:=temp;
+       DelayTimeShow;
+      end;
+end;
+
+procedure TIVchar.BFBDeleteClick(Sender: TObject);
+begin
+ if (SGFBStep.Row=(SGFBStep.RowCount-1))or(SGFBStep.Row<1) then Exit;
+ ForwSteps.Delete(SGFBStep.Row-1);
+ ForwStepShow();
+end;
+
+procedure TIVchar.BFBEditClick(Sender: TObject);
+ var st:string;
+     temp:double;
+begin
+ if (SGFBStep.Row=0)or(SGFBStep.Row>=SGFBStep.RowCount-1) then Exit;
+ if (SGFBStep.Col=0) then
+    if InputQuery('Voltage limit',
+                  'Edit voltage limit value.'+
+                   #10+'The value must be greater 0 and less or equal '
+                   +FloatToStrF(Vmax,ffGeneral,2,1),
+                   st) then
+       begin
+        temp:=round(10*StrToFloat555(st))/10;
+        if (temp>0)and(temp<=Vmax)and(temp<>ErResult) then
+         begin
+           ForwSteps.X[SGFBStep.Row-1]:=temp;
+           ForwSteps.DeleteDuplicate;
+           ForwSteps.Sorting();
+           ForwStepShow();
+         end;
+       end;
+ if (SGFBStep.Col=1) then
+    if InputQuery('Step value',
+                  'Edit step value.'+
+                   #10+'The value must be greater than 0',
+                   st) then
+       begin
+        temp:=round(1000*StrToFloat555(st))/1000;
+        if (temp>0)and(temp<>ErResult) then
+         begin
+           ForwSteps.Y[SGFBStep.Row-1]:=temp;
+           ForwStepShow();
+         end;
+       end;
+ end;
+
 procedure TIVchar.BParamReceiveClick(Sender: TObject);
 begin
  PacketCreate([ParameterReceiveCommand]);
@@ -135,21 +317,51 @@ begin
  PacketIsSend(ComPort1);
 end;
 
-procedure TIVchar.Button1Click(Sender: TObject);
-//var Str:string;
-var B:byte;
-begin
-V721A.Request();
-//showmessage(booltostr(V721A.Request()));
-//b:=strtoint(Edit1.Text);
-//ComPort1.Write(b,1);
 
-//b:=15;
-//Label1.Caption:=inttostr(BCDtoDec(b,True))
-//               +inttostr(BCDtoDec(b,False));
+
+
+procedure TIVchar.BRBDeleteClick(Sender: TObject);
+begin
+ if (SGRBStep.Row=(SGRBStep.RowCount-1))or(SGRBStep.Row<1) then Exit;
+ RevSteps.Delete(SGRBStep.Row-1);
+ RevStepShow();
 end;
 
-
+procedure TIVchar.BRBEditClick(Sender: TObject);
+ var st:string;
+     temp:double;
+begin
+ if (SGRBStep.Row=0)or(SGRBStep.Row>=SGRBStep.RowCount-1) then Exit;
+ if (SGRBStep.Col=0) then
+    if InputQuery('Voltage limit',
+                  'Edit voltage limit value.'+
+                  #10+'The value must be less 0 and greater or equal '
+                  +FloatToStrF(-Vmax,ffGeneral,2,1),
+                  st) then
+       begin
+        temp:=round(10*StrToFloat555(st))/10;
+        if (temp<0)and(temp>=(-Vmax))and(temp<>ErResult) then
+         begin
+           RevSteps.X[SGFBStep.Row-1]:=abs(temp);
+           RevSteps.DeleteDuplicate;
+           RevSteps.Sorting();
+           RevStepShow();
+         end;
+       end;
+ if (SGRBStep.Col=1) then
+    if InputQuery('Step value',
+                  'Edit step value.'+
+                   #10+'The value must be greater than 0',
+                   st) then
+       begin
+        temp:=round(1000*StrToFloat555(st))/1000;
+        if (temp>0)and(temp<>ErResult) then
+         begin
+           RevSteps.Y[SGFBStep.Row-1]:=temp;
+           RevStepShow();
+         end;
+       end;
+end;
 
 procedure TIVchar.BV721AMeasClick(Sender: TObject);
 begin
@@ -235,6 +447,11 @@ end;
 //  showmessage(tempstr);
 //end;
 
+procedure TIVchar.CBForwClick(Sender: TObject);
+begin
+ RangeShow();
+end;
+
 procedure TIVchar.ComDPacketPacket(Sender: TObject; const Str: string);
  var Data:TArrByte;
 //     Data:array of byte;
@@ -257,31 +474,30 @@ begin
 
 end;
 
-procedure TIVchar.ComPort1RxBuf(Sender: TObject; const Buffer; Count: Integer);
-var Str:string;
-begin
-//showmessage('Hi2');
-//ComPort1.ReadStr(Str, 2);
+//procedure TIVchar.ComPort1RxBuf(Sender: TObject; const Buffer; Count: Integer);
+//var Str:string;
+//begin
+////showmessage('Hi2');
+////ComPort1.ReadStr(Str, 2);
+////
+////Label1.Caption:=inttostr(byte(Length(Str)));
+////Label1.Caption:=Str;
+//end;
 //
-//Label1.Caption:=inttostr(byte(Length(Str)));
-//Label1.Caption:=Str;
-end;
-
-procedure TIVchar.ComPort1RxChar(Sender: TObject; Count: Integer);
-var Str:string;
-    B,i:byte;
-begin
-//for I := 0 to Count - 1 do
-// begin
-//   ComPort1.Read(B,1);
-//   Label1.Caption:=Label1.Caption+' '+inttostr(B);
-// end;
-
-end;
+//procedure TIVchar.ComPort1RxChar(Sender: TObject; Count: Integer);
+//var Str:string;
+//    B,i:byte;
+//begin
+////for I := 0 to Count - 1 do
+//// begin
+////   ComPort1.Read(B,1);
+////   Label1.Caption:=Label1.Caption+' '+inttostr(B);
+//// end;
+//
+//end;
 
 procedure TIVchar.FormCreate(Sender: TObject);
- var i,TempPin:integer;
-     ConfigFile:TIniFile;
+//     ConfigFile:TIniFile;
 begin
  DecimalSeparator:='.';
  DiapazonsBegin();
@@ -292,74 +508,36 @@ begin
  V721_II:= TV721.Create(ComPort1);
 
  NumberPins:=TStringList.Create;
+ Range:=TDiapazon.Create;
+ new(ForwSteps);
+ new(RevSteps);
 
  ConfigFile:=TIniFile.Create(ExtractFilePath(Application.ExeName)+'IVChar.ini');
-// SetLength(NumberPins,ConfigFile.ReadInteger('PinNumbers','PinCount',3));
-// for I := 0 to High(NumberPins) do
-//    NumberPins[i]:=ConfigFile.ReadInteger('PinNumbers','Pin'+IntToStr(i),100);
 
- for I := 0 to ConfigFile.ReadInteger('PinNumbers','PinCount',3)-1 do
-    NumberPins.Add(ConfigFile.ReadString('PinNumbers','Pin'+IntToStr(i),IntTostr(UndefinedPin)));
-
-// TempPin:=ConfigFile.ReadInteger('PinNumbers','V721A',-1);
-// if (TempPin>-1)and(TempPin<=High(NumberPins)) then
-//     V721A.PinNumber:=NumberPins[TempPin];
-// //     VoltmetrConnect(V721A,NumberPins[TempPin]);
-// TempPin:=ConfigFile.ReadInteger('PinNumbers','V721_I',-1);
-// if (TempPin>-1)and(TempPin<=High(NumberPins)) then
-//      V721_I.PinNumber:=NumberPins[TempPin];
-////     VoltmetrConnect(V721_I,NumberPins[TempPin]);
-// TempPin:=ConfigFile.ReadInteger('PinNumbers','V721_II',-1);
-// if (TempPin>-1)and(TempPin<=High(NumberPins)) then
-//     V721_II.PinNumber:=NumberPins[TempPin];
-////     VoltmetrConnect(V721_II,NumberPins[TempPin]);
-
-
- TempPin:=ConfigFile.ReadInteger('PinNumbers','V721A',-1);
- if (TempPin>-1)and(TempPin<NumberPins.Count) then
-     V721A.PinNumber:=StrToInt(NumberPins[TempPin]);
- TempPin:=ConfigFile.ReadInteger('PinNumbers','V721_I',-1);
- if (TempPin>-1)and(TempPin<NumberPins.Count) then
-     V721_I.PinNumber:=StrToInt(NumberPins[TempPin]);
- TempPin:=ConfigFile.ReadInteger('PinNumbers','V721_II',-1);
- if (TempPin>-1)and(TempPin<NumberPins.Count) then
-     V721_II.PinNumber:=StrToInt(NumberPins[TempPin]);
-
- ConfigFile.Free;
-
- CBV721A.Sorted:=False;
- CBV721I.Sorted:=False;
- CBV721II.Sorted:=False;
+ PinsFromIniFile();
  NumberPinsShow();
-// CBV721A.Items:=NumberPins;
-
  VoltmetrNumberPinShow();
-
-// V721A.PinNumber:=26;
-
-// V721A:= TV721A.Create(26,ComPort1);
-
- // V721A:= TV721A.Create(26);
-// V721A.ComPort:=ComPort1;
-// V721A.fComPacket.ComPort:=ComPort1;
 
  VotmetrToForm(V721A);
  VotmetrToForm(V721_I);
  VotmetrToForm(V721_II);
 
-// if not(assigned(V721A)) then
-//    begin
-//      BV721AMeas.Enabled:=False;
-//    end;
+ RangeReadFromIniFile();
+ RangeToForm();
 
+ StepsReadFromIniFile();
+ ForwStepShow();
+ RevStepShow();
 
+ DelayTimeReadFromIniFile();
+ DelayTimeShow();
 
 
  ComDPacket.StartString:=PacketBeginChar;
  ComDPacket.StopString:=PacketEndChar;
  ComDPacket.ComPort:=ComPort1;
+
  try
-//  ComPort1.ClearBuffer(True, True);
   ComPort1.Open;
   Comport1.AbortAllAsync;
   ComPort1.ClearBuffer(True, True);
@@ -369,36 +547,18 @@ begin
 end;
 
 procedure TIVchar.FormDestroy(Sender: TObject);
- var  ConfigFile:TIniFile;
-      i:integer;
 begin
- ConfigFile:=TIniFile.Create(ExtractFilePath(Application.ExeName)+'IVChar.ini');
- ConfigFile.EraseSection('PinNumbers');
-// ConfigFile.WriteInteger('PinNumbers','PinCount',High(NumberPins)+1);
- ConfigFile.WriteInteger('PinNumbers','PinCount',NumberPins.Count);
-// for I := 0 to High(NumberPins) do
- for I := 0 to NumberPins.Count-1 do
-   begin
-//    ConfigFile.WriteInteger('PinNumbers','Pin'+IntToStr(i),NumberPins[i]);
-//    if assigned(V721A)and(V721A.PinNumber=NumberPins[i]) then
-//         ConfigFile.WriteInteger('PinNumbers','V721A',i);
-//    if assigned(V721_I)and(V721_I.PinNumber=NumberPins[i]) then
-//         ConfigFile.WriteInteger('PinNumbers','V721_I',i);
-//    if assigned(V721_II)and(V721_II.PinNumber=NumberPins[i]) then
-//         ConfigFile.WriteInteger('PinNumbers','V721_II',i);
-    ConfigFile.WriteString('PinNumbers','Pin'+IntToStr(i),NumberPins[i]);
-    if assigned(V721A)and(IntToStr(V721A.PinNumber)=NumberPins[i]) then
-         ConfigFile.WriteInteger('PinNumbers','V721A',i);
-    if assigned(V721_I)and(IntToStr(V721_I.PinNumber)=NumberPins[i]) then
-         ConfigFile.WriteInteger('PinNumbers','V721_I',i);
-    if assigned(V721_II)and(IntToStr(V721_II.PinNumber)=NumberPins[i]) then
-         ConfigFile.WriteInteger('PinNumbers','V721_II',i);
 
-   end;
-
+ PinsWriteToIniFile();
+ Range.WriteToIniFile(ConfigFile,'Range','Measure');
+ StepsWriteToIniFile();
+ DelayTimeWriteToIniFile();
 
  ConfigFile.Free;
 
+ dispose(ForwSteps);
+ dispose(RevSteps);
+ Range.Free;
  NumberPins.Free;
 
  if assigned(V721A) then V721A.Free;
@@ -416,6 +576,7 @@ begin
 //  ComPort1.Free;
  end;
 end;
+
 
 
 
@@ -523,6 +684,73 @@ begin
      if SBV721IIAuto.Down then Time.OnTimer:=BV721IIMeas.OnClick;
      Time.Enabled:=SBV721IIAuto.Down;
    end;
+end;
+
+
+
+procedure TIVchar.SGFBStepDrawCell(Sender: TObject; ACol, ARow: Integer;
+  Rect: TRect; State: TGridDrawState);
+begin
+ if (ARow>1)and(not(odd(Arow))) then
+  begin
+     SGFBStep.Canvas.Brush.Color:=RGB(252,212,213);
+//     SGFBStep.Canvas.Brush.Color:=RGB(218,240,254);
+     SGFBStep.Canvas.FillRect(Rect);
+     SGFBStep.Canvas.TextOut(Rect.Left+2,Rect.Top+2,SGFBStep.Cells[Acol,Arow]);
+  end
+end;
+
+procedure TIVchar.SGFBStepSelectCell(Sender: TObject; ACol, ARow: Integer;
+  var CanSelect: Boolean);
+begin
+ if (Sender as TStringGrid).Name='SGFBStep' then
+  begin
+    BFBEdit.Enabled:=True;
+    BFBDelete.Enabled:=True;
+  end;
+ if (Sender as TStringGrid).Name='SGRBStep' then
+  begin
+    BRBEdit.Enabled:=True;
+    BRBDelete.Enabled:=True;
+  end;
+end;
+
+procedure TIVchar.SGRBStepDrawCell(Sender: TObject; ACol, ARow: Integer;
+  Rect: TRect; State: TGridDrawState);
+begin
+ if (ARow>1)and(not(odd(Arow))) then
+  begin
+     SGRBStep.Canvas.Brush.Color:=RGB(218,240,254);
+     SGRBStep.Canvas.FillRect(Rect);
+     SGRBStep.Canvas.TextOut(Rect.Left+2,Rect.Top+2,SGRBStep.Cells[Acol,Arow]);
+  end
+end;
+
+procedure TIVchar.UDFBHighLimitClick(Sender: TObject; Button: TUDBtnType);
+begin
+ if (Sender as TUpDown).Name='UDFBHighLimit' then
+  begin
+  LFBHighlimitValue.Caption:=FloatToStrF(UDFBHighLimit.Position/10,ffFixed, 1, 1);
+  Range.XMax:=UDFBHighLimit.Position/10;
+//  showmessage(Inttostr(UDFBHighLimit.Position));
+  end;
+ if (Sender as TUpDown).Name='UDFBLowLimit' then
+  begin
+  LFBLowlimitValue.Caption:=FloatToStrF(UDFBLowLimit.Position/10,ffFixed, 1, 1);
+  Range.XMin:=UDFBLowLimit.Position/10;
+  end;
+ if (Sender as TUpDown).Name='UDRBHighLimit' then
+  begin
+  LRBHighlimitValue.Caption:=FloatToStrF(-(UDRBHighLimit.Max-UDRBHighLimit.Position)/10,ffFixed, 1, 1);
+  Range.YMin:=(UDRBHighLimit.Max-UDRBHighLimit.Position)/10;
+//  showmessage(Inttostr(UDFBHighLimit.Position));
+  end;
+ if (Sender as TUpDown).Name='UDRBLowLimit' then
+  begin
+  LRBLowlimitValue.Caption:=FloatToStrF(-(UDRBLowLimit.Max-UDRBLowLimit.Position)/10,ffFixed, 1, 1);
+  Range.Ymax:=(UDRBLowLimit.Max-UDRBLowLimit.Position)/10;
+  end;
+ RangeShow;
 end;
 
 //Procedure TIVchar.VoltmetrConnect(var Voltmetr:TVoltmetr;PinNumber:byte);
@@ -658,7 +886,6 @@ begin
     (Main.Components[i] as TComboBox).Items:=NumberPins;
  finally
  end;
-// CBV721A.Items:=NumberPins;
 end;
 
 Procedure TIVchar.VoltmetrNumberPinShow();
@@ -669,16 +896,171 @@ begin
    LV721IPin.Caption:=V721_I.PinNumberStr;
  if assigned(V721_II) then
    LV721IIPin.Caption:=V721_II.PinNumberStr;
-// if V721A.PinNumber=255 then
-//    LV721APin.Caption:='Control pin is undefined'
-//                       else
-//    LV721APin.Caption:='Control pin number is '+IntToStr(V721A.PinNumber);
+end;
+
+procedure TIVchar.RangeShow;
+ var Start,Finish:double;
+begin
+  if CBForw.Checked then Finish:=Range.XMax
+                    else Finish:=-Range.Ymin;
+  if CBRev.Checked then Start:=-Range.YMax
+                   else Start:=Range.Xmin;
+  if (not(CBForw.Checked))and(not(CBRev.Checked))
+    then begin
+         Finish:=0;
+         Start:=0;
+         end;
+  LADRange.Caption := 'Range is [' + FloattostrF(Start, ffFixed, 1, 1) + ' .. '
+                                   + FloattostrF(Finish, ffFixed, 1, 1) + '] V';
+end;
+
+procedure TIVchar.RangeReadFromIniFile;
+begin
+  Range.ReadFromIniFile(ConfigFile, 'Range', 'Measure');
+  if (Range.XMax = ErResult)or(Range.XMax >Vmax) then
+                   Range.XMax := Vmax;
+  if (Range.YMax = ErResult)or(Range.YMax >Vmax) then
+                   Range.YMax := Vmax;
+  if Range.XMin<0 then Range.XMin := 0;
+  if Range.YMin<0 then Range.YMin := 0;
+end;
+
+procedure TIVchar.RangeToForm;
+begin
+  RangeShow;
+  UDFBHighLimit.Position := round(Range.XMax * 10);
+  UDFBLowLimit.Position := round(Range.XMin * 10);
+  LFBHighlimitValue.Caption := FloatToStrF(UDFBHighLimit.Position / 10, ffFixed, 1, 1);
+  LFBLowlimitValue.Caption := FloatToStrF(UDFBLowLimit.Position / 10, ffFixed, 1, 1);
+  UDRBHighLimit.Position := UDRBHighLimit.Max-round(Range.YMin * 10);
+  UDRBLowLimit.Position := UDRBLowLimit.Max-round(Range.YMax * 10);
+  LRBHighlimitValue.Caption := FloatToStrF(-(UDRBHighLimit.Max-UDRBHighLimit.Position) / 10, ffFixed, 1, 1);
+  LRBLowlimitValue.Caption := FloatToStrF(-(UDRBLowLimit.Max-UDRBLowLimit.Position)/ 10, ffFixed, 1, 1);
+end;
+
+procedure TIVchar.StepsReadFromIniFile;
+begin
+  StepReadFromIniFile(ForwSteps,'Forw');
+  StepReadFromIniFile(RevSteps,'Rev');
+end;
+
+procedure TIVchar.StepReadFromIniFile(A:PVector; Ident:string);
+begin
+  A^.ReadFromIniFile(ConfigFile, 'Step', Ident);
+  A^.DeleteErResult;
+  A^.DeleteDuplicate;
+  A^.Sorting;
+  while (A^.n > 0) and (A^.X[High(A^.X)] > Vmax) do
+    A^.Delete(A^.n - 1);
+  while (A^.n > 0) and (A^.X[0] < 0) do
+    A^.Delete(A^.n - 1);
+  if (A^.n > 0) and (A^.X[High(A^.X)] <> Vmax) then
+    begin
+     A^.SetLenVector(A^.n+1);
+     A^.X[High(A^.X)] := Vmax;
+     A^.Y[High(A^.X)] := StepDefault;
+    end;
+  if A^.n < 1 then
+    begin
+      A^.SetLenVector(1);
+      A^.X[0] := Vmax;
+      A^.Y[0] := StepDefault;
+    end;
+end;
+
+procedure TIVchar.StepsWriteToIniFile;
+begin
+  ConfigFile.EraseSection('Step');
+  ForwSteps.WriteToIniFile(ConfigFile, 'Step', 'Forw');
+  RevSteps.WriteToIniFile(ConfigFile, 'Step', 'Rev');
+end;
+
+procedure TIVchar.ForwStepShow;
+ var
+  I: Integer;
+begin
+  SGFBStep.RowCount := ForwSteps^.n + 1;
+  for I := 0 to High(ForwSteps^.X) do
+   begin
+     SGFBStep.Cells[0,i+1]:=FloatToStrF(ForwSteps^.X[i],ffGeneral,2,1);
+     SGFBStep.Cells[1,i+1]:=FloatToStrF(ForwSteps^.Y[i],ffGeneral,4,3);
+   end;
+end;
+
+procedure TIVchar.RevStepShow;
+ var
+  I: Integer;
+begin
+  SGRBStep.RowCount := RevSteps^.n + 1;
+  for I := 0 to High(RevSteps^.X) do
+   begin
+     SGRBStep.Cells[0,i+1]:=FloatToStrF(-RevSteps^.X[i],ffGeneral,2,1);
+     SGRBStep.Cells[1,i+1]:=FloatToStrF(RevSteps^.Y[i],ffGeneral,3,2);
+   end;
+end;
+
+procedure TIVchar.DelayTimeReadFromIniFile;
+begin
+  ForwDelay := ConfigFile.ReadInteger('Delay', 'ForwTime', 0);
+  if (ForwDelay<0)or(ForwDelay>10000) then ForwDelay:=0;
+  RevDelay := ConfigFile.ReadInteger('Delay', 'RevTime', 0);
+  if (RevDelay<0)or(RevDelay>10000) then RevDelay:=0;
+end;
+
+procedure TIVchar.DelayTimeShow;
+begin
+  LFBDelayValue.Caption := IntToStr(ForwDelay);
+  LRBDelayValue.Caption := IntToStr(RevDelay);
+end;
+
+procedure TIVchar.DelayTimeWriteToIniFile;
+begin
+  WriteIniDef(ConfigFile, 'Delay', 'ForwTime', ForwDelay, 0);
+  WriteIniDef(ConfigFile, 'Delay', 'RevTime', RevDelay, 0);
+end;
+
+
+procedure TIVchar.PinsWriteToIniFile;
+var
+  i: Integer;
+begin
+  ConfigFile.EraseSection('PinNumbers');
+  ConfigFile.WriteInteger('PinNumbers', 'PinCount', NumberPins.Count);
+  for I := 0 to NumberPins.Count - 1 do
+  begin
+    ConfigFile.WriteString('PinNumbers', 'Pin' + IntToStr(i), NumberPins[i]);
+    if assigned(V721A) and (IntToStr(V721A.PinNumber) = NumberPins[i]) then
+      ConfigFile.WriteInteger('PinNumbers', 'V721A', i);
+    if assigned(V721_I) and (IntToStr(V721_I.PinNumber) = NumberPins[i]) then
+      ConfigFile.WriteInteger('PinNumbers', 'V721_I', i);
+    if assigned(V721_II) and (IntToStr(V721_II.PinNumber) = NumberPins[i]) then
+      ConfigFile.WriteInteger('PinNumbers', 'V721_II', i);
+  end;
+end;
+
+procedure TIVchar.PinsFromIniFile;
+var
+  i,TempPin: Integer;
+begin
+  for I := 0 to ConfigFile.ReadInteger('PinNumbers', 'PinCount', 3) - 1 do
+    NumberPins.Add(ConfigFile.ReadString('PinNumbers', 'Pin' + IntToStr(i), IntToStr(UndefinedPin)));
+
+  TempPin := ConfigFile.ReadInteger('PinNumbers', 'V721A', -1);
+  if (TempPin > -1) and (TempPin < NumberPins.Count) then
+    V721A.PinNumber := StrToInt(NumberPins[TempPin]);
+  TempPin := ConfigFile.ReadInteger('PinNumbers', 'V721_I', -1);
+  if (TempPin > -1) and (TempPin < NumberPins.Count) then
+    V721_I.PinNumber := StrToInt(NumberPins[TempPin]);
+  TempPin := ConfigFile.ReadInteger('PinNumbers', 'V721_II', -1);
+  if (TempPin > -1) and (TempPin < NumberPins.Count) then
+    V721_II.PinNumber := StrToInt(NumberPins[TempPin]);
 end;
 
 procedure TIVchar.ComponentView;
+ var i:integer;
 begin
-  PanelV721_I.Height := round(PanelV721_I.Parent.Height / 2);
-  PanelV721_II.Height := round(PanelV721_II.Parent.Height / 2);
+  PanelV721_I.Height := round(0.48*PanelV721_I.Parent.Height);
+  PanelV721_II.Height := round(0.48*PanelV721_II.Parent.Height);
   ChLine.Top:=0;
   ChLine.Left:=0;
   ChLine.Height := round(ChLine.Parent.Height / 2);
@@ -687,7 +1069,36 @@ begin
   ChLg.Left:=0;
   ChLg.Height := round(ChLg.Parent.Height / 2);
   ChLg.Width:= round(0.7*ChLg.Parent.Width);
+
+//  BIVStop.Enabled:=False;
+//  BIVSave.Enabled:=False;
+  LADVoltageValue.Caption:=Undefined;
+  LADCurrentValue.Caption:=Undefined;
+  LTRValue.Caption:=Undefined;
+  LTLastValue.Caption:=Undefined;
+
+  try
+  for i := Main.ComponentCount - 1 downto 0 do
+   begin
+     if Main.Components[i].Tag = 1 then
+      (Main.Components[i] as TComboBox).Sorted:=False;
+     if Main.Components[i].Tag = 2 then
+      (Main.Components[i] as TUpDown).Max:=round(10*Vmax);
+     if Main.Components[i].Tag = 3 then
+      begin
+      (Main.Components[i] as TStringGrid).Cells[0,0]:='Limit';
+      (Main.Components[i] as TStringGrid).Cells[1,0]:='Step';
+      end;
+     if Main.Components[i].Tag = 4 then
+      (Main.Components[i] as TButton).Enabled:=False;
+   end;
+  finally
   end;
+
+//  SGFBStep.Cells[0,0]:='Limit';
+//  SGFBStep.Cells[1,0]:='Step';
+
+end;
 
 procedure TIVchar.DiapazonsBegin;
 var
