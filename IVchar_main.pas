@@ -1088,6 +1088,8 @@ begin
       begin
       (Main.Components[i] as TStringGrid).Cells[0,0]:='Limit';
       (Main.Components[i] as TStringGrid).Cells[1,0]:='Step';
+      (Main.Components[i] as TStringGrid).ColWidths[0]:=(Main.Components[i] as TStringGrid).Canvas.TextWidth('Limit')+15;
+      (Main.Components[i] as TStringGrid).ColWidths[1]:=(Main.Components[i] as TStringGrid).Canvas.TextWidth('0.005')+15;
       end;
      if Main.Components[i].Tag = 4 then
       (Main.Components[i] as TButton).Enabled:=False;
