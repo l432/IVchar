@@ -108,6 +108,19 @@ type
     BRBAdd: TButton;
     STRBDelay: TStaticText;
     BRBDelayInput: TButton;
+    GBTS: TGroupBox;
+    RBTSImitation: TRadioButton;
+    RBTSTermocouple: TRadioButton;
+    CBTSTC: TComboBox;
+    GBVS: TGroupBox;
+    RBVSSimulation: TRadioButton;
+    RBVSMeasur: TRadioButton;
+    CBVSMeas: TComboBox;
+    GBCS: TGroupBox;
+    RBCSSimulation: TRadioButton;
+    RBCSMeasur: TRadioButton;
+    CBCSMeas: TComboBox;
+    BSaveSetting: TButton;
 //    procedure ComPort1RxChar(Sender: TObject; Count: Integer);
 //    procedure ComPort1RxBuf(Sender: TObject; const Buffer; Count: Integer);
     procedure FormCreate(Sender: TObject);
@@ -140,6 +153,8 @@ type
       Rect: TRect; State: TGridDrawState);
     procedure BRBDeleteClick(Sender: TObject);
     procedure BRBEditClick(Sender: TObject);
+    procedure RBTSImitationClick(Sender: TObject);
+    procedure BSaveSettingClick(Sender: TObject);
   private
     procedure DiapazonsBegin();
     {налаштування компонентів, пов'язаних
@@ -169,15 +184,23 @@ type
     procedure DelayTimeReadFromIniFile;
     procedure DelayTimeShow;
     procedure DelayTimeWriteToIniFile;
+    procedure MeasuringEquipmentRead;
+    procedure MeasuringEquipmentShow;
+    procedure SourcesReadFromIniFileAndToForm;
+    procedure SourcesWriteToIniFile;
+    procedure RadioButtonSelect(GB:TGroupBox; Index:integer);
+    procedure SettingWriteToIniFile;
     { Private declarations }
   public
     V721A:TV721A;
     V721_I,V721_II:TV721;
     ConfigFile:TIniFile;
+    MeasuringEquipment,
     NumberPins:TStringList; // номери пінів, які використовуються як керуючі для SPI
     Range:TDiapazon;//межі вимірювань, Х - пряма гілка, Y - зворотня
     ForwSteps,RevSteps:PVector;
-    ForwDelay,RevDelay:Integer;
+    ForwDelay,RevDelay,
+    TemperatureSource,VoltageSource,CurrentSource,TermocoupleME:Integer;
   end;
 
 const
@@ -185,6 +208,8 @@ const
   Vmax=8;
   Imax=2e-2;
   StepDefault=0.01;
+  MeasuringEquipmentName:array[0..2]of string=
+           ('B7-21A','B7-21 (1)','B7-21 (2)');
 
 
 var
@@ -363,6 +388,12 @@ begin
        end;
 end;
 
+
+procedure TIVchar.BSaveSettingClick(Sender: TObject);
+begin
+ SettingWriteToIniFile();
+end;
+
 procedure TIVchar.BV721AMeasClick(Sender: TObject);
 begin
  if not(ComPort1.Connected) then
@@ -452,6 +483,14 @@ begin
  RangeShow();
 end;
 
+
+//procedure TIVchar.CBTSTCSelect(Sender: TObject);
+//begin
+// TermocoupleME:=CBTSTC.ItemIndex;
+// showmessage(inttostr(TermocoupleME));
+//
+//end;
+
 procedure TIVchar.ComDPacketPacket(Sender: TObject; const Str: string);
  var Data:TArrByte;
 //     Data:array of byte;
@@ -508,10 +547,10 @@ begin
  V721_II:= TV721.Create(ComPort1);
 
  NumberPins:=TStringList.Create;
+ MeasuringEquipment:=TStringList.Create;
  Range:=TDiapazon.Create;
  new(ForwSteps);
  new(RevSteps);
-
  ConfigFile:=TIniFile.Create(ExtractFilePath(Application.ExeName)+'IVChar.ini');
 
  PinsFromIniFile();
@@ -521,6 +560,13 @@ begin
  VotmetrToForm(V721A);
  VotmetrToForm(V721_I);
  VotmetrToForm(V721_II);
+
+ MeasuringEquipmentRead();
+ MeasuringEquipmentShow();
+
+ SourcesReadFromIniFileAndToForm();
+
+
 
  RangeReadFromIniFile();
  RangeToForm();
@@ -549,16 +595,13 @@ end;
 procedure TIVchar.FormDestroy(Sender: TObject);
 begin
 
- PinsWriteToIniFile();
- Range.WriteToIniFile(ConfigFile,'Range','Measure');
- StepsWriteToIniFile();
- DelayTimeWriteToIniFile();
-
+ SettingWriteToIniFile();
  ConfigFile.Free;
 
  dispose(ForwSteps);
  dispose(RevSteps);
  Range.Free;
+ MeasuringEquipment.Free;
  NumberPins.Free;
 
  if assigned(V721A) then V721A.Free;
@@ -938,6 +981,51 @@ begin
   LRBLowlimitValue.Caption := FloatToStrF(-(UDRBLowLimit.Max-UDRBLowLimit.Position)/ 10, ffFixed, 1, 1);
 end;
 
+procedure TIVchar.RBTSImitationClick(Sender: TObject);
+begin
+  if (Sender as TRadioButton).Parent.Name='GBTS' then
+   begin
+     if RBTSImitation.Checked then
+       begin
+        TemperatureSource:=0;
+        CBTSTC.Enabled:=False;
+       end;
+     if RBTSTermocouple.Checked then
+       begin
+        TemperatureSource:=1;
+        CBTSTC.Enabled:=True;
+       end;
+   end;
+
+  if (Sender as TRadioButton).Parent.Name='GBVS' then
+   begin
+     if RBVSSimulation.Checked then
+       begin
+        VoltageSource:=0;
+        CBVSMeas.Enabled:=False;
+       end;
+     if RBVSMeasur.Checked then
+       begin
+        VoltageSource:=1;
+        CBVSMeas.Enabled:=True;
+       end;
+   end;
+
+  if (Sender as TRadioButton).Parent.Name='GBCS' then
+   begin
+     if RBCSSimulation.Checked then
+       begin
+        CurrentSource:=0;
+        CBCSMeas.Enabled:=False;
+       end;
+     if RBCSMeasur.Checked then
+       begin
+        CurrentSource:=1;
+        CBCSMeas.Enabled:=True;
+       end;
+   end;
+end;
+
 procedure TIVchar.StepsReadFromIniFile;
 begin
   StepReadFromIniFile(ForwSteps,'Forw');
@@ -1019,6 +1107,82 @@ begin
   WriteIniDef(ConfigFile, 'Delay', 'RevTime', RevDelay, 0);
 end;
 
+procedure TIVchar.MeasuringEquipmentRead;
+ var i:integer;
+begin
+  MeasuringEquipment.Clear;
+  for I := Low(MeasuringEquipmentName) to High(MeasuringEquipmentName) do
+   MeasuringEquipment.Add(MeasuringEquipmentName[i]);
+end;
+
+procedure TIVchar.MeasuringEquipmentShow;
+ var i:integer;
+begin
+ try
+ for i := Main.ComponentCount - 1 downto 0 do
+   if Main.Components[i].Tag = 5 then
+    (Main.Components[i] as TComboBox).Items:=MeasuringEquipment;
+ finally
+ end;
+end;
+
+procedure TIVchar.SourcesReadFromIniFileAndToForm;
+begin
+ TemperatureSource := ConfigFile.ReadInteger('Sources', 'Temperature', 0);
+ RadioButtonSelect(GBTS,TemperatureSource);
+ try
+  CBTSTC.ItemIndex:=ConfigFile.ReadInteger('Sources', 'Termocouple', 0);
+ except
+  CBTSTC.ItemIndex:=0;
+ end;
+
+ VoltageSource := ConfigFile.ReadInteger('Sources', 'Voltage', 0);
+ RadioButtonSelect(GBVS,VoltageSource);
+ try
+  CBVSMeas.ItemIndex:=ConfigFile.ReadInteger('Sources', 'Voltage_M', 0);
+ except
+  CBVSMeas.ItemIndex:=0;
+ end;
+
+ CurrentSource := ConfigFile.ReadInteger('Sources', 'Current', 0);
+ RadioButtonSelect(GBCS,CurrentSource);
+ try
+  CBCSMeas.ItemIndex:=ConfigFile.ReadInteger('Sources', 'Current_M', 0);
+ except
+  CBCSMeas.ItemIndex:=0;
+ end;
+
+end;
+
+procedure TIVchar.SourcesWriteToIniFile;
+begin
+  ConfigFile.EraseSection('Sources');
+  WriteIniDef(ConfigFile, 'Sources', 'Temperature', TemperatureSource, 0);
+  WriteIniDef(ConfigFile, 'Sources', 'Termocouple', CBTSTC.ItemIndex, 0);
+  WriteIniDef(ConfigFile, 'Sources', 'Voltage', VoltageSource, 0);
+  WriteIniDef(ConfigFile, 'Sources', 'Voltage_M', CBVSMeas.ItemIndex, 0);
+  WriteIniDef(ConfigFile, 'Sources', 'Current', CurrentSource, 0);
+  WriteIniDef(ConfigFile, 'Sources', 'Current_M', CBCSMeas.ItemIndex, 0);
+end;
+
+procedure TIVchar.RadioButtonSelect(GB:TGroupBox; Index:integer);
+ var i:integer;
+begin
+ for I := 0 to Main.ComponentCount - 1 do
+    if (Main.Components[i] is TRadioButton)and
+     ((Main.Components[i] as TRadioButton).Parent.Name=GB.Name) then
+      (Main.Components[i] as TRadioButton).Checked:=
+        ((Main.Components[i] as TRadioButton).Tag=(GB.Tag+Index))
+end;
+
+procedure TIVchar.SettingWriteToIniFile;
+begin
+  SourcesWriteToIniFile;
+  PinsWriteToIniFile;
+  Range.WriteToIniFile(ConfigFile, 'Range', 'Measure');
+  StepsWriteToIniFile;
+  DelayTimeWriteToIniFile;
+end;
 
 procedure TIVchar.PinsWriteToIniFile;
 var

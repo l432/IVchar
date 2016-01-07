@@ -20,12 +20,14 @@ type
 //   fComPacket: TComDataPacket;
 //   fPacket:array of byte;
    fPinNumber:byte;
+   fPinGateNumber:byte;
    fData:TArrByte;
 
    Procedure MModeDetermination(Data:byte); virtual;
    Procedure DiapazonDetermination(Data:byte); virtual;
    Procedure ValueDetermination(Data:array of byte);virtual;
    Function GetPinNumberStr():string;
+   Function PinGetGateNumberStr():string;
 //   Procedure PacketCreate();
   public
 //   fEvent:TEvent;
@@ -34,12 +36,16 @@ type
    property MeasureMode:TMeasureMode read FMeasureMode;
    property Value:double read fValue;
    property PinNumber:byte read fPinNumber write fPinNumber;
+   property PinGateNumber:byte read fPinGateNumber write fPinGateNumber;
    property PinNumberStr:string read GetPinNumberStr;
+   property PinGateNumberStr:string read PinGetGateNumberStr;
    property Diapazon:TDiapazons read fDiapazon;
    property isReady:boolean read fIsReady;
    Procedure ConvertToValue(Data:array of byte);
    Constructor Create(NumberPin:byte);overload;
+   Constructor Create(NumberPin,GateNumberPin:byte);overload;
    Constructor Create(NumberPin:byte;CP:TComPort);overload;
+   Constructor Create(NumberPin,GateNumberPin:byte;CP:TComPort);overload;
    Constructor Create(CP:TComPort);overload;
    Procedure Free;
    Function Request():boolean;
@@ -104,6 +110,7 @@ Constructor TVoltmetr.Create(NumberPin:byte);
 begin
   inherited Create();
   fPinNumber:=NumberPin;
+  fPinGateNumber:=UndefinedPin;
   fIsReady:=False;
   fIsReceived:=False;
   fMeasureMode:=MMErr;
@@ -122,12 +129,27 @@ begin
 //  fEvent:=TEvent.Create(nil,True,True,#0);
 end;
 
+Constructor TVoltmetr.Create(NumberPin,GateNumberPin:byte);
+begin
+  Create(NumberPin);
+  fPinGateNumber:=GateNumberPin;
+end;
+
+
 Constructor TVoltmetr.Create(NumberPin:byte;CP:TComPort);
 begin
  Create(NumberPin);
  ComPort:=CP;
  fComPacket.ComPort:=CP;
 end;
+
+Constructor TVoltmetr.Create(NumberPin,GateNumberPin:byte;CP:TComPort);
+begin
+ Create(NumberPin,GateNumberPin);
+ ComPort:=CP;
+ fComPacket.ComPort:=CP;
+end;
+
 
 Constructor TVoltmetr.Create(CP:TComPort);
 begin
@@ -302,6 +324,15 @@ begin
     Result:='Control pin is undefined'
                        else
     Result:='Control pin number is '+IntToStr(PinNumber);
+end;
+
+
+Function TVoltmetr.PinGetGateNumberStr():string;
+begin
+  if fPinGateNumber=UndefinedPin then
+    Result:='Gate pin is undefined'
+                       else
+    Result:='Gate pin number is '+IntToStr(fPinGateNumber);
 end;
 
 Procedure TVoltmetr.ConvertToValue(Data:array of byte);
