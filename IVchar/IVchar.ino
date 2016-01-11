@@ -7,7 +7,7 @@
 #define V7_21Command 1
 #define ParameterReceiveCommand 2
 
-byte DrivePins[] = {25, 26, 27, 28, 29, 30};
+byte DrivePins[] = {25, 26, 27, 28, 29, 30, 31, 32, 33, 34};
 //enum { REG_LATCH = 5 };
 
 byte incomingByte = 0;
@@ -50,7 +50,7 @@ start:
       //       Serial.write(packet, packet[0]);
       //       Serial.write(PacketEnd);
 
-      if (packet[1] == V7_21Command) V721(packet[2]);
+      if (packet[1] == V7_21Command) V721(packet[2],packet[3]);
       if (packet[1] == ParameterReceiveCommand) SendParameters();
 
     }
@@ -73,7 +73,9 @@ byte FCS (byte Data[], int n)
   return byte(FCS & 0xFF);
 }
 
-void V721(byte PinNumber) {
+void V721(byte PinNumber, byte PinGateNumber) {
+  digitalWrite(PinGateNumber, LOW);
+  delay(1);  
   digitalWrite(PinNumber, LOW);
   digitalWrite(PinNumber, HIGH);
   byte data[8];
@@ -84,6 +86,7 @@ void V721(byte PinNumber) {
   {
     data[i + 3] = SPI.transfer(0);
   }
+  digitalWrite(PinGateNumber, HIGH);
   data[sizeof(data) - 1] = 0;
   data[sizeof(data) - 1] = FCS(data, data[0]);
 
@@ -104,10 +107,10 @@ void SendParameters() {
   data[sizeof(data) - 1] = 0;
   data[sizeof(data) - 1] = FCS(data, data[0]);
 
-// SendPacket(data,sizeof(data));
-  Serial.write(PacketStart);
-  Serial.write(data, sizeof(data));
-  Serial.write(PacketEnd);
+ SendPacket(data,sizeof(data));
+//  Serial.write(PacketStart);
+//  Serial.write(data, sizeof(data));
+//  Serial.write(PacketEnd);
 }
 
 void SendPacket(byte Data[], int n){

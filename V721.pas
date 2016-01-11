@@ -1,7 +1,8 @@
 unit V721;
 
 interface
- uses OlegType,CPort,Dialogs,SysUtils,Classes,Windows,Forms,SyncObjs,PacketParameters;
+ uses OlegType,CPort,Dialogs,SysUtils,Classes,Windows,Forms,SyncObjs,PacketParameters,
+     ExtCtrls,StdCtrls,Buttons,IniFiles;
 
 type
   TMeasureMode=(IA,ID,UA,UD,MMErr);
@@ -22,6 +23,7 @@ type
    fPinNumber:byte;
    fPinGateNumber:byte;
    fData:TArrByte;
+   fName:string;
 
    Procedure MModeDetermination(Data:byte); virtual;
    Procedure DiapazonDetermination(Data:byte); virtual;
@@ -41,12 +43,13 @@ type
    property PinGateNumberStr:string read PinGetGateNumberStr;
    property Diapazon:TDiapazons read fDiapazon;
    property isReady:boolean read fIsReady;
+   property Name:string read fName;
    Procedure ConvertToValue(Data:array of byte);
    Constructor Create(NumberPin:byte);overload;
    Constructor Create(NumberPin,GateNumberPin:byte);overload;
    Constructor Create(NumberPin:byte;CP:TComPort);overload;
    Constructor Create(NumberPin,GateNumberPin:byte;CP:TComPort);overload;
-   Constructor Create(CP:TComPort);overload;
+   Constructor Create(CP:TComPort;Nm:string);overload;
    Procedure Free;
    Function Request():boolean;
    Procedure PacketReceiving(Sender: TObject; const Str: string);
@@ -66,6 +69,37 @@ type
    Procedure DiapazonDetermination(Data:byte);override;
    Procedure ValueDetermination(Data:array of byte);override;
   public
+  end;
+
+  TVoltmetrShow=class
+  private
+   fIsReady:boolean;
+   Voltmetr:TVoltmetr;
+   MeasureMode,Range:TRadioGroup;
+   DataLabel,UnitLabel,ControlPinLabel,GatePinLabel:TLabel;
+   SetControlButton,SetGateButton,MeasurementButton:TButton;
+   AutoSpeedButton:TSpeedButton;
+   PinsComboBox:TComboBox;
+   Time:TTimer;
+  public
+   Constructor Create(V:TVoltmetr;
+                      MM,R:TRadioGroup;
+                      DL,UL,CPL,GPL:TLabel;
+                      SCB,SGB,MB:TButton;
+                      AB:TSpeedButton;
+                      PCB:TComboBox;
+                      TT:TTimer);
+   procedure PinsReadFromIniFile(ConfigFile:TIniFile);
+   procedure PinsWriteToIniFile(ConfigFile:TIniFile);
+   procedure NumberPinShow();
+   procedure ButtonEnabled();
+   procedure VoltmetrDataShow();
+   procedure SetControlButtonClick(Sender: TObject);
+   procedure SetGateButtonClick(Sender: TObject);
+   procedure MeasurementButtonClick(Sender: TObject);
+   procedure AutoSpeedButtonClick(Sender: TObject);
+   procedure MeasureModeClick(Sender: TObject);
+   procedure RangeClick(Sender: TObject);
   end;
 
 
@@ -151,9 +185,10 @@ begin
 end;
 
 
-Constructor TVoltmetr.Create(CP:TComPort);
+Constructor TVoltmetr.Create(CP:TComPort;Nm:string);
 begin
  Create(UndefinedPin,CP);
+ fName:=Nm;
 end;
 
 Procedure TVoltmetr.Free;
@@ -225,7 +260,7 @@ end;
 
 Function TVoltmetr.Request():boolean;
 begin
-  PacketCreate([V7_21Command,PinNumber]);
+  PacketCreate([V7_21Command,PinNumber,PinGateNumber]);
 
 //  ShowData(aPacket);
 //  PacketIsReceived('gg1t',@aPacket[Low(aPacket)]);
@@ -436,6 +471,176 @@ begin
   inherited ValueDetermination(Data);
   if fValue<>ErResult then fValue:=-fValue;
 end;
+
+Constructor TVoltmetrShow.Create(V:TVoltmetr;
+                      MM,R:TRadioGroup;
+                      DL,UL,CPL,GPL:TLabel;
+                      SCB,SGB,MB:TButton;
+                      AB:TSpeedButton;
+                      PCB:TComboBox;
+                      TT:TTimer);
+ var i:integer;
+begin
+  inherited Create();
+   Voltmetr:=V;
+   MeasureMode:=MM;
+   Range:=R;
+   DataLabel:=DL;
+   UnitLabel:=UL;
+   ControlPinLabel:=CPL;
+   GatePinLabel:=GPL;
+   MeasurementButton:=MB;
+   AutoSpeedButton:=AB;
+   SetControlButton:=SCB;
+   SetGateButton:=SGB;
+   PinsComboBox:=PCB;
+   Time:=TT;
+   fIsReady:=assigned(Voltmetr)and
+             assigned(MeasureMode)and
+             assigned(Range)and
+             assigned(DataLabel)and
+             assigned(ControlPinLabel)and
+             assigned(GatePinLabel)and
+             assigned(MeasurementButton)and
+             assigned(AutoSpeedButton)and
+             assigned(SetControlButton)and
+             assigned(SetGateButton)and
+             assigned(Time)and
+             assigned(PinsComboBox);
+
+  if fIsReady then
+  begin
+    MeasureMode.Items.Clear;
+    for I := 0 to ord(MMErr) do
+      MeasureMode.Items.Add(MeasureModeLabels[TMeasureMode(i)]);
+    MeasureMode.ItemIndex := 4;
+    UnitLabel.Caption := '';
+    DiapazonFill(TMeasureMode(MeasureMode.ItemIndex), Range.Items);
+    SetControlButton.OnClick:=SetControlButtonClick;
+    SetGateButton.OnClick:=SetGateButtonClick;
+    MeasurementButton.OnClick:=MeasurementButtonClick;
+    AutoSpeedButton.OnClick:=AutoSpeedButtonClick;
+    MeasureMode.OnClick:=MeasureModeClick;
+    Range.OnClick:=RangeClick;
+  end;
+end;
+
+Procedure TVoltmetrShow.PinsReadFromIniFile(ConfigFile:TIniFile);
+ var TempPin:integer;
+begin
+  if not(fIsReady) then Exit;
+  if Voltmetr.Name='' then Exit;
+  TempPin := ConfigFile.ReadInteger(Voltmetr.Name, 'Control', -1);
+  if (TempPin > -1) and (TempPin < PinsComboBox.Items.Count) then
+    Voltmetr.PinNumber := StrToInt(PinsComboBox.Items[TempPin]);
+  TempPin := ConfigFile.ReadInteger(Voltmetr.Name, 'Gate', -1);
+  if (TempPin > -1) and (TempPin < PinsComboBox.Items.Count) then
+    Voltmetr.PinGateNumber := StrToInt(PinsComboBox.Items[TempPin]);
+end;
+
+Procedure TVoltmetrShow.PinsWriteToIniFile(ConfigFile:TIniFile);
+ var i:integer;
+begin
+  if not(fIsReady) then Exit;
+  if Voltmetr.Name='' then Exit;
+  ConfigFile.EraseSection(Voltmetr.Name);
+  for I := 0 to PinsComboBox.Items.Count - 1 do
+  begin
+    if (IntToStr(Voltmetr.PinNumber) = PinsComboBox.Items[i]) then
+      ConfigFile.WriteInteger(Voltmetr.Name, 'Control', i);
+    if (IntToStr(Voltmetr.PinGateNumber) = PinsComboBox.Items[i]) then
+      ConfigFile.WriteInteger(Voltmetr.Name, 'Gate', i);
+  end;
+end;
+
+procedure TVoltmetrShow.NumberPinShow();
+begin
+ if fIsReady then
+   begin
+     ControlPinLabel.Caption:=Voltmetr.PinNumberStr;
+     GatePinLabel.Caption:=Voltmetr.PinGateNumberStr;
+   end;
+end;
+
+procedure TVoltmetrShow.ButtonEnabled();
+begin
+  if not(fIsReady) then Exit;
+  MeasurementButton.Enabled:=(Voltmetr.PinNumber<>UndefinedPin)and
+                             (Voltmetr.PinGateNumber<>UndefinedPin){and
+                             (Voltmetr.ComPort.Connected)};
+  AutoSpeedButton.Enabled:=MeasurementButton.Enabled;
+end;
+
+procedure TVoltmetrShow.VoltmetrDataShow();
+begin
+  if not(fIsReady) then Exit;
+  MeasureMode.ItemIndex:=ord(Voltmetr.MeasureMode);
+  DiapazonFill(TMeasureMode(MeasureMode.ItemIndex),
+                Range.Items);
+
+  Range.ItemIndex:=
+     DiapazonSelect(Voltmetr.MeasureMode,Voltmetr.Diapazon);
+  case Voltmetr.MeasureMode of
+     IA,ID: UnitLabel.Caption:=' A';
+     UA,UD: UnitLabel.Caption:=' V';
+     MMErr: UnitLabel.Caption:='';
+  end;
+  if Voltmetr.isReady then
+      DataLabel.Caption:=FloatToStrF(Voltmetr.Value,ffExponent,4,2)
+                       else
+      begin
+       DataLabel.Caption:='    ERROR';
+       UnitLabel.Caption:='';
+      end;
+end;
+
+procedure TVoltmetrShow.SetControlButtonClick(Sender: TObject);
+begin
+  if PinsComboBox.ItemIndex<0 then Exit;
+  if PinsComboBox.Items[PinsComboBox.ItemIndex]<>IntToStr(Voltmetr.PinNumber) then
+    begin
+     Voltmetr.PinNumber:=StrToInt(PinsComboBox.Items[PinsComboBox.ItemIndex]);
+     NumberPinShow();
+     ButtonEnabled();
+    end;
+end;
+
+procedure TVoltmetrShow.SetGateButtonClick(Sender: TObject);
+begin
+  if PinsComboBox.ItemIndex<0 then Exit;
+  if PinsComboBox.Items[PinsComboBox.ItemIndex]<>IntToStr(Voltmetr.PinGateNumber) then
+    begin
+     Voltmetr.PinGateNumber:=StrToInt(PinsComboBox.Items[PinsComboBox.ItemIndex]);
+     NumberPinShow();
+     ButtonEnabled();
+    end;
+end;
+
+procedure TVoltmetrShow.MeasurementButtonClick(Sender: TObject);
+begin
+ if not(Voltmetr.ComPort.Connected) then Exit;
+ Voltmetr.Measurement();
+ VoltmetrDataShow();
+end;
+
+procedure TVoltmetrShow.AutoSpeedButtonClick(Sender: TObject);
+begin
+ MeasurementButton.Enabled:=not(AutoSpeedButton.Down);
+ if AutoSpeedButton.Down then Time.OnTimer:=MeasurementButton.OnClick;
+ Time.Enabled:=AutoSpeedButton.Down;
+end;
+
+procedure TVoltmetrShow.MeasureModeClick(Sender: TObject);
+begin
+  if fIsReady then MeasureMode.ItemIndex:=ord(Voltmetr.MeasureMode);
+end;
+
+procedure TVoltmetrShow.RangeClick(Sender: TObject);
+begin
+ if fIsReady then
+  Range.ItemIndex:=DiapazonSelect(Voltmetr.MeasureMode,Voltmetr.Diapazon);
+end;
+
 
 Function BCDtoDec(BCD:byte; isLow:boolean):byte;
 {виділяє з ВCD, яке містить дві десяткові

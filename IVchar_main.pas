@@ -121,6 +121,12 @@ type
     RBCSMeasur: TRadioButton;
     CBCSMeas: TComboBox;
     BSaveSetting: TButton;
+    LV721IPinG: TLabel;
+    LV721APinG: TLabel;
+    BV721ASetGate: TButton;
+    BV721ISetGate: TButton;
+    LV721IIPinG: TLabel;
+    BV721IISetGate: TButton;
 //    procedure ComPort1RxChar(Sender: TObject; Count: Integer);
 //    procedure ComPort1RxBuf(Sender: TObject; const Buffer; Count: Integer);
     procedure FormCreate(Sender: TObject);
@@ -129,7 +135,7 @@ type
     procedure FormDestroy(Sender: TObject);
 //    procedure ComDataPacket1Packet(Sender: TObject; const Str: string);
 //    procedure ComDataPacket1Discard(Sender: TObject; const Str: string);
-    procedure BV721AMeasClick(Sender: TObject);
+//    procedure BV721AMeasClick(Sender: TObject);
     procedure SBV721AAutoClick(Sender: TObject);
     procedure PCChange(Sender: TObject);
     procedure RGV721ARangeClick(Sender: TObject);
@@ -194,6 +200,7 @@ type
   public
     V721A:TV721A;
     V721_I,V721_II:TV721;
+    VoltmetrShows:TVoltmetrShow;
     ConfigFile:TIniFile;
     MeasuringEquipment,
     NumberPins:TStringList; // номери пінів, які використовуються як керуючі для SPI
@@ -394,29 +401,40 @@ begin
  SettingWriteToIniFile();
 end;
 
-procedure TIVchar.BV721AMeasClick(Sender: TObject);
-begin
- if not(ComPort1.Connected) then
-    begin
-      PortConnected();
-      Exit;
-    end;
- V721A.Measurement();
- VotmetrToForm(V721A);
-end;
+//procedure TIVchar.BV721AMeasClick(Sender: TObject);
+//begin
+// if not(ComPort1.Connected) then
+//    begin
+//      PortConnected();
+//      Exit;
+//    end;
+// V721A.Measurement();
+// VotmetrToForm(V721A);
+//end;
 
 procedure TIVchar.BV721ASetClick(Sender: TObject);
 begin
- if (Sender as TButton).Name='BV721ASet' then
-  begin
-  if CBV721A.ItemIndex<0 then Exit;
-  if CBV721A.Items[CBV721A.ItemIndex]<>IntToStr(V721A.PinNumber) then
-    begin
-     V721A.PinNumber:=StrToInt(NumberPins[CBV721A.ItemIndex]);
-     VoltmetrNumberPinShow();
-     VotmetrToForm(V721A);
-    end;
-  end;
+// if (Sender as TButton).Name='BV721ASet' then
+//  begin
+//  if CBV721A.ItemIndex<0 then Exit;
+//  if CBV721A.Items[CBV721A.ItemIndex]<>IntToStr(V721A.PinNumber) then
+//    begin
+//     V721A.PinNumber:=StrToInt(NumberPins[CBV721A.ItemIndex]);
+//     VoltmetrNumberPinShow();
+//     VotmetrToForm(V721A);
+//    end;
+//  end;
+// if (Sender as TButton).Name='BV721ASetGate' then
+//  begin
+//  if CBV721A.ItemIndex<0 then Exit;
+//  if CBV721A.Items[CBV721A.ItemIndex]<>IntToStr(V721A.PinGateNumber) then
+//    begin
+//     V721A.PinGateNumber:=StrToInt(NumberPins[CBV721A.ItemIndex]);
+//     VoltmetrNumberPinShow();
+//     VotmetrToForm(V721A);
+//    end;
+//  end;
+
  if (Sender as TButton).Name='BV721ISet' then
   begin
   if CBV721I.ItemIndex<0 then Exit;
@@ -427,12 +445,33 @@ begin
      VotmetrToForm(V721_I);
     end;
   end;
+ if (Sender as TButton).Name='BV721ISetGate' then
+  begin
+  if CBV721I.ItemIndex<0 then Exit;
+  if CBV721I.Items[CBV721I.ItemIndex]<>IntToStr(V721_I.PinGateNumber) then
+    begin
+     V721_I.PinGateNumber:=StrToInt(NumberPins[CBV721I.ItemIndex]);
+     VoltmetrNumberPinShow();
+     VotmetrToForm(V721_I);
+    end;
+  end;
+
  if (Sender as TButton).Name='BV721IISet' then
   begin
   if CBV721II.ItemIndex<0 then Exit;
   if CBV721II.Items[CBV721II.ItemIndex]<>IntToStr(V721_II.PinNumber) then
     begin
      V721_II.PinNumber:=StrToInt(NumberPins[CBV721II.ItemIndex]);
+     VoltmetrNumberPinShow();
+     VotmetrToForm(V721_II);
+    end;
+  end;
+ if (Sender as TButton).Name='BV721IISetGate' then
+  begin
+  if CBV721II.ItemIndex<0 then Exit;
+  if CBV721II.Items[CBV721II.ItemIndex]<>IntToStr(V721_II.PinGateNumber) then
+    begin
+     V721_II.PinGateNumber:=StrToInt(NumberPins[CBV721II.ItemIndex]);
      VoltmetrNumberPinShow();
      VotmetrToForm(V721_II);
     end;
@@ -542,22 +581,35 @@ begin
  DiapazonsBegin();
  ComponentView();
 
- V721A:= TV721A.Create(ComPort1);
- V721_I:= TV721.Create(ComPort1);
- V721_II:= TV721.Create(ComPort1);
+ ConfigFile:=TIniFile.Create(ExtractFilePath(Application.ExeName)+'IVChar.ini');
+
+ V721A:= TV721A.Create(ComPort1,'V721A');
+ V721_I:= TV721.Create(ComPort1,'V721_I');
+ V721_II:= TV721.Create(ComPort1,'V721_II');
+
+ VoltmetrShows:=TVoltmetrShow.Create(V721A,RGV721A_MM,RGV721ARange,LV721A,LV721AU,
+                      LV721APin,LV721APinG,BV721ASet,BV721ASetGate,
+                      BV721AMeas,SBV721AAuto,CBV721A,Time);
 
  NumberPins:=TStringList.Create;
  MeasuringEquipment:=TStringList.Create;
  Range:=TDiapazon.Create;
  new(ForwSteps);
  new(RevSteps);
- ConfigFile:=TIniFile.Create(ExtractFilePath(Application.ExeName)+'IVChar.ini');
+ 
 
  PinsFromIniFile();
  NumberPinsShow();
+
+ VoltmetrShows.PinsReadFromIniFile(ConfigFile);
+ VoltmetrShows.NumberPinShow();
+ VoltmetrShows.ButtonEnabled();
+// VoltmetrShows.VoltmetrDataShow();
+
  VoltmetrNumberPinShow();
 
- VotmetrToForm(V721A);
+
+// VotmetrToForm(V721A);
  VotmetrToForm(V721_I);
  VotmetrToForm(V721_II);
 
@@ -565,8 +617,6 @@ begin
  MeasuringEquipmentShow();
 
  SourcesReadFromIniFileAndToForm();
-
-
 
  RangeReadFromIniFile();
  RangeToForm();
@@ -595,6 +645,8 @@ end;
 procedure TIVchar.FormDestroy(Sender: TObject);
 begin
 
+ VoltmetrShows.PinsWriteToIniFile(ConfigFile);
+ PinsWriteToIniFile;
  SettingWriteToIniFile();
  ConfigFile.Free;
 
@@ -604,6 +656,7 @@ begin
  MeasuringEquipment.Free;
  NumberPins.Free;
 
+ VoltmetrShows.Free;
  if assigned(V721A) then V721A.Free;
  if assigned(V721_I) then V721_I.Free;
  if assigned(V721_II) then V721_II.Free;
@@ -663,9 +716,9 @@ end;
 
 procedure TIVchar.RGV721ARangeClick(Sender: TObject);
 begin
- if  (Sender as TRadiogroup).Name='RGV721ARange' then
-  RGV721ARange.ItemIndex:=
-    DiapazonSelect(V721A.MeasureMode,V721A.Diapazon);
+// if  (Sender as TRadiogroup).Name='RGV721ARange' then
+//  RGV721ARange.ItemIndex:=
+//    DiapazonSelect(V721A.MeasureMode,V721A.Diapazon);
  if  (Sender as TRadiogroup).Name='RGV721IRange' then
   RGV721IRange.ItemIndex:=
     DiapazonSelect(V721_I.MeasureMode,V721_I.Diapazon);
@@ -676,9 +729,9 @@ end;
 
 procedure TIVchar.RGV721A_MMClick(Sender: TObject);
 begin
- if  (Sender as TRadiogroup).Name='RGV721A_MM' then
-  if Assigned(V721A) then
-   RGV721A_MM.ItemIndex:=ord(V721A.MeasureMode);
+// if  (Sender as TRadiogroup).Name='RGV721A_MM' then
+//  if Assigned(V721A) then
+//   RGV721A_MM.ItemIndex:=ord(V721A.MeasureMode);
  if  (Sender as TRadiogroup).Name='RGV721I_MM' then
   if Assigned(V721_I) then
    RGV721I_MM.ItemIndex:=ord(V721_I.MeasureMode);
@@ -737,7 +790,6 @@ begin
  if (ARow>1)and(not(odd(Arow))) then
   begin
      SGFBStep.Canvas.Brush.Color:=RGB(252,212,213);
-//     SGFBStep.Canvas.Brush.Color:=RGB(218,240,254);
      SGFBStep.Canvas.FillRect(Rect);
      SGFBStep.Canvas.TextOut(Rect.Left+2,Rect.Top+2,SGFBStep.Cells[Acol,Arow]);
   end
@@ -831,12 +883,12 @@ begin
  if Voltmetr=V721A then
   begin
    BV721AMeas.Enabled:=assigned(V721A);
-   SBV721AAuto.Enabled:= assigned(V721A);
+   SBV721AAuto.Enabled:=BV721AMeas.Enabled;
 
    if assigned(V721A) then
    begin
-     BV721AMeas.Enabled:=(V721A.PinNumber<>UndefinedPin);
-     SBV721AAuto.Enabled:=(V721A.PinNumber<>UndefinedPin);
+     BV721AMeas.Enabled:=(V721A.PinNumber<>UndefinedPin)and((V721A.PinGateNumber<>UndefinedPin));
+     SBV721AAuto.Enabled:=BV721AMeas.Enabled;
      RGV721A_MM.ItemIndex:=ord(V721A.MeasureMode);
      DiapazonFill(TMeasureMode(RGV721A_MM.ItemIndex),
                    RGV721ARange.Items);
@@ -861,12 +913,12 @@ begin
  if Voltmetr=V721_I then
   begin
    BV721IMeas.Enabled:=assigned(V721_I);
-   SBV721IAuto.Enabled:= assigned(V721_I);
+   SBV721IAuto.Enabled:= BV721IMeas.Enabled;
 
    if assigned(V721_I) then
    begin
-     BV721IMeas.Enabled:=(V721_I.PinNumber<>UndefinedPin);
-     SBV721IAuto.Enabled:=(V721_I.PinNumber<>UndefinedPin);
+     BV721IMeas.Enabled:=(V721_I.PinNumber<>UndefinedPin)and(V721_I.PinGateNumber<>UndefinedPin);
+     SBV721IAuto.Enabled:=BV721IMeas.Enabled;
      RGV721I_MM.ItemIndex:=ord(V721_I.MeasureMode);
      DiapazonFill(TMeasureMode(RGV721I_MM.ItemIndex),
                    RGV721IRange.Items);
@@ -891,11 +943,11 @@ begin
  if Voltmetr=V721_II then
   begin
    BV721IIMeas.Enabled:=assigned(V721_II);
-   SBV721IIAuto.Enabled:= assigned(V721_II);
+   SBV721IIAuto.Enabled:= BV721IIMeas.Enabled;
 
    if assigned(V721_II) then
    begin
-     BV721IIMeas.Enabled:=(V721_II.PinNumber<>UndefinedPin);
+     BV721IIMeas.Enabled:=(V721_II.PinNumber<>UndefinedPin)and((V721_II.PinGateNumber<>UndefinedPin));
      SBV721IIAuto.Enabled:=(V721_II.PinNumber<>UndefinedPin);
      RGV721II_MM.ItemIndex:=ord(V721_II.MeasureMode);
      DiapazonFill(TMeasureMode(RGV721II_MM.ItemIndex),
@@ -933,12 +985,21 @@ end;
 
 Procedure TIVchar.VoltmetrNumberPinShow();
 begin
- if assigned(V721A) then
-   LV721APin.Caption:=V721A.PinNumberStr;
+// if assigned(V721A) then
+//   begin
+//   LV721APin.Caption:=V721A.PinNumberStr;
+//   LV721APinG.Caption:=V721A.PinGateNumberStr;
+//   end;
  if assigned(V721_I) then
+   begin
    LV721IPin.Caption:=V721_I.PinNumberStr;
+   LV721IPinG.Caption:=V721_I.PinGateNumberStr;
+   end;
  if assigned(V721_II) then
+   begin
    LV721IIPin.Caption:=V721_II.PinNumberStr;
+   LV721IIPinG.Caption:=V721_II.PinGateNumberStr;
+   end;
 end;
 
 procedure TIVchar.RangeShow;
@@ -1178,7 +1239,6 @@ end;
 procedure TIVchar.SettingWriteToIniFile;
 begin
   SourcesWriteToIniFile;
-  PinsWriteToIniFile;
   Range.WriteToIniFile(ConfigFile, 'Range', 'Measure');
   StepsWriteToIniFile;
   DelayTimeWriteToIniFile;
@@ -1193,12 +1253,18 @@ begin
   for I := 0 to NumberPins.Count - 1 do
   begin
     ConfigFile.WriteString('PinNumbers', 'Pin' + IntToStr(i), NumberPins[i]);
-    if assigned(V721A) and (IntToStr(V721A.PinNumber) = NumberPins[i]) then
-      ConfigFile.WriteInteger('PinNumbers', 'V721A', i);
+//    if assigned(V721A) and (IntToStr(V721A.PinNumber) = NumberPins[i]) then
+//      ConfigFile.WriteInteger('PinNumbers', 'V721A', i);
     if assigned(V721_I) and (IntToStr(V721_I.PinNumber) = NumberPins[i]) then
       ConfigFile.WriteInteger('PinNumbers', 'V721_I', i);
     if assigned(V721_II) and (IntToStr(V721_II.PinNumber) = NumberPins[i]) then
       ConfigFile.WriteInteger('PinNumbers', 'V721_II', i);
+//    if assigned(V721A) and (IntToStr(V721A.PinGateNumber) = NumberPins[i]) then
+//      ConfigFile.WriteInteger('PinNumbers', 'V721AGate', i);
+    if assigned(V721_I) and (IntToStr(V721_I.PinGateNumber) = NumberPins[i]) then
+      ConfigFile.WriteInteger('PinNumbers', 'V721_IGate', i);
+    if assigned(V721_II) and (IntToStr(V721_II.PinGateNumber) = NumberPins[i]) then
+      ConfigFile.WriteInteger('PinNumbers', 'V721_IIGate', i);
   end;
 end;
 
@@ -1209,15 +1275,26 @@ begin
   for I := 0 to ConfigFile.ReadInteger('PinNumbers', 'PinCount', 3) - 1 do
     NumberPins.Add(ConfigFile.ReadString('PinNumbers', 'Pin' + IntToStr(i), IntToStr(UndefinedPin)));
 
-  TempPin := ConfigFile.ReadInteger('PinNumbers', 'V721A', -1);
-  if (TempPin > -1) and (TempPin < NumberPins.Count) then
-    V721A.PinNumber := StrToInt(NumberPins[TempPin]);
+//  TempPin := ConfigFile.ReadInteger('PinNumbers', 'V721A', -1);
+//  if (TempPin > -1) and (TempPin < NumberPins.Count) then
+//    V721A.PinNumber := StrToInt(NumberPins[TempPin]);
   TempPin := ConfigFile.ReadInteger('PinNumbers', 'V721_I', -1);
   if (TempPin > -1) and (TempPin < NumberPins.Count) then
     V721_I.PinNumber := StrToInt(NumberPins[TempPin]);
   TempPin := ConfigFile.ReadInteger('PinNumbers', 'V721_II', -1);
   if (TempPin > -1) and (TempPin < NumberPins.Count) then
     V721_II.PinNumber := StrToInt(NumberPins[TempPin]);
+
+//  TempPin := ConfigFile.ReadInteger('PinNumbers', 'V721AGate', -1);
+//  if (TempPin > -1) and (TempPin < NumberPins.Count) then
+//    V721A.PinGateNumber := StrToInt(NumberPins[TempPin]);
+  TempPin := ConfigFile.ReadInteger('PinNumbers', 'V721_IGate', -1);
+  if (TempPin > -1) and (TempPin < NumberPins.Count) then
+    V721_I.PinGateNumber := StrToInt(NumberPins[TempPin]);
+  TempPin := ConfigFile.ReadInteger('PinNumbers', 'V721_IIGate', -1);
+  if (TempPin > -1) and (TempPin < NumberPins.Count) then
+    V721_II.PinGateNumber := StrToInt(NumberPins[TempPin]);
+
 end;
 
 procedure TIVchar.ComponentView;
@@ -1270,22 +1347,22 @@ procedure TIVchar.DiapazonsBegin;
 var
   i: Integer;
 begin
-  RGV721A_MM.Items.Clear;
+//  RGV721A_MM.Items.Clear;
   RGV721I_MM.Items.Clear;
   RGV721II_MM.Items.Clear;
   for I := 0 to ord(MMErr) do
    begin
-    RGV721A_MM.Items.Add(MeasureModeLabels[TMeasureMode(i)]);
+//    RGV721A_MM.Items.Add(MeasureModeLabels[TMeasureMode(i)]);
     RGV721I_MM.Items.Add(MeasureModeLabels[TMeasureMode(i)]);
     RGV721II_MM.Items.Add(MeasureModeLabels[TMeasureMode(i)]);
    end;
-  RGV721A_MM.ItemIndex := 4;
+//  RGV721A_MM.ItemIndex := 4;
   RGV721I_MM.ItemIndex := 3;
   RGV721II_MM.ItemIndex := 3;
-  LV721AU.Caption := '';
+//  LV721AU.Caption := '';
   LV721IU.Caption := '';
   LV721IIU.Caption := '';
-  DiapazonFill(TMeasureMode(RGV721A_MM.ItemIndex), RGV721ARange.Items);
+//  DiapazonFill(TMeasureMode(RGV721A_MM.ItemIndex), RGV721ARange.Items);
   DiapazonFill(TMeasureMode(RGV721I_MM.ItemIndex), RGV721IRange.Items);
   DiapazonFill(TMeasureMode(RGV721II_MM.ItemIndex), RGV721IIRange.Items);
 end;
