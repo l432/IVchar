@@ -3,7 +3,7 @@ program IV;
 uses
   Forms,
   IVchar_main in 'IVchar_main.pas' {IVchar},
-  V721 in 'V721.pas',
+  SPIdevice in 'SPIdevice.pas',
   PacketParameters in 'PacketParameters.pas';
 
 {$R *.res}

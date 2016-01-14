@@ -1,4 +1,4 @@
-unit V721;
+unit SPIdevice;
 
 interface
  uses OlegType,CPort,Dialogs,SysUtils,Classes,Windows,Forms,SyncObjs,PacketParameters,
@@ -9,7 +9,42 @@ type
   TDiapazons=(nA100,micA1,micA10,micA100,mA1,mA10,mA100,mA1000,
               mV10,mV100,V1,V10,V100,V1000,DErr);
 
-  TVoltmetr=class
+  TSPIdevice=class
+  {базовий клас для пристроїв, які керуються
+  за допомогою Аrduino з використанням шини SPI}
+  private
+   fPins:TArrByte;
+   {номери пінів Arduino;
+   в цьому класі масив містить 2 елементи,
+   за необхідності в нащадках треба міняти конструктор
+   [0] для лінії Slave Select шини SPI
+   [1] для керування буфером між  Аrduino  та приладом}
+   fName:string;
+   fComPort:TComPort;
+   fComPacket: TComDataPacket;
+   Procedure PacketReceiving(Sender: TObject; const Str: string);virtual;abstract;
+  protected
+   Function GetPinStr(Index:integer):string;
+   Function GetPin(Index:integer):byte;
+   Procedure SetPin(Index:integer; value:byte);
+  public
+   property PinControl:byte Index 0 read GetPin write SetPin;
+   property PinGate:byte Index 1 read GetPin write SetPin;
+   property PinControlStr:string Index 0 read GetPinStr;
+   property PinGateStr:string Index 1 read GetPinStr;
+   property Name:string read fName;
+   Constructor Create();overload;
+   Constructor Create(CP:TComPort);overload;
+   Constructor Create(CP:TComPort;Nm:string);overload;
+   Procedure Free;
+   Procedure PinsReadFromIniFile(ConfigFile:TIniFile);overload;
+   Procedure PinsReadFromIniFile(ConfigFile:TIniFile;Strings:TStrings);overload;
+   Procedure PinsWriteToIniFile(ConfigFile:TIniFile);overload;
+   Procedure PinsWriteToIniFile(ConfigFile:TIniFile;Strings:TStrings);overload;
+  end;
+
+
+  TVoltmetr=class(TSPIdevice)
   {базовий клас для вольтметрів серії В7-21}
   private
    fMeasureMode:TMeasureMode;
@@ -17,37 +52,25 @@ type
    fDiapazon:TDiapazons;
    fIsReady:boolean;
    fIsReceived:boolean;
-   fPinNumber:byte;
-   fPinGateNumber:byte;
    fData:TArrByte;
-   fName:string;
-
    Procedure MModeDetermination(Data:byte); virtual;
    Procedure DiapazonDetermination(Data:byte); virtual;
    Procedure ValueDetermination(Data:array of byte);virtual;
-   Function GetPinNumberStr():string;
-   Function PinGetGateNumberStr():string;
+   Procedure PacketReceiving(Sender: TObject; const Str: string);override;
   public
-   ComPort:TComPort;
-   fComPacket: TComDataPacket;
    property MeasureMode:TMeasureMode read FMeasureMode;
    property Value:double read fValue;
-   property PinNumber:byte read fPinNumber write fPinNumber;
-   property PinGateNumber:byte read fPinGateNumber write fPinGateNumber;
-   property PinNumberStr:string read GetPinNumberStr;
-   property PinGateNumberStr:string read PinGetGateNumberStr;
    property Diapazon:TDiapazons read fDiapazon;
    property isReady:boolean read fIsReady;
-   property Name:string read fName;
    Procedure ConvertToValue(Data:array of byte);
-   Constructor Create(NumberPin:byte);overload;
-   Constructor Create(NumberPin,GateNumberPin:byte);overload;
-   Constructor Create(NumberPin:byte;CP:TComPort);overload;
-   Constructor Create(NumberPin,GateNumberPin:byte;CP:TComPort);overload;
-   Constructor Create(CP:TComPort;Nm:string);overload;
-   Procedure Free;
+   Constructor Create();overload;
+//   Constructor Create(NumberPin,GateNumberPin:byte);overload;
+//   Constructor Create(NumberPin:byte;CP:TComPort);overload;
+//   Constructor Create(NumberPin,GateNumberPin:byte;CP:TComPort);overload;
+//   Constructor Create(CP:TComPort;Nm:string);overload;
+//   Procedure Free;
    Function Request():boolean;
-   Procedure PacketReceiving(Sender: TObject; const Str: string);
+//   Procedure PacketReceiving(Sender: TObject; const Str: string);
    Function Measurement():double;
   end;
 
@@ -75,6 +98,12 @@ type
    SetControlButton,SetGateButton,MeasurementButton:TButton;
    PinsComboBox:TComboBox;
    Time:TTimer;
+   procedure SetControlButtonClick(Sender: TObject);
+   procedure SetGateButtonClick(Sender: TObject);
+   procedure MeasurementButtonClick(Sender: TObject);
+   procedure AutoSpeedButtonClick(Sender: TObject);
+   procedure MeasureModeClick(Sender: TObject);
+   procedure RangeClick(Sender: TObject);
   public
    AutoSpeedButton:TSpeedButton;
    Constructor Create(V:TVoltmetr;
@@ -89,24 +118,71 @@ type
    procedure NumberPinShow();
    procedure ButtonEnabled();
    procedure VoltmetrDataShow();
-   procedure SetControlButtonClick(Sender: TObject);
-   procedure SetGateButtonClick(Sender: TObject);
-   procedure MeasurementButtonClick(Sender: TObject);
-   procedure AutoSpeedButtonClick(Sender: TObject);
-   procedure MeasureModeClick(Sender: TObject);
-   procedure RangeClick(Sender: TObject);
   end;
 
+  TOutputRange=(p050,p100,p108,pm050,pm100,pm108);
+
+  TDACChannel=class
+   Range:TOutputRange;
+   Power:boolean;
+   Overcurrent:boolean;
+  end;
+
+  TDAC=class(TSPIdevice)
+  {базовий клас для ЦАП}
+  private
+//   fChannels:Array of TDACChannel;
+   Procedure PacketReceiving(Sender: TObject; const Str: string);override;
+//   Function GetChannel(Index:integer):TDACChannel;
+//   Procedure SetChannel(Index:integer; value:TDACChannel);
+  public
+//   fChannels:Array of TDACChannel;
+   ChannelA:TDACChannel;
+   ChannelB:TDACChannel;
+   {пін для оновлення напруги ЦАП}
+   property PinLDAC:byte Index 2 read GetPin write SetPin;
+   property PinLDACStr:string Index 2 read GetPinStr;
+   {пін для встановлення нульової напруги ЦАП}
+   property PinCLR:byte Index 3 read GetPin write SetPin;
+   property PinCLRStr:string Index 3 read GetPinStr;
+//   property ChannelA:TDACChannel Index 0 read GetChannel write SetChannel;
+//   property ChannelB:TDACChannel Index 1 read GetChannel write SetChannel;
+   Constructor Create();overload;
+  end;
+
+  TDACChannelShow=class
+  private
+   fIsReady:boolean;
+   Channel:TDACChannel;
+   OutputRanges:TRadioGroup;
+  public
+   Constructor Create(DACC:TDACChannel;
+                      ORs:TRadioGroup
+                      );
+  end;
 
 const
   UndefinedPin=255;
+
   MeasureModeLabels:array[TMeasureMode]of string=
    ('~ I', '= I','~ U', '= U','Error');
+
   DiapazonsLabels:array[TDiapazons]of string=
    ('100 nA','1 micA','10 micA','100 micA',
     '1 mA','10 mA','100 mA','1000 mA',
      '10 mV','100 mV','1 V','10 V','100 V','1000 V','Error');
 
+  PinNames:array[0..3]of string=
+   ('Control','Gate','LDAC','CLR');
+
+  OutputRangeLabels:array[TOutputRange]of string=
+  ('0..5','0..10','0..10.8',
+  '-5..5','-10..10','-10.8..10.8');
+
+  GainValueOutputRangeLabels:array[TOutputRange]of double=
+  (2,4,4.32,4,8,8.64);
+
+  REFIN=2.5;
 
 Function BCDtoDec(BCD:byte; isLow:boolean):byte;
 {виділяє з ВCD, яке містить дві десяткові
@@ -125,15 +201,14 @@ Function DiapazonSelect(Mode:TMeasureMode;Diapazon:TDiapazons):integer;
 
 implementation
 
-Constructor TVoltmetr.Create(NumberPin:byte);
+
+Constructor TSPIdevice.Create();
 begin
   inherited Create();
-  fPinNumber:=NumberPin;
-  fPinGateNumber:=UndefinedPin;
-  fIsReady:=False;
-  fIsReceived:=False;
-  fMeasureMode:=MMErr;
-  fDiapazon:=DErr;
+  SetLength(fPins,2);
+  PinControl:=UndefinedPin;
+  PinGate:=UndefinedPin;
+  fName:='';
   fComPacket:=TComDataPacket.Create(fComPacket);
   fComPacket.Size:=0;
   fComPacket.MaxBufferSize:=1024;
@@ -144,39 +219,130 @@ begin
   fComPacket.OnPacket:=PacketReceiving;
 end;
 
-Constructor TVoltmetr.Create(NumberPin,GateNumberPin:byte);
-begin
-  Create(NumberPin);
-  fPinGateNumber:=GateNumberPin;
-end;
 
-
-Constructor TVoltmetr.Create(NumberPin:byte;CP:TComPort);
+Constructor TSPIdevice.Create(CP:TComPort);
 begin
- Create(NumberPin);
- ComPort:=CP;
+ Create();
+ fComPort:=CP;
  fComPacket.ComPort:=CP;
 end;
 
-Constructor TVoltmetr.Create(NumberPin,GateNumberPin:byte;CP:TComPort);
+Constructor TSPIdevice.Create(CP:TComPort;Nm:string);
 begin
- Create(NumberPin,GateNumberPin);
- ComPort:=CP;
- fComPacket.ComPort:=CP;
-end;
-
-
-Constructor TVoltmetr.Create(CP:TComPort;Nm:string);
-begin
- Create(UndefinedPin,CP);
+ Create(CP);
  fName:=Nm;
 end;
 
-Procedure TVoltmetr.Free;
+
+Procedure TSPIdevice.Free;
 begin
  fComPacket.Free;
  inherited;
 end;
+
+Function TSPIdevice.GetPinStr(Index:integer):string;
+begin
+  Result:=PinNames[Index]+' pin is ';
+  if fPins[Index]=UndefinedPin then
+    Result:=Result+'undefined'
+                               else
+    Result:=Result+IntToStr(fPins[Index]);
+end;
+
+Function TSPIdevice.GetPin(Index:integer):byte;
+begin
+  Result:=fPins[Index];
+end;
+
+Procedure TSPIdevice.SetPin(Index:integer; value:byte);
+begin
+  fPins[Index]:=value;
+end;
+
+Procedure TSPIdevice.PinsReadFromIniFile(ConfigFile:TIniFile);
+ var i:integer;
+begin
+  if Name='' then Exit;
+  for I := 0 to High(fPins) do
+      fPins[i]:=ConfigFile.ReadInteger(Name, PinNames[i], UndefinedPin);
+end;
+
+Procedure TSPIdevice.PinsReadFromIniFile(ConfigFile:TIniFile;Strings:TStrings);
+ var i,TempPin:integer;
+begin
+  if Name='' then Exit;
+  for I := 0 to High(fPins) do
+   begin
+    TempPin := ConfigFile.ReadInteger(Name, PinNames[i], -1);
+    if (TempPin > -1) and (TempPin < Strings.Count) then
+      fPins[i] := StrToInt(Strings[TempPin]);
+   end;
+end;
+
+
+Procedure TSPIdevice.PinsWriteToIniFile(ConfigFile:TIniFile);
+ var i:integer;
+begin
+  if Name='' then Exit;
+  ConfigFile.EraseSection(Name);
+  for I := 0 to High(fPins) do
+     WriteIniDef(ConfigFile,Name,PinNames[i], UndefinedPin);
+end;
+
+Procedure TSPIdevice.PinsWriteToIniFile(ConfigFile:TIniFile;Strings:TStrings);
+ var i,j:integer;
+begin
+  if Name='' then Exit;
+  ConfigFile.EraseSection(Name);
+  for I := 0 to Strings.Count - 1 do
+    for j := 0 to High(fPins) do
+      if (IntToStr(fPins[j]) = Strings[i]) then
+        ConfigFile.WriteInteger(Name, PinNames[j], i);
+end;
+
+
+Constructor TVoltmetr.Create();
+begin
+  inherited Create();
+  fIsReady:=False;
+  fIsReceived:=False;
+  fMeasureMode:=MMErr;
+  fDiapazon:=DErr;
+end;
+
+//Constructor TVoltmetr.Create(NumberPin,GateNumberPin:byte);
+//begin
+//  Create(NumberPin);
+//  fPinGateNumber:=GateNumberPin;
+//end;
+//
+//
+//Constructor TVoltmetr.Create(NumberPin:byte;CP:TComPort);
+//begin
+// Create(NumberPin);
+// fComPort:=CP;
+// fComPacket.ComPort:=CP;
+//end;
+//
+//Constructor TVoltmetr.Create(NumberPin,GateNumberPin:byte;CP:TComPort);
+//begin
+// Create(NumberPin,GateNumberPin);
+// fComPort:=CP;
+// fComPacket.ComPort:=CP;
+//end;
+//
+//
+//Constructor TVoltmetr.Create(CP:TComPort;Nm:string);
+//begin
+// Create(UndefinedPin,CP);
+// fName:=Nm;
+//end;
+//
+//Procedure TVoltmetr.Free;
+//begin
+// fComPacket.Free;
+// inherited;
+//end;
 
 Procedure TVoltmetr.MModeDetermination(Data:byte);
 begin
@@ -220,8 +386,8 @@ end;
 
 Function TVoltmetr.Request():boolean;
 begin
-  PacketCreate([V7_21Command,PinNumber,PinGateNumber]);
-  Result:=PacketIsSend(ComPort);
+  PacketCreate([V7_21Command,PinControl,PinGate]);
+  Result:=PacketIsSend(fComPort);
 end;
 
 Function TVoltmetr.Measurement():double;
@@ -230,7 +396,7 @@ var {i0,}i:integer;
     isFirst:boolean;
 begin
  Result:=ErResult;
- if not(ComPort.Connected) then
+ if not(fComPort.Connected) then
    begin
     showmessage('Port is not connected');
     Exit;
@@ -263,7 +429,7 @@ procedure TVoltmetr.PacketReceiving(Sender: TObject; const Str: string);
  var i:integer;
 begin
  if not(PacketIsReceived(Str,fData,V7_21Command)) then Exit;
- if fData[2]<>PinNumber then Exit;
+ if fData[2]<>PinControl then Exit;
 
  for I := 0 to High(fData)-4 do
    fData[i]:=fData[i+3];
@@ -271,22 +437,22 @@ begin
  fIsReceived:=True;
 end;
 
-Function TVoltmetr.GetPinNumberStr():string;
-begin
-  if PinNumber=UndefinedPin then
-    Result:='Control pin is undefined'
-                       else
-    Result:='Control pin is '+IntToStr(PinNumber);
-end;
+//Function TVoltmetr.GetPinNumberStr():string;
+//begin
+//  if PinNumber=UndefinedPin then
+//    Result:='Control pin is undefined'
+//                       else
+//    Result:='Control pin is '+IntToStr(PinNumber);
+//end;
 
 
-Function TVoltmetr.PinGetGateNumberStr():string;
-begin
-  if fPinGateNumber=UndefinedPin then
-    Result:='Gate pin is undefined'
-                       else
-    Result:='Gate pin is '+IntToStr(fPinGateNumber);
-end;
+//Function TVoltmetr.PinGetGateNumberStr():string;
+//begin
+//  if fPinGateNumber=UndefinedPin then
+//    Result:='Gate pin is undefined'
+//                       else
+//    Result:='Gate pin is '+IntToStr(fPinGateNumber);
+//end;
 
 Procedure TVoltmetr.ConvertToValue(Data:array of byte);
 begin
@@ -438,53 +604,35 @@ begin
     MeasurementButton.OnClick:=MeasurementButtonClick;
     AutoSpeedButton.OnClick:=AutoSpeedButtonClick;
     MeasureMode.OnClick:=MeasureModeClick;
+//    MeasureMode.OnClick:=RadioGroupClick(Sender,ord(Voltmetr.MeasureMode));
     Range.OnClick:=RangeClick;
   end;
 end;
 
 Procedure TVoltmetrShow.PinsReadFromIniFile(ConfigFile:TIniFile);
- var TempPin:integer;
 begin
-  if not(fIsReady) then Exit;
-  if Voltmetr.Name='' then Exit;
-  TempPin := ConfigFile.ReadInteger(Voltmetr.Name, 'Control', -1);
-  if (TempPin > -1) and (TempPin < PinsComboBox.Items.Count) then
-    Voltmetr.PinNumber := StrToInt(PinsComboBox.Items[TempPin]);
-  TempPin := ConfigFile.ReadInteger(Voltmetr.Name, 'Gate', -1);
-  if (TempPin > -1) and (TempPin < PinsComboBox.Items.Count) then
-    Voltmetr.PinGateNumber := StrToInt(PinsComboBox.Items[TempPin]);
+  if fIsReady then Voltmetr.PinsReadFromIniFile(ConfigFile,PinsComboBox.Items);
 end;
 
 Procedure TVoltmetrShow.PinsWriteToIniFile(ConfigFile:TIniFile);
- var i:integer;
 begin
-  if not(fIsReady) then Exit;
-  if Voltmetr.Name='' then Exit;
-  ConfigFile.EraseSection(Voltmetr.Name);
-  for I := 0 to PinsComboBox.Items.Count - 1 do
-  begin
-    if (IntToStr(Voltmetr.PinNumber) = PinsComboBox.Items[i]) then
-      ConfigFile.WriteInteger(Voltmetr.Name, 'Control', i);
-    if (IntToStr(Voltmetr.PinGateNumber) = PinsComboBox.Items[i]) then
-      ConfigFile.WriteInteger(Voltmetr.Name, 'Gate', i);
-  end;
+  if fIsReady then Voltmetr.PinsWriteToIniFile(ConfigFile,PinsComboBox.Items);
 end;
 
 procedure TVoltmetrShow.NumberPinShow();
 begin
  if fIsReady then
    begin
-     ControlPinLabel.Caption:=Voltmetr.PinNumberStr;
-     GatePinLabel.Caption:=Voltmetr.PinGateNumberStr;
+     ControlPinLabel.Caption:=Voltmetr.PinControlStr;
+     GatePinLabel.Caption:=Voltmetr.PinGateStr;
    end;
 end;
 
 procedure TVoltmetrShow.ButtonEnabled();
 begin
   if not(fIsReady) then Exit;
-  MeasurementButton.Enabled:=(Voltmetr.PinNumber<>UndefinedPin)and
-                             (Voltmetr.PinGateNumber<>UndefinedPin){and
-                             (Voltmetr.ComPort.Connected)};
+  MeasurementButton.Enabled:=(Voltmetr.PinControl<>UndefinedPin)and
+                             (Voltmetr.PinGate<>UndefinedPin);
   AutoSpeedButton.Enabled:=MeasurementButton.Enabled;
 end;
 
@@ -514,9 +662,9 @@ end;
 procedure TVoltmetrShow.SetControlButtonClick(Sender: TObject);
 begin
   if PinsComboBox.ItemIndex<0 then Exit;
-  if PinsComboBox.Items[PinsComboBox.ItemIndex]<>IntToStr(Voltmetr.PinNumber) then
+  if PinsComboBox.Items[PinsComboBox.ItemIndex]<>IntToStr(Voltmetr.PinControl) then
     begin
-     Voltmetr.PinNumber:=StrToInt(PinsComboBox.Items[PinsComboBox.ItemIndex]);
+     Voltmetr.PinControl:=StrToInt(PinsComboBox.Items[PinsComboBox.ItemIndex]);
      NumberPinShow();
      ButtonEnabled();
     end;
@@ -525,9 +673,9 @@ end;
 procedure TVoltmetrShow.SetGateButtonClick(Sender: TObject);
 begin
   if PinsComboBox.ItemIndex<0 then Exit;
-  if PinsComboBox.Items[PinsComboBox.ItemIndex]<>IntToStr(Voltmetr.PinGateNumber) then
+  if PinsComboBox.Items[PinsComboBox.ItemIndex]<>IntToStr(Voltmetr.PinGate) then
     begin
-     Voltmetr.PinGateNumber:=StrToInt(PinsComboBox.Items[PinsComboBox.ItemIndex]);
+     Voltmetr.PinGate:=StrToInt(PinsComboBox.Items[PinsComboBox.ItemIndex]);
      NumberPinShow();
      ButtonEnabled();
     end;
@@ -535,7 +683,7 @@ end;
 
 procedure TVoltmetrShow.MeasurementButtonClick(Sender: TObject);
 begin
- if not(Voltmetr.ComPort.Connected) then Exit;
+ if not(Voltmetr.fComPort.Connected) then Exit;
  Voltmetr.Measurement();
  VoltmetrDataShow();
 end;
@@ -557,6 +705,7 @@ begin
  if fIsReady then
   Range.ItemIndex:=DiapazonSelect(Voltmetr.MeasureMode,Voltmetr.Diapazon);
 end;
+
 
 
 Function BCDtoDec(BCD:byte; isLow:boolean):byte;
@@ -610,5 +759,75 @@ begin
   end;
  Result:=ord(Diapazon)-ord(i0);
 end;
+
+
+Constructor TDAC.Create();
+// var i:integer;
+begin
+  inherited Create();
+  SetLength(fPins,4);
+  PinLDAC:=UndefinedPin;
+  PinCLR:=UndefinedPin;
+//  SetLength(fChannels,2);
+//  for I := 0 to High(fChannels) do
+//   fChannels[i]:=TDACChannel.Create;
+  ChannelA:=TDACChannel.Create;
+  ChannelB:=TDACChannel.Create;
+end;
+
+procedure TDAC.PacketReceiving(Sender: TObject; const Str: string);
+// var i:integer;
+begin
+// if not(PacketIsReceived(Str,fData,V7_21Command)) then Exit;
+// if fData[2]<>PinNumber then Exit;
+//
+// for I := 0 to High(fData)-4 do
+//   fData[i]:=fData[i+3];
+// SetLength(fData,High(fData)-3);
+// fIsReceived:=True;
+end;
+
+//Function TDAC.GetChannel(Index:integer):TDACChannel;
+//begin
+//  Result:=fChannels[Index];
+//end;
+//
+//Procedure TDAC.SetChannel(Index:integer; value:TDACChannel);
+//begin
+//  fChannels[Index]:=value;
+//end;
+
+
+Constructor TDACChannelShow.Create(DACC:TDACChannel;
+                      ORs:TRadioGroup
+                      );
+ var i:TOutputRange;
+begin
+  inherited Create();
+   Channel:=DACC;
+   OutputRanges:=ORs;
+   fIsReady:=true //assigned(Channel)
+         and assigned(OutputRanges)
+             ;
+
+  if fIsReady then
+  begin
+    OutputRanges.Items.Clear;
+    for I := Low(TOutputRange) to High(TOutputRange) do
+      OutputRanges.Items.Add(OutputRangeLabels[i]);
+
+//    MeasureMode.ItemIndex := 4;
+//    UnitLabel.Caption := '';
+//    DiapazonFill(TMeasureMode(MeasureMode.ItemIndex), Range.Items);
+//    SetControlButton.OnClick:=SetControlButtonClick;
+//    SetGateButton.OnClick:=SetGateButtonClick;
+//    MeasurementButton.OnClick:=MeasurementButtonClick;
+//    AutoSpeedButton.OnClick:=AutoSpeedButtonClick;
+//    MeasureMode.OnClick:=MeasureModeClick;
+//    Range.OnClick:=RangeClick;
+  end;
+end;
+
+
 
 end.

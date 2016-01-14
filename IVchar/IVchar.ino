@@ -6,6 +6,7 @@
 #define PacketMaxLength 15
 #define V7_21Command 1
 #define ParameterReceiveCommand 2
+#define DACCommand 3
 
 byte DrivePins[] = {25, 26, 27, 28, 29, 30, 31, 32, 33, 34};
 //enum { REG_LATCH = 5 };

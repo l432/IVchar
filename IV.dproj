@@ -33,6 +33,6 @@
       <Form>IVchar</Form>
     </DCCReference>
     <DCCReference Include="PacketParameters.pas" />
-    <DCCReference Include="V721.pas" />
+    <DCCReference Include="SPIdevice.pas" />
   </ItemGroup>
 </Project>

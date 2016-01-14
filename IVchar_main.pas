@@ -4,7 +4,7 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, CPort, ComCtrls, Buttons, V721, ExtCtrls, IniFiles,PacketParameters,
+  Dialogs, StdCtrls, CPort, ComCtrls, Buttons, SPIdevice, ExtCtrls, IniFiles,PacketParameters,
   TeEngine, Series, TeeProcs, Chart, Spin, OlegType, Grids, OlegMath;
 
 type
@@ -127,6 +127,9 @@ type
     BV721ISetGate: TButton;
     LV721IIPinG: TLabel;
     BV721IISetGate: TButton;
+    PanelDACChA: TPanel;
+    STChA: TStaticText;
+    RGORChA: TRadioGroup;
     procedure FormCreate(Sender: TObject);
     procedure PortConnected();
     procedure BConnectClick(Sender: TObject);
@@ -180,6 +183,8 @@ type
     procedure VoltmetrsReadFromIniFileAndToForm;
     procedure VoltmetrsWriteToIniFile;
     procedure VoltmetrsFree;
+    procedure DACCreate;
+    procedure DACFree;
     { Private declarations }
   public
     V721A:TV721A;
@@ -192,6 +197,8 @@ type
     ForwSteps,RevSteps:PVector;
     ForwDelay,RevDelay,
     TemperatureSource,VoltageSource,CurrentSource,TermocoupleME:Integer;
+    DAC:TDAC;
+    DACChanelShows:array of TDACChannelShow;
   end;
 
 const
@@ -436,6 +443,8 @@ begin
  DelayTimeReadFromIniFile();
  DelayTimeShow();
 
+ DACCreate();
+
 
  ComDPacket.StartString:=PacketBeginChar;
  ComDPacket.StopString:=PacketEndChar;
@@ -457,12 +466,17 @@ begin
  SettingWriteToIniFile();
  ConfigFile.Free;
 
+ DACFree();
+
+
  dispose(ForwSteps);
  dispose(RevSteps);
  Range.Free;
  MeasuringEquipment.Free;
  NumberPins.Free;
  VoltmetrsFree();
+
+
 
  try
   if ComPort1.Connected then
@@ -909,6 +923,22 @@ begin
     V721_I.Free;
   if assigned(V721_II) then
     V721_II.Free;
+end;
+
+procedure TIVchar.DACCreate;
+begin
+  DAC := TDAC.Create(ComPort1, 'AD5752R');
+  SetLength(DACChanelShows,2);
+  DACChanelShows[0]:= TDACChannelShow.Create(DAC.ChannelA, RGORChA);
+//  DACChanelShows[0]:= TDACChannelShow.Create(DAC.fChannels[0], RGORChA);
+end;
+
+procedure TIVchar.DACFree;
+   var i:integer;
+begin
+  if assigned(DAC) then DAC.Free;
+  for I := 0 to High(DACChanelShows) do
+        DACChanelShows[i].Free;
 end;
 
 procedure TIVchar.PinsWriteToIniFile;
