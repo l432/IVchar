@@ -35,7 +35,7 @@ object IVchar: TIVchar
     Top = 0
     Width = 1036
     Height = 577
-    ActivePage = TS_DAC
+    ActivePage = TS_B7_21A
     Align = alTop
     Font.Charset = RUSSIAN_CHARSET
     Font.Color = clWindowText
@@ -47,6 +47,10 @@ object IVchar: TIVchar
     OnChange = PCChange
     object TS_Main: TTabSheet
       Caption = 'Main'
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       object ChLine: TChart
         Left = 0
         Top = 0

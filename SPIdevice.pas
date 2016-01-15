@@ -33,9 +33,9 @@ type
    property PinControlStr:string Index 0 read GetPinStr;
    property PinGateStr:string Index 1 read GetPinStr;
    property Name:string read fName;
-   Constructor Create();overload;
-   Constructor Create(CP:TComPort);overload;
-   Constructor Create(CP:TComPort;Nm:string);overload;
+   Constructor Create();//overload;
+//   Constructor Create(CP:TComPort);overload;
+//   Constructor Create(CP:TComPort;Nm:string);overload;
    Procedure Free;
    Procedure PinsReadFromIniFile(ConfigFile:TIniFile);overload;
    Procedure PinsReadFromIniFile(ConfigFile:TIniFile;Strings:TStrings);overload;
@@ -64,6 +64,8 @@ type
    property isReady:boolean read fIsReady;
    Procedure ConvertToValue(Data:array of byte);
    Constructor Create();overload;
+   Constructor Create(CP:TComPort);overload;
+   Constructor Create(CP:TComPort;Nm:string);overload;
 //   Constructor Create(NumberPin,GateNumberPin:byte);overload;
 //   Constructor Create(NumberPin:byte;CP:TComPort);overload;
 //   Constructor Create(NumberPin,GateNumberPin:byte;CP:TComPort);overload;
@@ -89,6 +91,13 @@ type
   public
   end;
 
+  TAdapterRadioGroupClick=class
+    fbool:boolean;
+    findexx:integer;
+    Constructor Create(b:boolean;ind:integer);
+    procedure RadioGroupClick(Sender: TObject);
+  end;
+
   TVoltmetrShow=class
   private
    fIsReady:boolean;
@@ -102,8 +111,8 @@ type
    procedure SetGateButtonClick(Sender: TObject);
    procedure MeasurementButtonClick(Sender: TObject);
    procedure AutoSpeedButtonClick(Sender: TObject);
-   procedure MeasureModeClick(Sender: TObject);
-   procedure RangeClick(Sender: TObject);
+//   procedure MeasureModeClick(Sender: TObject);
+//   procedure RangeClick(Sender: TObject);
   public
    AutoSpeedButton:TSpeedButton;
    Constructor Create(V:TVoltmetr;
@@ -131,23 +140,22 @@ type
   TDAC=class(TSPIdevice)
   {базовий клас для ЦАП}
   private
-//   fChannels:Array of TDACChannel;
-   Procedure PacketReceiving(Sender: TObject; const Str: string);override;
-//   Function GetChannel(Index:integer):TDACChannel;
-//   Procedure SetChannel(Index:integer; value:TDACChannel);
+    FChannelB: TDACChannel;
+    FChannelA: TDACChannel;
+    Procedure PacketReceiving(Sender: TObject; const Str: string);override;
+    procedure SetChannelA(const Value: TDACChannel);
+    procedure SetChannelB(const Value: TDACChannel);
   public
-//   fChannels:Array of TDACChannel;
-   ChannelA:TDACChannel;
-   ChannelB:TDACChannel;
    {пін для оновлення напруги ЦАП}
    property PinLDAC:byte Index 2 read GetPin write SetPin;
    property PinLDACStr:string Index 2 read GetPinStr;
    {пін для встановлення нульової напруги ЦАП}
    property PinCLR:byte Index 3 read GetPin write SetPin;
    property PinCLRStr:string Index 3 read GetPinStr;
-//   property ChannelA:TDACChannel Index 0 read GetChannel write SetChannel;
-//   property ChannelB:TDACChannel Index 1 read GetChannel write SetChannel;
+   property ChannelA:TDACChannel read FChannelA write SetChannelA;
+   property ChannelB:TDACChannel read FChannelB write SetChannelB;
    Constructor Create();overload;
+   Constructor Create(CP:TComPort;Nm:string);overload;
   end;
 
   TDACChannelShow=class
@@ -220,18 +228,18 @@ begin
 end;
 
 
-Constructor TSPIdevice.Create(CP:TComPort);
-begin
- Create();
- fComPort:=CP;
- fComPacket.ComPort:=CP;
-end;
-
-Constructor TSPIdevice.Create(CP:TComPort;Nm:string);
-begin
- Create(CP);
- fName:=Nm;
-end;
+//Constructor TSPIdevice.Create(CP:TComPort);
+//begin
+// Create();
+// fComPort:=CP;
+// fComPacket.ComPort:=CP;
+//end;
+//
+//Constructor TSPIdevice.Create(CP:TComPort;Nm:string);
+//begin
+// Create(CP);
+// fName:=Nm;
+//end;
 
 
 Procedure TSPIdevice.Free;
@@ -306,7 +314,8 @@ begin
   inherited Create();
   fIsReady:=False;
   fIsReceived:=False;
-  fMeasureMode:=MMErr;
+  fMeasureMode:=ID;
+//  fMeasureMode:=MMErr;
   fDiapazon:=DErr;
 end;
 
@@ -347,6 +356,19 @@ end;
 Procedure TVoltmetr.MModeDetermination(Data:byte);
 begin
 
+end;
+
+constructor TVoltmetr.Create(CP: TComPort);
+begin
+ Create();
+ fComPort:=CP;
+ fComPacket.ComPort:=CP;
+end;
+
+constructor TVoltmetr.Create(CP: TComPort; Nm: string);
+begin
+ Create(CP);
+ fName:=Nm;
 end;
 
 Procedure TVoltmetr.DiapazonDetermination(Data:byte);
@@ -596,16 +618,20 @@ begin
     MeasureMode.Items.Clear;
     for I := 0 to ord(MMErr) do
       MeasureMode.Items.Add(MeasureModeLabels[TMeasureMode(i)]);
-    MeasureMode.ItemIndex := 4;
+//    MeasureMode.ItemIndex := 4;
+    MeasureMode.ItemIndex := ord(Voltmetr.MeasureMode);
     UnitLabel.Caption := '';
-    DiapazonFill(TMeasureMode(MeasureMode.ItemIndex), Range.Items);
+//    DiapazonFill(TMeasureMode(MeasureMode.ItemIndex), Range.Items);
+    DiapazonFill(Voltmetr.MeasureMode, Range.Items);
+    Range.ItemIndex:=DiapazonSelect(Voltmetr.MeasureMode,Voltmetr.Diapazon);
     SetControlButton.OnClick:=SetControlButtonClick;
     SetGateButton.OnClick:=SetGateButtonClick;
     MeasurementButton.OnClick:=MeasurementButtonClick;
     AutoSpeedButton.OnClick:=AutoSpeedButtonClick;
-    MeasureMode.OnClick:=MeasureModeClick;
-//    MeasureMode.OnClick:=RadioGroupClick(Sender,ord(Voltmetr.MeasureMode));
-    Range.OnClick:=RangeClick;
+//    MeasureMode.OnClick:=MeasureModeClick;
+    MeasureMode.OnClick:=TAdapterRadioGroupClick.Create(fIsReady,ord(Voltmetr.MeasureMode)).RadioGroupClick;
+    Range.OnClick:=TAdapterRadioGroupClick.Create(fIsReady,DiapazonSelect(Voltmetr.MeasureMode,Voltmetr.Diapazon)).RadioGroupClick;
+//    Range.OnClick:=RangeClick;
   end;
 end;
 
@@ -695,16 +721,16 @@ begin
  Time.Enabled:=AutoSpeedButton.Down;
 end;
 
-procedure TVoltmetrShow.MeasureModeClick(Sender: TObject);
-begin
-  if fIsReady then MeasureMode.ItemIndex:=ord(Voltmetr.MeasureMode);
-end;
-
-procedure TVoltmetrShow.RangeClick(Sender: TObject);
-begin
- if fIsReady then
-  Range.ItemIndex:=DiapazonSelect(Voltmetr.MeasureMode,Voltmetr.Diapazon);
-end;
+//procedure TVoltmetrShow.MeasureModeClick(Sender: TObject);
+//begin
+//  if fIsReady then MeasureMode.ItemIndex:=ord(Voltmetr.MeasureMode);
+//end;
+//
+//procedure TVoltmetrShow.RangeClick(Sender: TObject);
+//begin
+// if fIsReady then
+//  Range.ItemIndex:=DiapazonSelect(Voltmetr.MeasureMode,Voltmetr.Diapazon);
+//end;
 
 
 
@@ -775,6 +801,14 @@ begin
   ChannelB:=TDACChannel.Create;
 end;
 
+constructor TDAC.Create(CP: TComPort; Nm: string);
+begin
+ Create();
+ fComPort:=CP;
+ fComPacket.ComPort:=CP;
+ fName:=Nm;
+end;
+
 procedure TDAC.PacketReceiving(Sender: TObject; const Str: string);
 // var i:integer;
 begin
@@ -785,6 +819,18 @@ begin
 //   fData[i]:=fData[i+3];
 // SetLength(fData,High(fData)-3);
 // fIsReceived:=True;
+end;
+
+
+
+procedure TDAC.SetChannelA(const Value: TDACChannel);
+begin
+  FChannelA := Value;
+end;
+
+procedure TDAC.SetChannelB(const Value: TDACChannel);
+begin
+  FChannelB := Value;
 end;
 
 //Function TDAC.GetChannel(Index:integer):TDACChannel;
@@ -815,6 +861,8 @@ begin
     OutputRanges.Items.Clear;
     for I := Low(TOutputRange) to High(TOutputRange) do
       OutputRanges.Items.Add(OutputRangeLabels[i]);
+    OutputRanges.ItemIndex:=ord(Channel.Range);
+    OutputRanges.OnClick:=TAdapterRadioGroupClick.Create(fIsReady,ord(Channel.Range)).RadioGroupClick;
 
 //    MeasureMode.ItemIndex := 4;
 //    UnitLabel.Caption := '';
@@ -829,5 +877,20 @@ begin
 end;
 
 
+
+{ TAdapter }
+
+constructor TAdapterRadioGroupClick.Create(b: boolean; ind: integer);
+begin
+ inherited Create;
+ fbool:=b;
+ findexx:=ind;
+end;
+
+procedure TAdapterRadioGroupClick.RadioGroupClick(Sender: TObject);
+begin
+// showmessage(inttostr(findexx));
+ if fbool then (Sender as TRadioGroup).ItemIndex:=findexx;
+end;
 
 end.

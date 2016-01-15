@@ -495,6 +495,7 @@ end;
 procedure TIVchar.PCChange(Sender: TObject);
  var i:integer;
 begin
+// showmessage(inttostr(ord(V721A.MeasureMode)));
  for I := 0 to High(VoltmetrShows) do
    try
    if VoltmetrShows[i].AutoSpeedButton.Down then
