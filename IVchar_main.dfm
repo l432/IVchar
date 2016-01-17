@@ -35,7 +35,7 @@ object IVchar: TIVchar
     Top = 0
     Width = 1036
     Height = 577
-    ActivePage = TS_B7_21A
+    ActivePage = TS_DAC
     Align = alTop
     Font.Charset = RUSSIAN_CHARSET
     Font.Color = clWindowText
@@ -47,10 +47,6 @@ object IVchar: TIVchar
     OnChange = PCChange
     object TS_Main: TTabSheet
       Caption = 'Main'
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object ChLine: TChart
         Left = 0
         Top = 0
@@ -880,10 +876,70 @@ object IVchar: TIVchar
     object TS_DAC: TTabSheet
       Caption = 'DAC'
       ImageIndex = 3
+      object LDACPinC: TLabel
+        Left = 711
+        Top = 58
+        Width = 314
+        Height = 42
+        AutoSize = False
+        Caption = 'LV721APin'
+        Font.Charset = RUSSIAN_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -22
+        Font.Name = 'Courier'
+        Font.Style = [fsBold]
+        ParentFont = False
+        WordWrap = True
+      end
+      object LDACPinG: TLabel
+        Left = 711
+        Top = 146
+        Width = 314
+        Height = 42
+        AutoSize = False
+        Caption = 'LV721APin'
+        Font.Charset = RUSSIAN_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -22
+        Font.Name = 'Courier'
+        Font.Style = [fsBold]
+        ParentFont = False
+        WordWrap = True
+      end
+      object LDACPinLDAC: TLabel
+        Left = 711
+        Top = 234
+        Width = 314
+        Height = 42
+        AutoSize = False
+        Caption = 'LV721APin'
+        Font.Charset = RUSSIAN_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -22
+        Font.Name = 'Courier'
+        Font.Style = [fsBold]
+        ParentFont = False
+        WordWrap = True
+      end
+      object LDACPinCLR: TLabel
+        Left = 711
+        Top = 322
+        Width = 314
+        Height = 42
+        AutoSize = False
+        Caption = 'LV721APin'
+        Font.Charset = RUSSIAN_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -22
+        Font.Name = 'Courier'
+        Font.Style = [fsBold]
+        ParentFont = False
+        WordWrap = True
+      end
       object PanelDACChA: TPanel
         Left = 3
         Top = 3
-        Width = 408
+        Width = 382
         Height = 358
         BevelWidth = 3
         BorderStyle = bsSingle
@@ -928,6 +984,78 @@ object IVchar: TIVchar
           ParentFont = False
           TabOrder = 1
         end
+      end
+      object CBDAC: TComboBox
+        Tag = 1
+        Left = 882
+        Top = 11
+        Width = 121
+        Height = 41
+        Style = csDropDownList
+        Font.Charset = RUSSIAN_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -28
+        Font.Name = 'Arial'
+        Font.Style = [fsBold]
+        ItemHeight = 33
+        ParentFont = False
+        TabOrder = 1
+      end
+      object BDACSetC: TButton
+        Left = 875
+        Top = 106
+        Width = 150
+        Height = 30
+        Caption = 'set control'
+        Font.Charset = RUSSIAN_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -27
+        Font.Name = 'Arial'
+        Font.Style = [fsBold]
+        ParentFont = False
+        TabOrder = 2
+      end
+      object BDACSetG: TButton
+        Left = 875
+        Top = 194
+        Width = 150
+        Height = 30
+        Caption = 'set control'
+        Font.Charset = RUSSIAN_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -27
+        Font.Name = 'Arial'
+        Font.Style = [fsBold]
+        ParentFont = False
+        TabOrder = 3
+      end
+      object BDACSetLDAC: TButton
+        Left = 875
+        Top = 282
+        Width = 150
+        Height = 30
+        Caption = 'set control'
+        Font.Charset = RUSSIAN_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -27
+        Font.Name = 'Arial'
+        Font.Style = [fsBold]
+        ParentFont = False
+        TabOrder = 4
+      end
+      object BDACSetCLR: TButton
+        Left = 875
+        Top = 370
+        Width = 150
+        Height = 30
+        Caption = 'set control'
+        Font.Charset = RUSSIAN_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -27
+        Font.Name = 'Arial'
+        Font.Style = [fsBold]
+        ParentFont = False
+        TabOrder = 5
       end
     end
     object TS_Setting: TTabSheet

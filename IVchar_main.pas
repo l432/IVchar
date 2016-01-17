@@ -130,6 +130,15 @@ type
     PanelDACChA: TPanel;
     STChA: TStaticText;
     RGORChA: TRadioGroup;
+    CBDAC: TComboBox;
+    LDACPinC: TLabel;
+    BDACSetC: TButton;
+    LDACPinG: TLabel;
+    BDACSetG: TButton;
+    LDACPinLDAC: TLabel;
+    BDACSetLDAC: TButton;
+    LDACPinCLR: TLabel;
+    BDACSetCLR: TButton;
     procedure FormCreate(Sender: TObject);
     procedure PortConnected();
     procedure BConnectClick(Sender: TObject);
@@ -185,6 +194,8 @@ type
     procedure VoltmetrsFree;
     procedure DACCreate;
     procedure DACFree;
+    procedure DACReadFromIniFileAndToForm;
+    procedure DACWriteToIniFile;
     { Private declarations }
   public
     V721A:TV721A;
@@ -199,6 +210,7 @@ type
     TemperatureSource,VoltageSource,CurrentSource,TermocoupleME:Integer;
     DAC:TDAC;
     DACChanelShows:array of TDACChannelShow;
+    DACShow:TDACShow;
   end;
 
 const
@@ -444,7 +456,7 @@ begin
  DelayTimeShow();
 
  DACCreate();
-
+ DACReadFromIniFileAndToForm;
 
  ComDPacket.StartString:=PacketBeginChar;
  ComDPacket.StopString:=PacketEndChar;
@@ -461,6 +473,7 @@ end;
 
 procedure TIVchar.FormDestroy(Sender: TObject);
 begin
+ DACWriteToIniFile();
  VoltmetrsWriteToIniFile();
  PinsWriteToIniFile;
  SettingWriteToIniFile();
@@ -932,14 +945,28 @@ begin
   SetLength(DACChanelShows,2);
   DACChanelShows[0]:= TDACChannelShow.Create(DAC.ChannelA, RGORChA);
 //  DACChanelShows[0]:= TDACChannelShow.Create(DAC.fChannels[0], RGORChA);
+  DACShow:=TDACShow.Create(DAC,LDACPinC,LDACPinG,LDACPinLDAC,LDACPinCLR,
+                           BDACSetC,BDACSetG,BDACSetLDAC,BDACSetCLR,CBDAC);
 end;
 
 procedure TIVchar.DACFree;
    var i:integer;
 begin
-  if assigned(DAC) then DAC.Free;
+  DACShow.Free;
   for I := 0 to High(DACChanelShows) do
         DACChanelShows[i].Free;
+  if assigned(DAC) then DAC.Free;
+end;
+
+procedure TIVchar.DACReadFromIniFileAndToForm;
+begin
+  DACShow.PinsReadFromIniFile(ConfigFile);
+  DACShow.NumberPinShow;
+end;
+
+procedure TIVchar.DACWriteToIniFile;
+begin
+  DAC.PinsWriteToIniFile(ConfigFile);
 end;
 
 procedure TIVchar.PinsWriteToIniFile;

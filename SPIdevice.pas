@@ -18,7 +18,7 @@ type
    в цьому класі масив містить 2 елементи,
    за необхідності в нащадках треба міняти конструктор
    [0] для лінії Slave Select шини SPI
-   [1] для керування буфером між  Аrduino  та приладом}
+   [1] для керування буфером між Аrduino та приладом}
    fName:string;
    fComPort:TComPort;
    fComPacket: TComDataPacket;
@@ -33,9 +33,9 @@ type
    property PinControlStr:string Index 0 read GetPinStr;
    property PinGateStr:string Index 1 read GetPinStr;
    property Name:string read fName;
-   Constructor Create();//overload;
-//   Constructor Create(CP:TComPort);overload;
-//   Constructor Create(CP:TComPort;Nm:string);overload;
+   Constructor Create();overload;virtual;
+   Constructor Create(CP:TComPort);overload;
+   Constructor Create(CP:TComPort;Nm:string);overload;
    Procedure Free;
    Procedure PinsReadFromIniFile(ConfigFile:TIniFile);overload;
    Procedure PinsReadFromIniFile(ConfigFile:TIniFile;Strings:TStrings);overload;
@@ -63,9 +63,9 @@ type
    property Diapazon:TDiapazons read fDiapazon;
    property isReady:boolean read fIsReady;
    Procedure ConvertToValue(Data:array of byte);
-   Constructor Create();overload;
-   Constructor Create(CP:TComPort);overload;
-   Constructor Create(CP:TComPort;Nm:string);overload;
+   Constructor Create();overload;override;
+//   Constructor Create(CP:TComPort);overload;
+//   Constructor Create(CP:TComPort;Nm:string);overload;
 //   Constructor Create(NumberPin,GateNumberPin:byte);overload;
 //   Constructor Create(NumberPin:byte;CP:TComPort);overload;
 //   Constructor Create(NumberPin,GateNumberPin:byte;CP:TComPort);overload;
@@ -92,23 +92,58 @@ type
   end;
 
   TAdapterRadioGroupClick=class
-    fbool:boolean;
+//    fbool:boolean;
     findexx:integer;
-    Constructor Create(b:boolean;ind:integer);
+    Constructor Create({b:boolean;}ind:integer);
     procedure RadioGroupClick(Sender: TObject);
   end;
 
-  TVoltmetrShow=class
+  TSimpleEvent = procedure() of object;
+
+  TAdapterSetButton=class
   private
-   fIsReady:boolean;
-   Voltmetr:TVoltmetr;
-   MeasureMode,Range:TRadioGroup;
-   DataLabel,UnitLabel,ControlPinLabel,GatePinLabel:TLabel;
-   SetControlButton,SetGateButton,MeasurementButton:TButton;
+    FSimpleAction: TSimpleEvent;
+    PinsComboBox:TComboBox;
+    SPIDevice:TSPIdevice;
+    fi:integer;
+  public
+   property SimpleAction:TSimpleEvent read FSimpleAction write FSimpleAction;
+   Constructor Create(PCB:TComboBox;SPID:TSPIdevice;i:integer;Action:TSimpleEvent);
+   procedure SetButtonClick(Sender: TObject);
+  end;
+
+
+  TSPIDeviceShow=class
+  private
+   SPIDevice:TSPIdevice;
+   PinLabels:array of TLabel;
+   SetPinButtons:array of TButton;
    PinsComboBox:TComboBox;
+    procedure CreateFooter;
+  public
+   Constructor Create(SPID:TSPIdevice;
+                      ControlPinLabel,GatePinLabel:TLabel;
+                      SetControlButton,SetGateButton:TButton;
+                      PCB:TComboBox);
+   procedure PinsReadFromIniFile(ConfigFile:TIniFile);
+   procedure PinsWriteToIniFile(ConfigFile:TIniFile);
+   procedure NumberPinShow();virtual;
+  end;
+
+
+  TVoltmetrShow=class(TSPIDeviceShow)
+  private
+//   fIsReady:boolean;
+//   Voltmetr:TVoltmetr;
+   MeasureMode,Range:TRadioGroup;
+   DataLabel,UnitLabel:TLabel;
+//   DataLabel,UnitLabel,ControlPinLabel,GatePinLabel:TLabel;
+//   SetControlButton,SetGateButton,MeasurementButton:TButton;
+   MeasurementButton:TButton;
+//   PinsComboBox:TComboBox;
    Time:TTimer;
-   procedure SetControlButtonClick(Sender: TObject);
-   procedure SetGateButtonClick(Sender: TObject);
+//   procedure SetControlButtonClick(Sender: TObject);
+//   procedure SetGateButtonClick(Sender: TObject);
    procedure MeasurementButtonClick(Sender: TObject);
    procedure AutoSpeedButtonClick(Sender: TObject);
 //   procedure MeasureModeClick(Sender: TObject);
@@ -122,9 +157,9 @@ type
                       AB:TSpeedButton;
                       PCB:TComboBox;
                       TT:TTimer);
-   procedure PinsReadFromIniFile(ConfigFile:TIniFile);
-   procedure PinsWriteToIniFile(ConfigFile:TIniFile);
-   procedure NumberPinShow();
+//   procedure PinsReadFromIniFile(ConfigFile:TIniFile);
+//   procedure PinsWriteToIniFile(ConfigFile:TIniFile);
+   procedure NumberPinShow();override;
    procedure ButtonEnabled();
    procedure VoltmetrDataShow();
   end;
@@ -154,19 +189,30 @@ type
    property PinCLRStr:string Index 3 read GetPinStr;
    property ChannelA:TDACChannel read FChannelA write SetChannelA;
    property ChannelB:TDACChannel read FChannelB write SetChannelB;
-   Constructor Create();overload;
-   Constructor Create(CP:TComPort;Nm:string);overload;
+   Constructor Create();overload;override;
+//   Constructor Create(CP:TComPort;Nm:string);overload;
   end;
 
   TDACChannelShow=class
   private
-   fIsReady:boolean;
+//   fIsReady:boolean;
    Channel:TDACChannel;
    OutputRanges:TRadioGroup;
   public
    Constructor Create(DACC:TDACChannel;
                       ORs:TRadioGroup
                       );
+  end;
+
+  TDACShow=class(TSPIDeviceShow)
+  private
+  public
+   Constructor Create(DAC:TDAC;
+                      CPL,GPL,LDACPL,CLRPL:TLabel;
+                      SCB,SGB,SLDACB,SCLRB:TButton;
+                      PCB:TComboBox
+                      );
+   procedure NumberPinShow();override;
   end;
 
 const
@@ -228,18 +274,18 @@ begin
 end;
 
 
-//Constructor TSPIdevice.Create(CP:TComPort);
-//begin
-// Create();
-// fComPort:=CP;
-// fComPacket.ComPort:=CP;
-//end;
-//
-//Constructor TSPIdevice.Create(CP:TComPort;Nm:string);
-//begin
-// Create(CP);
-// fName:=Nm;
-//end;
+Constructor TSPIdevice.Create(CP:TComPort);
+begin
+ Create();
+ fComPort:=CP;
+ fComPacket.ComPort:=CP;
+end;
+
+Constructor TSPIdevice.Create(CP:TComPort;Nm:string);
+begin
+ Create(CP);
+ fName:=Nm;
+end;
 
 
 Procedure TSPIdevice.Free;
@@ -314,8 +360,8 @@ begin
   inherited Create();
   fIsReady:=False;
   fIsReceived:=False;
-  fMeasureMode:=ID;
-//  fMeasureMode:=MMErr;
+//  fMeasureMode:=ID;
+  fMeasureMode:=MMErr;
   fDiapazon:=DErr;
 end;
 
@@ -358,18 +404,18 @@ begin
 
 end;
 
-constructor TVoltmetr.Create(CP: TComPort);
-begin
- Create();
- fComPort:=CP;
- fComPacket.ComPort:=CP;
-end;
-
-constructor TVoltmetr.Create(CP: TComPort; Nm: string);
-begin
- Create(CP);
- fName:=Nm;
-end;
+//constructor TVoltmetr.Create(CP: TComPort);
+//begin
+// Create();
+// fComPort:=CP;
+// fComPacket.ComPort:=CP;
+//end;
+//
+//constructor TVoltmetr.Create(CP: TComPort; Nm: string);
+//begin
+// Create(CP);
+// fName:=Nm;
+//end;
 
 Procedure TVoltmetr.DiapazonDetermination(Data:byte);
 begin
@@ -586,98 +632,112 @@ Constructor TVoltmetrShow.Create(V:TVoltmetr;
                       TT:TTimer);
  var i:integer;
 begin
-  inherited Create();
-   Voltmetr:=V;
+  inherited Create(V,CPL,GPL,SCB,SGB,PCB);
+//   Voltmetr:=V;
    MeasureMode:=MM;
    Range:=R;
    DataLabel:=DL;
    UnitLabel:=UL;
-   ControlPinLabel:=CPL;
-   GatePinLabel:=GPL;
+//   ControlPinLabel:=CPL;
+//   GatePinLabel:=GPL;
    MeasurementButton:=MB;
    AutoSpeedButton:=AB;
-   SetControlButton:=SCB;
-   SetGateButton:=SGB;
-   PinsComboBox:=PCB;
+//   SetControlButton:=SCB;
+//   SetGateButton:=SGB;
+//   PinsComboBox:=PCB;
    Time:=TT;
-   fIsReady:=assigned(Voltmetr)and
-             assigned(MeasureMode)and
-             assigned(Range)and
-             assigned(DataLabel)and
-             assigned(ControlPinLabel)and
-             assigned(GatePinLabel)and
-             assigned(MeasurementButton)and
-             assigned(AutoSpeedButton)and
-             assigned(SetControlButton)and
-             assigned(SetGateButton)and
-             assigned(Time)and
-             assigned(PinsComboBox);
+//   fIsReady:=assigned(Voltmetr)and
+//             assigned(MeasureMode)and
+//             assigned(Range)and
+//             assigned(DataLabel)and
+//             assigned(ControlPinLabel)and
+//             assigned(GatePinLabel)and
+//             assigned(MeasurementButton)and
+//             assigned(AutoSpeedButton)and
+//             assigned(SetControlButton)and
+//             assigned(SetGateButton)and
+//             assigned(Time)and
+//             assigned(PinsComboBox);
 
-  if fIsReady then
-  begin
+//  if fIsReady then
+//  begin
+    CreateFooter();
     MeasureMode.Items.Clear;
     for I := 0 to ord(MMErr) do
       MeasureMode.Items.Add(MeasureModeLabels[TMeasureMode(i)]);
 //    MeasureMode.ItemIndex := 4;
-    MeasureMode.ItemIndex := ord(Voltmetr.MeasureMode);
+//    MeasureMode.ItemIndex := ord(Voltmetr.MeasureMode);
+    MeasureMode.ItemIndex := ord((SPIDevice as TVoltmetr).MeasureMode);
     UnitLabel.Caption := '';
 //    DiapazonFill(TMeasureMode(MeasureMode.ItemIndex), Range.Items);
-    DiapazonFill(Voltmetr.MeasureMode, Range.Items);
-    Range.ItemIndex:=DiapazonSelect(Voltmetr.MeasureMode,Voltmetr.Diapazon);
-    SetControlButton.OnClick:=SetControlButtonClick;
-    SetGateButton.OnClick:=SetGateButtonClick;
+//    DiapazonFill(Voltmetr.MeasureMode, Range.Items);
+//    Range.ItemIndex:=DiapazonSelect(Voltmetr.MeasureMode,Voltmetr.Diapazon);
+    DiapazonFill((SPIDevice as TVoltmetr).MeasureMode, Range.Items);
+    Range.ItemIndex:=DiapazonSelect((SPIDevice as TVoltmetr).MeasureMode,(SPIDevice as TVoltmetr).Diapazon);
+
+//    SetPinButtons[0].OnClick:=SetControlButtonClick;
+//    SetPinButtons[1].OnClick:=SetGateButtonClick;
+//    SetControlButton.OnClick:=SetControlButtonClick;
+//    SetGateButton.OnClick:=SetGateButtonClick;
     MeasurementButton.OnClick:=MeasurementButtonClick;
     AutoSpeedButton.OnClick:=AutoSpeedButtonClick;
 //    MeasureMode.OnClick:=MeasureModeClick;
-    MeasureMode.OnClick:=TAdapterRadioGroupClick.Create(fIsReady,ord(Voltmetr.MeasureMode)).RadioGroupClick;
-    Range.OnClick:=TAdapterRadioGroupClick.Create(fIsReady,DiapazonSelect(Voltmetr.MeasureMode,Voltmetr.Diapazon)).RadioGroupClick;
+//    MeasureMode.OnClick:=TAdapterRadioGroupClick.Create(fIsReady,ord(Voltmetr.MeasureMode)).RadioGroupClick;
+//    Range.OnClick:=TAdapterRadioGroupClick.Create(fIsReady,DiapazonSelect(Voltmetr.MeasureMode,Voltmetr.Diapazon)).RadioGroupClick;
+    MeasureMode.OnClick:=TAdapterRadioGroupClick.Create(ord((SPIDevice as TVoltmetr).MeasureMode)).RadioGroupClick;
+    Range.OnClick:=TAdapterRadioGroupClick.Create(DiapazonSelect((SPIDevice as TVoltmetr).MeasureMode,(SPIDevice as TVoltmetr).Diapazon)).RadioGroupClick;
 //    Range.OnClick:=RangeClick;
-  end;
+//  end;
 end;
 
-Procedure TVoltmetrShow.PinsReadFromIniFile(ConfigFile:TIniFile);
-begin
-  if fIsReady then Voltmetr.PinsReadFromIniFile(ConfigFile,PinsComboBox.Items);
-end;
-
-Procedure TVoltmetrShow.PinsWriteToIniFile(ConfigFile:TIniFile);
-begin
-  if fIsReady then Voltmetr.PinsWriteToIniFile(ConfigFile,PinsComboBox.Items);
-end;
+//Procedure TVoltmetrShow.PinsReadFromIniFile(ConfigFile:TIniFile);
+//begin
+//  try
+//  Voltmetr.PinsReadFromIniFile(ConfigFile,PinsComboBox.Items);
+//  except
+//  end;
+//end;
+//
+//Procedure TVoltmetrShow.PinsWriteToIniFile(ConfigFile:TIniFile);
+//begin
+//  if fIsReady then Voltmetr.PinsWriteToIniFile(ConfigFile,PinsComboBox.Items);
+//end;
 
 procedure TVoltmetrShow.NumberPinShow();
 begin
- if fIsReady then
-   begin
-     ControlPinLabel.Caption:=Voltmetr.PinControlStr;
-     GatePinLabel.Caption:=Voltmetr.PinGateStr;
-   end;
+ inherited NumberPinShow();
+ ButtonEnabled()
+// if fIsReady then
+//   begin
+//     ControlPinLabel.Caption:=Voltmetr.PinControlStr;
+//     GatePinLabel.Caption:=Voltmetr.PinGateStr;
+//   end;
 end;
 
 procedure TVoltmetrShow.ButtonEnabled();
 begin
-  if not(fIsReady) then Exit;
-  MeasurementButton.Enabled:=(Voltmetr.PinControl<>UndefinedPin)and
-                             (Voltmetr.PinGate<>UndefinedPin);
+//  if not(fIsReady) then Exit;
+  MeasurementButton.Enabled:=(SPIDevice.PinControl<>UndefinedPin)and
+                             (SPIDevice.PinGate<>UndefinedPin);
   AutoSpeedButton.Enabled:=MeasurementButton.Enabled;
 end;
 
 procedure TVoltmetrShow.VoltmetrDataShow();
 begin
-  if not(fIsReady) then Exit;
-  MeasureMode.ItemIndex:=ord(Voltmetr.MeasureMode);
+//  if not(fIsReady) then Exit;
+  MeasureMode.ItemIndex:=ord((SPIDevice as TVoltmetr).MeasureMode);
   DiapazonFill(TMeasureMode(MeasureMode.ItemIndex),
                 Range.Items);
 
   Range.ItemIndex:=
-     DiapazonSelect(Voltmetr.MeasureMode,Voltmetr.Diapazon);
-  case Voltmetr.MeasureMode of
+     DiapazonSelect((SPIDevice as TVoltmetr).MeasureMode,(SPIDevice as TVoltmetr).Diapazon);
+  case (SPIDevice as TVoltmetr).MeasureMode of
      IA,ID: UnitLabel.Caption:=' A';
      UA,UD: UnitLabel.Caption:=' V';
      MMErr: UnitLabel.Caption:='';
   end;
-  if Voltmetr.isReady then
-      DataLabel.Caption:=FloatToStrF(Voltmetr.Value,ffExponent,4,2)
+  if (SPIDevice as TVoltmetr).isReady then
+      DataLabel.Caption:=FloatToStrF((SPIDevice as TVoltmetr).Value,ffExponent,4,2)
                        else
       begin
        DataLabel.Caption:='    ERROR';
@@ -685,32 +745,32 @@ begin
       end;
 end;
 
-procedure TVoltmetrShow.SetControlButtonClick(Sender: TObject);
-begin
-  if PinsComboBox.ItemIndex<0 then Exit;
-  if PinsComboBox.Items[PinsComboBox.ItemIndex]<>IntToStr(Voltmetr.PinControl) then
-    begin
-     Voltmetr.PinControl:=StrToInt(PinsComboBox.Items[PinsComboBox.ItemIndex]);
-     NumberPinShow();
-     ButtonEnabled();
-    end;
-end;
-
-procedure TVoltmetrShow.SetGateButtonClick(Sender: TObject);
-begin
-  if PinsComboBox.ItemIndex<0 then Exit;
-  if PinsComboBox.Items[PinsComboBox.ItemIndex]<>IntToStr(Voltmetr.PinGate) then
-    begin
-     Voltmetr.PinGate:=StrToInt(PinsComboBox.Items[PinsComboBox.ItemIndex]);
-     NumberPinShow();
-     ButtonEnabled();
-    end;
-end;
+//procedure TVoltmetrShow.SetControlButtonClick(Sender: TObject);
+//begin
+//  if PinsComboBox.ItemIndex<0 then Exit;
+//  if PinsComboBox.Items[PinsComboBox.ItemIndex]<>IntToStr(SPIDevice.PinControl) then
+//    begin
+//     SPIDevice.PinControl:=StrToInt(PinsComboBox.Items[PinsComboBox.ItemIndex]);
+//     NumberPinShow();
+////     ButtonEnabled();
+//    end;
+//end;
+//
+//procedure TVoltmetrShow.SetGateButtonClick(Sender: TObject);
+//begin
+//  if PinsComboBox.ItemIndex<0 then Exit;
+//  if PinsComboBox.Items[PinsComboBox.ItemIndex]<>IntToStr(SPIDevice.PinGate) then
+//    begin
+//     SPIDevice.PinGate:=StrToInt(PinsComboBox.Items[PinsComboBox.ItemIndex]);
+//     NumberPinShow();
+////     ButtonEnabled();
+//    end;
+//end;
 
 procedure TVoltmetrShow.MeasurementButtonClick(Sender: TObject);
 begin
- if not(Voltmetr.fComPort.Connected) then Exit;
- Voltmetr.Measurement();
+ if not((SPIDevice as TVoltmetr).fComPort.Connected) then Exit;
+ (SPIDevice as TVoltmetr).Measurement();
  VoltmetrDataShow();
 end;
 
@@ -801,13 +861,13 @@ begin
   ChannelB:=TDACChannel.Create;
 end;
 
-constructor TDAC.Create(CP: TComPort; Nm: string);
-begin
- Create();
- fComPort:=CP;
- fComPacket.ComPort:=CP;
- fName:=Nm;
-end;
+//constructor TDAC.Create(CP: TComPort; Nm: string);
+//begin
+// Create();
+// fComPort:=CP;
+// fComPacket.ComPort:=CP;
+// fName:=Nm;
+//end;
 
 procedure TDAC.PacketReceiving(Sender: TObject; const Str: string);
 // var i:integer;
@@ -852,17 +912,17 @@ begin
   inherited Create();
    Channel:=DACC;
    OutputRanges:=ORs;
-   fIsReady:=true //assigned(Channel)
-         and assigned(OutputRanges)
+//   fIsReady:=true //assigned(Channel)
+//         and assigned(OutputRanges)
              ;
 
-  if fIsReady then
-  begin
+//  if fIsReady then
+//  begin
     OutputRanges.Items.Clear;
     for I := Low(TOutputRange) to High(TOutputRange) do
       OutputRanges.Items.Add(OutputRangeLabels[i]);
     OutputRanges.ItemIndex:=ord(Channel.Range);
-    OutputRanges.OnClick:=TAdapterRadioGroupClick.Create(fIsReady,ord(Channel.Range)).RadioGroupClick;
+    OutputRanges.OnClick:=TAdapterRadioGroupClick.Create(ord(Channel.Range)).RadioGroupClick;
 
 //    MeasureMode.ItemIndex := 4;
 //    UnitLabel.Caption := '';
@@ -873,24 +933,122 @@ begin
 //    AutoSpeedButton.OnClick:=AutoSpeedButtonClick;
 //    MeasureMode.OnClick:=MeasureModeClick;
 //    Range.OnClick:=RangeClick;
-  end;
+//  end;
 end;
 
 
 
 { TAdapter }
 
-constructor TAdapterRadioGroupClick.Create(b: boolean; ind: integer);
+constructor TAdapterRadioGroupClick.Create({b: boolean; }ind: integer);
 begin
  inherited Create;
- fbool:=b;
+// fbool:=b;
  findexx:=ind;
 end;
 
 procedure TAdapterRadioGroupClick.RadioGroupClick(Sender: TObject);
 begin
 // showmessage(inttostr(findexx));
- if fbool then (Sender as TRadioGroup).ItemIndex:=findexx;
+ {if fbool then }
+ try
+ (Sender as TRadioGroup).ItemIndex:=findexx;
+ except
+ end;
+end;
+
+{ TSPIdeviceShow }
+
+constructor TSPIdeviceShow.Create(SPID:TSPIdevice;
+                                  ControlPinLabel, GatePinLabel: TLabel;
+                                  SetControlButton, SetGateButton: TButton; PCB: TComboBox);
+begin
+ inherited Create();
+ SPIDevice:=SPID;
+ SetLength(PinLabels,High(SPIDevice.fPins)+1);
+ SetLength(SetPinButtons,High(SPIDevice.fPins)+1);
+ PinLabels[0]:=ControlPinLabel;
+ PinLabels[1]:=GatePinLabel;
+ SetPinButtons[0]:=SetControlButton;
+ SetPinButtons[1]:=SetGateButton;
+ PinsComboBox:=PCB;
+// CreateFooter();
+end;
+
+procedure TSPIDeviceShow.NumberPinShow;
+begin
+   PinLabels[0].Caption:=SPIDevice.PinControlStr;
+   PinLabels[1].Caption:=SPIDevice.PinGateStr;
+end;
+
+procedure TSPIDeviceShow.CreateFooter;
+var
+  i: Integer;
+begin
+//  showmessage(SPIDevice.Name);
+  for I := 0 to High(SetPinButtons) do
+    begin
+    SetPinButtons[i].OnClick := TAdapterSetButton.Create(PinsComboBox, SPIDevice, i, NumberPinShow).SetButtonClick;
+    SetPinButtons[i].Caption := 'set ' + LowerCase(PinNames[i]);
+    end;
+end;
+
+procedure TSPIDeviceShow.PinsReadFromIniFile(ConfigFile: TIniFile);
+begin
+  SPIDevice.PinsReadFromIniFile(ConfigFile,PinsComboBox.Items);
+end;
+
+procedure TSPIDeviceShow.PinsWriteToIniFile(ConfigFile: TIniFile);
+begin
+  SPIDevice.PinsWriteToIniFile(ConfigFile,PinsComboBox.Items);
+end;
+
+{ TAdapterSetButton }
+
+constructor TAdapterSetButton.Create(PCB: TComboBox;SPID:TSPIdevice;i:integer;
+  Action: TSimpleEvent);
+begin
+  inherited Create;
+  PinsComboBox:=PCB;
+  SPIDevice:=SPID;
+  SimpleAction:=Action;
+  fi:=i;
+end;
+
+procedure TAdapterSetButton.SetButtonClick(Sender: TObject);
+begin
+  if PinsComboBox.ItemIndex<0 then Exit;
+  if PinsComboBox.Items[PinsComboBox.ItemIndex]<>IntToStr(SPIDevice.fPins[fi]) then
+    begin
+     SPIDevice.fPins[fi]:=StrToInt(PinsComboBox.Items[PinsComboBox.ItemIndex]);
+     SimpleAction();
+    end;
+end;
+
+{ TDACShow }
+
+constructor TDACShow.Create(DAC: TDAC;
+                            CPL, GPL, LDACPL, CLRPL: TLabel;
+                            SCB, SGB, SLDACB, SCLRB: TButton;
+                            PCB: TComboBox);
+begin
+ inherited Create(DAC,CPL,GPL,SCB,SGB,PCB);
+ PinLabels[2]:=LDACPL;
+ PinLabels[3]:=CLRPL;
+ SetPinButtons[2]:=SLDACB;
+ SetPinButtons[3]:=SCLRB;
+ CreateFooter()
+// for I := 0 to High(SetPinButtons) do
+// SetPinButtons[i].OnClick:=TAdapterSetButton.Create(PinsComboBox,SPIDevice,i,
+//                              NumberPinShow).SetButtonClick;
+
+end;
+
+procedure TDACShow.NumberPinShow;
+begin
+   inherited NumberPinShow();
+   PinLabels[2].Caption:=(SPIDevice as TDAC).PinLDACStr;
+   PinLabels[3].Caption:=(SPIDevice as TDAC).PinCLRStr;
 end;
 
 end.
