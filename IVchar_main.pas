@@ -473,6 +473,7 @@ end;
 
 procedure TIVchar.FormDestroy(Sender: TObject);
 begin
+
  DACWriteToIniFile();
  VoltmetrsWriteToIniFile();
  PinsWriteToIniFile;
@@ -966,7 +967,7 @@ end;
 
 procedure TIVchar.DACWriteToIniFile;
 begin
-  DAC.PinsWriteToIniFile(ConfigFile);
+  DACShow.PinsWriteToIniFile(ConfigFile);
 end;
 
 procedure TIVchar.PinsWriteToIniFile;

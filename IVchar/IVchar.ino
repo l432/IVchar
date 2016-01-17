@@ -7,6 +7,7 @@
 #define V7_21Command 1
 #define ParameterReceiveCommand 2
 #define DACCommand 3
+#define DAC_OR 1
 
 byte DrivePins[] = {25, 26, 27, 28, 29, 30, 31, 32, 33, 34};
 //enum { REG_LATCH = 5 };
@@ -51,8 +52,20 @@ start:
       //       Serial.write(packet, packet[0]);
       //       Serial.write(PacketEnd);
 
-      if (packet[1] == V7_21Command) V721(packet[2],packet[3]);
+      if (packet[1] == V7_21Command) V721(packet[2], packet[3]);
       if (packet[1] == ParameterReceiveCommand) SendParameters();
+      if (packet[1] == DACCommand) {
+        switch (packet[2]) {
+          case DAC_OR:
+            DACOutputRange(packet[3], packet[4], packet[5], packet[6], packet[7]);
+            break;
+            //          case label:
+            // код для выполнения
+            //            break;
+            //          default:
+            // код для выполнения
+        }
+      }
 
     }
   }
@@ -74,9 +87,20 @@ byte FCS (byte Data[], int n)
   return byte(FCS & 0xFF);
 }
 
+void GateOpen(byte PinGate) {
+  digitalWrite(PinGate, LOW);
+  delay(1);
+}
+
+void GateClose(byte PinGate) {
+  digitalWrite(PinGate, HIGH);
+  delay(1);
+}
+
 void V721(byte PinNumber, byte PinGateNumber) {
-  digitalWrite(PinGateNumber, LOW);
-  delay(1);  
+  GateOpen(PinGateNumber);
+  //  digitalWrite(PinGateNumber, LOW);
+  //  delay(1);
   digitalWrite(PinNumber, LOW);
   digitalWrite(PinNumber, HIGH);
   byte data[8];
@@ -87,14 +111,13 @@ void V721(byte PinNumber, byte PinGateNumber) {
   {
     data[i + 3] = SPI.transfer(0);
   }
-  digitalWrite(PinGateNumber, HIGH);
+
   data[sizeof(data) - 1] = 0;
   data[sizeof(data) - 1] = FCS(data, data[0]);
 
-  SendPacket(data,sizeof(data));
-//  Serial.write(PacketStart);
-//  Serial.write(data, sizeof(data));
-//  Serial.write(PacketEnd);
+  SendPacket(data, sizeof(data));
+  GateClose(PinGateNumber);
+  //  digitalWrite(PinGateNumber, HIGH);
 }
 
 void SendParameters() {
@@ -108,15 +131,72 @@ void SendParameters() {
   data[sizeof(data) - 1] = 0;
   data[sizeof(data) - 1] = FCS(data, data[0]);
 
- SendPacket(data,sizeof(data));
-//  Serial.write(PacketStart);
-//  Serial.write(data, sizeof(data));
-//  Serial.write(PacketEnd);
+  SendPacket(data, sizeof(data));
+
 }
 
-void SendPacket(byte Data[], int n){
+void SendPacket(byte Data[], int n) {
   Serial.write(PacketStart);
   Serial.write(Data, n);
-  Serial.write(PacketEnd);  
+  Serial.write(PacketEnd);
 }
+
+void DACPause(byte PinControl) {
+  digitalWrite(PinControl, HIGH);
+  delay(1);
+  digitalWrite(PinControl, LOW);
+}
+
+
+void  DACOutputRange(byte PinControl, byte PinGate, byte Data1, byte Data2, byte Data3) {
+  GateOpen(PinGate);
+  digitalWrite(PinControl, LOW);
+  SPI.transfer(Data1);
+  SPI.transfer(Data2);
+  SPI.transfer(Data3);
+  DACPause(PinControl);
+  //  digitalWrite(PinControl, HIGH);
+  //  delay(1);
+  //  digitalWrite(PinControl, LOW);
+  byte Inquiry = Data1;
+  bitSet(Inquiry, 7);
+  SPI.transfer(Inquiry);
+  SPI.transfer(0);
+  SPI.transfer(0);
+  DACPause(PinControl);
+  //  digitalWrite(PinControl, HIGH);
+  //  delay(1);
+  //  digitalWrite(PinControl, LOW);
+  byte AnswerRange,AnswerChannel;
+  AnswerChannel=SPI.transfer(0x18);
+  SPI.transfer(0);
+  AnswerRange = SPI.transfer(0);
+  digitalWrite(PinControl, HIGH);
+  if ((AnswerRange & 0x07) != (Data3 & 0x07)) {
+    byte data[6];
+    data[0] = sizeof(data);
+    data[1] = DACCommand;
+    data[2] = DAC_OR;
+    data[3] = (AnswerChannel & 0x07);    
+    data[4] = (AnswerRange & 0x07);
+    data[5] = 0;
+    data[5] = FCS(data, data[0]);
+    SendPacket(data, sizeof(data));
+  }
+  GateClose(PinGate);
+}
+
+void CreateAndSendPacket(byte DDATA[], int n) {
+  byte data[n + 2];
+  data[0] = sizeof(data);
+  for (byte i = 0; i < n; i++)
+  {
+    data[i + 1] = DDATA[i];
+  }
+  data[sizeof(data) - 1] = 0;
+  data[sizeof(data) - 1] = FCS(data, data[0]);
+  SendPacket(data, sizeof(data));
+}
+
+
 
