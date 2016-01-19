@@ -939,7 +939,7 @@ object IVchar: TIVchar
       object PanelDACChA: TPanel
         Left = 3
         Top = 3
-        Width = 382
+        Width = 295
         Height = 358
         BevelWidth = 3
         BorderStyle = bsSingle
@@ -950,9 +950,22 @@ object IVchar: TIVchar
         Font.Style = [fsBold]
         ParentFont = False
         TabOrder = 0
+        object LORChA: TLabel
+          Left = 129
+          Top = 48
+          Width = 139
+          Height = 28
+          Caption = '-10.8..10.8'
+          Font.Charset = RUSSIAN_CHARSET
+          Font.Color = clGreen
+          Font.Height = -23
+          Font.Name = 'Verdana'
+          Font.Style = [fsBold]
+          ParentFont = False
+        end
         object STChA: TStaticText
-          Left = 98
-          Top = 8
+          Left = 42
+          Top = 0
           Width = 164
           Height = 38
           Caption = 'Channel A'
@@ -964,25 +977,48 @@ object IVchar: TIVchar
           ParentFont = False
           TabOrder = 0
         end
-        object RGORChA: TRadioGroup
-          Left = 8
-          Top = 52
-          Width = 321
-          Height = 197
-          Caption = 'Output  Range'
-          Color = clCream
-          Columns = 2
+        object STORChA: TStaticText
+          Left = 3
+          Top = 55
+          Width = 120
+          Height = 23
+          Caption = 'Output Range:'
           Font.Charset = RUSSIAN_CHARSET
-          Font.Color = clWindowText
-          Font.Height = -20
-          Font.Name = 'Verdana'
+          Font.Color = clBlack
+          Font.Height = -17
+          Font.Name = 'Arial'
           Font.Style = [fsBold]
-          Items.Strings = (
-            '1')
-          ParentBackground = False
-          ParentColor = False
           ParentFont = False
           TabOrder = 1
+        end
+        object CBORChA: TComboBox
+          Left = 10
+          Top = 82
+          Width = 143
+          Height = 30
+          Style = csDropDownList
+          Font.Charset = RUSSIAN_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -18
+          Font.Name = 'Verdana'
+          Font.Style = [fsBold]
+          ItemHeight = 22
+          ParentFont = False
+          TabOrder = 2
+        end
+        object BORChA: TButton
+          Left = 176
+          Top = 82
+          Width = 108
+          Height = 30
+          Caption = 'set range'
+          Font.Charset = RUSSIAN_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -23
+          Font.Name = 'Arial'
+          Font.Style = [fsBold]
+          ParentFont = False
+          TabOrder = 3
         end
       end
       object CBDAC: TComboBox

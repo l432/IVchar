@@ -92,6 +92,8 @@ type
    Overcurrent:boolean;
   end;
 
+  TChannelType=(A,B,Both,Error);
+
   TDAC=class(TSPIdevice)
   {базовий клас для ЦАП}
   private
@@ -100,6 +102,10 @@ type
     Procedure PacketReceiving(Sender: TObject; const Str: string);override;
     procedure SetChannelA(const Value: TDACChannel);
     procedure SetChannelB(const Value: TDACChannel);
+    Procedure OutputRange(Channel: Byte; Range: TOutputRange);
+    Function ChannelTypeDetermine(Channel:byte):TChannelType;
+    procedure ChannelSetRange(Channel:byte;Range:TOutputRange);overload;
+    procedure ChannelSetRange(Channel:byte;Range:byte);overload;
   public
    {пін для оновлення напруги ЦАП}
    property PinLDAC:byte Index 2 read GetPin write SetPin;
@@ -114,16 +120,18 @@ type
    Procedure OutputRangeA(Range:TOutputRange);
    Procedure OutputRangeB(Range:TOutputRange);
    Procedure OutputRangeBoth(Range:TOutputRange);
+   Procedure OutputRangeReadFromIniFile(ConfigFile:TIniFile);
+   Procedure OutputRangeWriteToIniFile(ConfigFile:TIniFile);
   end;
 
 
   TAdapterRadioGroupClick=class
     findexx:integer;
-    DAC:TDAC;
+//    DAC:TDAC;
     Constructor Create(ind:integer);overload;
-    Constructor Create(ind:integer;DDAC:TDAC);overload;
+//    Constructor Create(ind:integer;DDAC:TDAC);overload;
     procedure RadioGroupClick(Sender: TObject);
-    procedure RadioGroupDACChannelClick(Sender: TObject);
+//    procedure RadioGroupDACChannelClick(Sender: TObject);
   end;
 
   TSimpleEvent = procedure() of object;
@@ -184,12 +192,21 @@ type
 
   TDACChannelShow=class
   private
+   DAC:TDAC;
+   ChannelIndex:integer;// 8 - ChannelA, 10 - ChannelB
    Channel:TDACChannel;
-   OutputRanges:TRadioGroup;
+   RangesLabel:TLabel;
+   RangesComboBox:TComboBox;
+   RangesSetButton:TButton;
+   procedure SetButtomAction(Sender:TObject);
   public
-   Constructor Create(DACC:TDACChannel;
-                      ORs:TRadioGroup
+   Constructor Create(DACC:TDAC;
+               CI:integer;
+               RL:TLabel;
+               RCB:TComboBox;
+               RSB:TButton
                       );
+   procedure RangeShow;
   end;
 
   TDACShow=class(TSPIDeviceShow)
@@ -684,6 +701,35 @@ begin
 end;
 
 
+procedure TDAC.ChannelSetRange(Channel: byte; Range: TOutputRange);
+begin
+  case ChannelTypeDetermine(Channel) of
+   A:ChannelA.Range:=Range;
+   B:ChannelB.Range:=Range;
+   Both:begin
+         ChannelA.Range:=Range;
+         ChannelB.Range:=Range;
+        end;
+   Error:;
+  end;
+end;
+
+procedure TDAC.ChannelSetRange(Channel, Range: byte);
+begin
+ ChannelSetRange(Channel, TOutputRange(Range));
+end;
+
+function TDAC.ChannelTypeDetermine(Channel: byte): TChannelType;
+begin
+ Channel:=(Channel and $07);
+ case Channel of
+   0:Result:=A;
+   2:Result:=B;
+   4:Result:=Both;
+   else  Result:=Error;
+ end;
+end;
+
 Constructor TDAC.Create();
 begin
   inherited Create();
@@ -692,6 +738,7 @@ begin
   PinCLR:=UndefinedPin;
   ChannelA:=TDACChannel.Create;
   ChannelB:=TDACChannel.Create;
+//  ChannelA.Range:=pm100;
 end;
 
 
@@ -700,6 +747,12 @@ begin
  ChannelA.Free;
  ChannelB.Free;
  inherited Free;
+end;
+
+procedure TDAC.OutputRange(Channel: Byte; Range: TOutputRange);
+begin
+  PacketCreate([DACCommand,DAC_OR,PinControl,PinGate,Channel,0,byte(ord(Range))]);
+  if PacketIsSend(fComPort) then ChannelSetRange(Channel,Range);
 end;
 
 procedure TDAC.OutputRangeA(Range:TOutputRange);
@@ -713,24 +766,41 @@ begin
 //    pm100:B:=4;
 //    pm108:B:=5;
 //  end;
-  PacketCreate([DACCommand,DAC_OR,PinControl,PinGate,8,0,byte(ord(Range))]);
-  if PacketIsSend(fComPort) then ChannelA.Range:=Range;
+  OutputRange(8,Range);
+//  PacketCreate([DACCommand,DAC_OR,PinControl,PinGate,8,0,byte(ord(Range))]);
+//  if PacketIsSend(fComPort) then ChannelA.Range:=Range;
 end;
 
 procedure TDAC.OutputRangeB(Range: TOutputRange);
 begin
-  PacketCreate([DACCommand,DAC_OR,PinControl,PinGate,10,0,byte(ord(Range))]);
-  if PacketIsSend(fComPort) then ChannelB.Range:=Range;
+  OutputRange(10,Range);
+//  PacketCreate([DACCommand,DAC_OR,PinControl,PinGate,10,0,byte(ord(Range))]);
+//  if PacketIsSend(fComPort) then ChannelB.Range:=Range;
 end;
 
 procedure TDAC.OutputRangeBoth(Range: TOutputRange);
 begin
-  PacketCreate([DACCommand,DAC_OR,PinControl,PinGate,12,0,byte(ord(Range))]);
-  if PacketIsSend(fComPort) then
-      begin
-      ChannelA.Range:=Range;
-      ChannelB.Range:=Range;
-      end;
+  OutputRange(12,Range);
+//  PacketCreate([DACCommand,DAC_OR,PinControl,PinGate,12,0,byte(ord(Range))]);
+//  if PacketIsSend(fComPort) then
+//      begin
+//      ChannelA.Range:=Range;
+//      ChannelB.Range:=Range;
+//      end;
+end;
+
+procedure TDAC.OutputRangeReadFromIniFile(ConfigFile: TIniFile);
+begin
+  if Name='' then Exit;
+  ChannelA.Range:=TOutputRange(ConfigFile.ReadInteger(Name, 'OutputRangeA', 0));
+  ChannelB.Range:=TOutputRange(ConfigFile.ReadInteger(Name, 'OutputRangeB', 0));
+end;
+
+procedure TDAC.OutputRangeWriteToIniFile(ConfigFile: TIniFile);
+begin
+  if Name='' then Exit;
+  WriteIniDef(ConfigFile,Name,'OutputRangeA', ord(ChannelA.Range),0);
+  WriteIniDef(ConfigFile,Name,'OutputRangeB', ord(ChannelB.Range),0);
 end;
 
 procedure TDAC.PacketReceiving(Sender: TObject; const Str: string);
@@ -740,14 +810,15 @@ begin
  if fData[2]=DAC_OR then
   begin
     MessageDlg('Output Range setting has trouble',mtError,[mbOK],0);
-    case fData[3] of
-     8: ChannelA.Range:=TOutputRange(fData[4]);
-     10:ChannelB.Range:=TOutputRange(fData[4]);
-     12:begin
-         ChannelA.Range:=TOutputRange(fData[4]);
-         ChannelB.Range:=TOutputRange(fData[4]);
-        end;
-    end;
+    ChannelSetRange(fData[3],fData[4]);
+//    case fData[3] of
+//     8: ChannelA.Range:=TOutputRange(fData[4]);
+//     10:ChannelB.Range:=TOutputRange(fData[4]);
+//     12:begin
+//         ChannelA.Range:=TOutputRange(fData[4]);
+//         ChannelB.Range:=TOutputRange(fData[4]);
+//        end;
+//    end;
   end;
 
 // if fData[2]<>PinNumber then Exit;
@@ -770,24 +841,51 @@ begin
   FChannelB := Value;
 end;
 
-Constructor TDACChannelShow.Create(DACC:TDACChannel;
-                      ORs:TRadioGroup
+Constructor TDACChannelShow.Create(DACC:TDAC;
+                                   CI:integer;
+                                   RL:TLabel;
+                                   RCB:TComboBox;
+                                   RSB:TButton
                       );
  var i:TOutputRange;
 begin
   inherited Create();
-   Channel:=DACC;
-   OutputRanges:=ORs;
+  DAC:=DACC;
+  ChannelIndex:=CI;
+  case ChannelIndex of
+   10:Channel:=DAC.ChannelB;
+   else Channel:=DAC.ChannelA;
+  end;
+//  Channel:=DACC;
+  RangesLabel:=RL;
+  RangesComboBox:=RCB;
+  RangesSetButton:=RSB;
+  RangesSetButton.OnClick:=SetButtomAction;
+  RangesComboBox.Items.Clear;
+  for I := Low(TOutputRange) to High(TOutputRange) do
+      RangesComboBox.Items.Add(OutputRangeLabels[i]);
+  RangeShow();
 
-   OutputRanges.Items.Clear;
-    for I := Low(TOutputRange) to High(TOutputRange) do
-      OutputRanges.Items.Add(OutputRangeLabels[i]);
-    OutputRanges.ItemIndex:=ord(Channel.Range);
-    OutputRanges.OnClick:=TAdapterRadioGroupClick.Create(ord(Channel.Range)).RadioGroupClick;
+//  OutputRanges.ItemIndex:=ord(Channel.Range);
+//    OutputRanges.OnClick:=TAdapterRadioGroupClick.Create(ord(Channel.Range)).RadioGroupClick;
 
 end;
 
+procedure TDACChannelShow.RangeShow;
+begin
+  RangesLabel.Caption := OutputRangeLabels[Channel.Range];
+end;
 
+
+
+procedure TDACChannelShow.SetButtomAction(Sender: TObject);
+begin
+   if not(RangesLabel.Caption=RangesComboBox.Items[RangesComboBox.ItemIndex]) then
+    begin
+      DAC.OutputRange(ChannelIndex,TOutputRange(RangesComboBox.ItemIndex));
+      RangesLabel.Caption:=OutputRangeLabels[Channel.Range];
+    end;
+end;
 
 { TAdapter }
 
@@ -797,11 +895,11 @@ begin
  findexx:=ind;
 end;
 
-constructor TAdapterRadioGroupClick.Create(ind: integer; DDAC: TDAC);
-begin
-  Create(ind);
-  DAC:=DDAC;
-end;
+//constructor TAdapterRadioGroupClick.Create(ind: integer; DDAC: TDAC);
+//begin
+//  Create(ind);
+//  DAC:=DDAC;
+//end;
 
 procedure TAdapterRadioGroupClick.RadioGroupClick(Sender: TObject);
 begin
@@ -811,19 +909,19 @@ begin
  end;
 end;
 
-procedure TAdapterRadioGroupClick.RadioGroupDACChannelClick(Sender: TObject);
-begin
-  if findexx=0 then
-   begin
-     DAC.OutputRangeA(TOutputRange((Sender as TRadioGroup).ItemIndex));
-     (Sender as TRadioGroup).ItemIndex:=ord(DAC.ChannelA.Range);
-   end;
-  if findexx=1 then
-   begin
-     DAC.OutputRangeB(TOutputRange((Sender as TRadioGroup).ItemIndex));
-     (Sender as TRadioGroup).ItemIndex:=ord(DAC.ChannelB.Range);
-   end;
-end;
+//procedure TAdapterRadioGroupClick.RadioGroupDACChannelClick(Sender: TObject);
+//begin
+//  if findexx=0 then
+//   begin
+//     DAC.OutputRangeA(TOutputRange((Sender as TRadioGroup).ItemIndex));
+//     (Sender as TRadioGroup).ItemIndex:=ord(DAC.ChannelA.Range);
+//   end;
+//  if findexx=1 then
+//   begin
+//     DAC.OutputRangeB(TOutputRange((Sender as TRadioGroup).ItemIndex));
+//     (Sender as TRadioGroup).ItemIndex:=ord(DAC.ChannelB.Range);
+//   end;
+//end;
 
 { TSPIdeviceShow }
 

@@ -34,5 +34,6 @@
     </DCCReference>
     <DCCReference Include="PacketParameters.pas" />
     <DCCReference Include="SPIdevice.pas" />
+    <None Include="IV.todo" />
   </ItemGroup>
 </Project>

@@ -129,7 +129,6 @@ type
     BV721IISetGate: TButton;
     PanelDACChA: TPanel;
     STChA: TStaticText;
-    RGORChA: TRadioGroup;
     CBDAC: TComboBox;
     LDACPinC: TLabel;
     BDACSetC: TButton;
@@ -139,6 +138,10 @@ type
     BDACSetLDAC: TButton;
     LDACPinCLR: TLabel;
     BDACSetCLR: TButton;
+    STORChA: TStaticText;
+    LORChA: TLabel;
+    CBORChA: TComboBox;
+    BORChA: TButton;
     procedure FormCreate(Sender: TObject);
     procedure PortConnected();
     procedure BConnectClick(Sender: TObject);
@@ -162,6 +165,8 @@ type
     procedure BRBEditClick(Sender: TObject);
     procedure RBTSImitationClick(Sender: TObject);
     procedure BSaveSettingClick(Sender: TObject);
+//    procedure BORChAClick(Sender: TObject);
+//    procedure RGORChAClick(Sender: TObject);
   private
     procedure ComponentView;
     {початкове налаштування різних компонентів}
@@ -344,6 +349,15 @@ begin
          end;
        end;
  end;
+
+//procedure TIVchar.BORChAClick(Sender: TObject);
+//begin
+//   if not(LORChA.Caption=CBORChA.Items[CBORChA.ItemIndex]) then
+//    begin
+//      DAC.OutputRangeA(TOutputRange(CBORChA.ItemIndex));
+//      LORChA.Caption:=OutputRangeLabels[DAC.ChannelA.Range];
+//    end;
+//end;
 
 procedure TIVchar.BParamReceiveClick(Sender: TObject);
 begin
@@ -802,6 +816,12 @@ begin
    end;
 end;
 
+//procedure TIVchar.RGORChAClick(Sender: TObject);
+//begin
+// DAC.OutputRangeA(TOutputRange((Sender as TRadioGroup).ItemIndex));
+// (Sender as TRadioGroup).ItemIndex:=ord(DAC.ChannelA.Range);
+//end;
+
 procedure TIVchar.DelayTimeReadFromIniFile;
 begin
   ForwDelay := ConfigFile.ReadInteger('Delay', 'ForwTime', 0);
@@ -944,7 +964,7 @@ procedure TIVchar.DACCreate;
 begin
   DAC := TDAC.Create(ComPort1, 'AD5752R');
   SetLength(DACChanelShows,2);
-  DACChanelShows[0]:= TDACChannelShow.Create(DAC.ChannelA, RGORChA);
+  DACChanelShows[0]:= TDACChannelShow.Create(DAC,8, LORChA,CBORChA,BORChA);
 //  DACChanelShows[0]:= TDACChannelShow.Create(DAC.fChannels[0], RGORChA);
   DACShow:=TDACShow.Create(DAC,LDACPinC,LDACPinG,LDACPinLDAC,LDACPinCLR,
                            BDACSetC,BDACSetG,BDACSetLDAC,BDACSetCLR,CBDAC);
@@ -963,11 +983,14 @@ procedure TIVchar.DACReadFromIniFileAndToForm;
 begin
   DACShow.PinsReadFromIniFile(ConfigFile);
   DACShow.NumberPinShow;
+  DAC.OutputRangeReadFromIniFile(ConfigFile);
+  DACChanelShows[0].RangeShow;
 end;
 
 procedure TIVchar.DACWriteToIniFile;
 begin
   DACShow.PinsWriteToIniFile(ConfigFile);
+  DAC.OutputRangeWriteToIniFile(ConfigFile);
 end;
 
 procedure TIVchar.PinsWriteToIniFile;
