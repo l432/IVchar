@@ -47,6 +47,10 @@ object IVchar: TIVchar
     OnChange = PCChange
     object TS_Main: TTabSheet
       Caption = 'Main'
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       object ChLine: TChart
         Left = 0
         Top = 0
@@ -364,6 +368,10 @@ object IVchar: TIVchar
     object TS_B7_21A: TTabSheet
       Caption = 'B7_21A'
       ImageIndex = 1
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       object LV721A: TLabel
         Left = 352
         Top = 25
@@ -485,7 +493,7 @@ object IVchar: TIVchar
         Font.Height = -28
         Font.Name = 'Arial'
         Font.Style = [fsBold]
-        ItemHeight = 33
+        ItemHeight = 0
         ParentFont = False
         TabOrder = 3
       end
@@ -521,6 +529,10 @@ object IVchar: TIVchar
     object TS_B7_21: TTabSheet
       Caption = 'B7_21'
       ImageIndex = 2
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       object PanelV721_I: TPanel
         Left = 0
         Top = 0
@@ -631,7 +643,7 @@ object IVchar: TIVchar
           Font.Height = -28
           Font.Name = 'Arial'
           Font.Style = [fsBold]
-          ItemHeight = 33
+          ItemHeight = 0
           ParentFont = False
           TabOrder = 1
         end
@@ -802,7 +814,7 @@ object IVchar: TIVchar
           Font.Height = -28
           Font.Name = 'Arial'
           Font.Style = [fsBold]
-          ItemHeight = 33
+          ItemHeight = 0
           ParentFont = False
           TabOrder = 1
         end
@@ -876,6 +888,10 @@ object IVchar: TIVchar
     object TS_DAC: TTabSheet
       Caption = 'DAC'
       ImageIndex = 3
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       object LDACPinC: TLabel
         Left = 711
         Top = 58
@@ -1002,7 +1018,7 @@ object IVchar: TIVchar
           Font.Height = -18
           Font.Name = 'Verdana'
           Font.Style = [fsBold]
-          ItemHeight = 22
+          ItemHeight = 0
           ParentFont = False
           TabOrder = 2
         end
@@ -1033,7 +1049,7 @@ object IVchar: TIVchar
         Font.Height = -28
         Font.Name = 'Arial'
         Font.Style = [fsBold]
-        ItemHeight = 33
+        ItemHeight = 0
         ParentFont = False
         TabOrder = 1
       end
@@ -1097,6 +1113,10 @@ object IVchar: TIVchar
     object TS_Setting: TTabSheet
       Caption = 'Setting'
       ImageIndex = 4
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       object GBFB: TGroupBox
         Left = 22
         Top = 16
@@ -1514,7 +1534,7 @@ object IVchar: TIVchar
           Width = 145
           Height = 27
           Style = csDropDownList
-          ItemHeight = 19
+          ItemHeight = 0
           TabOrder = 2
         end
       end
@@ -1559,7 +1579,7 @@ object IVchar: TIVchar
           Width = 145
           Height = 27
           Style = csDropDownList
-          ItemHeight = 19
+          ItemHeight = 0
           TabOrder = 2
         end
       end
@@ -1604,7 +1624,7 @@ object IVchar: TIVchar
           Width = 145
           Height = 27
           Style = csDropDownList
-          ItemHeight = 19
+          ItemHeight = 0
           TabOrder = 2
         end
       end

@@ -89,7 +89,7 @@ type
   TDACChannel=class
    Range:TOutputRange;
    Power:boolean;
-   Overcurrent:boolean;
+//   Overcurrent:boolean;
   end;
 
   TChannelType=(A,B,Both,Error);
@@ -102,10 +102,19 @@ type
     Procedure PacketReceiving(Sender: TObject; const Str: string);override;
     procedure SetChannelA(const Value: TDACChannel);
     procedure SetChannelB(const Value: TDACChannel);
-    Procedure OutputRange(Channel: Byte; Range: TOutputRange);
+    Procedure OutputRange(Channel: Byte; Range: TOutputRange; NotImperative: Boolean=True);
+    {якщо NotImperative=True, то встановлення вихідного діапазону не буде
+    відбуватися, якщо вже існуючий співпадає з тим, що намагаються встановити;
+    в протилежному випадку завжди буде відсилатися відповідний пакет -
+    потрібно, наприклад при початку роботи}
+    Procedure PowerOn(Channel: Byte; NotImperative: Boolean=True);
     Function ChannelTypeDetermine(Channel:byte):TChannelType;
     procedure ChannelSetRange(Channel:byte;Range:TOutputRange);overload;
     procedure ChannelSetRange(Channel:byte;Range:byte);overload;
+    procedure ChannelSetPower(ChannelType:TChannelType);
+    function ChannelRangeIsReady(Channel:byte;Range:TOutputRange):boolean;
+    {False якщо Range не співпадає з тим, що вже встановлено}
+    function ChannelPowerIsReady(ChannelType:TChannelType):boolean;
   public
    {пін для оновлення напруги ЦАП}
    property PinLDAC:byte Index 2 read GetPin write SetPin;
@@ -117,11 +126,24 @@ type
    property ChannelB:TDACChannel read FChannelB write SetChannelB;
    Constructor Create();overload;override;
    Procedure Free;
-   Procedure OutputRangeA(Range:TOutputRange);
-   Procedure OutputRangeB(Range:TOutputRange);
-   Procedure OutputRangeBoth(Range:TOutputRange);
-   Procedure OutputRangeReadFromIniFile(ConfigFile:TIniFile);
-   Procedure OutputRangeWriteToIniFile(ConfigFile:TIniFile);
+   Procedure OutputRangeA(Range:TOutputRange; NotImperative: Boolean=True);
+   Procedure OutputRangeB(Range:TOutputRange; NotImperative: Boolean=True);
+   Procedure OutputRangeBoth(Range:TOutputRange; NotImperative: Boolean=True);
+   Procedure ChannelsReadFromIniFile(ConfigFile:TIniFile);
+   Procedure ChannelsWriteToIniFile(ConfigFile:TIniFile);
+   Procedure PowerOnA(NotImperative: Boolean=True);
+   Procedure PowerOnB(NotImperative: Boolean=True);
+   Procedure PowerOnBoth(NotImperative: Boolean=True);
+   Procedure PowerOffBoth(NotImperative: Boolean=True);
+   Procedure HookForGraphElementApdate();
+   {виконується в кінці PacketReceiving для оновлення
+   даних графічних елементів, пов'язаних з DAC.
+   В цьому класі порожня, треба причепити
+   за необхідності якусь дію десь інде}
+   Procedure SetMode();
+   {встановлюється режим роботи:
+   SDO Disable=0, CLR Seting =0, Clamp Enable=1
+   TSD enable = 0 - див Datasheet}
   end;
 
 
@@ -245,6 +267,8 @@ const
 
   {константи операцій з ЦАП}
   DAC_OR=1; //встановлення діапазону
+  DAC_Mode=2; //встановлення параметрів роботи
+  DAC_Power=3;//подача живлення
 
 Function BCDtoDec(BCD:byte; isLow:boolean):byte;
 {виділяє з ВCD, яке містить дві десяткові
@@ -714,9 +738,54 @@ begin
   end;
 end;
 
+
+
+procedure TDAC.ChannelSetPower(ChannelType: TChannelType);
+begin
+ case ChannelType of
+   A: begin
+       ChannelA.Power:=True;
+       ChannelB.Power:=False;
+      end;
+   B: begin
+       ChannelA.Power:=False;
+       ChannelB.Power:=True;
+      end;
+   Both:begin
+       ChannelA.Power:=True;
+       ChannelB.Power:=True;
+       end;
+   Error: begin
+         ChannelA.Power:=False;
+         ChannelB.Power:=False;
+        end;
+ end;
+end;
+
 procedure TDAC.ChannelSetRange(Channel, Range: byte);
 begin
  ChannelSetRange(Channel, TOutputRange(Range));
+end;
+
+function TDAC.ChannelPowerIsReady(ChannelType: TChannelType): boolean;
+begin
+ case ChannelType of
+   A:Result:=ChannelA.Power;
+   B:Result:=ChannelB.Power;
+   Both:Result:=(ChannelA.Power)and(ChannelB.Power);
+   Error:Result:=(not(ChannelA.Power))and(not(ChannelB.Power))
+   else Result:=False;
+ end;
+end;
+
+function TDAC.ChannelRangeIsReady(Channel: byte; Range: TOutputRange): boolean;
+begin
+  case ChannelTypeDetermine(Channel) of
+   A:Result:=(ChannelA.Range=Range);
+   B:Result:=(ChannelB.Range=Range);
+   Both:Result:=((ChannelA.Range=Range)and(ChannelB.Range=Range));
+   else Result:=False;
+  end;
 end;
 
 function TDAC.ChannelTypeDetermine(Channel: byte): TChannelType;
@@ -749,58 +818,50 @@ begin
  inherited Free;
 end;
 
-procedure TDAC.OutputRange(Channel: Byte; Range: TOutputRange);
+procedure TDAC.HookForGraphElementApdate;
 begin
+
+end;
+
+procedure TDAC.OutputRange(Channel: Byte; Range: TOutputRange; NotImperative: Boolean=True);
+begin
+  if ChannelRangeIsReady(Channel,Range)and(NotImperative) then  Exit;
+
   PacketCreate([DACCommand,DAC_OR,PinControl,PinGate,Channel,0,byte(ord(Range))]);
   if PacketIsSend(fComPort) then ChannelSetRange(Channel,Range);
 end;
 
-procedure TDAC.OutputRangeA(Range:TOutputRange);
-// var B:byte;
+procedure TDAC.OutputRangeA(Range:TOutputRange; NotImperative: Boolean=True);
 begin
-//  case Range of
-//    p050: B:=0;
-//    p100: B:=1;
-//    p108: B:=2;
-//    pm050:B:=3;
-//    pm100:B:=4;
-//    pm108:B:=5;
-//  end;
-  OutputRange(8,Range);
-//  PacketCreate([DACCommand,DAC_OR,PinControl,PinGate,8,0,byte(ord(Range))]);
-//  if PacketIsSend(fComPort) then ChannelA.Range:=Range;
+  OutputRange(8, Range, NotImperative);
 end;
 
-procedure TDAC.OutputRangeB(Range: TOutputRange);
+procedure TDAC.OutputRangeB(Range: TOutputRange; NotImperative: Boolean=True);
 begin
-  OutputRange(10,Range);
-//  PacketCreate([DACCommand,DAC_OR,PinControl,PinGate,10,0,byte(ord(Range))]);
-//  if PacketIsSend(fComPort) then ChannelB.Range:=Range;
+  OutputRange(10, Range, NotImperative);
 end;
 
-procedure TDAC.OutputRangeBoth(Range: TOutputRange);
+procedure TDAC.OutputRangeBoth(Range: TOutputRange; NotImperative: Boolean=True);
 begin
-  OutputRange(12,Range);
-//  PacketCreate([DACCommand,DAC_OR,PinControl,PinGate,12,0,byte(ord(Range))]);
-//  if PacketIsSend(fComPort) then
-//      begin
-//      ChannelA.Range:=Range;
-//      ChannelB.Range:=Range;
-//      end;
+  OutputRange(12, Range, NotImperative);
 end;
 
-procedure TDAC.OutputRangeReadFromIniFile(ConfigFile: TIniFile);
+procedure TDAC.ChannelsReadFromIniFile(ConfigFile: TIniFile);
 begin
   if Name='' then Exit;
   ChannelA.Range:=TOutputRange(ConfigFile.ReadInteger(Name, 'OutputRangeA', 0));
   ChannelB.Range:=TOutputRange(ConfigFile.ReadInteger(Name, 'OutputRangeB', 0));
+  ChannelA.Power:=ConfigFile.ReadBool(Name, 'PowerA', False);
+  ChannelB.Power:=ConfigFile.ReadBool(Name, 'PowerB', False);
 end;
 
-procedure TDAC.OutputRangeWriteToIniFile(ConfigFile: TIniFile);
+procedure TDAC.ChannelsWriteToIniFile(ConfigFile: TIniFile);
 begin
   if Name='' then Exit;
   WriteIniDef(ConfigFile,Name,'OutputRangeA', ord(ChannelA.Range),0);
   WriteIniDef(ConfigFile,Name,'OutputRangeB', ord(ChannelB.Range),0);
+  ConfigFile.WriteBool(Name,'PowerA',ChannelA.Power);
+  ConfigFile.WriteBool(Name,'PowerB',ChannelB.Power);
 end;
 
 procedure TDAC.PacketReceiving(Sender: TObject; const Str: string);
@@ -809,27 +870,69 @@ begin
  if not(PacketIsReceived(Str,fData,DACCommand)) then Exit;
  if fData[2]=DAC_OR then
   begin
-    MessageDlg('Output Range setting has trouble',mtError,[mbOK],0);
+    MessageDlg('DAC Output Range setting has trouble',mtError,[mbOK],0);
     ChannelSetRange(fData[3],fData[4]);
-//    case fData[3] of
-//     8: ChannelA.Range:=TOutputRange(fData[4]);
-//     10:ChannelB.Range:=TOutputRange(fData[4]);
-//     12:begin
-//         ChannelA.Range:=TOutputRange(fData[4]);
-//         ChannelB.Range:=TOutputRange(fData[4]);
-//        end;
-//    end;
+  end;
+ if fData[2]=DAC_Mode then
+  begin
+    MessageDlg('DAC setting Mode has trouble',mtError,[mbOK],0);
+  end;
+ if fData[2]=DAC_Power then
+  begin
+    MessageDlg('DAC power has trouble',mtError,[mbOK],0);
+    if ((fData[3] and $10)=0) then
+       MessageDlg('DAC  internal reference is not powered!!!',mtError,[mbOK],0)
+                              else
+      begin
+        MessageDlg('DAC power has trouble',mtError,[mbOK],0);
+        if (fData[3] and $01)=0 then ChannelA.Power:=False else ChannelA.Power:=True;
+        if (fData[3] and $04)=0 then ChannelB.Power:=False else ChannelB.Power:=True;
+      end;
   end;
 
-// if fData[2]<>PinNumber then Exit;
-//
-// for I := 0 to High(fData)-4 do
-//   fData[i]:=fData[i+3];
-// SetLength(fData,High(fData)-3);
-// fIsReceived:=True;
+
+  HookForGraphElementApdate();
+
 end;
 
 
+
+
+
+procedure TDAC.PowerOn(Channel: Byte; NotImperative: Boolean);
+ var ChannelType: TChannelType;
+begin
+  case Channel of
+   $11: ChannelType:=A;
+   $14: ChannelType:=B;
+   $15: ChannelType:=Both;
+   else ChannelType:=Error;
+  end;
+
+  if ChannelPowerIsReady(ChannelType)and(NotImperative) then  Exit;
+  PacketCreate([DACCommand,DAC_Power,PinControl,PinGate,$10,0,Channel]);
+  if PacketIsSend(fComPort) then ChannelSetPower(ChannelType);
+end;
+
+procedure TDAC.PowerOnA(NotImperative: Boolean=True);
+begin
+  PowerOn($11,NotImperative)
+end;
+
+procedure TDAC.PowerOnB(NotImperative: Boolean=True);
+begin
+  PowerOn($14,NotImperative)
+end;
+
+procedure TDAC.PowerOnBoth(NotImperative: Boolean=True);
+begin
+  PowerOn($15,NotImperative)
+end;
+
+procedure TDAC.PowerOffBoth(NotImperative: Boolean);
+begin
+ PowerOn($10,NotImperative)
+end;
 
 procedure TDAC.SetChannelA(const Value: TDACChannel);
 begin
@@ -839,6 +942,12 @@ end;
 procedure TDAC.SetChannelB(const Value: TDACChannel);
 begin
   FChannelB := Value;
+end;
+
+procedure TDAC.SetMode;
+begin
+  PacketCreate([DACCommand,DAC_Mode,PinControl,PinGate,$19,$00,$04]);
+//  if not(PacketIsSend(fComPort)) then
 end;
 
 Constructor TDACChannelShow.Create(DACC:TDAC;

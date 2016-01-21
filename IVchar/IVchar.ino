@@ -8,6 +8,8 @@
 #define ParameterReceiveCommand 2
 #define DACCommand 3
 #define DAC_OR 1
+#define DAC_Mode 2
+#define DAC_Power 3
 
 byte DrivePins[] = {25, 26, 27, 28, 29, 30, 31, 32, 33, 34};
 //enum { REG_LATCH = 5 };
@@ -59,9 +61,12 @@ start:
           case DAC_OR:
             DACOutputRange(packet[3], packet[4], packet[5], packet[6], packet[7]);
             break;
-            //          case label:
-            // код для выполнения
-            //            break;
+          case DAC_Mode:
+            DACSetMode(packet[3], packet[4], packet[5], packet[6], packet[7]);
+            break;
+          case DAC_Power:
+            DACPower(packet[3], packet[4], packet[5], packet[6], packet[7]);
+            break;
             //          default:
             // код для выполнения
         }
@@ -167,8 +172,8 @@ void  DACOutputRange(byte PinControl, byte PinGate, byte Data1, byte Data2, byte
   //  digitalWrite(PinControl, HIGH);
   //  delay(1);
   //  digitalWrite(PinControl, LOW);
-  byte AnswerRange,AnswerChannel;
-  AnswerChannel=SPI.transfer(0x18);
+  byte AnswerRange, AnswerChannel;
+  AnswerChannel = SPI.transfer(0x18);
   SPI.transfer(0);
   AnswerRange = SPI.transfer(0);
   digitalWrite(PinControl, HIGH);
@@ -177,7 +182,7 @@ void  DACOutputRange(byte PinControl, byte PinGate, byte Data1, byte Data2, byte
     data[0] = sizeof(data);
     data[1] = DACCommand;
     data[2] = DAC_OR;
-    data[3] = (AnswerChannel & 0x07);    
+    data[3] = (AnswerChannel & 0x07);
     data[4] = (AnswerRange & 0x07);
     data[5] = 0;
     data[5] = FCS(data, data[0]);
@@ -185,6 +190,74 @@ void  DACOutputRange(byte PinControl, byte PinGate, byte Data1, byte Data2, byte
   }
   GateClose(PinGate);
 }
+
+void DACSetMode(byte PinControl, byte PinGate, byte Data1, byte Data2, byte Data3) {
+  GateOpen(PinGate);
+  digitalWrite(PinControl, LOW);
+  SPI.transfer(Data1);
+  SPI.transfer(Data2);
+  SPI.transfer(Data3);
+  DACPause(PinControl);
+
+  byte Inquiry = Data1;
+  bitSet(Inquiry, 7);
+  SPI.transfer(Inquiry);
+  SPI.transfer(0);
+  SPI.transfer(0);
+  DACPause(PinControl);
+
+  byte Mode;
+  SPI.transfer(0x18);
+  SPI.transfer(0);
+  Mode = SPI.transfer(0);
+  digitalWrite(PinControl, HIGH);
+  if ((Mode & 0x0F) != (Data3 & 0x0F)) {
+    byte data[4];
+    data[0] = sizeof(data);
+    data[1] = DACCommand;
+    data[2] = DAC_Mode;
+    data[3] = 0;
+    data[3] = FCS(data, data[0]);
+    SendPacket(data, sizeof(data));
+  }
+  GateClose(PinGate);
+}
+
+void DACPower(byte PinControl, byte PinGate, byte Data1, byte Data2, byte Data3) {
+  GateOpen(PinGate);
+  digitalWrite(PinControl, LOW);
+  SPI.transfer(Data1);
+  SPI.transfer(Data2);
+  SPI.transfer(Data3);
+  DACPause(PinControl);
+
+  byte Inquiry = Data1;
+  bitSet(Inquiry, 7);
+  SPI.transfer(Inquiry);
+  SPI.transfer(0);
+  SPI.transfer(0);
+  DACPause(PinControl);
+
+  byte Power;
+  SPI.transfer(0x18);
+  SPI.transfer(0);
+  Power = SPI.transfer(0);
+  digitalWrite(PinControl, HIGH);
+  if (((Power & 0x10) == 0) ||
+      ((Power & 0x01) != (Data3 & 0x01)) ||
+      ((Power & 0x04) != (Data3 & 0x04))) {
+    byte data[5];
+    data[0] = sizeof(data);
+    data[1] = DACCommand;
+    data[2] = DAC_Mode;
+    data[3] = Power;
+    data[4] = 0;
+    data[4] = FCS(data, data[0]);
+    SendPacket(data, sizeof(data));
+  }
+  GateClose(PinGate);
+}
+
 
 void CreateAndSendPacket(byte DDATA[], int n) {
   byte data[n + 2];

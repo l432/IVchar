@@ -983,14 +983,14 @@ procedure TIVchar.DACReadFromIniFileAndToForm;
 begin
   DACShow.PinsReadFromIniFile(ConfigFile);
   DACShow.NumberPinShow;
-  DAC.OutputRangeReadFromIniFile(ConfigFile);
+  DAC.ChannelsReadFromIniFile(ConfigFile);
   DACChanelShows[0].RangeShow;
 end;
 
 procedure TIVchar.DACWriteToIniFile;
 begin
   DACShow.PinsWriteToIniFile(ConfigFile);
-  DAC.OutputRangeWriteToIniFile(ConfigFile);
+  DAC.ChannelsWriteToIniFile(ConfigFile);
 end;
 
 procedure TIVchar.PinsWriteToIniFile;
