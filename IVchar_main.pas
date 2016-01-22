@@ -13,7 +13,7 @@ type
     PC: TPageControl;
     TS_Main: TTabSheet;
     TS_B7_21A: TTabSheet;
-    BitBtn1: TBitBtn;
+    BBClose: TBitBtn;
     LConnected: TLabel;
     BConnect: TButton;
     LV721A: TLabel;
@@ -142,6 +142,8 @@ type
     LORChA: TLabel;
     CBORChA: TComboBox;
     BORChA: TButton;
+    LPowChA: TLabel;
+    BBPowChA: TBitBtn;
     procedure FormCreate(Sender: TObject);
     procedure PortConnected();
     procedure BConnectClick(Sender: TObject);
@@ -964,8 +966,8 @@ procedure TIVchar.DACCreate;
 begin
   DAC := TDAC.Create(ComPort1, 'AD5752R');
   SetLength(DACChanelShows,2);
-  DACChanelShows[0]:= TDACChannelShow.Create(DAC,8, LORChA,CBORChA,BORChA);
-//  DACChanelShows[0]:= TDACChannelShow.Create(DAC.fChannels[0], RGORChA);
+  DACChanelShows[0]:= TDACChannelShow.Create(DAC,8, LORChA,CBORChA,BORChA,LPowChA,BBPowChA);
+//  DACChanelShows[1]:= TDACChannelShow.Create(DAC,10, );
   DACShow:=TDACShow.Create(DAC,LDACPinC,LDACPinG,LDACPinLDAC,LDACPinCLR,
                            BDACSetC,BDACSetG,BDACSetLDAC,BDACSetCLR,CBDAC);
 end;
@@ -984,7 +986,8 @@ begin
   DACShow.PinsReadFromIniFile(ConfigFile);
   DACShow.NumberPinShow;
   DAC.ChannelsReadFromIniFile(ConfigFile);
-  DACChanelShows[0].RangeShow;
+  DAC.Begining();
+  DACChanelShows[0].DataShow;
 end;
 
 procedure TIVchar.DACWriteToIniFile;

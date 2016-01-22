@@ -99,6 +99,7 @@ type
   private
     FChannelB: TDACChannel;
     FChannelA: TDACChannel;
+    FBeginingDoesNotDone: boolean;
     Procedure PacketReceiving(Sender: TObject; const Str: string);override;
     procedure SetChannelA(const Value: TDACChannel);
     procedure SetChannelB(const Value: TDACChannel);
@@ -124,6 +125,7 @@ type
    property PinCLRStr:string Index 3 read GetPinStr;
    property ChannelA:TDACChannel read FChannelA write SetChannelA;
    property ChannelB:TDACChannel read FChannelB write SetChannelB;
+   property BeginingDoesNotDone:boolean read FBeginingDoesNotDone;
    Constructor Create();overload;override;
    Procedure Free;
    Procedure OutputRangeA(Range:TOutputRange; NotImperative: Boolean=True);
@@ -135,6 +137,8 @@ type
    Procedure PowerOnB(NotImperative: Boolean=True);
    Procedure PowerOnBoth(NotImperative: Boolean=True);
    Procedure PowerOffBoth(NotImperative: Boolean=True);
+   Procedure PowerOffB();
+   Procedure PowerOffA();
    Procedure HookForGraphElementApdate();
    {виконується в кінці PacketReceiving для оновлення
    даних графічних елементів, пов'язаних з DAC.
@@ -144,6 +148,7 @@ type
    {встановлюється режим роботи:
    SDO Disable=0, CLR Seting =0, Clamp Enable=1
    TSD enable = 0 - див Datasheet}
+   Procedure Begining();
   end;
 
 
@@ -220,15 +225,23 @@ type
    RangesLabel:TLabel;
    RangesComboBox:TComboBox;
    RangesSetButton:TButton;
-   procedure SetButtomAction(Sender:TObject);
+   PowerLabel:TLabel;
+   PowerButton:TBitBtn;
+   procedure SetRangeButtomAction(Sender:TObject);
+   procedure PowerButtomAction(Sender:TObject);
+   function ReadyTesting:boolean;
   public
    Constructor Create(DACC:TDAC;
                CI:integer;
                RL:TLabel;
                RCB:TComboBox;
-               RSB:TButton
+               RSB:TButton;
+               PL:TLabel;
+               PB:TBitBtn
                       );
+   procedure DataShow;
    procedure RangeShow;
+   procedure PowerShow;
   end;
 
   TDACShow=class(TSPIDeviceShow)
@@ -286,6 +299,9 @@ Function DiapazonSelect(Mode:TMeasureMode;Diapazon:TDiapazons):integer;
 відповідає Diapazon при даному Mode}
 
 implementation
+
+uses
+  Graphics;
 
 
 Constructor TSPIdevice.Create();
@@ -767,6 +783,34 @@ begin
  ChannelSetRange(Channel, TOutputRange(Range));
 end;
 
+procedure TDAC.Begining;
+begin
+ if not(fComPort.Connected) then Exit;
+ if (ChannelA.Range=ChannelB.Range) then
+          OutputRangeBoth(ChannelA.Range,False)
+                                    else
+          begin
+           OutputRangeA(ChannelA.Range,False);
+           sleep(100);
+           OutputRangeB(ChannelB.Range,False);
+          end;
+ sleep(100);
+ if ChannelA.Power then
+    begin
+      if ChannelB.Power then PowerOnBoth(False)
+                        else PowerOnA(False);
+    end
+                   else
+    begin
+      if ChannelB.Power then PowerOnB(False)
+                        else PowerOffBoth(False);
+    end;
+ sleep(100);
+ SetMode();
+ sleep(100);
+ FBeginingDoesNotDone:=False;
+end;
+
 function TDAC.ChannelPowerIsReady(ChannelType: TChannelType): boolean;
 begin
  case ChannelType of
@@ -808,6 +852,7 @@ begin
   ChannelA:=TDACChannel.Create;
   ChannelB:=TDACChannel.Create;
 //  ChannelA.Range:=pm100;
+  FBeginingDoesNotDone:=True;
 end;
 
 
@@ -899,7 +944,7 @@ end;
 
 
 
-procedure TDAC.PowerOn(Channel: Byte; NotImperative: Boolean);
+procedure TDAC.PowerOn(Channel: Byte; NotImperative: Boolean=True);
  var ChannelType: TChannelType;
 begin
   case Channel of
@@ -929,10 +974,23 @@ begin
   PowerOn($15,NotImperative)
 end;
 
+procedure TDAC.PowerOffA();
+begin
+  if (ChannelA.Power)and(ChannelB.Power) then PowerOnB(False);
+  if (ChannelA.Power)and(not(ChannelB.Power)) then PowerOffBoth(False);
+end;
+
+procedure TDAC.PowerOffB();
+begin
+  if (ChannelB.Power)and(ChannelA.Power) then PowerOnA(False);
+  if (ChannelB.Power)and(not(ChannelA.Power)) then PowerOffBoth(False);
+end;
+
 procedure TDAC.PowerOffBoth(NotImperative: Boolean);
 begin
  PowerOn($10,NotImperative)
 end;
+
 
 procedure TDAC.SetChannelA(const Value: TDACChannel);
 begin
@@ -947,6 +1005,7 @@ end;
 procedure TDAC.SetMode;
 begin
   PacketCreate([DACCommand,DAC_Mode,PinControl,PinGate,$19,$00,$04]);
+  PacketIsSend(fComPort);
 //  if not(PacketIsSend(fComPort)) then
 end;
 
@@ -954,7 +1013,9 @@ Constructor TDACChannelShow.Create(DACC:TDAC;
                                    CI:integer;
                                    RL:TLabel;
                                    RCB:TComboBox;
-                                   RSB:TButton
+                                   RSB:TButton;
+                                   PL:TLabel;
+                                   PB:TBitBtn
                       );
  var i:TOutputRange;
 begin
@@ -969,31 +1030,95 @@ begin
   RangesLabel:=RL;
   RangesComboBox:=RCB;
   RangesSetButton:=RSB;
-  RangesSetButton.OnClick:=SetButtomAction;
+  RangesSetButton.OnClick:=SetRangeButtomAction;
   RangesComboBox.Items.Clear;
   for I := Low(TOutputRange) to High(TOutputRange) do
       RangesComboBox.Items.Add(OutputRangeLabels[i]);
-  RangeShow();
+  PowerLabel:=PL;
+  PowerButton:=PB;
+  PowerButton.OnClick:=PowerButtomAction;    
+  DataShow();
 
 //  OutputRanges.ItemIndex:=ord(Channel.Range);
 //    OutputRanges.OnClick:=TAdapterRadioGroupClick.Create(ord(Channel.Range)).RadioGroupClick;
 
 end;
 
-procedure TDACChannelShow.RangeShow;
+procedure TDACChannelShow.DataShow;
 begin
-  RangesLabel.Caption := OutputRangeLabels[Channel.Range];
+  RangeShow();
+  PowerShow();
 end;
 
 
 
-procedure TDACChannelShow.SetButtomAction(Sender: TObject);
+
+
+procedure TDACChannelShow.PowerShow;
 begin
+  if Channel.Power then
+    begin
+     PowerLabel.Caption:='Power on';
+     PowerLabel.Font.Color:=clRed;
+     PowerButton.Caption:='Off';
+     PowerButton.Font.Color:=clNavy;
+    end
+                   else
+    begin
+     PowerLabel.Caption:='Power off';
+     PowerLabel.Font.Color:=clNavy;
+     PowerButton.Caption:='On';
+     PowerButton.Font.Color:=clRed;
+    end
+end;
+
+procedure TDACChannelShow.RangeShow;
+begin
+ RangesLabel.Caption := OutputRangeLabels[Channel.Range];
+end;
+
+function TDACChannelShow.ReadyTesting: boolean;
+begin
+ if DAC.BeginingDoesNotDone then
+    begin
+     DAC.Begining();
+     Result:=DAC.BeginingDoesNotDone;
+    end
+                            else
+    Result:=False;
+end;
+
+procedure TDACChannelShow.SetRangeButtomAction(Sender: TObject);
+begin
+   if ReadyTesting then Exit;
    if not(RangesLabel.Caption=RangesComboBox.Items[RangesComboBox.ItemIndex]) then
     begin
       DAC.OutputRange(ChannelIndex,TOutputRange(RangesComboBox.ItemIndex));
-      RangesLabel.Caption:=OutputRangeLabels[Channel.Range];
+      RangeShow();
     end;
+end;
+
+procedure TDACChannelShow.PowerButtomAction(Sender: TObject);
+begin
+  if ReadyTesting then Exit;
+  case ChannelIndex of
+   10:
+     if Channel.Power then DAC.PowerOffB()
+                      else
+                  begin
+                    if DAC.ChannelA.Power then DAC.PowerOnBoth()
+                                          else DAC.PowerOnB();
+                  end;
+   else
+     if Channel.Power then DAC.PowerOffA()
+                      else
+                  begin
+                    if DAC.ChannelB.Power then DAC.PowerOnBoth()
+                                          else DAC.PowerOnA();
+                  end;
+
+  end;
+ PowerShow(); 
 end;
 
 { TAdapter }
