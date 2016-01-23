@@ -654,6 +654,7 @@ end;
 procedure TVoltmetrShow.VoltmetrDataShow();
 begin
   MeasureMode.ItemIndex:=ord((SPIDevice as TVoltmetr).MeasureMode);
+//  showmessage(inttostr(MeasureMode.ItemIndex));
   DiapazonFill(TMeasureMode(MeasureMode.ItemIndex),
                 Range.Items);
 
