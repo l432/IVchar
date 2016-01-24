@@ -144,6 +144,24 @@ type
     BORChA: TButton;
     LPowChA: TLabel;
     BBPowChA: TBitBtn;
+    BDACInit: TButton;
+    BDACReset: TButton;
+    LOVChA: TLabel;
+    BOVchangeChA: TButton;
+    BOVsetChA: TButton;
+    PanelDACChB: TPanel;
+    LORChB: TLabel;
+    LPowChB: TLabel;
+    LOVChB: TLabel;
+    STChB: TStaticText;
+    STORChB: TStaticText;
+    CBORChB: TComboBox;
+    BORChB: TButton;
+    BBPowChB: TBitBtn;
+    STOVChB: TStaticText;
+    BOVchangeChB: TButton;
+    BOVsetChB: TButton;
+    STOVChA: TStaticText;
     procedure FormCreate(Sender: TObject);
     procedure PortConnected();
     procedure BConnectClick(Sender: TObject);
@@ -167,6 +185,7 @@ type
     procedure BRBEditClick(Sender: TObject);
     procedure RBTSImitationClick(Sender: TObject);
     procedure BSaveSettingClick(Sender: TObject);
+//    procedure BOVsetChAClick(Sender: TObject);
 //    procedure BORChAClick(Sender: TObject);
 //    procedure RGORChAClick(Sender: TObject);
   private
@@ -352,6 +371,18 @@ begin
        end;
  end;
 
+
+
+//procedure TIVchar.BOVsetChAClick(Sender: TObject);
+// var d:double;
+//     int:integer;
+//begin
+//  d:=Strtofloat(LOVChA.Caption);
+//  DAC.ChannelB.Range:=pm100;
+//  int:=Dac.IntVoltage(d,DAC.ChannelB.Range);
+//  showmessage(IntToHex(int,4));
+//end;
+
 //procedure TIVchar.BORChAClick(Sender: TObject);
 //begin
 //   if not(LORChA.Caption=CBORChA.Items[CBORChA.ItemIndex]) then
@@ -364,7 +395,7 @@ begin
 procedure TIVchar.BParamReceiveClick(Sender: TObject);
 begin
  PacketCreate([ParameterReceiveCommand]);
- PacketIsSend(ComPort1);
+ PacketIsSend(ComPort1,'Parameter receiving is unsuccessful');
 end;
 
 procedure TIVchar.BRBDeleteClick(Sender: TObject);
@@ -966,10 +997,17 @@ procedure TIVchar.DACCreate;
 begin
   DAC := TDAC.Create(ComPort1, 'AD5752R');
   SetLength(DACChanelShows,2);
-  DACChanelShows[0]:= TDACChannelShow.Create(DAC,8, LORChA,CBORChA,BORChA,LPowChA,BBPowChA);
-//  DACChanelShows[1]:= TDACChannelShow.Create(DAC,10, );
-  DACShow:=TDACShow.Create(DAC,LDACPinC,LDACPinG,LDACPinLDAC,LDACPinCLR,
-                           BDACSetC,BDACSetG,BDACSetLDAC,BDACSetCLR,CBDAC);
+  DACChanelShows[0]:= TDACChannelShow.Create(DAC,8, LORChA,LOVChA,CBORChA,
+                                      BORChA,BOVchangeChA,BOVsetChA,
+                                      LPowChA,BBPowChA);
+  DACChanelShows[1]:= TDACChannelShow.Create(DAC,10, LORChB,LOVChB,CBORChB,
+                                      BORChB,BOVchangeChB,BOVsetChB,
+                                      LPowChB,BBPowChB);
+  DACShow:=TDACShow.Create(DAC,
+                           DACChanelShows[0],DACChanelShows[1],
+                           LDACPinC,LDACPinG,LDACPinLDAC,LDACPinCLR,
+                           BDACSetC,BDACSetG,BDACSetLDAC,BDACSetCLR,CBDAC,
+                           PanelDACChA,PanelDACChB,BDACInit,BDACReset);
 end;
 
 procedure TIVchar.DACFree;
@@ -984,10 +1022,10 @@ end;
 procedure TIVchar.DACReadFromIniFileAndToForm;
 begin
   DACShow.PinsReadFromIniFile(ConfigFile);
-  DACShow.NumberPinShow;
   DAC.ChannelsReadFromIniFile(ConfigFile);
   DAC.Begining();
-  DACChanelShows[0].DataShow;
+  DACShow.NumberPinShow;
+  DACShow.DataShow;
 end;
 
 procedure TIVchar.DACWriteToIniFile;

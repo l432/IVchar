@@ -25,7 +25,7 @@ PacketBegin - 0-й байт
 Довжину пакету (PacketBegin та PacketEnd не враховуються) - 1-й байт
 Контрольну суму - передостанній байт
 PacketEnd - останній байт}
-Function PacketIsSend(ComPort:TComPort):boolean;
+Function PacketIsSend(ComPort:TComPort; report:string):boolean;
 {спроба відіслати aPacket через ComPort}
 Function PacketIsReceived(const Str: string; var pData:TArrByte):boolean;overload;
 {розмір pData встановлюється відповідно
@@ -61,7 +61,7 @@ begin
   aPacket[High(aPacket)]:=PacketEnd;
 end;
 
-Function PacketIsSend(ComPort:TComPort):boolean;
+Function PacketIsSend(ComPort:TComPort; report:string):boolean;
 begin
   if ComPort.Connected then
    begin
@@ -71,7 +71,7 @@ begin
    end
                        else
    Result:=False;
- if not(Result) then MessageDlg('Packet is not send',mtError, [mbOK], 0);
+ if not(Result) then MessageDlg(report,mtError, [mbOK], 0);
 end;
 
 Function PacketIsReceived(const Str: string; var pData:TArrByte):boolean;

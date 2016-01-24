@@ -89,17 +89,20 @@ type
   TDACChannel=class
    Range:TOutputRange;
    Power:boolean;
-//   Overcurrent:boolean;
+   Overcurrent:boolean;
   end;
 
   TChannelType=(A,B,Both,Error);
+
+  TSimpleEvent = procedure() of object;
 
   TDAC=class(TSPIdevice)
   {базовий клас для ЦАП}
   private
     FChannelB: TDACChannel;
     FChannelA: TDACChannel;
-    FBeginingDoesNotDone: boolean;
+    FBeginingIsDone: boolean;
+    fHookForGraphElementApdate:TSimpleEvent;
     Procedure PacketReceiving(Sender: TObject; const Str: string);override;
     procedure SetChannelA(const Value: TDACChannel);
     procedure SetChannelB(const Value: TDACChannel);
@@ -109,6 +112,7 @@ type
     в протилежному випадку завжди буде відсилатися відповідний пакет -
     потрібно, наприклад при початку роботи}
     Procedure PowerOn(Channel: Byte; NotImperative: Boolean=True);
+    Procedure Output(Voltage:double;Channel: Byte);
     Function ChannelTypeDetermine(Channel:byte):TChannelType;
     procedure ChannelSetRange(Channel:byte;Range:TOutputRange);overload;
     procedure ChannelSetRange(Channel:byte;Range:byte);overload;
@@ -116,8 +120,12 @@ type
     function ChannelRangeIsReady(Channel:byte;Range:TOutputRange):boolean;
     {False якщо Range не співпадає з тим, що вже встановлено}
     function ChannelPowerIsReady(ChannelType:TChannelType):boolean;
+    function IntVoltage(Voltage:double;Range:TOutputRange):integer;
+    function HighVoltage(Range:TOutputRange):double;
+    function LowVoltage(Range:TOutputRange):double;
   public
    {пін для оновлення напруги ЦАП}
+//       function IntVoltage(Voltage:double;Range:TOutputRange):integer;
    property PinLDAC:byte Index 2 read GetPin write SetPin;
    property PinLDACStr:string Index 2 read GetPinStr;
    {пін для встановлення нульової напруги ЦАП}
@@ -125,7 +133,13 @@ type
    property PinCLRStr:string Index 3 read GetPinStr;
    property ChannelA:TDACChannel read FChannelA write SetChannelA;
    property ChannelB:TDACChannel read FChannelB write SetChannelB;
-   property BeginingDoesNotDone:boolean read FBeginingDoesNotDone;
+   property BeginingIsDone:boolean read FBeginingIsDone;
+   property HookForGraphElementApdate:TSimpleEvent
+             read fHookForGraphElementApdate write fHookForGraphElementApdate;
+   {виконується в кінці PacketReceiving для оновлення
+   даних графічних елементів, пов'язаних з DAC.
+   В цьому класі порожня, треба причепити
+   за необхідності якусь дію десь інде}
    Constructor Create();overload;override;
    Procedure Free;
    Procedure OutputRangeA(Range:TOutputRange; NotImperative: Boolean=True);
@@ -139,7 +153,7 @@ type
    Procedure PowerOffBoth(NotImperative: Boolean=True);
    Procedure PowerOffB();
    Procedure PowerOffA();
-   Procedure HookForGraphElementApdate();
+//   Procedure HookForGraphElementApdate();
    {виконується в кінці PacketReceiving для оновлення
    даних графічних елементів, пов'язаних з DAC.
    В цьому класі порожня, треба причепити
@@ -149,6 +163,12 @@ type
    SDO Disable=0, CLR Seting =0, Clamp Enable=1
    TSD enable = 0 - див Datasheet}
    Procedure Begining();
+   Procedure Reset();
+   Procedure OutputA(Voltage:double);
+   Procedure OutputB(Voltage:double);
+   Procedure OutputBoth(Voltage:double);
+   Procedure OutputSyn(VoltageA,VoltageB:double);
+   {встановлення напруги на обох вихідних каналах одночасно}
   end;
 
 
@@ -161,7 +181,7 @@ type
 //    procedure RadioGroupDACChannelClick(Sender: TObject);
   end;
 
-  TSimpleEvent = procedure() of object;
+
 
   TAdapterSetButton=class
   private
@@ -222,20 +242,22 @@ type
    DAC:TDAC;
    ChannelIndex:integer;// 8 - ChannelA, 10 - ChannelB
    Channel:TDACChannel;
-   RangesLabel:TLabel;
+   RangesLabel,ValueLabel:TLabel;
    RangesComboBox:TComboBox;
-   RangesSetButton:TButton;
+   RangesSetButton,ValueChangeButton,ValueSetButton:TButton;
    PowerLabel:TLabel;
    PowerButton:TBitBtn;
    procedure SetRangeButtomAction(Sender:TObject);
    procedure PowerButtomAction(Sender:TObject);
-   function ReadyTesting:boolean;
+   procedure ValueChangeButtonAction(Sender:TObject);
+   procedure ValueSetButtonAction(Sender:TObject);
+//   function ReadyTesting:boolean;
   public
    Constructor Create(DACC:TDAC;
                CI:integer;
-               RL:TLabel;
+               RL,VL:TLabel;
                RCB:TComboBox;
-               RSB:TButton;
+               RSB,VCB,VSB:TButton;
                PL:TLabel;
                PB:TBitBtn
                       );
@@ -246,13 +268,23 @@ type
 
   TDACShow=class(TSPIDeviceShow)
   private
+   DACChannelShowA,DACChannelShowB:TDACChannelShow;
+   PanelA,PanelB:TPanel;
+   InitButton,ResetButton:TButton;
+   procedure ButtonEnable();
+   procedure InitButtonClick(Sender:TObject);
+   procedure ResetButtonClick(Sender:TObject);
   public
    Constructor Create(DAC:TDAC;
+                      DACCSA,DACCSB:TDACChannelShow;
                       CPL,GPL,LDACPL,CLRPL:TLabel;
                       SCB,SGB,SLDACB,SCLRB:TButton;
-                      PCB:TComboBox
+                      PCB:TComboBox;
+                      PanA,PanB:TPanel;
+                      IB,RB:TButton
                       );
    procedure NumberPinShow();override;
+   procedure DataShow();
   end;
 
 const
@@ -273,15 +305,24 @@ const
   ('0..5','0..10','0..10.8',
   '-5..5','-10..10','-10.8..10.8');
 
-  GainValueOutputRangeLabels:array[TOutputRange]of double=
+  GainValueOutputRange:array[TOutputRange]of double=
   (2,4,4.32,4,8,8.64);
 
   REFIN=2.5;
+
+  {можливий відсоток напруги на виході від номінального діапазону}
+  pVoltageLimit=0.99998; // 65535/65536
+  pmVoltageLimit=0.99996; // 32767/32768
+
 
   {константи операцій з ЦАП}
   DAC_OR=1; //встановлення діапазону
   DAC_Mode=2; //встановлення параметрів роботи
   DAC_Power=3;//подача живлення
+  DAC_Reset=4;//встановлення нульової напруги на обох каналах
+  DAC_Output=5; //встановлення напруги
+  DAC_OutputSYN=6; //встановлення напруги одночасно на обох каналах
+  DAC_Overcurrent=7; // перевантаження на виході
 
 Function BCDtoDec(BCD:byte; isLow:boolean):byte;
 {виділяє з ВCD, яке містить дві десяткові
@@ -456,7 +497,7 @@ end;
 Function TVoltmetr.Request():boolean;
 begin
   PacketCreate([V7_21Command,PinControl,PinGate]);
-  Result:=PacketIsSend(fComPort);
+  Result:=PacketIsSend(fComPort,'Voltmetr '+Name+' measurement is unsuccessful');
 end;
 
 Function TVoltmetr.Measurement():double;
@@ -786,30 +827,30 @@ end;
 
 procedure TDAC.Begining;
 begin
- if not(fComPort.Connected) then Exit;
- if (ChannelA.Range=ChannelB.Range) then
-          OutputRangeBoth(ChannelA.Range,False)
-                                    else
-          begin
-           OutputRangeA(ChannelA.Range,False);
-           sleep(100);
-           OutputRangeB(ChannelB.Range,False);
-          end;
- sleep(100);
- if ChannelA.Power then
-    begin
-      if ChannelB.Power then PowerOnBoth(False)
-                        else PowerOnA(False);
-    end
-                   else
-    begin
-      if ChannelB.Power then PowerOnB(False)
-                        else PowerOffBoth(False);
-    end;
- sleep(100);
- SetMode();
- sleep(100);
- FBeginingDoesNotDone:=False;
+// if not(fComPort.Connected) then Exit;
+// if (ChannelA.Range=ChannelB.Range) then
+//          OutputRangeBoth(ChannelA.Range,False)
+//                                    else
+//          begin
+//           OutputRangeA(ChannelA.Range,False);
+//           sleep(100);
+//           OutputRangeB(ChannelB.Range,False);
+//          end;
+// sleep(100);
+// if ChannelA.Power then
+//    begin
+//      if ChannelB.Power then PowerOnBoth(False)
+//                        else PowerOnA(False);
+//    end
+//                   else
+//    begin
+//      if ChannelB.Power then PowerOnB(False)
+//                        else PowerOffBoth(False);
+//    end;
+// sleep(100);
+// SetMode();
+// sleep(100);
+ FBeginingIsDone:=True;
 end;
 
 function TDAC.ChannelPowerIsReady(ChannelType: TChannelType): boolean;
@@ -852,8 +893,12 @@ begin
   PinCLR:=UndefinedPin;
   ChannelA:=TDACChannel.Create;
   ChannelB:=TDACChannel.Create;
+  ChannelA.Overcurrent:=False;
+  ChannelB.Overcurrent:=False;
 //  ChannelA.Range:=pm100;
-  FBeginingDoesNotDone:=True;
+  FBeginingIsDone:=False;
+//  FBeginingIsDone:=True;
+
 end;
 
 
@@ -864,9 +909,104 @@ begin
  inherited Free;
 end;
 
-procedure TDAC.HookForGraphElementApdate;
+function TDAC.HighVoltage(Range: TOutputRange): double;
 begin
+ case Range of
+   p050: Result:=5*pVoltageLimit;
+   p100: Result:=10*pVoltageLimit;
+   p108: Result:=10.8*pVoltageLimit;
+   pm050: Result:=5*pmVoltageLimit;
+   pm100: Result:=10*pmVoltageLimit;
+   pm108: Result:=10.8*pmVoltageLimit;
+   else Result:=ErResult;
+ end;
+end;
 
+//procedure TDAC.HookForGraphElementApdate;
+//begin
+//
+//end;
+
+function TDAC.IntVoltage(Voltage: double; Range: TOutputRange): integer;
+begin
+ Result:=0;
+ if Voltage=0 then Exit;
+
+ if ord(Range)<3 then
+  begin
+    if Voltage>=HighVoltage(Range) then
+      begin
+      Result:=$FFFF;
+      Exit;
+      end;
+    if Voltage<=LowVoltage(Range) then
+      begin
+      Result:=$0;
+      Exit;
+      end;
+    Result:=(round(Voltage*65536/REFIN/GainValueOutputRange[Range]) and $FFFF);
+  end;
+
+ if ord(Range)>2 then
+  begin
+    if Voltage>=HighVoltage(Range) then
+      begin
+      Result:=$7FFF;
+      Exit;
+      end;
+    if Voltage<=LowVoltage(Range) then
+      begin
+      Result:=$8000;
+      Exit;
+      end;
+    if Voltage>0 then
+      Result:=(round(Voltage*65536/REFIN/GainValueOutputRange[Range]) and $7FFF)
+                 else
+      begin
+      Result:=(32767-round(abs(Voltage)*65536/REFIN/GainValueOutputRange[Range]) and $7FFF);
+      Result:=Result+$8000;
+      end;
+  end;
+end;
+
+function TDAC.LowVoltage(Range: TOutputRange): double;
+begin
+ case Range of
+   p050,p100,p108: Result:=0;
+   pm050: Result:=-5*pmVoltageLimit;
+   pm100: Result:=-10*pmVoltageLimit;
+   pm108: Result:=-10.8*pmVoltageLimit;
+   else Result:=ErResult;
+ end;
+end;
+
+procedure TDAC.Output(Voltage: double; Channel: Byte);
+ var IntData:integer;
+     Data2,Data3:byte;
+begin
+ if ChannelTypeDetermine(Channel)=A then
+     IntData:=IntVoltage(Voltage,ChannelA.Range)
+                                    else
+     IntData:=IntVoltage(Voltage,ChannelB.Range);
+ Data2:=((IntData shr 8) and $FF);
+ Data3:=(IntData and $FF);
+ PacketCreate([DACCommand,DAC_Output,PinControl,PinGate,Channel,Data2,Data3,PinLDAC]);
+ PacketIsSend(fComPort,'DAC output value setting is unsuccessful');
+end;
+
+procedure TDAC.OutputA(Voltage: double);
+begin
+  Output(Voltage,0);
+end;
+
+procedure TDAC.OutputB(Voltage: double);
+begin
+  Output(Voltage,2);
+end;
+
+procedure TDAC.OutputBoth(Voltage: double);
+begin
+  Output(Voltage,4);
 end;
 
 procedure TDAC.OutputRange(Channel: Byte; Range: TOutputRange; NotImperative: Boolean=True);
@@ -874,7 +1014,7 @@ begin
   if ChannelRangeIsReady(Channel,Range)and(NotImperative) then  Exit;
 
   PacketCreate([DACCommand,DAC_OR,PinControl,PinGate,Channel,0,byte(ord(Range))]);
-  if PacketIsSend(fComPort) then ChannelSetRange(Channel,Range);
+  if PacketIsSend(fComPort,'DAC range setting is unsuccessful') then ChannelSetRange(Channel,Range);
 end;
 
 procedure TDAC.OutputRangeA(Range:TOutputRange; NotImperative: Boolean=True);
@@ -890,6 +1030,21 @@ end;
 procedure TDAC.OutputRangeBoth(Range: TOutputRange; NotImperative: Boolean=True);
 begin
   OutputRange(12, Range, NotImperative);
+end;
+
+procedure TDAC.OutputSyn(VoltageA, VoltageB: double);
+ var IntData:integer;
+     DataAlo,DataAhi,DataBlo,DataBhi:byte;
+begin
+ IntData:=IntVoltage(VoltageA,ChannelA.Range);
+ DataAhi:=((IntData shr 8) and $FF);
+ DataAlo:=(IntData and $FF);
+ IntData:=IntVoltage(VoltageA,ChannelB.Range);
+ DataBhi:=((IntData shr 8) and $FF);
+ DataBlo:=(IntData and $FF);
+
+ PacketCreate([DACCommand,DAC_OutputSyn,PinControl,PinGate,PinLDAC,DataAhi,DataAlo,DataBhi,DataBlo]);
+ PacketIsSend(fComPort,'DAC synchronous output value setting is unsuccessful');
 end;
 
 procedure TDAC.ChannelsReadFromIniFile(ConfigFile: TIniFile);
@@ -914,15 +1069,18 @@ procedure TDAC.PacketReceiving(Sender: TObject; const Str: string);
 // var i:integer;
 begin
  if not(PacketIsReceived(Str,fData,DACCommand)) then Exit;
+
  if fData[2]=DAC_OR then
   begin
     MessageDlg('DAC Output Range setting has trouble',mtError,[mbOK],0);
     ChannelSetRange(fData[3],fData[4]);
   end;
+
  if fData[2]=DAC_Mode then
   begin
     MessageDlg('DAC setting Mode has trouble',mtError,[mbOK],0);
   end;
+
  if fData[2]=DAC_Power then
   begin
     MessageDlg('DAC power has trouble',mtError,[mbOK],0);
@@ -936,6 +1094,16 @@ begin
       end;
   end;
 
+ if fData[2]=DAC_Output then
+  begin
+    MessageDlg('DAC output has trouble',mtError,[mbOK],0);
+  end;
+
+ if fData[2]=DAC_Overcurrent then
+  begin
+    if (fData[3] and $02)>0 then ChannelB.Overcurrent:=False;
+    if (fData[4] and $80)>0 then ChannelA.Overcurrent:=False;
+  end;
 
   HookForGraphElementApdate();
 
@@ -957,7 +1125,7 @@ begin
 
   if ChannelPowerIsReady(ChannelType)and(NotImperative) then  Exit;
   PacketCreate([DACCommand,DAC_Power,PinControl,PinGate,$10,0,Channel]);
-  if PacketIsSend(fComPort) then ChannelSetPower(ChannelType);
+  if PacketIsSend(fComPort,'DAC channel power setting is unsuccessful') then ChannelSetPower(ChannelType);
 end;
 
 procedure TDAC.PowerOnA(NotImperative: Boolean=True);
@@ -973,6 +1141,16 @@ end;
 procedure TDAC.PowerOnBoth(NotImperative: Boolean=True);
 begin
   PowerOn($15,NotImperative)
+end;
+
+procedure TDAC.Reset;
+begin
+  PacketCreate([DACCommand,DAC_Reset,PinCLR,PinGate]);
+  if PacketIsSend(fComPort,'DAC reset is unsuccessful') then
+   begin
+    ChannelA.Overcurrent:=False;
+    ChannelB.Overcurrent:=False;
+   end;
 end;
 
 procedure TDAC.PowerOffA();
@@ -1006,15 +1184,15 @@ end;
 procedure TDAC.SetMode;
 begin
   PacketCreate([DACCommand,DAC_Mode,PinControl,PinGate,$19,$00,$04]);
-  PacketIsSend(fComPort);
+  PacketIsSend(fComPort,'DAC mode setting is unsuccessful');
 //  if not(PacketIsSend(fComPort)) then
 end;
 
 Constructor TDACChannelShow.Create(DACC:TDAC;
                                    CI:integer;
-                                   RL:TLabel;
+                                   RL,VL:TLabel;
                                    RCB:TComboBox;
-                                   RSB:TButton;
+                                   RSB,VCB,VSB:TButton;
                                    PL:TLabel;
                                    PB:TBitBtn
                       );
@@ -1037,8 +1215,17 @@ begin
       RangesComboBox.Items.Add(OutputRangeLabels[i]);
   PowerLabel:=PL;
   PowerButton:=PB;
-  PowerButton.OnClick:=PowerButtomAction;    
-  DataShow();
+  PowerButton.OnClick:=PowerButtomAction;
+
+  ValueLabel:=VL;
+  ValueLabel.Caption:='0';
+  ValueLabel.Font.Color:=clBlack;
+  ValueChangeButton:=VCB;
+  ValueChangeButton.OnClick:=ValueChangeButtonAction;
+  ValueSetButton:=VSB;
+  ValueSetButton.OnClick:=ValueSetButtonAction;
+
+  //  DataShow();
 
 //  OutputRanges.ItemIndex:=ord(Channel.Range);
 //    OutputRanges.OnClick:=TAdapterRadioGroupClick.Create(ord(Channel.Range)).RadioGroupClick;
@@ -1078,20 +1265,20 @@ begin
  RangesLabel.Caption := OutputRangeLabels[Channel.Range];
 end;
 
-function TDACChannelShow.ReadyTesting: boolean;
-begin
- if DAC.BeginingDoesNotDone then
-    begin
-     DAC.Begining();
-     Result:=DAC.BeginingDoesNotDone;
-    end
-                            else
-    Result:=False;
-end;
+//function TDACChannelShow.ReadyTesting: boolean;
+//begin
+// if (not(DAC.BeginingIsDone)) then
+//    begin
+//     DAC.Begining();
+//     Result:=DAC.BeginingIsDone;
+//    end
+//                            else
+//    Result:=False;
+//end;
 
 procedure TDACChannelShow.SetRangeButtomAction(Sender: TObject);
 begin
-   if ReadyTesting then Exit;
+//   if ReadyTesting then Exit;
    if not(RangesLabel.Caption=RangesComboBox.Items[RangesComboBox.ItemIndex]) then
     begin
       DAC.OutputRange(ChannelIndex,TOutputRange(RangesComboBox.ItemIndex));
@@ -1099,9 +1286,32 @@ begin
     end;
 end;
 
+procedure TDACChannelShow.ValueChangeButtonAction(Sender: TObject);
+ var value:string;
+begin
+ if InputQuery('Value', 'Output value is expect', value) then
+  begin
+    try
+      ValueLabel.Caption:=FloatToStrF(StrToFloat(value),ffFixed, 6, 4);
+      ValueLabel.Font.Color:=clBlack;
+    except
+
+    end;
+  end;
+end;
+
+procedure TDACChannelShow.ValueSetButtonAction(Sender: TObject);
+begin
+   case ChannelIndex of
+   10:   DAC.OutputB(Strtofloat(ValueLabel.Caption));
+   else  DAC.OutputA(Strtofloat(ValueLabel.Caption));
+   end;
+   ValueLabel.Font.Color:=clPurple;
+end;
+
 procedure TDACChannelShow.PowerButtomAction(Sender: TObject);
 begin
-  if ReadyTesting then Exit;
+//  if ReadyTesting then Exit;
   case ChannelIndex of
    10:
      if Channel.Power then DAC.PowerOffB()
@@ -1226,17 +1436,52 @@ end;
 
 { TDACShow }
 
+procedure TDACShow.ButtonEnable;
+ var PinDefined:boolean;
+begin
+ PinDefined:=(SPIDevice.PinControl<>UndefinedPin)and
+             (SPIDevice.PinGate<>UndefinedPin)and
+             ((SPIDevice as TDAC).PinLDAC<>UndefinedPin)and
+             ((SPIDevice as TDAC).PinCLR<>UndefinedPin);
+ PanelA.Enabled:=(PinDefined)and((SPIDevice as TDAC).BeginingIsDone);
+ PanelB.Enabled:=(PinDefined)and((SPIDevice as TDAC).BeginingIsDone);
+end;
+
 constructor TDACShow.Create(DAC: TDAC;
+                            DACCSA,DACCSB:TDACChannelShow;
                             CPL, GPL, LDACPL, CLRPL: TLabel;
                             SCB, SGB, SLDACB, SCLRB: TButton;
-                            PCB: TComboBox);
+                            PCB: TComboBox;
+                            PanA,PanB:Tpanel;
+                            IB,RB:TButton);
 begin
  inherited Create(DAC,CPL,GPL,SCB,SGB,PCB);
  PinLabels[2]:=LDACPL;
  PinLabels[3]:=CLRPL;
  SetPinButtons[2]:=SLDACB;
  SetPinButtons[3]:=SCLRB;
+ DACChannelShowA:=DACCSA;
+ DACChannelShowB:=DACCSB;
+ DAC.HookForGraphElementApdate:=DataShow;
+ PanelA:=PanA;
+ PanelB:=PanB;
+ InitButton:=IB;
+ InitButton.OnClick:=InitButtonClick;
+ ResetButton:=RB;
+ ResetButton.OnClick:=ResetButtonClick;
  CreateFooter()
+end;
+
+procedure TDACShow.DataShow;
+begin
+ DACChannelShowA.DataShow;
+ DACChannelShowB.DataShow;
+end;
+
+procedure TDACShow.InitButtonClick(Sender: TObject);
+begin
+ (SPIDevice as TDAC).Begining();
+  ButtonEnable();
 end;
 
 procedure TDACShow.NumberPinShow;
@@ -1244,6 +1489,12 @@ begin
    inherited NumberPinShow();
    PinLabels[2].Caption:=(SPIDevice as TDAC).PinLDACStr;
    PinLabels[3].Caption:=(SPIDevice as TDAC).PinCLRStr;
+   ButtonEnable();
+end;
+
+procedure TDACShow.ResetButtonClick(Sender: TObject);
+begin
+ (SPIDevice as TDAC).Reset();
 end;
 
 end.
