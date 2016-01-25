@@ -220,6 +220,7 @@ type
    DataLabel,UnitLabel:TLabel;
    MeasurementButton:TButton;
    Time:TTimer;
+   AdapterMeasureMode,AdapterRange:TAdapterRadioGroupClick;
    procedure MeasurementButtonClick(Sender: TObject);
    procedure AutoSpeedButtonClick(Sender: TObject);
   public
@@ -231,6 +232,7 @@ type
                       AB:TSpeedButton;
                       PCB:TComboBox;
                       TT:TTimer);
+   Procedure Free;                      
    procedure NumberPinShow();override;
    procedure ButtonEnabled();
    procedure VoltmetrDataShow();
@@ -524,6 +526,7 @@ start:
    inc(i);
  Application.ProcessMessages;
  until ((i>130)or(fIsReceived));
+// until ((i>1300)or(fIsReceived));
 // showmessage(inttostr((GetTickCount-i0)));
  if fIsReceived then ConvertToValue(fData);
  if fIsReady then Result:=fValue;
@@ -551,6 +554,9 @@ Procedure TVoltmetr.ConvertToValue(Data:array of byte);
 begin
   if High(Data)<>3 then Exit;
   MModeDetermination(Data[2]);
+//  showmessage('jjj');
+//  showmessage(inttostr(MeasureMode.ItemIndex));
+//    showmessage(inttostr(ord(fMeasureMode)));
   if fMeasureMode=MMErr then Exit;
   DiapazonDetermination(Data[3]);
   if fDiapazon=DErr then Exit;
@@ -675,8 +681,19 @@ begin
     Range.ItemIndex:=DiapazonSelect((SPIDevice as TVoltmetr).MeasureMode,(SPIDevice as TVoltmetr).Diapazon);
     MeasurementButton.OnClick:=MeasurementButtonClick;
     AutoSpeedButton.OnClick:=AutoSpeedButtonClick;
-    MeasureMode.OnClick:=TAdapterRadioGroupClick.Create(ord((SPIDevice as TVoltmetr).MeasureMode)).RadioGroupClick;
-    Range.OnClick:=TAdapterRadioGroupClick.Create(DiapazonSelect((SPIDevice as TVoltmetr).MeasureMode,(SPIDevice as TVoltmetr).Diapazon)).RadioGroupClick;
+    AdapterMeasureMode:=TAdapterRadioGroupClick.Create(ord((SPIDevice as TVoltmetr).MeasureMode));
+    AdapterRange:=TAdapterRadioGroupClick.Create(DiapazonSelect((SPIDevice as TVoltmetr).MeasureMode,(SPIDevice as TVoltmetr).Diapazon));
+    MeasureMode.OnClick:=AdapterMeasureMode.RadioGroupClick;
+    Range.OnClick:=AdapterRange.RadioGroupClick;
+//    MeasureMode.OnClick:=TAdapterRadioGroupClick.Create(ord((SPIDevice as TVoltmetr).MeasureMode)).RadioGroupClick;
+//    Range.OnClick:=TAdapterRadioGroupClick.Create(DiapazonSelect((SPIDevice as TVoltmetr).MeasureMode,(SPIDevice as TVoltmetr).Diapazon)).RadioGroupClick;
+end;
+
+procedure TVoltmetrShow.Free;
+begin
+ AdapterMeasureMode.Free;
+ AdapterRange.Free;
+ inherited Free;
 end;
 
 procedure TVoltmetrShow.NumberPinShow();
@@ -694,13 +711,16 @@ end;
 
 procedure TVoltmetrShow.VoltmetrDataShow();
 begin
+  MeasureMode.OnClick:=nil;
+  Range.OnClick:=nil;
   MeasureMode.ItemIndex:=ord((SPIDevice as TVoltmetr).MeasureMode);
-//  showmessage(inttostr(MeasureMode.ItemIndex));
   DiapazonFill(TMeasureMode(MeasureMode.ItemIndex),
                 Range.Items);
 
   Range.ItemIndex:=
      DiapazonSelect((SPIDevice as TVoltmetr).MeasureMode,(SPIDevice as TVoltmetr).Diapazon);
+  MeasureMode.OnClick:=AdapterMeasureMode.RadioGroupClick;
+  Range.OnClick:=AdapterRange.RadioGroupClick;
   case (SPIDevice as TVoltmetr).MeasureMode of
      IA,ID: UnitLabel.Caption:=' A';
      UA,UD: UnitLabel.Caption:=' V';
