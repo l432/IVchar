@@ -394,7 +394,7 @@ begin
 
 procedure TIVchar.BParamReceiveClick(Sender: TObject);
 begin
- PacketCreate([ParameterReceiveCommand]);
+ PacketCreate([ParameterReceiveCommand,0]);
  PacketIsSend(ComPort1,'Parameter receiving is unsuccessful');
 end;
 
@@ -460,7 +460,7 @@ begin
  if PacketIsReceived(Str,Data,ParameterReceiveCommand) then
   begin
    NumberPins.Clear;
-   for I := 2 to High(Data)-1 do
+   for I := 3 to High(Data)-1 do
     NumberPins.Add(IntToStr(Data[i]));
    NumberPinsShow();
   end;

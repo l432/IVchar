@@ -18,7 +18,7 @@
 byte DrivePins[] = {25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35};
 
 byte incomingByte = 0;
-byte PinControl, PinGate;
+byte PinControl, PinGate, DeviceId, ActionId;
 byte DACDataToSend[3];
 byte DACDataAnswer[3];
 
@@ -51,22 +51,28 @@ start:
 
       if (FCS(packet, sizeof(packet)) != 0) goto start;
 
-      if (packet[1] == V7_21Command) {
-        PinControl=packet[2];
-        PinGate=packet[3];
+      DeviceId = packet[1];
+      ActionId = packet[2];
+
+      //      if (packet[1] == V7_21Command) {
+      if (DeviceId == V7_21Command) {
+        PinControl = packet[2];
+        PinGate = packet[3];
         V721();
       }
-      if (packet[1] == ParameterReceiveCommand) SendParameters();
-      if (packet[1] == DACCommand) {
+      //      if (packet[1] == ParameterReceiveCommand) SendParameters();
+      if (DeviceId == ParameterReceiveCommand) SendParameters();
+      //      if (packet[1] == DACCommand) {
+      if (DeviceId == DACCommand) {
         PinControl = packet[3];
         PinGate = packet[4];
-        if (packet[2] != DAC_Reset) {
+        if (ActionId != DAC_Reset) {
           DACDataToSend[0] = packet[5];
           DACDataToSend[1] = packet[6];
           DACDataToSend[2] = packet[7];
         }
 
-        switch (packet[2]) {
+        switch (ActionId) {
           case DAC_OR:
             DACOutputRange();
             break;
@@ -127,11 +133,13 @@ void SendPacket(byte Data[], int n) {
 }
 
 void CreateAndSendPacket(byte DDATA[], int n) {
-  byte data[n + 2];
+  byte data[n + 4];
   data[0] = sizeof(data);
+  data[1] = DeviceId;
+  data[2] = ActionId;
   for (byte i = 0; i < n; i++)
   {
-    data[i + 1] = DDATA[i];
+    data[i + 3] = DDATA[i];
   }
   data[sizeof(data) - 1] = 0;
   data[sizeof(data) - 1] = FCS(data, data[0]);
@@ -140,29 +148,29 @@ void CreateAndSendPacket(byte DDATA[], int n) {
 
 void V721() {
   GateOpen();
-//  delay(5000);
+  //  delay(5000);
   digitalWrite(PinControl, LOW);
   digitalWrite(PinControl, HIGH);
-  byte data[6];
-  data[0] = V7_21Command;
-  data[1] = PinControl;
+  byte data[4];
+  //  data[0] = V7_21Command;
+  //  data[1] = PinControl;
   for (byte i = 0; i < 4; i++)
   {
-    data[i + 2] = SPI.transfer(0);
+    data[i] = SPI.transfer(0);
   }
   CreateAndSendPacket(data, sizeof(data));
-
   GateClose();
 }
 
 void SendParameters() {
-  byte data[sizeof(DrivePins) + 1];
-  data[0] = ParameterReceiveCommand;
-  for (byte i = 0; i < sizeof(DrivePins); i++)
-  {
-    data[i + 1] = DrivePins[i];
-  }
-  CreateAndSendPacket(data, sizeof(data));
+  //  byte data[sizeof(DrivePins) + 1];
+  //  data[0] = ParameterReceiveCommand;
+  //  for (byte i = 0; i < sizeof(DrivePins); i++)
+  //  {
+  //    data[i + 1] = DrivePins[i];
+  //  }
+  //  CreateAndSendPacket(data, sizeof(data));
+  CreateAndSendPacket(DrivePins, sizeof(DrivePins));
 }
 
 
@@ -179,7 +187,7 @@ void PinLH(byte Pin) {
   digitalWrite(Pin, HIGH);
 }
 
-void DACDataTransferBytes(byte Data1, byte Data2, byte Data3){
+void DACDataTransferBytes(byte Data1, byte Data2, byte Data3) {
   SPI.transfer(Data1);
   SPI.transfer(Data2);
   SPI.transfer(Data3);
@@ -187,83 +195,99 @@ void DACDataTransferBytes(byte Data1, byte Data2, byte Data3){
 }
 
 void DACDataTransfer() {
-  DACDataTransferBytes(DACDataToSend[0],DACDataToSend[1],DACDataToSend[2]);
+  DACDataTransferBytes(DACDataToSend[0], DACDataToSend[1], DACDataToSend[2]);
 }
 
 void DACDataTransferSimple(byte Data) {
-  DACDataTransferBytes(Data,0,0);
+  DACDataTransferBytes(Data, 0, 0);
 }
 
-void DACDataReceive(){
- DACDataAnswer[0] = SPI.transfer(0x18);
- DACDataAnswer[1] = SPI.transfer(0);
- DACDataAnswer[2] = SPI.transfer(0); 
+void DACDataReceive() {
+  DACDataAnswer[0] = SPI.transfer(0x18);
+  DACDataAnswer[1] = SPI.transfer(0);
+  DACDataAnswer[2] = SPI.transfer(0);
 }
 
 
-void  DACOutputRange() {
+void DACBeginTransfer() {
   GateOpen();
   digitalWrite(PinControl, LOW);
-
   DACDataTransfer();
+}
 
+void DACBeginReceive() {
   byte Inquiry = DACDataToSend[0];
   bitSet(Inquiry, 7);
-
   DACDataTransferSimple(Inquiry);
-
   DACDataReceive();
+}
+
+void DACBegin() {
+  DACBeginTransfer();
+  DACBeginReceive();
   digitalWrite(PinControl, HIGH);
+}
+
+void  DACOutputRange() {
+  //  GateOpen();
+  //  digitalWrite(PinControl, LOW);
+  //  DACDataTransfer();
+  //  byte Inquiry = DACDataToSend[0];
+  //  bitSet(Inquiry, 7);
+  //  DACDataTransferSimple(Inquiry);
+  //  DACDataReceive();
+  //  digitalWrite(PinControl, HIGH);
+  DACBegin();
+
   if ((DACDataAnswer[2] & 0x07) != (DACDataToSend[2] & 0x07)) {
-    byte data[4];
-    data[0] = DACCommand;
-    data[1] = DAC_OR;
-    data[2] = (DACDataAnswer[0] & 0x07);
-    data[3] = (DACDataAnswer[2] & 0x07);
+    byte data[2];
+    //    data[0] = DACCommand;
+    //    data[1] = DAC_OR;
+    data[0] = (DACDataAnswer[0] & 0x07);
+    data[1] = (DACDataAnswer[2] & 0x07);
     CreateAndSendPacket(data, sizeof(data));
   }
   GateClose();
 }
 
 void DACSetMode() {
-  GateOpen();
-  digitalWrite(PinControl, LOW);
+  //  GateOpen();
+  //  digitalWrite(PinControl, LOW);
+  //  DACDataTransfer();
+  //  byte Inquiry = DACDataToSend[0];
+  //  bitSet(Inquiry, 7);
+  //  DACDataTransferSimple(Inquiry);
+  //  DACDataReceive();
+  //  digitalWrite(PinControl, HIGH);
+  DACBegin();
 
-  DACDataTransfer();
-  byte Inquiry = DACDataToSend[0];
-  bitSet(Inquiry, 7);
-  DACDataTransferSimple(Inquiry);
-
-  DACDataReceive();
-  digitalWrite(PinControl, HIGH);
   if ((DACDataAnswer[2] & 0x0F) != (DACDataToSend[2] & 0x0F)) {
-    byte data[2];
-    data[0] = DACCommand;
-    data[1] = DAC_Mode;
-    CreateAndSendPacket(data, sizeof(data));
+    //    byte data[2];
+    //    data[0] = DACCommand;
+    //    data[1] = DAC_Mode;
+    CreateAndSendPacket(DrivePins, 0);
   }
   GateClose();
 }
 
 void DACPower() {
-  GateOpen();
-  digitalWrite(PinControl, LOW);
+  //  GateOpen();
+  //  digitalWrite(PinControl, LOW);
+  //  DACDataTransfer();
+  //  byte Inquiry = DACDataToSend[0];
+  //  bitSet(Inquiry, 7);
+  //  DACDataTransferSimple(Inquiry);
+  //  DACDataReceive();
+  //  digitalWrite(PinControl, HIGH);
+  DACBegin();
 
-  DACDataTransfer();
-
-  byte Inquiry = DACDataToSend[0];
-  bitSet(Inquiry, 7);
-  DACDataTransferSimple(Inquiry);
-
-  DACDataReceive();
-  digitalWrite(PinControl, HIGH);
   if (((DACDataAnswer[2] & 0x10) == 0) ||
       ((DACDataAnswer[2] & 0x01) != (DACDataToSend[2] & 0x01)) ||
       ((DACDataAnswer[2] & 0x04) != (DACDataToSend[2] & 0x04))) {
-    byte data[3];
-    data[0] = DACCommand;
-    data[1] = DAC_Mode;
-    data[2] = DACDataAnswer[2];
+    byte data[1];
+    //    data[0] = DACCommand;
+    //    data[1] = DAC_Power;
+    data[0] = DACDataAnswer[2];
     CreateAndSendPacket(data, sizeof(data));
   }
   GateClose();
@@ -275,46 +299,63 @@ void DACReset() {
   GateClose();
 }
 
-void  DACOutput(byte PinLDAC) {
-  GateOpen();
-  digitalWrite(PinControl, LOW);
-
-  DACDataTransfer();
-
-  PinLH(PinLDAC);
-
-  byte Inquiry = DACDataToSend[0];
-  bitSet(Inquiry, 7);
-  DACDataTransferSimple(Inquiry);
-
-  DACDataReceive();  
-
-  if ((DACDataAnswer[0] != DACDataToSend[0]) ||
-      (DACDataAnswer[1] != DACDataToSend[1]) ||
-      (DACDataAnswer[2] != DACDataToSend[2])) {
-    byte data[2];
-    data[0] = DACCommand;
-    data[1] = DAC_Output;
-    CreateAndSendPacket(data, sizeof(data));
-  }
-  
+void DACOvercurrent() {
   PinHL(PinControl);
   DACDataTransferSimple(0x90);
-
-  PinHL(PinControl);
- 
-  DACDataReceive();  
+  DACDataReceive();
   digitalWrite(PinControl, HIGH);
 
   if ((bitRead(DACDataAnswer[2], 7) == 1) ||
       (bitRead(DACDataAnswer[1], 1) == 1) ) {
-    byte data[4];
-    data[0] = DACCommand;
-    data[1] = DAC_Overcurrent;
-    data[2] = DACDataAnswer[1];
-    data[3] = DACDataAnswer[2];
+    byte data[2];
+    //    data[0] = DACCommand;
+    //    data[1] = DAC_Overcurrent;
+    ActionId = DAC_Overcurrent;
+    data[0] = DACDataAnswer[1];
+    data[1] = DACDataAnswer[2];
     CreateAndSendPacket(data, sizeof(data));
   }
+}
+
+void  DACOutput(byte PinLDAC) {
+  //  GateOpen();
+  //  digitalWrite(PinControl, LOW);
+  //  DACDataTransfer();
+  DACBeginTransfer();
+
+  PinLH(PinLDAC);
+
+  DACBeginReceive();
+  //  byte Inquiry = DACDataToSend[0];
+  //  bitSet(Inquiry, 7);
+  //  DACDataTransferSimple(Inquiry);
+  //  DACDataReceive();
+
+  if ((DACDataAnswer[0] != DACDataToSend[0]) ||
+      (DACDataAnswer[1] != DACDataToSend[1]) ||
+      (DACDataAnswer[2] != DACDataToSend[2])) {
+    //    byte data[2];
+    //    data[0] = DACCommand;
+    //    data[1] = DAC_Output;
+    CreateAndSendPacket(DrivePins, 0);
+  }
+
+//  PinHL(PinControl);
+//  DACDataTransferSimple(0x90);
+//  DACDataReceive();
+//  digitalWrite(PinControl, HIGH);
+//
+//  if ((bitRead(DACDataAnswer[2], 7) == 1) ||
+//      (bitRead(DACDataAnswer[1], 1) == 1) ) {
+//    byte data[2];
+//    //    data[0] = DACCommand;
+//    //    data[1] = DAC_Overcurrent;
+//    ActionId = DAC_Overcurrent;
+//    data[0] = DACDataAnswer[1];
+//    data[1] = DACDataAnswer[2];
+//    CreateAndSendPacket(data, sizeof(data));
+//  }
+  DACOvercurrent();
   GateClose();
 }
 
@@ -322,21 +363,20 @@ void  DACOutputSyn(byte PinLDAC, byte DataAhi, byte DataAlo, byte DataBhi, byte 
   GateOpen();
   digitalWrite(PinControl, LOW);
 
-  DACDataTransferBytes(0x00,DataAhi,DataAlo);
-  DACDataTransferBytes(0x02,DataBhi,DataBlo);
+  DACDataTransferBytes(0x00, DataAhi, DataAlo);
+  DACDataTransferBytes(0x02, DataBhi, DataBlo);
 
   PinLH(PinLDAC);
 
+  PinHL(PinControl);
   DACDataTransferSimple(0x80);
-
   DACDataReceive();
-
   if ((DACDataAnswer[1] != DataAhi) ||
       (DACDataAnswer[2] != DataAlo)) {
-    byte data[2];
-    data[0] = DACCommand;
-    data[1] = DAC_Output;
-    CreateAndSendPacket(data, sizeof(data));
+    //    byte data[2];
+    //    data[0] = DACCommand;
+    //    data[1] = DAC_Output;
+    CreateAndSendPacket(DrivePins, 0);
   }
 
   PinHL(PinControl);
@@ -344,28 +384,28 @@ void  DACOutputSyn(byte PinLDAC, byte DataAhi, byte DataAlo, byte DataBhi, byte 
   DACDataReceive();
   if ((DACDataAnswer[1] != DataBhi) ||
       (DACDataAnswer[2] != DataBlo)) {
-    byte data[2];
-    data[0] = DACCommand;
-    data[1] = DAC_Output;
-    CreateAndSendPacket(data, sizeof(data));
+    //    byte data[2];
+    //    data[0] = DACCommand;
+    //    data[1] = DAC_Output;
+    CreateAndSendPacket(DrivePins, 0);
   }
 
-  PinHL(PinControl);
-  DACDataTransferSimple(0x90);
-  PinHL(PinControl);
- 
-  DACDataReceive();  
-  digitalWrite(PinControl, HIGH);
-
-  if ((bitRead(DACDataAnswer[2], 7) == 1) ||
-      (bitRead(DACDataAnswer[1], 1) == 1) ) {
-    byte data[4];
-    data[0] = DACCommand;
-    data[1] = DAC_Overcurrent;
-    data[2] = DACDataAnswer[1];
-    data[3] = DACDataAnswer[2];
-    CreateAndSendPacket(data, sizeof(data));
-  } 
+//  PinHL(PinControl);
+//  DACDataTransferSimple(0x90);
+//  DACDataReceive();
+//  digitalWrite(PinControl, HIGH);
+//
+//  if ((bitRead(DACDataAnswer[2], 7) == 1) ||
+//      (bitRead(DACDataAnswer[1], 1) == 1) ) {
+//    byte data[2];
+//    //    data[0] = DACCommand;
+//    //    data[1] = DAC_Overcurrent;
+//    ActionId = DAC_Overcurrent;
+//    data[0] = DACDataAnswer[1];
+//    data[1] = DACDataAnswer[2];
+//    CreateAndSendPacket(data, sizeof(data));
+//  }
+  DACOvercurrent();
   GateClose();
 }
 
