@@ -526,7 +526,6 @@ start:
    inc(i);
  Application.ProcessMessages;
  until ((i>130)or(fIsReceived));
-// until ((i>1300)or(fIsReceived));
 // showmessage(inttostr((GetTickCount-i0)));
  if fIsReceived then ConvertToValue(fData);
  if fIsReady then Result:=fValue;
