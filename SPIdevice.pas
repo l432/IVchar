@@ -2,14 +2,15 @@ unit SPIdevice;
 
 interface
  uses OlegType,CPort,Dialogs,SysUtils,Classes,Windows,Forms,SyncObjs,PacketParameters,
-     ExtCtrls,StdCtrls,Buttons,IniFiles;
+     ExtCtrls,StdCtrls,Buttons,IniFiles, Measurement;
 
 type
   TMeasureMode=(IA,ID,UA,UD,MMErr);
+  TMeasureModeSet=set of TMeasureMode;
   TDiapazons=(nA100,micA1,micA10,micA100,mA1,mA10,mA100,mA1000,
               mV10,mV100,V1,V10,V100,V1000,DErr);
 
-  TSPIdevice=class
+  TSPIdevice=class(TInterfacedObject)
   {базовий клас для пристроїв, які керуються
   за допомогою Аrduino з використанням шини SPI}
   private
@@ -45,7 +46,7 @@ type
   end;
 
 
-  TVoltmetr=class(TSPIdevice)
+  TVoltmetr=class(TSPIdevice,IMeasurement)
   {базовий клас для вольтметрів серії В7-21}
   private
    fMeasureMode:TMeasureMode;
@@ -58,6 +59,7 @@ type
    Procedure DiapazonDetermination(Data:byte); virtual;
    Procedure ValueDetermination(Data:array of byte);virtual;
    Procedure PacketReceiving(Sender: TObject; const Str: string);override;
+   function GetData(LegalMeasureMode:TMeasureModeSet):double;
   public
    property MeasureMode:TMeasureMode read FMeasureMode;
    property Value:double read fValue;
@@ -67,6 +69,9 @@ type
    Constructor Create();overload;override;
    Function Request():boolean;
    Function Measurement():double;
+   function GetTemperature:double;
+   function GetVoltage(Vin:double):double;
+   function GetCurrent(Vin:double):double;
   end;
 
   TV721A=class(TVoltmetr)
@@ -208,6 +213,7 @@ type
                       ControlPinLabel,GatePinLabel:TLabel;
                       SetControlButton,SetGateButton:TButton;
                       PCB:TComboBox);
+//   Procedure Free;
    procedure PinsReadFromIniFile(ConfigFile:TIniFile);
    procedure PinsWriteToIniFile(ConfigFile:TIniFile);
    procedure NumberPinShow();virtual;
@@ -232,7 +238,7 @@ type
                       AB:TSpeedButton;
                       PCB:TComboBox;
                       TT:TTimer);
-   Procedure Free;                      
+   Procedure Free;
    procedure NumberPinShow();override;
    procedure ButtonEnabled();
    procedure VoltmetrDataShow();
@@ -354,7 +360,7 @@ begin
   PinControl:=UndefinedPin;
   PinGate:=UndefinedPin;
   fName:='';
-  fComPacket:=TComDataPacket.Create(fComPacket);
+  fComPacket:=TComDataPacket.Create(fComPort);
   fComPacket.Size:=0;
   fComPacket.MaxBufferSize:=1024;
   fComPacket.IncludeStrings:=False;
@@ -381,6 +387,8 @@ end;
 
 Procedure TSPIdevice.Free;
 begin
+// if fComPacket.ComPort<>nil then fComPacket.ComPort:=nil;
+// if fComPort<>nil then fComPort:=nil;
  fComPacket.Free;
  inherited;
 end;
@@ -464,6 +472,64 @@ end;
 Procedure TVoltmetr.DiapazonDetermination(Data:byte);
 begin
 
+end;
+
+function TVoltmetr.GetCurrent(Vin: double): double;
+// var temp:double;
+begin
+ Result:=GetData([ID,IA]);
+// Result:=ErResult;
+// temp:=Measurement();
+// if temp<>ErResult then
+//  begin
+//    if (fMeasureMode<>ID)or(fMeasureMode<>IA) then
+//         MessageDlg('Measure mode is wrong!!!',mtError, [mbOK], 0)
+//                                              else
+//         Result:=temp;
+//  end;
+end;
+
+function TVoltmetr.GetData(LegalMeasureMode: TMeasureModeSet): double;
+begin
+ Result:=Measurement();
+ if Result=ErResult then Exit;
+ if not(fMeasureMode in LegalMeasureMode) then
+   begin
+    MessageDlg('Measure mode is wrong!!!',mtError, [mbOK], 0);
+    Result:=ErResult;
+   end
+end;
+
+function TVoltmetr.GetTemperature: double;
+// var temp:double;
+begin
+ Result:=GetData([UD]);
+ if Result<>ErResult then Result:=T_CuKo(Result);
+
+// Result:=ErResult;
+// temp:=Measurement();
+// if temp<>ErResult then
+//  begin
+//    if (fMeasureMode<>UD) then
+//         MessageDlg('Measure mode is wrong!!!',mtError, [mbOK], 0)
+//                                              else
+//         Result:=T_CuKo(temp);
+//  end;
+end;
+
+function TVoltmetr.GetVoltage(Vin: double): double;
+// var temp:double;
+begin
+ Result:=GetData([UD,UA]);
+// Result:=ErResult;
+// temp:=Measurement();
+// if temp<>ErResult then
+//  begin
+//    if (fMeasureMode<>UD)or(fMeasureMode<>UA) then
+//         MessageDlg('Measure mode is wrong!!!',mtError, [mbOK], 0)
+//                                              else
+//         Result:=temp;
+//  end;
 end;
 
 Procedure TVoltmetr.ValueDetermination(Data:array of byte);
@@ -692,6 +758,13 @@ procedure TVoltmetrShow.Free;
 begin
  AdapterMeasureMode.Free;
  AdapterRange.Free;
+// MeasureMode:=nil;
+// Range:=nil;
+// DataLabel:=nil;
+// UnitLabel:=nil;
+// MeasurementButton:=nil;
+// AutoSpeedButton:=nil;
+// Time:=nil;
  inherited Free;
 end;
 
@@ -1420,6 +1493,16 @@ begin
     SetPinButtons[i].Caption := 'set ' + LowerCase(PinNames[i]);
     end;
 end;
+
+//procedure TSPIDeviceShow.Free;
+//begin
+// SPIDevice:=nil;
+// PinLabels[0]:=nil;
+// PinLabels[1]:=nil;
+// SetPinButtons[0]:=nil;
+// SetPinButtons[1]:=nil;
+// PinsComboBox:=nil;
+//end;
 
 procedure TSPIDeviceShow.PinsReadFromIniFile(ConfigFile: TIniFile);
 begin

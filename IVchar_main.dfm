@@ -35,7 +35,7 @@ object IVchar: TIVchar
     Top = 0
     Width = 1036
     Height = 577
-    ActivePage = TS_B7_21A
+    ActivePage = TS_Setting
     Align = alTop
     Font.Charset = RUSSIAN_CHARSET
     Font.Color = clWindowText
@@ -1899,6 +1899,51 @@ object IVchar: TIVchar
         ParentFont = False
         TabOrder = 5
         OnClick = BSaveSettingClick
+      end
+      object GBInputVoltage: TGroupBox
+        Tag = 130
+        Left = 808
+        Top = 65
+        Width = 177
+        Height = 96
+        Caption = 'Input voltage'
+        Font.Charset = RUSSIAN_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -17
+        Font.Name = 'Arial'
+        Font.Style = [fsBold]
+        ParentFont = False
+        TabOrder = 6
+        object RBIVSimulatiom: TRadioButton
+          Tag = 130
+          Left = 16
+          Top = 24
+          Width = 113
+          Height = 17
+          Caption = 'Simulation'
+          TabOrder = 0
+          OnClick = RBTSImitationClick
+        end
+        object RBIVChA: TRadioButton
+          Tag = 131
+          Left = 16
+          Top = 47
+          Width = 158
+          Height = 17
+          Caption = 'DAC Channel A'
+          TabOrder = 1
+          OnClick = RBTSImitationClick
+        end
+        object RBIVChB: TRadioButton
+          Tag = 132
+          Left = 16
+          Top = 70
+          Width = 158
+          Height = 17
+          Caption = 'DAC Channel B'
+          TabOrder = 2
+          OnClick = RBTSImitationClick
+        end
       end
     end
   end

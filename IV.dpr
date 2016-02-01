@@ -4,7 +4,8 @@ uses
   Forms,
   IVchar_main in 'IVchar_main.pas' {IVchar},
   SPIdevice in 'SPIdevice.pas',
-  PacketParameters in 'PacketParameters.pas';
+  PacketParameters in 'PacketParameters.pas',
+  Measurement in 'Measurement.pas';
 
 {$R *.res}
 

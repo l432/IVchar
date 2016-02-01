@@ -32,6 +32,7 @@
     <DCCReference Include="IVchar_main.pas">
       <Form>IVchar</Form>
     </DCCReference>
+    <DCCReference Include="Measurement.pas" />
     <DCCReference Include="PacketParameters.pas" />
     <DCCReference Include="SPIdevice.pas" />
     <None Include="IV.todo" />
