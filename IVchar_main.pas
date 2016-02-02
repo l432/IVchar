@@ -166,6 +166,18 @@ type
     RBIVSimulatiom: TRadioButton;
     RBIVChA: TRadioButton;
     RBIVChB: TRadioButton;
+    GBMeasChA: TGroupBox;
+    RBMeasSimChA: TRadioButton;
+    RBMeasMeasChA: TRadioButton;
+    CBMeasChA: TComboBox;
+    LMeasChA: TLabel;
+    BMeasChA: TButton;
+    GBMeasChB: TGroupBox;
+    LMeasChB: TLabel;
+    RBMeasSimChB: TRadioButton;
+    RBMeasMeasChB: TRadioButton;
+    CBMeasChB: TComboBox;
+    BMeasChB: TButton;
     procedure FormCreate(Sender: TObject);
     procedure PortConnected();
     procedure BConnectClick(Sender: TObject);
@@ -247,7 +259,10 @@ type
     DACShow:TDACShow;
     Simulator:TSimulator;
     Devices:array of TInterfacedObject;
-    TemperatureMD:TTemperatureMD;
+    Temperature_MD:TTemperature_MD;
+    Current_MD:TCurrent_MD;
+    VoltageIV_MD:TVoltageIV_MD;
+    ChannelA_MD,ChannelB_MD:TVoltageChannel_MD;
   end;
 
 const
@@ -1060,58 +1075,42 @@ begin
   Devices[1]:=V721A;
   Devices[2]:=V721_I;
   Devices[3]:=V721_II;
-  TemperatureMD:=TTemperatureMD.Create(Devices,RBTSImitation,RBTSTermocouple,CBTSTC,LTRValue);
-//  TemperatureMD:=TTemperatureMD.Create([Simulator,V721A],
-//   RBTSImitation,RBTSTermocouple,CBTSTC,LTRValue);
+  Temperature_MD:=TTemperature_MD.Create(Devices,RBTSImitation,RBTSTermocouple,CBTSTC,LTRValue);
+  Current_MD:=TCurrent_MD.Create(Devices,RBCSSimulation,RBCSMeasur,CBCSMeas,LADCurrentValue);
+  VoltageIV_MD:=TVoltageIV_MD.Create(Devices,RBVSSimulation,RBVSMeasur,CBVSMeas,LADVoltageValue);
+  ChannelA_MD:=TVoltageChannel_MD.Create(Devices,RBMeasSimChA,RBMeasMeasChA,CBMeasChA,LMeasChA);
+  ChannelB_MD:=TVoltageChannel_MD.Create(Devices,RBMeasSimChB,RBMeasMeasChB,CBMeasChB,LMeasChB);
+  ChannelA_MD.AddActionButton(BMeasChA,LOVChA);
+  ChannelB_MD.AddActionButton(BMeasChB,LOVChB);
 end;
 
 procedure TIVchar.DevicesFree;
-// var   i: Integer;
 begin
-  TemperatureMD.Free;
-//  for i := 0 to High(Devices) do
-//    Devices[i]:=nil;
-//  SetLength(Devices,0);
-//  Devices[0]._Release;
-//  Devices[0]:=nil;
+  Temperature_MD.Free;
+  Current_MD.Free;
+  VoltageIV_MD.Free;
+  ChannelA_MD.Free;
+  ChannelB_MD.Free;
   Simulator.Free;
 end;
 
 procedure TIVchar.DevicesReadFromIniAndToForm;
 begin
-  TemperatureMD.ReadFromIniFile(ConfigFile,'Sources','Temperature');
-
-// TemperatureSource := ConfigFile.ReadInteger('Sources', 'Temperature', 0);
-// RadioButtonSelect(GBTS,TemperatureSource);
-// try
-//  CBTSTC.ItemIndex:=ConfigFile.ReadInteger('Sources', 'Termocouple', 0);
-// except
-//  CBTSTC.ItemIndex:=0;
-// end;
-//
-// VoltageSource := ConfigFile.ReadInteger('Sources', 'Voltage', 0);
-// RadioButtonSelect(GBVS,VoltageSource);
-// try
-//  CBVSMeas.ItemIndex:=ConfigFile.ReadInteger('Sources', 'Voltage_M', 0);
-// except
-//  CBVSMeas.ItemIndex:=0;
-// end;
-//
-// CurrentSource := ConfigFile.ReadInteger('Sources', 'Current', 0);
-// RadioButtonSelect(GBCS,CurrentSource);
-// try
-//  CBCSMeas.ItemIndex:=ConfigFile.ReadInteger('Sources', 'Current_M', 0);
-// except
-//  CBCSMeas.ItemIndex:=0;
-// end;
-
-
+  Temperature_MD.ReadFromIniFile(ConfigFile,'Sources','Temperature');
+  Current_MD.ReadFromIniFile(ConfigFile,'Sources','Current');
+  VoltageIV_MD.ReadFromIniFile(ConfigFile,'Sources','Voltage');
+  ChannelA_MD.ReadFromIniFile(ConfigFile,'Sources','ChannelA');
+  ChannelB_MD.ReadFromIniFile(ConfigFile,'Sources','ChannelB');
 end;
 
 procedure TIVchar.DevicesWriteToIniFile;
 begin
   ConfigFile.EraseSection('Sources');
-  TemperatureMD.WriteToIniFile(ConfigFile,'Sources','Temperature');
+  Temperature_MD.WriteToIniFile(ConfigFile,'Sources','Temperature');
+  Current_MD.WriteToIniFile(ConfigFile,'Sources','Current');
+  VoltageIV_MD.WriteToIniFile(ConfigFile,'Sources','Voltage');
+  ChannelA_MD.WriteToIniFile(ConfigFile,'Sources','ChannelA');
+  ChannelB_MD.WriteToIniFile(ConfigFile,'Sources','ChannelB');
 end;
 
 procedure TIVchar.PinsWriteToIniFile;

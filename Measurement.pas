@@ -31,8 +31,10 @@ private
  fSetOfInterface:array of TInterfacedObject;
  SimulatorRadioBut,MeasurementRadioBut:TRadioButton;
  DevicesComboBox:TComboBox;
- ResultIndicator:TLabel;
+ ResultIndicator,DataForAction:TLabel;
+ ActionButton:TButton;
  procedure DetermineInterface(Sender: TObject);
+ procedure ActionButtonOnClick(Sender: TObject);
  procedure SetOnClickAction(Action: TNotifyEvent);
  function GetResult(Value:double):double;virtual;
  function StringResult(data:double):string;virtual;
@@ -48,16 +50,33 @@ public
  function GetMeasurementResult(Value: Double):double;
  procedure ReadFromIniFile(ConfigFile:TIniFile;const Section, Ident: string);
  procedure WriteToIniFile(ConfigFile:TIniFile;const Section, Ident: string);
+ procedure AddActionButton(AB:TButton;DFA:TLabel);
 end;
 
-TTemperatureMD =class(TMeasuringDevice)
+TTemperature_MD =class(TMeasuringDevice)
 private
  function GetResult(Value:double):double;override;
  function StringResult(data:double):string;override;
 public
-// function GetMeasurementResult():double;override;
 end;
 
+TCurrent_MD =class(TMeasuringDevice)
+private
+ function GetResult(Value:double):double;override;
+public
+end;
+
+TVoltageIV_MD =class(TMeasuringDevice)
+private
+ function StringResult(data:double):string;override;
+public
+end;
+
+TVoltageChannel_MD =class(TMeasuringDevice)
+private
+ function StringResult(data:double):string;override;
+public
+end;
 
 
 function T_CuKo(Voltage:double):double;
@@ -104,6 +123,24 @@ end;
 
 
 { TMeasuringDevice }
+
+procedure TMeasuringDevice.ActionButtonOnClick(Sender: TObject);
+ var value:double;
+begin
+ try
+   value:=StrToFloat(DataForAction.Caption);
+ except
+   value:=ErResult;
+ end;
+ GetMeasurementResult(Value);
+end;
+
+procedure TMeasuringDevice.AddActionButton(AB: TButton; DFA: TLabel);
+begin
+ ActionButton:=AB;
+ ActionButton.OnClick:=ActionButtonOnClick;
+ DataForAction:=DFA;
+end;
 
 constructor TMeasuringDevice.Create(//const SOI:array of IMeasurement;
                                     const SOI:array of TInterfacedObject;
@@ -230,14 +267,36 @@ end;
 // end;
 //end;
 
-function TTemperatureMD.GetResult(Value: double): double;
+function TTemperature_MD.GetResult(Value: double): double;
 begin
  Result:=(fSetOfInterface[fActiveInterfaceNumber] as IMeasurement).GetTemperature();
 end;
 
-function TTemperatureMD.StringResult(data: double): string;
+function TTemperature_MD.StringResult(data: double): string;
 begin
   Result:=FloatToStrF(data,ffFixed, 4, 1);
+end;
+
+{ TCurrentMD }
+
+function TCurrent_MD.GetResult(Value: double): double;
+begin
+ Result:=(fSetOfInterface[fActiveInterfaceNumber] as IMeasurement).GetCurrent(Value);
+end;
+
+
+{ TVoltageIV_MD }
+
+function TVoltageIV_MD.StringResult(data: double): string;
+begin
+ Result:=FloatToStrF(data,ffFixed, 4, 3);
+end;
+
+{ TVoltageChannel_MD }
+
+function TVoltageChannel_MD.StringResult(data: double): string;
+begin
+ Result:=FloatToStrF(data,ffFixed, 6, 4);
 end;
 
 end.
