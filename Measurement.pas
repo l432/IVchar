@@ -86,7 +86,7 @@ function T_CuKo(Voltage:double):double;
 implementation
 
 uses
-  SysUtils, OlegType;
+  SysUtils, OlegType, SPIdevice;
 
 { Simulator }
 
@@ -104,7 +104,8 @@ end;
 function TSimulator.GetTemperature: double;
 begin
  sleep(500);
- Result:=300;
+ Result:=Random(4000)/10.0;
+// Result:=300;
 end;
 
 function TSimulator.GetVoltage(Vin: double): double;
@@ -204,7 +205,13 @@ end;
 
 function TMeasuringDevice.GetResult(Value: double): double;
 begin
- Result:=(fSetOfInterface[fActiveInterfaceNumber] as IMeasurement).GetVoltage(Value);
+ Result:=ErResult;
+ if (fSetOfInterface[fActiveInterfaceNumber] is TSimulator) then
+   Result:=(fSetOfInterface[fActiveInterfaceNumber] as TSimulator).GetVoltage(Value);
+ if (fSetOfInterface[fActiveInterfaceNumber] is TVoltmetr) then
+   Result:=(fSetOfInterface[fActiveInterfaceNumber] as TVoltmetr).GetVoltage(Value);
+
+//  Result:=(fSetOfInterface[fActiveInterfaceNumber] as IMeasurement).GetVoltage(Value);
 end;
 
 procedure TMeasuringDevice.SetVisualElementValue;
@@ -269,7 +276,12 @@ end;
 
 function TTemperature_MD.GetResult(Value: double): double;
 begin
- Result:=(fSetOfInterface[fActiveInterfaceNumber] as IMeasurement).GetTemperature();
+  Result:=ErResult;
+ if (fSetOfInterface[fActiveInterfaceNumber] is TSimulator) then
+   Result:=(fSetOfInterface[fActiveInterfaceNumber] as TSimulator).GetTemperature();
+ if (fSetOfInterface[fActiveInterfaceNumber] is TVoltmetr) then
+   Result:=(fSetOfInterface[fActiveInterfaceNumber] as TVoltmetr).GetTemperature();
+// Result:=(fSetOfInterface[fActiveInterfaceNumber] as IMeasurement).GetTemperature();
 end;
 
 function TTemperature_MD.StringResult(data: double): string;
@@ -281,7 +293,12 @@ end;
 
 function TCurrent_MD.GetResult(Value: double): double;
 begin
- Result:=(fSetOfInterface[fActiveInterfaceNumber] as IMeasurement).GetCurrent(Value);
+ Result:=ErResult;
+ if (fSetOfInterface[fActiveInterfaceNumber] is TSimulator) then
+   Result:=(fSetOfInterface[fActiveInterfaceNumber] as TSimulator).GetCurrent(Value);
+ if (fSetOfInterface[fActiveInterfaceNumber] is TVoltmetr) then
+   Result:=(fSetOfInterface[fActiveInterfaceNumber] as TVoltmetr).GetCurrent(Value);
+// Result:=(fSetOfInterface[fActiveInterfaceNumber] as IMeasurement).GetCurrent(Value);
 end;
 
 
