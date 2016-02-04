@@ -98,7 +98,7 @@ end;
 function TSimulator.GetCurrent(Vin: double): double;
 begin
  sleep(300);
- Result:=Vin*Vin;
+ Result:=4e-4*Vin;
 end;
 
 function TSimulator.GetTemperature: double;

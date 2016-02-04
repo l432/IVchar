@@ -198,10 +198,12 @@ type
       Rect: TRect; State: TGridDrawState);
     procedure BRBDeleteClick(Sender: TObject);
     procedure BRBEditClick(Sender: TObject);
-    procedure RBTSImitationClick(Sender: TObject);
+//    procedure RBTSImitationClick(Sender: TObject);
     procedure BSaveSettingClick(Sender: TObject);
     procedure SBTAutoClick(Sender: TObject);
     procedure BIVStartClick(Sender: TObject);
+    procedure PCChanging(Sender: TObject; var AllowChange: Boolean);
+    procedure BIVStopClick(Sender: TObject);
 //    procedure BOVsetChAClick(Sender: TObject);
 //    procedure BORChAClick(Sender: TObject);
 //    procedure RGORChAClick(Sender: TObject);
@@ -250,7 +252,16 @@ type
     procedure BoxFromIniFile;
     procedure BoxToIniFile;
     procedure IVCharBegin;
+    procedure IVCharEnd;
+    procedure VectorsCreate;
+    procedure VectorsDispose;
     { Private declarations }
+    procedure IVcharCycle(Action:TSimpleEvent;ItIsForvard:boolean=True);
+    procedure ActionEmpty();
+    procedure ActionForward();
+    procedure RangeWriteToIniFile;
+    procedure IVVoltageMeasForw(var tempV: Double);
+    procedure IVCurrentMeasForw(var tempI: Double);
   public
     V721A:TV721A;
     V721_I,V721_II:TV721;
@@ -258,10 +269,11 @@ type
     ConfigFile:TIniFile;
     MeasuringEquipment,
     NumberPins:TStringList; // номери пінів, які використовуються як керуючі для SPI
-    Range:TDiapazon;//межі вимірювань, Х - пряма гілка, Y - зворотня
-    ForwSteps,RevSteps:PVector;
-    ForwDelay,RevDelay,
-    TemperatureSource,VoltageSource,CurrentSource:Integer;
+    Xmin,Ymin,Xmax,Ymax:double;
+    //    Range:TDiapazon;//межі вимірювань, Х - пряма гілка, Y - зворотня
+    ForwSteps,RevSteps,IVResult:PVector;
+    ForwDelay,RevDelay:Integer;
+//    TemperatureSource,VoltageSource,CurrentSource:Integer;
     DAC:TDAC;
     DACChanelShows:array of TDACChannelShow;
     DACShow:TDACShow;
@@ -272,6 +284,10 @@ type
     VoltageIV_MD:TVoltageIV_MD;
     ChannelA_MD,ChannelB_MD:TVoltageChannel_MD;
     TemperatureMeasuringThread:TTemperatureMeasuringThread;
+    NumberOfTemperatureMeasuring: Integer;
+    {TemperatureIsMeasuring,}IVMeasuringToStop:boolean;
+    PointNumber:Integer;
+    VoltageInput,VoltageInputCorrection,Temperature:double;
   end;
 
 const
@@ -289,6 +305,128 @@ var
 implementation
 
 {$R *.dfm}
+
+procedure TIVchar.ActionEmpty;
+begin
+
+end;
+
+procedure TIVchar.RangeWriteToIniFile;
+ var Section,Ident:string;
+begin
+    Section:='Range';
+    Ident:='Measure';
+    ConfigFile.EraseSection(Section);
+    WriteIniDef(ConfigFile,Section,Ident+'XMin',Xmin,0);
+    WriteIniDef(ConfigFile,Section,Ident+'YMin',Ymin,0);
+    WriteIniDef(ConfigFile,Section,Ident+'XMax',Xmax,Vmax);
+    WriteIniDef(ConfigFile,Section,Ident+'Ymax',Ymax,Vmax);
+end;
+
+procedure TIVchar.IVVoltageMeasForw(var tempV: Double);
+begin
+  repeat
+     tempV := VoltageIV_MD.GetMeasurementResult(VoltageInput);
+//     showmessage(floattostr(tempV)+' '+floattostr(VoltageInput));
+     if RGDO.ItemIndex=1 then
+       begin
+       tempV:=-tempV;
+       LADVoltageValue.Caption:=FloatToStrF(tempV,ffFixed, 4, 3);
+       end;
+     if not(CBSStep.Checked) then Break;
+     if abs(tempV-VoltageInput)>0.0004 then
+       VoltageInputCorrection:=VoltageInputCorrection-(tempV-VoltageInput);
+     if abs(tempV-VoltageInput)>0.0009 then
+      begin
+       SetVoltage(VoltageInput+VoltageInputCorrection);
+       sleep(ForwDelay);
+      end;
+  until (abs(tempV-VoltageInput)<0.001) ;
+
+
+//{}if not(Par^.SC_Reg)and(znak=1) then
+// begin
+// if i=0 then UUtemp:=U
+//        else
+//         begin
+//               if U1>0 then UUtemp:=a^.x[i]+Delta(a^.x[i])
+//                       else UUtemp:=-abs(a^.x[i])-abs(Delta(a^.x[i]));
+//         end;
+//
+// if (abs(U1-UUtemp)>0.0008) then
+//  begin
+//  if (abs(U1-UUtemp)>0.001) then Upop:=Upop-(U1-UUtemp)
+//      else
+//  if (Par^.Kan1.Name=UTC)and(UNITC.Tp='v')and(znak=1) then
+//                        Upop:=Upop-0.0005*(U1-UUtemp)/abs(U1-UUtemp)
+//                                           else
+//                        Upop:=Upop-0.001*(U1-UUtemp)/abs(U1-UUtemp);
+//  end;
+//
+// if (abs(U1-UUtemp)>0.0014)and(i<>0) then Continue;
+// if ((abs(U1-UUtemp)>0.0018){or(U1<0)})and(i=0) then Continue;
+//
+//
+// end;{}
+
+end;
+
+procedure TIVchar.IVCurrentMeasForw(var tempI: Double);
+begin
+  tempI := Current_MD.GetMeasurementResult(VoltageInput);
+  if RGDO.ItemIndex=1 then
+       begin
+       tempI:=-tempI;
+       LADVoltageValue.Caption:=FloatToStrF(tempI,ffExponent, 4, 2);
+       end;
+end;
+
+procedure TIVchar.ActionForward;
+ var tempV,tempI:double;
+begin
+// if Condition then
+//  begin
+//   VoltageInput:=Start;
+//   repeat
+//     if IVMeasuringToStop then Exit;
+//     inc(PointNumber);
+//     Action;
+//     VoltageInput:=VoltageInput+StepDetermine(VoltageInput,Steps);
+//   until VoltageInput>Finish;
+//  end;
+//end;
+//      showmessage(floattostr(VoltageInput));
+
+ SetVoltage(VoltageInput+VoltageInputCorrection);
+ sleep(ForwDelay);
+
+ // showmessage(floattostr(VoltageInput+VoltageInputCorrection));
+
+ IVCurrentMeasForw(tempI);
+ if (tempI=ErResult)or(abs(tempI)>=Imax) then
+  begin
+   IVMeasuringToStop:=True;
+   Exit;
+  end;
+
+//   showmessage(floattostr(tempI));
+
+ IVVoltageMeasForw(tempV);
+ if tempV=ErResult then
+  begin
+   IVMeasuringToStop:=True;
+   Exit;
+  end;
+
+  IVResult.Add(tempV,tempI);
+  ForwLine.AddXY(tempV,tempI);
+  if abs(tempI)>1e-11 then  ForwLg.AddXY(tempV,abs(tempI));
+
+  if NumberOfTemperatureMeasuring=PointNumber then
+    Temperature:=Temperature_MD.GetMeasurementResult(VoltageInput);
+  PBIV.Position := PointNumber;
+
+end;
 
 procedure TIVchar.BConnectClick(Sender: TObject);
 begin
@@ -411,8 +549,28 @@ begin
 
 procedure TIVchar.BIVStartClick(Sender: TObject);
 begin
- showmessage(inttostr(MeasurementNumberDetermine));
+// showmessage(inttostr(MeasurementNumberDetermine));
   IVCharBegin();
+ case RGInputVoltage.ItemIndex of
+  1:DAC.OutputRangeA(pm100);
+  2:DAC.OutputRangeB(pm100);
+ end;
+
+  IVcharCycle(ActionForward);
+//  IVcharCycle(ActionEmpty,False);
+//  sleep(5000);
+
+  IVCharEnd();
+ case RGInputVoltage.ItemIndex of
+  1,2:DAC.Reset;
+ end;
+  if Temperature=ErResult then
+    Temperature:=Temperature_MD.GetMeasurementResult(VoltageInput);
+end;
+
+procedure TIVchar.BIVStopClick(Sender: TObject);
+begin
+ IVMeasuringToStop:=True;
 end;
 
 //procedure TIVchar.BOVsetChAClick(Sender: TObject);
@@ -523,9 +681,8 @@ begin
 
  NumberPins:=TStringList.Create;
  MeasuringEquipment:=TStringList.Create;
- Range:=TDiapazon.Create;
- new(ForwSteps);
- new(RevSteps);
+// Range:=TDiapazon.Create;
+ VectorsCreate();
 
  BoxFromIniFile();
 
@@ -582,10 +739,8 @@ begin
  DevicesFree();
 
  DACFree();
-
- dispose(ForwSteps);
- dispose(RevSteps);
- Range.Free;
+ VectorsDispose();
+// Range.Free;
  MeasuringEquipment.Free;
  NumberPins.Free;
  VoltmetrsFree();
@@ -619,6 +774,11 @@ begin
      end;
    except
    end;
+end;
+
+procedure TIVchar.PCChanging(Sender: TObject; var AllowChange: Boolean);
+begin
+ AllowChange:=False;
 end;
 
 procedure TIVchar.PortConnected();
@@ -729,7 +889,8 @@ begin
     Exit;
    end;
   LFBHighlimitValue.Caption:=FloatToStrF(UDFBHighLimit.Position/10,ffFixed, 1, 1);
-  Range.XMax:=UDFBHighLimit.Position/10;
+  XMax:=UDFBHighLimit.Position/10;
+//  Range.XMax:=UDFBHighLimit.Position/10;
   end;
  if (Sender as TUpDown).Name='UDFBLowLimit' then
   begin
@@ -739,7 +900,8 @@ begin
     Exit;
    end;
   LFBLowlimitValue.Caption:=FloatToStrF(UDFBLowLimit.Position/10,ffFixed, 1, 1);
-  Range.XMin:=UDFBLowLimit.Position/10;
+  XMin:=UDFBLowLimit.Position/10;
+//  Range.XMin:=UDFBLowLimit.Position/10;
   end;
  if (Sender as TUpDown).Name='UDRBHighLimit' then
   begin
@@ -750,7 +912,8 @@ begin
     Exit;
    end;
   LRBHighlimitValue.Caption:=FloatToStrF(-(UDRBHighLimit.Max-UDRBHighLimit.Position)/10,ffFixed, 1, 1);
-  Range.YMin:=(UDRBHighLimit.Max-UDRBHighLimit.Position)/10;
+  YMin:=(UDRBHighLimit.Max-UDRBHighLimit.Position)/10;
+//  Range.YMin:=(UDRBHighLimit.Max-UDRBHighLimit.Position)/10;
   end;
  if (Sender as TUpDown).Name='UDRBLowLimit' then
   begin
@@ -760,7 +923,8 @@ begin
     Exit;
    end;
   LRBLowlimitValue.Caption:=FloatToStrF(-(UDRBLowLimit.Max-UDRBLowLimit.Position)/10,ffFixed, 1, 1);
-  Range.Ymax:=(UDRBLowLimit.Max-UDRBLowLimit.Position)/10;
+  Ymax:=(UDRBLowLimit.Max-UDRBLowLimit.Position)/10;
+//  Range.Ymax:=(UDRBLowLimit.Max-UDRBLowLimit.Position)/10;
   end;
  RangeShow;
 end;
@@ -780,10 +944,14 @@ end;
 procedure TIVchar.RangeShow;
  var Start,Finish:double;
 begin
-  if CBForw.Checked then Finish:=Range.XMax
-                    else Finish:=-Range.Ymin;
-  if CBRev.Checked then Start:=-Range.YMax
-                   else Start:=Range.Xmin;
+//  if CBForw.Checked then Finish:=Range.XMax
+//                    else Finish:=-Range.Ymin;
+//  if CBRev.Checked then Start:=-Range.YMax
+//                   else Start:=Range.Xmin;
+  if CBForw.Checked then Finish:=XMax
+                    else Finish:=-Ymin;
+  if CBRev.Checked then Start:=-YMax
+                   else Start:=Xmin;
   if (not(CBForw.Checked))and(not(CBRev.Checked))
     then begin
          Finish:=0;
@@ -794,73 +962,90 @@ begin
 end;
 
 procedure TIVchar.RangeReadFromIniFile;
+ var Section,Ident:string;
 begin
-  Range.ReadFromIniFile(ConfigFile, 'Range', 'Measure');
-  if (Range.XMax = ErResult)or(Range.XMax >Vmax) then
-                   Range.XMax := Vmax;
-  if (Range.YMax = ErResult)or(Range.YMax >Vmax) then
-                   Range.YMax := Vmax;
-  if Range.XMin<0 then Range.XMin := 0;
-  if Range.YMin<0 then Range.YMin := 0;
+
+//  Range.ReadFromIniFile(ConfigFile, 'Range', 'Measure');
+//  if (Range.XMax = ErResult)or(Range.XMax >Vmax) then
+//                   Range.XMax := Vmax;
+//  if (Range.YMax = ErResult)or(Range.YMax >Vmax) then
+//                   Range.YMax := Vmax;
+//  if Range.XMin<0 then Range.XMin := 0;
+//  if Range.YMin<0 then Range.YMin := 0;
+
+  Section:='Range';
+  Ident:='Measure';
+  XMin:=ConfigFile.ReadFloat(Section,Ident+'XMin',0);
+  YMin:=ConfigFile.ReadFloat(Section,Ident+'YMin',0);
+  XMax:=ConfigFile.ReadFloat(Section,Ident+'XMax',Vmax);
+  YMax:=ConfigFile.ReadFloat(Section,Ident+'Ymax',Vmax);
+  if (XMax >Vmax)or(Xmin>=Xmax) then XMax := Vmax;
+  if (YMax >Vmax)or(Ymin>=Ymax) then YMax := Vmax;
+  if (XMin<0)or(Xmin>=Xmax) then XMin := 0;
+  if (YMin<0)or(Ymin>=Ymax) then YMin := 0;
 end;
 
 procedure TIVchar.RangeToForm;
 begin
   RangeShow;
-  UDFBHighLimit.Position := round(Range.XMax * 10);
-  UDFBLowLimit.Position := round(Range.XMin * 10);
+//  UDFBHighLimit.Position := round(Range.XMax * 10);
+//  UDFBLowLimit.Position := round(Range.XMin * 10);
+  UDFBHighLimit.Position := round(XMax * 10);
+  UDFBLowLimit.Position := round(XMin * 10);
   LFBHighlimitValue.Caption := FloatToStrF(UDFBHighLimit.Position / 10, ffFixed, 1, 1);
   LFBLowlimitValue.Caption := FloatToStrF(UDFBLowLimit.Position / 10, ffFixed, 1, 1);
-  UDRBHighLimit.Position := UDRBHighLimit.Max-round(Range.YMin * 10);
-  UDRBLowLimit.Position := UDRBLowLimit.Max-round(Range.YMax * 10);
+  UDRBHighLimit.Position := UDRBHighLimit.Max-round(YMin * 10);
+  UDRBLowLimit.Position := UDRBLowLimit.Max-round(YMax * 10);
+//  UDRBHighLimit.Position := UDRBHighLimit.Max-round(Range.YMin * 10);
+//  UDRBLowLimit.Position := UDRBLowLimit.Max-round(Range.YMax * 10);
   LRBHighlimitValue.Caption := FloatToStrF(-(UDRBHighLimit.Max-UDRBHighLimit.Position) / 10, ffFixed, 1, 1);
   LRBLowlimitValue.Caption := FloatToStrF(-(UDRBLowLimit.Max-UDRBLowLimit.Position)/ 10, ffFixed, 1, 1);
 end;
 
-procedure TIVchar.RBTSImitationClick(Sender: TObject);
-begin
-  if (Sender as TRadioButton).Parent.Name='GBTS' then
-   begin
-     if RBTSImitation.Checked then
-       begin
-        TemperatureSource:=0;
-        CBTSTC.Enabled:=False;
-       end;
-     if RBTSTermocouple.Checked then
-       begin
-        TemperatureSource:=1;
-        CBTSTC.Enabled:=True;
-       end;
-   end;
-
-  if (Sender as TRadioButton).Parent.Name='GBVS' then
-   begin
-     if RBVSSimulation.Checked then
-       begin
-        VoltageSource:=0;
-        CBVSMeas.Enabled:=False;
-       end;
-     if RBVSMeasur.Checked then
-       begin
-        VoltageSource:=1;
-        CBVSMeas.Enabled:=True;
-       end;
-   end;
-
-  if (Sender as TRadioButton).Parent.Name='GBCS' then
-   begin
-     if RBCSSimulation.Checked then
-       begin
-        CurrentSource:=0;
-        CBCSMeas.Enabled:=False;
-       end;
-     if RBCSMeasur.Checked then
-       begin
-        CurrentSource:=1;
-        CBCSMeas.Enabled:=True;
-       end;
-   end;
-end;
+//procedure TIVchar.RBTSImitationClick(Sender: TObject);
+//begin
+//  if (Sender as TRadioButton).Parent.Name='GBTS' then
+//   begin
+//     if RBTSImitation.Checked then
+//       begin
+//        TemperatureSource:=0;
+//        CBTSTC.Enabled:=False;
+//       end;
+//     if RBTSTermocouple.Checked then
+//       begin
+//        TemperatureSource:=1;
+//        CBTSTC.Enabled:=True;
+//       end;
+//   end;
+//
+//  if (Sender as TRadioButton).Parent.Name='GBVS' then
+//   begin
+//     if RBVSSimulation.Checked then
+//       begin
+//        VoltageSource:=0;
+//        CBVSMeas.Enabled:=False;
+//       end;
+//     if RBVSMeasur.Checked then
+//       begin
+//        VoltageSource:=1;
+//        CBVSMeas.Enabled:=True;
+//       end;
+//   end;
+//
+//  if (Sender as TRadioButton).Parent.Name='GBCS' then
+//   begin
+//     if RBCSSimulation.Checked then
+//       begin
+//        CurrentSource:=0;
+//        CBCSMeas.Enabled:=False;
+//       end;
+//     if RBCSMeasur.Checked then
+//       begin
+//        CurrentSource:=1;
+//        CBCSMeas.Enabled:=True;
+//       end;
+//   end;
+//end;
 
 procedure TIVchar.StepsReadFromIniFile;
 begin
@@ -962,28 +1147,34 @@ begin
   WriteIniDef(ConfigFile, 'Delay', 'RevTime', RevDelay, 0);
 end;
 
-function TIVchar.MeasurementNumberDetermine: integer;
- var Number:integer;
-     Voltage:double;
+function TIVchar.MeasurementNumberDetermine(): integer;
+// var Number:integer;
+//     Voltage:double;
 begin
- Number:=0;
- if CBForw.Checked then
-  begin
-   Voltage:=Range.XMin;
-   repeat
-     inc(Number);
-     Voltage:=Voltage+StepDetermine(Voltage,ForwSteps);
-   until Voltage>Range.XMax;
-  end;
- if CBRev.Checked then
-  begin
-   Voltage:=Range.YMin;
-   repeat
-     inc(Number);
-     Voltage:=Voltage+StepDetermine(Voltage,RevSteps);
-   until Voltage>Range.YMax;
-  end;
- Result:=Number;
+ PointNumber:=0;
+ IVcharCycle(ActionEmpty);
+ IVcharCycle(ActionEmpty,False);
+ Result:=PointNumber;
+
+//number:=0;
+// if CBForw.Checked then
+//  begin
+//   Voltage:=XMin;
+//   repeat
+//     inc(Number);
+//     Voltage:=Voltage+StepDetermine(Voltage,ForwSteps);
+//   until Voltage>XMax;
+//  end;
+// if CBRev.Checked then
+//  begin
+//   Voltage:=YMin;
+//   repeat
+//     inc(Number);
+//     Voltage:=Voltage+StepDetermine(Voltage,RevSteps);
+//   until Voltage>YMax;
+//  end;
+// Result:=Number;
+
 end;
 
 procedure TIVchar.BoxFromIniFile;
@@ -1004,8 +1195,12 @@ begin
 end;
 
 procedure TIVchar.IVCharBegin;
+
 begin
+  IVMeasuringToStop:=False;
   PBIV.Max := MeasurementNumberDetermine();
+  NumberOfTemperatureMeasuring:=round(PBIV.Max/2);
+
   PBIV.Position := 0;
   BIVStop.Enabled:=True;
   CBForw.Enabled:=False;
@@ -1013,7 +1208,93 @@ begin
   CBSStep.Enabled:=False;
   BIVSave.Enabled:=False;
   BIVStart.Enabled:=False;
+  BConnect.Enabled:=False;
+  BParamReceive.Enabled:=False;
   SBTAuto.Enabled:=False;
+  PC.OnChanging:=PCChanging;
+
+//  TemperatureIsMeasuring:=SBTAuto.Down;
+//  if TemperatureIsMeasuring then SBTAuto.Down:=False;
+  if SBTAuto.Down then SBTAuto.Down:=False;
+
+  PointNumber:=0;
+  PBIV.Position := PointNumber;
+  SetLenVector(IVResult,PointNumber);
+  Temperature:=ErResult;
+  VoltageInputCorrection:=0;
+
+  ForwLine.Clear;
+  RevLine.Clear;
+  ForwLg.Clear;
+  RevLg.Clear;
+
+end;
+
+procedure TIVchar.IVcharCycle(Action: TSimpleEvent; ItIsForvard: boolean);
+ var Start,Finish:double;
+     Steps:PVector;
+     Condition:boolean;
+begin
+ if ItIsForvard then
+   begin
+//     Start:=Range.XMin;
+//     Finish:=Range.XMax;
+     Start:=XMin;
+     Finish:=XMax;
+     Steps:=ForwSteps;
+     Condition:=CBForw.Checked;
+   end          else
+   begin
+//     Start:=Range.YMin;
+//     Finish:=Range.YMax;
+     Start:=YMin;
+     Finish:=YMax;
+     Steps:=RevSteps;
+     Condition:=CBRev.Checked;
+   end;
+
+ if Condition then
+  begin
+   VoltageInput:=Start;
+   repeat
+     Application.ProcessMessages;
+     if IVMeasuringToStop then Exit;
+     inc(PointNumber);
+
+     Action;
+     VoltageInput:=VoltageInput+StepDetermine(VoltageInput,Steps);
+   until VoltageInput>Finish;
+  end;
+end;
+
+procedure TIVchar.IVCharEnd;
+begin
+  BIVStop.Enabled := False;
+  CBForw.Enabled := True;
+  CBRev.Enabled := True;
+  CBSStep.Enabled := True;
+  BIVStart.Enabled := True;
+  BConnect.Enabled := True;
+  BParamReceive.Enabled := True;
+  SBTAuto.Enabled := True;
+  PC.OnChanging := nil;
+  if High(IVResult^.X)>0 then BIVSave.Enabled := True;
+  
+//  if TemperatureIsMeasuring then SBTAuto.Down:=True;
+end;
+
+procedure TIVchar.VectorsCreate;
+begin
+  new(ForwSteps);
+  new(RevSteps);
+  new(IVResult);
+end;
+
+procedure TIVchar.VectorsDispose;
+begin
+  dispose(ForwSteps);
+  dispose(RevSteps);
+  dispose(IVResult);
 end;
 
 procedure TIVchar.MeasuringEquipmentRead;
@@ -1102,8 +1383,8 @@ end;
 
 procedure TIVchar.SettingWriteToIniFile;
 begin
-//  SourcesWriteToIniFile;
-  Range.WriteToIniFile(ConfigFile, 'Range', 'Measure');
+//    Range.WriteToIniFile(ConfigFile, 'Range', 'Measure');
+  RangeWriteToIniFile;
   StepsWriteToIniFile;
   DelayTimeWriteToIniFile;
   DevicesWriteToIniFile;
@@ -1112,6 +1393,7 @@ end;
 
 procedure TIVchar.SetVoltage(Value: double);
 begin
+ if RGDO.ItemIndex=1 then Value:=-Value;
  case RGInputVoltage.ItemIndex of
   1:DAC.OutputA(Value);
   2:DAC.OutputB(Value);
@@ -1295,6 +1577,9 @@ begin
   LADCurrentValue.Caption:=Undefined;
   LTRValue.Caption:=Undefined;
   LTLastValue.Caption:=Undefined;
+
+  PC.OnChanging:=nil;
+  ChLg.LeftAxis.Logarithmic:=True;
 
   try
   for i := IVchar.ComponentCount - 1 downto 0 do

@@ -45,6 +45,7 @@ object IVchar: TIVchar
     ParentFont = False
     TabOrder = 0
     OnChange = PCChange
+    OnChanging = PCChanging
     object TS_Main: TTabSheet
       Caption = 'Main'
       object ChLine: TChart
@@ -205,6 +206,7 @@ object IVchar: TIVchar
           Height = 25
           Caption = 'Stop'
           TabOrder = 3
+          OnClick = BIVStopClick
         end
         object CBSStep: TCheckBox
           Left = 16
@@ -1140,7 +1142,6 @@ object IVchar: TIVchar
             Height = 17
             Caption = 'Simulation'
             TabOrder = 0
-            OnClick = RBTSImitationClick
           end
           object RBMeasMeasChA: TRadioButton
             Tag = 111
@@ -1150,7 +1151,6 @@ object IVchar: TIVchar
             Height = 17
             Caption = 'Measurement'
             TabOrder = 1
-            OnClick = RBTSImitationClick
           end
           object CBMeasChA: TComboBox
             Tag = 5
@@ -1479,7 +1479,6 @@ object IVchar: TIVchar
             Height = 17
             Caption = 'Simulation'
             TabOrder = 0
-            OnClick = RBTSImitationClick
           end
           object RBMeasMeasChB: TRadioButton
             Tag = 111
@@ -1489,7 +1488,6 @@ object IVchar: TIVchar
             Height = 17
             Caption = 'Measurement'
             TabOrder = 1
-            OnClick = RBTSImitationClick
           end
           object CBMeasChB: TComboBox
             Tag = 5
@@ -1919,7 +1917,6 @@ object IVchar: TIVchar
           Height = 17
           Caption = 'Simulation'
           TabOrder = 0
-          OnClick = RBTSImitationClick
         end
         object RBTSTermocouple: TRadioButton
           Tag = 101
@@ -1929,7 +1926,6 @@ object IVchar: TIVchar
           Height = 17
           Caption = 'Thermocouple'
           TabOrder = 1
-          OnClick = RBTSImitationClick
         end
         object CBTSTC: TComboBox
           Tag = 5
@@ -1964,7 +1960,6 @@ object IVchar: TIVchar
           Height = 17
           Caption = 'Simulation'
           TabOrder = 0
-          OnClick = RBTSImitationClick
         end
         object RBVSMeasur: TRadioButton
           Tag = 111
@@ -1974,7 +1969,6 @@ object IVchar: TIVchar
           Height = 17
           Caption = 'Measurement'
           TabOrder = 1
-          OnClick = RBTSImitationClick
         end
         object CBVSMeas: TComboBox
           Tag = 5
@@ -2009,7 +2003,6 @@ object IVchar: TIVchar
           Height = 17
           Caption = 'Simulation'
           TabOrder = 0
-          OnClick = RBTSImitationClick
         end
         object RBCSMeasur: TRadioButton
           Tag = 121
@@ -2019,7 +2012,6 @@ object IVchar: TIVchar
           Height = 17
           Caption = 'Measurement'
           TabOrder = 1
-          OnClick = RBTSImitationClick
         end
         object CBCSMeas: TComboBox
           Tag = 5
