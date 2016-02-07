@@ -35,7 +35,7 @@ object IVchar: TIVchar
     Top = 0
     Width = 1036
     Height = 577
-    ActivePage = TS_Main
+    ActivePage = TS_Setting
     Align = alTop
     Font.Charset = RUSSIAN_CHARSET
     Font.Color = clWindowText
@@ -2059,7 +2059,7 @@ object IVchar: TIVchar
       end
       object RGDO: TRadioGroup
         Left = 22
-        Top = 360
+        Top = 344
         Width = 123
         Height = 97
         Caption = 'Diod orientation'
@@ -2073,6 +2073,42 @@ object IVchar: TIVchar
           'Inverse')
         ParentFont = False
         TabOrder = 7
+      end
+      object GBPR: TGroupBox
+        Left = 174
+        Top = 344
+        Width = 139
+        Height = 97
+        Caption = 'Parasitic resistance'
+        TabOrder = 8
+        object LPR: TLabel
+          Left = 24
+          Top = 16
+          Width = 90
+          Height = 34
+          Caption = '10.26'
+          Font.Charset = RUSSIAN_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -28
+          Font.Name = 'Verdana'
+          Font.Style = [fsBold]
+          ParentFont = False
+        end
+        object BPR: TButton
+          Left = 3
+          Top = 56
+          Width = 133
+          Height = 30
+          Caption = 'input value'
+          Font.Charset = RUSSIAN_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -23
+          Font.Name = 'Arial'
+          Font.Style = [fsBold]
+          ParentFont = False
+          TabOrder = 0
+          OnClick = BPRClick
+        end
       end
     end
   end

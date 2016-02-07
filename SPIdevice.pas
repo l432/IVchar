@@ -919,29 +919,29 @@ end;
 
 procedure TDAC.Begining;
 begin
-// if not(fComPort.Connected) then Exit;
-// if (ChannelA.Range=ChannelB.Range) then
-//          OutputRangeBoth(ChannelA.Range,False)
-//                                    else
-//          begin
-//           OutputRangeA(ChannelA.Range,False);
-//           sleep(100);
-//           OutputRangeB(ChannelB.Range,False);
-//          end;
-// sleep(100);
-// if ChannelA.Power then
-//    begin
-//      if ChannelB.Power then PowerOnBoth(False)
-//                        else PowerOnA(False);
-//    end
-//                   else
-//    begin
-//      if ChannelB.Power then PowerOnB(False)
-//                        else PowerOffBoth(False);
-//    end;
-// sleep(100);
-// SetMode();
-// sleep(100);
+ if not(fComPort.Connected) then Exit;
+ if (ChannelA.Range=ChannelB.Range) then
+          OutputRangeBoth(ChannelA.Range,False)
+                                    else
+          begin
+           OutputRangeA(ChannelA.Range,False);
+           sleep(100);
+           OutputRangeB(ChannelB.Range,False);
+          end;
+ sleep(100);
+ if ChannelA.Power then
+    begin
+      if ChannelB.Power then PowerOnBoth(False)
+                        else PowerOnA(False);
+    end
+                   else
+    begin
+      if ChannelB.Power then PowerOnB(False)
+                        else PowerOffBoth(False);
+    end;
+ sleep(100);
+ SetMode();
+ sleep(100);
  FBeginingIsDone:=True;
 end;
 
