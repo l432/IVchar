@@ -35,7 +35,7 @@ object IVchar: TIVchar
     Top = 0
     Width = 1036
     Height = 577
-    ActivePage = TS_Setting
+    ActivePage = TS_Main
     Align = alTop
     Font.Charset = RUSSIAN_CHARSET
     Font.Color = clWindowText
@@ -191,7 +191,7 @@ object IVchar: TIVchar
         end
         object BIVStart: TButton
           Left = 167
-          Top = 27
+          Top = 25
           Width = 84
           Height = 27
           Caption = 'Start'
@@ -223,7 +223,14 @@ object IVchar: TIVchar
           Width = 84
           Height = 25
           Caption = 'Save'
+          Font.Charset = RUSSIAN_CHARSET
+          Font.Color = clBlack
+          Font.Height = -17
+          Font.Name = 'Arial'
+          Font.Style = [fsBold]
+          ParentFont = False
           TabOrder = 5
+          OnClick = BIVSaveClick
         end
         object PBIV: TProgressBar
           Left = 24
@@ -2082,19 +2089,91 @@ object IVchar: TIVchar
         Caption = 'Parasitic resistance'
         TabOrder = 8
         object LPR: TLabel
-          Left = 24
-          Top = 16
-          Width = 90
-          Height = 34
-          Caption = '10.26'
+          Left = 10
+          Top = 20
+          Width = 124
+          Height = 28
+          Caption = '1.26E+01'
           Font.Charset = RUSSIAN_CHARSET
           Font.Color = clWindowText
-          Font.Height = -28
+          Font.Height = -23
           Font.Name = 'Verdana'
           Font.Style = [fsBold]
           ParentFont = False
         end
         object BPR: TButton
+          Left = 3
+          Top = 56
+          Width = 133
+          Height = 30
+          Caption = 'input value'
+          Font.Charset = RUSSIAN_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -23
+          Font.Name = 'Arial'
+          Font.Style = [fsBold]
+          ParentFont = False
+          TabOrder = 0
+          OnClick = BPRClick
+        end
+      end
+      object GBMC: TGroupBox
+        Left = 343
+        Top = 344
+        Width = 139
+        Height = 97
+        Caption = 'Maximum current'
+        TabOrder = 9
+        object LMC: TLabel
+          Left = 10
+          Top = 20
+          Width = 124
+          Height = 28
+          Caption = '1.26E+01'
+          Font.Charset = RUSSIAN_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -23
+          Font.Name = 'Verdana'
+          Font.Style = [fsBold]
+          ParentFont = False
+        end
+        object BMC: TButton
+          Left = 3
+          Top = 56
+          Width = 133
+          Height = 30
+          Caption = 'input value'
+          Font.Charset = RUSSIAN_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -23
+          Font.Name = 'Arial'
+          Font.Style = [fsBold]
+          ParentFont = False
+          TabOrder = 0
+          OnClick = BPRClick
+        end
+      end
+      object GBMinC: TGroupBox
+        Left = 510
+        Top = 344
+        Width = 139
+        Height = 97
+        Caption = 'Minimum current'
+        TabOrder = 10
+        object LMinC: TLabel
+          Left = 10
+          Top = 20
+          Width = 124
+          Height = 28
+          Caption = '1.26E+01'
+          Font.Charset = RUSSIAN_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -23
+          Font.Name = 'Verdana'
+          Font.Style = [fsBold]
+          ParentFont = False
+        end
+        object BMinC: TButton
           Left = 3
           Top = 56
           Width = 133
@@ -2173,6 +2252,14 @@ object IVchar: TIVchar
   object ComDPacket: TComDataPacket
     OnPacket = ComDPacketPacket
     Left = 944
+    Top = 576
+  end
+  object SaveDialog: TSaveDialog
+    DefaultExt = '.dat'
+    Filter = 'data files (*.dat)|*.dat|all files|*.*'
+    Options = [ofOverwritePrompt, ofHideReadOnly, ofNoValidate, ofPathMustExist, ofShareAware, ofNoTestFileCreate, ofNoNetworkButton, ofNoLongNames, ofNoDereferenceLinks, ofEnableSizing, ofDontAddToRecent]
+    OptionsEx = [ofExNoPlacesBar]
+    Left = 912
     Top = 576
   end
 end

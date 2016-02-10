@@ -34,6 +34,7 @@
     </DCCReference>
     <DCCReference Include="Measurement.pas" />
     <DCCReference Include="PacketParameters.pas" />
+    <DCCReference Include="ShowTypes.pas" />
     <DCCReference Include="SPIdevice.pas" />
     <DCCReference Include="TempThread.pas" />
     <None Include="IV.todo" />

@@ -98,7 +98,7 @@ end;
 function TSimulator.GetCurrent(Vin: double): double;
 begin
  sleep(300);
- Result:=4e-5*Vin;
+ Result:=4e-8*Vin;
 // Result:=4e-11*Vin;
 end;
 

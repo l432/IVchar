@@ -6,7 +6,8 @@ uses
   SPIdevice in 'SPIdevice.pas',
   PacketParameters in 'PacketParameters.pas',
   Measurement in 'Measurement.pas',
-  TempThread in 'TempThread.pas';
+  TempThread in 'TempThread.pas',
+  ShowTypes in 'ShowTypes.pas';
 
 {$R *.res}
 

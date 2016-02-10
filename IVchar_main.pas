@@ -6,7 +6,7 @@ uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, StdCtrls, CPort, ComCtrls, Buttons, SPIdevice, ExtCtrls, IniFiles,PacketParameters,
   TeEngine, Series, TeeProcs, Chart, Spin, OlegType, Grids, OlegMath,Measurement, 
-  TempThread;
+  TempThread, ShowTypes,OlegGraph;
 
 type
   TIVchar = class(TForm)
@@ -180,6 +180,13 @@ type
     GBPR: TGroupBox;
     LPR: TLabel;
     BPR: TButton;
+    GBMC: TGroupBox;
+    LMC: TLabel;
+    BMC: TButton;
+    GBMinC: TGroupBox;
+    LMinC: TLabel;
+    BMinC: TButton;
+    SaveDialog: TSaveDialog;
     procedure FormCreate(Sender: TObject);
     procedure PortConnected();
     procedure BConnectClick(Sender: TObject);
@@ -208,6 +215,7 @@ type
     procedure PCChanging(Sender: TObject; var AllowChange: Boolean);
     procedure BIVStopClick(Sender: TObject);
     procedure BPRClick(Sender: TObject);
+    procedure BIVSaveClick(Sender: TObject);
 //    procedure BOVsetChAClick(Sender: TObject);
 //    procedure BORChAClick(Sender: TObject);
 //    procedure RGORChAClick(Sender: TObject);
@@ -272,6 +280,10 @@ type
     procedure SleepReal;
     procedure IVDataSave(tempI: Double; tempV: Double);
     procedure IVSetVoltage;
+    procedure ConstantShowCreate;
+    procedure ConstantShowFromIniFile;
+    procedure ConstantShowToIniFile;
+    procedure SaveCommentsFile(FileName: string);
   public
     V721A:TV721A;
     V721_I,V721_II:TV721;
@@ -298,13 +310,16 @@ type
     {TemperatureIsMeasuring,}IVMeasuringToStop,ItIsForward:boolean;
     PointNumber:Integer;
     VoltageInput,VoltageInputCorrection,VoltageInputReal,Temperature:double;
+    DoubleConstantShows:array of TDoubleConstantShow;
+    Imax,Rs,Imin:double;
+//    Dir:string;
   end;
 
 const
   Undefined='NoData';
   Vmax=8;
-  Imax=2e-2;
-  Imin=5e-11;
+//  Imax=2e-2;
+//  Imin=5e-11;
   StepDefault=0.01;
   MeasuringEquipmentName:array[0..2]of string=
            ('B7-21A','B7-21 (1)','B7-21 (2)');
@@ -335,10 +350,11 @@ begin
 end;
 
 procedure TIVchar.IVVoltageMeas(var tempV: Double; tempI: Double);
-var
-  Rs: Double;
+//var
+//  Rs: Double;
 begin
-  Rs:=StrToFloat(LPR.Caption);
+//  Rs:=StrToFloat(LPR.Caption);
+//  Rs:=DoubleConstantShows[0].GetValue;
   repeat
      Application.ProcessMessages;
      if IVMeasuringToStop then Exit;
@@ -527,6 +543,51 @@ begin
   SleepReal;
 end;
 
+procedure TIVchar.ConstantShowCreate;
+begin
+  SetLength(DoubleConstantShows, 3);
+  DoubleConstantShows[0]:=TDoubleConstantShow.Create(LPR,BPR,
+        'Resistance','Parasitic resistance value is expected',0);
+  DoubleConstantShows[1]:=TDoubleConstantShow.Create(LMC,BMC,
+        'Maximum current','Maximum current for I-V characteristic measurement is expected',2e-2);
+  DoubleConstantShows[2]:=TDoubleConstantShow.Create(LMinC,BMinC,
+        'Minimum current','Minimum current for I-V characteristic measurement is expected',5e-11);
+end;
+
+procedure TIVchar.ConstantShowFromIniFile;
+ var i:integer;
+begin
+  for I := Low(DoubleConstantShows) to High(DoubleConstantShows) do
+   DoubleConstantShows[i].ReadFromIniFile(ConfigFile);
+end;
+
+procedure TIVchar.ConstantShowToIniFile;
+ var i:integer;
+begin
+  ConfigFile.EraseSection(DoubleConstantSection);
+  for I := Low(DoubleConstantShows) to High(DoubleConstantShows) do
+   DoubleConstantShows[i].WriteToIniFile(ConfigFile);
+end;
+
+procedure TIVchar.SaveCommentsFile(FileName: string);
+ var SR : TSearchRec;
+     DT:integer;
+     FF:TextFile;
+     name:string;
+begin
+    if FindFirst(FileName,faAnyFile,SR)<>0 then Exit;
+    DT:=SR.Time;
+    name:=SR.Name;
+    AssignFile(FF,'comments');
+    if FindFirst('comments',faAnyFile,SR)=0 then Append(FF) else ReWrite(FF);
+    FindClose(SR);
+    writeln(FF,Name,' - ',DateTimeToStr(FileDateToDateTime(DT)));
+    write(FF,'T=',LTLastValue.Caption);
+    writeln(FF);
+    writeln(FF);
+    CloseFile(FF);
+end;
+
 procedure TIVchar.ActionMeasurement;
  var tempV,tempI:double;
 begin
@@ -678,6 +739,32 @@ begin
  end;
 
 
+
+procedure TIVchar.BIVSaveClick(Sender: TObject);
+ var last:string;
+begin
+  last:=LastDATFileName();
+  if last<>NoFile  then
+  begin
+    try
+      SaveDialog.FileName:=IntToStr(StrToInt(last)+1)+'.dat';
+    except
+      SaveDialog.FileName:=last+'1.dat';;
+    end;
+  end              else
+  SaveDialog.FileName:='1.dat';
+  SaveDialog.Title:='Last file - '+last+'.dat';
+  SaveDialog.InitialDir:=GetCurrentDir;
+  if SaveDialog.Execute then
+   begin
+     IVResult.Sorting;
+     IVResult.DeleteDuplicate;
+     Write_File(SaveDialog.FileName,IVResult);
+     LTLastValue.Caption:=LTRValue.Caption;
+     BIVSave.Font.Style:=BIVSave.Font.Style+[fsStrikeOut];
+     SaveCommentsFile(SaveDialog.FileName);
+   end;
+end;
 
 procedure TIVchar.BIVStartClick(Sender: TObject);
 begin
@@ -833,6 +920,9 @@ begin
  MeasuringEquipment:=TStringList.Create;
 // Range:=TDiapazon.Create;
  VectorsCreate();
+
+ ConstantShowCreate();
+ ConstantShowFromIniFile();
 
  BoxFromIniFile();
 
@@ -1340,7 +1430,8 @@ begin
   CBRev.Checked := ConfigFile.ReadBool('Box', CBRev.Name, False);
   CBSStep.Checked := ConfigFile.ReadBool('Box', CBSStep.Name, False);
   RGDO.ItemIndex:= ConfigFile.ReadInteger('Box', RGDO.Name,0);
-  LPR.Caption:=FloatToStrF(ConfigFile.ReadFloat('Box', 'Resistance',0),ffFixed, 5, 3);
+  ChDir(ConfigFile.ReadString('Box', 'Directory',ExtractFilePath(Application.ExeName)));
+//  LPR.Caption:=FloatToStrF(ConfigFile.ReadFloat('Box', 'Resistance',0),ffFixed, 5, 3);
 end;
 
 procedure TIVchar.BoxToIniFile;
@@ -1350,7 +1441,8 @@ begin
   WriteIniDef(ConfigFile, 'Box', CBRev.Name, CBRev.Checked);
   WriteIniDef(ConfigFile, 'Box', CBSStep.Name, CBSStep.Checked);
   WriteIniDef(ConfigFile, 'Box', RGDO.Name, RGDO.ItemIndex);
-  WriteIniDef(ConfigFile, 'Box', 'Resistance', StrToFloat(LPR.Caption),0)
+  WriteIniDef(ConfigFile, 'Box','Directory',GetCurrentDir,ExtractFilePath(Application.ExeName));
+//  WriteIniDef(ConfigFile, 'Box', 'Resistance', StrToFloat(LPR.Caption),0)
 end;
 
 procedure TIVchar.IVCharBegin;
@@ -1359,6 +1451,7 @@ begin
   IVMeasuringToStop:=False;
   PBIV.Max := MeasurementNumberDetermine();
   NumberOfTemperatureMeasuring:=round(PBIV.Max/2);
+  DecimalSeparator:='.';
 
   PBIV.Position := 0;
   BIVStop.Enabled:=True;
@@ -1386,6 +1479,10 @@ begin
   RevLine.Clear;
   ForwLg.Clear;
   RevLg.Clear;
+
+  Rs:=DoubleConstantShows[0].GetValue;
+  Imax:=DoubleConstantShows[1].GetValue;
+  Imin:=DoubleConstantShows[2].GetValue;
 
 end;
 
@@ -1442,6 +1539,7 @@ begin
   if High(IVResult^.X)>0 then
    begin
    BIVSave.Enabled := True;
+   BIVSave.Font.Style:=BIVSave.Font.Style-[fsStrikeOut];
    IVResult.Sorting;
    IVResult.DeleteDuplicate;
    end;
@@ -1564,6 +1662,7 @@ begin
   DelayTimeWriteToIniFile;
   DevicesWriteToIniFile;
   BoxToIniFile;
+  ConstantShowToIniFile();
 end;
 
 procedure TIVchar.SetVoltage(Value: double);
