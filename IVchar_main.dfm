@@ -35,7 +35,7 @@ object IVchar: TIVchar
     Top = 0
     Width = 1036
     Height = 577
-    ActivePage = TS_Main
+    ActivePage = TS_Setting
     Align = alTop
     Font.Charset = RUSSIAN_CHARSET
     Font.Color = clWindowText
@@ -2189,6 +2189,81 @@ object IVchar: TIVchar
           OnClick = BPRClick
         end
       end
+      object GBCOM: TGroupBox
+        Left = 696
+        Top = 334
+        Width = 289
+        Height = 83
+        Caption = 'COM parameters'
+        TabOrder = 11
+        object ComCBPort: TComComboBox
+          Left = 16
+          Top = 45
+          Width = 97
+          Height = 29
+          ComPort = ComPort1
+          ComProperty = cpPort
+          AutoApply = True
+          Style = csDropDownList
+          Font.Charset = RUSSIAN_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -18
+          Font.Name = 'Arial'
+          Font.Style = [fsBold]
+          ItemHeight = 21
+          ItemIndex = -1
+          ParentFont = False
+          TabOrder = 0
+        end
+        object ComCBBR: TComComboBox
+          Left = 160
+          Top = 45
+          Width = 121
+          Height = 29
+          ComPort = ComPort1
+          ComProperty = cpBaudRate
+          AutoApply = True
+          Text = '115200'
+          Style = csDropDownList
+          Font.Charset = RUSSIAN_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -18
+          Font.Name = 'Arial'
+          Font.Style = [fsBold]
+          ItemHeight = 21
+          ItemIndex = 13
+          ParentFont = False
+          TabOrder = 1
+        end
+        object STCOMP: TStaticText
+          Left = 40
+          Top = 16
+          Width = 41
+          Height = 26
+          Caption = 'Port'
+          Font.Charset = RUSSIAN_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -18
+          Font.Name = 'Verdana'
+          Font.Style = []
+          ParentFont = False
+          TabOrder = 2
+        end
+        object StaticText1: TStaticText
+          Left = 173
+          Top = 16
+          Width = 97
+          Height = 26
+          Caption = 'Baud Rate'
+          Font.Charset = RUSSIAN_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -18
+          Font.Name = 'Verdana'
+          Font.Style = []
+          ParentFont = False
+          TabOrder = 3
+        end
+      end
     end
   end
   object BBClose: TBitBtn
@@ -2239,7 +2314,7 @@ object IVchar: TIVchar
     FlowControl.XonXoffIn = False
     Timeouts.WriteTotalMultiplier = 10
     Timeouts.WriteTotalConstant = 100
-    StoredProps = [spBasic]
+    StoredProps = [spBasic, spBuffer, spTimeouts]
     TriggersOnRxChar = False
     Left = 976
     Top = 576

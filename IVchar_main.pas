@@ -6,7 +6,7 @@ uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, StdCtrls, CPort, ComCtrls, Buttons, SPIdevice, ExtCtrls, IniFiles,PacketParameters,
   TeEngine, Series, TeeProcs, Chart, Spin, OlegType, Grids, OlegMath,Measurement, 
-  TempThread, ShowTypes,OlegGraph;
+  TempThread, ShowTypes,OlegGraph, CPortCtl;
 
 type
   TIVchar = class(TForm)
@@ -187,6 +187,11 @@ type
     LMinC: TLabel;
     BMinC: TButton;
     SaveDialog: TSaveDialog;
+    GBCOM: TGroupBox;
+    ComCBPort: TComComboBox;
+    ComCBBR: TComComboBox;
+    STCOMP: TStaticText;
+    StaticText1: TStaticText;
     procedure FormCreate(Sender: TObject);
     procedure PortConnected();
     procedure BConnectClick(Sender: TObject);
@@ -952,6 +957,9 @@ begin
 
 // TemperatureThreadCreate();
 
+ ComPort1.LoadSettings(stIniFile,ExtractFilePath(Application.ExeName)+'IVChar.ini');
+ ComCBBR.UpdateSettings;
+ ComCBPort.UpdateSettings;
 
  ComDPacket.StartString:=PacketBeginChar;
  ComDPacket.StopString:=PacketEndChar;
@@ -1663,6 +1671,7 @@ begin
   DevicesWriteToIniFile;
   BoxToIniFile;
   ConstantShowToIniFile();
+  ComPort1.StoreSettings(stIniFile,ExtractFilePath(Application.ExeName)+'IVChar.ini');
 end;
 
 procedure TIVchar.SetVoltage(Value: double);
