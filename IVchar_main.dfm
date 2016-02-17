@@ -35,7 +35,7 @@ object IVchar: TIVchar
     Top = 0
     Width = 1036
     Height = 577
-    ActivePage = TS_Setting
+    ActivePage = TS_Main
     Align = alTop
     Font.Charset = RUSSIAN_CHARSET
     Font.Color = clWindowText
@@ -1523,6 +1523,10 @@ object IVchar: TIVchar
         end
       end
     end
+    object TS_DACR2R: TTabSheet
+      Caption = 'DAC R-2R'
+      ImageIndex = 5
+    end
     object TS_Setting: TTabSheet
       Caption = 'Setting'
       ImageIndex = 4
@@ -2204,6 +2208,7 @@ object IVchar: TIVchar
           ComPort = ComPort1
           ComProperty = cpPort
           AutoApply = True
+          Text = 'COM1'
           Style = csDropDownList
           Font.Charset = RUSSIAN_CHARSET
           Font.Color = clWindowText
@@ -2211,7 +2216,7 @@ object IVchar: TIVchar
           Font.Name = 'Arial'
           Font.Style = [fsBold]
           ItemHeight = 21
-          ItemIndex = -1
+          ItemIndex = 0
           ParentFont = False
           TabOrder = 0
         end

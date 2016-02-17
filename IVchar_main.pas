@@ -192,6 +192,7 @@ type
     ComCBBR: TComComboBox;
     STCOMP: TStaticText;
     StaticText1: TStaticText;
+    TS_DACR2R: TTabSheet;
     procedure FormCreate(Sender: TObject);
     procedure PortConnected();
     procedure BConnectClick(Sender: TObject);
