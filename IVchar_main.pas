@@ -316,16 +316,18 @@ type
     //    Range:TDiapazon;//межі вимірювань, Х - пряма гілка, Y - зворотня
     ForwSteps,RevSteps,IVResult:PVector;
     ForwDelay,RevDelay:Integer;
-//    TemperatureSource,VoltageSource,CurrentSource:Integer;
-    DAC:TDAC;
-    DACChanelShows:array of TDACChannelShow;
-    DACShow:TDACShow;
+//    DAC:TDAC;
+//    DACChanelShows:array of TDACChannelShow;
+//    DACShow:TDACShow;
+    DACR2R:TDACR2R;
+    DACR2RShow:TDACR2RShow;
     Simulator:TSimulator;
     Devices:array of TInterfacedObject;
     Temperature_MD:TTemperature_MD;
     Current_MD:TCurrent_MD;
     VoltageIV_MD:TVoltageIV_MD;
-    ChannelA_MD,ChannelB_MD:TVoltageChannel_MD;
+//    ChannelA_MD,ChannelB_MD:TVoltageChannel_MD;
+    DACR2R_MD:TVoltageChannel_MD;
     TemperatureMeasuringThread:TTemperatureMeasuringThread;
     NumberOfTemperatureMeasuring: Integer;
     {TemperatureIsMeasuring,}IVMeasuringToStop,ItIsForward:boolean;
@@ -791,23 +793,17 @@ procedure TIVchar.BIVStartClick(Sender: TObject);
 begin
 // showmessage(inttostr(MeasurementNumberDetermine));
   IVCharBegin();
- case RGInputVoltage.ItemIndex of
-  1:DAC.OutputRangeA(pm100);
-  2:DAC.OutputRangeB(pm100);
- end;
+// case RGInputVoltage.ItemIndex of
+//  1:DAC.OutputRangeA(pm100);
+//  2:DAC.OutputRangeB(pm100);
+// end;
 
   IVcharFullCycle(ActionMeasurement);
-//  ItIsForward:=True;
-//  IVcharCycle(ActionMeasurement);
-//  ItIsForward:=False;
-//  IVcharCycle(ActionMeasurement);
-
-//  IVcharCycle(ActionEmpty,False);
-//  sleep(5000);
 
   IVCharEnd();
  case RGInputVoltage.ItemIndex of
-  1,2:DAC.Reset;
+//  1,2:DAC.Reset;
+  3:DACR2R.Output(0);
  end;
   if Temperature=ErResult then
     Temperature:=Temperature_MD.GetMeasurementResult(VoltageInput);
@@ -1694,8 +1690,9 @@ procedure TIVchar.SetVoltage(Value: double);
 begin
  if RGDO.ItemIndex=1 then Value:=-Value;
  case RGInputVoltage.ItemIndex of
-  1:DAC.OutputA(Value);
-  2:DAC.OutputB(Value);
+//  1:DAC.OutputA(Value);
+//  2:DAC.OutputB(Value);
+  3:DACR2R.Output(Value);
  end;
 end;
 
@@ -1753,43 +1750,52 @@ end;
 
 procedure TIVchar.DACCreate;
 begin
-  DAC := TDAC.Create(ComPort1, 'AD5752R');
-  SetLength(DACChanelShows,2);
-  DACChanelShows[0]:= TDACChannelShow.Create(DAC,8, LORChA,LOVChA,CBORChA,
-                                      BORChA,BOVchangeChA,BOVsetChA,
-                                      LPowChA,BBPowChA);
-  DACChanelShows[1]:= TDACChannelShow.Create(DAC,10, LORChB,LOVChB,CBORChB,
-                                      BORChB,BOVchangeChB,BOVsetChB,
-                                      LPowChB,BBPowChB);
-  DACShow:=TDACShow.Create(DAC,
-                           DACChanelShows[0],DACChanelShows[1],
-                           LDACPinC,LDACPinG,LDACPinLDAC,LDACPinCLR,
-                           BDACSetC,BDACSetG,BDACSetLDAC,BDACSetCLR,CBDAC,
-                           PanelDACChA,PanelDACChB,BDACInit,BDACReset);
+//  DAC := TDAC.Create(ComPort1, 'AD5752R');
+//  SetLength(DACChanelShows,2);
+//  DACChanelShows[0]:= TDACChannelShow.Create(DAC,8, LORChA,LOVChA,CBORChA,
+//                                      BORChA,BOVchangeChA,BOVsetChA,
+//                                      LPowChA,BBPowChA);
+//  DACChanelShows[1]:= TDACChannelShow.Create(DAC,10, LORChB,LOVChB,CBORChB,
+//                                      BORChB,BOVchangeChB,BOVsetChB,
+//                                      LPowChB,BBPowChB);
+//  DACShow:=TDACShow.Create(DAC,
+//                           DACChanelShows[0],DACChanelShows[1],
+//                           LDACPinC,LDACPinG,LDACPinLDAC,LDACPinCLR,
+//                           BDACSetC,BDACSetG,BDACSetLDAC,BDACSetCLR,CBDAC,
+//                           PanelDACChA,PanelDACChB,BDACInit,BDACReset);
+  DACR2R:=TDACR2R.Create(ComPort1,'DACR2R');
+  DACR2RShow:=TDACR2RShow.Create(DACR2R,LDACR2RPinC,LDACR2RPinG,LOVDACR2R,
+                                 BDACR2RSetC,BDACR2RSetG,BOVchangeDACR2R,BOVsetDACR2R,CBDACR2R);
+
 end;
 
 procedure TIVchar.DACFree;
-   var i:integer;
+//   var i:integer;
 begin
-  DACShow.Free;
-  for I := 0 to High(DACChanelShows) do
-        DACChanelShows[i].Free;
-  if assigned(DAC) then DAC.Free;
+//  DACShow.Free;
+//  for I := 0 to High(DACChanelShows) do
+//        DACChanelShows[i].Free;
+//  if assigned(DAC) then DAC.Free;
+  DACR2RShow.Free;
+  if assigned(DACR2R) then DACR2R.Free;
 end;
 
 procedure TIVchar.DACReadFromIniFileAndToForm;
 begin
-  DACShow.PinsReadFromIniFile(ConfigFile);
-  DAC.ChannelsReadFromIniFile(ConfigFile);
-  DAC.Begining();
-  DACShow.NumberPinShow;
-  DACShow.DataShow;
+//  DACShow.PinsReadFromIniFile(ConfigFile);
+//  DAC.ChannelsReadFromIniFile(ConfigFile);
+//  DAC.Begining();
+//  DACShow.NumberPinShow;
+//  DACShow.DataShow;
+  DACR2RShow.PinsReadFromIniFile(ConfigFile);
+  DACR2RShow.NumberPinShow
 end;
 
 procedure TIVchar.DACWriteToIniFile;
 begin
-  DACShow.PinsWriteToIniFile(ConfigFile);
-  DAC.ChannelsWriteToIniFile(ConfigFile);
+//  DACShow.PinsWriteToIniFile(ConfigFile);
+//  DAC.ChannelsWriteToIniFile(ConfigFile);
+  DACR2RShow.PinsWriteToIniFile(ConfigFile);
 end;
 
 procedure TIVchar.DevicesCreate;
@@ -1803,10 +1809,13 @@ begin
   Temperature_MD:=TTemperature_MD.Create(Devices,RBTSImitation,RBTSTermocouple,CBTSTC,LTRValue);
   Current_MD:=TCurrent_MD.Create(Devices,RBCSSimulation,RBCSMeasur,CBCSMeas,LADCurrentValue);
   VoltageIV_MD:=TVoltageIV_MD.Create(Devices,RBVSSimulation,RBVSMeasur,CBVSMeas,LADVoltageValue);
-  ChannelA_MD:=TVoltageChannel_MD.Create(Devices,RBMeasSimChA,RBMeasMeasChA,CBMeasChA,LMeasChA);
-  ChannelB_MD:=TVoltageChannel_MD.Create(Devices,RBMeasSimChB,RBMeasMeasChB,CBMeasChB,LMeasChB);
-  ChannelA_MD.AddActionButton(BMeasChA,LOVChA);
-  ChannelB_MD.AddActionButton(BMeasChB,LOVChB);
+//  ChannelA_MD:=TVoltageChannel_MD.Create(Devices,RBMeasSimChA,RBMeasMeasChA,CBMeasChA,LMeasChA);
+//  ChannelB_MD:=TVoltageChannel_MD.Create(Devices,RBMeasSimChB,RBMeasMeasChB,CBMeasChB,LMeasChB);
+//  ChannelA_MD.AddActionButton(BMeasChA,LOVChA);
+//  ChannelB_MD.AddActionButton(BMeasChB,LOVChB);
+  DACR2R_MD:=TVoltageChannel_MD.Create(Devices,RBMeasSimR2R,RBMeasMeasR2R,CBMeasR2R,LMeasR2R);
+  DACR2R_MD.AddActionButton(BMeasR2R,LOVDACR2R);
+
 end;
 
 procedure TIVchar.DevicesFree;
@@ -1814,8 +1823,9 @@ begin
   Temperature_MD.Free;
   Current_MD.Free;
   VoltageIV_MD.Free;
-  ChannelA_MD.Free;
-  ChannelB_MD.Free;
+  DACR2R_MD.Free;
+//  ChannelA_MD.Free;
+//  ChannelB_MD.Free;
   Simulator.Free;
 end;
 
@@ -1824,8 +1834,9 @@ begin
   Temperature_MD.ReadFromIniFile(ConfigFile,'Sources','Temperature');
   Current_MD.ReadFromIniFile(ConfigFile,'Sources','Current');
   VoltageIV_MD.ReadFromIniFile(ConfigFile,'Sources','Voltage');
-  ChannelA_MD.ReadFromIniFile(ConfigFile,'Sources','ChannelA');
-  ChannelB_MD.ReadFromIniFile(ConfigFile,'Sources','ChannelB');
+  DACR2R_MD.ReadFromIniFile(ConfigFile,'Sources','R2R');
+//  ChannelA_MD.ReadFromIniFile(ConfigFile,'Sources','ChannelA');
+//  ChannelB_MD.ReadFromIniFile(ConfigFile,'Sources','ChannelB');
   RGInputVoltage.ItemIndex:=ConfigFile.ReadInteger('Sources', 'Input voltage', 0);
 end;
 
@@ -1835,8 +1846,9 @@ begin
   Temperature_MD.WriteToIniFile(ConfigFile,'Sources','Temperature');
   Current_MD.WriteToIniFile(ConfigFile,'Sources','Current');
   VoltageIV_MD.WriteToIniFile(ConfigFile,'Sources','Voltage');
-  ChannelA_MD.WriteToIniFile(ConfigFile,'Sources','ChannelA');
-  ChannelB_MD.WriteToIniFile(ConfigFile,'Sources','ChannelB');
+  DACR2R_MD.WriteToIniFile(ConfigFile,'Sources','R2R');
+//  ChannelA_MD.WriteToIniFile(ConfigFile,'Sources','ChannelA');
+//  ChannelB_MD.WriteToIniFile(ConfigFile,'Sources','ChannelB');
   WriteIniDef(ConfigFile,'Sources', 'Input voltage',RGInputVoltage.ItemIndex,0);
 end;
 

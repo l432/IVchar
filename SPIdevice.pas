@@ -179,6 +179,7 @@ type
 TDACR2R=class(TSPIdevice)
   {базовий клас для ЦАП}
 private
+ Procedure PacketReceiving(Sender: TObject; const Str: string);override;
  function IntVoltage(Voltage:double):integer;
 public
  Procedure Output(Voltage:double);
@@ -1592,7 +1593,7 @@ begin
  InitButton.OnClick:=InitButtonClick;
  ResetButton:=RB;
  ResetButton.OnClick:=ResetButtonClick;
- CreateFooter()
+ CreateFooter();
 end;
 
 procedure TDACShow.DataShow;
@@ -1670,11 +1671,16 @@ procedure TDACR2R.Output(Voltage: double);
      Data1,Data0:byte;
 begin
 // IntData:=IntVoltage(Voltage);
- IntData:=$8100;
+ IntData:=$8142;
  Data1:=((IntData shr 8) and $FF);
  Data0:=(IntData and $FF);
  PacketCreate([DACR2RCommand,PinControl,PinGate,Data1,Data0]);
  PacketIsSend(fComPort,'DAC R2R output value setting is unsuccessful');
+end;
+
+procedure TDACR2R.PacketReceiving(Sender: TObject; const Str: string);
+begin
+
 end;
 
 { TDACR2RShow }
@@ -1692,6 +1698,7 @@ begin
   ValueChangeButton.OnClick:=ValueChangeButtonAction;
   ValueSetButton:=VSB;
   ValueSetButton.OnClick:=ValueSetButtonAction;
+  CreateFooter();
 end;
 
 procedure TDACR2RShow.ValueChangeButtonAction(Sender: TObject);
@@ -1700,7 +1707,7 @@ begin
  if InputQuery('Value', 'Output value is expect', value) then
   begin
     try
-      ValueLabel.Caption:=FloatToStrF(StrToFloat(value),ffFixed, 5, 3);
+      ValueLabel.Caption:=FloatToStrF(StrToFloat(value),ffFixed, 6, 4);
       ValueLabel.Font.Color:=clBlack;
     except
 
