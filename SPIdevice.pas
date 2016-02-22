@@ -176,6 +176,14 @@ type
    {встановлення напруги на обох вихідних каналах одночасно}
   end;
 
+TDACR2R=class(TSPIdevice)
+  {базовий клас для ЦАП}
+private
+ function IntVoltage(Voltage:double):integer;
+public
+ Procedure Output(Voltage:double);
+end;
+
 
   TAdapterRadioGroupClick=class
     findexx:integer;
@@ -294,6 +302,19 @@ type
    procedure NumberPinShow();override;
    procedure DataShow();
   end;
+
+TDACR2RShow=class(TSPIDeviceShow)
+private
+ ValueChangeButton,ValueSetButton:TButton;
+ ValueLabel:TLabel;
+ procedure ValueChangeButtonAction(Sender:TObject);
+ procedure ValueSetButtonAction(Sender:TObject);
+public
+   Constructor Create(DACR2R:TDACR2R;
+                      CPL,GPL,VL:TLabel;
+                      SCB,SGB,VCB,VSB:TButton;
+                      PCB:TComboBox);
+end;
 
 const
   UndefinedPin=255;
@@ -1597,6 +1618,100 @@ end;
 procedure TDACShow.ResetButtonClick(Sender: TObject);
 begin
  (SPIDevice as TDAC).Reset();
+end;
+
+{ TDACR2R }
+
+function TDACR2R.IntVoltage(Voltage: double): integer;
+begin
+ Result:=0;
+// if Voltage=0 then Exit;
+//
+// if ord(Range)<3 then
+//  begin
+//    if Voltage>=HighVoltage(Range) then
+//      begin
+//      Result:=$FFFF;
+//      Exit;
+//      end;
+//    if Voltage<=LowVoltage(Range) then
+//      begin
+//      Result:=$0;
+//      Exit;
+//      end;
+//    Result:=(round(Voltage*65536/REFIN/GainValueOutputRange[Range]) and $FFFF);
+//  end;
+//
+// if ord(Range)>2 then
+//  begin
+//    if Voltage>=HighVoltage(Range) then
+//      begin
+//      Result:=$7FFF;
+//      Exit;
+//      end;
+//    if Voltage<=LowVoltage(Range) then
+//      begin
+//      Result:=$8000;
+//      Exit;
+//      end;
+//    if Voltage>0 then
+//      Result:=(round(Voltage*65536/REFIN/GainValueOutputRange[Range]) and $7FFF)
+//                 else
+//      begin
+//      Result:=(32767-round(abs(Voltage)*65536/REFIN/GainValueOutputRange[Range]) and $7FFF);
+//      Result:=Result+$8000;
+//      end;
+//  end;
+
+end;
+
+procedure TDACR2R.Output(Voltage: double);
+ var IntData:integer;
+     Data1,Data0:byte;
+begin
+// IntData:=IntVoltage(Voltage);
+ IntData:=$8100;
+ Data1:=((IntData shr 8) and $FF);
+ Data0:=(IntData and $FF);
+ PacketCreate([DACR2RCommand,PinControl,PinGate,Data1,Data0]);
+ PacketIsSend(fComPort,'DAC R2R output value setting is unsuccessful');
+end;
+
+{ TDACR2RShow }
+
+constructor TDACR2RShow.Create(DACR2R: TDACR2R;
+                               CPL,GPL,VL:TLabel;
+                               SCB,SGB,VCB,VSB:TButton;
+                               PCB: TComboBox);
+begin
+ inherited Create(DACR2R,CPL,GPL,SCB,SGB,PCB);
+  ValueLabel:=VL;
+  ValueLabel.Caption:='0';
+  ValueLabel.Font.Color:=clBlack;
+  ValueChangeButton:=VCB;
+  ValueChangeButton.OnClick:=ValueChangeButtonAction;
+  ValueSetButton:=VSB;
+  ValueSetButton.OnClick:=ValueSetButtonAction;
+end;
+
+procedure TDACR2RShow.ValueChangeButtonAction(Sender: TObject);
+ var value:string;
+begin
+ if InputQuery('Value', 'Output value is expect', value) then
+  begin
+    try
+      ValueLabel.Caption:=FloatToStrF(StrToFloat(value),ffFixed, 5, 3);
+      ValueLabel.Font.Color:=clBlack;
+    except
+
+    end;
+  end;
+end;
+
+procedure TDACR2RShow.ValueSetButtonAction(Sender: TObject);
+begin
+   (SPIDevice as TDACR2R).Output(Strtofloat(ValueLabel.Caption));
+   ValueLabel.Font.Color:=clPurple;
 end;
 
 end.

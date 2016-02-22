@@ -15,6 +15,7 @@ const
   V7_21Command=$1;
   ParameterReceiveCommand=$2;
   DACCommand=$3;
+  DACR2RCommand=$4;
 
 var
   aPacket:array of byte;
