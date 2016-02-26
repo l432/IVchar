@@ -1671,10 +1671,10 @@ procedure TDACR2R.Output(Voltage: double);
      Data1,Data0:byte;
 begin
 // IntData:=IntVoltage(Voltage);
- IntData:=$8142;
+ IntData:=$ffff;
  Data1:=((IntData shr 8) and $FF);
  Data0:=(IntData and $FF);
- PacketCreate([DACR2RCommand,PinControl,PinGate,Data1,Data0]);
+ PacketCreate([DACR2RCommand,PinControl,PinGate,Data1,Data0,$00]);
  PacketIsSend(fComPort,'DAC R2R output value setting is unsuccessful');
 end;
 

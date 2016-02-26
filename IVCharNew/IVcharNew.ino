@@ -1,6 +1,5 @@
 #include <SPI.h>
 
-
 #define PacketStart 10
 #define PacketEnd 255
 #define PacketMaxLength 15
@@ -8,13 +7,19 @@
 #define ParameterReceiveCommand 2
 #define DACCommand 3
 #define DACR2RCommand 4
+#define DACR2R_Pos 0x00
+#define DACR2R_Neg 0xFF
+#define DACR2R_Reset 0xAA
 
-byte DrivePins[] = {25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35};
+
+byte DrivePins[] = {25, 26, 27, 28, 29, 30, 31, 32, 34, 35};
 
 byte incomingByte = 0;
 byte PinControl, PinGate, DeviceId, ActionId;
-byte DACDataToSend[3];
-//byte DACDataAnswer[3];
+byte DACR2RPinSign = 33;
+
+byte DACDataReceived[3];
+boolean DACR2RPinSignBool;
 
 void setup() {
   Serial.begin(115200);
@@ -26,6 +31,9 @@ void setup() {
     pinMode(DrivePins[i], OUTPUT);
     digitalWrite(DrivePins[i], HIGH);
   }
+  pinMode(DACR2RPinSign, OUTPUT);
+  digitalWrite(DACR2RPinSign, LOW);
+  DACR2RPinSignBool = false;
 }
 
 void loop() {
@@ -45,21 +53,24 @@ start:
 
       if (FCS(packet, sizeof(packet)) != 0) goto start;
 
+      if (packet[0] < 3) goto start;
       DeviceId = packet[1];
-      ActionId = packet[2];
-
-      if (DeviceId == V7_21Command) {
+      if (packet[0] > 4) {
         PinControl = packet[2];
         PinGate = packet[3];
+      }
+
+      if (DeviceId == V7_21Command) {
+        if (packet[0] < 5) goto start;
         V721();
       }
       if (DeviceId == ParameterReceiveCommand) SendParameters();
 
       if (DeviceId == DACR2RCommand) {
-        PinControl = packet[2];
-        PinGate = packet[3];
-        DACDataToSend[0] = packet[4];
-        DACDataToSend[1] = packet[5];
+        if (packet[0] < 8) goto start;
+        DACDataReceived[0] = packet[4];
+        DACDataReceived[1] = packet[5];
+        DACDataReceived[2] = packet[6];
         DACR2R();
       }
 
@@ -123,20 +134,31 @@ void V721() {
   {
     data[i] = SPI.transfer(0);
   }
+  ActionId = PinControl;
   CreateAndSendPacket(data, sizeof(data));
   GateClose();
 }
 
 void SendParameters() {
+  ActionId = 0x00;
   CreateAndSendPacket(DrivePins, sizeof(DrivePins));
 }
 
 void DACR2R() {
-  GateOpen();
+  if ((DACDataReceived[2] == DACR2R_Neg) && (DACR2RPinSignBool == false))
+  {
+    digitalWrite(DACR2RPinSign, HIGH);
+    DACR2RPinSignBool = true;
+  };
+
+  if ((DACDataReceived[2] == DACR2R_Pos) && (DACR2RPinSignBool == true))
+  {
+    digitalWrite(DACR2RPinSign, LOW);
+    DACR2RPinSignBool = false;
+  };
   digitalWrite(PinControl, LOW);
-  SPI.transfer(DACDataToSend[0]);
-  SPI.transfer(DACDataToSend[1]);
+  SPI.transfer(DACDataReceived[0]);
+  SPI.transfer(DACDataReceived[1]);
   digitalWrite(PinControl, HIGH);
-  GateClose();
 }
 
