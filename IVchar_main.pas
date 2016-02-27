@@ -340,7 +340,7 @@ type
 
 const
   Undefined='NoData';
-  Vmax=8;
+  Vmax=6.5;
 //  Imax=2e-2;
 //  Imin=5e-11;
   StepDefault=0.01;

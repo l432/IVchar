@@ -354,6 +354,10 @@ const
   DAC_OutputSYN=6; //встановлення напруги одночасно на обох каналах
   DAC_Overcurrent=7; // перевантаження на виході
 
+  DACR2R_Pos=$00; //додатня напруга
+  DACR2R_Neg=$FF; //від'ємна напруга
+  DACR2R_Reset=$AA; //встановлюється нульова напруга
+
 Function BCDtoDec(BCD:byte; isLow:boolean):byte;
 {виділяє з ВCD, яке містить дві десяткові
 цифри у двійково-десятковому представленні,
@@ -561,7 +565,7 @@ begin
  temp:=BCDtoDec(Data[0],False)*10+temp;
  temp:=temp+BCDtoDec(Data[1],True)*100;
  temp:=temp+BCDtoDec(Data[1],False)*1000;
- temp:=temp+BCDtoDec(Data[1],False)*1000;
+// temp:=temp+BCDtoDec(Data[1],False)*1000;
  temp:=temp+((Data[2] shr 4)and$1)*10000;
  if (Data[2] shr 5)and$1>0 then temp:=-temp;
  case fDiapazon of
@@ -1668,13 +1672,15 @@ end;
 
 procedure TDACR2R.Output(Voltage: double);
  var IntData:integer;
-     Data1,Data0:byte;
+     Data2,Data1,Data0:byte;
 begin
+ if Voltage<0 then Data2:=DACR2R_Neg
+              else Data2:=DACR2R_Pos;
 // IntData:=IntVoltage(Voltage);
  IntData:=$ffff;
- Data1:=((IntData shr 8) and $FF);
- Data0:=(IntData and $FF);
- PacketCreate([DACR2RCommand,PinControl,PinGate,Data1,Data0,$00]);
+ Data0:=((IntData shr 8) and $FF);
+ Data1:=(IntData and $FF);
+ PacketCreate([DACR2RCommand,PinControl,PinGate,Data0,Data1,Data2]);
  PacketIsSend(fComPort,'DAC R2R output value setting is unsuccessful');
 end;
 
