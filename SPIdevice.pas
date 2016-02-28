@@ -2,7 +2,7 @@ unit SPIdevice;
 
 interface
  uses OlegType,CPort,Dialogs,SysUtils,Classes,Windows,Forms,SyncObjs,PacketParameters,
-     ExtCtrls,StdCtrls,Buttons,IniFiles, Measurement;
+     ExtCtrls,StdCtrls,Buttons,IniFiles, Measurement,Math;
 
 type
   TMeasureMode=(IA,ID,UA,UD,MMErr);
@@ -183,6 +183,7 @@ private
  function IntVoltage(Voltage:double):integer;
 public
  Procedure Output(Voltage:double);
+ Procedure Reset();
 end;
 
 
@@ -306,14 +307,15 @@ end;
 
 TDACR2RShow=class(TSPIDeviceShow)
 private
- ValueChangeButton,ValueSetButton:TButton;
+ ValueChangeButton,ValueSetButton,ResetButton:TButton;
  ValueLabel:TLabel;
  procedure ValueChangeButtonAction(Sender:TObject);
  procedure ValueSetButtonAction(Sender:TObject);
+ procedure ResetButtonClick(Sender:TObject);
 public
-   Constructor Create(DACR2R:TDACR2R;
+  Constructor Create(DACR2R:TDACR2R;
                       CPL,GPL,VL:TLabel;
-                      SCB,SGB,VCB,VSB:TButton;
+                      SCB,SGB,VCB,VSB,RB:TButton;
                       PCB:TComboBox);
 end;
 
@@ -1628,46 +1630,9 @@ end;
 { TDACR2R }
 
 function TDACR2R.IntVoltage(Voltage: double): integer;
+ const MaxValue=65536;
 begin
- Result:=0;
-// if Voltage=0 then Exit;
-//
-// if ord(Range)<3 then
-//  begin
-//    if Voltage>=HighVoltage(Range) then
-//      begin
-//      Result:=$FFFF;
-//      Exit;
-//      end;
-//    if Voltage<=LowVoltage(Range) then
-//      begin
-//      Result:=$0;
-//      Exit;
-//      end;
-//    Result:=(round(Voltage*65536/REFIN/GainValueOutputRange[Range]) and $FFFF);
-//  end;
-//
-// if ord(Range)>2 then
-//  begin
-//    if Voltage>=HighVoltage(Range) then
-//      begin
-//      Result:=$7FFF;
-//      Exit;
-//      end;
-//    if Voltage<=LowVoltage(Range) then
-//      begin
-//      Result:=$8000;
-//      Exit;
-//      end;
-//    if Voltage>0 then
-//      Result:=(round(Voltage*65536/REFIN/GainValueOutputRange[Range]) and $7FFF)
-//                 else
-//      begin
-//      Result:=(32767-round(abs(Voltage)*65536/REFIN/GainValueOutputRange[Range]) and $7FFF);
-//      Result:=Result+$8000;
-//      end;
-//  end;
-
+ Result:=Min(Round(abs(Voltage)*10000),MaxValue);
 end;
 
 procedure TDACR2R.Output(Voltage: double);
@@ -1676,8 +1641,8 @@ procedure TDACR2R.Output(Voltage: double);
 begin
  if Voltage<0 then Data2:=DACR2R_Neg
               else Data2:=DACR2R_Pos;
-// IntData:=IntVoltage(Voltage);
- IntData:=$ffff;
+ IntData:=IntVoltage(Voltage);
+// IntData:=$ffff;
  Data0:=((IntData shr 8) and $FF);
  Data1:=(IntData and $FF);
  PacketCreate([DACR2RCommand,PinControl,PinGate,Data0,Data1,Data2]);
@@ -1689,11 +1654,17 @@ begin
 
 end;
 
+procedure TDACR2R.Reset;
+begin
+ PacketCreate([DACR2RCommand,PinControl,PinGate,$00,$00,DACR2R_Reset]);
+ PacketIsSend(fComPort,'DAC R2R reset is unsuccessful');
+end;
+
 { TDACR2RShow }
 
 constructor TDACR2RShow.Create(DACR2R: TDACR2R;
                                CPL,GPL,VL:TLabel;
-                               SCB,SGB,VCB,VSB:TButton;
+                               SCB,SGB,VCB,VSB,RB:TButton;
                                PCB: TComboBox);
 begin
  inherited Create(DACR2R,CPL,GPL,SCB,SGB,PCB);
@@ -1704,7 +1675,14 @@ begin
   ValueChangeButton.OnClick:=ValueChangeButtonAction;
   ValueSetButton:=VSB;
   ValueSetButton.OnClick:=ValueSetButtonAction;
+  ResetButton:=RB;
+  ResetButton.OnClick:=ResetButtonClick;
   CreateFooter();
+end;
+
+procedure TDACR2RShow.ResetButtonClick(Sender: TObject);
+begin
+ (SPIDevice as TDACR2R).Reset();
 end;
 
 procedure TDACR2RShow.ValueChangeButtonAction(Sender: TObject);

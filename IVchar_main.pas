@@ -208,6 +208,7 @@ type
     RBMeasMeasR2R: TRadioButton;
     CBMeasR2R: TComboBox;
     BMeasR2R: TButton;
+    BDACR2RReset: TButton;
     procedure FormCreate(Sender: TObject);
     procedure PortConnected();
     procedure BConnectClick(Sender: TObject);
@@ -803,7 +804,7 @@ begin
   IVCharEnd();
  case RGInputVoltage.ItemIndex of
 //  1,2:DAC.Reset;
-  3:DACR2R.Output(0);
+  3:DACR2R.Reset;
  end;
   if Temperature=ErResult then
     Temperature:=Temperature_MD.GetMeasurementResult(VoltageInput);
@@ -835,7 +836,7 @@ end;
 
 procedure TIVchar.BParamReceiveClick(Sender: TObject);
 begin
- PacketCreate([ParameterReceiveCommand,0]);
+ PacketCreate([ParameterReceiveCommand]);
  PacketIsSend(ComPort1,'Parameter receiving is unsuccessful');
 end;
 
@@ -1765,7 +1766,8 @@ begin
 //                           PanelDACChA,PanelDACChB,BDACInit,BDACReset);
   DACR2R:=TDACR2R.Create(ComPort1,'DACR2R');
   DACR2RShow:=TDACR2RShow.Create(DACR2R,LDACR2RPinC,LDACR2RPinG,LOVDACR2R,
-                                 BDACR2RSetC,BDACR2RSetG,BOVchangeDACR2R,BOVsetDACR2R,CBDACR2R);
+                                 BDACR2RSetC,BDACR2RSetG,BOVchangeDACR2R,
+                                 BOVsetDACR2R, BDACR2RReset, CBDACR2R);
 
 end;
 

@@ -1,16 +1,26 @@
 #include <SPI.h>
 
-#define PacketStart 10
-#define PacketEnd 255
-#define PacketMaxLength 15
-#define V7_21Command 1
-#define ParameterReceiveCommand 2
-#define DACCommand 3
-#define DACR2RCommand 4
-#define DACR2R_Pos 0x00
-#define DACR2R_Neg 0xFF
-#define DACR2R_Reset 0xAA
+//#define PacketStart 10
+//#define PacketEnd 255
+//#define PacketMaxLength 15
+//#define V7_21Command 1
+//#define ParameterReceiveCommand 2
+//#define DACCommand 3
+//#define DACR2RCommand 4
+//#define DACR2R_Pos 0x00
+//#define DACR2R_Neg 0xFF
+//#define DACR2R_Reset 0xAA
 
+const byte PacketStart=10;
+const byte PacketEnd=255;
+const byte PacketMaxLength=15;
+const byte V7_21Command= 1;
+const byte ParameterReceiveCommand= 2;
+const byte DACCommand= 3;
+const byte DACR2RCommand= 4;
+const byte DACR2R_Pos= 0x00;
+const byte DACR2R_Neg= 0xFF;
+const byte DACR2R_Reset= 0xAA;
 
 byte DrivePins[] = {25, 26, 27, 28, 29, 30, 31, 32, 34, 35};
 
@@ -145,13 +155,13 @@ void SendParameters() {
 }
 
 void DACR2R() {
-  if ((DACDataReceived[2] == DACR2R_Neg) && (DACR2RPinSignBool == false))
+  if (DACDataReceived[2] == DACR2R_Neg && !DACR2RPinSignBool)
   {
     digitalWrite(DACR2RPinSign, HIGH);
     DACR2RPinSignBool = true;
   };
 
-  if ((DACDataReceived[2] == DACR2R_Pos) && (DACR2RPinSignBool == true))
+  if (DACDataReceived[2] == DACR2R_Pos && DACR2RPinSignBool)
   {
     digitalWrite(DACR2RPinSign, LOW);
     DACR2RPinSignBool = false;
