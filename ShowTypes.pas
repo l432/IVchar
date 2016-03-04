@@ -3,7 +3,7 @@ unit ShowTypes;
 interface
 
 uses
-  StdCtrls, IniFiles;
+  StdCtrls, IniFiles, Windows;
 
 const DoubleConstantSection='DoubleConstant';
       NoFile='no file';
@@ -40,6 +40,10 @@ function LastFileName(Mask:string):string;
 function LastDATFileName():string;
 {повертає назву (коротку) останього .dat файлу в
 поточному каталозі}
+
+Procedure MelodyShot();
+
+Procedure MelodyLong();
 
 implementation
 
@@ -129,6 +133,18 @@ begin
   Result:=LastFileName('*.dat');
   if Result<>NoFile then
    Result:=Copy(Result,1,Length(Result)-4);
+end;
+
+Procedure MelodyShot();
+begin
+  Windows.Beep(100,50);
+end;
+
+Procedure MelodyLong();
+begin
+ Windows.Beep(700,100);
+ Windows.Beep(200,100);
+ Windows.Beep(500,100);
 end;
 
 end.

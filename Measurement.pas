@@ -23,11 +23,24 @@ public
  function GetCurrent(Vin:double):double;
 end;
 
+TDevice=class
+private
+ fActiveInterfaceNumber:integer;
+ fSetOfInterface:array of TInterfacedObject;
+ DevicesComboBox:TComboBox;
+ DataForAction:TLabel;
+ procedure DetermineInterface(Sender: TObject);
+ procedure SetVisualElementValue;
+public
+ Constructor Create();
+ procedure ReadFromIniFile(ConfigFile:TIniFile;const Section, Ident: string);
+ procedure WriteToIniFile(ConfigFile:TIniFile;const Section, Ident: string);
+end;
+
+
 TMeasuringDevice =class
 private
-// fActiveInterface:IMeasurement;
  fActiveInterfaceNumber:integer;
-// fSetOfInterface:array of IMeasurement;
  fSetOfInterface:array of TInterfacedObject;
  SimulatorRadioBut,MeasurementRadioBut:TRadioButton;
  DevicesComboBox:TComboBox;

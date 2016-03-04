@@ -89,6 +89,13 @@ type
   public
   end;
 
+  TV721_Brak=class(TV721)
+  {коричнева банка, при пайці переплутано 2 контакти}
+  private
+   Procedure DiapazonDetermination(Data:byte);override;
+  public
+  end;
+
   TOutputRange=(p050,p100,p108,pm050,pm100,pm108);
 
   TDACChannel=class
@@ -176,14 +183,29 @@ type
    {встановлення напруги на обох вихідних каналах одночасно}
   end;
 
+const DACR2R_MaxValue=65535;
+      DACR2R_Factor=10000;
+
+type
+
 TDACR2R=class(TSPIdevice)
   {базовий клас для ЦАП}
 private
+ fCalibration:PVector;
  Procedure PacketReceiving(Sender: TObject; const Str: string);override;
  function IntVoltage(Voltage:double):integer;
+ procedure DataByteToSendPrepare(Voltage: Double);
+ procedure PacketCreateAndSend(report: string);
+    procedure DataByteToSendFromInteger(IntData: Integer);
+// procedure CalibrationFileProcessing(filename:string);
 public
+ Constructor Create();overload;override;
+ Procedure Free;
  Procedure Output(Voltage:double);
  Procedure Reset();
+ Procedure CalibrationRead();
+ procedure CalibrationFileProcessing(filename:string);
+ Procedure OutputInt(Kod:integer);
 end;
 
 
@@ -378,7 +400,7 @@ Function DiapazonSelect(Mode:TMeasureMode;Diapazon:TDiapazons):integer;
 implementation
 
 uses
-  Graphics;
+  Graphics, OlegMath, OlegGraph;
 
 
 Constructor TSPIdevice.Create();
@@ -518,14 +540,32 @@ begin
 end;
 
 function TVoltmetr.GetData(LegalMeasureMode: TMeasureModeSet): double;
+ var a,b,c{,a1,a2,a3}:double;
 begin
- Result:=Measurement();
- if Result=ErResult then Exit;
- if not(fMeasureMode in LegalMeasureMode) then
+ a:=Measurement();
+ sleep(300);
+ b:=Measurement();
+ sleep(100);
+ c:=Measurement();
+ Result:=MedianFiltr(a,b,c);
+ if Result=0 then
    begin
-    MessageDlg('Measure mode is wrong!!!',mtError, [mbOK], 0);
-    Result:=ErResult;
-   end
+     sleep(300);
+     a:=Measurement();
+     sleep(100);
+     b:=Measurement();
+     sleep(100);
+     c:=Measurement();
+     Result:=MedianFiltr(a,b,c);
+   end;
+ 
+
+// if Result=ErResult then Exit;
+// if not(fMeasureMode in LegalMeasureMode) then
+//   begin
+//    MessageDlg('Measure mode is wrong!!!',mtError, [mbOK], 0);
+//    Result:=ErResult;
+//   end
 end;
 
 function TVoltmetr.GetTemperature: double;
@@ -635,6 +675,9 @@ procedure TVoltmetr.PacketReceiving(Sender: TObject; const Str: string);
  var i:integer;
 begin
  if not(PacketIsReceived(Str,fData,V7_21Command)) then Exit;
+ ShowData(fData);
+
+
  if fData[2]<>PinControl then Exit;
 
  for I := 0 to High(fData)-4 do
@@ -1630,23 +1673,48 @@ end;
 { TDACR2R }
 
 function TDACR2R.IntVoltage(Voltage: double): integer;
- const MaxValue=65536;
+// const MaxValue=65535;
+ var temp:double;
 begin
- Result:=Min(Round(abs(Voltage)*10000),MaxValue);
+ if Voltage=0 then
+  begin
+    Result:=0;
+    Exit;
+  end;
+// temp:=fCalibration^.Xvalue(Voltage);
+// showmessage(floattostr(temp));
+// if temp=ErResult then
+
+   Result:=Min(Round(abs(Voltage)*DACR2R_Factor),DACR2R_MaxValue)
+
+//                  else
+//   Result:=Min(Round(abs(temp)*10000),MaxValue);
+
+//  Result:=2329;
 end;
 
 procedure TDACR2R.Output(Voltage: double);
- var IntData:integer;
-     Data2,Data1,Data0:byte;
+// var
+//     Data2,Data1,Data0:byte;
 begin
- if Voltage<0 then Data2:=DACR2R_Neg
-              else Data2:=DACR2R_Pos;
- IntData:=IntVoltage(Voltage);
-// IntData:=$ffff;
- Data0:=((IntData shr 8) and $FF);
- Data1:=(IntData and $FF);
- PacketCreate([DACR2RCommand,PinControl,PinGate,Data0,Data1,Data2]);
- PacketIsSend(fComPort,'DAC R2R output value setting is unsuccessful');
+ if Voltage<0 then fData[2]:=DACR2R_Neg
+              else fData[2]:=DACR2R_Pos;
+ DataByteToSendPrepare(Voltage);
+ PacketCreateAndSend('DAC R2R output value setting is unsuccessful');
+end;
+
+Procedure TDACR2R.OutputInt(Kod:integer);
+begin
+ if Kod<0 then fData[2]:=DACR2R_Neg
+          else fData[2]:=DACR2R_Pos;
+ DataByteToSendFromInteger(abs(Kod));
+ PacketCreateAndSend('DAC R2R output value setting is unsuccessful');
+end;
+
+procedure TDACR2R.DataByteToSendFromInteger(IntData: Integer);
+begin
+  fData[0] := ((IntData shr 8) and $FF);
+  fData[1] := (IntData and $FF);
 end;
 
 procedure TDACR2R.PacketReceiving(Sender: TObject; const Str: string);
@@ -1656,8 +1724,64 @@ end;
 
 procedure TDACR2R.Reset;
 begin
- PacketCreate([DACR2RCommand,PinControl,PinGate,$00,$00,DACR2R_Reset]);
- PacketIsSend(fComPort,'DAC R2R reset is unsuccessful');
+ Output(0);
+// fData[2]:=DACR2R_Reset;
+// DataByteToSendPrepare(0);
+// PacketCreateAndSend('DAC R2R reset is unsuccessful');
+end;
+
+procedure TDACR2R.PacketCreateAndSend(report: string);
+begin
+  PacketCreate([DACR2RCommand, PinControl, PinGate, fData[0], fData[1], fData[2]]);
+  PacketIsSend(fComPort, report);
+end;
+
+procedure TDACR2R.CalibrationFileProcessing(filename: string);
+ var vec:PVector;
+     i:integer;
+     newfilename:string;
+begin
+ new(vec);
+ Read_File (filename, vec);
+ for I := 0 to high(vec^.X) do
+   begin
+     vec^.X[i]:=round(vec^.X[i]*DACR2R_Factor);
+     vec^.Y[i]:=round(vec^.Y[i]*DACR2R_Factor);
+     Swap(vec^.X[i],vec^.Y[i]);
+   end;
+ vec.Sorting();
+ newfilename:=filename;
+ Insert('n',newfilename,AnsiPos(ExtractFileExt(filename),newfilename));
+ Write_File(newfilename, vec);
+ dispose(vec)
+end;
+
+procedure TDACR2R.CalibrationRead;
+begin
+ Read_File ('calibr.dat', fCalibration);
+ fCalibration^.Sorting();
+end;
+
+constructor TDACR2R.Create;
+begin
+  inherited Create();
+  SetLength(fData,3);
+  new(fCalibration);
+  fCalibration^.SetLenVector(0);
+end;
+
+procedure TDACR2R.DataByteToSendPrepare(Voltage: Double);
+var
+  IntData: Integer;
+begin
+  IntData := IntVoltage(Voltage);
+  DataByteToSendFromInteger(IntData);
+end;
+
+procedure TDACR2R.Free;
+begin
+ dispose(fCalibration);
+ inherited Free;
 end;
 
 { TDACR2RShow }
@@ -1703,6 +1827,40 @@ procedure TDACR2RShow.ValueSetButtonAction(Sender: TObject);
 begin
    (SPIDevice as TDACR2R).Output(Strtofloat(ValueLabel.Caption));
    ValueLabel.Font.Color:=clPurple;
+end;
+
+{ TV721_Brak }
+
+procedure TV721_Brak.DiapazonDetermination(Data: byte);
+begin
+  fDiapazon:=DErr;
+  case Data of
+   127:if fMeasureMode=ID
+                      then fDiapazon:=mA1000
+                      else fDiapazon:=V1000;
+   239: if fMeasureMode=ID
+                      then fDiapazon:=mA100
+                      else fDiapazon:=V100;
+   223: if fMeasureMode=ID
+                      then fDiapazon:=mA10
+                      else fDiapazon:=V10;
+   191: if fMeasureMode=ID
+                      then fDiapazon:=mA1
+                      else fDiapazon:=V1;
+   247: if fMeasureMode=ID
+                      then fDiapazon:=micA100
+                      else fDiapazon:=mV100;
+   251: if(fMeasureMode=ID)then fDiapazon:=micA10
+                           else
+           if(fMeasureMode=UD) then  fDiapazon:=mV10
+                               else Exit;
+   253: if(fMeasureMode=ID) then fDiapazon:=micA1
+                           else Exit;
+   254: if(fMeasureMode=ID) then fDiapazon:=nA100
+                           else Exit;
+  end;
+
+
 end;
 
 end.
