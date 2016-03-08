@@ -7,7 +7,8 @@ uses
   PacketParameters in 'PacketParameters.pas',
   Measurement in 'Measurement.pas',
   TempThread in 'TempThread.pas',
-  ShowTypes in 'ShowTypes.pas';
+  ShowTypes in 'ShowTypes.pas',
+  Dependence in 'Dependence.pas';
 
 {$R *.res}
 

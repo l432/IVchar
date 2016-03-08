@@ -10,7 +10,7 @@ type
   TDiapazons=(nA100,micA1,micA10,micA100,mA1,mA10,mA100,mA1000,
               mV10,mV100,V1,V10,V100,V1000,DErr);
 
-  TSPIdevice=class(TInterfacedObject)
+  TSPIdevice=class(TInterfacedObject,IName)
   {базовий клас для пристроїв, які керуються
   за допомогою Аrduino з використанням шини SPI}
   private
@@ -43,6 +43,7 @@ type
    Procedure PinsReadFromIniFile(ConfigFile:TIniFile;Strings:TStrings);overload;
    Procedure PinsWriteToIniFile(ConfigFile:TIniFile);overload;
    Procedure PinsWriteToIniFile(ConfigFile:TIniFile;Strings:TStrings);overload;
+   function GetName:string;
   end;
 
 
@@ -188,12 +189,21 @@ const DACR2R_MaxValue=65535;
 
 type
 
-TDACR2R=class(TSPIdevice)
+TDACR2R_Calibr=record
+             pos01:array [1..10000]of word;
+             neg01:array [1..10000]of word;
+             pos16:array [1001..6500]of word;
+             neg16:array [1001..6500]of word;
+             end;
+PDACR2R_Calibr=^TDACR2R_Calibr;
+
+TDACR2R=class(TSPIdevice,IOutput)
   {базовий клас для ЦАП}
 private
  fCalibration:PVector;
  Procedure PacketReceiving(Sender: TObject; const Str: string);override;
  function IntVoltage(Voltage:double):integer;
+ function IntVoltageCalibr(Voltage:double):integer; 
  procedure DataByteToSendPrepare(Voltage: Double);
  procedure PacketCreateAndSend(report: string);
     procedure DataByteToSendFromInteger(IntData: Integer);
@@ -206,6 +216,8 @@ public
  Procedure CalibrationRead();
  procedure CalibrationFileProcessing(filename:string);
  Procedure OutputInt(Kod:integer);
+ function CalibrationStep(Voltage:double):double;
+ procedure OutputCalibr(Voltage:double);
 end;
 
 
@@ -450,6 +462,11 @@ begin
     Result:=Result+'undefined'
                                else
     Result:=Result+IntToStr(fPins[Index]);
+end;
+
+function TSPIdevice.GetName: string;
+begin
+ Result:=Name;
 end;
 
 Function TSPIdevice.GetPin(Index:integer):byte;
@@ -1693,6 +1710,16 @@ begin
 //  Result:=2329;
 end;
 
+function TDACR2R.IntVoltageCalibr(Voltage: double): integer;
+begin
+ if Voltage=0 then
+  begin
+    Result:=0;
+    Exit;
+  end;
+ Result:=Min(Round(abs(Voltage)*DACR2R_Factor),DACR2R_MaxValue)
+end;
+
 procedure TDACR2R.Output(Voltage: double);
 // var
 //     Data2,Data1,Data0:byte;
@@ -1700,6 +1727,14 @@ begin
  if Voltage<0 then fData[2]:=DACR2R_Neg
               else fData[2]:=DACR2R_Pos;
  DataByteToSendPrepare(Voltage);
+ PacketCreateAndSend('DAC R2R output value setting is unsuccessful');
+end;
+
+procedure TDACR2R.OutputCalibr(Voltage: double);
+begin
+ if Voltage<0 then fData[2]:=DACR2R_Neg
+              else fData[2]:=DACR2R_Pos;
+ DataByteToSendFromInteger(IntVoltageCalibr(Voltage));
  PacketCreateAndSend('DAC R2R output value setting is unsuccessful');
 end;
 
@@ -1760,6 +1795,12 @@ procedure TDACR2R.CalibrationRead;
 begin
  Read_File ('calibr.dat', fCalibration);
  fCalibration^.Sorting();
+end;
+
+function TDACR2R.CalibrationStep(Voltage: double): double;
+begin
+  if abs(Voltage)<=1 then Result:=1e-4
+                     else Result:=3e-4;
 end;
 
 constructor TDACR2R.Create;
