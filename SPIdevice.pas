@@ -692,11 +692,8 @@ procedure TVoltmetr.PacketReceiving(Sender: TObject; const Str: string);
  var i:integer;
 begin
  if not(PacketIsReceived(Str,fData,V7_21Command)) then Exit;
- ShowData(fData);
-
-
+// ShowData(fData);
  if fData[2]<>PinControl then Exit;
-
  for I := 0 to High(fData)-4 do
    fData[i]:=fData[i+3];
  SetLength(fData,High(fData)-3);

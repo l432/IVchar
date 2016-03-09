@@ -206,7 +206,6 @@ object IVchar: TIVchar
           Height = 25
           Caption = 'Stop'
           TabOrder = 3
-          OnClick = BIVStopClick
         end
         object CBSStep: TCheckBox
           Tag = 6
@@ -231,7 +230,6 @@ object IVchar: TIVchar
           Font.Style = [fsBold]
           ParentFont = False
           TabOrder = 5
-          OnClick = BIVSaveClick
         end
         object PBIV: TProgressBar
           Left = 24
