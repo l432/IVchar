@@ -227,6 +227,8 @@ type
     STOKDACR2R: TStaticText;
     LOKDACR2R: TLabel;
     BOKchangeDACR2R: TButton;
+    LADInputVoltage: TLabel;
+    LADInputVoltageValue: TLabel;
     procedure FormCreate(Sender: TObject);
     procedure PortConnected();
     procedure BConnectClick(Sender: TObject);
@@ -742,6 +744,7 @@ end;
 
 procedure TIVchar.IVCharHookSetVoltage;
 begin
+  LADInputVoltageValue.Caption:=FloatToStrF(TDependenceMeasuring.VoltageInputReal,ffFixed, 4, 3);
   if TDependenceMeasuring.ItIsForward then
     TDependenceMeasuring.VoltageInputRealChange(TDependenceMeasuring.VoltageInput+VoltageInputCorrection);
  if RGDO.ItemIndex=1 then TDependenceMeasuring.VoltageInputRealChange(-1*TDependenceMeasuring.VoltageInputReal);
@@ -829,6 +832,7 @@ end;
 
 procedure TIVchar.CalibrHookSetVoltage;
 begin
+ LADInputVoltageValue.Caption:=FloatToStrF(TDependenceMeasuring.VoltageInputReal,ffFixed, 6, 4);
  SettingDevice.SetValueCalibr(TDependenceMeasuring.VoltageInputReal);
 end;
 
@@ -2013,6 +2017,7 @@ begin
 
   LADVoltageValue.Caption:=Undefined;
   LADCurrentValue.Caption:=Undefined;
+  LADInputVoltageValue.Caption:=Undefined;
   LTRValue.Caption:=Undefined;
   LTLastValue.Caption:=Undefined;
 

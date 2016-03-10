@@ -1699,7 +1699,7 @@ begin
     Exit;
   end;
 
- if (Voltage>0)and(Voltage<=1) then
+ if (Voltage>0)and(Voltage<1.001) then
    begin
      Result:=fCalibration^.pos01[(Round(Voltage*DACR2R_Factor))];
      Exit;
@@ -1748,7 +1748,7 @@ begin
  if Voltage<0 then fData[2]:=DACR2R_Neg
               else fData[2]:=DACR2R_Pos;
  DataByteToSendFromInteger(VoltToKod(Voltage));
- PacketCreateAndSend('DAC R2R output value setting is unsuccessful');
+ PacketCreateAndSend('DAC R2R output calibration value setting is unsuccessful');
 end;
 
 Procedure TDACR2R.OutputInt(Kod:integer);
@@ -1786,8 +1786,8 @@ end;
 
 function TDACR2R.VoltToKodIndex(Volt: double): word;
 begin
-  if abs(Volt)<=0 then Result:=VoltToKod(Volt)
-                  else Result:=Round(VoltToKod(Volt)/10);
+  if abs(Volt)<1.001 then Result:=min(10000,VoltToKod(Volt))
+                     else Result:=Round(VoltToKod(Volt)/10);
 end;
 
 procedure TDACR2R.PacketCreateAndSend(report: string);
@@ -1863,16 +1863,16 @@ begin
            fCalibration^.pos01[RealKod]:=RequiredKod;
      Exit;
    end;
- if (Voltage<0)and(Voltage>=-1) then
-   begin
-     Result:=fCalibration^.neg01[(Round(abs(Voltage)*DACR2R_Factor))];
-     Exit;
-   end;
- if (Voltage<-1) then
-   begin
-     Result:=Min(fCalibration^.neg16[(Round(abs(Voltage)*DACR2R_Factor/10))],DACR2R_MaxValue);
-     Exit;
-   end;
+// if (Voltage<0)and(Voltage>=-1) then
+//   begin
+//     Result:=fCalibration^.neg01[(Round(abs(Voltage)*DACR2R_Factor))];
+//     Exit;
+//   end;
+// if (Voltage<-1) then
+//   begin
+//     Result:=Min(fCalibration^.neg16[(Round(abs(Voltage)*DACR2R_Factor/10))],DACR2R_MaxValue);
+//     Exit;
+//   end;
 end;
 
 procedure TDACR2R.Free;

@@ -106,15 +106,16 @@ begin
  SetVoltage();
 
  repeat
-   HookSecondMeas();
-   if ftempI=ErResult then
+  HookSecondMeas();
+  if ftempI=ErResult then
     begin
      fIVMeasuringToStop:=True;
      Exit;
     end;
+  fSecondMeasIsDone:=True;
 
-   HookFirstMeas();
-   if ftempV=ErResult then
+  HookFirstMeas();
+  if ftempV=ErResult then
     begin
      fIVMeasuringToStop:=True;
      Exit;
