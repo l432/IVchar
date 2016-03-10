@@ -200,14 +200,16 @@ PDACR2R_Calibr=^TDACR2R_Calibr;
 TDACR2R=class(TSPIdevice,IOutput)
   {базовий клас для ЦАП}
 private
- fCalibration:PVector;
+ fCalibration:PDACR2R_Calibr;
  Procedure PacketReceiving(Sender: TObject; const Str: string);override;
  function IntVoltage(Voltage:double):integer;
- function IntVoltageCalibr(Voltage:double):integer; 
+// function IntVoltageCalibr(Voltage:double):integer;
+ function VoltToKod(Volt:double):word;
+ function VoltToKodIndex(Volt:double):word;
  procedure DataByteToSendPrepare(Voltage: Double);
  procedure PacketCreateAndSend(report: string);
-    procedure DataByteToSendFromInteger(IntData: Integer);
-// procedure CalibrationFileProcessing(filename:string);
+ procedure DataByteToSendFromInteger(IntData: Integer);
+ procedure DataToCalibration(RequiredVoltage,RealVoltage:double);
 public
  Constructor Create();overload;override;
  Procedure Free;
@@ -341,15 +343,18 @@ end;
 
 TDACR2RShow=class(TSPIDeviceShow)
 private
- ValueChangeButton,ValueSetButton,ResetButton:TButton;
- ValueLabel:TLabel;
+ ValueChangeButton,ValueSetButton,
+ KodChangeButton,KodSetButton,ResetButton:TButton;
+ ValueLabel,KodLabel:TLabel;
  procedure ValueChangeButtonAction(Sender:TObject);
  procedure ValueSetButtonAction(Sender:TObject);
+ procedure KodChangeButtonAction(Sender:TObject);
+ procedure KodSetButtonAction(Sender:TObject);
  procedure ResetButtonClick(Sender:TObject);
 public
-  Constructor Create(DACR2R:TDACR2R;
-                      CPL,GPL,VL:TLabel;
-                      SCB,SGB,VCB,VSB,RB:TButton;
+ Constructor Create(DACR2R:TDACR2R;
+                      CPL,GPL,VL,KL:TLabel;
+                      SCB,SGB,VCB,VSB,KCB,KSB,RB:TButton;
                       PCB:TComboBox);
 end;
 
@@ -1687,35 +1692,46 @@ end;
 { TDACR2R }
 
 function TDACR2R.IntVoltage(Voltage: double): integer;
-// const MaxValue=65535;
- var temp:double;
 begin
  if Voltage=0 then
   begin
     Result:=0;
     Exit;
   end;
-// temp:=fCalibration^.Xvalue(Voltage);
-// showmessage(floattostr(temp));
-// if temp=ErResult then
+
+ if (Voltage>0)and(Voltage<=1) then
+   begin
+     Result:=fCalibration^.pos01[(Round(Voltage*DACR2R_Factor))];
+     Exit;
+   end;
+ if (Voltage>1) then
+   begin
+     Result:=Min(fCalibration^.pos16[(Round(Voltage*DACR2R_Factor/10))],DACR2R_MaxValue);
+     Exit;
+   end;
+ if (Voltage<0)and(Voltage>=-1) then
+   begin
+     Result:=fCalibration^.neg01[(Round(abs(Voltage)*DACR2R_Factor))];
+     Exit;
+   end;
+ if (Voltage<-1) then
+   begin
+     Result:=Min(fCalibration^.neg16[(Round(abs(Voltage)*DACR2R_Factor/10))],DACR2R_MaxValue);
+     Exit;
+   end;
 
    Result:=Min(Round(abs(Voltage)*DACR2R_Factor),DACR2R_MaxValue)
-
-//                  else
-//   Result:=Min(Round(abs(temp)*10000),MaxValue);
-
-//  Result:=2329;
 end;
 
-function TDACR2R.IntVoltageCalibr(Voltage: double): integer;
-begin
- if Voltage=0 then
-  begin
-    Result:=0;
-    Exit;
-  end;
- Result:=Min(Round(abs(Voltage)*DACR2R_Factor),DACR2R_MaxValue)
-end;
+//function TDACR2R.IntVoltageCalibr(Voltage: double): integer;
+//begin
+//// if Voltage=0 then
+////  begin
+////    Result:=0;
+////    Exit;
+////  end;
+// Result:=Min(Round(abs(Voltage)*DACR2R_Factor),DACR2R_MaxValue)
+//end;
 
 procedure TDACR2R.Output(Voltage: double);
 // var
@@ -1731,7 +1747,7 @@ procedure TDACR2R.OutputCalibr(Voltage: double);
 begin
  if Voltage<0 then fData[2]:=DACR2R_Neg
               else fData[2]:=DACR2R_Pos;
- DataByteToSendFromInteger(IntVoltageCalibr(Voltage));
+ DataByteToSendFromInteger(VoltToKod(Voltage));
  PacketCreateAndSend('DAC R2R output value setting is unsuccessful');
 end;
 
@@ -1740,7 +1756,7 @@ begin
  if Kod<0 then fData[2]:=DACR2R_Neg
           else fData[2]:=DACR2R_Pos;
  DataByteToSendFromInteger(abs(Kod));
- PacketCreateAndSend('DAC R2R output value setting is unsuccessful');
+ PacketCreateAndSend('DAC R2R output kod setting is unsuccessful');
 end;
 
 procedure TDACR2R.DataByteToSendFromInteger(IntData: Integer);
@@ -1756,10 +1772,22 @@ end;
 
 procedure TDACR2R.Reset;
 begin
- Output(0);
-// fData[2]:=DACR2R_Reset;
-// DataByteToSendPrepare(0);
-// PacketCreateAndSend('DAC R2R reset is unsuccessful');
+// Output(0);
+ fData[2]:=DACR2R_Pos;
+ fData[0] := $00;
+ fData[1] := $00;
+ PacketCreateAndSend('DAC R2R reset is unsuccessful');
+end;
+
+function TDACR2R.VoltToKod(Volt: double): word;
+begin
+ Result:=Min(Round(abs(Volt)*DACR2R_Factor),DACR2R_MaxValue);
+end;
+
+function TDACR2R.VoltToKodIndex(Volt: double): word;
+begin
+  if abs(Volt)<=0 then Result:=VoltToKod(Volt)
+                  else Result:=Round(VoltToKod(Volt)/10);
 end;
 
 procedure TDACR2R.PacketCreateAndSend(report: string);
@@ -1790,8 +1818,8 @@ end;
 
 procedure TDACR2R.CalibrationRead;
 begin
- Read_File ('calibr.dat', fCalibration);
- fCalibration^.Sorting();
+// Read_File ('calibr.dat', fCalibration);
+// fCalibration^.Sorting();
 end;
 
 function TDACR2R.CalibrationStep(Voltage: double): double;
@@ -1805,7 +1833,7 @@ begin
   inherited Create();
   SetLength(fData,3);
   new(fCalibration);
-  fCalibration^.SetLenVector(0);
+//  fCalibration^.SetLenVector(0);
 end;
 
 procedure TDACR2R.DataByteToSendPrepare(Voltage: Double);
@@ -1814,6 +1842,37 @@ var
 begin
   IntData := IntVoltage(Voltage);
   DataByteToSendFromInteger(IntData);
+end;
+
+procedure TDACR2R.DataToCalibration(RequiredVoltage, RealVoltage: double);
+ var RealKod,RequiredKod:word;
+begin
+ RealKod:=VoltToKodIndex(RealVoltage);
+ RequiredKod:=VoltToKod(RequiredVoltage);
+ if (RequiredVoltage>0)and(RequiredVoltage<=1) then
+   begin
+     if (fCalibration^.pos01[RealKod]>RequiredKod)
+            or(fCalibration^.pos01[RealKod]=0) then
+           fCalibration^.pos01[RealKod]:=RequiredKod;
+     Exit;
+   end;
+ if (RequiredVoltage>1) then
+   begin
+     if (fCalibration^.pos16[RealKod]>RequiredKod)
+            or(fCalibration^.pos01[RealKod]=0) then
+           fCalibration^.pos01[RealKod]:=RequiredKod;
+     Exit;
+   end;
+ if (Voltage<0)and(Voltage>=-1) then
+   begin
+     Result:=fCalibration^.neg01[(Round(abs(Voltage)*DACR2R_Factor))];
+     Exit;
+   end;
+ if (Voltage<-1) then
+   begin
+     Result:=Min(fCalibration^.neg16[(Round(abs(Voltage)*DACR2R_Factor/10))],DACR2R_MaxValue);
+     Exit;
+   end;
 end;
 
 procedure TDACR2R.Free;
@@ -1825,8 +1884,8 @@ end;
 { TDACR2RShow }
 
 constructor TDACR2RShow.Create(DACR2R: TDACR2R;
-                               CPL,GPL,VL:TLabel;
-                               SCB,SGB,VCB,VSB,RB:TButton;
+                               CPL,GPL,VL,KL:TLabel;
+                               SCB,SGB,VCB,VSB,KCB,KSB,RB:TButton;
                                PCB: TComboBox);
 begin
  inherited Create(DACR2R,CPL,GPL,SCB,SGB,PCB);
@@ -1839,7 +1898,36 @@ begin
   ValueSetButton.OnClick:=ValueSetButtonAction;
   ResetButton:=RB;
   ResetButton.OnClick:=ResetButtonClick;
+  KodLabel:=KL;
+  KodLabel.Caption:='0';
+  KodLabel.Font.Color:=clBlack;
+  KodChangeButton:=KCB;
+  KodChangeButton.OnClick:=KodChangeButtonAction;
+  KodSetButton:=KSB;
+  KodSetButton.OnClick:=KodSetButtonAction;
+
   CreateFooter();
+end;
+
+procedure TDACR2RShow.KodChangeButtonAction(Sender: TObject);
+ var value:string;
+begin
+ if InputQuery('Value', 'Output kod is expect', value) then
+  begin
+    try
+      KodLabel.Caption:=IntToStr(StrToInt(value));
+      KodLabel.Font.Color:=clBlack;
+    except
+
+    end;
+  end;
+end;
+
+procedure TDACR2RShow.KodSetButtonAction(Sender: TObject);
+begin
+   (SPIDevice as TDACR2R).OutputInt(StrToInt(KodLabel.Caption));
+   KodLabel.Font.Color:=clPurple;
+   ValueLabel.Font.Color:=clBlack;
 end;
 
 procedure TDACR2RShow.ResetButtonClick(Sender: TObject);
@@ -1865,6 +1953,7 @@ procedure TDACR2RShow.ValueSetButtonAction(Sender: TObject);
 begin
    (SPIDevice as TDACR2R).Output(Strtofloat(ValueLabel.Caption));
    ValueLabel.Font.Color:=clPurple;
+   KodLabel.Font.Color:=clBlack;
 end;
 
 { TV721_Brak }

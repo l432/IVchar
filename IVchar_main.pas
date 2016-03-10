@@ -178,7 +178,7 @@ type
     ComCBPort: TComComboBox;
     ComCBBR: TComComboBox;
     STCOMP: TStaticText;
-    StaticText1: TStaticText;
+    STComBR: TStaticText;
     TS_DACR2R: TTabSheet;
     CBDACR2R: TComboBox;
     LDACR2RPinC: TLabel;
@@ -196,7 +196,7 @@ type
     CBCurrentValue: TCheckBox;
     Button1: TButton;
     OpenDialog: TOpenDialog;
-    Button2: TButton;
+    BOKsetDACR2R: TButton;
     STTD: TStaticText;
     CBVS: TComboBox;
     GBDS: TGroupBox;
@@ -224,6 +224,9 @@ type
     UDRBHighLimitR2R: TUpDown;
     UDRBLowLimitR2R: TUpDown;
     CBCalibr: TCheckBox;
+    STOKDACR2R: TStaticText;
+    LOKDACR2R: TLabel;
+    BOKchangeDACR2R: TButton;
     procedure FormCreate(Sender: TObject);
     procedure PortConnected();
     procedure BConnectClick(Sender: TObject);
@@ -250,7 +253,7 @@ type
 //    procedure BIVStopClick(Sender: TObject);
 //    procedure BIVSaveClick(Sender: TObject);
     procedure Button1Click(Sender: TObject);
-    procedure Button2Click(Sender: TObject);
+//    procedure BOKsetDACR2RClick(Sender: TObject);
 //    procedure BOVsetChAClick(Sender: TObject);
 //    procedure BORChAClick(Sender: TObject);
 //    procedure RGORChAClick(Sender: TObject);
@@ -811,7 +814,8 @@ begin
   until (AtempNumber>AtempNumbermax);
 
   if (CBCurrentValue.Checked and (abs(tmI)>=Imax)) then
-   tmI:=ErResult;
+   TDependenceMeasuring.VoltageInputChange(Vmax);
+//   tmI:=ErResult;
   TDependenceMeasuring.tempIChange(tmI);
 end;
 
@@ -870,7 +874,11 @@ begin
        if (not(CBSStep.Checked))or(not(TDependenceMeasuring.ItIsForward)) then Break;
        if abs(tmV-TDependenceMeasuring.VoltageInput)>0.0004 then
          VoltageInputCorrection:=VoltageInputCorrection-(tmV-TDependenceMeasuring.VoltageInput);
-       if abs(tmV-TDependenceMeasuring.VoltageInput)>0.0009 then IVMeasuring.SetVoltage();
+       if abs(tmV-TDependenceMeasuring.VoltageInput)>0.0009 then
+          begin
+           IVMeasuring.SetVoltage();
+           TDependenceMeasuring.SecondMeasIsDoneChange(False);
+          end;
     until (abs(tmV-TDependenceMeasuring.VoltageInput)<0.001) ;
 
     if tmV=ErResult then Break;
@@ -879,7 +887,7 @@ begin
                                              else
      begin
        if (TDependenceMeasuring.ItIsForward and (tmV>IVResult^.X[High(IVResult^.X)])) then AtempNumber:=AtempNumbermax;
-       if (not(TDependenceMeasuring.ItIsForward) and (TDependenceMeasuring.tempI<IVResult^.X[High(IVResult^.X)])) then AtempNumber:=AtempNumbermax;
+       if (not(TDependenceMeasuring.ItIsForward) and (tmV<IVResult^.X[High(IVResult^.X)])) then AtempNumber:=AtempNumbermax;
      end;
    inc(AtempNumber);
   until (AtempNumber>AtempNumbermax);
@@ -928,7 +936,7 @@ end;
 
 procedure TIVchar.IVCharHookDataSave;
 begin
-  if abs(TDependenceMeasuring.tempI)<=Imin
+  if abs(TDependenceMeasuring.tempI)<=abs(Imin)
      then TDependenceMeasuring.tempIChange(ErResult);
   if NumberOfTemperatureMeasuring=TDependenceMeasuring.PointNumber
     then Temperature:=Temperature_MD.GetMeasurementResult(TDependenceMeasuring.VoltageInput);
@@ -946,6 +954,12 @@ end;
 procedure TIVchar.HookEnd;
 begin
   SettingDevice.Reset;
+  if not(TDependenceMeasuring.ItIsForward) then
+   begin
+   sleep(500);
+   SettingDevice.Reset;
+   end;
+
   CBSStep.Enabled := True;
   CBCalibr.Enabled := True;
   CBCurrentValue.Enabled := True;
@@ -1246,20 +1260,20 @@ begin
        end;
 end;
 
-procedure TIVchar.Button2Click(Sender: TObject);
- var value:string;
-     Kod:integer;
-begin
- if InputQuery('Value', 'Output value is expect', value) then
-  begin
-    try
-      Kod:=StrToInt(value);
-      DACR2R.OutputInt(Kod);
-    except
-
-    end;
-  end;
-end;
+//procedure TIVchar.BOKsetDACR2RClick(Sender: TObject);
+// var value:string;
+//     Kod:integer;
+//begin
+// if InputQuery('Value', 'Output value is expect', value) then
+//  begin
+//    try
+//      Kod:=StrToInt(value);
+//      DACR2R.OutputInt(Kod);
+//    except
+//
+//    end;
+//  end;
+//end;
 
 procedure TIVchar.ComDPacketPacket(Sender: TObject; const Str: string);
  var Data:TArrByte;
@@ -1865,9 +1879,10 @@ begin
 //                           BDACSetC,BDACSetG,BDACSetLDAC,BDACSetCLR,CBDAC,
 //                           PanelDACChA,PanelDACChB,BDACInit,BDACReset);
   DACR2R:=TDACR2R.Create(ComPort1,'DAC R-2R');
-  DACR2RShow:=TDACR2RShow.Create(DACR2R,LDACR2RPinC,LDACR2RPinG,LOVDACR2R,
+  DACR2RShow:=TDACR2RShow.Create(DACR2R,LDACR2RPinC,LDACR2RPinG,LOVDACR2R,LOKDACR2R,
                                  BDACR2RSetC,BDACR2RSetG,BOVchangeDACR2R,
-                                 BOVsetDACR2R, BDACR2RReset, CBDACR2R);
+                                 BOVsetDACR2R, BOKchangeDACR2R, BOKsetDACR2R,
+                                 BDACR2RReset, CBDACR2R);
 
 end;
 

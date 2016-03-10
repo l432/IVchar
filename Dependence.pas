@@ -60,6 +60,7 @@ public
   class procedure ItIsForwardChange(Value: boolean);
   class function IVMeasuringToStop:boolean;
   class procedure IVMeasuringToStopChange(Value: boolean);
+  class procedure SecondMeasIsDoneChange(Value: boolean);
   class function VoltageInput:double;
   class procedure VoltageInputChange(Value: double);
   class function VoltageInputReal:double;
@@ -85,6 +86,7 @@ uses
 var
   fItIsForward:boolean;
   fIVMeasuringToStop:boolean;
+  fSecondMeasIsDone:boolean;
   fVoltageInput:double;
   fVoltageInputReal:double;
   fVoltageStep:double;
@@ -102,19 +104,22 @@ end;
 procedure TDependenceMeasuring.ActionMeasurement;
 begin
  SetVoltage();
- HookSecondMeas();
- if ftempI=ErResult then
-  begin
-   fIVMeasuringToStop:=True;
-   Exit;
-  end;
 
- HookFirstMeas();
- if ftempV=ErResult then
-  begin
-   fIVMeasuringToStop:=True;
-   Exit;
-  end;
+ repeat
+   HookSecondMeas();
+   if ftempI=ErResult then
+    begin
+     fIVMeasuringToStop:=True;
+     Exit;
+    end;
+
+   HookFirstMeas();
+   if ftempV=ErResult then
+    begin
+     fIVMeasuringToStop:=True;
+     Exit;
+    end;
+ until (fSecondMeasIsDone);
 
   DataSave();
 
@@ -267,6 +272,11 @@ begin
 //   end;
   HookEndMeasuring();
   MelodyLong();
+end;
+
+class procedure TDependenceMeasuring.SecondMeasIsDoneChange(Value: boolean);
+begin
+ fSecondMeasIsDone:=Value;
 end;
 
 procedure TDependenceMeasuring.FullCycle(Action: TSimpleEvent);
