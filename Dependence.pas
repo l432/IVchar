@@ -67,6 +67,8 @@ public
   class procedure VoltageInputRealChange(Value: double);
   class function VoltageStep:double;
   class procedure VoltageStepChange(Value: double);
+  class function VoltageCorrection:double;
+  class procedure VoltageCorrectionChange(Value: double);
   class function tempV:double;
   class procedure tempVChange(Value: double);
   class function tempI:double;
@@ -90,6 +92,7 @@ var
   fVoltageInput:double;
   fVoltageInputReal:double;
   fVoltageStep:double;
+  fVoltageCorrection:double;
   ftempV,ftempI:double;
   fPointNumber:word;
   fDelayTime:integer;
@@ -153,6 +156,8 @@ begin
   RevLine.Clear;
   ForwLg.Clear;
   RevLg.Clear;
+
+  fVoltageCorrection:=0;
 
   HookBeginMeasuring();
 end;
@@ -337,13 +342,13 @@ end;
 
 procedure TDependenceMeasuring.SetVoltage;
 begin
-  if fItIsForward then fVoltageInputReal := fVoltageInput
-                  else fVoltageInputReal := -fVoltageInput;
+  if fItIsForward then fVoltageInputReal := (fVoltageInput+fVoltageCorrection)
+                  else fVoltageInputReal := -(fVoltageInput+fVoltageCorrection);
 
  HookSetVoltage();
 // SetDevice.SetValue(fVoltageInputReal);
 
- sleep(1000);
+ sleep(800);
  sleep(fDelayTime);
 end;
 
@@ -365,6 +370,16 @@ end;
 class procedure TDependenceMeasuring.tempVChange(Value: double);
 begin
   ftempV:=Value;
+end;
+
+class function TDependenceMeasuring.VoltageCorrection: double;
+begin
+  Result:=fVoltageCorrection;
+end;
+
+class procedure TDependenceMeasuring.VoltageCorrectionChange(Value: double);
+begin
+ fVoltageCorrection:=Value;
 end;
 
 class function TDependenceMeasuring.VoltageInput: double;

@@ -61,11 +61,13 @@ type
    Procedure ValueDetermination(Data:array of byte);virtual;
    Procedure PacketReceiving(Sender: TObject; const Str: string);override;
    function GetData(LegalMeasureMode:TMeasureModeSet):double;
+   function GetResistance():double;
   public
    property MeasureMode:TMeasureMode read FMeasureMode;
    property Value:double read fValue;
    property Diapazon:TDiapazons read fDiapazon;
    property isReady:boolean read fIsReady;
+   property Resistance:double read GetResistance;
    Procedure ConvertToValue(Data:array of byte);
    Constructor Create();overload;override;
    Function Request():boolean;
@@ -73,6 +75,7 @@ type
    function GetTemperature:double;
    function GetVoltage(Vin:double):double;
    function GetCurrent(Vin:double):double;
+   function GetResist():double;
   end;
 
   TV721A=class(TVoltmetr)
@@ -584,7 +587,7 @@ function TVoltmetr.GetData(LegalMeasureMode: TMeasureModeSet): double;
  var a,b,c{,a1,a2,a3}:double;
 begin
  a:=Measurement();
- sleep(300);
+ sleep(100);
  b:=Measurement();
  sleep(100);
  c:=Measurement();
@@ -607,6 +610,25 @@ begin
 //    MessageDlg('Measure mode is wrong!!!',mtError, [mbOK], 0);
 //    Result:=ErResult;
 //   end
+end;
+
+function TVoltmetr.GetResist: double;
+begin
+  Result:=GetResistance();
+end;
+
+function TVoltmetr.GetResistance: double;
+begin
+ case fDiapazon of
+   nA100: Result:=100000;
+   micA1: Result:=100000;
+   micA10: Result:=10000;
+   micA100: Result:=1000;
+   mA1: Result:=100;
+   mA10: Result:=10;
+   mA1000:Result:=1;
+   else Result:=0;
+ end;
 end;
 
 function TVoltmetr.GetTemperature: double;

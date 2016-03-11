@@ -757,12 +757,38 @@ procedure TIVchar.IVCharCurrentMeasHook;
   Jump,tmI: Double;
   IncreaseVoltage: Boolean;
   AtempNumber:byte;
+  Ua,Ux,VoltageNew,difU:double;
+  ItIsEnd:boolean;
 begin
   AtempNumber := 0;
   repeat
-    Application.ProcessMessages;
-    if TDependenceMeasuring.IVMeasuringToStop then Exit;
-    tmI := Current_MD.GetMeasurementResult(TDependenceMeasuring.VoltageInputReal);
+
+    repeat
+      Application.ProcessMessages;
+      if TDependenceMeasuring.IVMeasuringToStop then Exit;
+      tmI := Current_MD.GetMeasurementResult(TDependenceMeasuring.VoltageInputReal);
+      ItIsEnd:=True;
+      if tmI=ErResult then Break;
+      if ItIsBegining then Break;
+
+      Ua:=abs(tmI)*Current_MD.GetResist;
+      if  TDependenceMeasuring.VoltageInputReal>0
+         then Ux:=TDependenceMeasuring.VoltageInputReal-Ua
+         else Ux:=TDependenceMeasuring.VoltageInputReal+Ua;
+
+//      if TDependenceMeasuring.VoltageInputReal>0
+//       then difU:=TDependenceMeasuring.VoltageInput-Ux
+//       else difU:=Ux-TDependenceMeasuring.VoltageInput;
+
+      difU:=abs(Ux-TDependenceMeasuring.VoltageInput);
+      if difU>0.1*TDependenceMeasuring.VoltageStep then
+         begin
+          VoltageNew:=TDependenceMeasuring.VoltageInput*(TDependenceMeasuring.VoltageInputReal/Ux-1);
+          TDependenceMeasuring.VoltageCorrectionChange(VoltageNew);
+          IVMeasuring.SetVoltage();
+          ItIsEnd:=False;
+         end;
+    until ItIsEnd;
     if tmI=ErResult then Break;
 
     if RGDO.ItemIndex=1 then

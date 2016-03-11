@@ -17,6 +17,7 @@ IMeasurement = interface
  function GetTemperature:double;
  function GetVoltage(Vin:double):double;
  function GetCurrent(Vin:double):double;
+ function GetResist:double;
 // function GetName:string;
 end;
 
@@ -38,6 +39,7 @@ public
  function GetTemperature:double;
  function GetVoltage(Vin:double):double;
  function GetCurrent(Vin:double):double;
+ function GetResist:double;
  function GetName:string;
  procedure Output(Value:double);
  Procedure Reset();
@@ -60,29 +62,19 @@ end;
 
 TMeasuringDevice =class(TDevice)
 private
-// fActiveInterfaceNumber:integer;
-// fSetOfInterface:array of TInterfacedObject;
-// SimulatorRadioBut,MeasurementRadioBut:TRadioButton;
-// DevicesComboBox:TComboBox;
  ResultIndicator,DataForAction:TLabel;
  ActionButton:TButton;
-// procedure DetermineInterface(Sender: TObject);
  procedure ActionButtonOnClick(Sender: TObject);
-// procedure SetOnClickAction(Action: TNotifyEvent);
  function GetResult(Value:double):double;virtual;
  function StringResult(data:double):string;virtual;
-// procedure SetVisualElementValue;
 public
  Constructor Create(const SOI:array of TInterfacedObject;
-//                    SimRaB,MeaRB:TRadioButton;
                     DevCB:TComboBox;
                     RI:TLabel
                     );
-// procedure Free;
  function GetMeasurementResult(Value: Double):double;
-// procedure ReadFromIniFile(ConfigFile:TIniFile;const Section, Ident: string);
-// procedure WriteToIniFile(ConfigFile:TIniFile;const Section, Ident: string);
  procedure AddActionButton(AB:TButton;DFA:TLabel);
+ function GetResist():double;
 end;
 
 TTemperature_MD =class(TMeasuringDevice)
@@ -157,6 +149,11 @@ end;
 function TSimulator.GetName: string;
 begin
   Result:=Name;
+end;
+
+function TSimulator.GetResist: double;
+begin
+ Result:=0;
 end;
 
 function TSimulator.GetTemperature: double;
@@ -265,6 +262,14 @@ begin
  finally
 
  end;
+end;
+
+function TMeasuringDevice.GetResist: double;
+begin
+ if (fSetOfInterface[DevicesComboBox.ItemIndex] is TSimulator) then
+   Result:=(fSetOfInterface[DevicesComboBox.ItemIndex] as TSimulator).GetResist();
+ if (fSetOfInterface[DevicesComboBox.ItemIndex] is TVoltmetr) then
+   Result:=(fSetOfInterface[DevicesComboBox.ItemIndex] as TVoltmetr).GetResist();
 end;
 
 function TMeasuringDevice.GetResult(Value: double): double;
