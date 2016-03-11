@@ -194,7 +194,7 @@ type
     BMeasR2R: TButton;
     BDACR2RReset: TButton;
     CBCurrentValue: TCheckBox;
-    Button1: TButton;
+    BDFFA_R2R: TButton;
     OpenDialog: TOpenDialog;
     BOKsetDACR2R: TButton;
     STTD: TStaticText;
@@ -254,7 +254,7 @@ type
     procedure PCChanging(Sender: TObject; var AllowChange: Boolean);
 //    procedure BIVStopClick(Sender: TObject);
 //    procedure BIVSaveClick(Sender: TObject);
-    procedure Button1Click(Sender: TObject);
+    procedure BDFFA_R2RClick(Sender: TObject);
 //    procedure BOKsetDACR2RClick(Sender: TObject);
 //    procedure BOVsetChAClick(Sender: TObject);
 //    procedure BORChAClick(Sender: TObject);
@@ -338,6 +338,7 @@ type
     procedure HookEnd;
     procedure IVCharSaveClick(Sender: TObject);
     procedure CalibrSaveClick(Sender: TObject);
+    procedure ParametersFileWork(Action: TSimpleEvent);
   public
     V721A:TV721A;
 //    V721_I,V721_II:TV721;
@@ -851,6 +852,15 @@ begin
   BIVSave.Font.Style:=BIVSave.Font.Style+[fsStrikeOut];
 end;
 
+procedure TIVchar.ParametersFileWork(Action: TSimpleEvent);
+ var tempdir: string;
+begin
+  tempdir := GetCurrentDir;
+  ChDir(ExtractFilePath(Application.ExeName));
+  Action;
+  ChDir(tempdir);
+end;
+
 procedure TIVchar.IVCharVoltageMeasHook;
   var AtempNumber:byte;
     tmV:double;
@@ -1255,12 +1265,13 @@ begin
  SettingWriteToIniFile();
 end;
 
-procedure TIVchar.Button1Click(Sender: TObject);
+procedure TIVchar.BDFFA_R2RClick(Sender: TObject);
 begin
   if OpenDialog.Execute()
      then
        begin
-         DACR2R.CalibrationFileProcessing(OpenDialog.FileName)
+         DACR2R.CalibrationFileProcessing(OpenDialog.FileName);
+         ParametersFileWork(DACR2R.CalibrationWrite);
        end;
 end;
 
@@ -1902,7 +1913,7 @@ begin
 end;
 
 procedure TIVchar.DACReadFromIniFileAndToForm;
-  var tempdir:string;
+//  var tempdir:string;
 begin
 //  DACShow.PinsReadFromIniFile(ConfigFile);
 //  DAC.ChannelsReadFromIniFile(ConfigFile);
@@ -1911,10 +1922,11 @@ begin
 //  DACShow.DataShow;
   DACR2RShow.PinsReadFromIniFile(ConfigFile);
   DACR2RShow.NumberPinShow;
-  tempdir:=GetCurrentDir;
-  ChDir(ExtractFilePath(Application.ExeName));
-  DACR2R.CalibrationRead();
-  ChDir(tempdir);
+  ParametersFileWork(DACR2R.CalibrationRead);
+//  tempdir := GetCurrentDir;
+//  ChDir(ExtractFilePath(Application.ExeName));
+//  DACR2R.CalibrationRead();
+//  ChDir(tempdir);
 end;
 
 procedure TIVchar.DACWriteToIniFile;
