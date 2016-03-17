@@ -242,6 +242,7 @@ public
  Procedure OutputInt(Kod:integer);
  function CalibrationStep(Voltage:double):double;
  procedure OutputCalibr(Voltage:double);
+ procedure SaveFileWithCalibrData(DataVec:PVector);
 end;
 
 
@@ -1803,6 +1804,17 @@ begin
  PacketCreateAndSend('DAC R2R reset is unsuccessful');
 end;
 
+
+procedure TDACR2R.SaveFileWithCalibrData(DataVec: PVector);
+ var FileName:string;
+begin
+  DataVec.Sorting;
+  DataVec.DeleteDuplicate;
+  FileName:='cal'+IntToStr(trunc(DataVec^.X[0]*100))+
+            '_'+IntToStr(trunc(DataVec^.X[High(DataVec^.X)]*100))+
+            '.dat';
+  DataVec.Write_File(FileName,5);
+end;
 
 procedure TDACR2R.PacketCreateAndSend(report: string);
 begin

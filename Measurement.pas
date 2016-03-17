@@ -266,6 +266,7 @@ end;
 
 function TMeasuringDevice.GetResist: double;
 begin
+ Result:=ErResult;
  if (fSetOfInterface[DevicesComboBox.ItemIndex] is TSimulator) then
    Result:=(fSetOfInterface[DevicesComboBox.ItemIndex] as TSimulator).GetResist();
  if (fSetOfInterface[DevicesComboBox.ItemIndex] is TVoltmetr) then

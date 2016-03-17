@@ -335,6 +335,7 @@ type
     procedure IVCharVoltageMeasHook;
     procedure CalibrHookFirstMeas;
     procedure IVCharHookDataSave;
+    procedure CalibrHookDataSave;
     procedure HookEnd;
     procedure IVCharSaveClick(Sender: TObject);
     procedure CalibrSaveClick(Sender: TObject);
@@ -647,7 +648,7 @@ begin
   CalibrMeasuring.HookFirstMeas:=CalibrHookFirstMeas;
 
   IVMeasuring.HookDataSave:=IVCharHookDataSave;
-  CalibrMeasuring.HookDataSave:=ActionEmpty;
+  CalibrMeasuring.HookDataSave:=CalibrHookDataSave;
 
   IVMeasuring.HookEndMeasuring:=IVcharHookEnd;
   CalibrMeasuring.HookEndMeasuring:=CalibrHookEnd;
@@ -864,16 +865,11 @@ begin
 end;
 
 procedure TIVchar.CalibrSaveClick(Sender: TObject);
- var filename,tempdir:string;
+ var tempdir:string;
 begin
-  IVResult.Sorting;
-  IVResult.DeleteDuplicate;
-  filename:='cal'+IntToStr(trunc(IVResult^.X[0]*100))+
-            '_'+IntToStr(trunc(IVResult^.X[High(IVResult^.X)]*100))+
-            '.dat';
   tempdir:=GetCurrentDir;
   ChDir(ExtractFilePath(Application.ExeName));
-  Write_File(FileName,IVResult,5);
+  DACR2R.SaveFileWithCalibrData(IVResult);
   ChDir(tempdir);
   BIVSave.Font.Style:=BIVSave.Font.Style+[fsStrikeOut];
 end;
@@ -958,6 +954,21 @@ begin
 //
 //
 // end;{}
+end;
+
+procedure TIVchar.CalibrHookDataSave;
+ var tempdir:string;
+     tempVec:PVector;
+begin
+  if TDependenceMeasuring.PointNumber=0 then Exit;
+  if (TDependenceMeasuring.PointNumber mod 1000)<>0 then Exit;
+    new(tempVec);
+    IVResult^.Copy(tempVec^);
+    tempdir:=GetCurrentDir;
+    ChDir(ExtractFilePath(Application.ExeName));
+    DACR2R.SaveFileWithCalibrData(tempVec);
+    ChDir(tempdir);
+    dispose(tempVec);
 end;
 
 procedure TIVchar.CalibrHookEnd;
