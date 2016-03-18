@@ -157,7 +157,7 @@ begin
   ForwLg.Clear;
   RevLg.Clear;
 
-  fVoltageCorrection:=0;
+//  fVoltageCorrection:=0;
 
   HookBeginMeasuring();
 end;
@@ -188,6 +188,15 @@ begin
  RevLine:=RLn;
  ForwLg:=FLg;
  RevLg:=RLg;
+
+ HookBeginMeasuring:=AEmpty;
+ HookEndMeasuring:=AEmpty;
+ HookCycle:=AEmpty;
+ HookStep:=AEmpty;
+ HookSetVoltage:=AEmpty;
+ HookSecondMeas:=AEmpty;
+ HookFirstMeas:=AEmpty;
+ HookDataSave:=AEmpty;
 end;
 
 procedure TDependenceMeasuring.Cycle(ItIsForwardInput: Boolean; Action: TSimpleEvent);
@@ -196,6 +205,7 @@ procedure TDependenceMeasuring.Cycle(ItIsForwardInput: Boolean; Action: TSimpleE
 begin
  fItIsForward:=ItIsForwardInput;
  fDelayTime:=0;
+ fVoltageCorrection:=0;
  HookCycle();
 
  if fItIsForward then
@@ -348,7 +358,7 @@ begin
  HookSetVoltage();
 // SetDevice.SetValue(fVoltageInputReal);
 
- sleep(800);
+// sleep(800);
  sleep(fDelayTime);
 end;
 
