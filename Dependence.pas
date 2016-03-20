@@ -16,6 +16,7 @@ private
   fHookSecondMeas:TSimpleEvent;
   fHookFirstMeas:TSimpleEvent;
   fHookDataSave:TSimpleEvent;
+  fHookAction:TSimpleEvent;
   CBForw,CBRev: TCheckBox;
   ProgressBar: TProgressBar;
   ButtonStop: TButton;
@@ -47,6 +48,7 @@ public
   property HookSecondMeas:TSimpleEvent read fHookSecondMeas write fHookSecondMeas;
   property HookFirstMeas:TSimpleEvent read fHookFirstMeas write fHookFirstMeas;
   property HookDataSave:TSimpleEvent read fHookDataSave write fHookDataSave;
+  property HookAction:TSimpleEvent read fHookAction write fHookAction;
   Constructor Create({RF:TLimitShow;
                      RR:TLimitShowRev;}
                      CBF,CBR: TCheckBox;
@@ -106,32 +108,47 @@ end;
 
 procedure TDependenceMeasuring.ActionMeasurement;
 begin
- SetVoltage();
+// SetVoltage();
 
- repeat
-  HookSecondMeas();
-  if ftempI=ErResult then
-    begin
-     fIVMeasuringToStop:=True;
-     Exit;
-    end;
-  fSecondMeasIsDone:=True;
+// repeat
+//  HookSecondMeas();
+//  if ftempI=ErResult then
+//    begin
+//     fIVMeasuringToStop:=True;
+//     Exit;
+//    end;
+//  fSecondMeasIsDone:=True;
+//
+//  HookFirstMeas();
+//  if ftempV=ErResult then
+//    begin
+//     fIVMeasuringToStop:=True;
+//     Exit;
+//    end;
+// until (fSecondMeasIsDone);
 
-  HookFirstMeas();
-  if ftempV=ErResult then
-    begin
-     fIVMeasuringToStop:=True;
-     Exit;
-    end;
- until (fSecondMeasIsDone);
+  repeat
+    SetVoltage();
+    fSecondMeasIsDone:=True;
+    HookFirstMeas();
+    if ftempV=ErResult then
+      begin
+       fIVMeasuringToStop:=True;
+       Exit;
+      end;
+    if not(fSecondMeasIsDone)  then Continue;
+
+    fSecondMeasIsDone:=True;
+    HookSecondMeas();
+    if ftempI=ErResult then
+      begin
+       fIVMeasuringToStop:=True;
+       Exit;
+      end;
+  until (fSecondMeasIsDone);
 
   DataSave();
-
-  //  if NumberOfTemperatureMeasuring=PointNumber then
-//    Temperature:=Temperature_MD.GetMeasurementResult(VoltageInput);
   ProgressBar.Position := fPointNumber;
-//
-//  if ItIsBegining then ItIsBegining:=not(ItIsBegining);
 
   MelodyShot();
 end;
@@ -197,6 +214,7 @@ begin
  HookSecondMeas:=AEmpty;
  HookFirstMeas:=AEmpty;
  HookDataSave:=AEmpty;
+ HookAction:=AEmpty;
 end;
 
 procedure TDependenceMeasuring.Cycle(ItIsForwardInput: Boolean; Action: TSimpleEvent);
@@ -219,7 +237,6 @@ begin
      Finish:=RangeRev.HighValue;;
      Condition:=CBRev.Checked;
    end;
-//   showmessage('Hiiiii2');
 
  if Condition then
   begin
@@ -227,18 +244,13 @@ begin
    repeat
      Application.ProcessMessages;
      if fIVMeasuringToStop then Exit;
-
      inc(fPointNumber);
-//     showmessage(inttostr(fPointNumber));
+     HookAction();
      Action;
-//     showmessage('jjj');
      HookStep();
-//     showmessage('jjj333');
      fVoltageInput:=fVoltageInput+fVoltageStep;
    until fVoltageInput>Finish;
   end;
-
-
 end;
 
 
@@ -334,7 +346,6 @@ end;
 procedure TDependenceMeasuring.Measuring;
 begin
   BeginMeasuring();
-
   FullCycle(ActionMeasurement);
   EndMeasuring();
 end;
@@ -352,13 +363,9 @@ end;
 
 procedure TDependenceMeasuring.SetVoltage;
 begin
-  if fItIsForward then fVoltageInputReal := (fVoltageInput+fVoltageCorrection)
-                  else fVoltageInputReal := -(fVoltageInput+fVoltageCorrection);
-
+ if fItIsForward then fVoltageInputReal := (fVoltageInput+fVoltageCorrection)
+                 else fVoltageInputReal := -(fVoltageInput+fVoltageCorrection);
  HookSetVoltage();
-// SetDevice.SetValue(fVoltageInputReal);
-
-// sleep(800);
  sleep(fDelayTime);
 end;
 
