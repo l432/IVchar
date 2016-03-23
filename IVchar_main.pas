@@ -234,6 +234,7 @@ type
     GBRVP: TGroupBox;
     LRVP: TLabel;
     BRVP: TButton;
+    CBPC: TCheckBox;
     procedure FormCreate(Sender: TObject);
     procedure PortConnected();
     procedure BConnectClick(Sender: TObject);
@@ -377,7 +378,9 @@ type
     NumberOfTemperatureMeasuring: Integer;
     {IVMeasuringToStop,ItIsForward,}ItIsBegining:boolean;
 //    PointNumber:Integer;
-    VoltageInputCorrection,VoltageMeasured,{CurrentCorrection,}Temperature:double;
+    Temperature
+    ,VoltageInputCorrection,VoltageMeasured
+    ,VoltageInputCorrectionN,VoltageMeasuredN:double;
     DoubleConstantShows:array of TDoubleConstantShow;
     Imax,Imin{,Rs}:double;
     IVMeasuring,CalibrMeasuring:TDependenceMeasuring;
@@ -766,9 +769,18 @@ end;
 
 procedure TIVchar.IVCharHookSetVoltage;
 begin
-  LADInputVoltageValue.Caption:=FloatToStrF(TDependenceMeasuring.VoltageInputReal,ffFixed, 4, 3);
-//  if TDependenceMeasuring.ItIsForward then
-//    TDependenceMeasuring.VoltageInputRealChange(TDependenceMeasuring.VoltageInput+VoltageInputCorrection);
+  if TDependenceMeasuring.ItIsForward then
+    LADInputVoltageValue.Caption:=FloatToStrF(TDependenceMeasuring.VoltageInput,ffFixed, 4, 3)+
+    ' '+FloatToStrF(TDependenceMeasuring.VoltageInputReal,ffFixed, 4, 3)
+                                       else
+    LADInputVoltageValue.Caption:=FloatToStrF(-TDependenceMeasuring.VoltageInput,ffFixed, 4, 3)+
+    ' '+FloatToStrF(TDependenceMeasuring.VoltageInputReal,ffFixed, 4, 3);
+
+//showmessage('volt='+floattostr(VoltageMeasured)+
+//            ' voltN='+floattostr(VoltageMeasuredN)+#10+
+//            'Cal='+floattostr(VoltageInputCorrection)+
+//            ' calN='+floattostr(VoltageInputCorrectionN));
+
  if RGDO.ItemIndex=1 then TDependenceMeasuring.VoltageInputRealChange(-1*TDependenceMeasuring.VoltageInputReal);
  SettingDevice.SetValue(TDependenceMeasuring.VoltageInputReal);
 end;
@@ -900,12 +912,24 @@ procedure TIVchar.IVCharHookAction;
 begin
  VoltageInputCorrection:=ErResult;
  VoltageMeasured:=ErResult;
+ VoltageInputCorrectionN:=ErResult;
+ VoltageMeasuredN:=ErResult;
 
- if TDependenceMeasuring.ItIsForward then
-  Cor:=VolCorrection.Yvalue(TDependenceMeasuring.VoltageInput)
-                                     else
-  Cor:=VolCorrection.Yvalue(-TDependenceMeasuring.VoltageInput);
- TDependenceMeasuring.VoltageCorrectionChange(Cor);
+// Cor1:=0;
+// if (not(ItIsBegining))and(VolCorrectionNew^.X[High(VolCorrectionNew^.X)]<>0) then
+//  Cor1:=TDependenceMeasuring.VoltageInput*
+//            ((VolCorrectionNew^.X[High(VolCorrectionNew^.X)]+VolCorrectionNew^.X[High(VolCorrectionNew^.Y)])/VolCorrectionNew^.X[High(VolCorrectionNew^.X)]-1);
+ if CBPC.Checked then
+ begin
+   if TDependenceMeasuring.ItIsForward then
+    Cor:=VolCorrection.Yvalue(TDependenceMeasuring.VoltageInput)
+                                       else
+    Cor:=VolCorrection.Yvalue(-TDependenceMeasuring.VoltageInput);
+   if Cor<>ErResult then
+     TDependenceMeasuring.VoltageCorrectionChange(Cor)
+ end;
+//                  else
+//   TDependenceMeasuring.VoltageCorrectionChange(Cor1);
 end;
 
 procedure TIVchar.CalibrHookSecondMeas();
@@ -958,7 +982,8 @@ end;
 
 procedure TIVchar.IVCharVoltageMeasHook;
   var
-    tmV,MaxDif,NewCorrection:double;
+    tmV,MaxDif,NewCorrection,Factor:double;
+  ItIsLarge,CorrectionIsNeeded: Boolean;
 
   function y3(x1,x2,x3,y1,y2:double):double;
   begin
@@ -980,24 +1005,132 @@ begin
      tmV:=-tmV;
      LADVoltageValue.Caption:=FloatToStrF(tmV,ffFixed, 4, 3);
      end;
-  if (abs(abs(tmV)-TDependenceMeasuring.VoltageInput)>=MaxDif) then
+
+  if TDependenceMeasuring.ItIsForward then
+   CorrectionIsNeeded:=(abs(tmV-TDependenceMeasuring.VoltageInput)>=MaxDif)
+                                       else
+  CorrectionIsNeeded:=(abs(abs(tmV)-TDependenceMeasuring.VoltageInput)>=MaxDif);
+
+
+
+  if CorrectionIsNeeded then
    begin
     TDependenceMeasuring.SecondMeasIsDoneChange(False);
     tmV:=abs(tmV);
-    if VoltageMeasured<>ErResult then
-      begin
-       if abs(VoltageMeasured-tmV)<1e-4 then
-        NewCorrection:=TDependenceMeasuring.VoltageCorrection+0.0002
-                                        else
-        NewCorrection:=y3(VoltageMeasured,tmV,TDependenceMeasuring.VoltageInput,
-                          VoltageInputCorrection,TDependenceMeasuring.VoltageCorrection);
+    ItIsLarge:=(tmV>TDependenceMeasuring.VoltageInput);
 
-      end                        else
-       NewCorrection:=TDependenceMeasuring.VoltageInput*
-            ((TDependenceMeasuring.VoltageInput+TDependenceMeasuring.VoltageCorrection)/abs(tmV)-1);
+    if (ItIsLarge)and(abs(-VoltageMeasuredN+tmV)<0.25*MaxDif) then
+     begin
+      Randomize;
+      NewCorrection:=0.15*Random;
+//      VoltageMeasuredN:=ErResult;
+      VoltageMeasured:=ErResult;
+      VoltageInputCorrection:=ErResult;
+//      VoltageInputCorrectionN:=ErResult;
+      TDependenceMeasuring.VoltageCorrectionChange(NewCorrection);
+      Exit;
+     end;
 
-    VoltageInputCorrection:=TDependenceMeasuring.VoltageCorrection;
-    VoltageMeasured:=tmV;
+    if (not(ItIsLarge))and(abs(VoltageMeasured-tmV)<0.25*MaxDif) then
+     begin
+      Randomize;
+      NewCorrection:=0.15*Random;
+      VoltageMeasuredN:=ErResult;
+//      VoltageMeasured:=ErResult;
+//      VoltageInputCorrection:=ErResult;
+      VoltageInputCorrectionN:=ErResult;
+      TDependenceMeasuring.VoltageCorrectionChange(NewCorrection);
+      Exit;
+     end;
+
+//    if ItIsLarge then
+//       begin
+//        VoltageInputCorrectionN:=TDependenceMeasuring.VoltageCorrection;
+//        VoltageMeasuredN:=tmV;
+//       end       else
+//       begin
+//        VoltageInputCorrection:=TDependenceMeasuring.VoltageCorrection;
+//        VoltageMeasured:=tmV;
+//       end;
+//
+//    if (VoltageMeasured<>ErResult)and(VoltageMeasuredN<>ErResult)
+//     then
+//       NewCorrection:=y3(VoltageMeasured,VoltageMeasuredN,TDependenceMeasuring.VoltageInput,
+//                          VoltageInputCorrection,VoltageInputCorrectionN)
+//
+//    else
+   if ItIsLarge then Factor:=1
+                else Factor:=2.5;
+   if tmV>(TDependenceMeasuring.VoltageInput+TDependenceMeasuring.VoltageCorrection)
+     then
+   if ItIsLarge then Factor:=1.2
+                else Factor:=0.8;
+
+
+   NewCorrection:=TDependenceMeasuring.VoltageCorrection+
+                     Factor*(TDependenceMeasuring.VoltageInput-tmV);
+
+//    if tmV>(TDependenceMeasuring.VoltageInput+TDependenceMeasuring.VoltageCorrection)
+//     then
+//     begin
+//      if (VoltageMeasuredN=ErResult)and(VoltageMeasured=ErResult)
+//          then
+//          NewCorrection:=TDependenceMeasuring.VoltageInput-tmV
+//          else
+//          NewCorrection:=TDependenceMeasuring.VoltageCorrection+
+//                     0.5*(TDependenceMeasuring.VoltageInput-tmV);
+//
+//
+//
+//
+////      if VoltageMeasured<>ErResult then
+////         NewCorrection:=y3(VoltageMeasured,tmV,TDependenceMeasuring.VoltageInput,
+////                            VoltageInputCorrection,TDependenceMeasuring.VoltageInput-tmV);
+////
+////      if (VoltageMeasured=ErResult)and(VoltageMeasuredN<>ErResult)
+////       then
+////         begin
+////         showmessage('jjjj');
+////          NewCorrection:=(TDependenceMeasuring.VoltageInput-tmV);
+//////          NewCorrection:=VoltageInputCorrectionN-TDependenceMeasuring.VoltageInput+tmV;
+////
+//////          NewCorrection:=y3(VoltageMeasuredN,tmV,TDependenceMeasuring.VoltageInput,
+//////                            VoltageInputCorrectionN,TDependenceMeasuring.VoltageInput-tmV);
+////
+////         end;
+//     end;
+//
+//
+//    if ItIsLarge then
+//       begin
+//        VoltageInputCorrectionN:=TDependenceMeasuring.VoltageCorrection;
+//        VoltageMeasuredN:=tmV;
+//       end       else
+//       begin
+//        VoltageInputCorrection:=TDependenceMeasuring.VoltageCorrection;
+//        VoltageMeasured:=tmV;
+//       end;
+//
+//
+//
+//    if not(tmV>(TDependenceMeasuring.VoltageInput+TDependenceMeasuring.VoltageCorrection))
+//    then
+//    begin
+////     showmessage('hi-2');
+//    if (VoltageMeasured<>ErResult)and(VoltageMeasuredN<>ErResult)
+//     then
+////       NewCorrection:=y3(VoltageMeasured,tmV,TDependenceMeasuring.VoltageInput,
+////                          VoltageInputCorrection,TDependenceMeasuring.VoltageCorrection)
+//       NewCorrection:=y3(VoltageMeasured,VoltageMeasuredN,TDependenceMeasuring.VoltageInput,
+//                          VoltageInputCorrection,VoltageInputCorrectionN)
+//
+//     else
+//       NewCorrection:=TDependenceMeasuring.VoltageInput*
+//            ((TDependenceMeasuring.VoltageInput+TDependenceMeasuring.VoltageCorrection)/tmV-1);
+//    end;
+
+    if abs(NewCorrection)>0.3 then NewCorrection:=0.1*NewCorrection/NewCorrection;
+
     TDependenceMeasuring.VoltageCorrectionChange(NewCorrection);
     Exit;
    end;

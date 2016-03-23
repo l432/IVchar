@@ -241,6 +241,15 @@ begin
  if Condition then
   begin
    fVoltageInput:=Start;
+   if not(fItIsForward)
+      and(fVoltageInput=0)
+      and(RangeFor.LowValue=0)
+      and(CBForw.Checked) then
+    begin
+     HookStep();
+     fVoltageInput:=fVoltageInput+fVoltageStep;
+    end;
+
    repeat
      Application.ProcessMessages;
      if fIVMeasuringToStop then Exit;
@@ -363,6 +372,7 @@ end;
 
 procedure TDependenceMeasuring.SetVoltage;
 begin
+// showmessage(floattostr(fVoltageCorrection));
  if fItIsForward then fVoltageInputReal := (fVoltageInput+fVoltageCorrection)
                  else fVoltageInputReal := -(fVoltageInput+fVoltageCorrection);
  HookSetVoltage();
