@@ -375,7 +375,7 @@ type
     TemperatureMeasuringThread:TTemperatureMeasuringThread;
     IVCharRangeFor,CalibrRangeFor:TLimitShow;
     IVCharRangeRev,CalibrRangeRev:TLimitShowRev;
-    NumberOfTemperatureMeasuring: Integer;
+    NumberOfTemperatureMeasuring,IterationNumber: Integer;
     {IVMeasuringToStop,ItIsForward,}ItIsBegining:boolean;
 //    PointNumber:Integer;
     Temperature
@@ -391,6 +391,7 @@ const
   Vmax=6.5;
   StepDefault=0.01;
   AtempNumbermax=3;
+//  Rmeas=19.5886;
 
 var
   IVchar: TIVchar;
@@ -755,6 +756,7 @@ end;
 
 procedure TIVchar.HookBegin;
 begin
+   DecimalSeparator:='.';
   CBCalibr.Enabled := False;
   CBCurrentValue.Enabled := False;
   BIVStart.Enabled := False;
@@ -837,41 +839,41 @@ begin
 //         LADCurrentValue.Caption:=FloatToStrF(tmI,ffExponent, 4, 2);
 //         end;
 
-    if (abs(tmI)<=Imin)and(TDependenceMeasuring.VoltageInput<>0) then
-      begin
-        if TDependenceMeasuring.ItIsForward then Jump:=0.05 else Jump:=0.5;
-        if Jump<StepDetermine(TDependenceMeasuring.VoltageInput,TDependenceMeasuring.ItIsForward)
-           then Jump:=StepDetermine(TDependenceMeasuring.VoltageInput,TDependenceMeasuring.ItIsForward);
-
-        IncreaseVoltage:=True;
-        TDependenceMeasuring.SecondMeasIsDoneChange(False);
-        repeat
-
-          TDependenceMeasuring.VoltageInputChange(TDependenceMeasuring.VoltageInput+Jump);
-          IVMeasuring.SetVoltage();
-
-          if not(IVCharCurrentMeasuring(tmI)) then Exit;
-//          Application.ProcessMessages;
-//          if TDependenceMeasuring.IVMeasuringToStop then Exit;
-//          tmI := Current_MD.GetMeasurementResult(TDependenceMeasuring.VoltageInputReal);
-//          if tmI=ErResult then Break;
-//          if RGDO.ItemIndex=1 then
-//               begin
-//               tmI:=-tmI;
-//               LADCurrentValue.Caption:=FloatToStrF(tmI,ffExponent, 4, 2);
-//               end;
-          if  (abs(tmI)>Imin)and(IncreaseVoltage) then
-                         begin
-                         Jump:=-Jump/5;
-                         IncreaseVoltage:=False;
-                         end;
-         if  (abs(tmI)<=Imin)and(not(IncreaseVoltage)) then
-                        begin
-                        Jump:=-Jump/5;
-                        IncreaseVoltage:=true;
-                        end;
-        until ((abs(tmI)<=Imin)and(Jump<StepDetermine(TDependenceMeasuring.VoltageInput,TDependenceMeasuring.ItIsForward)));
-      end;
+//    if (abs(tmI)<=Imin)and(TDependenceMeasuring.VoltageInput<>0) then
+//      begin
+//        if TDependenceMeasuring.ItIsForward then Jump:=0.05 else Jump:=0.5;
+//        if Jump<StepDetermine(TDependenceMeasuring.VoltageInput,TDependenceMeasuring.ItIsForward)
+//           then Jump:=StepDetermine(TDependenceMeasuring.VoltageInput,TDependenceMeasuring.ItIsForward);
+//
+//        IncreaseVoltage:=True;
+//        TDependenceMeasuring.SecondMeasIsDoneChange(False);
+//        repeat
+//
+//          TDependenceMeasuring.VoltageInputChange(TDependenceMeasuring.VoltageInput+Jump);
+//          IVMeasuring.SetVoltage();
+//
+//          if not(IVCharCurrentMeasuring(tmI)) then Exit;
+////          Application.ProcessMessages;
+////          if TDependenceMeasuring.IVMeasuringToStop then Exit;
+////          tmI := Current_MD.GetMeasurementResult(TDependenceMeasuring.VoltageInputReal);
+////          if tmI=ErResult then Break;
+////          if RGDO.ItemIndex=1 then
+////               begin
+////               tmI:=-tmI;
+////               LADCurrentValue.Caption:=FloatToStrF(tmI,ffExponent, 4, 2);
+////               end;
+//          if  (abs(tmI)>Imin)and(IncreaseVoltage) then
+//                         begin
+//                         Jump:=-Jump/5;
+//                         IncreaseVoltage:=False;
+//                         end;
+//         if  (abs(tmI)<=Imin)and(not(IncreaseVoltage)) then
+//                        begin
+//                        Jump:=-Jump/5;
+//                        IncreaseVoltage:=true;
+//                        end;
+//        until ((abs(tmI)<=Imin)and(Jump<StepDetermine(TDependenceMeasuring.VoltageInput,TDependenceMeasuring.ItIsForward)));
+//      end;
 
 //   if tmI=ErResult then Break;
    if (ItIsBegining)or(High(IVResult^.Y)<0) then AtempNumber:=AtempNumbermax
@@ -894,6 +896,11 @@ begin
  Application.ProcessMessages;
  if TDependenceMeasuring.IVMeasuringToStop then Exit;
  Current := Current_MD.GetMeasurementResult(TDependenceMeasuring.VoltageInputReal);
+// ****************************
+//current:=current/Rmeas;
+//LADCurrentValue.Caption:=FloatToStrF(Current,ffExponent, 4, 2);
+
+//*********************************
  if Current=ErResult then
   begin
    TDependenceMeasuring.tempIChange(Current);
@@ -928,6 +935,7 @@ begin
    if Cor<>ErResult then
      TDependenceMeasuring.VoltageCorrectionChange(Cor)
  end;
+ IterationNumber:=0;
 //                  else
 //   TDependenceMeasuring.VoltageCorrectionChange(Cor1);
 end;
@@ -982,8 +990,9 @@ end;
 
 procedure TIVchar.IVCharVoltageMeasHook;
   var
-    tmV,MaxDif,NewCorrection,Factor:double;
+    tmV,MaxDif,NewCorrection,Factor,V:double;
   ItIsLarge,CorrectionIsNeeded: Boolean;
+ label bbegin;
 
   function y3(x1,x2,x3,y1,y2:double):double;
   begin
@@ -992,6 +1001,8 @@ procedure TIVchar.IVCharVoltageMeasHook;
 
 begin
   MaxDif:=IVCharVoltageMaxDif();
+
+bbegin:
   Application.ProcessMessages;
   if TDependenceMeasuring.IVMeasuringToStop then Exit;
   tmV := VoltageIV_MD.GetMeasurementResult(TDependenceMeasuring.VoltageInputReal);
@@ -1000,24 +1011,47 @@ begin
      TDependenceMeasuring.tempVChange(tmV);
      Exit;
     end;
+//************************************
+//  IVCharCurrentMeasuring(Factor);
+//  tmV :=tmV-Rmeas*abs(Factor);
+//  LADVoltageValue.Caption:=FloatToStrF(tmV,ffFixed, 4, 3);
+
+  //  tmV := VoltageIV_MD.GetMeasurementResult(TDependenceMeasuring.VoltageInputReal);
+
+//******************************
+
   if RGDO.ItemIndex=1 then
      begin
      tmV:=-tmV;
      LADVoltageValue.Caption:=FloatToStrF(tmV,ffFixed, 4, 3);
      end;
 
+
   if TDependenceMeasuring.ItIsForward then
    CorrectionIsNeeded:=(abs(tmV-TDependenceMeasuring.VoltageInput)>=MaxDif)
                                        else
   CorrectionIsNeeded:=(abs(abs(tmV)-TDependenceMeasuring.VoltageInput)>=MaxDif);
 
+//  if (CorrectionIsNeeded)and(CBPC.Checked)and(IterationNumber=0) then
+//   begin
+//     sleep(1500);
+//     inc(IterationNumber);
+//     goto bbegin;
+//   end;
 
 
   if CorrectionIsNeeded then
    begin
     TDependenceMeasuring.SecondMeasIsDoneChange(False);
-    tmV:=abs(tmV);
+
+    if TDependenceMeasuring.ItIsForward then V:=TDependenceMeasuring.VoltageInput
+                    else V:=-TDependenceMeasuring.VoltageInput;
+    if (not(TDependenceMeasuring.ItIsForward))and(TDependenceMeasuring.VoltageInput<>0) then
+                  tmV:=abs(tmV);
+//    tmV:=abs(tmV);
+
     ItIsLarge:=(tmV>TDependenceMeasuring.VoltageInput);
+//    ItIsLarge:=(abs(tmV)>abs(V));
 
     if (ItIsLarge)and(abs(-VoltageMeasuredN+tmV)<0.25*MaxDif) then
      begin
@@ -1059,16 +1093,37 @@ begin
 //                          VoltageInputCorrection,VoltageInputCorrectionN)
 //
 //    else
+
+
    if ItIsLarge then Factor:=1
                 else Factor:=2.5;
    if tmV>(TDependenceMeasuring.VoltageInput+TDependenceMeasuring.VoltageCorrection)
+//   if abs(tmV)>abs(V+TDependenceMeasuring.VoltageCorrection)
      then
    if ItIsLarge then Factor:=1.2
                 else Factor:=0.8;
+   inc(IterationNumber);
+   if (IterationNumber mod 7)=0 then
+   begin
+//    IterationNumber:=0;
+    Randomize;
+    Factor:=Factor*Random;
+   end;
 
+
+//   if ItIsLarge then Factor:=0.8
+//                else Factor:=1.2;
+//
+//
+//    if tmV>(TDependenceMeasuring.VoltageInput+TDependenceMeasuring.VoltageCorrection)
+//     then
+//   if ItIsLarge then Factor:=0.9
+//                else Factor:=0.5;
 
    NewCorrection:=TDependenceMeasuring.VoltageCorrection+
                      Factor*(TDependenceMeasuring.VoltageInput-tmV);
+//   NewCorrection:=TDependenceMeasuring.VoltageCorrection+
+//                     Factor*(V-tmV);
 
 //    if tmV>(TDependenceMeasuring.VoltageInput+TDependenceMeasuring.VoltageCorrection)
 //     then
@@ -1250,6 +1305,7 @@ end;
 
 procedure TIVchar.HookEnd;
 begin
+  DecimalSeparator:='.';
   SettingDevice.Reset;
   if not(TDependenceMeasuring.ItIsForward) then
    begin
@@ -1544,6 +1600,7 @@ end;
 
 procedure TIVchar.BSaveSettingClick(Sender: TObject);
 begin
+ DecimalSeparator:='.';
  SettingWriteToIniFile();
 end;
 

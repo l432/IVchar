@@ -224,11 +224,12 @@ begin
  fItIsForward:=ItIsForwardInput;
  fDelayTime:=0;
  fVoltageCorrection:=0;
- HookCycle();
+
 
  if fItIsForward then
    begin
      Start:=RangeFor.LowValue;
+//     Start:=0.01;
      Finish:=RangeFor.HighValue;
      Condition:=CBForw.Checked;
    end          else
@@ -237,6 +238,8 @@ begin
      Finish:=RangeRev.HighValue;;
      Condition:=CBRev.Checked;
    end;
+
+  HookCycle();  
 
  if Condition then
   begin
