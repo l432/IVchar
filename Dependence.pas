@@ -237,7 +237,26 @@ begin
      Start:=RangeRev.LowValue;;
      Finish:=RangeRev.HighValue;;
      Condition:=CBRev.Checked;
-   end;
+  end;
+
+
+   //**********************************
+// if not(CBRev.Checked) then
+// begin
+//   if fItIsForward then
+//    Start:=0
+//                   else
+//   begin
+//     Condition:=true;
+//     Start:=0.05;
+//     Finish:=0.1;
+//   end;
+// end;
+
+
+   //************************************
+
+
 
   HookCycle();  
 

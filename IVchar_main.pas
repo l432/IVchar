@@ -758,7 +758,7 @@ procedure TIVchar.HookBegin;
 begin
    DecimalSeparator:='.';
   CBCalibr.Enabled := False;
-  CBCurrentValue.Enabled := False;
+//  CBCurrentValue.Enabled := False;
   BIVStart.Enabled := False;
   BConnect.Enabled := False;
   BIVSave.Enabled:=False;
@@ -1285,6 +1285,7 @@ end;
 procedure TIVchar.IVCharHookDataSave;
 begin
   if abs(TDependenceMeasuring.tempI)<=abs(Imin)
+//     then TDependenceMeasuring.tempIChange(0);
      then TDependenceMeasuring.tempIChange(ErResult);
   if NumberOfTemperatureMeasuring=TDependenceMeasuring.PointNumber
     then Temperature:=Temperature_MD.GetMeasurementResult(TDependenceMeasuring.VoltageInput);
@@ -1314,7 +1315,7 @@ begin
    end;
 
   CBCalibr.Enabled := True;
-  CBCurrentValue.Enabled := True;
+//  CBCurrentValue.Enabled := True;
   BIVStart.Enabled := True;
   BConnect.Enabled := True;
   BParamReceive.Enabled := True;
@@ -1863,7 +1864,7 @@ end;
 
 procedure TIVchar.RangesCreate;
 begin
-  IVCharRangeFor:=TLimitShow.Create(Vmax,1,UDFBHighLimit,UDFBLowLimit,LFBHighlimitValue,LFBLowlimitValue,RangeShowLimit);
+  IVCharRangeFor:=TLimitShow.Create(Vmax,2,UDFBHighLimit,UDFBLowLimit,LFBHighlimitValue,LFBLowlimitValue,RangeShowLimit);
   IVCharRangeRev:=TLimitShowRev.Create(Vmax,1,UDRBHighLimit,UDRBLowLimit,LRBHighlimitValue,LRBLowlimitValue,RangeShowLimit);
   CalibrRangeFor:=TLimitShow.Create(Vmax,2,UDFBHighLimitR2R,UDFBLowLimitR2R,LFBHighlimitValueR2R,LFBLowlimitValueR2R,RangeShowLimit);
   CalibrRangeRev:=TLimitShowRev.Create(Vmax,2,UDRBHighLimitR2R,UDRBLowLimitR2R,LRBHighlimitValueR2R,LRBLowlimitValueR2R,RangeShowLimit);
