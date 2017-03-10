@@ -477,8 +477,6 @@ end;
 
 Procedure TSPIdevice.Free;
 begin
-// if fComPacket.ComPort<>nil then fComPacket.ComPort:=nil;
-// if fComPort<>nil then fComPort:=nil;
  fComPacket.Free;
  inherited;
 end;

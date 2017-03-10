@@ -51,7 +51,6 @@ TDevice=class
 private
  fSetOfInterface:array of TInterfacedObject;
  DevicesComboBox:TComboBox;
-// DataForAction:TLabel;
 public
  Constructor Create(const SOI:array of TInterfacedObject;
                     DevCB:TComboBox);
@@ -160,7 +159,6 @@ function TSimulator.GetTemperature: double;
 begin
  sleep(500);
  Result:=Random(4000)/10.0;
-// Result:=300;
 end;
 
 function TSimulator.GetVoltage(Vin: double): double;
@@ -205,7 +203,6 @@ begin
  except
 //   value:=ErResult;
  end;
-// GetMeasurementResult(Value);
 end;
 
 procedure TMeasuringDevice.AddActionButton(AB: TButton; DFA: TLabel);
@@ -216,42 +213,12 @@ begin
 end;
 
 constructor TMeasuringDevice.Create(const SOI:array of TInterfacedObject;
-//                                    SimRaB,MeaRB: TRadioButton;
                                     DevCB: TComboBox;
                                     RI: TLabel);
-//var
-//  I: Integer;
 begin
  inherited Create(SOI,DevCB);
-// SetLength(fSetOfInterface,High(SOI)+1);
-// for I := 0 to High(SOI) do
-//  fSetOfInterface[i]:=SOI[i];
-// SimulatorRadioBut:=SimRaB;
-// MeasurementRadioBut:=MeaRB;
-// DevicesComboBox:=DevCB;
-// SetOnClickAction(DetermineInterface);
-//       showmessage('jjjj');
-
  ResultIndicator:=RI;
-// fActiveInterfaceNumber:=0;
-
 end;
-
-//procedure TMeasuringDevice.DetermineInterface(Sender: TObject);
-//begin
-//  if SimulatorRadioBut.Checked then
-//   begin
-//     fActiveInterfaceNumber:=0;
-//     DevicesComboBox.Enabled:=False;
-//   end;
-//  if MeasurementRadioBut.Checked then
-//   begin
-//     DevicesComboBox.Enabled:=True;
-//     fActiveInterfaceNumber:=DevicesComboBox.ItemIndex+1;
-//   end;
-//end;
-
-
 
 function TMeasuringDevice.GetMeasurementResult(Value: Double): double;
 begin
@@ -276,41 +243,11 @@ end;
 function TMeasuringDevice.GetResult(Value: double): double;
 begin
  Result:=ErResult;
-// try
-//  Result:=(fSetOfInterface[DevicesComboBox.ItemIndex] as IMeasurement).GetVoltage(Value)
-// except
-// end;
  if (fSetOfInterface[DevicesComboBox.ItemIndex] is TSimulator) then
    Result:=(fSetOfInterface[DevicesComboBox.ItemIndex] as TSimulator).GetVoltage(Value);
  if (fSetOfInterface[DevicesComboBox.ItemIndex] is TVoltmetr) then
    Result:=(fSetOfInterface[DevicesComboBox.ItemIndex] as TVoltmetr).GetVoltage(Value);
-
-// if (fSetOfInterface[fActiveInterfaceNumber] is TSimulator) then
-//   Result:=(fSetOfInterface[fActiveInterfaceNumber] as TSimulator).GetVoltage(Value);
-// if (fSetOfInterface[fActiveInterfaceNumber] is TVoltmetr) then
-//   Result:=(fSetOfInterface[fActiveInterfaceNumber] as TVoltmetr).GetVoltage(Value);
 end;
-//
-//procedure TMeasuringDevice.SetVisualElementValue;
-//begin
-// SetOnClickAction(nil);
-// if fActiveInterfaceNumber=0 then
-//  begin
-//   SimulatorRadioBut.Checked:=True;
-//   DevicesComboBox.Enabled:=False;
-//  end
-//                             else
-//  begin
-//   MeasurementRadioBut.Checked:=True;
-//   DevicesComboBox.Enabled:=True;
-//   try
-//     DevicesComboBox.ItemIndex:=fActiveInterfaceNumber-1;
-//   except
-//     DevicesComboBox.ItemIndex:=-1;
-//   end;
-//  end;
-// SetOnClickAction(DetermineInterface);
-//end;
 
 
 function TMeasuringDevice.StringResult(data: double): string;
@@ -318,54 +255,16 @@ begin
  Result:=FloatToStrF(data,ffExponent, 4, 2);
 end;
 
-//procedure TMeasuringDevice.ReadFromIniFile(ConfigFile: TIniFile; const Section,
-//  Ident: string);
-//begin
-//  fActiveInterfaceNumber:=ConfigFile.ReadInteger(Section, Ident, 0);
-//  SetVisualElementValue;
-//end;
-
-//procedure TMeasuringDevice.WriteToIniFile(ConfigFile: TIniFile; const Section,
-//  Ident: string);
-//begin
-//  WriteIniDef(ConfigFile,Section, Ident,fActiveInterfaceNumber,0);
-//end;
-//
-//procedure TMeasuringDevice.SetOnClickAction(Action: TNotifyEvent);
-//begin
-//  SimulatorRadioBut.OnClick := Action;
-//  MeasurementRadioBut.OnClick := Action;
-//  DevicesComboBox.OnChange := Action;
-//end;
 
 { TTemperatureMD }
-
-//function TTemperatureMD.GetMeasurementResult: double;
-//begin
-// try
-// Result:=fSetOfInterface[fActiveInterfaceNumber].GetTemperature;
-// if ResultIndicator<>nil then
-//    ResultIndicator.Caption:=StringResult(Result);
-// finally
-//
-// end;
-//end;
 
 function TTemperature_MD.GetResult(Value: double): double;
 begin
   Result:=ErResult;
-// try
-//  Result:=(fSetOfInterface[DevicesComboBox.ItemIndex] as IMeasurement).GetTemperature()
-// except
-// end;
  if (fSetOfInterface[DevicesComboBox.ItemIndex] is TSimulator) then
    Result:=(fSetOfInterface[DevicesComboBox.ItemIndex] as TSimulator).GetTemperature();
  if (fSetOfInterface[DevicesComboBox.ItemIndex] is TVoltmetr) then
    Result:=(fSetOfInterface[DevicesComboBox.ItemIndex] as TVoltmetr).GetTemperature();
-// if (fSetOfInterface[fActiveInterfaceNumber] is TSimulator) then
-//   Result:=(fSetOfInterface[fActiveInterfaceNumber] as TSimulator).GetTemperature();
-// if (fSetOfInterface[fActiveInterfaceNumber] is TVoltmetr) then
-//   Result:=(fSetOfInterface[fActiveInterfaceNumber] as TVoltmetr).GetTemperature();
 end;
 
 function TTemperature_MD.StringResult(data: double): string;
@@ -378,19 +277,10 @@ end;
 function TCurrent_MD.GetResult(Value: double): double;
 begin
  Result:=ErResult;
-// try
-//  Result:=(fSetOfInterface[DevicesComboBox.ItemIndex] as IMeasurement).GetCurrent(Value)
-// except
-// end;
  if (fSetOfInterface[DevicesComboBox.ItemIndex] is TSimulator) then
    Result:=(fSetOfInterface[DevicesComboBox.ItemIndex] as TSimulator).GetCurrent(Value);
  if (fSetOfInterface[DevicesComboBox.ItemIndex] is TVoltmetr) then
    Result:=(fSetOfInterface[DevicesComboBox.ItemIndex] as TVoltmetr).GetCurrent(Value);
-
-// if (fSetOfInterface[fActiveInterfaceNumber] is TSimulator) then
-//   Result:=(fSetOfInterface[fActiveInterfaceNumber] as TSimulator).GetCurrent(Value);
-// if (fSetOfInterface[fActiveInterfaceNumber] is TVoltmetr) then
-//   Result:=(fSetOfInterface[fActiveInterfaceNumber] as TVoltmetr).GetCurrent(Value);
 end;
 
 
@@ -414,7 +304,6 @@ constructor TDevice.Create(const SOI: array of TInterfacedObject;
                            DevCB: TComboBox);
 var
   I: Integer;
-//  Name:Iname;
 begin
  inherited Create;
 
@@ -433,12 +322,6 @@ begin
   if (fSetOfInterface[i] is TSPIdevice) then
     DevicesComboBox.Items.Add((fSetOfInterface[i] as TSPIdevice).GetName);
 
-//   try
-//    Name:=(fSetOfInterface[i] as Iname);
-//    DevicesComboBox.Items.Add(Name.GetName);
-//   except
-//    DevicesComboBox.Items.Add('No Device');
-//   end;
   end;
 
  DevicesComboBox.ItemIndex:=0;
