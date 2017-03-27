@@ -47,6 +47,27 @@ type
   end;
 
 
+  TDS18B20=class(TSPIdevice,IMeasurement)
+  {базовий клас для датчика DS18B20}
+  private
+   fValue:double;
+   fIsReady:boolean;
+   fIsReceived:boolean;
+   Procedure ValueDetermination(Data:array of byte);virtual;
+   Procedure PacketReceiving(Sender: TObject; const Str: string);override;
+  public
+   property Value:double read fValue;
+   property isReady:boolean read fIsReady;
+   Constructor Create();overload;override;
+   Function Request():boolean;
+   Function Measurement():double;
+   function GetTemperature:double;
+   function GetVoltage(Vin:double):double;
+   function GetCurrent(Vin:double):double;
+   function GetResist():double;
+  end;
+
+
   TVoltmetr=class(TSPIdevice,IMeasurement)
   {базовий клас для вольтметрів серії В7-21}
   private
@@ -2139,6 +2160,111 @@ begin
  WriteToFile('pos16.cvt',pos16);
  WriteToFile('neg01.cvt',neg01);
  WriteToFile('neg16.cvt',neg16);
+end;
+
+{ TDS18B20 }
+
+constructor TDS18B20.Create;
+begin
+  inherited Create();
+  SetLength(fPins,2);
+  fIsReady:=False;
+  fIsReceived:=False;
+end;
+
+function TDS18B20.GetCurrent(Vin: double): double;
+begin
+   Result:=ErResult;
+end;
+
+function TDS18B20.GetResist: double;
+begin
+  Result:=ErResult;
+end;
+
+function TDS18B20.GetTemperature: double;
+begin
+ Result:=Measurement();
+end;
+
+function TDS18B20.GetVoltage(Vin: double): double;
+begin
+ Result:=ErResult;
+end;
+
+function TDS18B20.Measurement: double;
+label start;
+var i:integer;
+    isFirst:boolean;
+begin
+ Result:=ErResult;
+ if not(fComPort.Connected) then
+   begin
+    showmessage('Port is not connected');
+    Exit;
+   end;
+
+ isFirst:=True;
+start:
+ fIsReady:=False;
+ fIsReceived:=False;
+ if not(Request()) then Exit;
+ sleep(500);
+ i:=0;
+ repeat
+   sleep(10);
+   inc(i);
+ Application.ProcessMessages;
+ until ((i>130)or(fIsReceived));
+ if fIsReceived then ValueDetermination(fData);
+ if fIsReady then Result:=fValue;
+
+ if (Result=ErResult)and(isFirst) then
+    begin
+      isFirst:=false;
+      goto start;
+    end;
+end;
+
+
+procedure TDS18B20.PacketReceiving(Sender: TObject; const Str: string);
+ var i:integer;
+begin
+ if not(PacketIsReceived(Str,fData,DS18B20Command)) then Exit;
+// ShowData(fData);
+ if fData[2]<>PinControl then Exit;
+ for I := 0 to High(fData)-4 do
+   fData[i]:=fData[i+3];
+ SetLength(fData,High(fData)-3);
+ fIsReceived:=True;
+end;
+
+function TDS18B20.Request: boolean;
+begin
+  PacketCreate([DS18B20Command,PinControl]);
+  Result:=PacketIsSend(fComPort,'DS18B20 measurement is unsuccessful');
+end;
+
+procedure TDS18B20.ValueDetermination(Data: array of byte);
+ var temp:integer;
+     sign:byte;
+begin
+ if High(Data)<>1 then Exit;
+ sign:=(Data[1] and $F8);
+ if sign=$0 then
+    begin
+      temp:=(Data[1] and $7) Shl 8 + Data[0];
+      fValue:=temp/16.0;
+    end     else
+      if sign=$F8 then
+        begin
+         temp:=(Data[1] and $7) Shl 8 + Data[0]-128;
+         fValue:=temp/16.0;
+        end       else
+         fValue:=ErResult;
+  if (fValue<-55)or(fValue>125) then fValue:=ErResult
+                                else fValue:=fValue+273.16;
+ fIsready:=True;
 end;
 
 end.

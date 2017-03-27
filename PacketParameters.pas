@@ -16,6 +16,7 @@ const
   ParameterReceiveCommand=$2;
   DACCommand=$3;
   DACR2RCommand=$4;
+  DS18B20Command=$5;
 
 var
   aPacket:array of byte;
