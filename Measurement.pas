@@ -263,8 +263,13 @@ begin
   Result:=ErResult;
  if (fSetOfInterface[DevicesComboBox.ItemIndex] is TSimulator) then
    Result:=(fSetOfInterface[DevicesComboBox.ItemIndex] as TSimulator).GetTemperature();
- if (fSetOfInterface[DevicesComboBox.ItemIndex] is TVoltmetr) then
-   Result:=(fSetOfInterface[DevicesComboBox.ItemIndex] as TVoltmetr).GetTemperature();
+ if (fSetOfInterface[DevicesComboBox.ItemIndex] is TArduinoMeter) then
+   Result:=(fSetOfInterface[DevicesComboBox.ItemIndex] as TArduinoMeter).GetTemperature();
+
+// if (fSetOfInterface[DevicesComboBox.ItemIndex] is TVoltmetr) then
+//   Result:=(fSetOfInterface[DevicesComboBox.ItemIndex] as TVoltmetr).GetTemperature();
+// if (fSetOfInterface[DevicesComboBox.ItemIndex] is TDS18B20) then
+//   Result:=(fSetOfInterface[DevicesComboBox.ItemIndex] as TDS18B20).GetTemperature();
 end;
 
 function TTemperature_MD.StringResult(data: double): string;
@@ -319,8 +324,8 @@ begin
 
   if (fSetOfInterface[i] is TSimulator) then
     DevicesComboBox.Items.Add((fSetOfInterface[i] as TSimulator).GetName);
-  if (fSetOfInterface[i] is TSPIdevice) then
-    DevicesComboBox.Items.Add((fSetOfInterface[i] as TSPIdevice).GetName);
+  if (fSetOfInterface[i] is TArduinoDevice) then
+    DevicesComboBox.Items.Add((fSetOfInterface[i] as TArduinoDevice).GetName);
 
   end;
 

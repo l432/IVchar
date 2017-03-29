@@ -10,7 +10,7 @@ type
   TDiapazons=(nA100,micA1,micA10,micA100,mA1,mA10,mA100,mA1000,
               mV10,mV100,V1,V10,V100,V1000,DErr);
 
-  TSPIdevice=class(TInterfacedObject,IName)
+  TArduinoDevice=class(TInterfacedObject,IName)
   {базовий клас для пристроїв, які керуються
   за допомогою Аrduino з використанням шини SPI}
   private
@@ -46,57 +46,82 @@ type
    function GetName:string;
   end;
 
-
-  TDS18B20=class(TSPIdevice,IMeasurement)
-  {базовий клас для датчика DS18B20}
+  TArduinoMeter=class(TArduinoDevice,IMeasurement)
+  {базовий клас для вимірювальних об'єктів,
+  які використовують обмін даних з Arduino}
   private
    fValue:double;
    fIsReady:boolean;
    fIsReceived:boolean;
-   Procedure ValueDetermination(Data:array of byte);virtual;
+   fMetterKod:byte;
+   fMinDelayTime:integer;
+   Procedure ConvertToValue(Data:array of byte);virtual;abstract;
    Procedure PacketReceiving(Sender: TObject; const Str: string);override;
+   Function ResultProblem(Rez:double):boolean;virtual;
   public
    property Value:double read fValue;
    property isReady:boolean read fIsReady;
    Constructor Create();overload;override;
-   Function Request():boolean;
-   Function Measurement():double;
-   function GetTemperature:double;
-   function GetVoltage(Vin:double):double;
-   function GetCurrent(Vin:double):double;
-   function GetResist():double;
+   Function Request():boolean;virtual;
+   Function Measurement():double;virtual;
+   function GetTemperature:double;virtual;
+   function GetVoltage(Vin:double):double;virtual;
+   function GetCurrent(Vin:double):double;virtual;
+   function GetResist():double;virtual;
   end;
 
 
-  TVoltmetr=class(TSPIdevice,IMeasurement)
+  TDS18B20=class(TArduinoMeter)
+  {базовий клас для датчика DS18B20}
+  private
+//   fValue:double;
+//   fIsReady:boolean;
+//   fIsReceived:boolean;
+   Procedure ConvertToValue(Data:array of byte);override;
+//   Procedure PacketReceiving(Sender: TObject; const Str: string);override;
+  public
+//   property Value:double read fValue;
+//   property isReady:boolean read fIsReady;
+   Constructor Create();overload;override;
+//   Function Request():boolean;override;
+//   Function Measurement():double;override;
+   function GetTemperature:double;override;
+//   function GetVoltage(Vin:double):double;override;
+//   function GetCurrent(Vin:double):double;override;
+//   function GetResist():double;override;
+  end;
+
+
+  TVoltmetr=class(TArduinoMeter)
   {базовий клас для вольтметрів серії В7-21}
   private
    fMeasureMode:TMeasureMode;
-   fValue:double;
+//   fValue:double;
    fDiapazon:TDiapazons;
-   fIsReady:boolean;
-   fIsReceived:boolean;
+//   fIsReady:boolean;
+//   fIsReceived:boolean;
 //   fData:TArrByte;
    Procedure MModeDetermination(Data:byte); virtual;
    Procedure DiapazonDetermination(Data:byte); virtual;
    Procedure ValueDetermination(Data:array of byte);virtual;
-   Procedure PacketReceiving(Sender: TObject; const Str: string);override;
+//   Procedure PacketReceiving(Sender: TObject; const Str: string);override;
    function GetData(LegalMeasureMode:TMeasureModeSet):double;
    function GetResistance():double;
+   Function ResultProblem(Rez:double):boolean;override;
   public
    property MeasureMode:TMeasureMode read FMeasureMode;
-   property Value:double read fValue;
+//   property Value:double read fValue;
    property Diapazon:TDiapazons read fDiapazon;
-   property isReady:boolean read fIsReady;
+//   property isReady:boolean read fIsReady;
    property Resistance:double read GetResistance;
-   Procedure ConvertToValue(Data:array of byte);
+   Procedure ConvertToValue(Data:array of byte);override;
    Constructor Create();overload;override;
-   Function Request():boolean;
-   Function Measurement():double;
-   function GetTemperature:double;
-   function GetVoltage(Vin:double):double;
-   function GetCurrent(Vin:double):double;
-   function GetResist():double;
+   Function Request():boolean;override;
+//   Function Measurement():double;override;
+   function GetTemperature:double;override;
+   function GetVoltage(Vin:double):double;override;
+   function GetCurrent(Vin:double):double;override;
+   function GetResist():double;override;
   end;
 
   TV721A=class(TVoltmetr)
@@ -133,7 +158,7 @@ type
 
   TSimpleEvent = procedure() of object;
 
-  TDAC=class(TSPIdevice)
+  TDAC=class(TArduinoDevice)
   {базовий клас для ЦАП}
   private
     FChannelB: TDACChannel;
@@ -243,7 +268,7 @@ class function VoltToKod(Volt:double):word;
  procedure ReadFromFileData();
 end;
 
-TDACR2R=class(TSPIdevice,IOutput)
+TDACR2R=class(TArduinoDevice,IOutput)
   {базовий клас для ЦАП}
 private
  fCalibration:TDACR2R_Calibr;
@@ -282,24 +307,24 @@ end;
   private
     FSimpleAction: TSimpleEvent;
     PinsComboBox:TComboBox;
-    SPIDevice:TSPIdevice;
+    SPIDevice:TArduinoDevice;
     fi:integer;
   public
    property SimpleAction:TSimpleEvent read FSimpleAction write FSimpleAction;
-   Constructor Create(PCB:TComboBox;SPID:TSPIdevice;i:integer;Action:TSimpleEvent);
+   Constructor Create(PCB:TComboBox;SPID:TArduinoDevice;i:integer;Action:TSimpleEvent);
    procedure SetButtonClick(Sender: TObject);
   end;
 
 
   TSPIDeviceShow=class
   private
-   SPIDevice:TSPIdevice;
+   SPIDevice:TArduinoDevice;
    PinLabels:array of TLabel;
    SetPinButtons:array of TButton;
    PinsComboBox:TComboBox;
    procedure CreateFooter;
   public
-   Constructor Create(SPID:TSPIdevice;
+   Constructor Create(SPID:TArduinoDevice;
                       ControlPinLabel,GatePinLabel:TLabel;
                       SetControlButton,SetGateButton:TButton;
                       PCB:TComboBox);
@@ -464,7 +489,7 @@ uses
   Graphics, OlegMath, OlegGraph;
 
 
-Constructor TSPIdevice.Create();
+Constructor TArduinoDevice.Create();
 begin
   inherited Create();
   SetLength(fPins,2);
@@ -482,27 +507,27 @@ begin
 end;
 
 
-Constructor TSPIdevice.Create(CP:TComPort);
+Constructor TArduinoDevice.Create(CP:TComPort);
 begin
  Create();
  fComPort:=CP;
  fComPacket.ComPort:=CP;
 end;
 
-Constructor TSPIdevice.Create(CP:TComPort;Nm:string);
+Constructor TArduinoDevice.Create(CP:TComPort;Nm:string);
 begin
  Create(CP);
  fName:=Nm;
 end;
 
 
-Procedure TSPIdevice.Free;
+Procedure TArduinoDevice.Free;
 begin
  fComPacket.Free;
  inherited;
 end;
 
-Function TSPIdevice.GetPinStr(Index:integer):string;
+Function TArduinoDevice.GetPinStr(Index:integer):string;
 begin
   Result:=PinNames[Index]+' pin is ';
   if fPins[Index]=UndefinedPin then
@@ -511,22 +536,22 @@ begin
     Result:=Result+IntToStr(fPins[Index]);
 end;
 
-function TSPIdevice.GetName: string;
+function TArduinoDevice.GetName: string;
 begin
  Result:=Name;
 end;
 
-Function TSPIdevice.GetPin(Index:integer):byte;
+Function TArduinoDevice.GetPin(Index:integer):byte;
 begin
   Result:=fPins[Index];
 end;
 
-Procedure TSPIdevice.SetPin(Index:integer; value:byte);
+Procedure TArduinoDevice.SetPin(Index:integer; value:byte);
 begin
   fPins[Index]:=value;
 end;
 
-Procedure TSPIdevice.PinsReadFromIniFile(ConfigFile:TIniFile);
+Procedure TArduinoDevice.PinsReadFromIniFile(ConfigFile:TIniFile);
  var i:integer;
 begin
   if Name='' then Exit;
@@ -534,7 +559,7 @@ begin
       fPins[i]:=ConfigFile.ReadInteger(Name, PinNames[i], UndefinedPin);
 end;
 
-Procedure TSPIdevice.PinsReadFromIniFile(ConfigFile:TIniFile;Strings:TStrings);
+Procedure TArduinoDevice.PinsReadFromIniFile(ConfigFile:TIniFile;Strings:TStrings);
  var i,TempPin:integer;
 begin
   if Name='' then Exit;
@@ -547,7 +572,7 @@ begin
 end;
 
 
-Procedure TSPIdevice.PinsWriteToIniFile(ConfigFile:TIniFile);
+Procedure TArduinoDevice.PinsWriteToIniFile(ConfigFile:TIniFile);
  var i:integer;
 begin
   if Name='' then Exit;
@@ -556,7 +581,7 @@ begin
      WriteIniDef(ConfigFile,Name,PinNames[i], UndefinedPin);
 end;
 
-Procedure TSPIdevice.PinsWriteToIniFile(ConfigFile:TIniFile;Strings:TStrings);
+Procedure TArduinoDevice.PinsWriteToIniFile(ConfigFile:TIniFile;Strings:TStrings);
  var i,j:integer;
 begin
   if Name='' then Exit;
@@ -571,8 +596,10 @@ end;
 Constructor TVoltmetr.Create();
 begin
   inherited Create();
-  fIsReady:=False;
-  fIsReceived:=False;
+  fMetterKod:=V7_21Command;
+
+//  fIsReady:=False;
+//  fIsReceived:=False;
   fMeasureMode:=MMErr;
   fDiapazon:=DErr;
 end;
@@ -715,56 +742,61 @@ end;
 
 Function TVoltmetr.Request():boolean;
 begin
-  PacketCreate([V7_21Command,PinControl,PinGate]);
+  PacketCreate([fMetterKod,PinControl,PinGate]);
   Result:=PacketIsSend(fComPort,'Voltmetr '+Name+' measurement is unsuccessful');
 end;
 
-Function TVoltmetr.Measurement():double;
-label start;
-var {i0,}i:integer;
-    isFirst:boolean;
+function TVoltmetr.ResultProblem(Rez: double): boolean;
 begin
- Result:=ErResult;
- if not(fComPort.Connected) then
-   begin
-    showmessage('Port is not connected');
-    Exit;
-   end;
-
- isFirst:=True;
-start:
- fIsReady:=False;
- fIsReceived:=False;
- if not(Request()) then Exit;
-// i0:=GetTickCount;
- i:=0;
- repeat
-   sleep(10);
-   inc(i);
- Application.ProcessMessages;
- until ((i>130)or(fIsReceived));
-// showmessage(inttostr((GetTickCount-i0)));
- if fIsReceived then ConvertToValue(fData);
- if fIsReady then Result:=fValue;
-
- if ((Result=ErResult)or(abs(Result)<1e-14))and(isFirst) then
-    begin
-      isFirst:=false;
-      goto start;
-    end;
+ Result:=(abs(Rez)<1e-14);
 end;
 
-procedure TVoltmetr.PacketReceiving(Sender: TObject; const Str: string);
- var i:integer;
-begin
- if not(PacketIsReceived(Str,fData,V7_21Command)) then Exit;
-// ShowData(fData);
- if fData[2]<>PinControl then Exit;
- for I := 0 to High(fData)-4 do
-   fData[i]:=fData[i+3];
- SetLength(fData,High(fData)-3);
- fIsReceived:=True;
-end;
+//Function TVoltmetr.Measurement():double;
+//label start;
+//var {i0,}i:integer;
+//    isFirst:boolean;
+//begin
+// Result:=ErResult;
+// if not(fComPort.Connected) then
+//   begin
+//    showmessage('Port is not connected');
+//    Exit;
+//   end;
+//
+// isFirst:=True;
+//start:
+// fIsReady:=False;
+// fIsReceived:=False;
+// if not(Request()) then Exit;
+//// i0:=GetTickCount;
+// i:=0;
+// repeat
+//   sleep(10);
+//   inc(i);
+// Application.ProcessMessages;
+// until ((i>130)or(fIsReceived));
+//// showmessage(inttostr((GetTickCount-i0)));
+// if fIsReceived then ConvertToValue(fData);
+// if fIsReady then Result:=fValue;
+//
+// if ((Result=ErResult)or(abs(Result)<1e-14))and(isFirst) then
+//    begin
+//      isFirst:=false;
+//      goto start;
+//    end;
+//end;
+
+//procedure TVoltmetr.PacketReceiving(Sender: TObject; const Str: string);
+// var i:integer;
+//begin
+// if not(PacketIsReceived(Str,fData,V7_21Command)) then Exit;
+//// ShowData(fData);
+// if fData[2]<>PinControl then Exit;
+// for I := 0 to High(fData)-4 do
+//   fData[i]:=fData[i+3];
+// SetLength(fData,High(fData)-3);
+// fIsReceived:=True;
+//end;
 
 Procedure TVoltmetr.ConvertToValue(Data:array of byte);
 begin
@@ -1613,7 +1645,7 @@ end;
 
 { TSPIdeviceShow }
 
-constructor TSPIdeviceShow.Create(SPID:TSPIdevice;
+constructor TSPIdeviceShow.Create(SPID:TArduinoDevice;
                                   ControlPinLabel, GatePinLabel: TLabel;
                                   SetControlButton, SetGateButton: TButton; PCB: TComboBox);
 begin
@@ -1667,7 +1699,7 @@ end;
 
 { TAdapterSetButton }
 
-constructor TAdapterSetButton.Create(PCB: TComboBox;SPID:TSPIdevice;i:integer;
+constructor TAdapterSetButton.Create(PCB: TComboBox;SPID:TArduinoDevice;i:integer;
   Action: TSimpleEvent);
 begin
   inherited Create;
@@ -2167,85 +2199,86 @@ end;
 constructor TDS18B20.Create;
 begin
   inherited Create();
-  SetLength(fPins,2);
-  fIsReady:=False;
-  fIsReceived:=False;
+  fMetterKod:=DS18B20Command;
+  SetLength(fPins,1);
+  fMinDelayTime:=500;
+//  fIsReady:=False;
+//  fIsReceived:=False;
 end;
 
-function TDS18B20.GetCurrent(Vin: double): double;
-begin
-   Result:=ErResult;
-end;
+//function TDS18B20.GetCurrent(Vin: double): double;
+//begin
+//   Result:=ErResult;
+//end;
 
-function TDS18B20.GetResist: double;
-begin
-  Result:=ErResult;
-end;
+//function TDS18B20.GetResist: double;
+//begin
+//  Result:=ErResult;
+//end;
 
 function TDS18B20.GetTemperature: double;
 begin
  Result:=Measurement();
 end;
 
-function TDS18B20.GetVoltage(Vin: double): double;
-begin
- Result:=ErResult;
-end;
+//function TDS18B20.GetVoltage(Vin: double): double;
+//begin
+// Result:=ErResult;
+//end;
 
-function TDS18B20.Measurement: double;
-label start;
-var i:integer;
-    isFirst:boolean;
-begin
- Result:=ErResult;
- if not(fComPort.Connected) then
-   begin
-    showmessage('Port is not connected');
-    Exit;
-   end;
+//function TDS18B20.Measurement: double;
+//label start;
+//var i:integer;
+//    isFirst:boolean;
+//begin
+// Result:=ErResult;
+// if not(fComPort.Connected) then
+//   begin
+//    showmessage('Port is not connected');
+//    Exit;
+//   end;
+//
+// isFirst:=True;
+//start:
+// fIsReady:=False;
+// fIsReceived:=False;
+// if not(Request()) then Exit;
+// sleep(500);
+// i:=0;
+// repeat
+//   sleep(10);
+//   inc(i);
+// Application.ProcessMessages;
+// until ((i>130)or(fIsReceived));
+// if fIsReceived then ConvertToValue(fData);
+// if fIsReady then Result:=fValue;
+//
+// if (Result=ErResult)and(isFirst) then
+//    begin
+//      isFirst:=false;
+//      goto start;
+//    end;
+//end;
 
- isFirst:=True;
-start:
- fIsReady:=False;
- fIsReceived:=False;
- if not(Request()) then Exit;
- sleep(500);
- i:=0;
- repeat
-   sleep(10);
-   inc(i);
- Application.ProcessMessages;
- until ((i>130)or(fIsReceived));
- if fIsReceived then ValueDetermination(fData);
- if fIsReady then Result:=fValue;
 
- if (Result=ErResult)and(isFirst) then
-    begin
-      isFirst:=false;
-      goto start;
-    end;
-end;
+//procedure TDS18B20.PacketReceiving(Sender: TObject; const Str: string);
+// var i:integer;
+//begin
+// if not(PacketIsReceived(Str,fData,DS18B20Command)) then Exit;
+// if fData[2]<>PinControl then Exit;
+// for I := 0 to High(fData)-4 do
+//   fData[i]:=fData[i+3];
+// SetLength(fData,High(fData)-3);
+// fIsReceived:=True;
+//end;
 
+//function TDS18B20.Request: boolean;
+//begin
+//  PacketCreate([DS18B20Command,PinControl]);
+//  Result:=PacketIsSend(fComPort,'DS18B20 measurement is unsuccessful');
+//end;
 
-procedure TDS18B20.PacketReceiving(Sender: TObject; const Str: string);
- var i:integer;
-begin
- if not(PacketIsReceived(Str,fData,DS18B20Command)) then Exit;
-// ShowData(fData);
- if fData[2]<>PinControl then Exit;
- for I := 0 to High(fData)-4 do
-   fData[i]:=fData[i+3];
- SetLength(fData,High(fData)-3);
- fIsReceived:=True;
-end;
-
-function TDS18B20.Request: boolean;
-begin
-  PacketCreate([DS18B20Command,PinControl]);
-  Result:=PacketIsSend(fComPort,'DS18B20 measurement is unsuccessful');
-end;
-
-procedure TDS18B20.ValueDetermination(Data: array of byte);
+procedure TDS18B20.ConvertToValue(Data: array of byte);
  var temp:integer;
      sign:byte;
 begin
@@ -2265,6 +2298,94 @@ begin
   if (fValue<-55)or(fValue>125) then fValue:=ErResult
                                 else fValue:=fValue+273.16;
  fIsready:=True;
+end;
+
+{ TArduinoMeter }
+
+constructor TArduinoMeter.Create;
+begin
+  inherited Create();
+  fIsReady:=False;
+  fIsReceived:=False;
+  fMinDelayTime:=0;
+end;
+
+function TArduinoMeter.GetCurrent(Vin: double): double;
+begin
+  Result:=ErResult;
+end;
+
+function TArduinoMeter.GetResist: double;
+begin
+  Result:=ErResult;
+end;
+
+function TArduinoMeter.GetTemperature: double;
+begin
+  Result:=ErResult;
+end;
+
+function TArduinoMeter.GetVoltage(Vin: double): double;
+begin
+  Result:=ErResult;
+end;
+
+function TArduinoMeter.Measurement: double;
+label start;
+var i:integer;
+    isFirst:boolean;
+begin
+ Result:=ErResult;
+ if not(fComPort.Connected) then
+   begin
+    showmessage('Port is not connected');
+    Exit;
+   end;
+
+ isFirst:=True;
+start:
+ fIsReady:=False;
+ fIsReceived:=False;
+ if not(Request()) then Exit;
+ // i0:=GetTickCount;
+ sleep(fMinDelayTime);
+ i:=0;
+ repeat
+   sleep(10);
+   inc(i);
+ Application.ProcessMessages;
+ until ((i>130)or(fIsReceived));
+// showmessage(inttostr((GetTickCount-i0)));
+ if fIsReceived then ConvertToValue(fData);
+ if fIsReady then Result:=fValue;
+
+ if ((Result=ErResult)or(ResultProblem(Result)))and(isFirst) then
+    begin
+      isFirst:=false;
+      goto start;
+    end;
+end;
+
+procedure TArduinoMeter.PacketReceiving(Sender: TObject; const Str: string);
+  var i:integer;
+begin
+ if not(PacketIsReceived(Str,fData,fMetterKod)) then Exit;
+ if fData[2]<>PinControl then Exit;
+ for I := 0 to High(fData)-4 do
+   fData[i]:=fData[i+3];
+ SetLength(fData,High(fData)-3);
+ fIsReceived:=True;
+end;
+
+function TArduinoMeter.Request: boolean;
+begin
+  PacketCreate([fMetterKod,PinControl]);
+  Result:=PacketIsSend(fComPort,Name+' measurement is unsuccessful');
+end;
+
+function TArduinoMeter.ResultProblem(Rez: double): boolean;
+begin
+ Result:=False;
 end;
 
 end.
