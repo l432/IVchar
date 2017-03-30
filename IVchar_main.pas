@@ -235,6 +235,10 @@ type
     LRVP: TLabel;
     BRVP: TButton;
     CBPC: TCheckBox;
+    LDS18BPin: TLabel;
+    GBDS18B: TGroupBox;
+    BDS18B: TButton;
+    CBDS18b20: TComboBox;
     procedure FormCreate(Sender: TObject);
     procedure PortConnected();
     procedure BConnectClick(Sender: TObject);
@@ -356,8 +360,11 @@ type
     V721_I:TV721;
     V721_II:TV721_Brak;
     VoltmetrShows:array of TVoltmetrShow;
+    DS18B20:TDS18B20;
+    DS18B20show:TSPIdeviceShow;
     ConfigFile:TIniFile;
     NumberPins:TStringList; // номери пінів, які використовуються як керуючі для SPI
+    NumberPinsOneWire:TStringList; // номери пінів, які використовуються для OneWire
     ForwSteps,RevSteps,IVResult,VolCorrection,VolCorrectionNew:PVector;
 //    DAC:TDAC;
 //    DACChanelShows:array of TDACChannelShow;
@@ -1653,7 +1660,10 @@ begin
 
  VoltmetrsCreate();
 
+
+
  NumberPins:=TStringList.Create;
+ NumberPinsOneWire:=TStringList.Create;
  VectorsCreate();
 
  ConstantShowCreate();
@@ -1720,6 +1730,7 @@ begin
  VectorsDispose();
  RangesFree();
  NumberPins.Free;
+ NumberPinsOneWire.Free;
  VoltmetrsFree();
 
  try
@@ -1813,8 +1824,12 @@ Procedure TIVchar.NumberPinsShow();
 begin
  try
  for i := IVchar.ComponentCount - 1 downto 0 do
+   begin
    if IVchar.Components[i].Tag = 1 then
     (IVchar.Components[i] as TComboBox).Items:=NumberPins;
+   if IVchar.Components[i].Tag = 11 then
+    (IVchar.Components[i] as TComboBox).Items:=NumberPinsOneWire;
+   end;
  finally
  end;
 end;
@@ -2193,6 +2208,8 @@ begin
   VoltmetrShows[0]:= TVoltmetrShow.Create(V721A, RGV721A_MM, RGV721ARange, LV721A, LV721AU, LV721APin, LV721APinG, BV721ASet, BV721ASetGate, BV721AMeas, SBV721AAuto, CBV721A, Time);
   VoltmetrShows[1]:= TVoltmetrShow.Create(V721_I, RGV721I_MM, RGV721IRange, LV721I, LV721IU, LV721IPin, LV721IPinG, BV721ISet, BV721ISetGate, BV721IMeas, SBV721IAuto, CBV721I, Time);
   VoltmetrShows[2]:= TVoltmetrShow.Create(V721_II, RGV721II_MM, RGV721IIRange, LV721II, LV721IIU, LV721IIPin, LV721IIPinG, BV721IISet, BV721IISetGate, BV721IIMeas, SBV721IIAuto, CBV721II, Time);
+  DS18B20:=TDS18B20.Create(ComPort1, 'DS18B20');
+  DS18B20show:=TSPIDeviceShow.Create(DS18B20,LDS18BPin,nil,BDS18B,nil,CBDS18b20);
 end;
 
 procedure TIVchar.VoltmetrsReadFromIniFileAndToForm;
@@ -2204,6 +2221,8 @@ begin
   VoltmetrShows[i].NumberPinShow;
   VoltmetrShows[i].ButtonEnabled;
   end;
+ DS18B20show.PinsReadFromIniFile(ConfigFile);
+ DS18B20show.NumberPinShow;
 end;
 
 procedure TIVchar.VoltmetrsWriteToIniFile;
@@ -2211,6 +2230,7 @@ procedure TIVchar.VoltmetrsWriteToIniFile;
 begin
  for I := 0 to High(VoltmetrShows) do
   VoltmetrShows[i].PinsWriteToIniFile(ConfigFile);
+ DS18B20show.PinsWriteToIniFile(ConfigFile);
 end;
 
 procedure TIVchar.VoltmetrsFree;
@@ -2224,6 +2244,9 @@ begin
     V721_I.Free;
   if assigned(V721_II) then
     V721_II.Free;
+ DS18B20show.Free;
+  if assigned(DS18B20) then
+    DS18B20.Free;
 end;
 
 procedure TIVchar.DACCreate;
@@ -2293,6 +2316,7 @@ begin
   Devices[2]:=V721_I;
   Devices[3]:=V721_II;
   Temperature_MD:=TTemperature_MD.Create(Devices,{RBTSImitation,RBTSTermocouple,CBTSTC}CBTD,LTRValue);
+  Temperature_MD.Add(DS18B20);
   Current_MD:=TCurrent_MD.Create(Devices,{RBCSSimulation,RBCSMeasur,CBCSMeas}CBCMD,LADCurrentValue);
   VoltageIV_MD:=TVoltageIV_MD.Create(Devices,{RBVSSimulation,RBVSMeasur,CBVSMeas}CBVMD,LADVoltageValue);
 //  ChannelA_MD:=TVoltageChannel_MD.Create(Devices,RBMeasSimChA,RBMeasMeasChA,CBMeasChA,LMeasChA);
@@ -2351,6 +2375,11 @@ begin
   ConfigFile.WriteInteger('PinNumbers', 'PinCount', NumberPins.Count);
   for I := 0 to NumberPins.Count - 1 do
     ConfigFile.WriteString('PinNumbers', 'Pin' + IntToStr(i), NumberPins[i]);
+
+  ConfigFile.EraseSection('PinNumbersOneWire');
+  ConfigFile.WriteInteger('PinNumbersOneWire', 'PinCount', NumberPinsOneWire.Count);
+  for I := 0 to NumberPinsOneWire.Count - 1 do
+    ConfigFile.WriteString('PinNumbersOneWire', 'Pin' + IntToStr(i), NumberPinsOneWire[i]);
 end;
 
 procedure TIVchar.PinsFromIniFile;
@@ -2359,6 +2388,8 @@ var
 begin
   for I := 0 to ConfigFile.ReadInteger('PinNumbers', 'PinCount', 3) - 1 do
     NumberPins.Add(ConfigFile.ReadString('PinNumbers', 'Pin' + IntToStr(i), IntToStr(UndefinedPin)));
+  for I := 0 to ConfigFile.ReadInteger('PinNumbersOneWire', 'PinCount', 1) - 1 do
+    NumberPinsOneWire.Add(ConfigFile.ReadString('PinNumbersOneWire', 'Pin' + IntToStr(i), IntToStr(UndefinedPin)));
 end;
 
 procedure TIVchar.ComponentView;

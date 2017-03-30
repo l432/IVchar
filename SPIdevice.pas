@@ -919,7 +919,7 @@ begin
    MeasurementButton:=MB;
    AutoSpeedButton:=AB;
    Time:=TT;
-    CreateFooter();
+//    CreateFooter();
     MeasureMode.Items.Clear;
     for I := 0 to ord(MMErr) do
       MeasureMode.Items.Add(MeasureModeLabels[TMeasureMode(i)]);
@@ -1654,16 +1654,22 @@ begin
  SetLength(PinLabels,High(SPIDevice.fPins)+1);
  SetLength(SetPinButtons,High(SPIDevice.fPins)+1);
  PinLabels[0]:=ControlPinLabel;
- PinLabels[1]:=GatePinLabel;
+ if High(PinLabels)>0 then
+    PinLabels[1]:=GatePinLabel;
  SetPinButtons[0]:=SetControlButton;
- SetPinButtons[1]:=SetGateButton;
+ if High(SetPinButtons)>0 then
+    SetPinButtons[1]:=SetGateButton;
  PinsComboBox:=PCB;
+
+ CreateFooter();
+
 end;
 
 procedure TSPIDeviceShow.NumberPinShow;
 begin
    PinLabels[0].Caption:=SPIDevice.PinControlStr;
-   PinLabels[1].Caption:=SPIDevice.PinGateStr;
+   if High(PinLabels)>0 then
+    PinLabels[1].Caption:=SPIDevice.PinGateStr;
 end;
 
 procedure TSPIDeviceShow.CreateFooter;

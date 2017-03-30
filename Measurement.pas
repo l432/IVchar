@@ -54,6 +54,7 @@ private
 public
  Constructor Create(const SOI:array of TInterfacedObject;
                     DevCB:TComboBox);
+ procedure Add(IO:TInterfacedObject);
  procedure ReadFromIniFile(ConfigFile:TIniFile;const Section, Ident: string);
  procedure WriteToIniFile(ConfigFile:TIniFile;const Section, Ident: string);
 end;
@@ -305,6 +306,17 @@ end;
 
 { TDevice }
 
+procedure TDevice.Add(IO: TInterfacedObject);
+begin
+ SetLength(fSetOfInterface,High(fSetOfInterface)+2);
+ fSetOfInterface[High(fSetOfInterface)]:=IO;
+ if (fSetOfInterface[High(fSetOfInterface)] is TSimulator) then
+    DevicesComboBox.Items.Add((fSetOfInterface[High(fSetOfInterface)] as TSimulator).GetName);
+ if (fSetOfInterface[High(fSetOfInterface)] is TArduinoDevice) then
+    DevicesComboBox.Items.Add((fSetOfInterface[High(fSetOfInterface)] as TArduinoDevice).GetName);
+
+end;
+
 constructor TDevice.Create(const SOI: array of TInterfacedObject;
                            DevCB: TComboBox);
 var
@@ -318,16 +330,16 @@ begin
  SetLength(fSetOfInterface,High(SOI)+1);
 
 
- for I := 0 to High(SOI) do
-  begin
-   fSetOfInterface[i]:=SOI[i];
-
-  if (fSetOfInterface[i] is TSimulator) then
-    DevicesComboBox.Items.Add((fSetOfInterface[i] as TSimulator).GetName);
-  if (fSetOfInterface[i] is TArduinoDevice) then
-    DevicesComboBox.Items.Add((fSetOfInterface[i] as TArduinoDevice).GetName);
-
-  end;
+ for I := 0 to High(SOI) do  Add(SOI[i]);
+//  begin
+//   fSetOfInterface[i]:=SOI[i];
+//
+//  if (fSetOfInterface[i] is TSimulator) then
+//    DevicesComboBox.Items.Add((fSetOfInterface[i] as TSimulator).GetName);
+//  if (fSetOfInterface[i] is TArduinoDevice) then
+//    DevicesComboBox.Items.Add((fSetOfInterface[i] as TArduinoDevice).GetName);
+//
+//  end;
 
  DevicesComboBox.ItemIndex:=0;
 end;

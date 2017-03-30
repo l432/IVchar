@@ -35,7 +35,7 @@ object IVchar: TIVchar
     Top = 0
     Width = 786
     Height = 441
-    ActivePage = TS_B7_21
+    ActivePage = TS_Setting
     Align = alTop
     Font.Charset = RUSSIAN_CHARSET
     Font.Color = clWindowText
@@ -2578,7 +2578,6 @@ object IVchar: TIVchar
           ComPort = ComPort1
           ComProperty = cpPort
           AutoApply = True
-          Text = 'COM1'
           Style = csDropDownList
           Font.Charset = RUSSIAN_CHARSET
           Font.Color = clWindowText
@@ -2586,7 +2585,7 @@ object IVchar: TIVchar
           Font.Name = 'Arial'
           Font.Style = [fsBold]
           ItemHeight = 18
-          ItemIndex = 0
+          ItemIndex = -1
           ParentFont = False
           TabOrder = 0
         end
@@ -2598,7 +2597,6 @@ object IVchar: TIVchar
           ComPort = ComPort1
           ComProperty = cpBaudRate
           AutoApply = True
-          Text = '115200'
           Style = csDropDownList
           Font.Charset = RUSSIAN_CHARSET
           Font.Color = clWindowText
@@ -2606,7 +2604,7 @@ object IVchar: TIVchar
           Font.Name = 'Arial'
           Font.Style = [fsBold]
           ItemHeight = 18
-          ItemIndex = 13
+          ItemIndex = -1
           ParentFont = False
           TabOrder = 1
         end
@@ -2845,6 +2843,59 @@ object IVchar: TIVchar
           Font.Style = [fsBold]
           ParentFont = False
           TabOrder = 0
+        end
+      end
+      object GBDS18B: TGroupBox
+        Left = 590
+        Top = 258
+        Width = 185
+        Height = 119
+        Caption = 'DS18B20'
+        TabOrder = 12
+        object LDS18BPin: TLabel
+          Left = 3
+          Top = 23
+          Width = 179
+          Height = 32
+          AutoSize = False
+          Caption = 'LV721APin'
+          Font.Charset = RUSSIAN_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -17
+          Font.Name = 'Courier'
+          Font.Style = [fsBold]
+          ParentFont = False
+          WordWrap = True
+        end
+        object BDS18B: TButton
+          Left = 43
+          Top = 93
+          Width = 115
+          Height = 23
+          Caption = 'set control'
+          Font.Charset = RUSSIAN_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -20
+          Font.Name = 'Arial'
+          Font.Style = [fsBold]
+          ParentFont = False
+          TabOrder = 0
+        end
+        object CBDS18b20: TComboBox
+          Tag = 11
+          Left = 52
+          Top = 56
+          Width = 93
+          Height = 32
+          Style = csDropDownList
+          Font.Charset = RUSSIAN_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -21
+          Font.Name = 'Arial'
+          Font.Style = [fsBold]
+          ItemHeight = 24
+          ParentFont = False
+          TabOrder = 1
         end
       end
     end
