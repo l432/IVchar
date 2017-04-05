@@ -1,4 +1,5 @@
 #include <SPI.h>
+#include <OneWire.h>
 
 //#define PacketStart 10
 //#define PacketEnd 255
@@ -11,22 +12,26 @@
 //#define DACR2R_Neg 0xFF
 //#define DACR2R_Reset 0xAA
 
-const byte PacketStart=10;
-const byte PacketEnd=255;
-const byte PacketMaxLength=15;
-const byte V7_21Command= 1;
-const byte ParameterReceiveCommand= 2;
-const byte DACCommand= 3;
-const byte DACR2RCommand= 4;
-const byte DACR2R_Pos= 0x00;
-const byte DACR2R_Neg= 0xFF;
-const byte DACR2R_Reset= 0xAA;
+const byte PacketStart = 10;
+const byte PacketEnd = 255;
+const byte PacketMaxLength = 15;
+const byte V7_21Command = 1;
+const byte ParameterReceiveCommand = 2;
+const byte DACCommand = 3;
+const byte DACR2RCommand = 4;
+const byte DACR2R_Pos = 0x00;
+const byte DACR2R_Neg = 0xFF;
+const byte DACR2R_Reset = 0xAA;
+const byte DS18B20Command = 0x5;
+
 
 byte DrivePins[] = {25, 26, 27, 28, 29, 30, 31, 32, 34, 35};
 
 byte incomingByte = 0;
 byte PinControl, PinGate, DeviceId, ActionId;
 byte DACR2RPinSign = 33;
+byte DS18B20Pin = 36;
+OneWire  ds(DS18B20Pin);
 
 byte DACDataReceived[3];
 boolean DACR2RPinSignBool;
@@ -44,6 +49,7 @@ void setup() {
   pinMode(DACR2RPinSign, OUTPUT);
   digitalWrite(DACR2RPinSign, LOW);
   DACR2RPinSignBool = false;
+  //  OneWire  ds(DS18B20Pin);
 }
 
 void loop() {
@@ -82,6 +88,12 @@ start:
         DACDataReceived[1] = packet[5];
         DACDataReceived[2] = packet[6];
         DACR2R();
+      }
+
+      if (DeviceId == DS18B20Command) {
+        if (packet[0] < 4) goto start;
+        PinControl = packet[2];
+        DS18B20();
       }
 
     }
@@ -171,4 +183,28 @@ void DACR2R() {
   SPI.transfer(DACDataReceived[1]);
   digitalWrite(PinControl, HIGH);
 }
+
+void DS18B20() {
+  if (DS18B20Pin != PinControl)
+  {
+    delete &ds;
+    DS18B20Pin = PinControl;
+    OneWire ds(DS18B20Pin);
+  };
+  byte data[2];
+  ds.reset();
+  ds.write(0xCC);
+  ds.write(0x44);
+  delay(800);     // maybe 750ms is enough, maybe not
+  ds.reset();
+  ds.write(0xCC);
+  ds.write(0xBE);
+
+  for ( byte i = 0; i < 2; i++) {
+    data[i] = ds.read();
+  }
+  ActionId = DS18B20Pin;
+  CreateAndSendPacket(data, sizeof(data));
+}
+
 
