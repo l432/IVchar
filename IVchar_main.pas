@@ -773,7 +773,10 @@ begin
   SBTAuto.Enabled := False;
   PC.OnChanging := PCChanging;
   if SBTAuto.Down then
+    begin
     SBTAuto.Down := False;
+    TemperatureMeasuringThread.Terminate;
+    end;
 end;
 
 procedure TIVchar.IVCharHookSetVoltage;
