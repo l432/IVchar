@@ -3,7 +3,7 @@ unit TempThread;
 interface
 
 uses
-  Classes, Measurement;
+  Classes, Measurement,SPIdevice;
 
 type
   TTemperatureMeasuringThread = class(TThread)
@@ -18,7 +18,7 @@ type
 implementation
 
 uses
-  OlegType, Forms;
+  OlegType, Forms, SysUtils;
 
 { Important: Methods and properties of objects in visual components can only be
   used in a method called using Synchronize, for example,
@@ -39,7 +39,7 @@ procedure TTemperatureMeasuringThread.Doing;
 begin
   temp:=TemperatureMD.GetMeasurementResult(ErResult);
   if temp=ErResult then Terminate;
-
+  if (TemperatureMD.ActiveInterface is TDS18B20) then Sleep(5000);
 end;
 
 procedure TTemperatureMeasuringThread.Execute;

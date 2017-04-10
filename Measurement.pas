@@ -51,7 +51,9 @@ TDevice=class
 private
  fSetOfInterface:array of TInterfacedObject;
  DevicesComboBox:TComboBox;
+ function GetActiveInterface():TInterfacedObject;
 public
+ property ActiveInterface:TInterfacedObject read GetActiveInterface;
  Constructor Create(const SOI:array of TInterfacedObject;
                     DevCB:TComboBox);
  procedure Add(IO:TInterfacedObject);
@@ -344,11 +346,20 @@ begin
  DevicesComboBox.ItemIndex:=0;
 end;
 
+function TDevice.GetActiveInterface: TInterfacedObject;
+begin
+ if DevicesComboBox=nil then Result:=nil
+                    else
+     Result:=fSetOfInterface[DevicesComboBox.ItemIndex];
+
+end;
+
 procedure TDevice.ReadFromIniFile(ConfigFile: TIniFile; const Section,
   Ident: string);
 begin
   DevicesComboBox.ItemIndex:=ConfigFile.ReadInteger(Section, Ident, 0);
 end;
+
 
 procedure TDevice.WriteToIniFile(ConfigFile: TIniFile; const Section,
   Ident: string);
