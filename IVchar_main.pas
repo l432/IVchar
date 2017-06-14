@@ -356,9 +356,9 @@ type
     procedure ParametersFileWork(Action: TSimpleEvent);
   public
     V721A:TV721A;
-//    V721_I,V721_II:TV721;
-    V721_I:TV721;
-    V721_II:TV721_Brak;
+    V721_I,V721_II:TV721;
+//    V721_I:TV721;
+//    V721_II:TV721_Brak;
     VoltmetrShows:array of TVoltmetrShow;
     DS18B20:TDS18B20;
     DS18B20show:TSPIdeviceShow;
@@ -2206,7 +2206,8 @@ procedure TIVchar.VoltmetrsCreate;
 begin
   V721A := TV721A.Create(ComPort1, 'B7-21A');
   V721_I := TV721.Create(ComPort1, 'B7-21 (1)');
-  V721_II := TV721_Brak.Create(ComPort1, 'B7-21 (2)');
+  V721_II := TV721.Create(ComPort1, 'B7-21 (2)');
+//  V721_II := TV721_Brak.Create(ComPort1, 'B7-21 (2)');
   SetLength(VoltmetrShows,3);
   VoltmetrShows[0]:= TVoltmetrShow.Create(V721A, RGV721A_MM, RGV721ARange, LV721A, LV721AU, LV721APin, LV721APinG, BV721ASet, BV721ASetGate, BV721AMeas, SBV721AAuto, CBV721A, Time);
   VoltmetrShows[1]:= TVoltmetrShow.Create(V721_I, RGV721I_MM, RGV721IRange, LV721I, LV721IU, LV721IPin, LV721IPinG, BV721ISet, BV721ISetGate, BV721IMeas, SBV721IAuto, CBV721I, Time);

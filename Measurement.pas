@@ -161,7 +161,8 @@ end;
 function TSimulator.GetTemperature: double;
 begin
  sleep(500);
- Result:=Random(4000)/10.0;
+ result:=333;
+ // Result:=Random(4000)/10.0;
 end;
 
 function TSimulator.GetVoltage(Vin: double): double;
@@ -310,13 +311,14 @@ end;
 
 procedure TDevice.Add(IO: TInterfacedObject);
 begin
+// showmessage(inttostr(High(fSetOfInterface)));
  SetLength(fSetOfInterface,High(fSetOfInterface)+2);
  fSetOfInterface[High(fSetOfInterface)]:=IO;
  if (fSetOfInterface[High(fSetOfInterface)] is TSimulator) then
     DevicesComboBox.Items.Add((fSetOfInterface[High(fSetOfInterface)] as TSimulator).GetName);
  if (fSetOfInterface[High(fSetOfInterface)] is TArduinoDevice) then
     DevicesComboBox.Items.Add((fSetOfInterface[High(fSetOfInterface)] as TArduinoDevice).GetName);
-
+// showmessage(inttostr(High(fSetOfInterface)));
 end;
 
 constructor TDevice.Create(const SOI: array of TInterfacedObject;
@@ -332,16 +334,17 @@ begin
  SetLength(fSetOfInterface,High(SOI)+1);
 
 
- for I := 0 to High(SOI) do  Add(SOI[i]);
-//  begin
-//   fSetOfInterface[i]:=SOI[i];
-//
-//  if (fSetOfInterface[i] is TSimulator) then
-//    DevicesComboBox.Items.Add((fSetOfInterface[i] as TSimulator).GetName);
-//  if (fSetOfInterface[i] is TArduinoDevice) then
-//    DevicesComboBox.Items.Add((fSetOfInterface[i] as TArduinoDevice).GetName);
-//
-//  end;
+ for I := 0 to High(SOI) do
+// Add(SOI[i]);
+  begin
+   fSetOfInterface[i]:=SOI[i];
+
+  if (fSetOfInterface[i] is TSimulator) then
+    DevicesComboBox.Items.Add((fSetOfInterface[i] as TSimulator).GetName);
+  if (fSetOfInterface[i] is TArduinoDevice) then
+    DevicesComboBox.Items.Add((fSetOfInterface[i] as TArduinoDevice).GetName);
+
+  end;
 
  DevicesComboBox.ItemIndex:=0;
 end;
