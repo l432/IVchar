@@ -631,23 +631,33 @@ begin
 end;
 
 function TVoltmetr.GetData(LegalMeasureMode: TMeasureModeSet): double;
- var a,b,c{,a1,a2,a3}:double;
+ function AditionMeasurement(a,b:double):double;
+  var c:double;
+  begin
+    if abs(a-b)<1e-5*Max(abs(a),abs(b))
+     then
+      Result:=(a+b)/2
+     else
+      begin
+        sleep(100);
+        c:=Measurement();
+        Result:=MedianFiltr(a,b,c);
+      end;
+  end;
+ var a,b:double;
+
 begin
  a:=Measurement();
  sleep(100);
  b:=Measurement();
- sleep(100);
- c:=Measurement();
- Result:=MedianFiltr(a,b,c);
+ Result:=AditionMeasurement(a,b);
  if Result=0 then
    begin
      sleep(300);
      a:=Measurement();
      sleep(100);
      b:=Measurement();
-     sleep(100);
-     c:=Measurement();
-     Result:=MedianFiltr(a,b,c);
+     Result:=AditionMeasurement(a,b);
    end;
  
 

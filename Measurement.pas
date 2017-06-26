@@ -278,7 +278,7 @@ end;
 
 function TTemperature_MD.StringResult(data: double): string;
 begin
-  Result:=FloatToStrF(data,ffFixed, 4, 1);
+  Result:=FloatToStrF(data,ffFixed, 5, 2);
 end;
 
 { TCurrentMD }

@@ -382,14 +382,14 @@ object IVchar: TIVchar
           Caption = 'running:'
         end
         object LTRValue: TLabel
-          Left = 8
-          Top = 42
-          Width = 186
-          Height = 60
-          Caption = '298.5'
+          Left = 6
+          Top = 49
+          Width = 199
+          Height = 52
+          Caption = '298.51'
           Font.Charset = RUSSIAN_CHARSET
           Font.Color = clWindowText
-          Font.Height = -58
+          Font.Height = -54
           Font.Name = 'Courier'
           Font.Style = [fsBold]
           ParentFont = False
@@ -404,9 +404,9 @@ object IVchar: TIVchar
         object LTLastValue: TLabel
           Left = 178
           Top = 105
-          Width = 86
+          Width = 103
           Height = 26
-          Caption = '300.1'
+          Caption = '300.10'
           Font.Charset = RUSSIAN_CHARSET
           Font.Color = clWindowText
           Font.Height = -30
@@ -2403,8 +2403,8 @@ object IVchar: TIVchar
         end
       end
       object BSaveSetting: TButton
-        Left = 880
-        Top = 231
+        Left = 814
+        Top = 361
         Width = 145
         Height = 33
         Caption = 'Save Setting'
@@ -2652,14 +2652,6 @@ object IVchar: TIVchar
         Font.Style = [fsBold]
         ParentFont = False
         TabOrder = 8
-        object STTD: TStaticText
-          Left = 237
-          Top = 27
-          Width = 161
-          Height = 23
-          Caption = 'Temperature Device'
-          TabOrder = 0
-        end
         object CBVS: TComboBox
           Tag = 5
           Left = 12
@@ -2674,15 +2666,15 @@ object IVchar: TIVchar
           Font.Style = [fsBold]
           ItemHeight = 19
           ParentFont = False
-          TabOrder = 1
+          TabOrder = 0
         end
         object STVMD: TStaticText
-          Left = 13
-          Top = 109
+          Left = 229
+          Top = 24
           Width = 191
           Height = 23
           Caption = 'Voltage Measure Device'
-          TabOrder = 2
+          TabOrder = 1
         end
         object STVS: TStaticText
           Left = 13
@@ -2690,7 +2682,7 @@ object IVchar: TIVchar
           Width = 124
           Height = 23
           Caption = 'Voltage Source'
-          TabOrder = 3
+          TabOrder = 2
         end
         object STCMD: TStaticText
           Left = 237
@@ -2698,28 +2690,12 @@ object IVchar: TIVchar
           Width = 193
           Height = 23
           Caption = 'Current Measure Device'
-          TabOrder = 4
-        end
-        object CBTD: TComboBox
-          Tag = 5
-          Left = 235
-          Top = 56
-          Width = 173
-          Height = 27
-          Style = csDropDownList
-          Font.Charset = RUSSIAN_CHARSET
-          Font.Color = clWindowText
-          Font.Height = -17
-          Font.Name = 'Arial'
-          Font.Style = [fsBold]
-          ItemHeight = 19
-          ParentFont = False
-          TabOrder = 5
+          TabOrder = 3
         end
         object CBVMD: TComboBox
           Tag = 5
-          Left = 12
-          Top = 139
+          Left = 236
+          Top = 53
           Width = 172
           Height = 27
           Style = csDropDownList
@@ -2730,7 +2706,7 @@ object IVchar: TIVchar
           Font.Style = [fsBold]
           ItemHeight = 19
           ParentFont = False
-          TabOrder = 6
+          TabOrder = 4
         end
         object CBCMD: TComboBox
           Tag = 5
@@ -2746,7 +2722,7 @@ object IVchar: TIVchar
           Font.Style = [fsBold]
           ItemHeight = 19
           ParentFont = False
-          TabOrder = 7
+          TabOrder = 5
         end
       end
       object CBCurrentValue: TCheckBox
@@ -2847,16 +2823,77 @@ object IVchar: TIVchar
           TabOrder = 0
         end
       end
+      object GBVtoI: TGroupBox
+        Left = 564
+        Top = 103
+        Width = 205
+        Height = 107
+        Caption = 'Resistance V -> I'
+        Font.Charset = RUSSIAN_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -17
+        Font.Name = 'Courier'
+        Font.Style = [fsBold]
+        ParentFont = False
+        TabOrder = 12
+        object LVtoI: TLabel
+          Left = 38
+          Top = 42
+          Width = 122
+          Height = 26
+          Caption = '1.26E+01'
+          Font.Charset = RUSSIAN_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -22
+          Font.Name = 'Verdana'
+          Font.Style = [fsBold]
+          ParentFont = False
+        end
+        object BVtoI: TButton
+          Left = 36
+          Top = 74
+          Width = 132
+          Height = 30
+          Caption = 'input value'
+          Font.Charset = RUSSIAN_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -22
+          Font.Name = 'Arial'
+          Font.Style = [fsBold]
+          ParentFont = False
+          TabOrder = 0
+        end
+        object CheckBox1: TCheckBox
+          Tag = 6
+          Left = 18
+          Top = 11
+          Width = 184
+          Height = 38
+          Caption = 'Resistance used'
+          Font.Charset = RUSSIAN_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -17
+          Font.Name = 'Arial'
+          Font.Style = [fsBold]
+          ParentFont = False
+          TabOrder = 1
+          WordWrap = True
+        end
+      end
+    end
+    object TS_Temper: TTabSheet
+      Caption = 'Temperature'
+      ImageIndex = 6
       object GBDS18B: TGroupBox
-        Left = 772
-        Top = 337
+        Left = 292
+        Top = 25
         Width = 241
         Height = 156
         Caption = 'DS18B20'
-        TabOrder = 12
+        TabOrder = 0
         object LDS18BPin: TLabel
-          Left = 4
-          Top = 30
+          Left = 3
+          Top = 25
           Width = 234
           Height = 42
           AutoSize = False
@@ -2899,6 +2936,36 @@ object IVchar: TIVchar
           ParentFont = False
           TabOrder = 1
         end
+      end
+      object CBTD: TComboBox
+        Tag = 5
+        Left = 18
+        Top = 54
+        Width = 173
+        Height = 27
+        Style = csDropDownList
+        Font.Charset = RUSSIAN_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -17
+        Font.Name = 'Arial'
+        Font.Style = [fsBold]
+        ItemHeight = 19
+        ParentFont = False
+        TabOrder = 1
+      end
+      object STTD: TStaticText
+        Left = 18
+        Top = 25
+        Width = 161
+        Height = 23
+        Caption = 'Temperature Device'
+        Font.Charset = RUSSIAN_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -17
+        Font.Name = 'Arial'
+        Font.Style = [fsBold]
+        ParentFont = False
+        TabOrder = 2
       end
     end
   end

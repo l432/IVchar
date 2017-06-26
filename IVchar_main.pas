@@ -239,6 +239,11 @@ type
     GBDS18B: TGroupBox;
     BDS18B: TButton;
     CBDS18b20: TComboBox;
+    TS_Temper: TTabSheet;
+    GBVtoI: TGroupBox;
+    LVtoI: TLabel;
+    BVtoI: TButton;
+    CheckBox1: TCheckBox;
     procedure FormCreate(Sender: TObject);
     procedure PortConnected();
     procedure BConnectClick(Sender: TObject);
@@ -389,7 +394,7 @@ type
     ,VoltageInputCorrection,VoltageMeasured
     ,VoltageInputCorrectionN,VoltageMeasuredN:double;
     DoubleConstantShows:array of TDoubleConstantShow;
-    Imax,Imin{,Rs}:double;
+    Imax,Imin,R_VtoI:double;
     IVMeasuring,CalibrMeasuring:TDependenceMeasuring;
   end;
 
@@ -594,7 +599,7 @@ end;
 
 procedure TIVchar.ConstantShowCreate;
 begin
-  SetLength(DoubleConstantShows, 5);
+  SetLength(DoubleConstantShows, 6);
   DoubleConstantShows[0]:=TDoubleConstantShow.Create(LPR,BPR,
         'Resistance','Parasitic resistance value is expected',0);
   DoubleConstantShows[1]:=TDoubleConstantShow.Create(LMC,BMC,
@@ -605,6 +610,8 @@ begin
         'Forward voltage precision','Voltage precision for forward I-V characteristic is expected',0.001);
   DoubleConstantShows[4]:=TDoubleConstantShow.Create(LRVP,BRVP,
         'Reverse voltage precision','Voltage precision for reverse I-V characteristic is expected',0.005);
+  DoubleConstantShows[5]:=TDoubleConstantShow.Create(LVtoI,BVtoI,
+        'Resistance for V to I','Resistance for V to I transformation is expected',10);
 end;
 
 procedure TIVchar.ConstantShowFromIniFile;
@@ -758,6 +765,7 @@ begin
 //  Rs := DoubleConstantShows[0].GetValue;
   Imax := DoubleConstantShows[1].GetValue;
   Imin := DoubleConstantShows[2].GetValue;
+  R_VtoI:=DoubleConstantShows[5].GetValue;
   SetLenVector(VolCorrectionNew,0);
 end;
 
@@ -799,8 +807,8 @@ end;
 
 procedure TIVchar.IVCharCurrentMeasHook;
  var
-  Jump,tmI: Double;
-  IncreaseVoltage: Boolean;
+  {Jump,}tmI: Double;
+//  IncreaseVoltage: Boolean;
   AtempNumber:byte;
 //  Ua,Ux,NewCurrentCorrection:double;
 //  ItIsEnd:boolean;
@@ -907,8 +915,8 @@ begin
  if TDependenceMeasuring.IVMeasuringToStop then Exit;
  Current := Current_MD.GetMeasurementResult(TDependenceMeasuring.VoltageInputReal);
 // ****************************
-//current:=current/Rmeas;
-//LADCurrentValue.Caption:=FloatToStrF(Current,ffExponent, 4, 2);
+ Current:=current/R_VtoI;
+ LADCurrentValue.Caption:=FloatToStrF(Current,ffExponent, 4, 2);
 
 //*********************************
  if Current=ErResult then
@@ -1000,7 +1008,7 @@ end;
 
 procedure TIVchar.IVCharVoltageMeasHook;
   var
-    tmV,MaxDif,NewCorrection,Factor,V:double;
+    tmV,MaxDif,NewCorrection,Factor{,V}:double;
   ItIsLarge,CorrectionIsNeeded: Boolean;
  label bbegin;
 
@@ -1054,8 +1062,8 @@ bbegin:
    begin
     TDependenceMeasuring.SecondMeasIsDoneChange(False);
 
-    if TDependenceMeasuring.ItIsForward then V:=TDependenceMeasuring.VoltageInput
-                    else V:=-TDependenceMeasuring.VoltageInput;
+//    if TDependenceMeasuring.ItIsForward then V:=TDependenceMeasuring.VoltageInput
+//                    else V:=-TDependenceMeasuring.VoltageInput;
     if (not(TDependenceMeasuring.ItIsForward))and(TDependenceMeasuring.VoltageInput<>0) then
                   tmV:=abs(tmV);
 //    tmV:=abs(tmV);
