@@ -243,7 +243,7 @@ type
     GBVtoI: TGroupBox;
     LVtoI: TLabel;
     BVtoI: TButton;
-    CheckBox1: TCheckBox;
+    CBVtoI: TCheckBox;
     procedure FormCreate(Sender: TObject);
     procedure PortConnected();
     procedure BConnectClick(Sender: TObject);
@@ -915,8 +915,11 @@ begin
  if TDependenceMeasuring.IVMeasuringToStop then Exit;
  Current := Current_MD.GetMeasurementResult(TDependenceMeasuring.VoltageInputReal);
 // ****************************
- Current:=current/R_VtoI;
- LADCurrentValue.Caption:=FloatToStrF(Current,ffExponent, 4, 2);
+ if CBVtoI.Checked then
+  begin
+   Current:=current/R_VtoI;
+   LADCurrentValue.Caption:=FloatToStrF(Current,ffExponent, 4, 2);
+  end;
 
 //*********************************
  if Current=ErResult then

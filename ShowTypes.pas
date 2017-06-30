@@ -150,7 +150,7 @@ begin
  if InputQuery(Caption, Hint, value) then
   begin
     try
-      Lab.Caption:=FloatToStrF(StrToFloat(value),ffExponent, 3, 2);
+      Lab.Caption:=FloatToStrF(StrToFloat(value),ffExponent, 4, 3);
     except
 
     end;
@@ -180,7 +180,7 @@ end;
 procedure TDoubleConstantShow.ReadFromIniFile(ConfigFile: TIniFile);
 begin
  Lab.Caption:=FloatToStrF(ConfigFile.ReadFloat(DoubleConstantSection, Caption,DefaulValue),
-                          ffExponent, 3, 2);
+                          ffExponent, 4, 3);
 end;
 
 procedure TDoubleConstantShow.SetCaption(const Value: string);
