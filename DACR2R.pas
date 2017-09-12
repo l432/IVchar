@@ -177,27 +177,10 @@ end;
 
 procedure TDACR2R.CalibrationFileProcessing(filename: string);
  var vec:PVector;
-//     i:integer;
-//     newfilename:string;
 begin
  new(vec);
  Read_File (filename, vec);
  fCalibration.VectorToCalibr(vec);
-
-// for I := 0 to High(Vec^.X) do
-//   Vec^.Y[i]:=round(Vec^.Y[i]*10000)/10000;
-//
-// for I := 0 to High(Vec^.X)-2 do
-//   if (abs(Vec^.Y[i+1])<0.95*abs(Vec^.Y[i]))and
-//      (abs(Vec^.Y[i+1])<0.95*abs(Vec^.Y[i+2]))
-//               then Vec^.Delete(i+1);
-// Vec^.Sorting();
-// Vec^.SwapXY();
-// Vec^.DeleteDuplicate();
-// newfilename:=filename;
-// Insert('n',newfilename,AnsiPos(ExtractFileExt(filename),newfilename));
-// Write_File(newfilename, vec);
-// dispose(vec)
 end;
 
 procedure TDACR2R.CalibrationRead;
@@ -221,8 +204,6 @@ begin
   inherited Create();
   SetLength(fData,3);
   fCalibration:=TDACR2R_Calibr.Create;
-//  new(fCalibration);
-//  fCalibration^.SetLenVector(0);
 end;
 
 procedure TDACR2R.DataByteToSendPrepare(Voltage: Double);
@@ -235,7 +216,6 @@ end;
 
 procedure TDACR2R.Free;
 begin
-// dispose(fCalibration);
  fCalibration.Free;
  inherited Free;
 end;
@@ -325,19 +305,11 @@ begin
  if (Index>=Low(tempArrWord))and
     (Index<=High(tempArrWord)) then
         tempArrWord[Index]:=VoltToKod(RequiredVoltage);
-// try
-// Self.VoltToArray(RealVoltage)[VoltToKodIndex(RealVoltage)]:=VoltToKod(RequiredVoltage);
-// except
-// end;
 end;
 
 procedure TDACR2R_Calibr.AddWord(Index, Kod: word; Arr: TArrWord);
 begin
  if (Index<=High(Arr)) then Arr[Index]:=Kod;
-// try
-//  Arr[Index]:=Kod;
-// finally
-// end;
 end;
 
 constructor TDACR2R_Calibr.Create;

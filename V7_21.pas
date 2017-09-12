@@ -5,13 +5,25 @@ interface
 uses
   SPIdevice, ExtCtrls, StdCtrls, Buttons, Classes;
 
+
+
 type
   TMeasureMode=(IA,ID,UA,UD,MMErr);
   TMeasureModeSet=set of TMeasureMode;
   TDiapazons=(nA100,micA1,micA10,micA100,mA1,mA10,mA100,mA1000,
               mV10,mV100,V1,V10,V100,V1000,DErr);
 
+const
 
+  MeasureModeLabels:array[TMeasureMode]of string=
+   ('~ I', '= I','~ U', '= U','Error');
+
+  DiapazonsLabels:array[TDiapazons]of string=
+   ('100 nA','1 micA','10 micA','100 micA',
+    '1 mA','10 mA','100 mA','1000 mA',
+     '10 mV','100 mV','1 V','10 V','100 V','1000 V','Error');
+
+type
   TVoltmetr=class(TArduinoMeter)
   {базовий клас для вольтметрів серії В7-21}
   protected
@@ -83,19 +95,6 @@ type
    procedure VoltmetrDataShow();
   end;
 
-
-const
-
-  MeasureModeLabels:array[TMeasureMode]of string=
-   ('~ I', '= I','~ U', '= U','Error');
-
-  DiapazonsLabels:array[TDiapazons]of string=
-   ('100 nA','1 micA','10 micA','100 micA',
-    '1 mA','10 mA','100 mA','1000 mA',
-     '10 mV','100 mV','1 V','10 V','100 V','1000 V','Error');
-
-  PinNames:array[0..3]of string=
-   ('Control','Gate','LDAC','CLR');
 
 Function BCDtoDec(BCD:byte; isLow:boolean):byte;
 {виділяє з ВCD, яке містить дві десяткові
@@ -247,7 +246,6 @@ begin
  temp:=BCDtoDec(Data[0],False)*10+temp;
  temp:=temp+BCDtoDec(Data[1],True)*100;
  temp:=temp+BCDtoDec(Data[1],False)*1000;
-// temp:=temp+BCDtoDec(Data[1],False)*1000;
  temp:=temp+((Data[2] shr 4)and$1)*10000;
  if (Data[2] shr 5)and$1>0 then temp:=-temp;
  case fDiapazon of
@@ -286,9 +284,6 @@ Procedure TVoltmetr.ConvertToValue(Data:array of byte);
 begin
   if High(Data)<>3 then Exit;
   MModeDetermination(Data[2]);
-//  showmessage('jjj');
-//  showmessage(inttostr(MeasureMode.ItemIndex));
-//    showmessage(inttostr(ord(fMeasureMode)));
   if fMeasureMode=MMErr then Exit;
   DiapazonDetermination(Data[3]);
   if fDiapazon=DErr then Exit;
@@ -417,21 +412,13 @@ begin
     AdapterRange:=TAdapterRadioGroupClick.Create(DiapazonSelect((ArduDevice as TVoltmetr).MeasureMode,(ArduDevice as TVoltmetr).Diapazon));
     MeasureMode.OnClick:=AdapterMeasureMode.RadioGroupClick;
     Range.OnClick:=AdapterRange.RadioGroupClick;
-//    MeasureMode.OnClick:=TAdapterRadioGroupClick.Create(ord((SPIDevice as TVoltmetr).MeasureMode)).RadioGroupClick;
-//    Range.OnClick:=TAdapterRadioGroupClick.Create(DiapazonSelect((SPIDevice as TVoltmetr).MeasureMode,(SPIDevice as TVoltmetr).Diapazon)).RadioGroupClick;
 end;
 
 procedure TVoltmetrShow.Free;
 begin
  AdapterMeasureMode.Free;
  AdapterRange.Free;
-// MeasureMode:=nil;
-// Range:=nil;
-// DataLabel:=nil;
-// UnitLabel:=nil;
-// MeasurementButton:=nil;
-// AutoSpeedButton:=nil;
-// Time:=nil;
+
  inherited Free;
 end;
 
