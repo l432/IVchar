@@ -30,15 +30,20 @@
     <DelphiCompile Include="IV.dpr">
       <MainSource>MainSource</MainSource>
     </DelphiCompile>
+    <DCCReference Include="AD5752R.pas" />
+    <DCCReference Include="DACR2R.pas" />
     <DCCReference Include="Dependence.pas" />
     <DCCReference Include="IVchar_main.pas">
       <Form>IVchar</Form>
     </DCCReference>
     <DCCReference Include="Measurement.pas" />
     <DCCReference Include="PacketParameters.pas" />
+    <DCCReference Include="RS232device.pas" />
     <DCCReference Include="ShowTypes.pas" />
     <DCCReference Include="SPIdevice.pas" />
+    <DCCReference Include="TemperatureSensor.pas" />
     <DCCReference Include="TempThread.pas" />
+    <DCCReference Include="V7_21.pas" />
     <None Include="IV.todo" />
   </ItemGroup>
 </Project>

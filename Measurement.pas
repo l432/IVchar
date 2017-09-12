@@ -121,7 +121,7 @@ function T_CuKo(Voltage:double):double;
 implementation
 
 uses
-  SysUtils, OlegType, SPIdevice, Dialogs;
+  SysUtils, OlegType, SPIdevice, Dialogs, V7_21, DACR2R;
 
 { Simulator }
 

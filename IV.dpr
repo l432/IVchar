@@ -8,7 +8,12 @@ uses
   Measurement in 'Measurement.pas',
   TempThread in 'TempThread.pas',
   ShowTypes in 'ShowTypes.pas',
-  Dependence in 'Dependence.pas';
+  Dependence in 'Dependence.pas',
+  RS232device in 'RS232device.pas',
+  V7_21 in 'V7_21.pas',
+  TemperatureSensor in 'TemperatureSensor.pas',
+  AD5752R in 'AD5752R.pas',
+  DACR2R in 'DACR2R.pas';
 
 {$R *.res}
 

@@ -18,7 +18,7 @@ type
 implementation
 
 uses
-  OlegType, Forms, SysUtils;
+  OlegType, Forms, SysUtils, TemperatureSensor;
 
 { Important: Methods and properties of objects in visual components can only be
   used in a method called using Synchronize, for example,

@@ -6,7 +6,8 @@ uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, StdCtrls, CPort, ComCtrls, Buttons, SPIdevice, ExtCtrls, IniFiles,PacketParameters,
   TeEngine, Series, TeeProcs, Chart, Spin, OlegType, Grids, OlegMath,Measurement, 
-  TempThread, ShowTypes,OlegGraph, CPortCtl, Dependence;
+  TempThread, ShowTypes,OlegGraph, CPortCtl, Dependence, V7_21, 
+  TemperatureSensor, DACR2R;
 
 type
   TIVchar = class(TForm)
