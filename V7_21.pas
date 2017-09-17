@@ -27,17 +27,17 @@ type
   TVoltmetr=class(TArduinoMeter)
   {базовий клас для вольтметрів серії В7-21}
   protected
-   fMeasureMode:TMeasureMode;
-   fDiapazon:TDiapazons;
-   Procedure MModeDetermination(Data:byte); virtual;
-   Procedure DiapazonDetermination(Data:byte); virtual;
-   Procedure ValueDetermination(Data:array of byte);virtual;
+//   fMeasureMode:TMeasureMode;
+//   fDiapazon:TDiapazons;
+//   Procedure MModeDetermination(Data:byte); virtual;
+//   Procedure DiapazonDetermination(Data:byte); virtual;
+//   Procedure ValueDetermination(Data:array of byte);virtual;
    function GetData(LegalMeasureMode:TMeasureModeSet):double;
    function GetResistance():double;
    Function ResultProblem(Rez:double):boolean;override;
   public
-   property MeasureMode:TMeasureMode read FMeasureMode;
-   property Diapazon:TDiapazons read fDiapazon;
+//   property MeasureMode:TMeasureMode read FMeasureMode;
+//   property Diapazon:TDiapazons read fDiapazon;
    property Resistance:double read GetResistance;
    Procedure ConvertToValue(Data:array of byte);override;
    Constructor Create();overload;override;
@@ -268,9 +268,15 @@ begin
 end;
 
 
+//Function TVoltmetr.Request():boolean;
+//begin
+//  PacketCreate([fMetterKod,PinControl,PinGate]);
+//  Result:=PacketIsSend(fComPort,'Voltmetr '+Name+' measurement is unsuccessful');
+//end;
+
 Function TVoltmetr.Request():boolean;
 begin
-  PacketCreate([fMetterKod,PinControl,PinGate]);
+  PacketCreate([fMetterKod,Pins.PinControl,Pins.PinGate]);
   Result:=PacketIsSend(fComPort,'Voltmetr '+Name+' measurement is unsuccessful');
 end;
 
@@ -283,13 +289,14 @@ end;
 Procedure TVoltmetr.ConvertToValue(Data:array of byte);
 begin
   if High(Data)<>3 then Exit;
-  MModeDetermination(Data[2]);
-  if fMeasureMode=MMErr then Exit;
-  DiapazonDetermination(Data[3]);
-  if fDiapazon=DErr then Exit;
-  ValueDetermination(Data);
-  if Value=ErResult then Exit;
-  fIsready:=True;
+  inherited ConvertToValue(Data);
+//  MModeDetermination(Data[2]);
+//  if fMeasureMode=MMErr then Exit;
+//  DiapazonDetermination(Data[3]);
+//  if fDiapazon=DErr then Exit;
+//  ValueDetermination(Data);
+//  if Value=ErResult then Exit;
+//  fIsready:=True;
 end;
 
 Procedure TV721A.MModeDetermination(Data:byte);

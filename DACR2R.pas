@@ -59,8 +59,26 @@ public
  procedure SaveFileWithCalibrData(DataVec:PVector);
 end;
 
+//TDACR2RShow=class(TSPIDeviceShow)
+//private
+// ValueChangeButton,ValueSetButton,
+// KodChangeButton,KodSetButton,ResetButton:TButton;
+// ValueLabel,KodLabel:TLabel;
+// procedure ValueChangeButtonAction(Sender:TObject);
+// procedure ValueSetButtonAction(Sender:TObject);
+// procedure KodChangeButtonAction(Sender:TObject);
+// procedure KodSetButtonAction(Sender:TObject);
+// procedure ResetButtonClick(Sender:TObject);
+//public
+// Constructor Create(DACR2R:TDACR2R;
+//                      CPL,GPL,VL,KL:TLabel;
+//                      SCB,SGB,VCB,VSB,KCB,KSB,RB:TButton;
+//                      PCB:TComboBox);
+//end;
+
 TDACR2RShow=class(TSPIDeviceShow)
 private
+ DACR2R:TDACR2R;
  ValueChangeButton,ValueSetButton,
  KodChangeButton,KodSetButton,ResetButton:TButton;
  ValueLabel,KodLabel:TLabel;
@@ -70,7 +88,7 @@ private
  procedure KodSetButtonAction(Sender:TObject);
  procedure ResetButtonClick(Sender:TObject);
 public
- Constructor Create(DACR2R:TDACR2R;
+ Constructor Create(DAC:TDACR2R;
                       CPL,GPL,VL,KL:TLabel;
                       SCB,SGB,VCB,VSB,KCB,KSB,RB:TButton;
                       PCB:TComboBox);
@@ -169,9 +187,15 @@ begin
   DataVec.Write_File(FileName,5);
 end;
 
+//procedure TDACR2R.PacketCreateAndSend(report: string);
+//begin
+//  PacketCreate([DACR2RCommand, PinControl, PinGate, fData[0], fData[1], fData[2]]);
+//  PacketIsSend(fComPort, report);
+//end;
+
 procedure TDACR2R.PacketCreateAndSend(report: string);
 begin
-  PacketCreate([DACR2RCommand, PinControl, PinGate, fData[0], fData[1], fData[2]]);
+  PacketCreate([DACR2RCommand, Pins.PinControl, Pins.PinGate, fData[0], fData[1], fData[2]]);
   PacketIsSend(fComPort, report);
 end;
 
@@ -222,12 +246,39 @@ end;
 
 { TDACR2RShow }
 
-constructor TDACR2RShow.Create(DACR2R: TDACR2R;
+//constructor TDACR2RShow.Create(DACR2R: TDACR2R;
+//                               CPL,GPL,VL,KL:TLabel;
+//                               SCB,SGB,VCB,VSB,KCB,KSB,RB:TButton;
+//                               PCB: TComboBox);
+//begin
+// inherited Create(DACR2R,CPL,GPL,SCB,SGB,PCB);
+//  ValueLabel:=VL;
+//  ValueLabel.Caption:='0';
+//  ValueLabel.Font.Color:=clBlack;
+//  ValueChangeButton:=VCB;
+//  ValueChangeButton.OnClick:=ValueChangeButtonAction;
+//  ValueSetButton:=VSB;
+//  ValueSetButton.OnClick:=ValueSetButtonAction;
+//  ResetButton:=RB;
+//  ResetButton.OnClick:=ResetButtonClick;
+//  KodLabel:=KL;
+//  KodLabel.Caption:='0';
+//  KodLabel.Font.Color:=clBlack;
+//  KodChangeButton:=KCB;
+//  KodChangeButton.OnClick:=KodChangeButtonAction;
+//  KodSetButton:=KSB;
+//  KodSetButton.OnClick:=KodSetButtonAction;
+//
+//  CreateFooter();
+//end;
+
+constructor TDACR2RShow.Create(DAC: TDACR2R;
                                CPL,GPL,VL,KL:TLabel;
                                SCB,SGB,VCB,VSB,KCB,KSB,RB:TButton;
                                PCB: TComboBox);
 begin
- inherited Create(DACR2R,CPL,GPL,SCB,SGB,PCB);
+ inherited Create(DAC.Pins,CPL,GPL,SCB,SGB,PCB);
+  DACR2R:=DAC;
   ValueLabel:=VL;
   ValueLabel.Caption:='0';
   ValueLabel.Font.Color:=clBlack;
@@ -248,6 +299,7 @@ begin
   CreateFooter();
 end;
 
+
 procedure TDACR2RShow.KodChangeButtonAction(Sender: TObject);
  var value:string;
 begin
@@ -262,16 +314,28 @@ begin
   end;
 end;
 
+//procedure TDACR2RShow.KodSetButtonAction(Sender: TObject);
+//begin
+//   (ArduDevice as TDACR2R).OutputInt(StrToInt(KodLabel.Caption));
+//   KodLabel.Font.Color:=clPurple;
+//   ValueLabel.Font.Color:=clBlack;
+//end;
+//
+//procedure TDACR2RShow.ResetButtonClick(Sender: TObject);
+//begin
+// (ArduDevice as TDACR2R).Reset();
+//end;
+
 procedure TDACR2RShow.KodSetButtonAction(Sender: TObject);
 begin
-   (ArduDevice as TDACR2R).OutputInt(StrToInt(KodLabel.Caption));
+   DACR2R.OutputInt(StrToInt(KodLabel.Caption));
    KodLabel.Font.Color:=clPurple;
    ValueLabel.Font.Color:=clBlack;
 end;
 
 procedure TDACR2RShow.ResetButtonClick(Sender: TObject);
 begin
- (ArduDevice as TDACR2R).Reset();
+ DACR2R.Reset();
 end;
 
 procedure TDACR2RShow.ValueChangeButtonAction(Sender: TObject);
@@ -288,9 +352,16 @@ begin
   end;
 end;
 
+//procedure TDACR2RShow.ValueSetButtonAction(Sender: TObject);
+//begin
+//   (ArduDevice as TDACR2R).Output(Strtofloat(ValueLabel.Caption));
+//   ValueLabel.Font.Color:=clPurple;
+//   KodLabel.Font.Color:=clBlack;
+//end;
+
 procedure TDACR2RShow.ValueSetButtonAction(Sender: TObject);
 begin
-   (ArduDevice as TDACR2R).Output(Strtofloat(ValueLabel.Caption));
+   DACR2R.Output(Strtofloat(ValueLabel.Caption));
    ValueLabel.Font.Color:=clPurple;
    KodLabel.Font.Color:=clBlack;
 end;
