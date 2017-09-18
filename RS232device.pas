@@ -7,6 +7,10 @@ uses
 
 const
  Error='Error';
+ IA_Label='~ I';
+ ID_Label='= I';
+ UA_Label='~ U';
+ UD_Label='= U';
 
 type
 
@@ -42,9 +46,9 @@ type
    fDiapazon:Shortint;
    fMeasureModeAll:array of string;
    fDiapazonAll:array of array of string;
-   Procedure MModeDetermination(Data:array of byte); virtual;abstract;
-   Procedure DiapazonDetermination(Data:array of byte); virtual;abstract;
-   Procedure ValueDetermination(Data:array of byte);virtual;abstract;
+   Procedure MModeDetermination(Data:array of byte); virtual;
+   Procedure DiapazonDetermination(Data:array of byte); virtual;
+   Procedure ValueDetermination(Data:array of byte);virtual;
    Procedure ConvertToValue(Data:array of byte);virtual;
    Function ResultProblem(Rez:double):boolean;virtual;
    Function MeasureModeRead():string;
@@ -53,8 +57,9 @@ type
    property Value:double read fValue;
    property isReady:boolean read fIsReady;
    property MeasureMode:string read MeasureModeRead;
+   property MeasureModeIndex:ShortInt read fDiapazon;
+   property DiapazonIndex:ShortInt read fMeasureMode;
    property Diapazon:string read DiapazonRead;
-//   fDiapazonAll[fMeasureMode,fDiapazon];
    Constructor Create();overload;override;
    Function Request():boolean;virtual;
    Function Measurement():double;virtual;
@@ -64,14 +69,20 @@ type
    function GetResist():double;virtual;
   end;
 
+  TAdapterRadioGroupClick=class
+    findexx:integer;
+    Constructor Create(ind:integer);overload;
+    procedure RadioGroupClick(Sender: TObject);
+  end;
+
   TMetterShow=class
-  private
+  protected
    RS232Meter:TRS232Meter;
    MeasureMode,Range:TRadioGroup;
    DataLabel,UnitLabel:TLabel;
    MeasurementButton:TButton;
    Time:TTimer;
-//   AdapterMeasureMode,AdapterRange:TAdapterRadioGroupClick;
+   AdapterMeasureMode,AdapterRange:TAdapterRadioGroupClick;
    procedure MeasurementButtonClick(Sender: TObject);
    procedure AutoSpeedButtonClick(Sender: TObject);
    procedure DiapazonFill();
@@ -88,7 +99,7 @@ type
                       TT:TTimer
                       );
    Procedure Free;
-   procedure ButtonEnabled();
+//   procedure ButtonEnabled();
    procedure MetterDataShow();
   end;
 
@@ -164,6 +175,11 @@ begin
   fValue:=ErResult;
 end;
 
+procedure TRS232Meter.DiapazonDetermination(Data: array of byte);
+begin
+
+end;
+
 function TRS232Meter.DiapazonRead: string;
 begin
  Result:=fDiapazonAll[fMeasureMode,fDiapazon];
@@ -226,9 +242,15 @@ start:
 end;
 
 
+
 function TRS232Meter.MeasureModeRead: string;
 begin
  Result:=fMeasureModeAll[fMeasureMode]
+end;
+
+procedure TRS232Meter.MModeDetermination(Data: array of byte);
+begin
+
 end;
 
 function TRS232Meter.Request: boolean;
@@ -241,17 +263,20 @@ begin
  Result:=False;
 end;
 
+procedure TRS232Meter.ValueDetermination(Data: array of byte);
+begin
+
+end;
+
 { TMetterVoltmetrShow }
 
 procedure TMetterShow.AutoSpeedButtonClick(Sender: TObject);
 begin
-
+ MeasurementButton.Enabled:=not(AutoSpeedButton.Down);
+ if AutoSpeedButton.Down then Time.OnTimer:=MeasurementButton.OnClick;
+ Time.Enabled:=AutoSpeedButton.Down;
 end;
 
-procedure TMetterShow.ButtonEnabled;
-begin
-
-end;
 
 constructor TMetterShow.Create(Meter: TRS232Meter;
                                        MM, R: TRadioGroup;
@@ -263,8 +288,8 @@ begin
    RS232Meter:=Meter;
    MeasureMode:=MM;
    Range:=R;
-    MeasureMode.OnClick:=nil;
-    Range.OnClick:=nil;
+//    MeasureMode.OnClick:=nil;
+//    Range.OnClick:=nil;
    DataLabel:=DL;
    UnitLabel:=UL;
    MeasurementButton:=MB;
@@ -274,15 +299,20 @@ begin
    MeasureModeFill();
    MeasureModeIndex();
    DiapazonFill();
-   DiapazoneIndex();
+   DiapazonIndex();
    UnitLabel.Caption := '';
 
    MeasurementButton.OnClick:=MeasurementButtonClick;
-//    AutoSpeedButton.OnClick:=AutoSpeedButtonClick;
+   AutoSpeedButton.OnClick:=AutoSpeedButtonClick;
 //    AdapterMeasureMode:=TAdapterRadioGroupClick.Create(ord((ArduDevice as TVoltmetr).MeasureMode));
 //    AdapterRange:=TAdapterRadioGroupClick.Create(DiapazonSelect((ArduDevice as TVoltmetr).MeasureMode,(ArduDevice as TVoltmetr).Diapazon));
-//    MeasureMode.OnClick:=AdapterMeasureMode.RadioGroupClick;
-//    Range.OnClick:=AdapterRange.RadioGroupClick;
+
+//    AdapterMeasureMode:=TAdapterRadioGroupClick.Create(RS232Meter.MeasureModeIndex);
+//    AdapterRange:=TAdapterRadioGroupClick.Create(RS232Meter.DiapazonIndex);
+    AdapterMeasureMode:=TAdapterRadioGroupClick.Create(MeasureMode.Items.Count-1);
+    AdapterRange:=TAdapterRadioGroupClick.Create(Range.Items.Count-1);
+    MeasureMode.OnClick:=AdapterMeasureMode.RadioGroupClick;
+    Range.OnClick:=AdapterRange.RadioGroupClick;
 end;
 
 procedure TMetterShow.DiapazonIndex;
@@ -306,7 +336,10 @@ end;
 
 procedure TMetterShow.Free;
 begin
+ AdapterMeasureMode.Free;
+ AdapterRange.Free;
 
+ inherited Free;
 end;
 
 procedure TMetterShow.MeasurementButtonClick(Sender: TObject);
@@ -334,27 +367,56 @@ end;
 
 procedure TMetterShow.MetterDataShow;
 begin
-//  MeasureMode.OnClick:=nil;
-//  Range.OnClick:=nil;
+  MeasureMode.OnClick:=nil;
+  Range.OnClick:=nil;
   MeasureModeIndex();
   DiapazonFill();
   DiapazonIndex();
 
-//  MeasureMode.OnClick:=AdapterMeasureMode.RadioGroupClick;
-//  Range.OnClick:=AdapterRange.RadioGroupClick;
-  case (ArduDevice as TVoltmetr).MeasureMode of
-     IA,ID: UnitLabel.Caption:=' A';
-     UA,UD: UnitLabel.Caption:=' V';
-     MMErr: UnitLabel.Caption:='';
-  end;
-  if (ArduDevice as TVoltmetr).isReady then
-      DataLabel.Caption:=FloatToStrF((ArduDevice as TVoltmetr).Value,ffExponent,4,2)
-                       else
-      begin
-       DataLabel.Caption:='    ERROR';
-       UnitLabel.Caption:='';
-      end;
+  MeasureMode.OnClick:=AdapterMeasureMode.RadioGroupClick;
+  Range.OnClick:=AdapterRange.RadioGroupClick;
 
+  if RS232Meter.isReady then
+     begin
+//       UnitLabel.Caption:=RS232Meter.fMeasureModeLabelAll[RS232Meter.fMeasureMode];
+       UnitLabel.Caption:=RS232Meter.MeasureMode;
+       DataLabel.Caption:=FloatToStrF(RS232Meter.Value,ffExponent,4,2)
+     end
+                        else
+     begin
+       UnitLabel.Caption:='';
+       DataLabel.Caption:='    ERROR';
+     end;
+//  case (ArduDevice as TVoltmetr).MeasureMode of
+//     IA,ID: UnitLabel.Caption:=' A';
+//     UA,UD: UnitLabel.Caption:=' V';
+//     MMErr: UnitLabel.Caption:='';
+//  end;
+//  if (ArduDevice as TVoltmetr).isReady then
+//      DataLabel.Caption:=FloatToStrF((ArduDevice as TVoltmetr).Value,ffExponent,4,2)
+//                       else
+//      begin
+//       DataLabel.Caption:='    ERROR';
+//       UnitLabel.Caption:='';
+//      end;
+
+end;
+
+{ TAdapterRadioGroupClick }
+
+constructor TAdapterRadioGroupClick.Create(ind: integer);
+begin
+ inherited Create;
+ findexx:=ind;
+end;
+
+
+procedure TAdapterRadioGroupClick.RadioGroupClick(Sender: TObject);
+begin
+ try
+ (Sender as TRadioGroup).ItemIndex:=findexx;
+ except
+ end;
 end;
 
 end.

@@ -76,7 +76,7 @@ end;
 //                      PCB:TComboBox);
 //end;
 
-TDACR2RShow=class(TSPIDeviceShow)
+TDACR2RShow=class(TPinsShow)
 private
  DACR2R:TDACR2R;
  ValueChangeButton,ValueSetButton,

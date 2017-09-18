@@ -26,7 +26,8 @@ constructor TDS18B20.Create;
 begin
   inherited Create();
   fMetterKod:=DS18B20Command;
-  SetLength(fPins,1);
+//  SetLength(fPins,1);
+  SetLength(Pins.fPins,1);
   fMinDelayTime:=500;
 end;
 

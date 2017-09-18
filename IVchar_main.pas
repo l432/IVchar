@@ -367,7 +367,7 @@ type
 //    V721_II:TV721_Brak;
     VoltmetrShows:array of TVoltmetrShow;
     DS18B20:TDS18B20;
-    DS18B20show:TSPIdeviceShow;
+    DS18B20show:TPinsShow;
     ConfigFile:TIniFile;
     NumberPins:TStringList; // номери пінів, які використовуються як керуючі для SPI
     NumberPinsOneWire:TStringList; // номери пінів, які використовуються для OneWire
@@ -2225,7 +2225,8 @@ begin
   VoltmetrShows[1]:= TVoltmetrShow.Create(V721_I, RGV721I_MM, RGV721IRange, LV721I, LV721IU, LV721IPin, LV721IPinG, BV721ISet, BV721ISetGate, BV721IMeas, SBV721IAuto, CBV721I, Time);
   VoltmetrShows[2]:= TVoltmetrShow.Create(V721_II, RGV721II_MM, RGV721IIRange, LV721II, LV721IIU, LV721IIPin, LV721IIPinG, BV721IISet, BV721IISetGate, BV721IIMeas, SBV721IIAuto, CBV721II, Time);
   DS18B20:=TDS18B20.Create(ComPort1, 'DS18B20');
-  DS18B20show:=TSPIDeviceShow.Create(DS18B20,LDS18BPin,nil,BDS18B,nil,CBDS18b20);
+//  DS18B20show:=TPinsShow.Create(DS18B20,LDS18BPin,nil,BDS18B,nil,CBDS18b20);
+  DS18B20show:=TPinsShow.Create(DS18B20.Pins,LDS18BPin,nil,BDS18B,nil,CBDS18b20);
 end;
 
 procedure TIVchar.VoltmetrsReadFromIniFileAndToForm;
@@ -2233,7 +2234,8 @@ procedure TIVchar.VoltmetrsReadFromIniFileAndToForm;
 begin
  for I := 0 to High(VoltmetrShows) do
   begin
-  VoltmetrShows[i].PinsReadFromIniFile(ConfigFile);
+//  VoltmetrShows[i].PinsReadFromIniFile(ConfigFile);
+  VoltmetrShows[i].PinShow.PinsReadFromIniFile(ConfigFile);
   VoltmetrShows[i].NumberPinShow;
   VoltmetrShows[i].ButtonEnabled;
   end;
@@ -2245,7 +2247,8 @@ procedure TIVchar.VoltmetrsWriteToIniFile;
   var i:integer;
 begin
  for I := 0 to High(VoltmetrShows) do
-  VoltmetrShows[i].PinsWriteToIniFile(ConfigFile);
+//  VoltmetrShows[i].PinsWriteToIniFile(ConfigFile);
+  VoltmetrShows[i].PinShow.PinsWriteToIniFile(ConfigFile);
  DS18B20show.PinsWriteToIniFile(ConfigFile);
 end;
 

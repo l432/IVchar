@@ -19,17 +19,17 @@ type
   {клас для опису пінів, які використовуються
    при взаємодії з Аrduino}
   protected
+   fName:string;
+   Function GetPinStr(Index:integer):string;
+   Function GetPin(Index:integer):byte;
+   Procedure SetPin(Index:integer; value:byte);
+  public
    fPins:TArrByte;
    {номери пінів Arduino;
    в цьому класі масив містить 2 елементи,
    за необхідності в нащадках треба міняти конструктор
    [0] для лінії Slave Select шини SPI
    [1] для керування буфером між Аrduino та приладом}
-   fName:string;
-   Function GetPinStr(Index:integer):string;
-   Function GetPin(Index:integer):byte;
-   Procedure SetPin(Index:integer; value:byte);
-  public
    property PinControl:byte Index 0 read GetPin write SetPin;
    property PinGate:byte Index 1 read GetPin write SetPin;
    property PinControlStr:string Index 0 read GetPinStr;
@@ -137,11 +137,11 @@ type
 // TArrWord=array of word;
 
 
-  TAdapterRadioGroupClick=class
-    findexx:integer;
-    Constructor Create(ind:integer);overload;
-    procedure RadioGroupClick(Sender: TObject);
-  end;
+//  TAdapterRadioGroupClick=class
+//    findexx:integer;
+//    Constructor Create(ind:integer);overload;
+//    procedure RadioGroupClick(Sender: TObject);
+//  end;
 
 
 
@@ -186,7 +186,7 @@ type
 //   procedure NumberPinShow();virtual;
 //  end;
 
-  TSPIDeviceShow=class
+  TPinsShow=class
   protected
    Pins:TPins;
    PinLabels:array of TLabel;
@@ -318,20 +318,20 @@ uses
 
 { TAdapter }
 
-constructor TAdapterRadioGroupClick.Create(ind: integer);
-begin
- inherited Create;
- findexx:=ind;
-end;
-
-
-procedure TAdapterRadioGroupClick.RadioGroupClick(Sender: TObject);
-begin
- try
- (Sender as TRadioGroup).ItemIndex:=findexx;
- except
- end;
-end;
+//constructor TAdapterRadioGroupClick.Create(ind: integer);
+//begin
+// inherited Create;
+// findexx:=ind;
+//end;
+//
+//
+//procedure TAdapterRadioGroupClick.RadioGroupClick(Sender: TObject);
+//begin
+// try
+// (Sender as TRadioGroup).ItemIndex:=findexx;
+// except
+// end;
+//end;
 
 
 { TSPIdeviceShow }
@@ -355,7 +355,7 @@ end;
 // CreateFooter();
 //end;
 
-constructor TSPIdeviceShow.Create(Ps:TPins;
+constructor TPinsShow.Create(Ps:TPins;
                                   ControlPinLabel, GatePinLabel: TLabel;
                                   SetControlButton, SetGateButton: TButton; PCB: TComboBox);
 begin
@@ -381,7 +381,7 @@ end;
 //    PinLabels[1].Caption:=ArduDevice.PinGateStr;
 //end;
 
-procedure TSPIDeviceShow.NumberPinShow;
+procedure TPinsShow.NumberPinShow;
 begin
    PinLabels[0].Caption:=Pins.PinControlStr;
    if High(PinLabels)>0 then
@@ -399,7 +399,7 @@ end;
 //    end;
 //end;
 
-procedure TSPIDeviceShow.CreateFooter;
+procedure TPinsShow.CreateFooter;
 var
   i: Integer;
 begin
@@ -421,12 +421,12 @@ end;
 //end;
 
 
-procedure TSPIDeviceShow.PinsReadFromIniFile(ConfigFile: TIniFile);
+procedure TPinsShow.PinsReadFromIniFile(ConfigFile: TIniFile);
 begin
   Pins.ReadFromIniFile(ConfigFile,PinsComboBox.Items);
 end;
 
-procedure TSPIDeviceShow.PinsWriteToIniFile(ConfigFile: TIniFile);
+procedure TPinsShow.PinsWriteToIniFile(ConfigFile: TIniFile);
 begin
   Pins.WriteToIniFile(ConfigFile,PinsComboBox.Items);
 end;
