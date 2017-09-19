@@ -22,7 +22,7 @@ type
    fComPort:TComPort;
    fComPacket: TComDataPacket;
    fData:TArrByte;
-   Procedure PacketReceiving(Sender: TObject; const Str: string);virtual;abstract;
+//   Procedure PacketReceiving(Sender: TObject; const Str: string);virtual;abstract;
   public
    property Name:string read fName;
    Constructor Create();overload;virtual;
@@ -53,6 +53,8 @@ type
    Function ResultProblem(Rez:double):boolean;virtual;
    Function MeasureModeRead():string;
    Function DiapazonRead():string;
+   Function MeasureModeLabelRead():string;virtual;
+   Procedure PacketReceiving(Sender: TObject; const Str: string);virtual;
   public
    property Value:double read fValue;
    property isReady:boolean read fIsReady;
@@ -60,13 +62,14 @@ type
    property MeasureModeIndex:ShortInt read fDiapazon;
    property DiapazonIndex:ShortInt read fMeasureMode;
    property Diapazon:string read DiapazonRead;
+   property MeasureModeLabel:string read MeasureModeLabelRead;
    Constructor Create();overload;override;
    Function Request():boolean;virtual;
    Function Measurement():double;virtual;
    function GetTemperature:double;virtual;
    function GetVoltage(Vin:double):double;virtual;
    function GetCurrent(Vin:double):double;virtual;
-   function GetResist():double;virtual;
+//   function GetResist():double;virtual;
   end;
 
   TAdapterRadioGroupClick=class
@@ -104,7 +107,12 @@ type
   end;
 
 
-
+Function BCDtoDec(BCD:byte; isLow:boolean):byte;
+{виділяє з ВCD, яке містить дві десяткові
+цифри у двійково-десятковому представленні,
+ці цифри;
+якщо  isLow=true, то виділення із
+молодшої частини байта}
 
 implementation
 
@@ -124,7 +132,7 @@ begin
   fComPacket.CaseInsensitive:=False;
 //  fComPacket.StartString:=PacketBeginChar;
 //  fComPacket.StopString:=PacketEndChar;
-  fComPacket.OnPacket:=PacketReceiving;
+//  fComPacket.OnPacket:=PacketReceiving;
 end;
 
 constructor TRS232Device.Create(CP: TComPort);
@@ -167,6 +175,8 @@ end;
 constructor TRS232Meter.Create;
 begin
   inherited Create();
+  fComPacket.OnPacket:=PacketReceiving;
+
   fIsReady:=False;
   fIsReceived:=False;
   fMinDelayTime:=0;
@@ -190,10 +200,10 @@ begin
   Result:=ErResult;
 end;
 
-function TRS232Meter.GetResist: double;
-begin
-  Result:=ErResult;
-end;
+//function TRS232Meter.GetResist: double;
+//begin
+//  Result:=ErResult;
+//end;
 
 function TRS232Meter.GetTemperature: double;
 begin
@@ -243,12 +253,22 @@ end;
 
 
 
+function TRS232Meter.MeasureModeLabelRead: string;
+begin
+ Result:='';
+end;
+
 function TRS232Meter.MeasureModeRead: string;
 begin
  Result:=fMeasureModeAll[fMeasureMode]
 end;
 
 procedure TRS232Meter.MModeDetermination(Data: array of byte);
+begin
+
+end;
+
+procedure TRS232Meter.PacketReceiving(Sender: TObject; const Str: string);
 begin
 
 end;
@@ -379,14 +399,14 @@ begin
   if RS232Meter.isReady then
      begin
 //       UnitLabel.Caption:=RS232Meter.fMeasureModeLabelAll[RS232Meter.fMeasureMode];
-       UnitLabel.Caption:=RS232Meter.MeasureMode;
+       UnitLabel.Caption:=RS232Meter.MeasureModeLabel;
        DataLabel.Caption:=FloatToStrF(RS232Meter.Value,ffExponent,4,2)
      end
                         else
-     begin
-       UnitLabel.Caption:='';
+//     begin
+//       UnitLabel.Caption:='';
        DataLabel.Caption:='    ERROR';
-     end;
+//     end;
 //  case (ArduDevice as TVoltmetr).MeasureMode of
 //     IA,ID: UnitLabel.Caption:=' A';
 //     UA,UD: UnitLabel.Caption:=' V';
@@ -418,5 +438,18 @@ begin
  except
  end;
 end;
+
+
+Function BCDtoDec(BCD:byte; isLow:boolean):byte;
+{виділяє з ВCD, яке містить дві десяткові
+цифри у двійково-десятковому представленні,
+ці цифри;
+якщо  isLow=true, то виділення із
+молодшої частини байта}
+begin
+ if isLow then BCD:=BCD Shl 4;
+ Result:= BCD Shr 4;
+end;
+
 
 end.

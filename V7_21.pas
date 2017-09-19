@@ -25,17 +25,17 @@ const
    (UD_Label, UA_Label, ID_Label, IA_Label);
 
 
-  V721_CurrentLabels:array[nA100..mA1000]of string=
-    ('100 nA','1 micA','10 micA','100 micA',
-    '1 mA','10 mA','100 mA','1000 mA');
+//  V721_CurrentLabels:array[nA100..mA1000]of string=
+//    ('100 nA','1 micA','10 micA','100 micA',
+//    '1 mA','10 mA','100 mA','1000 mA');
+//
+//  V721_VoltageLabels:array[mV10..V1000]of string=
+//    ('10 mV','100 mV','1 V','10 V','100 V','1000 V');
 
-  V721_VoltageLabels:array[mV10..V1000]of string=
-    ('10 mV','100 mV','1 V','10 V','100 V','1000 V');
-
-//  DiapazonsLabels:array[TDiapazons]of string=
-//   ('100 nA','1 micA','10 micA','100 micA',
-//    '1 mA','10 mA','100 mA','1000 mA',
-//     '10 mV','100 mV','1 V','10 V','100 V','1000 V','Error');
+  V721_DiapazonsLabels:array[TV721_Diapazons]of string=
+   ('100 nA','1 micA','10 micA','100 micA',
+    '1 mA','10 mA','100 mA','1000 mA',
+     '10 mV','100 mV','1 V','10 V','100 V','1000 V');
 
 
 
@@ -56,6 +56,7 @@ type
    Function ResultProblem(Rez:double):boolean;override;
    Procedure DiapazonFilling(DiapazonNumber:byte;
                              D_Begin, D_End:TV721_Diapazons);
+   Function MeasureModeLabelRead():string;override;
   public
 //   property MeasureMode:TMeasureMode read FMeasureMode;
 //   property Diapazon:TDiapazons read fDiapazon;
@@ -140,12 +141,7 @@ type
   end;
 
 
-Function BCDtoDec(BCD:byte; isLow:boolean):byte;
-{виділяє з ВCD, яке містить дві десяткові
-цифри у двійково-десятковому представленні,
-ці цифри;
-якщо  isLow=true, то виділення із
-молодшої частини байта}
+
 
 //Procedure DiapazonFill(Mode:TMeasureMode; Diapazons:TStrings);
 {заповнює Diapazons можливими назвами діапазонів
@@ -215,7 +211,7 @@ procedure TVoltmetr.DiapazonFilling(DiapazonNumber:byte;
 begin
   SetLength(fDiapazonAll[DiapazonNumber],ord(D_End)-ord(D_Begin)+1);
   for V721_Diapazons := D_Begin to D_End
-        do fDiapazonAll[DiapazonNumber][ord(V721_Diapazons)-ord(D_Begin)]:=V721_VoltageLabels[V721_Diapazons];
+        do fDiapazonAll[DiapazonNumber][ord(V721_Diapazons)-ord(D_Begin)]:=V721_DiapazonsLabels[V721_Diapazons];
 end;
 
 function TVoltmetr.GetCurrent(Vin: double): double;
@@ -317,6 +313,15 @@ function TVoltmetr.GetVoltage(Vin: double): double;
 begin
 // Result:=GetData([UD,UA]);
  Result:=GetData();
+end;
+
+function TVoltmetr.MeasureModeLabelRead: string;
+begin
+ inherited MeasureModeLabelRead();
+ if (fMeasureMode=ord(IA))or(fMeasureMode=ord(ID))
+    then Result:=' A';
+ if (fMeasureMode=ord(UA))or(fMeasureMode=ord(UD))
+    then Result:=' V';
 end;
 
 //Procedure TVoltmetr.ValueDetermination(Data:array of byte);
@@ -773,16 +778,6 @@ end;
 //end;
 
 
-Function BCDtoDec(BCD:byte; isLow:boolean):byte;
-{виділяє з ВCD, яке містить дві десяткові
-цифри у двійково-десятковому представленні,
-ці цифри;
-якщо  isLow=true, то виділення із
-молодшої частини байта}
-begin
- if isLow then BCD:=BCD Shl 4;
- Result:= BCD Shr 4;
-end;
 
 //Procedure DiapazonFill(Mode:TMeasureMode; Diapazons:TStrings);
 //{заповнює Diapazons можливими назвами діапазонів

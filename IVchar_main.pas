@@ -1536,13 +1536,6 @@ procedure TIVchar.BIVStartClick(Sender: TObject);
 begin
 if CBCalibr.Checked then CalibrMeasuring.Measuring
                     else IVMeasuring.Measuring;
-//  IVCharBegin();
-//  IVcharFullCycle(ActionMeasurement);
-//
-//  IVCharEnd();
-//  SettingDevice.Reset;
-//  if Temperature=ErResult then
-//    Temperature:=Temperature_MD.GetMeasurementResult(VoltageInput);
 end;
 
 
@@ -2310,8 +2303,8 @@ begin
 //  DAC.Begining();
 //  DACShow.NumberPinShow;
 //  DACShow.DataShow;
-  DACR2RShow.PinsReadFromIniFile(ConfigFile);
-  DACR2RShow.NumberPinShow;
+  DACR2RShow.PinShow.PinsReadFromIniFile(ConfigFile);
+  DACR2RShow.PinShow.NumberPinShow;
   ParametersFileWork(DACR2R.CalibrationRead);
 //  tempdir := GetCurrentDir;
 //  ChDir(ExtractFilePath(Application.ExeName));
@@ -2323,7 +2316,7 @@ procedure TIVchar.DACWriteToIniFile;
 begin
 //  DACShow.PinsWriteToIniFile(ConfigFile);
 //  DAC.ChannelsWriteToIniFile(ConfigFile);
-  DACR2RShow.PinsWriteToIniFile(ConfigFile);
+  DACR2RShow.PinShow.PinsWriteToIniFile(ConfigFile);
 end;
 
 procedure TIVchar.DevicesCreate;

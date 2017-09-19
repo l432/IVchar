@@ -17,19 +17,25 @@ IMeasurement = interface
  function GetTemperature:double;
  function GetVoltage(Vin:double):double;
  function GetCurrent(Vin:double):double;
- function GetResist:double;
+// function GetResist:double;
 // function GetName:string;
 end;
 
-IOutput = interface
+IDAC = interface
   ['{F729B2E9-AF49-4293-873B-83D53C258E0A}']
  procedure Output(Value:double);
+ {встановлює на виході напругу Value}
+ procedure OutputInt(Kod:integer);
+ {встановлює на виході напругу, яка відповідає Kod}
  Procedure Reset();
+ {встановлює на виході 0}
  function CalibrationStep(Voltage:double):double;
+ {визначає крок при процедурі калібрування залежно від величини напруги Voltage}
  procedure OutputCalibr(Value:double);
+ {встановлює на виході напругу Value під час калібрування}
 end;
 
-TSimulator = class (TInterfacedObject,IMeasurement,IName,IOutput)
+TSimulator = class (TInterfacedObject,IMeasurement,IName,IDAC)
 private
  FName: string;
 public
@@ -45,6 +51,7 @@ public
  Procedure Reset();
  function CalibrationStep(Voltage:double):double;
  procedure OutputCalibr(Value:double);
+ procedure OutputInt(Kod:integer); 
 end;
 
 TDevice=class
@@ -76,7 +83,7 @@ public
                     );
  function GetMeasurementResult(Value: Double):double;
  procedure AddActionButton(AB:TButton;DFA:TLabel);
- function GetResist():double;
+// function GetResist():double;
 end;
 
 TTemperature_MD =class(TMeasuringDevice)
@@ -113,15 +120,35 @@ public
  procedure SetValueCalibr(Value:double);
 end;
 
+TDAC_Show=class
+private
+ fOutputInterface: TInterfacedObject;
+ ValueChangeButton,ValueSetButton,
+ KodChangeButton,KodSetButton,ResetButton:TButton;
+ ValueLabel,KodLabel:TLabel;
+ procedure ValueChangeButtonAction(Sender:TObject);
+ procedure ValueSetButtonAction(Sender:TObject);
+ procedure KodChangeButtonAction(Sender:TObject);
+ procedure KodSetButtonAction(Sender:TObject);
+ procedure ResetButtonClick(Sender:TObject);
+public
+ Constructor Create(OI: TInterfacedObject;
+                    VL, KL: TLabel;
+                    VCB, VSB, KCB,
+                    KSB, RB: TButton);
+end;
 
 function T_CuKo(Voltage:double):double;
 {функция расчета температури по значениям напряжения
 согласно градуировке термопары медь-константан}
 
+
+
+
 implementation
 
 uses
-  SysUtils, OlegType, SPIdevice, Dialogs, V7_21, DACR2R;
+  SysUtils, OlegType, SPIdevice, Dialogs, V7_21, DACR2R, RS232device, Graphics;
 
 { Simulator }
 
@@ -182,6 +209,11 @@ begin
 
 end;
 
+procedure TSimulator.OutputInt(Kod: integer);
+begin
+
+end;
+
 procedure TSimulator.Reset;
 begin
 
@@ -235,22 +267,26 @@ begin
  end;
 end;
 
-function TMeasuringDevice.GetResist: double;
-begin
- Result:=ErResult;
- if (fSetOfInterface[DevicesComboBox.ItemIndex] is TSimulator) then
-   Result:=(fSetOfInterface[DevicesComboBox.ItemIndex] as TSimulator).GetResist();
- if (fSetOfInterface[DevicesComboBox.ItemIndex] is TVoltmetr) then
-   Result:=(fSetOfInterface[DevicesComboBox.ItemIndex] as TVoltmetr).GetResist();
-end;
+//function TMeasuringDevice.GetResist: double;
+//begin
+// Result:=ErResult;
+// if (fSetOfInterface[DevicesComboBox.ItemIndex] is TSimulator) then
+//   Result:=(fSetOfInterface[DevicesComboBox.ItemIndex] as TSimulator).GetResist();
+//// if (fSetOfInterface[DevicesComboBox.ItemIndex] is TVoltmetr) then
+////   Result:=(fSetOfInterface[DevicesComboBox.ItemIndex] as TVoltmetr).GetResist();
+// if (fSetOfInterface[DevicesComboBox.ItemIndex] is TRS232Meter) then
+//   Result:=(fSetOfInterface[DevicesComboBox.ItemIndex] as TRS232Meter).GetResist();
+//end;
 
 function TMeasuringDevice.GetResult(Value: double): double;
 begin
  Result:=ErResult;
  if (fSetOfInterface[DevicesComboBox.ItemIndex] is TSimulator) then
    Result:=(fSetOfInterface[DevicesComboBox.ItemIndex] as TSimulator).GetVoltage(Value);
- if (fSetOfInterface[DevicesComboBox.ItemIndex] is TVoltmetr) then
-   Result:=(fSetOfInterface[DevicesComboBox.ItemIndex] as TVoltmetr).GetVoltage(Value);
+// if (fSetOfInterface[DevicesComboBox.ItemIndex] is TVoltmetr) then
+//   Result:=(fSetOfInterface[DevicesComboBox.ItemIndex] as TVoltmetr).GetVoltage(Value);
+ if (fSetOfInterface[DevicesComboBox.ItemIndex] is TRS232Meter) then
+   Result:=(fSetOfInterface[DevicesComboBox.ItemIndex] as TRS232Meter).GetVoltage(Value);
 end;
 
 
@@ -267,8 +303,10 @@ begin
   Result:=ErResult;
  if (fSetOfInterface[DevicesComboBox.ItemIndex] is TSimulator) then
    Result:=(fSetOfInterface[DevicesComboBox.ItemIndex] as TSimulator).GetTemperature();
- if (fSetOfInterface[DevicesComboBox.ItemIndex] is TArduinoMeter) then
-   Result:=(fSetOfInterface[DevicesComboBox.ItemIndex] as TArduinoMeter).GetTemperature();
+// if (fSetOfInterface[DevicesComboBox.ItemIndex] is TArduinoMeter) then
+//   Result:=(fSetOfInterface[DevicesComboBox.ItemIndex] as TArduinoMeter).GetTemperature();
+ if (fSetOfInterface[DevicesComboBox.ItemIndex] is TRS232Meter) then
+   Result:=(fSetOfInterface[DevicesComboBox.ItemIndex] as TRS232Meter).GetTemperature();
 
 // if (fSetOfInterface[DevicesComboBox.ItemIndex] is TVoltmetr) then
 //   Result:=(fSetOfInterface[DevicesComboBox.ItemIndex] as TVoltmetr).GetTemperature();
@@ -288,8 +326,10 @@ begin
  Result:=ErResult;
  if (fSetOfInterface[DevicesComboBox.ItemIndex] is TSimulator) then
    Result:=(fSetOfInterface[DevicesComboBox.ItemIndex] as TSimulator).GetCurrent(Value);
- if (fSetOfInterface[DevicesComboBox.ItemIndex] is TVoltmetr) then
-   Result:=(fSetOfInterface[DevicesComboBox.ItemIndex] as TVoltmetr).GetCurrent(Value);
+// if (fSetOfInterface[DevicesComboBox.ItemIndex] is TVoltmetr) then
+//   Result:=(fSetOfInterface[DevicesComboBox.ItemIndex] as TVoltmetr).GetCurrent(Value);
+ if (fSetOfInterface[DevicesComboBox.ItemIndex] is TRS232Meter) then
+   Result:=(fSetOfInterface[DevicesComboBox.ItemIndex] as TRS232Meter).GetCurrent(Value);
 end;
 
 
@@ -316,8 +356,10 @@ begin
  fSetOfInterface[High(fSetOfInterface)]:=IO;
  if (fSetOfInterface[High(fSetOfInterface)] is TSimulator) then
     DevicesComboBox.Items.Add((fSetOfInterface[High(fSetOfInterface)] as TSimulator).GetName);
- if (fSetOfInterface[High(fSetOfInterface)] is TArduinoDevice) then
-    DevicesComboBox.Items.Add((fSetOfInterface[High(fSetOfInterface)] as TArduinoDevice).GetName);
+// if (fSetOfInterface[High(fSetOfInterface)] is TArduinoDevice) then
+//    DevicesComboBox.Items.Add((fSetOfInterface[High(fSetOfInterface)] as TArduinoDevice).GetName);
+ if (fSetOfInterface[High(fSetOfInterface)] is TRS232Device) then
+    DevicesComboBox.Items.Add((fSetOfInterface[High(fSetOfInterface)] as TRS232Device).GetName);
 // showmessage(inttostr(High(fSetOfInterface)));
 end;
 
@@ -341,8 +383,10 @@ begin
 
   if (fSetOfInterface[i] is TSimulator) then
     DevicesComboBox.Items.Add((fSetOfInterface[i] as TSimulator).GetName);
-  if (fSetOfInterface[i] is TArduinoDevice) then
-    DevicesComboBox.Items.Add((fSetOfInterface[i] as TArduinoDevice).GetName);
+//  if (fSetOfInterface[i] is TArduinoDevice) then
+//    DevicesComboBox.Items.Add((fSetOfInterface[i] as TArduinoDevice).GetName);
+  if (fSetOfInterface[i] is TRS232Device) then
+    DevicesComboBox.Items.Add((fSetOfInterface[i] as TRS232Device).GetName);
 
   end;
 
@@ -405,6 +449,81 @@ begin
    (fSetOfInterface[DevicesComboBox.ItemIndex] as TSimulator).OutputCalibr(Value);
  if (fSetOfInterface[DevicesComboBox.ItemIndex] is TDACR2R) then
    (fSetOfInterface[DevicesComboBox.ItemIndex] as TDACR2R).OutputCalibr(Value);
+end;
+
+{ TOutputShow }
+
+constructor TDAC_Show.Create(OI: TInterfacedObject;
+                               VL, KL: TLabel;
+                               VCB, VSB, KCB,
+                               KSB, RB: TButton);
+
+begin
+  fOutputInterface:=OI;
+  ValueLabel:=VL;
+  ValueLabel.Caption:='0';
+  ValueLabel.Font.Color:=clBlack;
+  ValueChangeButton:=VCB;
+  ValueChangeButton.OnClick:=ValueChangeButtonAction;
+  ValueSetButton:=VSB;
+  ValueSetButton.OnClick:=ValueSetButtonAction;
+  ResetButton:=RB;
+  ResetButton.OnClick:=ResetButtonClick;
+  KodLabel:=KL;
+  KodLabel.Caption:='0';
+  KodLabel.Font.Color:=clBlack;
+  KodChangeButton:=KCB;
+  KodChangeButton.OnClick:=KodChangeButtonAction;
+  KodSetButton:=KSB;
+  KodSetButton.OnClick:=KodSetButtonAction;
+end;
+
+procedure TDAC_Show.KodChangeButtonAction(Sender: TObject);
+ var value:string;
+begin
+ if InputQuery('Value', 'Output kod is expect', value) then
+  begin
+    try
+      KodLabel.Caption:=IntToStr(StrToInt(value));
+      KodLabel.Font.Color:=clBlack;
+    except
+
+    end;
+  end;
+
+end;
+
+procedure TDAC_Show.KodSetButtonAction(Sender: TObject);
+begin
+   (fOutputInterface as IDAC).OutputInt(StrToInt(KodLabel.Caption));
+   KodLabel.Font.Color:=clPurple;
+   ValueLabel.Font.Color:=clBlack;
+end;
+
+procedure TDAC_Show.ResetButtonClick(Sender: TObject);
+begin
+ (fOutputInterface as IDAC).Reset();
+end;
+
+procedure TDAC_Show.ValueChangeButtonAction(Sender: TObject);
+ var value:string;
+begin
+ if InputQuery('Value', 'Output value is expect', value) then
+  begin
+    try
+      ValueLabel.Caption:=FloatToStrF(StrToFloat(value),ffFixed, 6, 4);
+      ValueLabel.Font.Color:=clBlack;
+    except
+
+    end;
+  end;
+end;
+
+procedure TDAC_Show.ValueSetButtonAction(Sender: TObject);
+begin
+   (fOutputInterface as IDAC).Output(StrToFloat(ValueLabel.Caption));
+   ValueLabel.Font.Color:=clPurple;
+   KodLabel.Font.Color:=clBlack;
 end;
 
 end.

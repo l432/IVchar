@@ -487,6 +487,8 @@ constructor TArduinoMeter.Create;
 begin
   inherited Create();
   Pins:=TPins.Create;
+  fComPacket.StartString:=PacketBeginChar;
+  fComPacket.StopString:=PacketEndChar;
 end;
 
 Constructor TArduinoMeter.Create(CP:TComPort;Nm:string);

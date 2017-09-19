@@ -43,6 +43,7 @@
     <DCCReference Include="SPIdevice.pas" />
     <DCCReference Include="TemperatureSensor.pas" />
     <DCCReference Include="TempThread.pas" />
+    <DCCReference Include="UT70.pas" />
     <DCCReference Include="V7_21.pas" />
     <None Include="IV.todo" />
   </ItemGroup>
