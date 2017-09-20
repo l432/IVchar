@@ -245,6 +245,7 @@ type
     LVtoI: TLabel;
     BVtoI: TButton;
     CBVtoI: TCheckBox;
+    TS_UT70: TTabSheet;
     procedure FormCreate(Sender: TObject);
     procedure PortConnected();
     procedure BConnectClick(Sender: TObject);
@@ -1976,6 +1977,7 @@ begin
      SGRBStep.Cells[1,i+1]:=FloatToStrF(RevSteps^.Y[i],ffGeneral,3,2);
    end;
 end;
+
 
 //procedure TIVchar.RGORChAClick(Sender: TObject);
 //begin

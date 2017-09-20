@@ -18,8 +18,8 @@ object IVchar: TIVchar
   PixelsPerInch = 120
   TextHeight = 17
   object LConnected: TLabel
-    Left = 10
-    Top = 603
+    Left = 8
+    Top = 625
     Width = 97
     Height = 27
     Caption = 'ComPort'
@@ -34,7 +34,7 @@ object IVchar: TIVchar
     Left = 0
     Top = 0
     Width = 1028
-    Height = 577
+    Height = 609
     ActivePage = TS_Main
     Align = alTop
     Font.Charset = RUSSIAN_CHARSET
@@ -42,16 +42,15 @@ object IVchar: TIVchar
     Font.Height = -28
     Font.Name = 'Courier'
     Font.Style = [fsBold]
+    MultiLine = True
     ParentFont = False
     TabOrder = 0
     OnChange = PCChange
     OnChanging = PCChanging
     object TS_Main: TTabSheet
       Caption = 'Main'
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
+      ExplicitTop = 68
+      ExplicitHeight = 505
       object ChLine: TChart
         Left = 0
         Top = 0
@@ -109,7 +108,7 @@ object IVchar: TIVchar
       end
       object ChLg: TChart
         Left = 0
-        Top = 268
+        Top = 300
         Width = 721
         Height = 268
         Legend.Visible = False
@@ -125,6 +124,7 @@ object IVchar: TIVchar
         Align = alCustom
         TabOrder = 1
         Anchors = [akLeft, akBottom]
+        ExplicitTop = 237
         PrintMargins = (
           15
           30
@@ -423,10 +423,8 @@ object IVchar: TIVchar
     object TS_B7_21A: TTabSheet
       Caption = 'B7_21A'
       ImageIndex = 1
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
+      ExplicitTop = 68
+      ExplicitHeight = 505
       object LV721A: TLabel
         Left = 352
         Top = 25
@@ -548,7 +546,7 @@ object IVchar: TIVchar
         Font.Height = -28
         Font.Name = 'Arial'
         Font.Style = [fsBold]
-        ItemHeight = 0
+        ItemHeight = 33
         ParentFont = False
         TabOrder = 3
       end
@@ -584,10 +582,8 @@ object IVchar: TIVchar
     object TS_B7_21: TTabSheet
       Caption = 'B7_21'
       ImageIndex = 2
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
+      ExplicitTop = 68
+      ExplicitHeight = 505
       object PanelV721_I: TPanel
         Left = 0
         Top = 0
@@ -698,7 +694,7 @@ object IVchar: TIVchar
           Font.Height = -28
           Font.Name = 'Arial'
           Font.Style = [fsBold]
-          ItemHeight = 0
+          ItemHeight = 33
           ParentFont = False
           TabOrder = 1
         end
@@ -761,11 +757,12 @@ object IVchar: TIVchar
       end
       object PanelV721_II: TPanel
         Left = 0
-        Top = 273
+        Top = 305
         Width = 1020
         Height = 263
         Align = alBottom
         TabOrder = 1
+        ExplicitTop = 242
         object LV721IIPin: TLabel
           Left = 7
           Top = 118
@@ -869,7 +866,7 @@ object IVchar: TIVchar
           Font.Height = -28
           Font.Name = 'Arial'
           Font.Style = [fsBold]
-          ItemHeight = 0
+          ItemHeight = 33
           ParentFont = False
           TabOrder = 1
         end
@@ -943,10 +940,9 @@ object IVchar: TIVchar
     object TS_DAC: TTabSheet
       Caption = 'DAC'
       ImageIndex = 3
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
+      TabVisible = False
+      ExplicitTop = 68
+      ExplicitHeight = 505
       object LDACPinC: TLabel
         Left = 711
         Top = 58
@@ -1099,7 +1095,7 @@ object IVchar: TIVchar
           Font.Height = -20
           Font.Name = 'Verdana'
           Font.Style = [fsBold]
-          ItemHeight = 0
+          ItemHeight = 25
           ParentFont = False
           TabOrder = 2
         end
@@ -1225,7 +1221,7 @@ object IVchar: TIVchar
             Width = 145
             Height = 27
             Style = csDropDownList
-            ItemHeight = 0
+            ItemHeight = 19
             TabOrder = 2
           end
           object BMeasChA: TButton
@@ -1256,7 +1252,7 @@ object IVchar: TIVchar
         Font.Height = -28
         Font.Name = 'Arial'
         Font.Style = [fsBold]
-        ItemHeight = 0
+        ItemHeight = 33
         ParentFont = False
         TabOrder = 1
       end
@@ -1436,7 +1432,7 @@ object IVchar: TIVchar
           Font.Height = -20
           Font.Name = 'Verdana'
           Font.Style = [fsBold]
-          ItemHeight = 0
+          ItemHeight = 25
           ParentFont = False
           TabOrder = 2
         end
@@ -1562,7 +1558,7 @@ object IVchar: TIVchar
             Width = 145
             Height = 27
             Style = csDropDownList
-            ItemHeight = 0
+            ItemHeight = 19
             TabOrder = 2
           end
           object BMeasChB: TButton
@@ -1585,10 +1581,8 @@ object IVchar: TIVchar
     object TS_DACR2R: TTabSheet
       Caption = 'DAC R-2R'
       ImageIndex = 5
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
+      ExplicitTop = 68
+      ExplicitHeight = 505
       object LDACR2RPinC: TLabel
         Left = 17
         Top = 78
@@ -1657,7 +1651,7 @@ object IVchar: TIVchar
         Font.Height = -28
         Font.Name = 'Arial'
         Font.Style = [fsBold]
-        ItemHeight = 0
+        ItemHeight = 33
         ParentFont = False
         TabOrder = 0
       end
@@ -1792,7 +1786,7 @@ object IVchar: TIVchar
           Font.Height = -17
           Font.Name = 'Arial'
           Font.Style = [fsBold]
-          ItemHeight = 0
+          ItemHeight = 19
           ParentFont = False
           TabOrder = 2
         end
@@ -2050,10 +2044,8 @@ object IVchar: TIVchar
     object TS_Setting: TTabSheet
       Caption = 'Setting'
       ImageIndex = 4
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
+      ExplicitTop = 68
+      ExplicitHeight = 505
       object GBFB: TGroupBox
         Left = 22
         Top = 16
@@ -2686,7 +2678,7 @@ object IVchar: TIVchar
           Font.Height = -17
           Font.Name = 'Arial'
           Font.Style = [fsBold]
-          ItemHeight = 0
+          ItemHeight = 19
           ParentFont = False
           TabOrder = 0
         end
@@ -2726,7 +2718,7 @@ object IVchar: TIVchar
           Font.Height = -17
           Font.Name = 'Arial'
           Font.Style = [fsBold]
-          ItemHeight = 0
+          ItemHeight = 19
           ParentFont = False
           TabOrder = 4
         end
@@ -2742,7 +2734,7 @@ object IVchar: TIVchar
           Font.Height = -17
           Font.Name = 'Arial'
           Font.Style = [fsBold]
-          ItemHeight = 0
+          ItemHeight = 19
           ParentFont = False
           TabOrder = 5
         end
@@ -2906,10 +2898,8 @@ object IVchar: TIVchar
     object TS_Temper: TTabSheet
       Caption = 'Temperature'
       ImageIndex = 6
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
+      ExplicitTop = 68
+      ExplicitHeight = 505
       object GBDS18B: TGroupBox
         Left = 292
         Top = 25
@@ -2958,7 +2948,7 @@ object IVchar: TIVchar
           Font.Height = -28
           Font.Name = 'Arial'
           Font.Style = [fsBold]
-          ItemHeight = 0
+          ItemHeight = 33
           ParentFont = False
           TabOrder = 1
         end
@@ -2975,7 +2965,7 @@ object IVchar: TIVchar
         Font.Height = -17
         Font.Name = 'Arial'
         Font.Style = [fsBold]
-        ItemHeight = 0
+        ItemHeight = 19
         ParentFont = False
         TabOrder = 1
       end
@@ -2994,18 +2984,24 @@ object IVchar: TIVchar
         TabOrder = 2
       end
     end
+    object TS_UT70: TTabSheet
+      Caption = 'UT70'
+      ImageIndex = 7
+      ExplicitTop = 68
+      ExplicitHeight = 505
+    end
   end
   object BBClose: TBitBtn
-    Left = 766
-    Top = 603
+    Left = 764
+    Top = 625
     Width = 98
     Height = 33
     TabOrder = 1
     Kind = bkClose
   end
   object BConnect: TButton
-    Left = 204
-    Top = 603
+    Left = 202
+    Top = 625
     Width = 98
     Height = 33
     Caption = 'BConnect'
@@ -3013,8 +3009,8 @@ object IVchar: TIVchar
     OnClick = BConnectClick
   end
   object BParamReceive: TButton
-    Left = 388
-    Top = 603
+    Left = 386
+    Top = 625
     Width = 98
     Height = 33
     Caption = 'Receive pin numbers'
@@ -3046,17 +3042,17 @@ object IVchar: TIVchar
     StoredProps = [spBasic, spBuffer, spTimeouts]
     TriggersOnRxChar = False
     Left = 976
-    Top = 576
+    Top = 608
   end
   object Time: TTimer
     Interval = 3000
-    Left = 1008
-    Top = 576
+    Left = 1000
+    Top = 624
   end
   object ComDPacket: TComDataPacket
     OnPacket = ComDPacketPacket
     Left = 944
-    Top = 576
+    Top = 608
   end
   object SaveDialog: TSaveDialog
     DefaultExt = '.dat'
@@ -3064,7 +3060,7 @@ object IVchar: TIVchar
     Options = [ofOverwritePrompt, ofHideReadOnly, ofNoValidate, ofPathMustExist, ofShareAware, ofNoTestFileCreate, ofNoNetworkButton, ofNoLongNames, ofNoDereferenceLinks, ofEnableSizing, ofDontAddToRecent]
     OptionsEx = [ofExNoPlacesBar]
     Left = 912
-    Top = 576
+    Top = 608
   end
   object OpenDialog: TOpenDialog
     Left = 1008

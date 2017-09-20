@@ -3,7 +3,7 @@ unit RS232device;
 interface
 
 uses
-  Measurement, CPort, PacketParameters, ExtCtrls, StdCtrls, Buttons;
+  Measurement, CPort, PacketParameters, ExtCtrls, StdCtrls, Buttons, Windows;
 
 const
  Error='Error';
@@ -76,6 +76,7 @@ type
     findexx:integer;
     Constructor Create(ind:integer);overload;
     procedure RadioGroupClick(Sender: TObject);
+    procedure RadioGroupOnEnter(Sender: TObject);
   end;
 
   TMetterShow=class
@@ -333,6 +334,8 @@ begin
     AdapterRange:=TAdapterRadioGroupClick.Create(Range.Items.Count-1);
     MeasureMode.OnClick:=AdapterMeasureMode.RadioGroupClick;
     Range.OnClick:=AdapterRange.RadioGroupClick;
+    MeasureMode.onEnter:=AdapterMeasureMode.RadioGroupOnEnter;
+    Range.onEnter:=AdapterRange.RadioGroupOnEnter;
 end;
 
 procedure TMetterShow.DiapazonIndex;
@@ -439,6 +442,14 @@ begin
  end;
 end;
 
+
+procedure TAdapterRadioGroupClick.RadioGroupOnEnter(Sender: TObject);
+begin
+ try
+  findexx:=(Sender as TRadioGroup).ItemIndex;
+ except
+ end;
+end;
 
 Function BCDtoDec(BCD:byte; isLow:boolean):byte;
 {виділяє з ВCD, яке містить дві десяткові
