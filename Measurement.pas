@@ -495,14 +495,20 @@ end;
 
 procedure TDAC_Show.KodSetButtonAction(Sender: TObject);
 begin
-   (fOutputInterface as IDAC).OutputInt(StrToInt(KodLabel.Caption));
+   if (fOutputInterface is TDACR2R) then
+    (fOutputInterface as TDACR2R).OutputInt(StrToInt(KodLabel.Caption));
+//   (fOutputInterface as IDAC).OutputInt(StrToInt(KodLabel.Caption));
    KodLabel.Font.Color:=clPurple;
    ValueLabel.Font.Color:=clBlack;
 end;
 
 procedure TDAC_Show.ResetButtonClick(Sender: TObject);
 begin
- (fOutputInterface as IDAC).Reset();
+ if (fOutputInterface is TDACR2R) then
+   (fOutputInterface as TDACR2R).Reset();
+   KodLabel.Font.Color:=clBlack;
+   ValueLabel.Font.Color:=clBlack;
+// (fOutputInterface as IDAC).Reset();
 end;
 
 procedure TDAC_Show.ValueChangeButtonAction(Sender: TObject);
@@ -521,7 +527,9 @@ end;
 
 procedure TDAC_Show.ValueSetButtonAction(Sender: TObject);
 begin
-   (fOutputInterface as IDAC).Output(StrToFloat(ValueLabel.Caption));
+   if (fOutputInterface is TDACR2R) then
+    (fOutputInterface as TDACR2R).Output(StrToFloat(ValueLabel.Caption));
+//   (fOutputInterface as IDAC).Output(StrToFloat(ValueLabel.Caption));
    ValueLabel.Font.Color:=clPurple;
    KodLabel.Font.Color:=clBlack;
 end;
