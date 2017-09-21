@@ -7,7 +7,7 @@ uses
   Dialogs, StdCtrls, CPort, ComCtrls, Buttons, SPIdevice, ExtCtrls, IniFiles,PacketParameters,
   TeEngine, Series, TeeProcs, Chart, Spin, OlegType, Grids, OlegMath,Measurement, 
   TempThread, ShowTypes,OlegGraph, CPortCtl, Dependence, V7_21, 
-  TemperatureSensor, DACR2R;
+  TemperatureSensor, DACR2R, UT70, RS232device;
 
 type
   TIVchar = class(TForm)
@@ -246,6 +246,18 @@ type
     BVtoI: TButton;
     CBVtoI: TCheckBox;
     TS_UT70: TTabSheet;
+    PanelUT70B: TPanel;
+    LUT70B: TLabel;
+    LUT70BU: TLabel;
+    SBUT70BAuto: TSpeedButton;
+    RGUT70B_MM: TRadioGroup;
+    RGUT70B_Range: TRadioGroup;
+    BUT70BMeas: TButton;
+    RGUT70B_RangeM: TRadioGroup;
+    STUT70Rort: TStaticText;
+    ComCBUT70Port: TComComboBox;
+    ComPortUT70B: TComPort;
+    LUT70BPort: TLabel;
     procedure FormCreate(Sender: TObject);
     procedure PortConnected();
     procedure BConnectClick(Sender: TObject);
@@ -361,6 +373,7 @@ type
     procedure IVCharSaveClick(Sender: TObject);
     procedure CalibrSaveClick(Sender: TObject);
     procedure ParametersFileWork(Action: TSimpleEvent);
+    procedure ComPortBegining;
   public
     V721A:TV721A;
     V721_I,V721_II:TV721;
@@ -379,6 +392,8 @@ type
     DACR2R:TDACR2R;
     DACR2RShow:TDACR2RShow;
     Simulator:TSimulator;
+    UT70B:TUT70B;
+    UT70BShow:TUT70BShow;
     Devices,DevicesSet:array of TInterfacedObject;
     Temperature_MD:TTemperature_MD;
     Current_MD:TCurrent_MD;
@@ -994,6 +1009,39 @@ begin
   ChDir(ExtractFilePath(Application.ExeName));
   Action;
   ChDir(tempdir);
+end;
+
+procedure TIVchar.ComPortBegining;
+begin
+  ComPort1.LoadSettings(stIniFile, ExtractFilePath(Application.ExeName) + 'IVChar.ini');
+  ComCBBR.UpdateSettings;
+  ComCBPort.UpdateSettings;
+
+  ComPortUT70B.LoadSettings(stIniFile, ExtractFilePath(Application.ExeName) + 'IVChar.ini');
+  ComCBUT70Port.UpdateSettings;
+
+  ComDPacket.StartString := PacketBeginChar;
+  ComDPacket.StopString := PacketEndChar;
+  ComDPacket.ComPort := ComPort1;
+
+  try
+    ComPort1.Open;
+    Comport1.AbortAllAsync;
+    ComPort1.ClearBuffer(True, True);
+  finally
+
+  end;
+
+  try
+    ComPortUT70B.Open;
+    ComPortUT70B.AbortAllAsync;
+    ComPortUT70B.ClearBuffer(True, True);
+  finally
+
+  end;
+
+   PortConnected;
+
 end;
 
 function TIVchar.IVCharVoltageMaxDif: double;
@@ -1667,6 +1715,7 @@ begin
 
  ConfigFile:=TIniFile.Create(ExtractFilePath(Application.ExeName)+'IVChar.ini');
 
+
  VoltmetrsCreate();
 
 
@@ -1702,22 +1751,39 @@ begin
  DevicesReadFromIniAndToForm();
 
   DependenceMeasuringCreate();
+//  ComPortBegining;
 
- ComPort1.LoadSettings(stIniFile,ExtractFilePath(Application.ExeName)+'IVChar.ini');
- ComCBBR.UpdateSettings;
- ComCBPort.UpdateSettings;
 
- ComDPacket.StartString:=PacketBeginChar;
- ComDPacket.StopString:=PacketEndChar;
- ComDPacket.ComPort:=ComPort1;
 
- try
-  ComPort1.Open;
-  Comport1.AbortAllAsync;
-  ComPort1.ClearBuffer(True, True);
- finally
-  PortConnected();
- end;
+  ComPortUT70B.LoadSettings(stIniFile, ExtractFilePath(Application.ExeName) + 'IVChar.ini');
+  ComCBUT70Port.UpdateSettings;
+
+  try
+    ComPortUT70B.Open;
+    ComPortUT70B.AbortAllAsync;
+    ComPortUT70B.ClearBuffer(True, True);
+  finally
+   PortStateToLabel(ComPortUT70B,LUT70BPort,nil);
+  end;
+
+
+  ComPort1.LoadSettings(stIniFile, ExtractFilePath(Application.ExeName) + 'IVChar.ini');
+  ComCBBR.UpdateSettings;
+  ComCBPort.UpdateSettings;
+  ComDPacket.StartString := PacketBeginChar;
+  ComDPacket.StopString := PacketEndChar;
+  ComDPacket.ComPort := ComPort1;
+  try
+    ComPort1.Open;
+    Comport1.AbortAllAsync;
+    ComPort1.ClearBuffer(True, True);
+  finally
+   PortStateToLabel(ComPort1,LConnected,BConnect);
+  end;
+
+
+
+//   PortConnected;
 
  if ComPort1.Connected then SettingDevice.Reset();
 
@@ -1751,6 +1817,18 @@ begin
    end;
  finally
  end;
+
+ try
+  if ComPortUT70B.Connected then
+   begin
+    ComPortUT70B.AbortAllAsync;
+    ComPortUT70B.ClearBuffer(True, True);
+    ComPortUT70B.Close;
+   end;
+ finally
+ end;
+
+
 end;
 
 
@@ -1777,18 +1855,21 @@ end;
 
 procedure TIVchar.PortConnected();
 begin
- if ComPort1.Connected then
-  begin
-   LConnected.Caption:='ComPort is open';
-   LConnected.Font.Color:=clBlue;
-   BConnect.Caption:='To close'
-  end
-                       else
-  begin
-   LConnected.Caption:='ComPort is close';
-   LConnected.Font.Color:=clRed;
-   BConnect.Caption:='To open'
-  end
+// PortStateToLabel(ComPort1,LConnected);
+// PortStateToLabel(ComPortUT70B,LUT70BPort);
+
+// if ComPort1.Connected then
+//  begin
+//   LConnected.Caption:='ComPort is open';
+//   LConnected.Font.Color:=clBlue;
+//   BConnect.Caption:='To close'
+//  end
+//                       else
+//  begin
+//   LConnected.Caption:='ComPort is close';
+//   LConnected.Font.Color:=clRed;
+//   BConnect.Caption:='To open'
+//  end
 end;
 
 procedure TIVchar.SGFBStepDrawCell(Sender: TObject; ACol, ARow: Integer;
@@ -2191,6 +2272,7 @@ begin
   BoxToIniFile;
   ConstantShowToIniFile();
   ComPort1.StoreSettings(stIniFile,ExtractFilePath(Application.ExeName)+'IVChar.ini');
+  ComPortUT70B.StoreSettings(stIniFile,ExtractFilePath(Application.ExeName)+'IVChar.ini');
 end;
 
 //procedure TIVchar.SetVoltage(Value: double);
@@ -2219,9 +2301,14 @@ begin
   VoltmetrShows[0]:= TVoltmetrShow.Create(V721A, RGV721A_MM, RGV721ARange, LV721A, LV721AU, LV721APin, LV721APinG, BV721ASet, BV721ASetGate, BV721AMeas, SBV721AAuto, CBV721A, Time);
   VoltmetrShows[1]:= TVoltmetrShow.Create(V721_I, RGV721I_MM, RGV721IRange, LV721I, LV721IU, LV721IPin, LV721IPinG, BV721ISet, BV721ISetGate, BV721IMeas, SBV721IAuto, CBV721I, Time);
   VoltmetrShows[2]:= TVoltmetrShow.Create(V721_II, RGV721II_MM, RGV721IIRange, LV721II, LV721IIU, LV721IIPin, LV721IIPinG, BV721IISet, BV721IISetGate, BV721IIMeas, SBV721IIAuto, CBV721II, Time);
+
   DS18B20:=TDS18B20.Create(ComPort1, 'DS18B20');
 //  DS18B20show:=TPinsShow.Create(DS18B20,LDS18BPin,nil,BDS18B,nil,CBDS18b20);
   DS18B20show:=TPinsShow.Create(DS18B20.Pins,LDS18BPin,nil,BDS18B,nil,CBDS18b20);
+
+  UT70B:=TUT70B.Create(ComPortUT70B, 'UT70B');
+  UT70BShow:= TUT70BShow.Create(UT70B, RGUT70B_MM, RGUT70B_Range, RGUT70B_RangeM, LUT70B, LUT70BU, BUT70BMeas, SBUT70BAuto, Time);
+
 end;
 
 procedure TIVchar.VoltmetrsReadFromIniFileAndToForm;
@@ -2258,9 +2345,15 @@ begin
     V721_I.Free;
   if assigned(V721_II) then
     V721_II.Free;
+
  DS18B20show.Free;
   if assigned(DS18B20) then
     DS18B20.Free;
+
+ UT70BShow.Free;
+  if assigned(UT70B) then
+    UT70B.Free;
+
 end;
 
 procedure TIVchar.DACCreate;
@@ -2329,14 +2422,20 @@ begin
   Devices[1]:=V721A;
   Devices[2]:=V721_I;
   Devices[3]:=V721_II;
+
+
   Temperature_MD:=TTemperature_MD.Create(Devices,{RBTSImitation,RBTSTermocouple,CBTSTC}CBTD,LTRValue);
   Temperature_MD.Add(DS18B20);
+
+  SetLength(Devices,5);
+  Devices[4]:=UT70B;
   Current_MD:=TCurrent_MD.Create(Devices,{RBCSSimulation,RBCSMeasur,CBCSMeas}CBCMD,LADCurrentValue);
   VoltageIV_MD:=TVoltageIV_MD.Create(Devices,{RBVSSimulation,RBVSMeasur,CBVSMeas}CBVMD,LADVoltageValue);
 //  ChannelA_MD:=TVoltageChannel_MD.Create(Devices,RBMeasSimChA,RBMeasMeasChA,CBMeasChA,LMeasChA);
 //  ChannelB_MD:=TVoltageChannel_MD.Create(Devices,RBMeasSimChB,RBMeasMeasChB,CBMeasChB,LMeasChB);
 //  ChannelA_MD.AddActionButton(BMeasChA,LOVChA);
 //  ChannelB_MD.AddActionButton(BMeasChB,LOVChB);
+
   DACR2R_MD:=TVoltageChannel_MD.Create(Devices,{RBMeasSimR2R,RBMeasMeasR2R,CBMeasR2R}CBMeasDACR2R,LMeasR2R);
   DACR2R_MD.AddActionButton(BMeasR2R,LOVDACR2R);
 

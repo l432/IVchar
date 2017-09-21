@@ -91,8 +91,11 @@ type
    procedure AutoSpeedButtonClick(Sender: TObject);
    procedure DiapazonFill();
    procedure MeasureModeFill();
-   procedure MeasureModeIndex();
-   procedure DiapazonIndex();
+//   procedure MeasureModeIndex();
+//   procedure DiapazonIndex();
+   procedure StringArrayToRadioGroup(SA:array of string;
+                                     RG:TRadioGroup);
+   procedure IndexToRadioGroup(Index:ShortInt;RG:TRadioGroup);
   public
    AutoSpeedButton:TSpeedButton;
    Constructor Create(Meter:TRS232Meter;
@@ -102,9 +105,9 @@ type
                       AB:TSpeedButton;
                       TT:TTimer
                       );
-   Procedure Free;
+   Procedure Free; virtual;
 //   procedure ButtonEnabled();
-   procedure MetterDataShow();
+   procedure MetterDataShow();virtual;
   end;
 
 
@@ -115,10 +118,12 @@ Function BCDtoDec(BCD:byte; isLow:boolean):byte;
 якщо  isLow=true, то виділення із
 молодшої частини байта}
 
+Procedure PortStateToLabel(Port:TComPort;Lab:TLabel;Button: TButton);
+
 implementation
 
 uses
-  OlegType, Dialogs, SysUtils, Forms;
+  OlegType, Dialogs, SysUtils, Forms, Graphics;
 
 { TRS232Device }
 
@@ -228,12 +233,14 @@ begin
     Exit;
    end;
 
+
  isFirst:=True;
 start:
  fIsReady:=False;
  fIsReceived:=False;
  if not(Request()) then Exit;
- // i0:=GetTickCount;
+
+//    showmessage('hu');
  sleep(fMinDelayTime);
  i:=0;
  repeat
@@ -318,9 +325,11 @@ begin
    Time:=TT;
 
    MeasureModeFill();
-   MeasureModeIndex();
+
+   IndexToRadioGroup(RS232Meter.fMeasureMode,MeasureMode);
+//   MeasureModeIndex();
    DiapazonFill();
-   DiapazonIndex();
+//   DiapazonIndex();
    UnitLabel.Caption := '';
 
    MeasurementButton.OnClick:=MeasurementButtonClick;
@@ -338,23 +347,26 @@ begin
     Range.onEnter:=AdapterRange.RadioGroupOnEnter;
 end;
 
-procedure TMetterShow.DiapazonIndex;
-begin
-  if RS232Meter.fDiapazon>-1
-    then Range.ItemIndex := RS232Meter.fDiapazon
-    else Range.ItemIndex :=Range.Items.Count-1;
-
-end;
+//procedure TMetterShow.DiapazonIndex;
+//begin
+//  if RS232Meter.fDiapazon>-1
+//    then Range.ItemIndex := RS232Meter.fDiapazon
+//    else Range.ItemIndex :=Range.Items.Count-1;
+//end;
 
 procedure TMetterShow.DiapazonFill;
- var i:byte;
+// var i:byte;
 begin
+
   Range.Items.Clear;
   if RS232Meter.fMeasureMode>-1
     then
-       for I := 0 to High(RS232Meter.fDiapazonAll[RS232Meter.fMeasureMode]) do
-           Range.Items.Add(RS232Meter.fDiapazonAll[RS232Meter.fMeasureMode,i]);
+      StringArrayToRadioGroup(RS232Meter.fDiapazonAll[RS232Meter.fMeasureMode],
+                              Range);
+//       for I := 0 to High(RS232Meter.fDiapazonAll[RS232Meter.fMeasureMode]) do
+//           Range.Items.Add(RS232Meter.fDiapazonAll[RS232Meter.fMeasureMode,i]);
   Range.Items.Add(Error);
+  IndexToRadioGroup(RS232Meter.fDiapazon,Range);
 end;
 
 procedure TMetterShow.Free;
@@ -365,6 +377,15 @@ begin
  inherited Free;
 end;
 
+procedure TMetterShow.IndexToRadioGroup(Index: ShortInt; RG: TRadioGroup);
+begin
+  try
+   RG.ItemIndex:=Index;
+  except
+   RG.ItemIndex:=RG.Items.Count-1;
+  end;
+end;
+
 procedure TMetterShow.MeasurementButtonClick(Sender: TObject);
 begin
   if not(RS232Meter.fComPort.Connected) then Exit;
@@ -373,28 +394,30 @@ begin
 end;
 
 procedure TMetterShow.MeasureModeFill;
- var i:byte;
+// var i:byte;
 begin
-    MeasureMode.Items.Clear;
-    for I := 0 to High(RS232Meter.fMeasureModeAll) do
-      MeasureMode.Items.Add(RS232Meter.fMeasureModeAll[i]);
+    StringArrayToRadioGroup(RS232Meter.fMeasureModeAll,MeasureMode);
+//    MeasureMode.Items.Clear;
+//    for I := 0 to High(RS232Meter.fMeasureModeAll) do
+//      MeasureMode.Items.Add(RS232Meter.fMeasureModeAll[i]);
     MeasureMode.Items.Add(Error);
 end;
 
-procedure TMetterShow.MeasureModeIndex;
-begin
-  if RS232Meter.fMeasureMode>-1
-    then MeasureMode.ItemIndex := RS232Meter.fMeasureMode
-    else MeasureMode.ItemIndex :=MeasureMode.Items.Count-1;
-end;
+//procedure TMetterShow.MeasureModeIndex;
+//begin
+//  if RS232Meter.fMeasureMode>-1
+//    then MeasureMode.ItemIndex := RS232Meter.fMeasureMode
+//    else MeasureMode.ItemIndex :=MeasureMode.Items.Count-1;
+//end;
 
 procedure TMetterShow.MetterDataShow;
 begin
   MeasureMode.OnClick:=nil;
   Range.OnClick:=nil;
-  MeasureModeIndex();
+//  MeasureModeIndex();
+  IndexToRadioGroup(RS232Meter.fMeasureMode,MeasureMode);
   DiapazonFill();
-  DiapazonIndex();
+//  DiapazonIndex();
 
   MeasureMode.OnClick:=AdapterMeasureMode.RadioGroupClick;
   Range.OnClick:=AdapterRange.RadioGroupClick;
@@ -423,6 +446,14 @@ begin
 //       UnitLabel.Caption:='';
 //      end;
 
+end;
+
+procedure TMetterShow.StringArrayToRadioGroup(SA: array of string;
+                                              RG: TRadioGroup);
+ var i:byte;
+begin
+    RG.Items.Clear;
+    for I := 0 to High(SA) do RG.Items.Add(SA[i]);
 end;
 
 { TAdapterRadioGroupClick }
@@ -462,5 +493,21 @@ begin
  Result:= BCD Shr 4;
 end;
 
+
+Procedure PortStateToLabel(Port:TComPort;Lab:TLabel;Button: TButton);
+begin
+   if Port.Connected then
+  begin
+   Lab.Caption:='Port is open';
+   Lab.Font.Color:=clBlue;
+   if Button<>nil then Button.Caption:='To close'
+  end
+                       else
+  begin
+   Lab.Caption:='Port is close';
+   Lab.Font.Color:=clRed;
+   if Button<>nil then Button.Caption:='To open'
+  end
+end;
 
 end.

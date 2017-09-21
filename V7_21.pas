@@ -134,7 +134,7 @@ type
                       AB:TSpeedButton;
                       PCB:TComboBox;
                       TT:TTimer);
-   Procedure Free;
+   Procedure Free; override;
    procedure NumberPinShow();
    procedure ButtonEnabled();
 //   procedure VoltmetrDataShow();
