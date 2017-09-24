@@ -3,7 +3,7 @@ unit UT70;
 interface
 
 uses
-  RS232device, ExtCtrls, StdCtrls, Buttons,PacketParameters;
+  RS232device, ExtCtrls, StdCtrls, Buttons,PacketParameters, CPort;
 
 
 type
@@ -72,7 +72,7 @@ type
     {TRUE при зашкалюванні}
 //    fMeasureTypeAll:array of string;
     fDiapazoneModeAll:array of string;
-    procedure ComPortSetup;
+//    procedure ComPortSetup;
     procedure NamesFilling;
     procedure DiapazonFilling(DiapazonNumber:byte;
                               D_Begin, D_End:TUT70_Diapazons);
@@ -83,12 +83,8 @@ type
      Procedure ValueDetermination(Data:array of byte);override;
      Function MeasureModeLabelRead():string;override;
    public
-     Constructor Create();override;
-//     Procedure ConvertToValue(Data:array of byte);override;
+     Constructor Create(CP:TComPort;Nm:string);override;
      Function Request():boolean;override;
-     function GetTemperature:double;override;
-     function GetVoltage(Vin:double):double;override;
-     function GetCurrent(Vin:double):double;override;
   end;
 
   TUT70BShow=class(TMetterShow)
@@ -111,7 +107,7 @@ type
 implementation
 
 uses
-  CPort, OlegType, Dialogs;
+  OlegType, Dialogs;
 
 { UT70B }
 
@@ -127,11 +123,11 @@ uses
 //  inherited ConvertToValue(Data);
 //end;
 
-constructor TUT70B.Create;
+constructor TUT70B.Create(CP:TComPort;Nm:string);
 begin
-
- inherited Create();
- ComPortSetup;
+ inherited Create(CP,Nm);
+ fComPacket.StartString := UT70_PacketBeginChar;
+ fComPacket.StopString := UT70_PacketEndChar;
  NamesFilling;
 end;
 
@@ -152,20 +148,6 @@ begin
         do fDiapazonAll[DiapazonNumber][ord(UT70_D)-ord(D_Begin)]:=UT70_DiapazonsLabels[UT70_D];
 end;
 
-function TUT70B.GetCurrent(Vin: double): double;
-begin
- Result:=Measurement();
-end;
-
-function TUT70B.GetTemperature: double;
-begin
- Result:=Measurement();
-end;
-
-function TUT70B.GetVoltage(Vin: double): double;
-begin
- Result:=Measurement();
-end;
 
 function TUT70B.MeasureModeLabelRead: string;
 begin
@@ -205,32 +187,20 @@ end;
 procedure TUT70B.PacketReceiving(Sender: TObject; const Str: string);
   var i:integer;
 begin
-//--------------
-//  if fIsReceived then Exit;
 
-//     showmessage(Str);
-
-//---------------------------
   SetLength(fData,Length(Str));
   for I := 0 to High(fData) do
     fData[i]:=ord(str[i+1]);
-//    ShowData(fData);
 
   if High(fData)<>8 then Exit;
   if fData[7]<>48 then Exit;
   for i := 0 to 8 do
    begin
-//    showmessage();
     if (fData[i] shr 4)<>3 then Exit;
     fData[i]:=(fData[i] and $0F)
    end;
 
-//    ShowData(fData);
-
  fIsReceived:=True;
-
-// fComPort.SetDTR(False);
-
 end;
 
 function TUT70B.Request: boolean;
@@ -385,17 +355,17 @@ begin
 
 end;
 
-procedure TUT70B.ComPortSetup;
-begin
-  fComPacket.StartString := UT70_PacketBeginChar;
-  fComPacket.StopString := UT70_PacketEndChar;
-
-//  fComPort.BaudRate := br2400;
-//  fComPort.StopBits := sbOneStopBit;
-//  fComPort.DataBits := dbSeven;
-//  fComPort.DataBits := dbEight;
-//  fComPort.Parity.Bits := prOdd;
-end;
+//procedure TUT70B.ComPortSetup;
+//begin
+//  fComPacket.StartString := UT70_PacketBeginChar;
+//  fComPacket.StopString := UT70_PacketEndChar;
+//
+////  fComPort.BaudRate := br2400;
+////  fComPort.StopBits := sbOneStopBit;
+////  fComPort.DataBits := dbSeven;
+////  fComPort.DataBits := dbEight;
+////  fComPort.Parity.Bits := prOdd;
+//end;
 
 { TUT70BShow }
 
@@ -407,7 +377,6 @@ constructor TUT70BShow.Create(UT70B: TUT70B;
                               TT: TTimer);
 begin
  inherited Create(UT70B,MM,R,DL,UL,MB,AB,TT);
-//    showmessage('hi');
  DiapazoneMode:=DM;
  StringArrayToRadioGroup(UT70B.fDiapazoneModeAll,DiapazoneMode);
  IndexToRadioGroup(1,DiapazoneMode);
@@ -419,16 +388,13 @@ end;
 
 procedure TUT70BShow.Free;
 begin
-  DiapazoneMode.Free;
+  AdapterDiapazoneMode.Free;
   inherited Free;
 end;
 
 procedure TUT70BShow.MetterDataShow;
 begin
   inherited MetterDataShow;
-
-//  if (RS232Meter as TUT70B).fMeasureMode=ord(ID) then  Range.Columns:=3;
-
 
   DiapazoneMode.OnClick:=nil;
   IndexToRadioGroup(ord((RS232Meter as TUT70B).fAUTO),DiapazoneMode);

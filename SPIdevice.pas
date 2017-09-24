@@ -34,7 +34,7 @@ type
    property PinGate:byte Index 1 read GetPin write SetPin;
    property PinControlStr:string Index 0 read GetPinStr;
    property PinGateStr:string Index 1 read GetPinStr;
-   property Name:string read fName;
+   property Name:string read fName write fName;
    Constructor Create();
    Procedure ReadFromIniFile(ConfigFile:TIniFile);overload;
    Procedure ReadFromIniFile(ConfigFile:TIniFile;Strings:TStrings);overload;
@@ -80,17 +80,17 @@ type
 ////   function GetName:string;
 //  end;
 
-  TArduinoDevice=class(TRS232Device)
-  {базовий клас для пристроїв, які керуються
-  за допомогою Аrduino з використанням шини SPI}
-  protected
-
-  public
-   Pins:TPins;
-   Constructor Create();overload;override;
-   Constructor Create(CP:TComPort;Nm:string);overload;override;
-   Procedure Free;
-  end;
+//  TArduinoDevice=class(TRS232Device)
+//  {базовий клас для пристроїв, які керуються
+//  за допомогою Аrduino з використанням шини SPI}
+//  protected
+//
+//  public
+//   Pins:TPins;
+//   Constructor Create();overload;override;
+//   Constructor Create(CP:TComPort;Nm:string);overload;override;
+//   Procedure Free;
+//  end;
 
 
 //  TArduinoMeter=class(TArduinoDevice,IMeasurement)
@@ -126,36 +126,14 @@ type
    Procedure PacketReceiving(Sender: TObject; const Str: string);override;
   public
    Pins:TPins;
-   Constructor Create();overload;override;
-   Constructor Create(CP:TComPort;Nm:string);overload;override;
+//   Constructor Create();overload;override;
+   Constructor Create(CP:TComPort;Nm:string);override;
    Procedure Free;
    Function Request():boolean;override;
   end;
 
   TSimpleEvent = procedure() of object;
-//
-// TArrWord=array of word;
 
-
-//  TAdapterRadioGroupClick=class
-//    findexx:integer;
-//    Constructor Create(ind:integer);overload;
-//    procedure RadioGroupClick(Sender: TObject);
-//  end;
-
-
-
-//  TAdapterSetButton=class
-//  private
-//    FSimpleAction: TSimpleEvent;
-//    PinsComboBox:TComboBox;
-//    SPIDevice:TArduinoDevice;
-//    fi:integer;
-//  public
-//   property SimpleAction:TSimpleEvent read FSimpleAction write FSimpleAction;
-//   Constructor Create(PCB:TComboBox;SPID:TArduinoDevice;i:integer;Action:TSimpleEvent);
-//   procedure SetButtonClick(Sender: TObject);
-//  end;
 
   TAdapterSetButton=class
   private
@@ -483,18 +461,23 @@ end;
 //  fMinDelayTime:=0;
 //end;
 
-constructor TArduinoMeter.Create;
-begin
-  inherited Create();
-  Pins:=TPins.Create;
-  fComPacket.StartString:=PacketBeginChar;
-  fComPacket.StopString:=PacketEndChar;
-end;
+//constructor TArduinoMeter.Create;
+//begin
+//  inherited Create();
+//  Pins:=TPins.Create;
+//  fComPacket.StartString:=PacketBeginChar;
+//  fComPacket.StopString:=PacketEndChar;
+//end;
 
 Constructor TArduinoMeter.Create(CP:TComPort;Nm:string);
 begin
   inherited Create(CP,Nm);
+
+  Pins:=TPins.Create;
   Pins.fName:=Nm;
+
+  fComPacket.StartString:=PacketBeginChar;
+  fComPacket.StopString:=PacketEndChar;
 end;
 
 
@@ -669,26 +652,26 @@ begin
   fPins[Index]:=value;
 end;
 
-{ TArduinoDevice }
-
-constructor TArduinoDevice.Create;
-begin
-  inherited Create;
-  Pins:=TPins.Create;
-  fComPacket.StartString:=PacketBeginChar;
-  fComPacket.StopString:=PacketEndChar;
-end;
-
-constructor TArduinoDevice.Create(CP: TComPort; Nm: string);
-begin
- inherited Create(CP,Nm);
- Pins.fName:=Nm;
-end;
-
-procedure TArduinoDevice.Free;
-begin
- Pins.Free;
- inherited Free;
-end;
+//{ TArduinoDevice }
+//
+//constructor TArduinoDevice.Create;
+//begin
+//  inherited Create;
+//  Pins:=TPins.Create;
+//  fComPacket.StartString:=PacketBeginChar;
+//  fComPacket.StopString:=PacketEndChar;
+//end;
+//
+//constructor TArduinoDevice.Create(CP: TComPort; Nm: string);
+//begin
+// inherited Create(CP,Nm);
+// Pins.fName:=Nm;
+//end;
+//
+//procedure TArduinoDevice.Free;
+//begin
+// Pins.Free;
+// inherited Free;
+//end;
 
 end.

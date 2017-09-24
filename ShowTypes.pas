@@ -34,6 +34,40 @@ public
  function GetValue:double;
 end;
 
+  TParameterShow1=class
+//  дл€ в≥дображенн€ на форм≥
+//  а) значенн€ параметру
+//  б) його назви
+//кл≥к на значенн≥ викликаЇ по€ву в≥конц€ дл€ його зм≥ни
+   private
+    STData:TStaticText; //величина параметру
+    fWindowCaption:string; //назва в≥конц€ зм≥ни параметра
+    fWindowText:string;  //текст у цьому в≥конц≥
+//    fHook:TEvent;
+    FDefaulValue:double;
+    fDigitNumber:byte;
+    procedure ButtonClick(Sender: TObject);
+    function GetData:double;
+    procedure SetData(value:double);
+    procedure SetDefaulValue(const Value: double);
+    function ValueToString(Value:double):string;
+   public
+    STCaption:TLabel;
+    property DefaulValue:double read FDefaulValue write SetDefaulValue;
+    Constructor Create(STD:TStaticText;
+                       STC:TLabel;
+                       ParametrCaption:string;
+                       {WC,}WT:string;
+                       InitValue:double;
+                       DN:byte=3
+    );
+    property Data:double read GetData write SetData;
+//    property Hook:TEvent read fHook write fHook;
+    procedure ReadFromIniFile(ConfigFile:TIniFile);
+    procedure WriteToIniFile(ConfigFile:TIniFile);
+  end;  //   TParameterShow=object
+
+
 TLimitShow=class
 private
   UpDownHigh,UpDownLow:TUpDown;
@@ -140,7 +174,7 @@ Procedure MelodyLong();
 implementation
 
 uses
-  Dialogs, SysUtils, Math, Forms;
+  Dialogs, SysUtils, Math, Forms, Controls;
 
 { TDoubleConstantShow }
 
@@ -238,6 +272,81 @@ begin
  Windows.Beep(200,100);
  Windows.Beep(500,100);
 end;
+
+
+Constructor TParameterShow1.Create(STD:TStaticText;
+                       STC:TLabel;
+                       ParametrCaption:string;
+                       {WC,}WT:string;
+                       InitValue:double;
+                       DN:byte=3
+                       );
+begin
+  inherited Create;
+  fDigitNumber:=DN;
+
+  STData:=STD;
+  STData.Caption:=ValueToString(InitValue);
+  STData.OnClick:=ButtonClick;
+  STData.Cursor:=crHandPoint;
+  STCaption:=STC;
+  STCaption.Caption:=ParametrCaption;
+  STCaption.WordWrap:=True;
+//  fWindowCaption:=WC;
+  fWindowCaption:=ParametrCaption+' input';
+  fWindowText:=WT;
+  DefaulValue:=InitValue;
+end;
+
+procedure TParameterShow1.ButtonClick(Sender: TObject);
+ var temp:double;
+     st:string;
+begin
+  st:=InputBox(fWindowCaption,fWindowText,STData.Caption);
+  try
+    temp:=StrToFloat(st);
+    STData.Caption:=ValueToString(temp);
+//    Hook();
+  finally
+  end;
+end;
+
+function TParameterShow1.GetData:double;
+begin
+ Result:=StrToFloat(STData.Caption);
+end;
+
+procedure TParameterShow1.SetData(value:double);
+begin
+  try
+    STData.Caption:=ValueToString(value);
+  finally
+
+  end;
+end;
+
+procedure TParameterShow1.ReadFromIniFile(ConfigFile:TIniFile);
+begin
+ STData.Caption:=ValueToString(ConfigFile.ReadFloat(DoubleConstantSection,STCaption.Caption,DefaulValue));
+end;
+
+procedure TParameterShow1.WriteToIniFile(ConfigFile:TIniFile);
+begin
+ WriteIniDef(ConfigFile, DoubleConstantSection, STCaption.Caption, StrToFloat(STData.Caption),DefaulValue)
+end;
+
+procedure TParameterShow1.SetDefaulValue(const Value: double);
+begin
+  FDefaulValue := Value;
+end;
+
+function TParameterShow1.ValueToString(Value:double):string;
+begin
+  if (Frac(Value)=0)and(Int(Value/Power(10,fDigitNumber+1))=0)
+    then Result:=FloatToStrF(Value,ffGeneral,fDigitNumber,fDigitNumber-1)
+    else Result:=FloatToStrF(Value,ffExponent,fDigitNumber,fDigitNumber-1);
+end;
+
 
 { LimitShow }
 

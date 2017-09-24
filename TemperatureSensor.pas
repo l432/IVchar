@@ -3,16 +3,16 @@ unit TemperatureSensor;
 interface
 
 uses
-  SPIdevice;
+  SPIdevice, CPort, Measurement;
 
 type
-  TDS18B20=class(TArduinoMeter)
+  TDS18B20=class(TArduinoMeter,ITemperatureMeasurement)
   {базовий клас для датчика DS18B20}
   protected
    Procedure ConvertToValue(Data:array of byte);override;
   public
-   Constructor Create();overload;override;
-   function GetTemperature:double;override;
+   Constructor Create(CP:TComPort;Nm:string);override;
+   function GetTemperature():double;
   end;
 
 implementation
@@ -22,9 +22,10 @@ uses
 
 { TDS18B20 }
 
-constructor TDS18B20.Create;
+constructor TDS18B20.Create(CP:TComPort;Nm:string);
 begin
-  inherited Create();
+  inherited Create(CP,Nm);
+
   fMetterKod:=DS18B20Command;
 //  SetLength(fPins,1);
   SetLength(Pins.fPins,1);

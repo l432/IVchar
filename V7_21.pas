@@ -3,34 +3,23 @@ unit V7_21;
 interface
 
 uses
-  SPIdevice, ExtCtrls, StdCtrls, Buttons, Classes, RS232device;
+  SPIdevice, ExtCtrls, StdCtrls, Buttons, Classes, RS232device, CPort;
 
 
 
 type
-//  TMeasureMode=(IA,ID,UA,UD,MMErr);
   TV721_MeasureMode=(UD,UA,ID,IA);
-//  TMeasureModeSet=set of TMeasureMode;
-//  TDiapazons=(nA100,micA1,micA10,micA100,mA1,mA10,mA100,mA1000,
-//              mV10,mV100,V1,V10,V100,V1000,DErr);
+
   TV721_Diapazons=
         (nA100,micA1,micA10,micA100,mA1,mA10,mA100,mA1000,
          mV10,mV100,V1,V10,V100,V1000);
 
 const
 
-//  MeasureModeLabels:array[TMeasureMode]of string=
-//   ('~ I', '= I','~ U', '= U','Error');
   V721_MeasureModeLabels:array[TV721_MeasureMode]of string=
    (UD_Label, UA_Label, ID_Label, IA_Label);
 
 
-//  V721_CurrentLabels:array[nA100..mA1000]of string=
-//    ('100 nA','1 micA','10 micA','100 micA',
-//    '1 mA','10 mA','100 mA','1000 mA');
-//
-//  V721_VoltageLabels:array[mV10..V1000]of string=
-//    ('10 mV','100 mV','1 V','10 V','100 V','1000 V');
 
   V721_DiapazonsLabels:array[TV721_Diapazons]of string=
    ('100 nA','1 micA','10 micA','100 micA',
@@ -43,31 +32,16 @@ type
   TVoltmetr=class(TArduinoMeter)
   {базовий клас для вольтметрів серії В7-21}
   protected
-//   fMeasureMode:TMeasureMode;
-//   fDiapazon:TDiapazons;
-//   Procedure MModeDetermination(Data:byte); virtual;
-//   Procedure MModeDetermination(Data:array of byte); override;
-//   Procedure DiapazonDetermination(Data:byte); virtual;
-//   Procedure DiapazonDetermination(Data:array of byte); override;
    Procedure ValueDetermination(Data:array of byte);override;
-//   function GetData(LegalMeasureMode:TMeasureModeSet):double;
-   function GetData():double;
-//   function GetResistance():double;
    Function ResultProblem(Rez:double):boolean;override;
    Procedure DiapazonFilling(DiapazonNumber:byte;
                              D_Begin, D_End:TV721_Diapazons);
    Function MeasureModeLabelRead():string;override;
   public
-//   property MeasureMode:TMeasureMode read FMeasureMode;
-//   property Diapazon:TDiapazons read fDiapazon;
-//   property Resistance:double read GetResistance;
    Procedure ConvertToValue(Data:array of byte);override;
-   Constructor Create();overload;override;
+   Constructor Create(CP:TComPort;Nm:string);override;
    Function Request():boolean;override;
-   function GetTemperature:double;override;
-   function GetVoltage(Vin:double):double;override;
-   function GetCurrent(Vin:double):double;override;
-//   function GetResist():double;override;
+   function GetData():double;override;
   end;
 
   TV721A=class(TVoltmetr)
@@ -87,7 +61,7 @@ type
    Procedure DiapazonDetermination(Data:array of byte);override;
    Procedure ValueDetermination(Data:array of byte);override;
   public
-   Constructor Create();overload;override;
+   Constructor Create(CP:TComPort;Nm:string);override;
   end;
 
   TV721_Brak=class(TV721)
@@ -164,10 +138,10 @@ uses   PacketParameters, Measurement, Math, SysUtils, OlegMath, OlegType;
 //  fDiapazon:=DErr;
 //end;
 
-Constructor TVoltmetr.Create();
+Constructor TVoltmetr.Create(CP:TComPort;Nm:string);
  var V721_MeasureMode:TV721_MeasureMode;
 begin
-  inherited Create();
+  inherited Create(CP,Nm);
   fMetterKod:=V7_21Command;
   SetLength(fMeasureModeAll,ord(High(V721_MeasureModeLabels))+1);
   for V721_MeasureMode := Low(TV721_MeasureMode)
@@ -186,25 +160,6 @@ begin
   DiapazonFilling(3,micA100,mA100);
 end;
 
-//Procedure TVoltmetr.MModeDetermination(Data:byte);
-//begin
-//
-//end;
-//
-//Procedure TVoltmetr.DiapazonDetermination(Data:byte);
-//begin
-//
-//end;
-//Procedure TVoltmetr.MModeDetermination(Data:array of byte);
-//begin
-//
-//end;
-//
-//Procedure TVoltmetr.DiapazonDetermination(Data:array of byte);
-//begin
-//
-//end;
-
 procedure TVoltmetr.DiapazonFilling(DiapazonNumber:byte;
                               D_Begin, D_End: TV721_Diapazons);
  var V721_Diapazons:TV721_Diapazons;
@@ -214,11 +169,11 @@ begin
         do fDiapazonAll[DiapazonNumber][ord(V721_Diapazons)-ord(D_Begin)]:=V721_DiapazonsLabels[V721_Diapazons];
 end;
 
-function TVoltmetr.GetCurrent(Vin: double): double;
-begin
-// Result:=GetData([ID,IA]);
- Result:=GetData();
-end;
+//function TVoltmetr.GetCurrent(Vin: double): double;
+//begin
+//// Result:=GetData([ID,IA]);
+// Result:=GetData();
+//end;
 
 //function TVoltmetr.GetData(LegalMeasureMode: TMeasureModeSet): double;
 // function AditionMeasurement(a,b:double):double;
@@ -302,18 +257,6 @@ end;
 // end;
 //end;
 
-function TVoltmetr.GetTemperature: double;
-begin
-// Result:=GetData([UD]);
- Result:=GetData();
- if Result<>ErResult then Result:=T_CuKo(Result);
-end;
-
-function TVoltmetr.GetVoltage(Vin: double): double;
-begin
-// Result:=GetData([UD,UA]);
- Result:=GetData();
-end;
 
 function TVoltmetr.MeasureModeLabelRead: string;
 begin
@@ -401,11 +344,6 @@ begin
         end;
 end;
 
-//Function TVoltmetr.Request():boolean;
-//begin
-//  PacketCreate([fMetterKod,PinControl,PinGate]);
-//  Result:=PacketIsSend(fComPort,'Voltmetr '+Name+' measurement is unsuccessful');
-//end;
 
 Function TVoltmetr.Request():boolean;
 begin
@@ -423,14 +361,8 @@ Procedure TVoltmetr.ConvertToValue(Data:array of byte);
 begin
   if High(Data)<>3 then Exit;
   inherited ConvertToValue(Data);
-//  MModeDetermination(Data[2]);
-//  if fMeasureMode=MMErr then Exit;
-//  DiapazonDetermination(Data[3]);
-//  if fDiapazon=DErr then Exit;
-//  ValueDetermination(Data);
-//  if Value=ErResult then Exit;
-//  fIsready:=True;
 end;
+
 //
 //Procedure TV721A.MModeDetermination(Data:byte);
 //begin
@@ -458,16 +390,6 @@ begin
 end;
 
 
-//Procedure TV721.MModeDetermination(Data:byte);
-//begin
-// Data:=Data and $07;
-//  case Data of
-//   7: fMeasureMode:=UD;
-//   5: fMeasureMode:=UA;
-//   3: fMeasureMode:=ID;
-//   else fMeasureMode:=MMErr;
-//  end;
-//end;
 
 Procedure TV721.MModeDetermination(Data:array of byte);
  var temp:byte;
@@ -570,9 +492,9 @@ begin
 end;
 
 
-constructor TV721.Create;
+constructor TV721.Create(CP:TComPort;Nm:string);
 begin
-  inherited Create();
+  inherited Create(CP,Nm);
   SetLength(fMeasureModeAll,High(fMeasureModeAll));
   fDiapazonAll[0][High(fDiapazonAll[0])]:='500 V';
   fDiapazonAll[1][High(fDiapazonAll[0])]:='500 V';

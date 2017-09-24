@@ -37,17 +37,19 @@ uses
 procedure TTemperatureMeasuringThread.Doing;
  var temp:double;
 begin
-  temp:=TemperatureMD.GetMeasurementResult(ErResult);
+  temp:=TemperatureMD.GetMeasurementResult();
   if temp=ErResult then Terminate;
-  if (TemperatureMD.ActiveInterface is TDS18B20) then Sleep(5000);
+//  if (TemperatureMD.ActiveInterface is TDS18B20) then Sleep(5000);
 end;
 
 procedure TTemperatureMeasuringThread.Execute;
 begin
-  while Terminated=False do
+  while not(Terminated) do
   begin
     Synchronize(Doing);
-//    Application.ProcessMessages;
+//  if (TemperatureMD.ActiveInterface is TDS18B20) then Sleep(5000);
+
+    //    Application.ProcessMessages;
   end;
 end;
 

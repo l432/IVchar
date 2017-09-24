@@ -3,7 +3,7 @@ unit DACR2R;
 interface
 
 uses
-  SPIdevice, Measurement, OlegType, StdCtrls;
+  SPIdevice, Measurement, OlegType, StdCtrls, RS232device, CPort;
 
 const DACR2R_MaxValue=65535;
       DACR2R_Factor=10000;
@@ -35,9 +35,13 @@ class function VoltToKod(Volt:double):word;
  procedure ReadFromFileData();
 end;
 
-TDACR2R=class(TArduinoDevice,IDAC)
+
+
+//TDACR2R=class(TArduinoDevice,IDAC)
+TDACR2R=class(TRS232Setter)
   {базовий клас для ЦАП}
 private
+ Pins:TPins;
  fCalibration:TDACR2R_Calibr;
  function  IntVoltage(Voltage:double):integer;
  procedure DataByteToSendPrepare(Voltage: Double);
@@ -46,16 +50,17 @@ private
 protected
 // Procedure PacketReceiving(Sender: TObject; const Str: string);override;
 public
- Constructor Create();overload;override;
+// Constructor Create();overload;override;
+ Constructor Create(CP:TComPort;Nm:string);override;
  Procedure Free;
- Procedure Output(Voltage:double);
- Procedure Reset();
+ Procedure Output(Voltage:double);override;
+ Procedure Reset();override;
  Procedure CalibrationRead();
  Procedure CalibrationWrite();
  procedure CalibrationFileProcessing(filename:string);
- Procedure OutputInt(Kod:integer);
- function CalibrationStep(Voltage:double):double;
- procedure OutputCalibr(Voltage:double);
+ Procedure OutputInt(Kod:integer);override;
+ function CalibrationStep(Voltage:double):double;override;
+ procedure OutputCalibr(Voltage:double);override;
  procedure SaveFileWithCalibrData(DataVec:PVector);
 end;
 
@@ -235,9 +240,13 @@ begin
  fCalibration.WriteToFileData();
 end;
 
-constructor TDACR2R.Create;
+constructor TDACR2R.Create(CP:TComPort;Nm:string);
 begin
-  inherited Create();
+  inherited Create(CP,Nm);
+  Pins:=TPins.Create;
+  Pins.Name:=Nm;
+  fComPacket.StartString:=PacketBeginChar;
+  fComPacket.StopString:=PacketEndChar;
   SetLength(fData,3);
   fCalibration:=TDACR2R_Calibr.Create;
 end;
@@ -252,6 +261,7 @@ end;
 
 procedure TDACR2R.Free;
 begin
+ Pins.Free;
  fCalibration.Free;
  inherited Free;
 end;

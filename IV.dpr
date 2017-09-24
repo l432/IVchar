@@ -14,7 +14,8 @@ uses
   TemperatureSensor in 'TemperatureSensor.pas',
   AD5752R in 'AD5752R.pas',
   DACR2R in 'DACR2R.pas',
-  UT70 in 'UT70.pas';
+  UT70 in 'UT70.pas',
+  HighResolutionTimer in 'HighResolutionTimer.pas';
 
 {$R *.res}
 

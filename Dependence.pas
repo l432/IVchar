@@ -108,25 +108,6 @@ end;
 
 procedure TDependenceMeasuring.ActionMeasurement;
 begin
-// SetVoltage();
-
-// repeat
-//  HookSecondMeas();
-//  if ftempI=ErResult then
-//    begin
-//     fIVMeasuringToStop:=True;
-//     Exit;
-//    end;
-//  fSecondMeasIsDone:=True;
-//
-//  HookFirstMeas();
-//  if ftempV=ErResult then
-//    begin
-//     fIVMeasuringToStop:=True;
-//     Exit;
-//    end;
-// until (fSecondMeasIsDone);
-
   repeat
     SetVoltage();
     fSecondMeasIsDone:=True;
