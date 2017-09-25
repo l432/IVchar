@@ -151,13 +151,13 @@ begin
   SetLength(fDiapazonAll,High(fMeasureModeAll)+1);
 
   {UD}
-  DiapazonFilling(0,mV10,V100);
+  DiapazonFilling(0,mV10,V1000);
   {UA}
-  DiapazonFilling(1,mV100,V100);
+  DiapazonFilling(1,mV100,V1000);
   {ID}
-  DiapazonFilling(2,nA100,mA100);
+  DiapazonFilling(2,nA100,mA1000);
   {IA}
-  DiapazonFilling(3,micA100,mA100);
+  DiapazonFilling(3,micA100,mA1000);
 end;
 
 procedure TVoltmetr.DiapazonFilling(DiapazonNumber:byte;
@@ -497,7 +497,7 @@ begin
   inherited Create(CP,Nm);
   SetLength(fMeasureModeAll,High(fMeasureModeAll));
   fDiapazonAll[0][High(fDiapazonAll[0])]:='500 V';
-  fDiapazonAll[1][High(fDiapazonAll[0])]:='500 V';
+  fDiapazonAll[1][High(fDiapazonAll[1])]:='500 V';
 end;
 
 //Procedure TV721.DiapazonDetermination(Data:byte);

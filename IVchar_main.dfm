@@ -35,7 +35,7 @@ object IVchar: TIVchar
     Top = 0
     Width = 1028
     Height = 609
-    ActivePage = TS_Temper
+    ActivePage = TS_Main
     Align = alTop
     Font.Charset = RUSSIAN_CHARSET
     Font.Color = clWindowText
@@ -2522,7 +2522,6 @@ object IVchar: TIVchar
           ComPort = ComPort1
           ComProperty = cpPort
           AutoApply = True
-          Text = 'COM1'
           Style = csDropDownList
           Font.Charset = RUSSIAN_CHARSET
           Font.Color = clWindowText
@@ -2530,7 +2529,7 @@ object IVchar: TIVchar
           Font.Name = 'Arial'
           Font.Style = [fsBold]
           ItemHeight = 24
-          ItemIndex = 0
+          ItemIndex = -1
           ParentFont = False
           TabOrder = 0
         end
@@ -2542,7 +2541,6 @@ object IVchar: TIVchar
           ComPort = ComPort1
           ComProperty = cpBaudRate
           AutoApply = True
-          Text = '115200'
           Style = csDropDownList
           Font.Charset = RUSSIAN_CHARSET
           Font.Color = clWindowText
@@ -2550,7 +2548,7 @@ object IVchar: TIVchar
           Font.Name = 'Arial'
           Font.Style = [fsBold]
           ItemHeight = 24
-          ItemIndex = 13
+          ItemIndex = -1
           ParentFont = False
           TabOrder = 1
         end
@@ -2832,7 +2830,7 @@ object IVchar: TIVchar
       object LTMI: TLabel
         Left = 18
         Top = 155
-        Width = 173
+        Width = 46
         Height = 18
         Caption = 'L1PR'
         Font.Charset = RUSSIAN_CHARSET
@@ -2939,6 +2937,58 @@ object IVchar: TIVchar
         Font.Style = [fsBold]
         ParentFont = False
         TabOrder = 3
+      end
+      object GBThermocouple: TGroupBox
+        Left = 556
+        Top = 25
+        Width = 242
+        Height = 155
+        Caption = 'ThermoCouple'
+        TabOrder = 4
+        object STTCV: TStaticText
+          Left = 35
+          Top = 25
+          Width = 168
+          Height = 23
+          Caption = 'Termocouple voltage'
+          Font.Charset = RUSSIAN_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -17
+          Font.Name = 'Arial'
+          Font.Style = [fsBold]
+          ParentFont = False
+          TabOrder = 0
+        end
+        object CBTcVMD: TComboBox
+          Tag = 5
+          Left = 34
+          Top = 73
+          Width = 173
+          Height = 27
+          Style = csDropDownList
+          Font.Charset = RUSSIAN_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -17
+          Font.Name = 'Arial'
+          Font.Style = [fsBold]
+          ItemHeight = 19
+          ParentFont = False
+          TabOrder = 1
+        end
+        object STMD: TStaticText
+          Left = 52
+          Top = 44
+          Width = 141
+          Height = 23
+          Caption = 'measuring device'
+          Font.Charset = RUSSIAN_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -17
+          Font.Name = 'Arial'
+          Font.Style = [fsBold]
+          ParentFont = False
+          TabOrder = 2
+        end
       end
     end
     object TS_UT70: TTabSheet
@@ -3094,7 +3144,6 @@ object IVchar: TIVchar
           ComPort = ComPortUT70B
           ComProperty = cpPort
           AutoApply = True
-          Text = 'COM1'
           Style = csDropDownList
           Font.Charset = RUSSIAN_CHARSET
           Font.Color = clWindowText
@@ -3102,7 +3151,7 @@ object IVchar: TIVchar
           Font.Name = 'Arial'
           Font.Style = [fsBold]
           ItemHeight = 24
-          ItemIndex = 0
+          ItemIndex = -1
           ParentFont = False
           TabOrder = 5
         end

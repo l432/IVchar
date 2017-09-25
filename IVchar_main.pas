@@ -256,6 +256,10 @@ type
     STVVtoI: TStaticText;
     LTMI: TLabel;
     STTMI: TStaticText;
+    GBThermocouple: TGroupBox;
+    STTCV: TStaticText;
+    CBTcVMD: TComboBox;
+    STMD: TStaticText;
     procedure FormCreate(Sender: TObject);
     procedure PortConnected();
     procedure BConnectClick(Sender: TObject);
@@ -379,6 +383,7 @@ type
     VoltmetrShows:array of TVoltmetrShow;
     DS18B20:TDS18B20;
     DS18B20show:TPinsShow;
+    ThermoCuple:TThermoCuple;
     ConfigFile:TIniFile;
     NumberPins:TStringList; // номери пінів, які використовуються як керуючі для SPI
     NumberPinsOneWire:TStringList; // номери пінів, які використовуються для OneWire
@@ -391,11 +396,12 @@ type
 //    Devices,DevicesSet:array of TInterfacedObject;
     Devices:array of IMeasurement;
     DevicesSet:array of IDAC;
+//    TemperatureDevices:array of ITemperatureMeasurement;
     Temperature_MD:TTemperature_MD;
 //    Current_MD:TCurrent_MD;
 //    VoltageIV_MD:TVoltageIV_MD;
 //    DACR2R_MD:TVoltageChannel_MD;
-    Current_MD,VoltageIV_MD,DACR2R_MD:TMeasuringDevice;
+    Current_MD,VoltageIV_MD,DACR2R_MD,TermoCouple_MD:TMeasuringDevice;
     SettingDevice:TSettingDevice;
     TemperatureMeasuringThread:TTemperatureMeasuringThread;
     IVCharRangeFor,CalibrRangeFor:TLimitShow;
@@ -824,6 +830,7 @@ begin
   Imin := DoubleConstantShows[2].Data;
   R_VtoI:=DoubleConstantShows[5].Data;
   SetLenVector(VolCorrectionNew,0);
+  ThermoCuple.Measurement:=TermoCouple_MD.ActiveInterface;
 end;
 
 procedure TIVchar.HookBegin;
@@ -2308,6 +2315,7 @@ procedure TIVchar.TemperatureThreadCreate;
 begin
   TemperatureMeasuringThread:=TTemperatureMeasuringThread.Create(True);
   TemperatureMeasuringThread.TemperatureMD:=Temperature_MD;
+  ThermoCuple.Measurement:=TermoCouple_MD.ActiveInterface;
   TemperatureMeasuringThread.Priority:=tpLower;
   TemperatureMeasuringThread.FreeOnTerminate:=True;
   TemperatureMeasuringThread.Resume;
@@ -2327,6 +2335,8 @@ begin
   DS18B20:=TDS18B20.Create(ComPort1, 'DS18B20');
 //  DS18B20show:=TPinsShow.Create(DS18B20,LDS18BPin,nil,BDS18B,nil,CBDS18b20);
   DS18B20show:=TPinsShow.Create(DS18B20.Pins,LDS18BPin,nil,BDS18B,nil,CBDS18b20);
+
+  ThermoCuple:=TThermoCuple.Create;
 
   UT70B:=TUT70B.Create(ComPortUT70B, 'UT70B');
   UT70BShow:= TUT70BShow.Create(UT70B, RGUT70B_MM, RGUT70B_Range, RGUT70B_RangeM, LUT70B, LUT70BU, BUT70BMeas, SBUT70BAuto, Time);
@@ -2376,6 +2386,7 @@ begin
   if assigned(UT70B) then
     UT70B.Free;
 
+  ThermoCuple.Free;
   Simulator.Free;
 end;
 
@@ -2442,10 +2453,11 @@ begin
   Devices[2]:=V721_I;
   Devices[3]:=V721_II;
 
+  TermoCouple_MD:=TMeasuringDevice.Create(Devices,CBTcVMD,LTRValue,srVoltge);
 
-//  Temperature_MD:=TTemperature_MD.Create(Devices,{RBTSImitation,RBTSTermocouple,CBTSTC}CBTD,LTRValue);
-  Temperature_MD:=TTemperature_MD.Create(Devices,CBTD,LTRValue,srVoltge);
-  Temperature_MD.Add(DS18B20);
+//  Temperature_MD:=TTemperature_MD.Create(Devices,CBTD,LTRValue,srVoltge);
+//  Temperature_MD.Add(DS18B20);
+  Temperature_MD:=TTemperature_MD.Create([Simulator,ThermoCuple,DS18B20],CBTD,LTRValue);
 
   SetLength(Devices,5);
   Devices[4]:=UT70B;
@@ -2472,6 +2484,7 @@ begin
   Current_MD.Free;
   VoltageIV_MD.Free;
   DACR2R_MD.Free;
+  TermoCouple_MD.Free;
 end;
 
 procedure TIVchar.DevicesReadFromIniAndToForm;
@@ -2481,6 +2494,8 @@ begin
   Current_MD.ReadFromIniFile(ConfigFile,'Sources','Current');
   VoltageIV_MD.ReadFromIniFile(ConfigFile,'Sources','Voltage');
   DACR2R_MD.ReadFromIniFile(ConfigFile,'Sources','R2R');
+  TermoCouple_MD.ReadFromIniFile(ConfigFile,'Sources','Thermocouple');
+
 //  ChannelA_MD.ReadFromIniFile(ConfigFile,'Sources','ChannelA');
 //  ChannelB_MD.ReadFromIniFile(ConfigFile,'Sources','ChannelB');
 end;
@@ -2493,6 +2508,8 @@ begin
   Current_MD.WriteToIniFile(ConfigFile,'Sources','Current');
   VoltageIV_MD.WriteToIniFile(ConfigFile,'Sources','Voltage');
   DACR2R_MD.WriteToIniFile(ConfigFile,'Sources','R2R');
+  TermoCouple_MD.WriteToIniFile(ConfigFile,'Sources','Thermocouple');
+
 //  ChannelA_MD.WriteToIniFile(ConfigFile,'Sources','ChannelA');
 //  ChannelB_MD.WriteToIniFile(ConfigFile,'Sources','ChannelB');
 end;

@@ -37,7 +37,7 @@ ITemperatureMeasurement = interface (IName)
   function GetTemperature:double;
 end;
 
-TSimulator = class (TInterfacedObject,IMeasurement,IDAC)
+TSimulator = class (TInterfacedObject,IMeasurement,IDAC,ITemperatureMeasurement)
 private
  FName: string;
  function GetName:string;
@@ -138,12 +138,27 @@ public
 // procedure Free;
 end;
 
-TTemperature_MD =class(TMeasuringDevice)
+TTemperature_MD =class(TDevice)
 private
-// function GetResult(Value:double):double;override;
-// function StringResult(data:double):string;override;
+ fSetOfInterface:array of ITemperatureMeasurement;
+ ResultIndicator:TLabel;
+ function GetResult():double;virtual;
+ function GetActiveInterface():ITemperatureMeasurement;
 public
+ property ActiveInterface:ITemperatureMeasurement read GetActiveInterface;
+ Constructor Create(const SOI:array of ITemperatureMeasurement;
+                    DevCB:TComboBox;
+                    RI:TLabel);
+ function GetMeasurementResult():double;
 end;
+
+//
+//TTemperature_MD =class(TMeasuringDevice)
+//private
+//// function GetResult(Value:double):double;override;
+//// function StringResult(data:double):string;override;
+//public
+//en
 
 //TCurrent_MD =class(TMeasuringDevice)
 //private
@@ -190,9 +205,7 @@ TDAC_Show=class
                       KSB, RB: TButton);
 end;
 
-function T_CuKo(Voltage:double):double;
-{функция расчета температури по значениям напряжения
-согласно градуировке термопары медь-константан}
+
 
 
 
@@ -278,13 +291,7 @@ begin
 
 end;
 
-function T_CuKo(Voltage:double):double;
-{функция расчета температури по значениям напряжения
-согласно градуировке термопары медь-константан}
-begin
- Voltage:=Voltage*1e6;
- Result:=273.8+0.025*Voltage-1.006e-6*Voltage*Voltage+1.625e-10*Voltage*Voltage*Voltage;
-end;
+
 
 
 { TMeasuringDevice }
@@ -717,6 +724,48 @@ end;
 function TMeasuringDevice.GetResult(): double;
 begin
  Result:=GetActiveInterface.GetData();
+end;
+
+{ TTemperature_MD }
+
+constructor TTemperature_MD.Create(const SOI: array of ITemperatureMeasurement;
+                                   DevCB: TComboBox; RI: TLabel);
+var I: Integer;
+begin
+ inherited Create(DevCB);
+ if High(SOI)<0 then Exit;
+ SetLength(fSetOfInterface,High(SOI)+1);
+ for I := 0 to High(SOI) do
+  begin
+   DevicesComboBox.Items.Add(SOI[i].Name);
+   fSetOfInterface[i]:=SOI[i];
+  end;
+ if DevicesComboBox.Items.Count>0 then DevicesComboBox.ItemIndex:=0;
+
+ ResultIndicator:=RI;
+end;
+
+function TTemperature_MD.GetActiveInterface: ITemperatureMeasurement;
+begin
+ if DevicesComboBox=nil
+   then Result:=nil
+   else Result:=fSetOfInterface[DevicesComboBox.ItemIndex];
+end;
+
+function TTemperature_MD.GetMeasurementResult: double;
+begin
+ try
+ Result:=GetResult();
+ if ResultIndicator<>nil then
+    ResultIndicator.Caption:=FloatToStrF(Result,ffFixed, 5, 2);
+ finally
+
+ end;
+end;
+
+function TTemperature_MD.GetResult: double;
+begin
+   Result:=GetActiveInterface.GetTemperature();
 end;
 
 end.

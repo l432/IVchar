@@ -3,7 +3,7 @@ unit TemperatureSensor;
 interface
 
 uses
-  SPIdevice, CPort, Measurement;
+  SPIdevice, CPort, Measurement, RS232device;
 
 type
   TDS18B20=class(TArduinoMeter,ITemperatureMeasurement)
@@ -13,6 +13,19 @@ type
   public
    Constructor Create(CP:TComPort;Nm:string);override;
    function GetTemperature():double;
+  end;
+
+  TThermoCuple=class(TNamedDevice,ITemperatureMeasurement)
+    protected
+
+    public
+     Measurement:IMeasurement;
+     class function T_CuKo(Voltage:double):double;
+     {функция расчета температури по значениям напряжения
+     согласно градуировке термопары медь-константан}
+     function GetTemperature():double;
+     Constructor Create();
+     Procedure Free;
   end;
 
 implementation
@@ -62,5 +75,28 @@ begin
  fIsReady:=True;
 end;
 
+
+{ TThermoCuple }
+
+constructor TThermoCuple.Create;
+begin
+ fName:='ThermoCouple';
+end;
+
+procedure TThermoCuple.Free;
+begin
+
+end;
+
+function TThermoCuple.GetTemperature: double;
+begin
+ Result:=T_CuKo(Measurement.GetData);
+end;
+
+class function TThermoCuple.T_CuKo(Voltage: double): double;
+begin
+ Voltage:=Voltage*1e6;
+ Result:=273.8+0.025*Voltage-1.006e-6*Voltage*Voltage+1.625e-10*Voltage*Voltage*Voltage;
+end;
 
 end.
