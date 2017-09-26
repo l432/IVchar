@@ -1,5 +1,6 @@
 #include <SPI.h>
 #include <OneWire.h>
+#include <avr/wdt.h>
 
 //#define PacketStart 10
 //#define PacketEnd 255
@@ -53,6 +54,7 @@ void setup() {
   DACR2RPinSignBool = false;
   DS18B20delay = false;
   EndDS18B20delay = 0;
+  wdt_enable(WDTO_500MS);
   //  OneWire  ds(DS18B20Pin);
 }
 
@@ -106,6 +108,7 @@ start:
   if (DS18B20delay && millis() >= EndDS18B20delay) {
     DS18B20End();
   }
+  wdt_reset();
 }
 
 void ShortDelay() {
@@ -204,7 +207,7 @@ void DS18B20() {
     DS18B20Pin = PinControl;
     OneWire ds(DS18B20Pin);
   };
-  byte data[2];
+  //  byte data[2];
   ds.reset();
   ds.write(0xCC);
   ds.write(0x44);
@@ -224,6 +227,7 @@ void DS18B20() {
 }
 
 void DS18B20End() {
+  byte data[2];
   ds.reset();
   ds.write(0xCC);
   ds.write(0xBE);
