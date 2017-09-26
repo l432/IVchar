@@ -9,7 +9,8 @@ type
   TDS18B20=class(TArduinoMeter,ITemperatureMeasurement)
   {базовий клас для датчика DS18B20}
   protected
-   Procedure ConvertToValue(Data:array of byte);override;
+//   Procedure ConvertToValue(Data:array of byte);override;
+   Procedure ConvertToValue();override;
   public
    Constructor Create(CP:TComPort;Nm:string);override;
    function GetTemperature():double;
@@ -53,20 +54,42 @@ begin
 end;
 
 
-procedure TDS18B20.ConvertToValue(Data: array of byte);
+//procedure TDS18B20.ConvertToValue(Data: array of byte);
+// var temp:integer;
+//     sign:byte;
+//begin
+// if High(Data)<>1 then Exit;
+// sign:=(Data[1] and $F8);
+// if sign=$0 then
+//    begin
+//      temp:=(Data[1] and $7) Shl 8 + Data[0];
+//      fValue:=temp/16.0;
+//    end     else
+//      if sign=$F8 then
+//        begin
+//         temp:=(Data[1] and $7) Shl 8 + Data[0]-128;
+//         fValue:=temp/16.0;
+//        end       else
+//         fValue:=ErResult;
+//  if (fValue<-55)or(fValue>125) then fValue:=ErResult
+//                                else fValue:=fValue+273.16;
+// fIsReady:=True;
+//end;
+
+procedure TDS18B20.ConvertToValue();
  var temp:integer;
      sign:byte;
 begin
- if High(Data)<>1 then Exit;
- sign:=(Data[1] and $F8);
+ if High(fData)<>1 then Exit;
+ sign:=(fData[1] and $F8);
  if sign=$0 then
     begin
-      temp:=(Data[1] and $7) Shl 8 + Data[0];
+      temp:=(fData[1] and $7) Shl 8 + fData[0];
       fValue:=temp/16.0;
     end     else
       if sign=$F8 then
         begin
-         temp:=(Data[1] and $7) Shl 8 + Data[0]-128;
+         temp:=(fData[1] and $7) Shl 8 + fData[0]-128;
          fValue:=temp/16.0;
         end       else
          fValue:=ErResult;
@@ -74,7 +97,6 @@ begin
                                 else fValue:=fValue+273.16;
  fIsReady:=True;
 end;
-
 
 { TThermoCuple }
 

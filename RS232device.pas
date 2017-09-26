@@ -3,7 +3,9 @@ unit RS232device;
 interface
 
 uses
-  Measurement, CPort, PacketParameters, ExtCtrls, StdCtrls, Buttons, Windows;
+  Measurement, CPort, PacketParameters, ExtCtrls, StdCtrls, Buttons, Windows,
+  Classes;
+
 
 const
  Error='Error';
@@ -54,25 +56,31 @@ TRS232Meter=class(TRS232Device,IMeasurement)
    fDiapazon:Shortint;
    fMeasureModeAll:array of string;
    fDiapazonAll:array of array of string;
+   fRS232MeasuringTread:TThread;
    Procedure MModeDetermination(Data:array of byte); virtual;
    Procedure DiapazonDetermination(Data:array of byte); virtual;
    Procedure ValueDetermination(Data:array of byte);virtual;
-
-   Procedure ConvertToValue(Data:array of byte);virtual;
-   Function ResultProblem(Rez:double):boolean;virtual;
+//   Procedure ConvertToValue(Data:array of byte);virtual;
+//   Function ResultProblem(Rez:double):boolean;virtual;
    Function MeasureModeLabelRead():string;virtual;
    Procedure PacketReceiving(Sender: TObject; const Str: string);virtual;
    Function Measurement():double;virtual;
 
   public
    property Value:double read fValue;
-   property isReady:boolean read fIsReady;
+   property isReady:boolean read fIsReady write fIsReady;
+   property isReceived:boolean read fIsReceived write fIsReceived;
+   property MinDelayTime:integer read  fMinDelayTime;
    property MeasureModeLabel:string read MeasureModeLabelRead;
 //   Constructor Create();override;
    Constructor Create(CP:TComPort;Nm:string);override;
+   Procedure ConvertToValue();virtual;
+   Function ResultProblem(Rez:double):boolean;virtual;
    Function Request():boolean;virtual;
    function GetData():double;virtual;
   end;
+
+
 
 TRS232Setter=class(TRS232Device,IDAC)
  protected
@@ -134,7 +142,7 @@ Procedure PortStateToLabel(Port:TComPort;Lab:TLabel;Button: TButton);
 implementation
 
 uses
-  OlegType, Dialogs, SysUtils, Forms, Graphics;
+  OlegType, Dialogs, SysUtils, Forms, Graphics, RS232_Meas_Tread;
 
 { TRS232Device }
 
@@ -175,14 +183,35 @@ end;
 
 { TRS232Meter }
 
-procedure TRS232Meter.ConvertToValue(Data: array of byte);
+//procedure TRS232Meter.ConvertToValue(Data: array of byte);
+//begin
+////   ShowData(Data);
+//  MModeDetermination(Data);
+//  if fMeasureMode=-1 then Exit;
+//
+////  showmessage(inttostr(fMeasureMode));
+//  DiapazonDetermination(Data);
+//  if fDiapazon=-1 then Exit;
+////    ShowData(Data);
+////  showmessage(inttostr(fDiapazon));
+//
+//  ValueDetermination(Data);
+//  if Value=ErResult then Exit;
+//
+//  fIsready:=True;
+//end;
+
+procedure TRS232Meter.ConvertToValue();
 begin
-  MModeDetermination(Data);
+  MModeDetermination(fData);
   if fMeasureMode=-1 then Exit;
-  DiapazonDetermination(Data);
+
+  DiapazonDetermination(fData);
   if fDiapazon=-1 then Exit;
-  ValueDetermination(Data);
+
+  ValueDetermination(fData);
   if Value=ErResult then Exit;
+
   fIsready:=True;
 end;
 
@@ -226,11 +255,50 @@ end;
 
 
 
+//function TRS232Meter.Measurement: double;
+//label start;
+//var i:integer;
+//    isFirst:boolean;
+//begin
+//
+// Result:=ErResult;
+// if not(fComPort.Connected) then
+//   begin
+//    showmessage('Port is not connected');
+//    Exit;
+//   end;
+//
+// isFirst:=True;
+//start:
+// fIsReady:=False;
+// fIsReceived:=False;
+// if not(Request()) then Exit;
+//
+//
+// sleep(fMinDelayTime);
+// i:=0;
+// repeat
+//   sleep(10);
+//   inc(i);
+// Application.ProcessMessages;
+// until ((i>130)or(fIsReceived));
+//// showmessage(inttostr((GetTickCount-i0)));
+// if fIsReceived then ConvertToValue(fData);
+// if fIsReady then Result:=fValue;
+//
+// if ((Result=ErResult)or(ResultProblem(Result)))and(isFirst) then
+//    begin
+//      isFirst:=false;
+//      goto start;
+//    end;
+//end;
+
 function TRS232Meter.Measurement: double;
 label start;
 var i:integer;
     isFirst:boolean;
 begin
+
  Result:=ErResult;
  if not(fComPort.Connected) then
    begin
@@ -238,30 +306,11 @@ begin
     Exit;
    end;
 
-
- isFirst:=True;
-start:
- fIsReady:=False;
- fIsReceived:=False;
- if not(Request()) then Exit;
-
- sleep(fMinDelayTime);
- i:=0;
- repeat
-   sleep(10);
-   inc(i);
- Application.ProcessMessages;
- until ((i>130)or(fIsReceived));
-// showmessage(inttostr((GetTickCount-i0)));
- if fIsReceived then ConvertToValue(fData);
+ fRS232MeasuringTread:=TRS232MeasuringTread.Create(Self);
  if fIsReady then Result:=fValue;
 
- if ((Result=ErResult)or(ResultProblem(Result)))and(isFirst) then
-    begin
-      isFirst:=false;
-      goto start;
-    end;
 end;
+
 
 
 
@@ -378,6 +427,12 @@ end;
 
 procedure TMetterShow.MeasurementButtonClick(Sender: TObject);
 begin
+//   if not((SPIDevice as TVoltmetr).fComPort.Connected) then Exit;
+// RS232Meter.Measurement();
+//showmessage('kkk');
+// MetterDataShow
+
+
   if RS232Meter.Measurement()<>ErResult then MetterDataShow();
 end;
 
@@ -448,8 +503,16 @@ Function BCDtoDec(BCD:byte; isLow:boolean):byte;
 якщо  isLow=true, то виділення із
 молодшої частини байта}
 begin
- if isLow then BCD:=BCD Shl 4;
- Result:= BCD Shr 4;
+//showmessage('g1');
+//showmessage(inttostr(BCD)+' '+inttostr(BCD Shl 4));
+
+// if isLow then BCD:=BCD Shl 4;
+ if isLow then Result:=BCD and $0F
+          else Result:= BCD Shr 4;
+// showmessage(inttostr(BCD)+' '+inttostr(BCD Shl 4));
+
+ // showmessage('g2');
+// Result:= BCD Shr 4;
 end;
 
 

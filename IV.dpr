@@ -15,7 +15,8 @@ uses
   AD5752R in 'AD5752R.pas',
   DACR2R in 'DACR2R.pas',
   UT70 in 'UT70.pas',
-  HighResolutionTimer in 'HighResolutionTimer.pas';
+  HighResolutionTimer in 'HighResolutionTimer.pas',
+  RS232_Meas_Tread in 'RS232_Meas_Tread.pas';
 
 {$R *.res}
 

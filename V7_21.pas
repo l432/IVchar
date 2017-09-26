@@ -33,12 +33,14 @@ type
   {базовий клас для вольтметрів серії В7-21}
   protected
    Procedure ValueDetermination(Data:array of byte);override;
-   Function ResultProblem(Rez:double):boolean;override;
+//   Function ResultProblem(Rez:double):boolean;override;
    Procedure DiapazonFilling(DiapazonNumber:byte;
                              D_Begin, D_End:TV721_Diapazons);
    Function MeasureModeLabelRead():string;override;
   public
-   Procedure ConvertToValue(Data:array of byte);override;
+//   Procedure ConvertToValue(Data:array of byte);override;
+   Procedure ConvertToValue();override;
+   Function ResultProblem(Rez:double):boolean;override;
    Constructor Create(CP:TComPort;Nm:string);override;
    Function Request():boolean;override;
    function GetData():double;override;
@@ -127,7 +129,8 @@ type
 
 implementation
 
-uses   PacketParameters, Measurement, Math, SysUtils, OlegMath, OlegType;
+uses   PacketParameters, Measurement, Math, SysUtils, OlegMath, OlegType, 
+  Dialogs;
 
 
 //Constructor TVoltmetr.Create();
@@ -298,12 +301,20 @@ end;
 Procedure TVoltmetr.ValueDetermination(Data:array of byte);
  var temp:double;
 begin
+// ShowData(Data);
+// showmessage(inttostr(Data[0]));
+
  temp:=BCDtoDec(Data[0],True);
+// showmessage(inttostr(Data[0]));
+
+
  temp:=BCDtoDec(Data[0],False)*10+temp;
  temp:=temp+BCDtoDec(Data[1],True)*100;
  temp:=temp+BCDtoDec(Data[1],False)*1000;
  temp:=temp+((Data[2] shr 4)and$1)*10000;
  if (Data[2] shr 5)and$1>0 then temp:=-temp;
+
+// ShowData(Data);
 
  fValue:=ErResult;
  if fMeasureMode=ord(IA) then
@@ -357,10 +368,16 @@ begin
 end;
 
 
-Procedure TVoltmetr.ConvertToValue(Data:array of byte);
+//Procedure TVoltmetr.ConvertToValue(Data:array of byte);
+//begin
+//  if High(Data)<>3 then Exit;
+//  inherited ConvertToValue(Data);
+//end;
+
+Procedure TVoltmetr.ConvertToValue();
 begin
-  if High(Data)<>3 then Exit;
-  inherited ConvertToValue(Data);
+  if High(fData)<>3 then Exit;
+  inherited ConvertToValue();
 end;
 
 //
@@ -446,7 +463,7 @@ begin
        fDiapazon:= round(Log2( Data[3]))-2;
    end;
   if fDiapazon<-1 then fDiapazon:=-1;
-
+//  showmessage(inttostr(fDiapazon));
 
 //  if fMeasureMode=ord(ID) then
 //   case Data[3] of

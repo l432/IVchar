@@ -187,7 +187,7 @@ end;
 procedure TUT70B.PacketReceiving(Sender: TObject; const Str: string);
   var i:integer;
 begin
-
+//   showmessage(str);
   SetLength(fData,Length(Str));
   for I := 0 to High(fData) do
     fData[i]:=ord(str[i+1]);

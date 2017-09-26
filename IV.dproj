@@ -42,6 +42,7 @@
     <DCCReference Include="Measurement.pas" />
     <DCCReference Include="PacketParameters.pas" />
     <DCCReference Include="RS232device.pas" />
+    <DCCReference Include="RS232_Meas_Tread.pas" />
     <DCCReference Include="ShowTypes.pas" />
     <DCCReference Include="SPIdevice.pas" />
     <DCCReference Include="TemperatureSensor.pas" />

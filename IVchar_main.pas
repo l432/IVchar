@@ -2316,6 +2316,7 @@ begin
   TemperatureMeasuringThread:=TTemperatureMeasuringThread.Create(True);
   TemperatureMeasuringThread.TemperatureMD:=Temperature_MD;
   ThermoCuple.Measurement:=TermoCouple_MD.ActiveInterface;
+
   TemperatureMeasuringThread.Priority:=tpLower;
   TemperatureMeasuringThread.FreeOnTerminate:=True;
   TemperatureMeasuringThread.Resume;
