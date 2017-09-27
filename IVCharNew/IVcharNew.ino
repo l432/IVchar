@@ -35,8 +35,6 @@ OneWire  ds(DS18B20Pin);
 
 byte DACDataReceived[3];
 boolean DACR2RPinSignBool;
-boolean DS18B20delay;
-unsigned long EndDS18B20delay;
 
 void setup() {
   Serial.begin(115200);
@@ -51,13 +49,11 @@ void setup() {
   pinMode(DACR2RPinSign, OUTPUT);
   digitalWrite(DACR2RPinSign, LOW);
   DACR2RPinSignBool = false;
-  DS18B20delay = false;
-  EndDS18B20delay = 0;
   //  OneWire  ds(DS18B20Pin);
 }
 
 void loop() {
-  //start:
+start:
   if (Serial.available() > 0) {
     // считываем входящий байт:
     incomingByte = Serial.read();
@@ -102,15 +98,8 @@ void loop() {
 
     }
   }
-start:
-  if (DS18B20delay && millis() >= EndDS18B20delay) {
-    DS18B20End();
-  }
 }
 
-void ShortDelay() {
-  delayMicroseconds(50);
-}
 
 byte FCS (byte Data[], int n)
 {
@@ -129,14 +118,12 @@ byte FCS (byte Data[], int n)
 
 void GateOpen() {
   digitalWrite(PinGate, LOW);
-  //  delay(1);
-  ShortDelay();
+  delay(1);
 }
 
 void GateClose() {
   digitalWrite(PinGate, HIGH);
-  //  delay(1);
-  ShortDelay();
+  delay(1);
 }
 
 void SendPacket(byte Data[], int n) {
@@ -208,22 +195,7 @@ void DS18B20() {
   ds.reset();
   ds.write(0xCC);
   ds.write(0x44);
-
-  DS18B20delay = true;
-  EndDS18B20delay = millis() + 800;
-  //  delay(800);     // maybe 750ms is enough, maybe not
-  //  ds.reset();
-  //  ds.write(0xCC);
-  //  ds.write(0xBE);
-  //
-  //  for ( byte i = 0; i < 2; i++) {
-  //    data[i] = ds.read();
-  //  }
-  //  ActionId = DS18B20Pin;
-  //  CreateAndSendPacket(data, sizeof(data));
-}
-
-void DS18B20End() {
+  delay(800);     // maybe 750ms is enough, maybe not
   ds.reset();
   ds.write(0xCC);
   ds.write(0xBE);
@@ -231,10 +203,8 @@ void DS18B20End() {
   for ( byte i = 0; i < 2; i++) {
     data[i] = ds.read();
   }
-  DeviceId = DS18B20Command;
   ActionId = DS18B20Pin;
   CreateAndSendPacket(data, sizeof(data));
-  DS18B20delay = false;
 }
 
 

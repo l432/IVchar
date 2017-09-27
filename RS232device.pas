@@ -232,7 +232,7 @@ constructor TRS232Meter.Create(CP:TComPort;Nm:string);
 begin
   inherited Create(CP,Nm);
   fComPacket.OnPacket:=PacketReceiving;
-
+               
   fIsReady:=False;
   fIsReceived:=False;
   fMinDelayTime:=0;

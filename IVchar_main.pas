@@ -1472,7 +1472,8 @@ begin
     ComPort1.AbortAllAsync;
    end;
  finally
-  PortConnected();
+ PortStateToLabel(ComPort1,LConnected,BConnect);
+//  PortConnected();
  end;
 end;
 
