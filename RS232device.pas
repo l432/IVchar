@@ -32,13 +32,16 @@ TRS232Device=class(TNamedDevice)
    fComPort:TComPort;
    fComPacket: TComDataPacket;
    fData:TArrByte;
+   fisNeededComPort:boolean;
 //   function GetName:string;
   public
 //   property Name:string read GetName;
+   property isNeededComPort:boolean read fisNeededComPort;
    Constructor Create();overload;
    Constructor Create(CP:TComPort);overload;
    Constructor Create(CP:TComPort;Nm:string);overload;virtual;
    Procedure Free;
+   procedure ComPortUsing();virtual;
   end;
 
 TRS232Meter=class(TRS232Device,IMeasurement)
@@ -164,6 +167,11 @@ begin
  fComPacket.ComPort:=CP;
 end;
 
+procedure TRS232Device.ComPortUsing;
+begin
+
+end;
+
 constructor TRS232Device.Create(CP: TComPort; Nm: string);
 begin
  Create(CP);
@@ -205,12 +213,12 @@ procedure TRS232Meter.ConvertToValue();
 begin
   MModeDetermination(fData);
   if fMeasureMode=-1 then Exit;
-
   DiapazonDetermination(fData);
   if fDiapazon=-1 then Exit;
+//  ShowData(fData);
 
   ValueDetermination(fData);
-  if Value=ErResult then Exit;
+//  if Value=ErResult then Exit;
 
   fIsready:=True;
 end;
@@ -255,44 +263,6 @@ end;
 
 
 
-//function TRS232Meter.Measurement: double;
-//label start;
-//var i:integer;
-//    isFirst:boolean;
-//begin
-//
-// Result:=ErResult;
-// if not(fComPort.Connected) then
-//   begin
-//    showmessage('Port is not connected');
-//    Exit;
-//   end;
-//
-// isFirst:=True;
-//start:
-// fIsReady:=False;
-// fIsReceived:=False;
-// if not(Request()) then Exit;
-//
-//
-// sleep(fMinDelayTime);
-// i:=0;
-// repeat
-//   sleep(10);
-//   inc(i);
-// Application.ProcessMessages;
-// until ((i>130)or(fIsReceived));
-//// showmessage(inttostr((GetTickCount-i0)));
-// if fIsReceived then ConvertToValue(fData);
-// if fIsReady then Result:=fValue;
-//
-// if ((Result=ErResult)or(ResultProblem(Result)))and(isFirst) then
-//    begin
-//      isFirst:=false;
-//      goto start;
-//    end;
-//end;
-
 function TRS232Meter.Measurement: double;
 label start;
 var i:integer;
@@ -306,12 +276,50 @@ begin
     Exit;
    end;
 
- fRS232MeasuringTread:=TRS232MeasuringTread.Create(Self);
+ isFirst:=True;
+start:
+ fIsReady:=False;
+ fIsReceived:=False;
+ if not(Request()) then Exit;
+
+
+ sleep(fMinDelayTime);
+ i:=0;
+ repeat
+   sleep(10);
+   inc(i);
+ Application.ProcessMessages;
+ until ((i>130)or(fIsReceived));
+// showmessage(inttostr((GetTickCount-i0)));
+// if fIsReceived then ConvertToValue(fData);
+//ShowData(fData);
+ if fIsReceived then ConvertToValue();
  if fIsReady then Result:=fValue;
 
+ if ((Result=ErResult)or(ResultProblem(Result)))and(isFirst) then
+    begin
+      isFirst:=false;
+      goto start;
+    end;
 end;
 
-
+//function TRS232Meter.Measurement: double;
+//label start;
+//var i:integer;
+//    isFirst:boolean;
+//begin
+//
+// Result:=ErResult;
+// if not(fComPort.Connected) then
+//   begin
+//    showmessage('Port is not connected');
+//    Exit;
+//   end;
+//
+// fRS232MeasuringTread:=TRS232MeasuringTread.Create(Self);
+// if fIsReady then Result:=fValue;
+//
+//end;
 
 
 function TRS232Meter.MeasureModeLabelRead: string;
@@ -428,12 +436,12 @@ end;
 procedure TMetterShow.MeasurementButtonClick(Sender: TObject);
 begin
 //   if not((SPIDevice as TVoltmetr).fComPort.Connected) then Exit;
-// RS232Meter.Measurement();
+ RS232Meter.Measurement();
 //showmessage('kkk');
-// MetterDataShow
+ MetterDataShow
 
 
-  if RS232Meter.Measurement()<>ErResult then MetterDataShow();
+//  if RS232Meter.Measurement()<>ErResult then MetterDataShow();
 end;
 
 procedure TMetterShow.MeasureModeFill;
@@ -453,13 +461,17 @@ begin
   MeasureMode.OnClick:=AdapterMeasureMode.RadioGroupClick;
   Range.OnClick:=AdapterRange.RadioGroupClick;
 
-  if RS232Meter.isReady then
+//  if RS232Meter.isReady then
+  if RS232Meter.Value<>ErResult then
      begin
        UnitLabel.Caption:=RS232Meter.MeasureModeLabel;
        DataLabel.Caption:=FloatToStrF(RS232Meter.Value,ffExponent,4,2)
      end
                         else
+     begin
+       UnitLabel.Caption:='';
        DataLabel.Caption:='    ERROR';
+     end;
 end;
 
 procedure TMetterShow.StringArrayToRadioGroup(SA: array of string;

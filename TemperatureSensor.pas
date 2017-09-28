@@ -10,10 +10,10 @@ type
   {базовий клас для датчика DS18B20}
   protected
 //   Procedure ConvertToValue(Data:array of byte);override;
-   Procedure ConvertToValue();override;
   public
    Constructor Create(CP:TComPort;Nm:string);override;
    function GetTemperature():double;
+   Procedure ConvertToValue();override;
   end;
 
   TThermoCuple=class(TNamedDevice,ITemperatureMeasurement)
@@ -112,7 +112,10 @@ end;
 
 function TThermoCuple.GetTemperature: double;
 begin
- Result:=T_CuKo(Measurement.GetData);
+ Result:=Measurement.GetData;
+ if Result<>ErResult then  Result:=T_CuKo(Result);
+
+// Result:=T_CuKo(Measurement.GetData);
 end;
 
 class function TThermoCuple.T_CuKo(Voltage: double): double;

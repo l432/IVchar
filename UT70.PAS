@@ -107,7 +107,7 @@ type
 implementation
 
 uses
-  OlegType, Dialogs;
+  OlegType, Dialogs, SysUtils;
 
 { UT70B }
 
@@ -137,6 +137,7 @@ begin
   fAUTO:=((Data[8] and 2)>0);
   fDiapazon:=Data[0];
   if fDiapazon>7 then fDiapazon:=-1;
+//  showmessage(inttostr(fDiapazon));
 end;
 
 procedure TUT70B.DiapazonFilling(DiapazonNumber: byte;
@@ -182,12 +183,12 @@ begin
                                    else fMeasureMode:=ord(UA);
    else fMeasureMode:=-1;
   end;
+//  showmessage(MeasureModeLabelRead);
 end;
 
 procedure TUT70B.PacketReceiving(Sender: TObject; const Str: string);
   var i:integer;
 begin
-//   showmessage(str);
   SetLength(fData,Length(Str));
   for I := 0 to High(fData) do
     fData[i]:=ord(str[i+1]);
@@ -199,6 +200,7 @@ begin
     if (fData[i] shr 4)<>3 then Exit;
     fData[i]:=(fData[i] and $0F)
    end;
+//   showmessage(str);
 
  fIsReceived:=True;
 end;
@@ -221,6 +223,7 @@ procedure TUT70B.ValueDetermination(Data: array of byte);
 begin
  fValue:=ErResult;
  fOUT:=((Data[6] and 1)>0);
+// showmessage(booltostr(fOUT)+',False='+booltostr(false));
  if fOUT then Exit;
 
  x:=Data[4]+10*Data[3]+100*Data[2]+1000*Data[1];
@@ -395,16 +398,22 @@ end;
 procedure TUT70BShow.MetterDataShow;
 begin
   inherited MetterDataShow;
+//   showmessage(booltostr((RS232Meter as TUT70B).fOUT)+',False='+booltostr(false));
+
 
   DiapazoneMode.OnClick:=nil;
   IndexToRadioGroup(ord((RS232Meter as TUT70B).fAUTO),DiapazoneMode);
   DiapazoneMode.OnClick:=AdapterDiapazoneMode.RadioGroupClick;
 
+//   showmessage(booltostr((RS232Meter as TUT70B).fOUT)+',False='+booltostr(false));
+
   if (RS232Meter as TUT70B).fOUT then
      begin
-      DataLabel.Caption:='  OL  ';
-      UnitLabel.Caption:='';
+      DataLabel.Caption:='     .OL';
+//      UnitLabel.Caption:='';
      end;
+
+
 end;
 
 end.
