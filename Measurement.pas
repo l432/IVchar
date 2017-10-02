@@ -189,7 +189,8 @@ end;
 
 TDAC_Show=class
   private
-   fOutputInterface: TInterfacedObject;
+//   fOutputInterface: TInterfacedObject;
+   fOutputInterface: IDAC;
    ValueChangeButton,ValueSetButton,
    KodChangeButton,KodSetButton,ResetButton:TButton;
    ValueLabel,KodLabel:TLabel;
@@ -199,7 +200,8 @@ TDAC_Show=class
    procedure KodSetButtonAction(Sender:TObject);
    procedure ResetButtonClick(Sender:TObject);
   public
-   Constructor Create(OI: TInterfacedObject;
+//   Constructor Create(OI: TInterfacedObject;
+   Constructor Create(OI: IDAC;
                       VL, KL: TLabel;
                       VCB, VSB, KCB,
                       KSB, RB: TButton);
@@ -571,7 +573,8 @@ end;
 
 { TDAC_Show }
 
-constructor TDAC_Show.Create(OI: TInterfacedObject;
+//constructor TDAC_Show.Create(OI: TInterfacedObject;
+constructor TDAC_Show.Create(OI: IDAC;
                                VL, KL: TLabel;
                                VCB, VSB, KCB,
                                KSB, RB: TButton);
@@ -611,21 +614,35 @@ begin
 
 end;
 
+//procedure TDAC_Show.KodSetButtonAction(Sender: TObject);
+//begin
+//   if (fOutputInterface is TDACR2R) then
+//    (fOutputInterface as TDACR2R).OutputInt(StrToInt(KodLabel.Caption));
+//   KodLabel.Font.Color:=clPurple;
+//   ValueLabel.Font.Color:=clBlack;
+//end;
+//
+//procedure TDAC_Show.ResetButtonClick(Sender: TObject);
+//begin
+// if (fOutputInterface is TDACR2R) then
+//   (fOutputInterface as TDACR2R).Reset();
+//   KodLabel.Font.Color:=clBlack;
+//   ValueLabel.Font.Color:=clBlack;
+//// (fOutputInterface as IDAC).Reset();
+//end;
+
 procedure TDAC_Show.KodSetButtonAction(Sender: TObject);
 begin
-   if (fOutputInterface is TDACR2R) then
-    (fOutputInterface as TDACR2R).OutputInt(StrToInt(KodLabel.Caption));
+   fOutputInterface.OutputInt(StrToInt(KodLabel.Caption));
    KodLabel.Font.Color:=clPurple;
    ValueLabel.Font.Color:=clBlack;
 end;
 
 procedure TDAC_Show.ResetButtonClick(Sender: TObject);
 begin
- if (fOutputInterface is TDACR2R) then
-   (fOutputInterface as TDACR2R).Reset();
+ fOutputInterface.Reset();
    KodLabel.Font.Color:=clBlack;
    ValueLabel.Font.Color:=clBlack;
-// (fOutputInterface as IDAC).Reset();
 end;
 
 procedure TDAC_Show.ValueChangeButtonAction(Sender: TObject);
@@ -642,10 +659,17 @@ begin
   end;
 end;
 
+//procedure TDAC_Show.ValueSetButtonAction(Sender: TObject);
+//begin
+//   if (fOutputInterface is TDACR2R) then
+//    (fOutputInterface as TDACR2R).Output(StrToFloat(ValueLabel.Caption));
+//   ValueLabel.Font.Color:=clPurple;
+//   KodLabel.Font.Color:=clBlack;
+//end;
+
 procedure TDAC_Show.ValueSetButtonAction(Sender: TObject);
 begin
-   if (fOutputInterface is TDACR2R) then
-    (fOutputInterface as TDACR2R).Output(StrToFloat(ValueLabel.Caption));
+   fOutputInterface.Output(StrToFloat(ValueLabel.Caption));
    ValueLabel.Font.Color:=clPurple;
    KodLabel.Font.Color:=clBlack;
 end;

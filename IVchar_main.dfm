@@ -35,7 +35,7 @@ object IVchar: TIVchar
     Top = 0
     Width = 786
     Height = 466
-    ActivePage = TS_UT70
+    ActivePage = TS_ET1255
     Align = alTop
     Font.Charset = RUSSIAN_CHARSET
     Font.Color = clWindowText
@@ -106,7 +106,7 @@ object IVchar: TIVchar
       end
       object ChLg: TChart
         Left = 0
-        Top = 229
+        Top = 204
         Width = 551
         Height = 205
         Legend.Visible = False
@@ -541,7 +541,7 @@ object IVchar: TIVchar
         Font.Height = -21
         Font.Name = 'Arial'
         Font.Style = [fsBold]
-        ItemHeight = 0
+        ItemHeight = 24
         ParentFont = False
         TabOrder = 3
       end
@@ -687,7 +687,7 @@ object IVchar: TIVchar
           Font.Height = -21
           Font.Name = 'Arial'
           Font.Style = [fsBold]
-          ItemHeight = 0
+          ItemHeight = 24
           ParentFont = False
           TabOrder = 1
         end
@@ -750,7 +750,7 @@ object IVchar: TIVchar
       end
       object PanelV721_II: TPanel
         Left = 0
-        Top = 230
+        Top = 205
         Width = 778
         Height = 201
         Align = alBottom
@@ -858,7 +858,7 @@ object IVchar: TIVchar
           Font.Height = -21
           Font.Name = 'Arial'
           Font.Style = [fsBold]
-          ItemHeight = 0
+          ItemHeight = 24
           ParentFont = False
           TabOrder = 1
         end
@@ -1085,7 +1085,7 @@ object IVchar: TIVchar
           Font.Height = -15
           Font.Name = 'Verdana'
           Font.Style = [fsBold]
-          ItemHeight = 0
+          ItemHeight = 18
           ParentFont = False
           TabOrder = 2
         end
@@ -1211,7 +1211,7 @@ object IVchar: TIVchar
             Width = 111
             Height = 24
             Style = csDropDownList
-            ItemHeight = 0
+            ItemHeight = 16
             TabOrder = 2
           end
           object BMeasChA: TButton
@@ -1242,7 +1242,7 @@ object IVchar: TIVchar
         Font.Height = -21
         Font.Name = 'Arial'
         Font.Style = [fsBold]
-        ItemHeight = 0
+        ItemHeight = 24
         ParentFont = False
         TabOrder = 1
       end
@@ -1422,7 +1422,7 @@ object IVchar: TIVchar
           Font.Height = -15
           Font.Name = 'Verdana'
           Font.Style = [fsBold]
-          ItemHeight = 0
+          ItemHeight = 18
           ParentFont = False
           TabOrder = 2
         end
@@ -1548,7 +1548,7 @@ object IVchar: TIVchar
             Width = 111
             Height = 24
             Style = csDropDownList
-            ItemHeight = 0
+            ItemHeight = 16
             TabOrder = 2
           end
           object BMeasChB: TButton
@@ -1639,7 +1639,7 @@ object IVchar: TIVchar
         Font.Height = -21
         Font.Name = 'Arial'
         Font.Style = [fsBold]
-        ItemHeight = 0
+        ItemHeight = 24
         ParentFont = False
         TabOrder = 0
       end
@@ -1774,7 +1774,7 @@ object IVchar: TIVchar
           Font.Height = -13
           Font.Name = 'Arial'
           Font.Style = [fsBold]
-          ItemHeight = 0
+          ItemHeight = 16
           ParentFont = False
           TabOrder = 2
         end
@@ -1798,7 +1798,7 @@ object IVchar: TIVchar
         Top = 143
         Width = 81
         Height = 23
-        Caption = 'set kod'
+        Caption = 'set code'
         Font.Charset = RUSSIAN_CHARSET
         Font.Color = clWindowText
         Font.Height = -17
@@ -2003,9 +2003,9 @@ object IVchar: TIVchar
       object STOKDACR2R: TStaticText
         Left = 372
         Top = 120
-        Width = 79
+        Width = 87
         Height = 20
-        Caption = 'Output Kod:'
+        Caption = 'Output Code:'
         Font.Charset = RUSSIAN_CHARSET
         Font.Color = clBlack
         Font.Height = -13
@@ -2027,6 +2027,34 @@ object IVchar: TIVchar
         Font.Style = [fsBold]
         ParentFont = False
         TabOrder = 11
+      end
+      object STValueRangeDACR2R: TStaticText
+        Left = 413
+        Top = 3
+        Width = 114
+        Height = 22
+        Caption = 'Value: -6 ... 6'
+        Font.Charset = RUSSIAN_CHARSET
+        Font.Color = clGreen
+        Font.Height = -15
+        Font.Name = 'Verdana'
+        Font.Style = [fsBold]
+        ParentFont = False
+        TabOrder = 12
+      end
+      object STCodeRangeDACR2R: TStaticText
+        Left = 360
+        Top = 179
+        Width = 234
+        Height = 22
+        Caption = 'Code: -65535 ... 0 ... 65535'
+        Font.Charset = RUSSIAN_CHARSET
+        Font.Color = clGreen
+        Font.Height = -15
+        Font.Name = 'Verdana'
+        Font.Style = [fsBold]
+        ParentFont = False
+        TabOrder = 13
       end
     end
     object TS_Setting: TTabSheet
@@ -2632,7 +2660,7 @@ object IVchar: TIVchar
           Font.Height = -13
           Font.Name = 'Arial'
           Font.Style = [fsBold]
-          ItemHeight = 0
+          ItemHeight = 16
           ParentFont = False
           TabOrder = 0
         end
@@ -2672,7 +2700,7 @@ object IVchar: TIVchar
           Font.Height = -13
           Font.Name = 'Arial'
           Font.Style = [fsBold]
-          ItemHeight = 0
+          ItemHeight = 16
           ParentFont = False
           TabOrder = 4
         end
@@ -2688,7 +2716,7 @@ object IVchar: TIVchar
           Font.Height = -13
           Font.Name = 'Arial'
           Font.Style = [fsBold]
-          ItemHeight = 0
+          ItemHeight = 16
           ParentFont = False
           TabOrder = 5
         end
@@ -2889,7 +2917,7 @@ object IVchar: TIVchar
           Font.Height = -21
           Font.Name = 'Arial'
           Font.Style = [fsBold]
-          ItemHeight = 0
+          ItemHeight = 24
           ParentFont = False
           TabOrder = 1
         end
@@ -2906,7 +2934,7 @@ object IVchar: TIVchar
         Font.Height = -13
         Font.Name = 'Arial'
         Font.Style = [fsBold]
-        ItemHeight = 0
+        ItemHeight = 16
         ParentFont = False
         TabOrder = 1
       end
@@ -2971,7 +2999,7 @@ object IVchar: TIVchar
           Font.Height = -13
           Font.Name = 'Arial'
           Font.Style = [fsBold]
-          ItemHeight = 0
+          ItemHeight = 16
           ParentFont = False
           TabOrder = 1
         end
@@ -2994,6 +3022,8 @@ object IVchar: TIVchar
     object TS_UT70: TTabSheet
       Caption = 'UT70'
       ImageIndex = 7
+      ExplicitTop = 31
+      ExplicitHeight = 431
       object PanelUT70B: TPanel
         Left = 0
         Top = 0
@@ -3152,6 +3182,601 @@ object IVchar: TIVchar
           Font.Style = [fsBold]
           ItemHeight = 18
           ItemIndex = -1
+          ParentFont = False
+          TabOrder = 5
+        end
+      end
+    end
+    object TS_ET1255: TTabSheet
+      Caption = 'ET1255'
+      ImageIndex = 8
+      object PET1255DAC: TPanel
+        Left = 3
+        Top = 3
+        Width = 454
+        Height = 400
+        BevelWidth = 3
+        BorderStyle = bsSingle
+        Font.Charset = RUSSIAN_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -21
+        Font.Name = 'Verdana'
+        Font.Style = [fsBold]
+        ParentFont = False
+        TabOrder = 0
+        object STDAC: TStaticText
+          Left = 32
+          Top = 0
+          Width = 52
+          Height = 29
+          Caption = 'DAC'
+          Font.Charset = RUSSIAN_CHARSET
+          Font.Color = clBlack
+          Font.Height = -21
+          Font.Name = 'Verdana'
+          Font.Style = [fsBold]
+          ParentFont = False
+          TabOrder = 0
+        end
+        object GBET1255DACh0: TGroupBox
+          Tag = 110
+          Left = 13
+          Top = 45
+          Width = 425
+          Height = 113
+          Caption = 'Channel 0'
+          Font.Charset = RUSSIAN_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -13
+          Font.Name = 'Arial'
+          Font.Style = [fsBold]
+          ParentFont = False
+          TabOrder = 1
+          object LOV1255ch0: TLabel
+            Left = 182
+            Top = 25
+            Width = 62
+            Height = 20
+            Caption = '-2.547'
+            Font.Charset = RUSSIAN_CHARSET
+            Font.Color = clBlack
+            Font.Height = -17
+            Font.Name = 'Verdana'
+            Font.Style = [fsBold]
+            ParentFont = False
+          end
+          object LOK1255Ch0: TLabel
+            Left = 195
+            Top = 84
+            Width = 48
+            Height = 20
+            Caption = '4096'
+            Font.Charset = RUSSIAN_CHARSET
+            Font.Color = clBlack
+            Font.Height = -17
+            Font.Name = 'Verdana'
+            Font.Style = [fsBold]
+            ParentFont = False
+          end
+          object BOVset1255Ch0: TButton
+            Left = 95
+            Top = 25
+            Width = 82
+            Height = 23
+            Caption = 'set value'
+            Font.Charset = RUSSIAN_CHARSET
+            Font.Color = clWindowText
+            Font.Height = -17
+            Font.Name = 'Arial'
+            Font.Style = [fsBold]
+            ParentFont = False
+            TabOrder = 0
+          end
+          object BOVchange1255Ch0: TButton
+            Left = 8
+            Top = 25
+            Width = 83
+            Height = 23
+            Caption = 'change'
+            Font.Charset = RUSSIAN_CHARSET
+            Font.Color = clWindowText
+            Font.Height = -17
+            Font.Name = 'Arial'
+            Font.Style = [fsBold]
+            ParentFont = False
+            TabOrder = 1
+          end
+          object BReset1255Ch0: TButton
+            Left = 8
+            Top = 55
+            Width = 123
+            Height = 23
+            Caption = 'Reset'
+            Font.Charset = RUSSIAN_CHARSET
+            Font.Color = clWindowText
+            Font.Height = -15
+            Font.Name = 'Verdana'
+            Font.Style = [fsBold]
+            ParentFont = False
+            TabOrder = 2
+          end
+          object BOKchange1255Ch0: TButton
+            Left = 6
+            Top = 84
+            Width = 83
+            Height = 23
+            Caption = 'change'
+            Font.Charset = RUSSIAN_CHARSET
+            Font.Color = clWindowText
+            Font.Height = -17
+            Font.Name = 'Arial'
+            Font.Style = [fsBold]
+            ParentFont = False
+            TabOrder = 3
+          end
+          object BOKset1255Ch0: TButton
+            Left = 95
+            Top = 84
+            Width = 81
+            Height = 23
+            Caption = 'set code'
+            Font.Charset = RUSSIAN_CHARSET
+            Font.Color = clWindowText
+            Font.Height = -17
+            Font.Name = 'Arial'
+            Font.Style = [fsBold]
+            ParentFont = False
+            TabOrder = 4
+          end
+          object GBMeas1255Ch0: TGroupBox
+            Tag = 110
+            Left = 269
+            Top = 9
+            Width = 147
+            Height = 98
+            Caption = 'Measurement'
+            Font.Charset = RUSSIAN_CHARSET
+            Font.Color = clWindowText
+            Font.Height = -13
+            Font.Name = 'Arial'
+            Font.Style = [fsBold]
+            ParentFont = False
+            TabOrder = 5
+            object LMeas1255Ch0: TLabel
+              Left = 37
+              Top = 15
+              Width = 71
+              Height = 16
+              Caption = '-0.0008'
+              Font.Charset = RUSSIAN_CHARSET
+              Font.Color = clBlack
+              Font.Height = -17
+              Font.Name = 'Courier'
+              Font.Style = [fsBold]
+              ParentFont = False
+            end
+            object BMeas1255Ch0: TButton
+              Left = 21
+              Top = 32
+              Width = 105
+              Height = 17
+              Caption = 'to measure'
+              Font.Charset = RUSSIAN_CHARSET
+              Font.Color = clWindowText
+              Font.Height = -17
+              Font.Name = 'Arial'
+              Font.Style = [fsBold]
+              ParentFont = False
+              TabOrder = 0
+            end
+            object STMD1255Ch0: TStaticText
+              Left = 24
+              Top = 51
+              Width = 105
+              Height = 20
+              Caption = 'Measure Device'
+              TabOrder = 1
+            end
+            object CBMeasET1255Ch0: TComboBox
+              Tag = 5
+              Left = 8
+              Top = 67
+              Width = 132
+              Height = 24
+              Style = csDropDownList
+              Font.Charset = RUSSIAN_CHARSET
+              Font.Color = clWindowText
+              Font.Height = -13
+              Font.Name = 'Arial'
+              Font.Style = [fsBold]
+              ItemHeight = 16
+              ParentFont = False
+              TabOrder = 2
+            end
+          end
+        end
+        object GBET1255DACh1: TGroupBox
+          Tag = 110
+          Left = 13
+          Top = 160
+          Width = 425
+          Height = 113
+          Caption = 'Channel 1'
+          Color = clSilver
+          Font.Charset = RUSSIAN_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -13
+          Font.Name = 'Arial'
+          Font.Style = [fsBold]
+          ParentBackground = False
+          ParentColor = False
+          ParentFont = False
+          TabOrder = 2
+          object LOV1255ch1: TLabel
+            Left = 182
+            Top = 25
+            Width = 62
+            Height = 20
+            Caption = '-2.547'
+            Font.Charset = RUSSIAN_CHARSET
+            Font.Color = clBlack
+            Font.Height = -17
+            Font.Name = 'Verdana'
+            Font.Style = [fsBold]
+            ParentFont = False
+          end
+          object LOK1255Ch1: TLabel
+            Left = 195
+            Top = 84
+            Width = 48
+            Height = 20
+            Caption = '4096'
+            Font.Charset = RUSSIAN_CHARSET
+            Font.Color = clBlack
+            Font.Height = -17
+            Font.Name = 'Verdana'
+            Font.Style = [fsBold]
+            ParentFont = False
+          end
+          object BOVset1255Ch1: TButton
+            Left = 95
+            Top = 25
+            Width = 82
+            Height = 23
+            Caption = 'set value'
+            Font.Charset = RUSSIAN_CHARSET
+            Font.Color = clWindowText
+            Font.Height = -17
+            Font.Name = 'Arial'
+            Font.Style = [fsBold]
+            ParentFont = False
+            TabOrder = 0
+          end
+          object BOVchange1255Ch1: TButton
+            Left = 8
+            Top = 25
+            Width = 83
+            Height = 23
+            Caption = 'change'
+            Font.Charset = RUSSIAN_CHARSET
+            Font.Color = clWindowText
+            Font.Height = -17
+            Font.Name = 'Arial'
+            Font.Style = [fsBold]
+            ParentFont = False
+            TabOrder = 1
+          end
+          object BReset1255Ch1: TButton
+            Left = 8
+            Top = 55
+            Width = 123
+            Height = 23
+            Caption = 'Reset'
+            Font.Charset = RUSSIAN_CHARSET
+            Font.Color = clWindowText
+            Font.Height = -15
+            Font.Name = 'Verdana'
+            Font.Style = [fsBold]
+            ParentFont = False
+            TabOrder = 2
+          end
+          object BOKchange1255Ch1: TButton
+            Left = 8
+            Top = 84
+            Width = 83
+            Height = 23
+            Caption = 'change'
+            Font.Charset = RUSSIAN_CHARSET
+            Font.Color = clWindowText
+            Font.Height = -17
+            Font.Name = 'Arial'
+            Font.Style = [fsBold]
+            ParentFont = False
+            TabOrder = 3
+          end
+          object BOKset1255Ch1: TButton
+            Left = 95
+            Top = 84
+            Width = 81
+            Height = 23
+            Caption = 'set code'
+            Font.Charset = RUSSIAN_CHARSET
+            Font.Color = clWindowText
+            Font.Height = -17
+            Font.Name = 'Arial'
+            Font.Style = [fsBold]
+            ParentFont = False
+            TabOrder = 4
+          end
+          object GBMeas1255Ch1: TGroupBox
+            Tag = 110
+            Left = 269
+            Top = 11
+            Width = 147
+            Height = 98
+            Caption = 'Measurement'
+            Font.Charset = RUSSIAN_CHARSET
+            Font.Color = clWindowText
+            Font.Height = -13
+            Font.Name = 'Arial'
+            Font.Style = [fsBold]
+            ParentFont = False
+            TabOrder = 5
+            object LMeas1255Ch1: TLabel
+              Left = 36
+              Top = 15
+              Width = 71
+              Height = 16
+              Caption = '-0.0008'
+              Font.Charset = RUSSIAN_CHARSET
+              Font.Color = clBlack
+              Font.Height = -17
+              Font.Name = 'Courier'
+              Font.Style = [fsBold]
+              ParentFont = False
+            end
+            object BMeas1255Ch1: TButton
+              Left = 21
+              Top = 32
+              Width = 105
+              Height = 17
+              Caption = 'to measure'
+              Font.Charset = RUSSIAN_CHARSET
+              Font.Color = clWindowText
+              Font.Height = -17
+              Font.Name = 'Arial'
+              Font.Style = [fsBold]
+              ParentFont = False
+              TabOrder = 0
+            end
+            object STMD1255Ch1: TStaticText
+              Left = 24
+              Top = 51
+              Width = 105
+              Height = 20
+              Caption = 'Measure Device'
+              TabOrder = 1
+            end
+            object CBMeasET1255Ch1: TComboBox
+              Tag = 5
+              Left = 8
+              Top = 67
+              Width = 132
+              Height = 24
+              Style = csDropDownList
+              Font.Charset = RUSSIAN_CHARSET
+              Font.Color = clWindowText
+              Font.Height = -13
+              Font.Name = 'Arial'
+              Font.Style = [fsBold]
+              ItemHeight = 16
+              ParentFont = False
+              TabOrder = 2
+            end
+          end
+        end
+        object GBET1255DACh2: TGroupBox
+          Tag = 110
+          Left = 13
+          Top = 275
+          Width = 425
+          Height = 113
+          Caption = 'Channel 2'
+          Font.Charset = RUSSIAN_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -13
+          Font.Name = 'Arial'
+          Font.Style = [fsBold]
+          ParentFont = False
+          TabOrder = 3
+          object LOV1255ch2: TLabel
+            Left = 182
+            Top = 25
+            Width = 62
+            Height = 20
+            Caption = '-2.547'
+            Font.Charset = RUSSIAN_CHARSET
+            Font.Color = clBlack
+            Font.Height = -17
+            Font.Name = 'Verdana'
+            Font.Style = [fsBold]
+            ParentFont = False
+          end
+          object LOK1255Ch2: TLabel
+            Left = 196
+            Top = 84
+            Width = 48
+            Height = 20
+            Caption = '4096'
+            Font.Charset = RUSSIAN_CHARSET
+            Font.Color = clBlack
+            Font.Height = -17
+            Font.Name = 'Verdana'
+            Font.Style = [fsBold]
+            ParentFont = False
+          end
+          object BOVset1255Ch2: TButton
+            Left = 95
+            Top = 25
+            Width = 82
+            Height = 23
+            Caption = 'set value'
+            Font.Charset = RUSSIAN_CHARSET
+            Font.Color = clWindowText
+            Font.Height = -17
+            Font.Name = 'Arial'
+            Font.Style = [fsBold]
+            ParentFont = False
+            TabOrder = 0
+          end
+          object BOVchange1255Ch2: TButton
+            Left = 8
+            Top = 25
+            Width = 83
+            Height = 23
+            Caption = 'change'
+            Font.Charset = RUSSIAN_CHARSET
+            Font.Color = clWindowText
+            Font.Height = -17
+            Font.Name = 'Arial'
+            Font.Style = [fsBold]
+            ParentFont = False
+            TabOrder = 1
+          end
+          object BReset1255Ch2: TButton
+            Left = 8
+            Top = 55
+            Width = 123
+            Height = 23
+            Caption = 'Reset'
+            Font.Charset = RUSSIAN_CHARSET
+            Font.Color = clWindowText
+            Font.Height = -15
+            Font.Name = 'Verdana'
+            Font.Style = [fsBold]
+            ParentFont = False
+            TabOrder = 2
+          end
+          object BOKchange1255Ch2: TButton
+            Left = 8
+            Top = 84
+            Width = 83
+            Height = 23
+            Caption = 'change'
+            Font.Charset = RUSSIAN_CHARSET
+            Font.Color = clWindowText
+            Font.Height = -17
+            Font.Name = 'Arial'
+            Font.Style = [fsBold]
+            ParentFont = False
+            TabOrder = 3
+          end
+          object BOKset1255Ch2: TButton
+            Left = 95
+            Top = 84
+            Width = 81
+            Height = 23
+            Caption = 'set code'
+            Font.Charset = RUSSIAN_CHARSET
+            Font.Color = clWindowText
+            Font.Height = -17
+            Font.Name = 'Arial'
+            Font.Style = [fsBold]
+            ParentFont = False
+            TabOrder = 4
+          end
+          object GBMeas1255Ch2: TGroupBox
+            Tag = 110
+            Left = 269
+            Top = 9
+            Width = 147
+            Height = 98
+            Caption = 'Measurement'
+            Font.Charset = RUSSIAN_CHARSET
+            Font.Color = clWindowText
+            Font.Height = -13
+            Font.Name = 'Arial'
+            Font.Style = [fsBold]
+            ParentFont = False
+            TabOrder = 5
+            object LMeas1255Ch2: TLabel
+              Left = 36
+              Top = 15
+              Width = 71
+              Height = 16
+              Caption = '-0.0008'
+              Font.Charset = RUSSIAN_CHARSET
+              Font.Color = clBlack
+              Font.Height = -17
+              Font.Name = 'Courier'
+              Font.Style = [fsBold]
+              ParentFont = False
+            end
+            object BMeas1255Ch2: TButton
+              Left = 21
+              Top = 32
+              Width = 105
+              Height = 17
+              Caption = 'to measure'
+              Font.Charset = RUSSIAN_CHARSET
+              Font.Color = clWindowText
+              Font.Height = -17
+              Font.Name = 'Arial'
+              Font.Style = [fsBold]
+              ParentFont = False
+              TabOrder = 0
+            end
+            object STMD1255Ch2: TStaticText
+              Left = 24
+              Top = 51
+              Width = 105
+              Height = 20
+              Caption = 'Measure Device'
+              TabOrder = 1
+            end
+            object CBMeasET1255Ch2: TComboBox
+              Tag = 5
+              Left = 8
+              Top = 67
+              Width = 132
+              Height = 24
+              Style = csDropDownList
+              Font.Charset = RUSSIAN_CHARSET
+              Font.Color = clWindowText
+              Font.Height = -13
+              Font.Name = 'Arial'
+              Font.Style = [fsBold]
+              ItemHeight = 16
+              ParentFont = False
+              TabOrder = 2
+            end
+          end
+        end
+        object STValueRangeDAC1255: TStaticText
+          Left = 170
+          Top = 5
+          Width = 146
+          Height = 22
+          Caption = 'Value: -2.5 ... 2.5'
+          Font.Charset = RUSSIAN_CHARSET
+          Font.Color = clGreen
+          Font.Height = -15
+          Font.Name = 'Verdana'
+          Font.Style = [fsBold]
+          ParentFont = False
+          TabOrder = 4
+        end
+        object STCodeRangeDAC1255: TStaticText
+          Left = 170
+          Top = 26
+          Width = 205
+          Height = 22
+          Caption = 'Code: 0 ... 2048 ... 4096'
+          Font.Charset = RUSSIAN_CHARSET
+          Font.Color = clGreen
+          Font.Height = -15
+          Font.Name = 'Verdana'
+          Font.Style = [fsBold]
           ParentFont = False
           TabOrder = 5
         end

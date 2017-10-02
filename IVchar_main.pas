@@ -7,7 +7,7 @@ uses
   Dialogs, StdCtrls, CPort, ComCtrls, Buttons, SPIdevice, ExtCtrls, IniFiles,PacketParameters,
   TeEngine, Series, TeeProcs, Chart, Spin, OlegType, Grids, OlegMath,Measurement, 
   TempThread, ShowTypes,OlegGraph, CPortCtl, Dependence, V7_21, 
-  TemperatureSensor, DACR2R, UT70, RS232device;
+  TemperatureSensor, DACR2R, UT70, RS232device,ET1255;
 
 type
   TIVchar = class(TForm)
@@ -260,6 +260,52 @@ type
     STTCV: TStaticText;
     CBTcVMD: TComboBox;
     STMD: TStaticText;
+    TS_ET1255: TTabSheet;
+    PET1255DAC: TPanel;
+    STDAC: TStaticText;
+    GBET1255DACh0: TGroupBox;
+    LOV1255ch0: TLabel;
+    BOVset1255Ch0: TButton;
+    BOVchange1255Ch0: TButton;
+    BReset1255Ch0: TButton;
+    LOK1255Ch0: TLabel;
+    BOKchange1255Ch0: TButton;
+    BOKset1255Ch0: TButton;
+    GBMeas1255Ch0: TGroupBox;
+    LMeas1255Ch0: TLabel;
+    BMeas1255Ch0: TButton;
+    STMD1255Ch0: TStaticText;
+    CBMeasET1255Ch0: TComboBox;
+    GBET1255DACh1: TGroupBox;
+    LOV1255ch1: TLabel;
+    LOK1255Ch1: TLabel;
+    BOVset1255Ch1: TButton;
+    BOVchange1255Ch1: TButton;
+    BReset1255Ch1: TButton;
+    BOKchange1255Ch1: TButton;
+    BOKset1255Ch1: TButton;
+    GBMeas1255Ch1: TGroupBox;
+    LMeas1255Ch1: TLabel;
+    BMeas1255Ch1: TButton;
+    STMD1255Ch1: TStaticText;
+    CBMeasET1255Ch1: TComboBox;
+    GBET1255DACh2: TGroupBox;
+    LOV1255ch2: TLabel;
+    LOK1255Ch2: TLabel;
+    BOVset1255Ch2: TButton;
+    BOVchange1255Ch2: TButton;
+    BReset1255Ch2: TButton;
+    BOKchange1255Ch2: TButton;
+    BOKset1255Ch2: TButton;
+    GBMeas1255Ch2: TGroupBox;
+    LMeas1255Ch2: TLabel;
+    BMeas1255Ch2: TButton;
+    STMD1255Ch2: TStaticText;
+    CBMeasET1255Ch2: TComboBox;
+    STValueRangeDAC1255: TStaticText;
+    STCodeRangeDAC1255: TStaticText;
+    STValueRangeDACR2R: TStaticText;
+    STCodeRangeDACR2R: TStaticText;
     procedure FormCreate(Sender: TObject);
     procedure PortConnected();
     procedure BConnectClick(Sender: TObject);
@@ -286,6 +332,7 @@ type
 //    procedure BIVStopClick(Sender: TObject);
 //    procedure BIVSaveClick(Sender: TObject);
     procedure BDFFA_R2RClick(Sender: TObject);
+    procedure Button1Click(Sender: TObject);
 //    procedure BOKsetDACR2RClick(Sender: TObject);
 //    procedure BOVsetChAClick(Sender: TObject);
 //    procedure BORChAClick(Sender: TObject);
@@ -375,6 +422,8 @@ type
     procedure IVCharSaveClick(Sender: TObject);
     procedure CalibrSaveClick(Sender: TObject);
     procedure ParametersFileWork(Action: TSimpleEvent);
+    procedure ET1255Create;
+    procedure ET1255Free;
   public
     V721A:TV721A;
     V721_I,V721_II:TV721;
@@ -393,6 +442,8 @@ type
     Simulator:TSimulator;
     UT70B:TUT70B;
     UT70BShow:TUT70BShow;
+    ET1255_DACs:array[TET1255_DAC_ChanelNumber] of TET1255_DAC;
+    ET1255_DACsShow:array[TET1255_DAC_ChanelNumber] of TDAC_Show;
 //    Devices,DevicesSet:array of TInterfacedObject;
     Devices:array of IMeasurement;
     DevicesSet:array of IDAC;
@@ -402,6 +453,7 @@ type
 //    VoltageIV_MD:TVoltageIV_MD;
 //    DACR2R_MD:TVoltageChannel_MD;
     Current_MD,VoltageIV_MD,DACR2R_MD,TermoCouple_MD:TMeasuringDevice;
+    ET1255_DAC_MD:array[TET1255_DAC_ChanelNumber] of TMeasuringDevice;
     SettingDevice:TSettingDevice;
     TemperatureMeasuringThread:TTemperatureMeasuringThread;
     IVCharRangeFor,CalibrRangeFor:TLimitShow;
@@ -1060,6 +1112,47 @@ begin
   ChDir(tempdir);
 end;
 
+procedure TIVchar.ET1255Create;
+ var I:TET1255_DAC_ChanelNumber;
+begin
+  if ET_StartDrv <> '' then
+    showmessage('ET1255 loading error' + ''#10''#13'' + ET_ErrMsg)
+                       else
+     begin
+     for I := Low(TET1255_DAC_ChanelNumber) to High(TET1255_DAC_ChanelNumber) do
+       begin
+        ET1255_DACs[i]:=TET1255_DAC.Create(i);
+        ET1255_DACs[i].Reset();
+       end;
+       ET1255_DACsShow[0]:=TDAC_Show.Create(ET1255_DACs[0],
+                      LOV1255ch0,LOK1255Ch0,BOVchange1255Ch0,
+                      BOVset1255Ch0,BOKchange1255Ch0,
+                      BOKset1255Ch0,BReset1255Ch0);
+       ET1255_DACsShow[1]:=TDAC_Show.Create(ET1255_DACs[1],
+                      LOV1255ch1,LOK1255Ch1,BOVchange1255Ch1,
+                      BOVset1255Ch1,BOKchange1255Ch1,
+                      BOKset1255Ch1,BReset1255Ch1);
+       ET1255_DACsShow[2]:=TDAC_Show.Create(ET1255_DACs[2],
+                      LOV1255ch2,LOK1255Ch2,BOVchange1255Ch2,
+                      BOVset1255Ch2,BOKchange1255Ch2,
+                      BOKset1255Ch2,BReset1255Ch2);
+     end;
+
+
+end;
+
+procedure TIVchar.ET1255Free;
+ var I:TET1255_DAC_ChanelNumber;
+begin
+     for I := Low(TET1255_DAC_ChanelNumber) to High(TET1255_DAC_ChanelNumber) do
+        if ET1255_DACs[i]<>nil then
+           begin
+            ET1255_DACsShow[i].Free;
+            ET1255_DACs[i].Reset();
+            ET1255_DACs[i].Free();
+           end;
+end;
+
 
 function TIVchar.IVCharVoltageMaxDif: double;
 begin
@@ -1695,6 +1788,13 @@ begin
  SettingWriteToIniFile();
 end;
 
+procedure TIVchar.Button1Click(Sender: TObject);
+begin
+ ET_WriteDAC(0,2);
+ showmessage(ET_ErrMsg);
+
+end;
+
 procedure TIVchar.BDFFA_R2RClick(Sender: TObject);
 begin
   if OpenDialog.Execute()
@@ -1743,6 +1843,8 @@ begin
 
 
  VoltmetrsCreate();
+ ET1255Create();
+
 
 
 
@@ -1829,6 +1931,8 @@ begin
  DependenceMeasuringFree();
 
  DevicesFree();
+
+ ET1255Free;
  VoltmetrsFree();
  DACFree();
 
@@ -2476,6 +2580,25 @@ begin
   SetLength(DevicesSet,2);
   DevicesSet[0]:=Simulator;
   DevicesSet[1]:=DACR2R;
+
+  if assigned(ET1255_DACs[0]) then
+   begin
+    SetLength(DevicesSet,5);
+    DevicesSet[2]:=ET1255_DACs[0];
+    DevicesSet[3]:=ET1255_DACs[1];
+    DevicesSet[4]:=ET1255_DACs[2];
+    ET1255_DAC_MD[0]:=TMeasuringDevice.Create(Devices,
+                      CBMeasET1255Ch0,LMeas1255Ch0,srPreciseVoltage);
+    ET1255_DAC_MD[0].AddActionButton(BMeas1255Ch0);
+    ET1255_DAC_MD[1]:=TMeasuringDevice.Create(Devices,
+                      CBMeasET1255Ch1,LMeas1255Ch1,srPreciseVoltage);
+    ET1255_DAC_MD[1].AddActionButton(BMeas1255Ch1);
+    ET1255_DAC_MD[2]:=TMeasuringDevice.Create(Devices,
+                      CBMeasET1255Ch2,LMeas1255Ch2,srPreciseVoltage);
+    ET1255_DAC_MD[2].AddActionButton(BMeas1255Ch2);
+   end;
+
+
   SettingDevice:=TSettingDevice.Create(DevicesSet,CBVS);
 end;
 
@@ -2487,6 +2610,9 @@ begin
   VoltageIV_MD.Free;
   DACR2R_MD.Free;
   TermoCouple_MD.Free;
+  ET1255_DAC_MD[0].Free;
+  ET1255_DAC_MD[1].Free;
+  ET1255_DAC_MD[2].Free;
 end;
 
 procedure TIVchar.DevicesReadFromIniAndToForm;
@@ -2497,6 +2623,9 @@ begin
   VoltageIV_MD.ReadFromIniFile(ConfigFile,'Sources','Voltage');
   DACR2R_MD.ReadFromIniFile(ConfigFile,'Sources','R2R');
   TermoCouple_MD.ReadFromIniFile(ConfigFile,'Sources','Thermocouple');
+  ET1255_DAC_MD[0].ReadFromIniFile(ConfigFile,'Sources','ET1255_DAC_Ch0');
+  ET1255_DAC_MD[1].ReadFromIniFile(ConfigFile,'Sources','ET1255_DAC_Ch1');
+  ET1255_DAC_MD[2].ReadFromIniFile(ConfigFile,'Sources','ET1255_DAC_Ch2');
 
 //  ChannelA_MD.ReadFromIniFile(ConfigFile,'Sources','ChannelA');
 //  ChannelB_MD.ReadFromIniFile(ConfigFile,'Sources','ChannelB');
@@ -2511,6 +2640,9 @@ begin
   VoltageIV_MD.WriteToIniFile(ConfigFile,'Sources','Voltage');
   DACR2R_MD.WriteToIniFile(ConfigFile,'Sources','R2R');
   TermoCouple_MD.WriteToIniFile(ConfigFile,'Sources','Thermocouple');
+  ET1255_DAC_MD[0].WriteToIniFile(ConfigFile,'Sources','ET1255_DAC_Ch0');
+  ET1255_DAC_MD[1].WriteToIniFile(ConfigFile,'Sources','ET1255_DAC_Ch1');
+  ET1255_DAC_MD[2].WriteToIniFile(ConfigFile,'Sources','ET1255_DAC_Ch2');
 
 //  ChannelA_MD.WriteToIniFile(ConfigFile,'Sources','ChannelA');
 //  ChannelB_MD.WriteToIniFile(ConfigFile,'Sources','ChannelB');

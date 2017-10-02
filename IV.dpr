@@ -16,7 +16,8 @@ uses
   DACR2R in 'DACR2R.pas',
   UT70 in 'UT70.pas',
   HighResolutionTimer in 'HighResolutionTimer.pas',
-  RS232_Meas_Tread in 'RS232_Meas_Tread.pas';
+  RS232_Meas_Tread in 'RS232_Meas_Tread.pas',
+  ET1255 in 'ET1255.pas';
 
 {$R *.res}
 

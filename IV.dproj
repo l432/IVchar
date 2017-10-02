@@ -35,6 +35,7 @@
     <DCCReference Include="AD5752R.pas" />
     <DCCReference Include="DACR2R.pas" />
     <DCCReference Include="Dependence.pas" />
+    <DCCReference Include="ET1255.pas" />
     <DCCReference Include="HighResolutionTimer.pas" />
     <DCCReference Include="IVchar_main.pas">
       <Form>IVchar</Form>
