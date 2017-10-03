@@ -65,7 +65,9 @@ start:
 
  Synchronize(FalseStatement);
 
- if not(fRS232Meter.Request()) then Exit;
+
+// if not(fRS232Meter.Request()) then Exit;
+ fRS232Meter.Request();
 
 
  sleep(fRS232Meter.MinDelayTime);
@@ -74,7 +76,7 @@ start:
    sleep(10);
    inc(i);
 // Application.ProcessMessages;
- until ((i>130)or(fRS232Meter.IsReceived));
+ until ((i>130)or(fRS232Meter.IsReceived)or(fRS232Meter.Error));
  if fRS232Meter.IsReceived then Synchronize(ConvertToValue);
  if fRS232Meter.IsReady then Rez:=fRS232Meter.Value;
 
@@ -83,13 +85,14 @@ start:
       isFirst:=false;
       goto start;
     end;
+
+ fRS232Meter.NewData:=True;
 end;
 
 
 procedure TRS232MeasuringTread.FalseStatement;
 begin
- fRS232Meter.isReady:=False;
- fRS232Meter.isReceived:=False;
+ fRS232Meter.MeasurementBegin;
 end;
 
 end.

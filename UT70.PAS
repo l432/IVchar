@@ -84,7 +84,8 @@ type
      Function MeasureModeLabelRead():string;override;
    public
      Constructor Create(CP:TComPort;Nm:string);override;
-     Function Request():boolean;override;
+//     Function Request():boolean;override;
+     procedure Request();override;
   end;
 
   TUT70BShow=class(TMetterShow)
@@ -205,17 +206,30 @@ begin
  fIsReceived:=True;
 end;
 
-function TUT70B.Request: boolean;
+//function TUT70B.Request: boolean;
+//begin
+//  if fComPort.Connected then
+//    begin
+//     fComPort.AbortAllAsync;
+//     fComPort.ClearBuffer(True, True);
+//     fComPort.SetDTR(True);
+//     Result:=True;
+//    end
+//                        else
+//     Result:=False;
+//end;
+
+procedure TUT70B.Request;
 begin
   if fComPort.Connected then
     begin
      fComPort.AbortAllAsync;
      fComPort.ClearBuffer(True, True);
      fComPort.SetDTR(True);
-     Result:=True;
+     fError:=False;
     end
                         else
-     Result:=False;
+     fError:=True;
 end;
 
 procedure TUT70B.ValueDetermination(Data: array of byte);

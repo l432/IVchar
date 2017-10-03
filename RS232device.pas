@@ -33,10 +33,10 @@ TRS232Device=class(TNamedDevice)
    fComPacket: TComDataPacket;
    fData:TArrByte;
    fisNeededComPort:boolean;
-//   function GetName:string;
+   fError:boolean;
   public
-//   property Name:string read GetName;
-   property isNeededComPort:boolean read fisNeededComPort;
+   property isNeededComPort:boolean read fisNeededComPort write fisNeededComPort;
+   property Error:boolean read fError;
    Constructor Create();overload;
    Constructor Create(CP:TComPort);overload;
    Constructor Create(CP:TComPort;Nm:string);overload;virtual;
@@ -60,6 +60,8 @@ TRS232Meter=class(TRS232Device,IMeasurement)
    fMeasureModeAll:array of string;
    fDiapazonAll:array of array of string;
    fRS232MeasuringTread:TThread;
+   fNewData:boolean;
+   function GetNewData:boolean;
    Procedure MModeDetermination(Data:array of byte); virtual;
    Procedure DiapazonDetermination(Data:array of byte); virtual;
    Procedure ValueDetermination(Data:array of byte);virtual;
@@ -70,6 +72,7 @@ TRS232Meter=class(TRS232Device,IMeasurement)
    Function Measurement():double;virtual;
 
   public
+   property NewData:boolean read GetNewData write fNewData;
    property Value:double read fValue;
    property isReady:boolean read fIsReady write fIsReady;
    property isReceived:boolean read fIsReceived write fIsReceived;
@@ -79,8 +82,10 @@ TRS232Meter=class(TRS232Device,IMeasurement)
    Constructor Create(CP:TComPort;Nm:string);override;
    Procedure ConvertToValue();virtual;
    Function ResultProblem(Rez:double):boolean;virtual;
-   Function Request():boolean;virtual;
+//   Function Request():boolean;virtual;
+   Procedure Request();virtual;
    function GetData():double;virtual;
+   procedure MeasurementBegin;
   end;
 
 
@@ -158,6 +163,9 @@ begin
   fComPacket.MaxBufferSize:=1024;
   fComPacket.IncludeStrings:=False;
   fComPacket.CaseInsensitive:=False;
+
+  fisNeededComPort:=False;
+  fError:=False;
 end;
 
 constructor TRS232Device.Create(CP: TComPort);
@@ -169,7 +177,7 @@ end;
 
 procedure TRS232Device.ComPortUsing;
 begin
-
+// showmessage(Name);
 end;
 
 constructor TRS232Device.Create(CP: TComPort; Nm: string);
@@ -183,6 +191,7 @@ begin
  fComPacket.Free;
 // inherited Free;
 end;
+
 
 //function TRS232Device.GetName: string;
 //begin
@@ -247,6 +256,8 @@ begin
   fMeasureMode:=-1;
   fDiapazon:=-1;
   fValue:=ErResult;
+  fNewData:=False;
+  fError:=False;
 end;
 
 
@@ -261,7 +272,19 @@ begin
   Result:=Measurement();
 end;
 
+procedure TRS232Meter.MeasurementBegin;
+begin
+  fIsReady := False;
+  fIsReceived:=False;
+  fError:=False;
+end;
 
+
+
+function TRS232Meter.GetNewData: boolean;
+begin
+ Result:=fNewData;
+end;
 
 function TRS232Meter.Measurement: double;
 label start;
@@ -278,9 +301,10 @@ begin
 
  isFirst:=True;
 start:
- fIsReady:=False;
- fIsReceived:=False;
- if not(Request()) then Exit;
+  MeasurementBegin;
+
+// if not(Request()) then Exit;
+  Request();
 
 
  sleep(fMinDelayTime);
@@ -289,7 +313,7 @@ start:
    sleep(10);
    inc(i);
  Application.ProcessMessages;
- until ((i>130)or(fIsReceived));
+ until ((i>130)or(fIsReceived)or(fError));
 // showmessage(inttostr((GetTickCount-i0)));
 // if fIsReceived then ConvertToValue(fData);
 //ShowData(fData);
@@ -301,6 +325,7 @@ start:
       isFirst:=false;
       goto start;
     end;
+ fNewData:=True;
 end;
 
 //function TRS232Meter.Measurement: double;
@@ -338,10 +363,16 @@ begin
 
 end;
 
-function TRS232Meter.Request: boolean;
+//function TRS232Meter.Request: boolean;
+//begin
+//  Result:=True;
+//end;
+
+procedure TRS232Meter.Request;
 begin
-  Result:=True;
+  fisNeededComPort:=True;
 end;
+
 
 function TRS232Meter.ResultProblem(Rez: double): boolean;
 begin

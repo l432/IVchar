@@ -134,14 +134,14 @@ end;
 
 procedure TET1255_DAC.Output(Value: double);
 begin
- showmessage('ch'+inttostr(fChanelNumber)+' d='+floattostr(Value));
+// showmessage('ch'+inttostr(fChanelNumber)+' d='+floattostr(Value));
 
  if Value>ET1255_DAC_MAX
     then ET_WriteDAC(ET1255_DAC_MAX,fChanelNumber)
     else if Value<ET1255_DAC_MIN
             then ET_WriteDAC(ET1255_DAC_MIN,fChanelNumber)
             else ET_WriteDAC(Value,fChanelNumber);
-// fError:=ET_ErrMsg;
+//ET_WriteDAC(Value,fChanelNumber);
  ShowError();
 end;
 
@@ -163,7 +163,7 @@ begin
  if Kod>ET1255_DAC_CodeReset then
     Output(ET1255_DAC_MAX*(Kod-ET1255_DAC_CodeReset)/(ET1255_DAC_CodeMAX-ET1255_DAC_CodeReset))
                              else
-    Output(ET1255_DAC_MIN*(Kod-ET1255_DAC_CodeMIN)/(ET1255_DAC_CodeReset-ET1255_DAC_CodeMIN));
+    Output(ET1255_DAC_MIN*(ET1255_DAC_CodeReset-Kod)/(ET1255_DAC_CodeReset-ET1255_DAC_CodeMIN));
 end;
 
 procedure TET1255_DAC.Reset;

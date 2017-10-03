@@ -17,7 +17,8 @@ uses
   UT70 in 'UT70.pas',
   HighResolutionTimer in 'HighResolutionTimer.pas',
   RS232_Meas_Tread in 'RS232_Meas_Tread.pas',
-  ET1255 in 'ET1255.pas';
+  ET1255 in 'ET1255.pas',
+  RS232_Mediator_Tread in 'RS232_Mediator_Tread.pas';
 
 {$R *.res}
 

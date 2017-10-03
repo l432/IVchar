@@ -8,10 +8,11 @@ uses
 const DACR2R_MaxValue=65535;
       DACR2R_Factor=10000;
 
-      DACR2R_Pos=$00; //додатня напруга
+      DACR2R_Pos=$0F; //додатня напруга
       DACR2R_Neg=$FF; //від'ємна напруга
       DACR2R_Reset=$AA; //встановлюється нульова напруга
 
+      DACR2R_Report='DAC R2R output is unsuccessful';
 
 type
 
@@ -45,7 +46,7 @@ private
  fCalibration:TDACR2R_Calibr;
  function  IntVoltage(Voltage:double):integer;
  procedure DataByteToSendPrepare(Voltage: Double);
- procedure PacketCreateAndSend(report: string);
+ procedure PacketCreateAndSend();
  procedure DataByteToSendFromInteger(IntData: Integer);
 protected
 // Procedure PacketReceiving(Sender: TObject; const Str: string);override;
@@ -62,6 +63,7 @@ public
  function CalibrationStep(Voltage:double):double;override;
  procedure OutputCalibr(Voltage:double);override;
  procedure SaveFileWithCalibrData(DataVec:PVector);
+ procedure ComPortUsing();override;
 end;
 
 //TDACR2RShow=class(TSPIDeviceShow)
@@ -153,7 +155,7 @@ begin
  if Voltage<0 then fData[2]:=DACR2R_Neg
               else fData[2]:=DACR2R_Pos;
  DataByteToSendPrepare(Voltage);
- PacketCreateAndSend('DAC R2R output value setting is unsuccessful');
+ PacketCreateAndSend();
 end;
 
 procedure TDACR2R.OutputCalibr(Voltage: double);
@@ -161,7 +163,7 @@ begin
  if Voltage<0 then fData[2]:=DACR2R_Neg
               else fData[2]:=DACR2R_Pos;
  DataByteToSendFromInteger(TDACR2R_Calibr.VoltToKod(Voltage));
- PacketCreateAndSend('DAC R2R output calibration value setting is unsuccessful');
+ PacketCreateAndSend();
 end;
 
 Procedure TDACR2R.OutputInt(Kod:integer);
@@ -169,7 +171,7 @@ begin
  if Kod<0 then fData[2]:=DACR2R_Neg
           else fData[2]:=DACR2R_Pos;
  DataByteToSendFromInteger(abs(Kod));
- PacketCreateAndSend('DAC R2R output kod setting is unsuccessful');
+ PacketCreateAndSend();
 end;
 
 procedure TDACR2R.DataByteToSendFromInteger(IntData: Integer);
@@ -189,7 +191,7 @@ begin
  fData[2]:=DACR2R_Pos;
  fData[0] := $00;
  fData[1] := $00;
- PacketCreateAndSend('DAC R2R reset is unsuccessful');
+ PacketCreateAndSend();
 end;
 
 
@@ -210,10 +212,19 @@ end;
 //  PacketIsSend(fComPort, report);
 //end;
 
-procedure TDACR2R.PacketCreateAndSend(report: string);
+//procedure TDACR2R.PacketCreateAndSend(report: string);
+//begin
+//  PacketCreate([DACR2RCommand, Pins.PinControl, Pins.PinGate, fData[0], fData[1], fData[2]]);
+//  PacketIsSend(fComPort, report);
+//end;
+
+procedure TDACR2R.PacketCreateAndSend();
 begin
-  PacketCreate([DACR2RCommand, Pins.PinControl, Pins.PinGate, fData[0], fData[1], fData[2]]);
-  PacketIsSend(fComPort, report);
+//  PacketCreate([DACR2RCommand, Pins.PinControl, Pins.PinGate, fData[0], fData[1], fData[2]]);
+//  while fisNeededComPort do sleep(100);
+
+  fisNeededComPort:=True;
+//  PacketIsSend(fComPort, report);
 end;
 
 procedure TDACR2R.CalibrationFileProcessing(filename: string);
@@ -238,6 +249,13 @@ end;
 procedure TDACR2R.CalibrationWrite;
 begin
  fCalibration.WriteToFileData();
+end;
+
+procedure TDACR2R.ComPortUsing;
+begin
+// inherited ComPortUsing;
+ PacketCreate([DACR2RCommand, Pins.PinControl, Pins.PinGate, fData[0], fData[1], fData[2]]);
+ PacketIsSend(fComPort, DACR2R_Report);
 end;
 
 constructor TDACR2R.Create(CP:TComPort;Nm:string);
@@ -386,6 +404,7 @@ procedure TDACR2R_Calibr.AddWord(Index, Kod: word; Arr: TArrWord);
 begin
  if (Index<=High(Arr)) then Arr[Index]:=Kod;
 end;
+
 
 constructor TDACR2R_Calibr.Create;
  var i:integer;

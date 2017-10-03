@@ -42,7 +42,8 @@ type
    Procedure ConvertToValue();override;
    Function ResultProblem(Rez:double):boolean;override;
    Constructor Create(CP:TComPort;Nm:string);override;
-   Function Request():boolean;override;
+//   Function Request():boolean;override;
+   procedure ComPortUsing();override;
    function GetData():double;override;
   end;
 
@@ -356,11 +357,11 @@ begin
 end;
 
 
-Function TVoltmetr.Request():boolean;
-begin
-  PacketCreate([fMetterKod,Pins.PinControl,Pins.PinGate]);
-  Result:=PacketIsSend(fComPort,'Voltmetr '+Name+' measurement is unsuccessful');
-end;
+//Function TVoltmetr.Request():boolean;
+//begin
+//  PacketCreate([fMetterKod,Pins.PinControl,Pins.PinGate]);
+//  Result:=PacketIsSend(fComPort,'Voltmetr '+Name+' measurement is unsuccessful');
+//end;
 
 function TVoltmetr.ResultProblem(Rez: double): boolean;
 begin
@@ -373,6 +374,12 @@ end;
 //  if High(Data)<>3 then Exit;
 //  inherited ConvertToValue(Data);
 //end;
+
+procedure TVoltmetr.ComPortUsing;
+begin
+  PacketCreate([fMetterKod,Pins.PinControl,Pins.PinGate]);
+  fError:=not(PacketIsSend(fComPort,'Voltmetr '+Name+' measurement is unsuccessful'));
+end;
 
 Procedure TVoltmetr.ConvertToValue();
 begin

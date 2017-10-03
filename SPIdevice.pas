@@ -129,7 +129,8 @@ type
 //   Constructor Create();overload;override;
    Constructor Create(CP:TComPort;Nm:string);override;
    Procedure Free;
-   Function Request():boolean;override;
+//   Function Request():boolean;override;
+   procedure ComPortUsing();override;
   end;
 
   TSimpleEvent = procedure() of object;
@@ -469,6 +470,12 @@ end;
 //  fComPacket.StopString:=PacketEndChar;
 //end;
 
+procedure TArduinoMeter.ComPortUsing;
+begin
+  PacketCreate([fMetterKod,Pins.PinControl]);
+  fError:=not(PacketIsSend(fComPort,Name+' measurement is unsuccessful'));
+end;
+
 Constructor TArduinoMeter.Create(CP:TComPort;Nm:string);
 begin
   inherited Create(CP,Nm);
@@ -571,11 +578,11 @@ begin
  fIsReceived:=True;
 end;
 
-function TArduinoMeter.Request: boolean;
-begin
-  PacketCreate([fMetterKod,Pins.PinControl]);
-  Result:=PacketIsSend(fComPort,Name+' measurement is unsuccessful');
-end;
+//function TArduinoMeter.Request: boolean;
+//begin
+//  PacketCreate([fMetterKod,Pins.PinControl]);
+//  Result:=PacketIsSend(fComPort,Name+' measurement is unsuccessful');
+//end;
 
 //function TArduinoMeter.ResultProblem(Rez: double): boolean;
 //begin

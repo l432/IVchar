@@ -15,7 +15,9 @@ end;
 
 IMeasurement = interface (IName)
   ['{7A6DCE4C-9A04-444A-B7FD-39B800BDE6A7}']
+ function GetNewData:boolean;
  function GetData:double;
+ property NewData:boolean read GetNewData;
 end;
 
 IDAC = interface (IName)
@@ -41,8 +43,10 @@ TSimulator = class (TInterfacedObject,IMeasurement,IDAC,ITemperatureMeasurement)
 private
  FName: string;
  function GetName:string;
+ function GetNewData:boolean;
 public
  property Name:string read GetName;
+ property NewData:boolean read GetNewData;
  Constructor Create();overload;
  Constructor Create(name:string);overload;
  function GetTemperature:double;
@@ -252,6 +256,11 @@ end;
 function TSimulator.GetName: string;
 begin
   Result:=fName;
+end;
+
+function TSimulator.GetNewData: boolean;
+begin
+ Result:=True;
 end;
 
 function TSimulator.GetData: double;

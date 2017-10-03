@@ -7,7 +7,7 @@ uses
   Dialogs, StdCtrls, CPort, ComCtrls, Buttons, SPIdevice, ExtCtrls, IniFiles,PacketParameters,
   TeEngine, Series, TeeProcs, Chart, Spin, OlegType, Grids, OlegMath,Measurement, 
   TempThread, ShowTypes,OlegGraph, CPortCtl, Dependence, V7_21, 
-  TemperatureSensor, DACR2R, UT70, RS232device,ET1255;
+  TemperatureSensor, DACR2R, UT70, RS232device,ET1255, RS232_Mediator_Tread;
 
 type
   TIVchar = class(TForm)
@@ -455,6 +455,7 @@ type
     Current_MD,VoltageIV_MD,DACR2R_MD,TermoCouple_MD:TMeasuringDevice;
     ET1255_DAC_MD:array[TET1255_DAC_ChanelNumber] of TMeasuringDevice;
     SettingDevice:TSettingDevice;
+    RS232_MediatorTread:TRS232_MediatorTread;
     TemperatureMeasuringThread:TTemperatureMeasuringThread;
     IVCharRangeFor,CalibrRangeFor:TLimitShow;
     IVCharRangeRev,CalibrRangeRev:TLimitShowRev;
@@ -1496,12 +1497,26 @@ end;
 procedure TIVchar.HookEnd;
 begin
   DecimalSeparator:='.';
+//  showmessage(SettingDevice.ActiveInterface.Name);
+// showmessage(
+//   booltostr(TDependenceMeasuring.IVMeasuringToStop)+' false'+booltostr(false));
+//  sleep(5000);
   SettingDevice.Reset;
-  if not(TDependenceMeasuring.ItIsForward) then
-   begin
-   sleep(500);
-   SettingDevice.Reset;
-   end;
+
+//  sleep(100);
+//Application.ProcessMessages;
+
+//  if not(TDependenceMeasuring.ItIsForward) then
+//   begin
+//   sleep(500);
+//   SettingDevice.Reset;
+//   end;
+//   sleep(5500);
+// Application.ProcessMessages;
+// sleep(2000);
+//
+// showmessage(
+//  booltostr(DACR2R.isNeededComPort)+' false'+booltostr(false));
 
   CBCalibr.Enabled := True;
 //  CBCurrentValue.Enabled := True;
@@ -1515,6 +1530,7 @@ begin
     BIVSave.Enabled := True;
     BIVSave.Font.Style := BIVSave.Font.Style - [fsStrikeOut];
   end;
+
 end;
 
 
@@ -1915,11 +1931,14 @@ begin
 
  if ComPort1.Connected then SettingDevice.Reset();
 
-
+ RS232_MediatorTread:=TRS232_MediatorTread.Create(
+                 [V721A,V721_I,V721_II,DS18B20,DACR2R]);
 end;
 
 procedure TIVchar.FormDestroy(Sender: TObject);
 begin
+ RS232_MediatorTread.Terminate;
+
  DACWriteToIniFile();
  VoltmetrsWriteToIniFile();
  PinsWriteToIniFile;
@@ -2391,6 +2410,8 @@ end;
 
 procedure TIVchar.SBTAutoClick(Sender: TObject);
 begin
+// showmessage(
+//  booltostr(DACR2R.isNeededComPort)+' false'+booltostr(false));
  if SBTAuto.Down then
     TemperatureThreadCreate()
                  else
