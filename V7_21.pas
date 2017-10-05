@@ -239,6 +239,7 @@ begin
      b:=Measurement();
      Result:=AditionMeasurement(a,b);
    end;
+ fNewData:=True;
 end;
 
 

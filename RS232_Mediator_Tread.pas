@@ -7,6 +7,7 @@ uses
 
 Const
   ScanningPeriod=50;
+  ScanningPeriodShot=20;
 
 type
   TRS232_MediatorTread = class(TThread)
@@ -30,7 +31,7 @@ type
 implementation
 
 uses
-  Windows, SysUtils, Forms, DateUtils;
+  Windows, SysUtils, Forms, DateUtils, IVchar_main;
 
 { Important: Methods and properties of objects in visual components can only be
   used in a method called using Synchronize, for example,
@@ -76,6 +77,9 @@ begin
   Self.Priority := tpNormal;
   Resume;
 
+//  if (FEventTerminate=0) then
+//    Application.MessageBox('text', 'cap', MB_OK)
+
 end;
 
 destructor TRS232_MediatorTread.Destroy;
@@ -99,32 +103,85 @@ procedure TRS232_MediatorTread.DoSomething;
  var i:byte;
 begin
 //  Synchronize(Start);
+//Inc(fint);
   for I := 0 to High(fArrayDevice) do
     if fArrayDevice[i].isNeededComPort then
       begin
       fArrayDevice[i].ComPortUsing();
-      fArrayDevice[i].isNeededComPort:=false;
+      fArrayDevice[i].isNeededComPort:=False;
       end;
 end;
 
+//procedure TRS232_MediatorTread.Execute;
+//var
+//  t: TDateTime;
+//  k: Int64;
+//begin
+//  while (not Terminated) and (not Application.Terminated) do
+//  begin
+//    t := Now();
+////    DoSomething;
+//    Synchronize(DoSomething);
+////    k := ScanningPeriod - Round(MilliSecondSpan(Now(), t));
+//    k := ScanningPeriod - MilliSecondsBetween(Now(), t);
+//    if k>0 then
+//      _Sleep(k);
+//  end;
+//end;
+
+//procedure TRS232_MediatorTread.Execute;
+//var
+//  t: TDateTime;
+//  k: Int64;
+//begin
+//
+//  while (not Terminated) and (not Application.Terminated) do
+//  begin
+//   ComPortAlloved:=not(ComPortAlloved);
+//   if ComPortAlloved  then
+//    begin
+//      _Sleep(ScanningPeriodShot);
+//    end               else
+//    begin
+//      t := Now();
+//      DoSomething;
+//      k := ScanningPeriod - Round(MilliSecondSpan(Now(), t));
+//      if k>0 then
+//        _Sleep(k);
+//    end;
+//  end;
+//end;
+
 procedure TRS232_MediatorTread.Execute;
 var
-  t: TDateTime;
-  k: Int64;
+//  t: TDateTime;
+//  k: Int64;
+  i:byte;
 begin
+  i:=0;
   while (not Terminated) and (not Application.Terminated) do
   begin
-    t := Now();
-//    DoSomething;
-    Synchronize(DoSomething);
-    k := ScanningPeriod - Round(MilliSecondSpan(Now(), t));
-    if k>0 then
-      _Sleep(k);
+   if i=0 then
+     begin
+       ResetEvent(EventComPortFree);
+       DoSomething;
+     end;
+   if i=1 then
+     begin
+       SetEvent(EventComPortFree);
+       sleep(ScanningPeriodShot);
+     end;
+   i:=1-i;
   end;
 end;
 
 procedure TRS232_MediatorTread.Terminate;
 begin
+//  if (FEventTerminate=0) then
+//    Application.MessageBox('text', 'cap', MB_OK)
+//                          else
+//    Application.MessageBox('text2', 'cap2', MB_OK);
+
   SetEvent(FEventTerminate);
   inherited Terminate;
 end;

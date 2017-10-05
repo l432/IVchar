@@ -4,7 +4,7 @@ interface
 
 uses
   Measurement, CPort, PacketParameters, ExtCtrls, StdCtrls, Buttons, Windows,
-  Classes;
+  Classes,HighResolutionTimer;
 
 
 const
@@ -13,6 +13,9 @@ const
  ID_Label='=I';
  UA_Label='~U';
  UD_Label='=U';
+
+var ComPortAlloved:boolean;
+    EventComPortFree: THandle;
 
 type
 
@@ -42,6 +45,7 @@ TRS232Device=class(TNamedDevice)
    Constructor Create(CP:TComPort;Nm:string);overload;virtual;
    Procedure Free;
    procedure ComPortUsing();virtual;
+   procedure isNeededComPortState();
   end;
 
 TRS232Meter=class(TRS232Device,IMeasurement)
@@ -193,6 +197,16 @@ begin
 end;
 
 
+procedure TRS232Device.isNeededComPortState;
+begin
+// while (not ComPortAlloved) do HRDelay(1);
+// fisNeededComPort:=True;
+
+ if WaitForSingleObject(EventComPortFree,1000)=WAIT_OBJECT_0
+  then fisNeededComPort:=True;
+
+end;
+
 //function TRS232Device.GetName: string;
 //begin
 // Result:=fName;
@@ -270,6 +284,7 @@ end;
 function TRS232Meter.GetData: double;
 begin
   Result:=Measurement();
+  fNewData:=True;
 end;
 
 procedure TRS232Meter.MeasurementBegin;
@@ -325,7 +340,6 @@ start:
       isFirst:=false;
       goto start;
     end;
- fNewData:=True;
 end;
 
 //function TRS232Meter.Measurement: double;
@@ -370,7 +384,8 @@ end;
 
 procedure TRS232Meter.Request;
 begin
-  fisNeededComPort:=True;
+  isNeededComPortState();
+//  fisNeededComPort:=True;
 end;
 
 
@@ -609,4 +624,14 @@ begin
    Result:=fName;
 end;
 
+initialization
+  ComPortAlloved:= True;
+  EventComPortFree := CreateEvent(nil,
+                                 True, // тип сброса TRUE - ручной
+                                 True, // начальное состояние TRUE - сигнальное
+                                 nil);
+
+finalization
+
+  CloseHandle(EventComPortFree);
 end.

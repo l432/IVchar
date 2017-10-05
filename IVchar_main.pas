@@ -7,7 +7,8 @@ uses
   Dialogs, StdCtrls, CPort, ComCtrls, Buttons, SPIdevice, ExtCtrls, IniFiles,PacketParameters,
   TeEngine, Series, TeeProcs, Chart, Spin, OlegType, Grids, OlegMath,Measurement, 
   TempThread, ShowTypes,OlegGraph, CPortCtl, Dependence, V7_21, 
-  TemperatureSensor, DACR2R, UT70, RS232device,ET1255, RS232_Mediator_Tread;
+  TemperatureSensor, DACR2R, UT70, RS232device,ET1255, RS232_Mediator_Tread,
+  mmsystem;
 
 type
   TIVchar = class(TForm)
@@ -306,6 +307,7 @@ type
     STCodeRangeDAC1255: TStaticText;
     STValueRangeDACR2R: TStaticText;
     STCodeRangeDACR2R: TStaticText;
+
     procedure FormCreate(Sender: TObject);
     procedure PortConnected();
     procedure BConnectClick(Sender: TObject);
@@ -468,6 +470,7 @@ type
     DoubleConstantShows:array of TParameterShow1;
     Imax,Imin,R_VtoI:double;
     IVMeasuring,CalibrMeasuring:TDependenceMeasuring;
+    TemperatueTimer : integer; // Код мультимедийного таймера для виміру температури
   end;
 
 const
@@ -484,10 +487,12 @@ implementation
 
 {$R *.dfm}
 
-//procedure TIVchar.ActionEmpty;
-//begin
-//
-//end;
+procedure TemperatureTimerCallBackProg(uTimerID, uMessage: UINT; dwUser,
+  dw1, dw2: DWORD);
+begin
+//  ThermoCuple.Measurement:=TermoCouple_MD.ActiveInterface;
+  IVchar.Temperature_MD.GetMeasurementResult();
+end;
 
 procedure TIVchar.RangeWriteToIniFile;
  var Section:string;
@@ -896,12 +901,22 @@ begin
   BIVSave.Enabled:=False;
   BParamReceive.Enabled := False;
   SBTAuto.Enabled := False;
-  PC.OnChanging := PCChanging;
-  if SBTAuto.Down then
+//  PC.OnChanging := PCChanging;
+
+//  if SBTAuto.Down then
+//    begin
+//    SBTAuto.Down := False;
+//    TemperatureMeasuringThread.Terminate;
+//    end;
+  if not(SBTAuto.Down) then
     begin
-    SBTAuto.Down := False;
-    TemperatureMeasuringThread.Terminate;
+    SBTAuto.Down := True;
+    ThermoCuple.Measurement:=TermoCouple_MD.ActiveInterface;
+    TemperatueTimer := timeSetEvent(
+                   round(1000*StrToFloat(STTMI.Caption)),
+                   1,@TemperatureTimerCallBackProg,100,TIME_PERIODIC);
     end;
+
 end;
 
 procedure TIVchar.IVCharHookSetVoltage;
@@ -1116,14 +1131,16 @@ end;
 procedure TIVchar.ET1255Create;
  var I:TET1255_DAC_ChanelNumber;
 begin
-  if ET_StartDrv <> '' then
-    showmessage('ET1255 loading error' + ''#10''#13'' + ET_ErrMsg)
-                       else
-     begin
+//  if ET_StartDrv <> '' then
+//    showmessage('ET1255 loading error' + ''#10''#13'' + ET_ErrMsg)
+//    ;
+    //                       else
+//     begin
+
      for I := Low(TET1255_DAC_ChanelNumber) to High(TET1255_DAC_ChanelNumber) do
        begin
         ET1255_DACs[i]:=TET1255_DAC.Create(i);
-        ET1255_DACs[i].Reset();
+//        ET1255_DACs[i].Reset();
        end;
        ET1255_DACsShow[0]:=TDAC_Show.Create(ET1255_DACs[0],
                       LOV1255ch0,LOK1255Ch0,BOVchange1255Ch0,
@@ -1137,7 +1154,13 @@ begin
                       LOV1255ch2,LOK1255Ch2,BOVchange1255Ch2,
                       BOVset1255Ch2,BOKchange1255Ch2,
                       BOKset1255Ch2,BReset1255Ch2);
-     end;
+//     end;
+
+  if ET_StartDrv <> '' then
+    showmessage('ET1255 loading error' + ''#10''#13'' + ET_ErrMsg)
+                       else
+     for I := Low(TET1255_DAC_ChanelNumber) to High(TET1255_DAC_ChanelNumber) do
+        ET1255_DACs[i].Reset();
 
 
 end;
@@ -1502,6 +1525,10 @@ begin
 //   booltostr(TDependenceMeasuring.IVMeasuringToStop)+' false'+booltostr(false));
 //  sleep(5000);
   SettingDevice.Reset;
+  if TDependenceMeasuring.IVMeasuringToStop
+   then showmessage('Procedure ia stopped');
+  
+//  SettingDevice.ActiveInterface.Output(0);
 
 //  sleep(100);
 //Application.ProcessMessages;
@@ -1524,7 +1551,7 @@ begin
   BConnect.Enabled := True;
   BParamReceive.Enabled := True;
   SBTAuto.Enabled := True;
-  PC.OnChanging := nil;
+//  PC.OnChanging := nil;
   if High(IVResult^.X) > 0 then
   begin
     BIVSave.Enabled := True;
@@ -1932,12 +1959,13 @@ begin
  if ComPort1.Connected then SettingDevice.Reset();
 
  RS232_MediatorTread:=TRS232_MediatorTread.Create(
-                 [V721A,V721_I,V721_II,DS18B20,DACR2R]);
+                 [DACR2R,V721A,V721_I,V721_II,DS18B20]);
 end;
 
 procedure TIVchar.FormDestroy(Sender: TObject);
 begin
- RS232_MediatorTread.Terminate;
+ if RS232_MediatorTread <> nil
+   then RS232_MediatorTread.Terminate;
 
  DACWriteToIniFile();
  VoltmetrsWriteToIniFile();
@@ -2410,12 +2438,20 @@ end;
 
 procedure TIVchar.SBTAutoClick(Sender: TObject);
 begin
-// showmessage(
-//  booltostr(DACR2R.isNeededComPort)+' false'+booltostr(false));
+// if SBTAuto.Down then
+//    TemperatureThreadCreate()
+//                 else
+//    TemperatureMeasuringThread.Terminate;
+
  if SBTAuto.Down then
-    TemperatureThreadCreate()
+    begin
+     ThermoCuple.Measurement:=TermoCouple_MD.ActiveInterface;
+     TemperatueTimer := timeSetEvent(
+                   round(1000*StrToFloat(STTMI.Caption)),
+                   1,@TemperatureTimerCallBackProg,100,TIME_PERIODIC);
+    end
                  else
-    TemperatureMeasuringThread.Terminate;
+     timeKillEvent(TemperatueTimer);
 end;
 
 procedure TIVchar.SettingWriteToIniFile;
@@ -2447,6 +2483,8 @@ begin
   TemperatureMeasuringThread.FreeOnTerminate:=True;
   TemperatureMeasuringThread.Resume;
 end;
+
+
 
 procedure TIVchar.VoltmetrsCreate;
 begin

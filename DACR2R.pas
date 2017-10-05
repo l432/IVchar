@@ -223,7 +223,9 @@ begin
 //  PacketCreate([DACR2RCommand, Pins.PinControl, Pins.PinGate, fData[0], fData[1], fData[2]]);
 //  while fisNeededComPort do sleep(100);
 
-  fisNeededComPort:=True;
+//  fisNeededComPort:=True;
+  isNeededComPortState();
+
 //  PacketIsSend(fComPort, report);
 end;
 
