@@ -74,6 +74,7 @@ TRS232Meter=class(TRS232Device,IMeasurement)
    Function MeasureModeLabelRead():string;virtual;
    Procedure PacketReceiving(Sender: TObject; const Str: string);virtual;
    Function Measurement():double;virtual;
+//   Function MeasurementThread():double;virtual;
 
   public
    property NewData:boolean read GetNewData write fNewData;
@@ -293,6 +294,7 @@ begin
   fIsReceived:=False;
   fError:=False;
 end;
+
 
 
 

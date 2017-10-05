@@ -307,6 +307,7 @@ type
     STCodeRangeDAC1255: TStaticText;
     STValueRangeDACR2R: TStaticText;
     STCodeRangeDACR2R: TStaticText;
+    TemperatureTimer: TTimer;
 
     procedure FormCreate(Sender: TObject);
     procedure PortConnected();
@@ -335,6 +336,7 @@ type
 //    procedure BIVSaveClick(Sender: TObject);
     procedure BDFFA_R2RClick(Sender: TObject);
     procedure Button1Click(Sender: TObject);
+    procedure TemperatureTimerTimer(Sender: TObject);
 //    procedure BOKsetDACR2RClick(Sender: TObject);
 //    procedure BOVsetChAClick(Sender: TObject);
 //    procedure BORChAClick(Sender: TObject);
@@ -426,6 +428,7 @@ type
     procedure ParametersFileWork(Action: TSimpleEvent);
     procedure ET1255Create;
     procedure ET1255Free;
+    procedure TemperatureTimerOnTime(Sender: TObject);
   public
     V721A:TV721A;
     V721_I,V721_II:TV721;
@@ -470,7 +473,8 @@ type
     DoubleConstantShows:array of TParameterShow1;
     Imax,Imin,R_VtoI:double;
     IVMeasuring,CalibrMeasuring:TDependenceMeasuring;
-    TemperatueTimer : integer; // Код мультимедийного таймера для виміру температури
+//    TemperatueTimer : integer; // Код мультимедийного таймера для виміру температури
+//    TemperatureTimer : TTimer; // таймер для виміру температури
   end;
 
 const
@@ -487,12 +491,14 @@ implementation
 
 {$R *.dfm}
 
-procedure TemperatureTimerCallBackProg(uTimerID, uMessage: UINT; dwUser,
-  dw1, dw2: DWORD);
-begin
-//  ThermoCuple.Measurement:=TermoCouple_MD.ActiveInterface;
-  IVchar.Temperature_MD.GetMeasurementResult();
-end;
+//procedure TemperatureTimerCallBackProg(uTimerID, uMessage: UINT; dwUser,
+//  dw1, dw2: DWORD);
+//begin
+////  ThermoCuple.Measurement:=TermoCouple_MD.ActiveInterface;
+//  IVchar.Temperature_MD.GetMeasurementResult();
+//end;
+
+
 
 procedure TIVchar.RangeWriteToIniFile;
  var Section:string;
@@ -908,14 +914,23 @@ begin
 //    SBTAuto.Down := False;
 //    TemperatureMeasuringThread.Terminate;
 //    end;
+
   if not(SBTAuto.Down) then
     begin
-    SBTAuto.Down := True;
-    ThermoCuple.Measurement:=TermoCouple_MD.ActiveInterface;
-    TemperatueTimer := timeSetEvent(
-                   round(1000*StrToFloat(STTMI.Caption)),
-                   1,@TemperatureTimerCallBackProg,100,TIME_PERIODIC);
+     SBTAuto.Down := True;
+     TemperatureTimer.Interval:=round(1000*StrToFloat(STTMI.Caption));
+     TemperatureTimer.Enabled:=True;
     end;
+
+
+//  if not(SBTAuto.Down) then
+//    begin
+//    SBTAuto.Down := True;
+//    ThermoCuple.Measurement:=TermoCouple_MD.ActiveInterface;
+//    TemperatueTimer := timeSetEvent(
+//                   round(1000*StrToFloat(STTMI.Caption)),
+//                   1,@TemperatureTimerCallBackProg,100,TIME_PERIODIC);
+//    end;
 
 end;
 
@@ -1958,6 +1973,12 @@ begin
 
  if ComPort1.Connected then SettingDevice.Reset();
 
+// TemperatureTimer:=TTimer.Create(IVchar);
+// TemperatureTimer.OnTimer:=TemperatureTimerOnTime;
+// TemperatureTimer.Enabled:=False;
+// if TemperatureTimer=nil then showmessage('pppp');
+
+
  RS232_MediatorTread:=TRS232_MediatorTread.Create(
                  [DACR2R,V721A,V721_I,V721_II,DS18B20]);
 end;
@@ -1966,6 +1987,10 @@ procedure TIVchar.FormDestroy(Sender: TObject);
 begin
  if RS232_MediatorTread <> nil
    then RS232_MediatorTread.Terminate;
+
+ if assigned(TemperatureTimer) then TemperatureTimer.Free;
+
+ 
 
  DACWriteToIniFile();
  VoltmetrsWriteToIniFile();
@@ -2444,14 +2469,26 @@ begin
 //    TemperatureMeasuringThread.Terminate;
 
  if SBTAuto.Down then
-    begin
-     ThermoCuple.Measurement:=TermoCouple_MD.ActiveInterface;
-     TemperatueTimer := timeSetEvent(
-                   round(1000*StrToFloat(STTMI.Caption)),
-                   1,@TemperatureTimerCallBackProg,100,TIME_PERIODIC);
-    end
+     begin
+//       TemperatureTimer:=TTimer.Create(IVchar);
+//       if TemperatureTimer=nil then showmessage('jj');
+
+       TemperatureTimer.Interval:=round(1000*StrToFloat(STTMI.Caption));
+       TemperatureTimer.Enabled:=True;
+     end
                  else
-     timeKillEvent(TemperatueTimer);
+       TemperatureTimer.Enabled:=False;
+
+
+// if SBTAuto.Down then
+//    begin
+//     ThermoCuple.Measurement:=TermoCouple_MD.ActiveInterface;
+//     TemperatueTimer := timeSetEvent(
+//                   round(1000*StrToFloat(STTMI.Caption)),
+//                   1,@TemperatureTimerCallBackProg,100,TIME_PERIODIC);
+//    end
+//                 else
+//     timeKillEvent(TemperatueTimer);
 end;
 
 procedure TIVchar.SettingWriteToIniFile;
@@ -2485,6 +2522,19 @@ begin
 end;
 
 
+
+procedure TIVchar.TemperatureTimerOnTime(Sender: TObject);
+begin
+  ThermoCuple.Measurement:=TermoCouple_MD.ActiveInterface;
+  Temperature_MD.GetMeasurementResult();
+end;
+
+
+procedure TIVchar.TemperatureTimerTimer(Sender: TObject);
+begin
+  ThermoCuple.Measurement:=TermoCouple_MD.ActiveInterface;
+  Temperature_MD.GetMeasurementResult();
+end;
 
 procedure TIVchar.VoltmetrsCreate;
 begin
