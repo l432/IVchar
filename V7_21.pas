@@ -45,6 +45,7 @@ type
 //   Function Request():boolean;override;
    procedure ComPortUsing();override;
    function GetData():double;override;
+   procedure GetDataThread(WPARAM: word);override;
   end;
 
   TV721A=class(TVoltmetr)
@@ -131,7 +132,7 @@ type
 implementation
 
 uses   PacketParameters, Measurement, Math, SysUtils, OlegMath, OlegType, 
-  Dialogs;
+  Dialogs, RS232_Meas_Tread;
 
 
 //Constructor TVoltmetr.Create();
@@ -210,6 +211,38 @@ end;
 //   end;
 //end;
 
+//function TVoltmetr.GetData(): double;
+// function AditionMeasurement(a,b:double):double;
+//  var c:double;
+//  begin
+//    if abs(a-b)<1e-5*Max(abs(a),abs(b))
+//     then
+//      Result:=(a+b)/2
+//     else
+//      begin
+//        sleep(100);
+//        c:=Measurement();
+//        Result:=MedianFiltr(a,b,c);
+//      end;
+//  end;
+// var a,b:double;
+//
+//begin
+// a:=Measurement();
+// sleep(100);
+// b:=Measurement();
+// Result:=AditionMeasurement(a,b);
+// if Result=0 then
+//   begin
+//     sleep(300);
+//     a:=Measurement();
+//     sleep(100);
+//     b:=Measurement();
+//     Result:=AditionMeasurement(a,b);
+//   end;
+// fNewData:=True;
+//end;
+
 function TVoltmetr.GetData(): double;
  function AditionMeasurement(a,b:double):double;
   var c:double;
@@ -227,6 +260,9 @@ function TVoltmetr.GetData(): double;
  var a,b:double;
 
 begin
+  Result:=ErResult;
+  if not(PortConnected) then Exit;
+  
  a:=Measurement();
  sleep(100);
  b:=Measurement();
@@ -242,6 +278,12 @@ begin
  fNewData:=True;
 end;
 
+
+procedure TVoltmetr.GetDataThread(WPARAM: word);
+begin
+  if PortConnected then
+   fRS232MeasuringTread:=TV721_MeasuringTread.Create(Self,WPARAM);
+end;
 
 //function TVoltmetr.GetResist: double;
 //begin

@@ -37,6 +37,7 @@ TRS232Device=class(TNamedDevice)
    fData:TArrByte;
    fisNeededComPort:boolean;
    fError:boolean;
+   function PortConnected():boolean;
   public
    property isNeededComPort:boolean read fisNeededComPort write fisNeededComPort;
    property Error:boolean read fError;
@@ -75,10 +76,11 @@ TRS232Meter=class(TRS232Device,IMeasurement)
    Procedure PacketReceiving(Sender: TObject; const Str: string);virtual;
    Function Measurement():double;virtual;
 //   Function MeasurementThread():double;virtual;
-
+   Function GetValue():double;virtual;
+   procedure SetNewData(Value:boolean);
   public
-   property NewData:boolean read GetNewData write fNewData;
-   property Value:double read fValue;
+   property NewData:boolean read GetNewData write SetNewData;
+   property Value:double read GetValue write fValue;
    property isReady:boolean read fIsReady write fIsReady;
    property isReceived:boolean read fIsReceived write fIsReceived;
    property MinDelayTime:integer read  fMinDelayTime;
@@ -91,6 +93,7 @@ TRS232Meter=class(TRS232Device,IMeasurement)
    Procedure Request();virtual;
    function GetData():double;virtual;
    procedure MeasurementBegin;
+   procedure GetDataThread(WPARAM: word);virtual;
   end;
 
 
@@ -208,6 +211,17 @@ begin
 
 end;
 
+function TRS232Device.PortConnected: boolean;
+begin
+ if fComPort.Connected then  Result:=True
+                       else
+        begin
+          Result:=False;
+          fError:=True;
+          showmessage('Port is not connected');
+        end;
+end;
+
 //function TRS232Device.GetName: string;
 //begin
 // Result:=fName;
@@ -284,8 +298,32 @@ end;
 
 function TRS232Meter.GetData: double;
 begin
-  Result:=Measurement();
-  fNewData:=True;
+  Result:=ErResult;
+  if PortConnected then
+   begin
+    Result:=Measurement();
+    fNewData:=True;
+   end;
+//  if not(fComPort.Connected) then
+//   begin
+//    fError:=True;
+//    showmessage('Port is not connected');
+//    Exit;
+//   end;
+//  Result:=Measurement();
+//  fNewData:=True;
+end;
+
+procedure TRS232Meter.GetDataThread(WPARAM: word);
+begin
+//  if not(fComPort.Connected) then
+//   begin
+//    fError:=True;
+//    showmessage('Port is not connected');
+//    Exit;
+//   end;
+ if PortConnected then
+   fRS232MeasuringTread:=TRS232MeasuringTread.Create(Self,WPARAM);
 end;
 
 procedure TRS232Meter.MeasurementBegin;
@@ -303,6 +341,11 @@ begin
  Result:=fNewData;
 end;
 
+function TRS232Meter.GetValue: double;
+begin
+ Result:=fValue;
+end;
+
 function TRS232Meter.Measurement: double;
 label start;
 var i:integer;
@@ -310,11 +353,11 @@ var i:integer;
 begin
 
  Result:=ErResult;
- if not(fComPort.Connected) then
-   begin
-    showmessage('Port is not connected');
-    Exit;
-   end;
+// if not(fComPort.Connected) then
+//   begin
+//    showmessage('Port is not connected');
+//    Exit;
+//   end;
 
  isFirst:=True;
 start:
@@ -394,6 +437,11 @@ end;
 function TRS232Meter.ResultProblem(Rez: double): boolean;
 begin
  Result:=False;
+end;
+
+procedure TRS232Meter.SetNewData(Value: boolean);
+begin
+ fNewData:=Value;
 end;
 
 procedure TRS232Meter.ValueDetermination(Data: array of byte);

@@ -14,19 +14,27 @@ type
    Constructor Create(CP:TComPort;Nm:string);override;
    function GetTemperature():double;
    Procedure ConvertToValue();override;
+   procedure GetTemperatureThread();
   end;
 
   TThermoCuple=class(TNamedDevice,ITemperatureMeasurement)
     protected
-
+     function GetNewData:boolean;
+     function GetValue:double;
+     procedure SetNewData(value:boolean);
     public
      Measurement:IMeasurement;
+     property NewData:boolean read GetNewData  write SetNewData;
+     property Value:double read GetValue;
      class function T_CuKo(Voltage:double):double;
      {функция расчета температури по значениям напряжения
      согласно градуировке термопары медь-константан}
      function GetTemperature():double;
      Constructor Create();
      Procedure Free;
+     function GetData:double;
+     procedure GetDataThread(WPARAM: word);
+     procedure GetTemperatureThread();
   end;
 
 implementation
@@ -53,6 +61,11 @@ begin
  Result:=Measurement();
 end;
 
+
+procedure TDS18B20.GetTemperatureThread;
+begin
+ GetDataThread(TemperMessage);
+end;
 
 //procedure TDS18B20.ConvertToValue(Data: array of byte);
 // var temp:integer;
@@ -110,12 +123,45 @@ begin
 
 end;
 
+function TThermoCuple.GetData: double;
+begin
+ Result:=GetTemperature;
+end;
+
+procedure TThermoCuple.GetDataThread(WPARAM: word);
+begin
+ Measurement.GetDataThread(WPARAM);
+end;
+
+function TThermoCuple.GetNewData: boolean;
+begin
+  Result:=Measurement.NewData;
+end;
+
 function TThermoCuple.GetTemperature: double;
 begin
  Result:=Measurement.GetData;
  if Result<>ErResult then  Result:=T_CuKo(Result);
 
 // Result:=T_CuKo(Measurement.GetData);
+end;
+
+procedure TThermoCuple.GetTemperatureThread;
+begin
+ Measurement.GetDataThread(TemperMessage);
+end;
+
+function TThermoCuple.GetValue: double;
+begin
+ if Measurement.Value<>ErResult then
+                Result:=T_CuKo(Measurement.Value)
+                                else
+                Result:=Measurement.Value;
+end;
+
+procedure TThermoCuple.SetNewData(Value: boolean);
+begin
+  Measurement.NewData:=Value;
 end;
 
 class function TThermoCuple.T_CuKo(Voltage: double): double;

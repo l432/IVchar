@@ -160,7 +160,7 @@ object IVchar: TIVchar
         Top = 3
         Width = 223
         Height = 169
-        Caption = 'I-V measurements'
+        Caption = 'Measurements'
         Font.Charset = RUSSIAN_CHARSET
         Font.Color = clWindowText
         Font.Height = -13
@@ -171,7 +171,7 @@ object IVchar: TIVchar
         object CBForw: TCheckBox
           Tag = 7
           Left = 12
-          Top = 23
+          Top = 48
           Width = 74
           Height = 13
           Caption = 'Forward'
@@ -182,7 +182,7 @@ object IVchar: TIVchar
         object CBRev: TCheckBox
           Tag = 7
           Left = 12
-          Top = 46
+          Top = 73
           Width = 74
           Height = 13
           Caption = 'Reverse'
@@ -191,7 +191,7 @@ object IVchar: TIVchar
           TabOrder = 1
         end
         object BIVStart: TButton
-          Left = 128
+          Left = 140
           Top = 20
           Width = 64
           Height = 21
@@ -201,7 +201,7 @@ object IVchar: TIVchar
         end
         object BIVStop: TButton
           Tag = 4
-          Left = 128
+          Left = 140
           Top = 57
           Width = 64
           Height = 19
@@ -231,17 +231,6 @@ object IVchar: TIVchar
           Step = 1
           TabOrder = 5
         end
-        object CBCalibr: TCheckBox
-          Tag = 7
-          Left = 12
-          Top = 69
-          Width = 87
-          Height = 13
-          Caption = 'Calibration'
-          Checked = True
-          State = cbChecked
-          TabOrder = 6
-        end
         object CBPC: TCheckBox
           Tag = 6
           Left = 12
@@ -255,8 +244,16 @@ object IVchar: TIVchar
           Font.Name = 'Arial'
           Font.Style = [fsBold]
           ParentFont = False
-          TabOrder = 7
+          TabOrder = 6
           WordWrap = True
+        end
+        object CBMeasurements: TComboBox
+          Left = 9
+          Top = 18
+          Width = 125
+          Height = 24
+          ItemHeight = 16
+          TabOrder = 7
         end
       end
       object GBAD: TGroupBox
@@ -2031,9 +2028,9 @@ object IVchar: TIVchar
       object STValueRangeDACR2R: TStaticText
         Left = 413
         Top = 3
-        Width = 114
+        Width = 146
         Height = 22
-        Caption = 'Value: -6 ... 6'
+        Caption = 'Value: -6.5 ... 6.5'
         Font.Charset = RUSSIAN_CHARSET
         Font.Color = clGreen
         Font.Height = -15

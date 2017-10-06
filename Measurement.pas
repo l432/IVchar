@@ -3,7 +3,15 @@ unit Measurement;
 interface
 
 uses
-  StdCtrls, Classes, IniFiles;
+  StdCtrls, Classes, IniFiles, Messages;
+
+Const
+   WM_MyMeasure=WM_USER+1;
+   {повідомлення, яке відсилається після закінчування
+   вимірювання в іншому потоці}
+
+   TemperMessage=1;
+   {WPARAM параметер, який надсилається при вимірюванні температури}
 
 type
 
@@ -16,8 +24,12 @@ end;
 IMeasurement = interface (IName)
   ['{7A6DCE4C-9A04-444A-B7FD-39B800BDE6A7}']
  function GetNewData:boolean;
+ function GetValue:double;
  function GetData:double;
- property NewData:boolean read GetNewData;
+ procedure SetNewData(Value:boolean);
+ procedure GetDataThread(WPARAM: word);
+ property NewData:boolean read GetNewData write SetNewData;
+ property Value:double read GetValue;
 end;
 
 IDAC = interface (IName)
@@ -34,19 +46,25 @@ IDAC = interface (IName)
  {встановлює на виході напругу Value під час калібрування}
 end;
 
-ITemperatureMeasurement = interface (IName)
+ITemperatureMeasurement = interface (IMeasurement)
   ['{DDC24597-B316-4E8B-B246-1DDD0B4D5E5D}']
   function GetTemperature:double;
+  procedure GetTemperatureThread();
 end;
 
 TSimulator = class (TInterfacedObject,IMeasurement,IDAC,ITemperatureMeasurement)
 private
  FName: string;
+ fValue:double;
+ fNewData:boolean;
  function GetName:string;
  function GetNewData:boolean;
+ function GetValue:double;
+ procedure SetNewData(Value:boolean);
 public
  property Name:string read GetName;
- property NewData:boolean read GetNewData;
+ property Value:double read GetValue;
+ property NewData:boolean read GetNewData write SetNewData;
  Constructor Create();overload;
  Constructor Create(name:string);overload;
  function GetTemperature:double;
@@ -58,6 +76,8 @@ public
  function CalibrationStep(Voltage:double):double;
  procedure OutputCalibr(Value:double);
  procedure OutputInt(Kod:integer);
+ procedure GetDataThread(WPARAM: word);
+ procedure GetTemperatureThread();
  procedure Free;
 end;
 
@@ -260,7 +280,7 @@ end;
 
 function TSimulator.GetNewData: boolean;
 begin
- Result:=True;
+ Result:=fNewData;
 end;
 
 function TSimulator.GetData: double;
@@ -268,11 +288,28 @@ begin
  Result:=GetTickCount/1e7;
 end;
 
+procedure TSimulator.GetDataThread(WPARAM: word);
+begin
+ fValue:=GetTickCount/1e7;
+ PostMessage(FindWindow ('TIVchar', 'IVchar'), WM_MyMeasure,WPARAM,0);
+end;
+
 function TSimulator.GetTemperature: double;
 begin
- sleep(500);
+// sleep(500);
+ fValue:=333;
  result:=333;
  // Result:=Random(4000)/10.0;
+end;
+
+procedure TSimulator.GetTemperatureThread;
+begin
+ GetDataThread(TemperMessage);
+end;
+
+function TSimulator.GetValue: double;
+begin
+ Result:=fValue;
 end;
 
 //function TSimulator.GetVoltage(Vin: double): double;
@@ -304,6 +341,11 @@ end;
 
 
 
+
+procedure TSimulator.SetNewData(Value: boolean);
+begin
+ fNewData:=Value;
+end;
 
 { TMeasuringDevice }
 

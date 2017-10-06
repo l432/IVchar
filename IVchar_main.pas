@@ -10,6 +10,10 @@ uses
   TemperatureSensor, DACR2R, UT70, RS232device,ET1255, RS232_Mediator_Tread,
   mmsystem;
 
+const
+  MeasIV='IV characteristic';
+  MeasR2RCalib='R2R-DAC Calibration';
+
 type
   TIVchar = class(TForm)
     ComPort1: TComPort;
@@ -214,7 +218,6 @@ type
     STRBlowlimitR2R: TStaticText;
     UDRBHighLimitR2R: TUpDown;
     UDRBLowLimitR2R: TUpDown;
-    CBCalibr: TCheckBox;
     STOKDACR2R: TStaticText;
     LOKDACR2R: TLabel;
     BOKchangeDACR2R: TButton;
@@ -308,6 +311,7 @@ type
     STValueRangeDACR2R: TStaticText;
     STCodeRangeDACR2R: TStaticText;
     TemperatureTimer: TTimer;
+    CBMeasurements: TComboBox;
 
     procedure FormCreate(Sender: TObject);
     procedure PortConnected();
@@ -424,11 +428,13 @@ type
     procedure CalibrHookDataSave;
     procedure HookEnd;
     procedure IVCharSaveClick(Sender: TObject);
+    procedure SaveClick(Sender: TObject);
     procedure CalibrSaveClick(Sender: TObject);
     procedure ParametersFileWork(Action: TSimpleEvent);
     procedure ET1255Create;
     procedure ET1255Free;
     procedure TemperatureTimerOnTime(Sender: TObject);
+    procedure WMMyMeasure (var Mes : TMessage); message WM_MyMeasure;
   public
     V721A:TV721A;
     V721_I,V721_II:TV721;
@@ -441,7 +447,8 @@ type
     ConfigFile:TIniFile;
     NumberPins:TStringList; // номери пінів, які використовуються як керуючі для SPI
     NumberPinsOneWire:TStringList; // номери пінів, які використовуються для OneWire
-    ForwSteps,RevSteps,IVResult,VolCorrection,VolCorrectionNew:PVector;
+    ForwSteps,RevSteps,IVResult,VolCorrection,
+    VolCorrectionNew,TemperData:PVector;
     DACR2R:TDACR2R;
     DACR2RShow:TDACR2RShow;
     Simulator:TSimulator;
@@ -471,7 +478,7 @@ type
     ,VoltageInputCorrectionN,VoltageMeasuredN:double;
 //    DoubleConstantShows:array of TDoubleConstantShow;
     DoubleConstantShows:array of TParameterShow1;
-    Imax,Imin,R_VtoI:double;
+    Imax,Imin,R_VtoI,Shift_VtoI:double;
     IVMeasuring,CalibrMeasuring:TDependenceMeasuring;
 //    TemperatueTimer : integer; // Код мультимедийного таймера для виміру температури
 //    TemperatureTimer : TTimer; // таймер для виміру температури
@@ -753,6 +760,35 @@ begin
    DoubleConstantShows[i].WriteToIniFile(ConfigFile);
 end;
 
+procedure TIVchar.SaveClick(Sender: TObject);
+ var last:string;
+begin
+  last:=LastDATFileName();
+  if last<>NoFile  then
+  begin
+    try
+      SaveDialog.FileName:=IntToStr(StrToInt(last)+1)+'.dat';
+    except
+      SaveDialog.FileName:=last+'1.dat';;
+    end;
+  end              else
+  SaveDialog.FileName:='1.dat';
+  SaveDialog.Title:='Last file - '+last+'.dat';
+  SaveDialog.InitialDir:=GetCurrentDir;
+  if SaveDialog.Execute then
+   begin
+     IVResult.Sorting;
+     IVResult.DeleteDuplicate;
+     Write_File(SaveDialog.FileName,IVResult);
+//toDo
+//     LTLastValue.Caption:=LTRValue.Caption;
+     LTLastValue.Caption:=FloatToStrF(Temperature,ffFixed, 5, 2);
+
+     BIVSave.Font.Style:=BIVSave.Font.Style+[fsStrikeOut];
+     SaveCommentsFile(SaveDialog.FileName);
+   end;
+end;
+
 procedure TIVchar.SaveCommentsFile(FileName: string);
  var SR : TSearchRec;
      DT:integer;
@@ -847,33 +883,34 @@ begin
 end;
 
 procedure TIVchar.IVCharSaveClick(Sender: TObject);
- var last:string;
+// var last:string;
 begin
   VolCorrectionNew.Sorting;
   VolCorrectionNew.DeleteDuplicate;
   VolCorrectionNew^.Copy(VolCorrection^);
 
-  last:=LastDATFileName();
-  if last<>NoFile  then
-  begin
-    try
-      SaveDialog.FileName:=IntToStr(StrToInt(last)+1)+'.dat';
-    except
-      SaveDialog.FileName:=last+'1.dat';;
-    end;
-  end              else
-  SaveDialog.FileName:='1.dat';
-  SaveDialog.Title:='Last file - '+last+'.dat';
-  SaveDialog.InitialDir:=GetCurrentDir;
-  if SaveDialog.Execute then
-   begin
-     IVResult.Sorting;
-     IVResult.DeleteDuplicate;
-     Write_File(SaveDialog.FileName,IVResult);
-     LTLastValue.Caption:=LTRValue.Caption;
-     BIVSave.Font.Style:=BIVSave.Font.Style+[fsStrikeOut];
-     SaveCommentsFile(SaveDialog.FileName);
-   end;
+  SaveClick(Sender);
+//  last:=LastDATFileName();
+//  if last<>NoFile  then
+//  begin
+//    try
+//      SaveDialog.FileName:=IntToStr(StrToInt(last)+1)+'.dat';
+//    except
+//      SaveDialog.FileName:=last+'1.dat';;
+//    end;
+//  end              else
+//  SaveDialog.FileName:='1.dat';
+//  SaveDialog.Title:='Last file - '+last+'.dat';
+//  SaveDialog.InitialDir:=GetCurrentDir;
+//  if SaveDialog.Execute then
+//   begin
+//     IVResult.Sorting;
+//     IVResult.DeleteDuplicate;
+//     Write_File(SaveDialog.FileName,IVResult);
+//     LTLastValue.Caption:=LTRValue.Caption;
+//     BIVSave.Font.Style:=BIVSave.Font.Style+[fsStrikeOut];
+//     SaveCommentsFile(SaveDialog.FileName);
+//   end;
 end;
 
 procedure TIVchar.CalibrationHookStep;
@@ -893,14 +930,23 @@ begin
   Imax := DoubleConstantShows[1].Data;
   Imin := DoubleConstantShows[2].Data;
   R_VtoI:=DoubleConstantShows[5].Data;
+  Shift_VtoI:= DoubleConstantShows[6].Data;
   SetLenVector(VolCorrectionNew,0);
   ThermoCuple.Measurement:=TermoCouple_MD.ActiveInterface;
+  TemperData.Clear;
+  if not(SBTAuto.Down) then
+    begin
+      Temperature:=Temperature_MD.GetMeasurementResult;
+      TemperData.Add(0,Temperature);
+    end;
+
 end;
 
 procedure TIVchar.HookBegin;
 begin
    DecimalSeparator:='.';
-  CBCalibr.Enabled := False;
+  CBMeasurements.Enabled:=False;
+//  CBCalibr.Enabled := False;
 //  CBCurrentValue.Enabled := False;
   BIVStart.Enabled := False;
   BConnect.Enabled := False;
@@ -915,12 +961,12 @@ begin
 //    TemperatureMeasuringThread.Terminate;
 //    end;
 
-  if not(SBTAuto.Down) then
-    begin
-     SBTAuto.Down := True;
-     TemperatureTimer.Interval:=round(1000*StrToFloat(STTMI.Caption));
-     TemperatureTimer.Enabled:=True;
-    end;
+//  if not(SBTAuto.Down) then
+//    begin
+//     SBTAuto.Down := True;
+//     TemperatureTimer.Interval:=round(1000*StrToFloat(STTMI.Caption));
+//     TemperatureTimer.Enabled:=True;
+//    end;
 
 
 //  if not(SBTAuto.Down) then
@@ -1065,7 +1111,7 @@ begin
 // ****************************
  if CBVtoI.Checked then
   begin
-   Current:=current/R_VtoI;
+   Current:=(current-Shift_VtoI)/R_VtoI;
    LADCurrentValue.Caption:=FloatToStrF(Current,ffExponent, 4, 2);
   end;
 
@@ -1513,9 +1559,25 @@ begin
   if abs(TDependenceMeasuring.tempI)<=abs(Imin)
 //     then TDependenceMeasuring.tempIChange(0);
      then TDependenceMeasuring.tempIChange(ErResult);
-  if NumberOfTemperatureMeasuring=TDependenceMeasuring.PointNumber
-//    then Temperature:=Temperature_MD.GetMeasurementResult(TDependenceMeasuring.VoltageInput);
-    then Temperature:=Temperature_MD.GetMeasurementResult();
+
+
+  if (not(SBTAuto.Down))and
+     (NumberOfTemperatureMeasuring=TDependenceMeasuring.PointNumber)
+    then
+    begin
+      Temperature:=Temperature_MD.GetMeasurementResult();
+      TemperData.Add(TDependenceMeasuring.PointNumber,Temperature);
+    end;
+
+  if (SBTAuto.Down)and
+     (Temperature_MD.ActiveInterface.NewData) then
+      begin
+       TemperData.Add(TDependenceMeasuring.PointNumber,
+                     Temperature_MD.ActiveInterface.Value);
+       Temperature_MD.ActiveInterface.NewData:=False;
+      end;
+
+
   if ItIsBegining then ItIsBegining:=not(ItIsBegining);
   if TDependenceMeasuring.ItIsForward then
      VolCorrectionNew.Add(TDependenceMeasuring.VoltageInput,TDependenceMeasuring.VoltageCorrection)
@@ -1526,9 +1588,20 @@ end;
 procedure TIVchar.IVcharHookEnd;
 begin
  HookEnd();
- if Temperature=ErResult then
-//    Temperature:=Temperature_MD.GetMeasurementResult(TDependenceMeasuring.VoltageInput);
-    Temperature:=Temperature_MD.GetMeasurementResult();
+
+  if (not(SBTAuto.Down)) then
+    begin
+      Temperature:=Temperature_MD.GetMeasurementResult();
+      TemperData.Add(TDependenceMeasuring.PointNumber,Temperature);
+    end;
+
+  TemperData.DeleteErResult;
+  if TemperData.n>0 then
+     Temperature:=TemperData.SumY/TemperData.n;
+
+// if Temperature=ErResult then
+//    Temperature:=Temperature_MD.GetMeasurementResult();
+
  BIVSave.OnClick:=IVCharSaveClick;
 end;
 
@@ -1560,7 +1633,8 @@ begin
 // showmessage(
 //  booltostr(DACR2R.isNeededComPort)+' false'+booltostr(false));
 
-  CBCalibr.Enabled := True;
+//  CBCalibr.Enabled := True;
+  CBMeasurements.Enabled:=True;
 //  CBCurrentValue.Enabled := True;
   BIVStart.Enabled := True;
   BConnect.Enabled := True;
@@ -1760,8 +1834,13 @@ begin
 
 procedure TIVchar.BIVStartClick(Sender: TObject);
 begin
-if CBCalibr.Checked then CalibrMeasuring.Measuring
-                    else IVMeasuring.Measuring;
+ if CBMeasurements.Items[CBMeasurements.ItemIndex]=MeasR2RCalib
+     then CalibrMeasuring.Measuring;
+ if CBMeasurements.Items[CBMeasurements.ItemIndex]=MeasIV
+     then IVMeasuring.Measuring;
+
+//if CBCalibr.Checked then CalibrMeasuring.Measuring
+//                    else IVMeasuring.Measuring;
 end;
 
 
@@ -1988,6 +2067,8 @@ begin
  if RS232_MediatorTread <> nil
    then RS232_MediatorTread.Terminate;
 
+ if SBTAuto.Down then TemperatureMeasuringThread.Terminate;
+
  if assigned(TemperatureTimer) then TemperatureTimer.Free;
 
  
@@ -2135,7 +2216,9 @@ procedure TIVchar.RangeShow(Sender: TObject);
     LimitShow:TLimitShow;
     LimitShowRev:TLimitShowRev;
  begin
-  if CBCalibr.Checked then
+  if CBMeasurements.Items[CBMeasurements.ItemIndex]
+        =MeasR2RCalib then
+//  if CBCalibr.Checked then
     begin
       LimitShow:=CalibrRangeFor;
       LimitShowRev:=CalibrRangeRev;
@@ -2315,6 +2398,7 @@ begin
       if IVchar.Components[i].Tag=7 then
      (IVchar.Components[i] as TCheckBox).OnClick:=RangeShow;
     end;
+  CBMeasurements.OnChange:=RangeShow;
  finally
  end;
 
@@ -2449,6 +2533,7 @@ begin
   new(IVResult);
   new(VolCorrection);
   new(VolCorrectionNew);
+  new(TemperData);
 end;
 
 procedure TIVchar.VectorsDispose;
@@ -2458,26 +2543,24 @@ begin
   dispose(IVResult);
   dispose(VolCorrection);
   dispose(VolCorrectionNew);
+  dispose(TemperData);
 end;
 
 
 procedure TIVchar.SBTAutoClick(Sender: TObject);
 begin
-// if SBTAuto.Down then
-//    TemperatureThreadCreate()
-//                 else
-//    TemperatureMeasuringThread.Terminate;
-
  if SBTAuto.Down then
-     begin
-//       TemperatureTimer:=TTimer.Create(IVchar);
-//       if TemperatureTimer=nil then showmessage('jj');
-
-       TemperatureTimer.Interval:=round(1000*StrToFloat(STTMI.Caption));
-       TemperatureTimer.Enabled:=True;
-     end
+    TemperatureThreadCreate()
                  else
-       TemperatureTimer.Enabled:=False;
+    TemperatureMeasuringThread.Terminate;
+
+// if SBTAuto.Down then
+//     begin
+//       TemperatureTimer.Interval:=round(1000*StrToFloat(STTMI.Caption));
+//       TemperatureTimer.Enabled:=True;
+//     end
+//                 else
+//       TemperatureTimer.Enabled:=False;
 
 
 // if SBTAuto.Down then
@@ -2512,13 +2595,17 @@ end;
 
 procedure TIVchar.TemperatureThreadCreate;
 begin
-  TemperatureMeasuringThread:=TTemperatureMeasuringThread.Create(True);
-  TemperatureMeasuringThread.TemperatureMD:=Temperature_MD;
   ThermoCuple.Measurement:=TermoCouple_MD.ActiveInterface;
+  TemperatureMeasuringThread:=
+    TTemperatureMeasuringThread.Create(Temperature_MD,round(1000*StrToFloat(STTMI.Caption)));
 
-  TemperatureMeasuringThread.Priority:=tpLower;
-  TemperatureMeasuringThread.FreeOnTerminate:=True;
-  TemperatureMeasuringThread.Resume;
+//  TemperatureMeasuringThread:=TTemperatureMeasuringThread.Create(True);
+//  TemperatureMeasuringThread.TemperatureMD:=Temperature_MD;
+//  ThermoCuple.Measurement:=TermoCouple_MD.ActiveInterface;
+//
+//  TemperatureMeasuringThread.Priority:=tpLower;
+//  TemperatureMeasuringThread.FreeOnTerminate:=True;
+//  TemperatureMeasuringThread.Resume;
 end;
 
 
@@ -2533,7 +2620,8 @@ end;
 procedure TIVchar.TemperatureTimerTimer(Sender: TObject);
 begin
   ThermoCuple.Measurement:=TermoCouple_MD.ActiveInterface;
-  Temperature_MD.GetMeasurementResult();
+//  Temperature_MD.GetMeasurementResult();
+  Temperature_MD.ActiveInterface.GetDataThread(TemperMessage);
 end;
 
 procedure TIVchar.VoltmetrsCreate;
@@ -2579,6 +2667,15 @@ begin
 //  VoltmetrShows[i].PinsWriteToIniFile(ConfigFile);
   VoltmetrShows[i].PinShow.PinsWriteToIniFile(ConfigFile);
  DS18B20show.PinsWriteToIniFile(ConfigFile);
+end;
+
+procedure TIVchar.WMMyMeasure(var Mes: TMessage);
+begin
+  if Mes.WParam=TemperMessage then
+    begin
+      LTRValue.Caption:=FloatToStrF(Temperature_MD.ActiveInterface.Value,ffFixed, 5, 2);
+    end;
+  
 end;
 
 procedure TIVchar.VoltmetrsFree;
@@ -2822,6 +2919,11 @@ begin
    end;
   finally
   end;
+
+  CBMeasurements.Items.Clear;
+  CBMeasurements.Items.Add(MeasIV);
+  CBMeasurements.Items.Add(MeasR2RCalib);
+  CBMeasurements.ItemIndex:=0;
 
 end;
 
