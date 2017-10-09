@@ -14,7 +14,8 @@ const
  UA_Label='~U';
  UD_Label='=U';
 
-var ComPortAlloved:boolean;
+var
+//ComPortAlloved:boolean;
     EventComPortFree: THandle;
 
 type
@@ -675,7 +676,7 @@ begin
 end;
 
 initialization
-  ComPortAlloved:= True;
+//  ComPortAlloved:= True;
   EventComPortFree := CreateEvent(nil,
                                  True, // тип сброса TRUE - ручной
                                  True, // начальное состояние TRUE - сигнальное

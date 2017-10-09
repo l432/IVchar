@@ -323,8 +323,8 @@ object IVchar: TIVchar
           ParentFont = False
         end
         object LADInputVoltage: TLabel
-          Left = 19
-          Top = 18
+          Left = 21
+          Top = 19
           Width = 86
           Height = 16
           Caption = 'Input Voltage:'
@@ -337,7 +337,7 @@ object IVchar: TIVchar
         end
         object LADInputVoltageValue: TLabel
           Left = 113
-          Top = 15
+          Top = 18
           Width = 41
           Height = 18
           Caption = '-3.456'
@@ -2547,6 +2547,7 @@ object IVchar: TIVchar
           ComPort = ComPort1
           ComProperty = cpPort
           AutoApply = True
+          Text = 'COM1'
           Style = csDropDownList
           Font.Charset = RUSSIAN_CHARSET
           Font.Color = clWindowText
@@ -2554,7 +2555,7 @@ object IVchar: TIVchar
           Font.Name = 'Arial'
           Font.Style = [fsBold]
           ItemHeight = 18
-          ItemIndex = -1
+          ItemIndex = 0
           ParentFont = False
           TabOrder = 0
         end
@@ -2566,6 +2567,7 @@ object IVchar: TIVchar
           ComPort = ComPort1
           ComProperty = cpBaudRate
           AutoApply = True
+          Text = '115200'
           Style = csDropDownList
           Font.Charset = RUSSIAN_CHARSET
           Font.Color = clWindowText
@@ -2573,7 +2575,7 @@ object IVchar: TIVchar
           Font.Name = 'Arial'
           Font.Style = [fsBold]
           ItemHeight = 18
-          ItemIndex = -1
+          ItemIndex = 13
           ParentFont = False
           TabOrder = 1
         end
@@ -3169,6 +3171,7 @@ object IVchar: TIVchar
           ComPort = ComPortUT70B
           ComProperty = cpPort
           AutoApply = True
+          Text = 'COM1'
           Style = csDropDownList
           Font.Charset = RUSSIAN_CHARSET
           Font.Color = clWindowText
@@ -3176,7 +3179,7 @@ object IVchar: TIVchar
           Font.Name = 'Arial'
           Font.Style = [fsBold]
           ItemHeight = 18
-          ItemIndex = -1
+          ItemIndex = 0
           ParentFont = False
           TabOrder = 5
         end
@@ -3777,6 +3780,94 @@ object IVchar: TIVchar
         end
       end
     end
+    object Time_Dependence: TTabSheet
+      Caption = 'Time'
+      ImageIndex = 9
+      object LTimeInterval: TLabel
+        Left = 10
+        Top = 87
+        Width = 76
+        Height = 13
+        Caption = 'Interval (s)'
+        Font.Charset = RUSSIAN_CHARSET
+        Font.Color = clMaroon
+        Font.Height = -11
+        Font.Name = 'Verdana'
+        Font.Style = [fsBold]
+        ParentFont = False
+      end
+      object LTimeDuration: TLabel
+        Left = 10
+        Top = 143
+        Width = 79
+        Height = 13
+        Caption = 'Duration (s)'
+        Font.Charset = RUSSIAN_CHARSET
+        Font.Color = clMaroon
+        Font.Height = -11
+        Font.Name = 'Verdana'
+        Font.Style = [fsBold]
+        ParentFont = False
+      end
+      object STTimeMD: TStaticText
+        Left = 15
+        Top = 18
+        Width = 117
+        Height = 20
+        Caption = 'Measurind Device'
+        Font.Charset = RUSSIAN_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -13
+        Font.Name = 'Arial'
+        Font.Style = [fsBold]
+        ParentFont = False
+        TabOrder = 0
+      end
+      object CBTimeMD: TComboBox
+        Tag = 5
+        Left = 15
+        Top = 44
+        Width = 132
+        Height = 24
+        Style = csDropDownList
+        Font.Charset = RUSSIAN_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -13
+        Font.Name = 'Arial'
+        Font.Style = [fsBold]
+        ItemHeight = 16
+        ParentFont = False
+        TabOrder = 1
+      end
+      object STTimeInterval: TStaticText
+        Left = 10
+        Top = 106
+        Width = 97
+        Height = 24
+        Caption = '1.34E+01'
+        Font.Charset = RUSSIAN_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -17
+        Font.Name = 'Verdana'
+        Font.Style = [fsBold]
+        ParentFont = False
+        TabOrder = 2
+      end
+      object STTimeDuration: TStaticText
+        Left = 10
+        Top = 162
+        Width = 97
+        Height = 24
+        Caption = '1.34E+01'
+        Font.Charset = RUSSIAN_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -17
+        Font.Name = 'Verdana'
+        Font.Style = [fsBold]
+        ParentFont = False
+        TabOrder = 3
+      end
+    end
   end
   object BBClose: TBitBtn
     Left = 584
@@ -3873,10 +3964,10 @@ object IVchar: TIVchar
     Left = 876
     Top = 612
   end
-  object TemperatureTimer: TTimer
+  object DependTimer: TTimer
     Enabled = False
     Interval = 5000
-    OnTimer = TemperatureTimerTimer
+    OnTimer = DependTimerTimer
     Left = 748
     Top = 464
   end

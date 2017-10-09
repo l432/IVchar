@@ -17,7 +17,7 @@ type
    procedure GetTemperatureThread();
   end;
 
-  TThermoCuple=class(TNamedDevice,ITemperatureMeasurement)
+  TThermoCuple=class(TNamedDevice,ITemperatureMeasurement,IMeasurement)
     protected
      function GetNewData:boolean;
      function GetValue:double;
