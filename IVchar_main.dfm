@@ -35,7 +35,7 @@ object IVchar: TIVchar
     Top = 0
     Width = 786
     Height = 466
-    ActivePage = TS_Main
+    ActivePage = Time_Dependence
     Align = alTop
     Font.Charset = RUSSIAN_CHARSET
     Font.Color = clWindowText
@@ -2547,7 +2547,6 @@ object IVchar: TIVchar
           ComPort = ComPort1
           ComProperty = cpPort
           AutoApply = True
-          Text = 'COM1'
           Style = csDropDownList
           Font.Charset = RUSSIAN_CHARSET
           Font.Color = clWindowText
@@ -2555,7 +2554,7 @@ object IVchar: TIVchar
           Font.Name = 'Arial'
           Font.Style = [fsBold]
           ItemHeight = 18
-          ItemIndex = 0
+          ItemIndex = -1
           ParentFont = False
           TabOrder = 0
         end
@@ -2567,7 +2566,6 @@ object IVchar: TIVchar
           ComPort = ComPort1
           ComProperty = cpBaudRate
           AutoApply = True
-          Text = '115200'
           Style = csDropDownList
           Font.Charset = RUSSIAN_CHARSET
           Font.Color = clWindowText
@@ -2575,7 +2573,7 @@ object IVchar: TIVchar
           Font.Name = 'Arial'
           Font.Style = [fsBold]
           ItemHeight = 18
-          ItemIndex = 13
+          ItemIndex = -1
           ParentFont = False
           TabOrder = 1
         end
@@ -3171,7 +3169,6 @@ object IVchar: TIVchar
           ComPort = ComPortUT70B
           ComProperty = cpPort
           AutoApply = True
-          Text = 'COM1'
           Style = csDropDownList
           Font.Charset = RUSSIAN_CHARSET
           Font.Color = clWindowText
@@ -3179,7 +3176,7 @@ object IVchar: TIVchar
           Font.Name = 'Arial'
           Font.Style = [fsBold]
           ItemHeight = 18
-          ItemIndex = 0
+          ItemIndex = -1
           ParentFont = False
           TabOrder = 5
         end
@@ -3783,6 +3780,8 @@ object IVchar: TIVchar
     object Time_Dependence: TTabSheet
       Caption = 'Time'
       ImageIndex = 9
+      ExplicitLeft = 6
+      ExplicitTop = 60
       object LTimeInterval: TLabel
         Left = 10
         Top = 87
@@ -3866,6 +3865,177 @@ object IVchar: TIVchar
         Font.Style = [fsBold]
         ParentFont = False
         TabOrder = 3
+      end
+      object GBCSetup: TGroupBox
+        Left = 291
+        Top = 18
+        Width = 414
+        Height = 215
+        Caption = 'Controling Setup'
+        Font.Charset = RUSSIAN_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -13
+        Font.Name = 'Courier'
+        Font.Style = [fsBold]
+        ParentFont = False
+        TabOrder = 4
+        object LControlNV: TLabel
+          Left = 178
+          Top = 33
+          Width = 89
+          Height = 13
+          Caption = 'Needed Value'
+          Font.Charset = RUSSIAN_CHARSET
+          Font.Color = clMaroon
+          Font.Height = -11
+          Font.Name = 'Verdana'
+          Font.Style = [fsBold]
+          ParentFont = False
+        end
+        object LControlCV: TLabel
+          Left = 306
+          Top = 33
+          Width = 89
+          Height = 13
+          Caption = 'Current Value'
+          Font.Charset = RUSSIAN_CHARSET
+          Font.Color = clMaroon
+          Font.Height = -11
+          Font.Name = 'Verdana'
+          Font.Style = [fsBold]
+          ParentFont = False
+        end
+        object LControlInterval: TLabel
+          Left = 18
+          Top = 159
+          Width = 76
+          Height = 13
+          Caption = 'Interval (s)'
+          Font.Charset = RUSSIAN_CHARSET
+          Font.Color = clMaroon
+          Font.Height = -11
+          Font.Name = 'Verdana'
+          Font.Style = [fsBold]
+          ParentFont = False
+        end
+        object SBControlBegin: TSpeedButton
+          Left = 207
+          Top = 175
+          Width = 170
+          Height = 26
+          AllowAllUp = True
+          GroupIndex = 2
+          Caption = 'Begin Controling'
+          Font.Charset = RUSSIAN_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -13
+          Font.Name = 'Arial'
+          Font.Style = [fsBold]
+          ParentFont = False
+          OnClick = SBTAutoClick
+        end
+        object CBControlCD: TComboBox
+          Tag = 5
+          Left = 8
+          Top = 114
+          Width = 132
+          Height = 24
+          Style = csDropDownList
+          Font.Charset = RUSSIAN_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -13
+          Font.Name = 'Arial'
+          Font.Style = [fsBold]
+          ItemHeight = 16
+          ParentFont = False
+          TabOrder = 0
+        end
+        object STControl_CD: TStaticText
+          Left = 8
+          Top = 88
+          Width = 97
+          Height = 20
+          Caption = 'Control Device'
+          Font.Charset = RUSSIAN_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -13
+          Font.Name = 'Arial'
+          Font.Style = [fsBold]
+          ParentFont = False
+          TabOrder = 1
+        end
+        object CBControlMD: TComboBox
+          Tag = 5
+          Left = 8
+          Top = 52
+          Width = 132
+          Height = 24
+          Style = csDropDownList
+          Font.Charset = RUSSIAN_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -13
+          Font.Name = 'Arial'
+          Font.Style = [fsBold]
+          ItemHeight = 16
+          ParentFont = False
+          TabOrder = 2
+        end
+        object STControl_MD: TStaticText
+          Left = 8
+          Top = 26
+          Width = 117
+          Height = 20
+          Caption = 'Measurind Device'
+          Font.Charset = RUSSIAN_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -13
+          Font.Name = 'Arial'
+          Font.Style = [fsBold]
+          ParentFont = False
+          TabOrder = 3
+        end
+        object STControlNV: TStaticText
+          Left = 178
+          Top = 52
+          Width = 97
+          Height = 24
+          Caption = '1.34E+01'
+          Font.Charset = RUSSIAN_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -17
+          Font.Name = 'Verdana'
+          Font.Style = [fsBold]
+          ParentFont = False
+          TabOrder = 4
+        end
+        object STControlCV: TStaticText
+          Left = 306
+          Top = 52
+          Width = 97
+          Height = 24
+          Caption = '1.34E+01'
+          Font.Charset = RUSSIAN_CHARSET
+          Font.Color = clBackground
+          Font.Height = -17
+          Font.Name = 'Verdana'
+          Font.Style = [fsBold]
+          ParentFont = False
+          TabOrder = 5
+        end
+        object STControlInterval: TStaticText
+          Left = 18
+          Top = 178
+          Width = 97
+          Height = 24
+          Caption = '1.34E+01'
+          Font.Charset = RUSSIAN_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -17
+          Font.Name = 'Verdana'
+          Font.Style = [fsBold]
+          ParentFont = False
+          TabOrder = 6
+        end
       end
     end
   end

@@ -13,6 +13,7 @@ uses
 const
   MeasIV='IV characteristic';
   MeasR2RCalib='R2R-DAC Calibration';
+  MeasTimeD='Time dependence';
 
   MD_IniSection='Sources';
 
@@ -322,6 +323,18 @@ type
     STTimeInterval: TStaticText;
     LTimeDuration: TLabel;
     STTimeDuration: TStaticText;
+    GBCSetup: TGroupBox;
+    CBControlCD: TComboBox;
+    STControl_CD: TStaticText;
+    CBControlMD: TComboBox;
+    STControl_MD: TStaticText;
+    STControlNV: TStaticText;
+    LControlNV: TLabel;
+    STControlCV: TStaticText;
+    LControlCV: TLabel;
+    STControlInterval: TStaticText;
+    LControlInterval: TLabel;
+    SBControlBegin: TSpeedButton;
 
     procedure FormCreate(Sender: TObject);
     procedure PortConnected();
@@ -426,6 +439,9 @@ type
     procedure CalibrHookEnd;
     procedure HookBegin;
     procedure TimeDHookBegin;
+    procedure TimeDHookEnd;
+    procedure TimeDHookFirstMeas;
+    procedure TimeDHookSecondMeas;
     procedure IVCharHookSetVoltage;
     procedure IVCharHookAction;
     procedure CalibrHookSetVoltage;
@@ -446,6 +462,7 @@ type
     procedure ET1255Free;
     procedure TemperatureTimerOnTime(Sender: TObject);
     procedure WMMyMeasure (var Mes : TMessage); message WM_MyMeasure;
+    procedure HookEndReset;
   public
     V721A:TV721A;
     V721_I,V721_II:TV721;
@@ -703,7 +720,7 @@ end;
 procedure TIVchar.ConstantShowCreate;
 begin
 
-  SetLength(DoubleConstantShows, 10);
+  SetLength(DoubleConstantShows, 12);
   DoubleConstantShows[0]:=TParameterShow1.Create(STPR,LPR,
         'Parasitic resistance',
 //        'Resistance input',
@@ -737,27 +754,20 @@ begin
         'Temperature measurement interval',5,2);
   DoubleConstantShows[8]:=TParameterShow1.Create(STTimeInterval,LTimeInterval,
         'Measurement interval (s)',
-        'Temperature measurement interval',15,2);
+        'Time dependence measurement interval',15,2);
   DoubleConstantShows[9]:=TParameterShow1.Create(STTimeDuration,LTimeDuration,
         'Measurement duration (s)',
         'Full measurement duration',0,2);
+  DoubleConstantShows[10]:=TParameterShow1.Create(STControlNV,LControlNV,
+        'Needed Value',
+        'Needed Value',0);
+  DoubleConstantShows[11]:=TParameterShow1.Create(STControlInterval,LControlInterval,
+        'Controling interval (s)',
+        'Controling measurement interval',15,2);
 
 
 
 
-//  SetLength(DoubleConstantShows, 6);
-//  DoubleConstantShows[0]:=TDoubleConstantShow.Create(LPR,BPR,
-//        'Resistance','Parasitic resistance value is expected',0);
-//  DoubleConstantShows[1]:=TDoubleConstantShow.Create(LMC,BMC,
-//        'Maximum current','Maximum current for I-V characteristic measurement is expected',2e-2);
-//  DoubleConstantShows[2]:=TDoubleConstantShow.Create(LMinC,BMinC,
-//        'Minimum current','Minimum current for I-V characteristic measurement is expected',5e-11);
-//  DoubleConstantShows[3]:=TDoubleConstantShow.Create(LFVP,BFVP,
-//        'Forward voltage precision','Voltage precision for forward I-V characteristic is expected',0.001);
-//  DoubleConstantShows[4]:=TDoubleConstantShow.Create(LRVP,BRVP,
-//        'Reverse voltage precision','Voltage precision for reverse I-V characteristic is expected',0.005);
-//  DoubleConstantShows[5]:=TDoubleConstantShow.Create(LVtoI,BVtoI,
-//        'Resistance for V to I','Resistance for V to I transformation is expected',10);
 end;
 
 procedure TIVchar.ConstantShowFromIniFile;
@@ -799,8 +809,7 @@ begin
      IVResult.Sorting;
      IVResult.DeleteDuplicate;
      Write_File(SaveDialog.FileName,IVResult);
-//toDo
-//     LTLastValue.Caption:=LTRValue.Caption;
+
      LTLastValue.Caption:=FloatToStrF(Temperature,ffFixed, 5, 2);
 
      BIVSave.Font.Style:=BIVSave.Font.Style+[fsStrikeOut];
@@ -859,15 +868,18 @@ begin
 
   IVMeasuring.HookSecondMeas:=IVCharCurrentMeasHook;
   CalibrMeasuring.HookSecondMeas:=CalibrHookSecondMeas;
+  TimeDependence.HookSecondMeas:=TimeDHookSecondMeas;
 
   IVMeasuring.HookFirstMeas:=IVCharVoltageMeasHook;
   CalibrMeasuring.HookFirstMeas:=CalibrHookFirstMeas;
+  TimeDependence.HookFirstMeas:=TimeDHookFirstMeas;
 
   IVMeasuring.HookDataSave:=IVCharHookDataSave;
   CalibrMeasuring.HookDataSave:=CalibrHookDataSave;
 
   IVMeasuring.HookEndMeasuring:=IVcharHookEnd;
   CalibrMeasuring.HookEndMeasuring:=CalibrHookEnd;
+  TimeDependence.HookEndMeasuring:=TimeDHookEnd;
 
 end;
 
@@ -1110,8 +1122,9 @@ begin
 //      end;
 
 //   if tmI=ErResult then Break;
-   if (ItIsBegining)or(High(IVResult^.Y)<0) then AtempNumber:=AtempNumbermax
-                                             else
+   if (ItIsBegining)or(High(IVResult^.Y)<0)
+       then AtempNumber:=AtempNumbermax
+       else
      begin
      if (TIVDependence.ItIsForward and (tmI>IVResult^.Y[High(IVResult^.Y)])) then AtempNumber:=AtempNumbermax;
      if (not(TIVDependence.ItIsForward) and (tmI<IVResult^.Y[High(IVResult^.Y)])) then AtempNumber:=AtempNumbermax;
@@ -1564,6 +1577,7 @@ end;
 
 procedure TIVchar.CalibrHookEnd;
 begin
+ HookEndReset();
  HookEnd();
  BIVSave.OnClick:=CalibrSaveClick;
 end;
@@ -1610,6 +1624,7 @@ end;
 
 procedure TIVchar.IVcharHookEnd;
 begin
+ HookEndReset;
  HookEnd();
 
   if (not(SBTAuto.Down)) then
@@ -1631,32 +1646,7 @@ end;
 procedure TIVchar.HookEnd;
 begin
   DecimalSeparator:='.';
-//  showmessage(SettingDevice.ActiveInterface.Name);
-// showmessage(
-//   booltostr(TDependenceMeasuring.IVMeasuringToStop)+' false'+booltostr(false));
-//  sleep(5000);
-  SettingDevice.Reset;
-  if TIVDependence.IVMeasuringToStop
-   then showmessage('Procedure ia stopped');
-  
-//  SettingDevice.ActiveInterface.Output(0);
 
-//  sleep(100);
-//Application.ProcessMessages;
-
-//  if not(TDependenceMeasuring.ItIsForward) then
-//   begin
-//   sleep(500);
-//   SettingDevice.Reset;
-//   end;
-//   sleep(5500);
-// Application.ProcessMessages;
-// sleep(2000);
-//
-// showmessage(
-//  booltostr(DACR2R.isNeededComPort)+' false'+booltostr(false));
-
-//  CBCalibr.Enabled := True;
   CBMeasurements.Enabled:=True;
 //  CBCurrentValue.Enabled := True;
   BIVStart.Enabled := True;
@@ -1861,6 +1851,8 @@ begin
      then CalibrMeasuring.Measuring;
  if CBMeasurements.Items[CBMeasurements.ItemIndex]=MeasIV
      then IVMeasuring.Measuring;
+ if CBMeasurements.Items[CBMeasurements.ItemIndex]=MeasTimeD
+     then TimeDependence.BeginMeasuring;
 
 //if CBCalibr.Checked then CalibrMeasuring.Measuring
 //                    else IVMeasuring.Measuring;
@@ -2643,14 +2635,45 @@ end;
 procedure TIVchar.TimeDHookBegin;
 begin
   HookBegin();
-  TimeDependence.Interval:=round(StrToFloatDef(STTimeInterval.Caption,15));
-  TimeDependence.Duration:=round(StrToFloatDef(STTimeDuration.Caption,0));
+//  TimeDependence.Interval:=round(StrToFloatDef(STTimeInterval.Caption,15));
+//  TimeDependence.Duration:=round(StrToFloatDef(STTimeDuration.Caption,0));
+//  showmessage(floattostr(round(StrToFloat(STTimeInterval.Caption))));
+//  temp:=round(StrToFloat(STTimeInterval.Caption));
+  TimeDependence.Interval:=round(StrToFloat(STTimeInterval.Caption));
+//  TimeDependence.Interval:=temp;
+//  showmessage(floattostr(TimeDependence.Interval));
+
+  TimeDependence.Duration:=round(StrToFloat(STTimeDuration.Caption));
+//  showmessage(floattostr(TimeDependence.Duration));
+
   LADInputVoltage.Visible:=False;
   LADInputVoltageValue.Visible:=False;
-  LADVoltage.Caption:='Meauring';
-  LADCurrent.Caption:='Time';
+  LADRange.Visible:=False;
+  LADVoltage.Caption:='Meauring:';
+  LADCurrent.Caption:='Time:';
+end;
 
+procedure TIVchar.TimeDHookEnd;
+begin
+ HookEnd();
+ LADInputVoltage.Visible:=True;
+ LADInputVoltageValue.Visible:=True;
+ LADRange.Visible:=True;
+ LADVoltage.Caption:='Voltage:';
+ LADCurrent.Caption:='Current:';
 
+ BIVSave.OnClick:=SaveClick;
+end;
+
+procedure TIVchar.TimeDHookFirstMeas;
+begin
+ TDependence.tempIChange(TimeD_MD.ActiveInterface.GetData);
+ LADVoltageValue.Caption:=FloatToStrF(TDependence.tempI,ffFixed, 4, 3);
+end;
+
+procedure TIVchar.TimeDHookSecondMeas;
+begin
+ LADCurrentValue.Caption:=FloatToStrF(TDependence.tempV,ffExponent, 4, 3);
 end;
 
 procedure TIVchar.DependTimerTimer(Sender: TObject);
@@ -2712,6 +2735,13 @@ begin
       LTRValue.Caption:=FloatToStrF(Temperature_MD.ActiveInterface.Value,ffFixed, 5, 2);
     end;
   
+end;
+
+procedure TIVchar.HookEndReset;
+begin
+  SettingDevice.Reset;
+  if TIVDependence.IVMeasuringToStop then
+    showmessage('Procedure ia stopped');
 end;
 
 procedure TIVchar.VoltmetrsFree;
@@ -2967,6 +2997,7 @@ begin
   CBMeasurements.Items.Clear;
   CBMeasurements.Items.Add(MeasIV);
   CBMeasurements.Items.Add(MeasR2RCalib);
+  CBMeasurements.Items.Add(MeasTimeD);
   CBMeasurements.ItemIndex:=0;
 
 end;
