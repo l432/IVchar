@@ -14,7 +14,7 @@ type
    Constructor Create(CP:TComPort;Nm:string);override;
    function GetTemperature():double;
    Procedure ConvertToValue();override;
-   procedure GetTemperatureThread();
+   procedure GetTemperatureThread(EventEnd:THandle);
   end;
 
   TThermoCuple=class(TNamedDevice,ITemperatureMeasurement,IMeasurement)
@@ -33,8 +33,8 @@ type
      Constructor Create();
      Procedure Free;
      function GetData:double;
-     procedure GetDataThread(WPARAM: word);
-     procedure GetTemperatureThread();
+     procedure GetDataThread(WPARAM: word;EventEnd:THandle);
+     procedure GetTemperatureThread(EventEnd:THandle);
   end;
 
 implementation
@@ -62,9 +62,9 @@ begin
 end;
 
 
-procedure TDS18B20.GetTemperatureThread;
+procedure TDS18B20.GetTemperatureThread(EventEnd:THandle);
 begin
- GetDataThread(TemperMessage);
+ GetDataThread(TemperMessage,EventEnd);
 end;
 
 //procedure TDS18B20.ConvertToValue(Data: array of byte);
@@ -128,9 +128,9 @@ begin
  Result:=GetTemperature;
 end;
 
-procedure TThermoCuple.GetDataThread(WPARAM: word);
+procedure TThermoCuple.GetDataThread(WPARAM: word;EventEnd:THandle);
 begin
- Measurement.GetDataThread(WPARAM);
+ Measurement.GetDataThread(WPARAM,EventEnd);
 end;
 
 function TThermoCuple.GetNewData: boolean;
@@ -146,9 +146,9 @@ begin
 // Result:=T_CuKo(Measurement.GetData);
 end;
 
-procedure TThermoCuple.GetTemperatureThread;
+procedure TThermoCuple.GetTemperatureThread(EventEnd:THandle);
 begin
- Measurement.GetDataThread(TemperMessage);
+ Measurement.GetDataThread(TemperMessage,EventEnd);
 end;
 
 function TThermoCuple.GetValue: double;

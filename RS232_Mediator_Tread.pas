@@ -3,29 +3,30 @@ unit RS232_Mediator_Tread;
 interface
 
 uses
-  Classes, RS232device;
+  Classes, RS232device, RS232_Meas_Tread;
 
 Const
   ScanningPeriod=50;
   ScanningPeriodShot=20;
 
 type
-  TRS232_MediatorTread = class(TThread)
+//  TRS232_MediatorTread = class(TThread)
+  TRS232_MediatorTread = class(TTheadSleep)
   private
     { Private declarations }
    fArrayDevice:array of TRS232Device;
    fNeededComPort:array of boolean;
-   fEventTerminate: THandle;
+//   fEventTerminate: THandle;
    procedure DoSomething;
-   procedure _Sleep(AMilliSeconds: Cardinal);
+//   procedure _Sleep(AMilliSeconds: Cardinal);
    procedure Finish();
    procedure Start();
   protected
     procedure Execute; override;
   public
     constructor Create(ArrayDevice:array of TRS232Device);
-    destructor Destroy; override;
-    procedure Terminate;
+//    destructor Destroy; override;
+//    procedure Terminate;
   end;
 
 implementation
@@ -64,17 +65,18 @@ end;
 constructor TRS232_MediatorTread.Create(ArrayDevice: array of TRS232Device);
  var i:byte;
 begin
- inherited Create(True);    // Поток создаем в состоянии «Приостановлен»
-  FreeOnTerminate := True;  // Поток освободит ресурсы при окончании работы
+// inherited Create(True);    // Поток создаем в состоянии «Приостановлен»
+//  FreeOnTerminate := True;  // Поток освободит ресурсы при окончании работы
 
   SetLength(fArrayDevice,High(ArrayDevice)+1);
   for I := 0 to High(ArrayDevice) do
    fArrayDevice[i]:=ArrayDevice[i];
   SetLength(fNeededComPort,High(ArrayDevice)+1);
 
-  FEventTerminate := CreateEvent(nil, False, False, nil);
+//  FEventTerminate := CreateEvent(nil, False, False, nil);
 
-  Self.Priority := tpNormal;
+//  Self.Priority := tpNormal;
+
   Resume;
 
 //  if (FEventTerminate=0) then
@@ -82,11 +84,11 @@ begin
 
 end;
 
-destructor TRS232_MediatorTread.Destroy;
-begin
-  CloseHandle(FEventTerminate);
-  inherited;
-end;
+//destructor TRS232_MediatorTread.Destroy;
+//begin
+//  CloseHandle(FEventTerminate);
+//  inherited;
+//end;
 
 //procedure TRS232_MediatorTread.DoSomething;
 // var i:byte;
@@ -102,8 +104,6 @@ end;
 procedure TRS232_MediatorTread.DoSomething;
  var i:byte;
 begin
-//  Synchronize(Start);
-//Inc(fint);
   for I := 0 to High(fArrayDevice) do
     if fArrayDevice[i].isNeededComPort then
       begin
@@ -170,25 +170,26 @@ begin
      begin
        SetEvent(EventComPortFree);
        sleep(ScanningPeriodShot);
+//       _Sleep(ScanningPeriodShot);
      end;
    i:=1-i;
   end;
 end;
 
-procedure TRS232_MediatorTread.Terminate;
-begin
-//  if (FEventTerminate=0) then
-//    Application.MessageBox('text', 'cap', MB_OK)
-//                          else
-//    Application.MessageBox('text2', 'cap2', MB_OK);
+//procedure TRS232_MediatorTread.Terminate;
+//begin
+////  if (FEventTerminate=0) then
+////    Application.MessageBox('text', 'cap', MB_OK)
+////                          else
+////    Application.MessageBox('text2', 'cap2', MB_OK);
+//
+//  SetEvent(FEventTerminate);
+//  inherited Terminate;
+//end;
 
-  SetEvent(FEventTerminate);
-  inherited Terminate;
-end;
-
-procedure TRS232_MediatorTread._Sleep(AMilliSeconds: Cardinal);
-begin
-   WaitForSingleObject(FEventTerminate, AMilliSeconds);
-end;
+//procedure TRS232_MediatorTread._Sleep(AMilliSeconds: Cardinal);
+//begin
+//   WaitForSingleObject(FEventTerminate, AMilliSeconds);
+//end;
 
 end.

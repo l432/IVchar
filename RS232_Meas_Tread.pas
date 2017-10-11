@@ -5,12 +5,40 @@ interface
 uses
   Classes, RS232device;
 
+//var
+//    EventMeasuringEnd: THandle;
+
 type
-  TRS232MeasuringTread = class(TThread)
+
+ TTheadSleep = class(TThread)
+  private
+    FEventTerminate: THandle;
+  public
+    constructor Create;
+    destructor Destroy; override;
+    procedure Terminate;
+    procedure _Sleep(AMilliSeconds: Cardinal);
+  end;
+
+ TTheadCycle = class(TTheadSleep)
+  private
+    fInterval:int64;
+  protected
+    procedure DoSomething;virtual;
+  public
+    constructor Create(Interval:Int64);
+    procedure Execute; override;
+  end;
+
+
+
+//  TRS232MeasuringTread = class(TThread)
+  TRS232MeasuringTread = class(TTheadSleep)
   private
     { Private declarations }
    fRS232Meter:TRS232Meter;
    fWPARAM: word;
+   fEventEnd:THandle;
    procedure FalseStatement();
    procedure ConvertToValue();
    procedure NewData();
@@ -18,27 +46,19 @@ type
   protected
     procedure Execute; override;
   public
-    constructor Create(RS_Meter:TRS232Meter;WPARAM: word);
+    constructor Create(RS_Meter:TRS232Meter;WPARAM: word; EventEnd: THandle);
   end;
 
   TV721_MeasuringTread = class(TRS232MeasuringTread)
   private
-    { Private declarations }
-//   fRS232Meter:TRS232Meter;
-//   fWPARAM: word;
-//   procedure FalseStatement();
-//   procedure ConvertToValue();
    procedure ExuteBegin;override;
   protected
-//    procedure Execute; override;
-  public
-//    constructor Create(RS_Meter:TRS232Meter;WPARAM: word);
   end;
 
 implementation
 
 uses
-  Windows, OlegType, Measurement, Math, OlegMath;
+  Windows, OlegType, Measurement, Math, OlegMath, SysUtils, DateUtils, Forms;
 
 { Important: Methods and properties of objects in visual components can only be
   used in a method called using Synchronize, for example,
@@ -59,13 +79,15 @@ begin
   fRS232Meter.ConvertToValue()
 end;
 
-constructor TRS232MeasuringTread.Create(RS_Meter: TRS232Meter; WPARAM: word);
+constructor TRS232MeasuringTread.Create(RS_Meter: TRS232Meter; WPARAM: word; EventEnd: THandle);
 begin
- inherited Create(True);    // Поток создаем в состоянии «Приостановлен»
-  FreeOnTerminate := True;  // Поток освободит ресурсы при окончании работы
+// inherited Create(True);    // Поток создаем в состоянии «Приостановлен»
+//  FreeOnTerminate := True;  // Поток освободит ресурсы при окончании работы
+  inherited Create();
   fRS232Meter := RS_Meter;
   fWPARAM:=WPARAM;
-  Self.Priority := tpNormal;
+  fEventEnd:=EventEnd;
+//  Self.Priority := tpNormal;
   Resume;
 end;
 
@@ -80,10 +102,12 @@ begin
 start:
   Synchronize(FalseStatement);
   fRS232Meter.Request;
-  sleep(fRS232Meter.MinDelayTime);
+//  sleep(fRS232Meter.MinDelayTime);
+  _Sleep(fRS232Meter.MinDelayTime);
   i := 0;
   repeat
-    sleep(10);
+//    sleep(10);
+    _Sleep(10);
     inc(i);
   until ((i > 130) or (fRS232Meter.IsReceived) or (fRS232Meter.Error));
   if fRS232Meter.IsReceived then
@@ -100,6 +124,7 @@ begin
  ExuteBegin;
  Synchronize(NewData);
  PostMessage(FindWindow ('TIVchar', 'IVchar'), WM_MyMeasure,fWPARAM,0);
+ SetEvent(fEventEnd);
 end;
 
 
@@ -124,7 +149,8 @@ begin
   st:
   inherited ExuteBegin;
   a:=fRS232Meter.Value;
-  sleep(100);
+//  sleep(100);
+  _Sleep(100);
   inherited ExuteBegin;
   b:=fRS232Meter.Value;
   if abs(a-b)<1e-5*Max(abs(a),abs(b))
@@ -132,17 +158,106 @@ begin
       fRS232Meter.Value:=(a+b)/2
      else
       begin
-        sleep(100);
+//        sleep(100);
+        _Sleep(100);
         inherited ExuteBegin;
         c:=fRS232Meter.Value;
         fRS232Meter.Value:=MedianFiltr(a,b,c);
       end;
   if (fRS232Meter.Value=0)and(isFirst) then
    begin
-    sleep(300);
+//    sleep(300);
+    _Sleep(300);
     isFirst:=False;
     goto st;
    end;
+end;
+
+//initialization
+//  EventMeasuringEnd := CreateEvent(nil,
+//                                 True, // тип сброса TRUE - ручной
+//                                 True, // начальное состояние TRUE - сигнальное
+//                                 nil);
+//
+//finalization
+//
+//  SetEvent(EventMeasuringEnd);
+//  CloseHandle(EventMeasuringEnd);
+
+{ TTheadPeriodic }
+
+constructor TTheadSleep.Create;
+begin
+  inherited Create(True);
+  FreeOnTerminate := True;
+  Self.Priority := tpNormal;
+  
+  FEventTerminate := CreateEvent(nil, False, False, nil);
+end;
+
+destructor TTheadSleep.Destroy;
+begin
+  CloseHandle(FEventTerminate);
+  inherited;
+end;
+
+//procedure TTheadPeriodic.DoSomething;
+//begin
+//
+//end;
+
+//procedure TTheadPeriodic.Execute;
+//var
+//  t: TDateTime;
+//  k: Int64;
+//begin
+//  while (not Terminated) and (not Application.Terminated) do
+//  begin
+//    t := Now();
+//    DoSomething;
+//    k := 5000 - Round(MilliSecondSpan(Now(), t));
+//    if k>0 then
+//      _Sleep(k);
+//  end;
+//end;
+
+procedure TTheadSleep.Terminate;
+begin
+  SetEvent(FEventTerminate);
+  inherited Terminate;
+end;
+
+procedure TTheadSleep._Sleep(AMilliSeconds: Cardinal);
+begin
+ WaitForSingleObject(FEventTerminate, AMilliSeconds);
+end;
+
+{ TTheadCycle }
+
+constructor TTheadCycle.Create(Interval: Int64);
+begin
+ inherited Create();
+ fInterval:=Interval;
+end;
+
+procedure TTheadCycle.DoSomething;
+begin
+
+end;
+
+procedure TTheadCycle.Execute;
+var
+  t: TDateTime;
+  k: Int64;
+begin
+  while (not Terminated) and (not Application.Terminated) do
+  begin
+    t := Now();
+    DoSomething;
+    k := 5000 - Round(MilliSecondSpan(Now(), t));
+    if k>0 then
+      _Sleep(k);
+  end;
 end;
 
 end.

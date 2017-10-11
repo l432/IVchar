@@ -27,7 +27,7 @@ IMeasurement = interface (IName)
  function GetValue:double;
  function GetData:double;
  procedure SetNewData(Value:boolean);
- procedure GetDataThread(WPARAM: word);
+ procedure GetDataThread(WPARAM: word; EventEnd:THandle);
  property NewData:boolean read GetNewData write SetNewData;
  property Value:double read GetValue;
 end;
@@ -49,7 +49,7 @@ end;
 ITemperatureMeasurement = interface (IMeasurement)
   ['{DDC24597-B316-4E8B-B246-1DDD0B4D5E5D}']
   function GetTemperature:double;
-  procedure GetTemperatureThread();
+  procedure GetTemperatureThread(EventEnd:THandle);
 end;
 
 TSimulator = class (TInterfacedObject,IMeasurement,IDAC,ITemperatureMeasurement)
@@ -76,8 +76,8 @@ public
  function CalibrationStep(Voltage:double):double;
  procedure OutputCalibr(Value:double);
  procedure OutputInt(Kod:integer);
- procedure GetDataThread(WPARAM: word);
- procedure GetTemperatureThread();
+ procedure GetDataThread(WPARAM: word;EventEnd:THandle);
+ procedure GetTemperatureThread(EventEnd:THandle);
  procedure Free;
 end;
 
@@ -232,7 +232,33 @@ TDAC_Show=class
 end;
 
 
+TPID=class
+  private
+    FKi: double;
+    FKd: double;
+    FKp: double;
+    FPeriod: double;
+    FNeeded: double;
+    EpsSum:double;
+    Epsi:array[0..1]of double;
+    fOutputValue:double;
+    procedure SetKd(const Value: double);
+    procedure SetKi(const Value: double);
+    procedure SetKp(const Value: double);
+    procedure SetPeriod(const Value: double);
+    procedure SetNeeded(const Value: double);
+    procedure DeviationCalculation(CurrentValue:double);
 
+ public
+   property Kp:double read FKp write SetKp;
+   property Ki:double read FKi write SetKi;
+   property Kd:double read FKd write SetKd;
+   property Period:double read FPeriod write SetPeriod;
+   property Needed:double read FNeeded write SetNeeded;
+   property OutputValue:double read fOutputValue;
+   Constructor Create(Kpp,Kii,Kdd,T,InitialValue,NeededValue:double);
+   function ControlingSignal(CurrentValue:double):double;
+end;
 
 
 
@@ -288,10 +314,11 @@ begin
  Result:=GetTickCount/1e7;
 end;
 
-procedure TSimulator.GetDataThread(WPARAM: word);
+procedure TSimulator.GetDataThread(WPARAM: word;EventEnd:THandle);
 begin
  fValue:=GetTickCount/1e7;
  PostMessage(FindWindow ('TIVchar', 'IVchar'), WM_MyMeasure,WPARAM,0);
+ SetEvent(EventEnd);
 end;
 
 function TSimulator.GetTemperature: double;
@@ -302,9 +329,9 @@ begin
  // Result:=Random(4000)/10.0;
 end;
 
-procedure TSimulator.GetTemperatureThread;
+procedure TSimulator.GetTemperatureThread(EventEnd:THandle);
 begin
- GetDataThread(TemperMessage);
+ GetDataThread(TemperMessage,EventEnd);
 end;
 
 function TSimulator.GetValue: double;
@@ -841,6 +868,66 @@ end;
 function TTemperature_MD.GetResult: double;
 begin
    Result:=GetActiveInterface.GetTemperature();
+end;
+
+{ TPID }
+
+
+function TPID.ControlingSignal(CurrentValue: double): double;
+begin
+ DeviationCalculation(CurrentValue);
+ fOutputValue:=Kp*(Epsi[1]+Ki*Period*EpsSum+Kd/Period*(Epsi[1]-Epsi[0]));
+ Result:=fOutputValue;
+end;
+
+constructor TPID.Create(Kpp, Kii, Kdd, T, InitialValue, NeededValue: double);
+begin
+  inherited Create;
+  Kp:=Kpp;
+  Ki:=Kii;
+  Kd:=0;
+  Period:=T;
+  Needed:=NeededValue;
+  EpsSum:=0;
+  Epsi[0]:=0;
+  Epsi[1]:=0;
+  ControlingSignal(InitialValue);
+  Kd:=Kdd;
+end;
+
+procedure TPID.DeviationCalculation(CurrentValue: double);
+ var eps:double;
+begin
+ eps:=FNeeded-CurrentValue;
+ EpsSum:=EpsSum+eps;
+ Epsi[0]:=Epsi[1];
+ Epsi[1]:=eps;
+end;
+
+procedure TPID.SetKd(const Value: double);
+begin
+  FKd := Value;
+end;
+
+procedure TPID.SetKi(const Value: double);
+begin
+  FKi := Value;
+end;
+
+procedure TPID.SetKp(const Value: double);
+begin
+  FKp := Value;
+end;
+
+procedure TPID.SetNeeded(const Value: double);
+begin
+  FNeeded := Value;
+end;
+
+procedure TPID.SetPeriod(const Value: double);
+begin
+  if Value>0 then FPeriod := Value
+             else fPeriod :=1;
 end;
 
 end.

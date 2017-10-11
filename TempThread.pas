@@ -3,18 +3,41 @@ unit TempThread;
 interface
 
 uses
-  Classes, Measurement,SPIdevice;
+  Classes, Measurement,SPIdevice, RS232_Meas_Tread;
+
 
 type
-  TTemperatureMeasuringThread = class(TThread)
+//  TTemperatureMeasuringThread = class(TThread)
+//  TTemperatureMeasuringThread = class(TTheadSleep)
+
+  TMeasuringThread = class(TTheadCycle)
   private
-    fInterval:int64;
-    procedure Doing;
+    fEventEnd:THandle;
+    fMeasurement:IMeasurement;
+    fWPARAM:word;
   protected
-    procedure Execute; override;
+   procedure DoSomething;override;
   public
-   TemperatureMD:TTemperature_MD;
-   constructor Create(TemMD:TTemperature_MD;Interval:Int64);
+   constructor Create(Measurement:IMeasurement;
+                      Interval:Int64;
+                      WPARAM: word;
+                      EventEnd:THandle);
+
+  end;
+
+
+
+  TTemperatureMeasuringThread = class(TTheadCycle)
+  private
+//    fInterval:int64;
+    fEventEnd:THandle;
+    fTemperatureMeasurement:ITemperatureMeasurement;
+  protected
+    procedure DoSomething;override;
+  public
+   constructor Create(TemperatureMeasurement:ITemperatureMeasurement;
+                      Interval:Int64;
+                      EventEnd:THandle);
 
   end;
 
@@ -37,27 +60,30 @@ uses
 
 { TTemperatureMeasuringThread }
 
-constructor TTemperatureMeasuringThread.Create(TemMD: TTemperature_MD;Interval:Int64);
+constructor TTemperatureMeasuringThread.Create(TemperatureMeasurement:ITemperatureMeasurement;
+                                               Interval:Int64;
+                                                EventEnd:THandle);
 begin
-  inherited Create(True);    // Поток создаем в состоянии «Приостановлен»
-  FreeOnTerminate := True;  // Поток освободит ресурсы при окончании работы
-  TemperatureMD:=TemMD;
-  fInterval:=Interval;
+//  inherited Create(True);    // Поток создаем в состоянии «Приостановлен»
+//  FreeOnTerminate := True;  // Поток освободит ресурсы при окончании работы
+//  inherited Create();
+  inherited Create(Interval);
+//  TemperatureMD:=TemMD;
+//  fInterval:=Interval;
+  fTemperatureMeasurement:=TemperatureMeasurement;
+  fEventEnd:=EventEnd;
 //  ThermoCuple.Measurement:=TermoCouple_MD.ActiveInterface;
 
-  Priority:=tpNormal;
+//  Priority:=tpNormal;
   Resume;
 end;
 
-procedure TTemperatureMeasuringThread.Doing;
+//procedure TTemperatureMeasuringThread.Doing;
+procedure TTemperatureMeasuringThread.DoSomething;
 // var temp:double;
 begin
-  TemperatureMD.ActiveInterface.GetTemperatureThread();
-//  PostMessage(FindWindow ('TIVchar', 'IVchar'), WM_MyMeasure,TemperMessage,0);
-
-//  temp:=TemperatureMD.GetMeasurementResult();
-//  if temp=ErResult then Terminate;
-//  if (TemperatureMD.ActiveInterface is TDS18B20) then Sleep(5000);
+  fTemperatureMeasurement.GetTemperatureThread(fEventEnd);
+//  TemperatureMD.ActiveInterface.GetTemperatureThread(fEventEnd);
 end;
 
 //procedure TTemperatureMeasuringThread.Execute;
@@ -71,20 +97,39 @@ end;
 //  end;
 //end;
 
-procedure TTemperatureMeasuringThread.Execute;
-var
-  t: TDateTime;
-  k: Int64;
-begin
-  while (not Terminated) and (not Application.Terminated) do
-  begin
-    t := Now();
-    Doing;
-    k := fInterval - Round(MilliSecondSpan(Now(), t));
-    if k>0 then
+//procedure TTemperatureMeasuringThread.Execute;
+//var
+//  t: TDateTime;
+//  k: Int64;
+//begin
+//  while (not Terminated) and (not Application.Terminated) do
+//  begin
+//    t := Now();
+//    Doing;
+//    k := fInterval - Round(MilliSecondSpan(Now(), t));
+//    if k>0 then
 //      _Sleep(k);
-      sleep(k);
-  end;
+////      sleep(k);
+//  end;
+//end;
+
+
+
+{ TMeasuringThread }
+
+constructor TMeasuringThread.Create(Measurement: IMeasurement; Interval: Int64;
+  WPARAM: word; EventEnd: THandle);
+begin
+ inherited Create(Interval);
+ fEventEnd:=EventEnd;
+ fMeasurement:=Measurement;
+ fWPARAM:=WPARAM;
+ Resume;
+end;
+
+procedure TMeasuringThread.DoSomething;
+begin
+  fMeasurement.GetDataThread(fWPARAM, fEventEnd);
 end;
 
 end.

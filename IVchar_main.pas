@@ -330,11 +330,12 @@ type
     STControl_MD: TStaticText;
     STControlNV: TStaticText;
     LControlNV: TLabel;
-    STControlCV: TStaticText;
     LControlCV: TLabel;
     STControlInterval: TStaticText;
     LControlInterval: TLabel;
     SBControlBegin: TSpeedButton;
+    LControlCVValue: TLabel;
+    LPIDParam: TLabel;
 
     procedure FormCreate(Sender: TObject);
     procedure PortConnected();
@@ -460,7 +461,7 @@ type
     procedure ParametersFileWork(Action: TSimpleEvent);
     procedure ET1255Create;
     procedure ET1255Free;
-    procedure TemperatureTimerOnTime(Sender: TObject);
+//    procedure TemperatureTimerOnTime(Sender: TObject);
     procedure WMMyMeasure (var Mes : TMessage); message WM_MyMeasure;
     procedure HookEndReset;
   public
@@ -493,9 +494,9 @@ type
 //    VoltageIV_MD:TVoltageIV_MD;
 //    DACR2R_MD:TVoltageChannel_MD;
     Current_MD,VoltageIV_MD,DACR2R_MD,
-    TermoCouple_MD,TimeD_MD:TMeasuringDevice;
+    TermoCouple_MD,TimeD_MD,Control_MD:TMeasuringDevice;
     ET1255_DAC_MD:array[TET1255_DAC_ChanelNumber] of TMeasuringDevice;
-    SettingDevice:TSettingDevice;
+    SettingDevice,SettingDeviceControl:TSettingDevice;
     RS232_MediatorTread:TRS232_MediatorTread;
     TemperatureMeasuringThread:TTemperatureMeasuringThread;
     IVCharRangeFor,CalibrRangeFor:TLimitShow;
@@ -753,10 +754,10 @@ begin
         'Temperature measurement interval (s)',
         'Temperature measurement interval',5,2);
   DoubleConstantShows[8]:=TParameterShow1.Create(STTimeInterval,LTimeInterval,
-        'Measurement interval (s)',
+        'Measurement interval, (>=1 s)',
         'Time dependence measurement interval',15,2);
   DoubleConstantShows[9]:=TParameterShow1.Create(STTimeDuration,LTimeDuration,
-        'Measurement duration (s)',
+        'Measurement duration (s), 0 - infinite',
         'Full measurement duration',0,2);
   DoubleConstantShows[10]:=TParameterShow1.Create(STControlNV,LControlNV,
         'Needed Value',
@@ -2065,7 +2066,6 @@ begin
 
 //   PortConnected;
 
- if ComPort1.Connected then SettingDevice.Reset();
 
 // TemperatureTimer:=TTimer.Create(IVchar);
 // TemperatureTimer.OnTimer:=TemperatureTimerOnTime;
@@ -2075,6 +2075,9 @@ begin
 
  RS232_MediatorTread:=TRS232_MediatorTread.Create(
                  [DACR2R,V721A,V721_I,V721_II,DS18B20]);
+
+ if (ComPort1.Connected)and(SettingDevice.ActiveInterface.Name=DACR2R.Name) then SettingDevice.Reset();
+
 end;
 
 procedure TIVchar.FormDestroy(Sender: TObject);
@@ -2612,7 +2615,10 @@ procedure TIVchar.TemperatureThreadCreate;
 begin
   ThermoCuple.Measurement:=TermoCouple_MD.ActiveInterface;
   TemperatureMeasuringThread:=
-    TTemperatureMeasuringThread.Create(Temperature_MD,round(1000*StrToFloat(STTMI.Caption)));
+    TTemperatureMeasuringThread.Create(Temperature_MD.ActiveInterface,
+                                       round(1000*StrToFloat(STTMI.Caption)),
+                                       EventMeasuringEnd);
+//    TTemperatureMeasuringThread.Create(Temperature_MD,round(1000*StrToFloat(STTMI.Caption)),EventMeasuringEnd);
 
 //  TemperatureMeasuringThread:=TTemperatureMeasuringThread.Create(True);
 //  TemperatureMeasuringThread.TemperatureMD:=Temperature_MD;
@@ -2625,11 +2631,11 @@ end;
 
 
 
-procedure TIVchar.TemperatureTimerOnTime(Sender: TObject);
-begin
-  ThermoCuple.Measurement:=TermoCouple_MD.ActiveInterface;
-  Temperature_MD.GetMeasurementResult();
-end;
+//procedure TIVchar.TemperatureTimerOnTime(Sender: TObject);
+//begin
+//  ThermoCuple.Measurement:=TermoCouple_MD.ActiveInterface;
+//  Temperature_MD.GetMeasurementResult();
+//end;
 
 
 procedure TIVchar.TimeDHookBegin;
@@ -2680,7 +2686,7 @@ procedure TIVchar.DependTimerTimer(Sender: TObject);
 begin
   ThermoCuple.Measurement:=TermoCouple_MD.ActiveInterface;
 //  Temperature_MD.GetMeasurementResult();
-  Temperature_MD.ActiveInterface.GetDataThread(TemperMessage);
+  Temperature_MD.ActiveInterface.GetDataThread(TemperMessage,EventMeasuringEnd);
 end;
 
 procedure TIVchar.VoltmetrsCreate;
@@ -2741,7 +2747,7 @@ procedure TIVchar.HookEndReset;
 begin
   SettingDevice.Reset;
   if TIVDependence.IVMeasuringToStop then
-    showmessage('Procedure ia stopped');
+    showmessage('Procedure is stopped');
 end;
 
 procedure TIVchar.VoltmetrsFree;
@@ -2844,16 +2850,22 @@ begin
   Current_MD:=TMeasuringDevice.Create(Devices,CBCMD,LADCurrentValue,srCurrent);
   VoltageIV_MD:=TMeasuringDevice.Create(Devices,CBVMD,LADVoltageValue,srVoltge);
 
-//  DACR2R_MD:=TVoltageChannel_MD.Create(Devices,{RBMeasSimR2R,RBMeasMeasR2R,CBMeasR2R}CBMeasDACR2R,LMeasR2R);
-//  DACR2R_MD.AddActionButton(BMeasR2R,LOVDACR2R);
   DACR2R_MD:=TMeasuringDevice.Create(Devices,CBMeasDACR2R,LMeasR2R,srPreciseVoltage);
   DACR2R_MD.AddActionButton(BMeasR2R);
 
-//  SetLength(Devices,7);
-//  Devices[5]:=ThermoCuple;
-  TimeD_MD:=TMeasuringDevice.Create(Devices,CBTimeMD,LADCurrentValue,srVoltge);
-  TimeD_MD.Add(ThermoCuple);
-  TimeD_MD.Add(DS18B20);
+  SetLength(Devices,7);
+  Devices[5]:=ThermoCuple;
+  Devices[6]:=DS18B20;
+  TimeD_MD:=
+    TMeasuringDevice.Create(Devices,CBTimeMD,LADCurrentValue,srVoltge);
+  Control_MD:=
+    TMeasuringDevice.Create(Devices,CBControlMD,LControlCVValue,srPreciseVoltage);
+
+//  TimeD_MD.Add(ThermoCuple);
+//  TimeD_MD.Add(DS18B20);
+
+
+
 
   SetLength(DevicesSet,2);
   DevicesSet[0]:=Simulator;
@@ -2878,11 +2890,14 @@ begin
 
 
   SettingDevice:=TSettingDevice.Create(DevicesSet,CBVS);
+  SettingDeviceControl:=TSettingDevice.Create(DevicesSet,CBControlCD);
 end;
 
 procedure TIVchar.DevicesFree;
 begin
+  SettingDeviceControl.Free;
   SettingDevice.Free;
+  Control_MD.Free;
   TimeD_MD.Free;
   Temperature_MD.Free;
   Current_MD.Free;
@@ -2896,6 +2911,7 @@ end;
 
 procedure TIVchar.DevicesReadFromIniAndToForm;
 begin
+  SettingDeviceControl.ReadFromIniFile(ConfigFile,MD_IniSection,'Control input');
   SettingDevice.ReadFromIniFile(ConfigFile,MD_IniSection,'Input voltage');
   Temperature_MD.ReadFromIniFile(ConfigFile,MD_IniSection,'Temperature');
   Current_MD.ReadFromIniFile(ConfigFile,MD_IniSection,'Current');
@@ -2906,6 +2922,8 @@ begin
   ET1255_DAC_MD[1].ReadFromIniFile(ConfigFile,MD_IniSection,'ET1255_DAC_Ch1');
   ET1255_DAC_MD[2].ReadFromIniFile(ConfigFile,MD_IniSection,'ET1255_DAC_Ch2');
   TimeD_MD.ReadFromIniFile(ConfigFile,MD_IniSection,'Time Dependence');
+  Control_MD.ReadFromIniFile(ConfigFile,MD_IniSection,'Control setup');
+
 //  ChannelA_MD.ReadFromIniFile(ConfigFile,'Sources','ChannelA');
 //  ChannelB_MD.ReadFromIniFile(ConfigFile,'Sources','ChannelB');
 end;
@@ -2913,6 +2931,7 @@ end;
 procedure TIVchar.DevicesWriteToIniFile;
 begin
   ConfigFile.EraseSection(MD_IniSection);
+  SettingDeviceControl.WriteToIniFile(ConfigFile,MD_IniSection,'Control input');
   SettingDevice.WriteToIniFile(ConfigFile,MD_IniSection,'Input voltage');
   Temperature_MD.WriteToIniFile(ConfigFile,MD_IniSection,'Temperature');
   Current_MD.WriteToIniFile(ConfigFile,MD_IniSection,'Current');
@@ -2923,9 +2942,7 @@ begin
   ET1255_DAC_MD[1].WriteToIniFile(ConfigFile,MD_IniSection,'ET1255_DAC_Ch1');
   ET1255_DAC_MD[2].WriteToIniFile(ConfigFile,MD_IniSection,'ET1255_DAC_Ch2');
   TimeD_MD.WriteToIniFile(ConfigFile,MD_IniSection,'Time Dependence');
-
-//  ChannelA_MD.WriteToIniFile(ConfigFile,'Sources','ChannelA');
-//  ChannelB_MD.WriteToIniFile(ConfigFile,'Sources','ChannelB');
+  Control_MD.WriteToIniFile(ConfigFile,MD_IniSection,'Control setup');
 end;
 
 procedure TIVchar.PinsWriteToIniFile;

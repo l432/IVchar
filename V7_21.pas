@@ -45,7 +45,7 @@ type
 //   Function Request():boolean;override;
    procedure ComPortUsing();override;
    function GetData():double;override;
-   procedure GetDataThread(WPARAM: word);override;
+   procedure GetDataThread(WPARAM: word;EventEnd:THandle);override;
   end;
 
   TV721A=class(TVoltmetr)
@@ -279,10 +279,10 @@ begin
 end;
 
 
-procedure TVoltmetr.GetDataThread(WPARAM: word);
+procedure TVoltmetr.GetDataThread(WPARAM: word;EventEnd:THandle);
 begin
   if PortConnected then
-   fRS232MeasuringTread:=TV721_MeasuringTread.Create(Self,WPARAM);
+   fRS232MeasuringTread:=TV721_MeasuringTread.Create(Self,WPARAM,EventEnd);
 end;
 
 //function TVoltmetr.GetResist: double;

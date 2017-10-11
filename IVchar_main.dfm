@@ -3780,8 +3780,6 @@ object IVchar: TIVchar
     object Time_Dependence: TTabSheet
       Caption = 'Time'
       ImageIndex = 9
-      ExplicitLeft = 6
-      ExplicitTop = 60
       object LTimeInterval: TLabel
         Left = 10
         Top = 87
@@ -3934,6 +3932,32 @@ object IVchar: TIVchar
           ParentFont = False
           OnClick = SBTAutoClick
         end
+        object LControlCVValue: TLabel
+          Left = 304
+          Top = 52
+          Width = 93
+          Height = 20
+          Caption = '1.34E+01'
+          Font.Charset = RUSSIAN_CHARSET
+          Font.Color = clBlue
+          Font.Height = -17
+          Font.Name = 'Verdana'
+          Font.Style = [fsBold]
+          ParentFont = False
+        end
+        object LPIDParam: TLabel
+          Left = 242
+          Top = 95
+          Width = 103
+          Height = 13
+          Caption = 'PID parameters'
+          Font.Charset = RUSSIAN_CHARSET
+          Font.Color = clMaroon
+          Font.Height = -11
+          Font.Name = 'Verdana'
+          Font.Style = [fsBold]
+          ParentFont = False
+        end
         object CBControlCD: TComboBox
           Tag = 5
           Left = 8
@@ -4008,20 +4032,6 @@ object IVchar: TIVchar
           ParentFont = False
           TabOrder = 4
         end
-        object STControlCV: TStaticText
-          Left = 306
-          Top = 52
-          Width = 97
-          Height = 24
-          Caption = '1.34E+01'
-          Font.Charset = RUSSIAN_CHARSET
-          Font.Color = clBackground
-          Font.Height = -17
-          Font.Name = 'Verdana'
-          Font.Style = [fsBold]
-          ParentFont = False
-          TabOrder = 5
-        end
         object STControlInterval: TStaticText
           Left = 18
           Top = 178
@@ -4034,7 +4044,7 @@ object IVchar: TIVchar
           Font.Name = 'Verdana'
           Font.Style = [fsBold]
           ParentFont = False
-          TabOrder = 6
+          TabOrder = 5
         end
       end
     end

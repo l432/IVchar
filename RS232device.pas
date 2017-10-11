@@ -17,6 +17,7 @@ const
 var
 //ComPortAlloved:boolean;
     EventComPortFree: THandle;
+    EventMeasuringEnd: THandle;
 
 type
 
@@ -94,7 +95,7 @@ TRS232Meter=class(TRS232Device,IMeasurement)
    Procedure Request();virtual;
    function GetData():double;virtual;
    procedure MeasurementBegin;
-   procedure GetDataThread(WPARAM: word);virtual;
+   procedure GetDataThread(WPARAM: word;EventEnd:THandle);virtual;
   end;
 
 
@@ -315,7 +316,7 @@ begin
 //  fNewData:=True;
 end;
 
-procedure TRS232Meter.GetDataThread(WPARAM: word);
+procedure TRS232Meter.GetDataThread(WPARAM: word;EventEnd:THandle);
 begin
 //  if not(fComPort.Connected) then
 //   begin
@@ -324,7 +325,7 @@ begin
 //    Exit;
 //   end;
  if PortConnected then
-   fRS232MeasuringTread:=TRS232MeasuringTread.Create(Self,WPARAM);
+   fRS232MeasuringTread:=TRS232MeasuringTread.Create(Self,WPARAM,EventEnd);
 end;
 
 procedure TRS232Meter.MeasurementBegin;
@@ -681,8 +682,18 @@ initialization
                                  True, // тип сброса TRUE - ручной
                                  True, // начальное состояние TRUE - сигнальное
                                  nil);
+  EventMeasuringEnd := CreateEvent(nil,
+                                 True, // тип сброса TRUE - ручной
+                                 True, // начальное состояние TRUE - сигнальное
+                                 nil);
+
 
 finalization
 
+  SetEvent(EventComPortFree);
   CloseHandle(EventComPortFree);
+
+  
+  SetEvent(EventMeasuringEnd);
+  CloseHandle(EventMeasuringEnd);
 end.
