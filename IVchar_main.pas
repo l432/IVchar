@@ -331,11 +331,34 @@ type
     STControlNV: TStaticText;
     LControlNV: TLabel;
     LControlCV: TLabel;
-    STControlInterval: TStaticText;
+    STControlKi: TStaticText;
     LControlInterval: TLabel;
     SBControlBegin: TSpeedButton;
     LControlCVValue: TLabel;
     LPIDParam: TLabel;
+    STControlKp: TStaticText;
+    LControlKp: TLabel;
+    STControlInterval: TStaticText;
+    LControlKi: TLabel;
+    STControlKd: TStaticText;
+    LControlKd: TLabel;
+    BControlReset: TButton;
+    GBTermostat: TGroupBox;
+    LTermostatNT: TLabel;
+    LTermostatCT: TLabel;
+    SBTermostat: TSpeedButton;
+    LTermostatCTValue: TLabel;
+    LTermostatPID: TLabel;
+    LTermostatKp: TLabel;
+    LTermostatKi: TLabel;
+    LTermostatKd: TLabel;
+    CBTermostatCD: TComboBox;
+    STTermostatCD: TStaticText;
+    STTermostatNT: TStaticText;
+    STTermostatKi: TStaticText;
+    STTermostatKp: TStaticText;
+    STTermostatKd: TStaticText;
+    BTermostatReset: TButton;
 
     procedure FormCreate(Sender: TObject);
     procedure PortConnected();
@@ -365,6 +388,10 @@ type
     procedure BDFFA_R2RClick(Sender: TObject);
     procedure Button1Click(Sender: TObject);
     procedure DependTimerTimer(Sender: TObject);
+    procedure SBControlBeginClick(Sender: TObject);
+    procedure BControlResetClick(Sender: TObject);
+    procedure SBTermostatClick(Sender: TObject);
+    procedure BTermostatResetClick(Sender: TObject);
 //    procedure BOKsetDACR2RClick(Sender: TObject);
 //    procedure BOVsetChAClick(Sender: TObject);
 //    procedure BORChAClick(Sender: TObject);
@@ -404,6 +431,7 @@ type
     procedure DevicesWriteToIniFile;
 //    procedure SetVoltage(Value:double);
     procedure TemperatureThreadCreate;
+    procedure ControllerThreadCreate;
     function StepDetermine(Voltage: Double; ItForward: Boolean):double;
 //    function MeasurementNumberDetermine():integer;
     procedure BoxFromIniFile;
@@ -496,13 +524,14 @@ type
     Current_MD,VoltageIV_MD,DACR2R_MD,
     TermoCouple_MD,TimeD_MD,Control_MD:TMeasuringDevice;
     ET1255_DAC_MD:array[TET1255_DAC_ChanelNumber] of TMeasuringDevice;
-    SettingDevice,SettingDeviceControl:TSettingDevice;
+    SettingDevice,SettingDeviceControl,SettingTermostat:TSettingDevice;
     RS232_MediatorTread:TRS232_MediatorTread;
     TemperatureMeasuringThread:TTemperatureMeasuringThread;
+    ControllerThread:TControllerThread;
     IVCharRangeFor,CalibrRangeFor:TLimitShow;
     IVCharRangeRev,CalibrRangeRev:TLimitShowRev;
     NumberOfTemperatureMeasuring,IterationNumber: Integer;
-    ItIsBegining:boolean;
+    ItIsBegining,IsWorkingTermostat:boolean;
     Temperature
     ,VoltageInputCorrection,VoltageMeasured
     ,VoltageInputCorrectionN,VoltageMeasuredN:double;
@@ -510,7 +539,9 @@ type
     DoubleConstantShows:array of TParameterShow1;
     Imax,Imin,R_VtoI,Shift_VtoI:double;
     IVMeasuring,CalibrMeasuring:TIVDependence;
-    TimeDependence:TTimeDependence;
+    TimeDependence:TTimeDependenceTimer;
+    PID_Termostat:TPID;
+    IsPID_Termostat_Created:boolean;
 //    TemperatueTimer : integer; // Код мультимедийного таймера для виміру температури
 //    TemperatureTimer : TTimer; // таймер для виміру температури
   end;
@@ -721,7 +752,7 @@ end;
 procedure TIVchar.ConstantShowCreate;
 begin
 
-  SetLength(DoubleConstantShows, 12);
+  SetLength(DoubleConstantShows, 19);
   DoubleConstantShows[0]:=TParameterShow1.Create(STPR,LPR,
         'Parasitic resistance',
 //        'Resistance input',
@@ -754,17 +785,40 @@ begin
         'Temperature measurement interval (s)',
         'Temperature measurement interval',5,2);
   DoubleConstantShows[8]:=TParameterShow1.Create(STTimeInterval,LTimeInterval,
-        'Measurement interval, (>=1 s)',
+        'Measurement interval, (s)',
         'Time dependence measurement interval',15,2);
   DoubleConstantShows[9]:=TParameterShow1.Create(STTimeDuration,LTimeDuration,
         'Measurement duration (s), 0 - infinite',
         'Full measurement duration',0,2);
+
   DoubleConstantShows[10]:=TParameterShow1.Create(STControlNV,LControlNV,
         'Needed Value',
         'Needed Value',0);
   DoubleConstantShows[11]:=TParameterShow1.Create(STControlInterval,LControlInterval,
         'Controling interval (s)',
         'Controling measurement interval',15,2);
+  DoubleConstantShows[12]:=TParameterShow1.Create(STControlKp,LControlKp,
+        'Kp',
+        'Proportional term of controller',1);
+  DoubleConstantShows[13]:=TParameterShow1.Create(STControlKi,LControlKi,
+        'Ki',
+        'Integral term of controller',0);
+  DoubleConstantShows[14]:=TParameterShow1.Create(STControlKd,LControlKd,
+        'Kd',
+        'Derivative term of controller',0);
+
+  DoubleConstantShows[15]:=TParameterShow1.Create(STTermostatNT,LTermostatNT,
+        'Needed Temperature',
+        'Needed Temperature',300);
+  DoubleConstantShows[16]:=TParameterShow1.Create(STTermostatKp,LTermostatKp,
+        'Proportional',
+        'Proportional term of termostat',0.1);
+  DoubleConstantShows[17]:=TParameterShow1.Create(STTermostatKi,LTermostatKi,
+        'Integral',
+        'Integral term of termostat',0);
+  DoubleConstantShows[18]:=TParameterShow1.Create(STTermostatKd,LTermostatKd,
+        'Derivative',
+        'Derivative term of termostat',0);
 
 
 
@@ -788,6 +842,19 @@ begin
 //   DoubleConstantShows[i].WriteToIniFile(ConfigFile);
   for I := Low(DoubleConstantShows) to High(DoubleConstantShows) do
    DoubleConstantShows[i].WriteToIniFile(ConfigFile);
+end;
+
+procedure TIVchar.ControllerThreadCreate;
+begin
+  ThermoCuple.Measurement:=TermoCouple_MD.ActiveInterface;
+  ControllerThread:=
+    TControllerThread.Create(Control_MD.ActiveInterface,
+                             SettingDeviceControl.ActiveInterface,
+                             DoubleConstantShows[11].Data,
+                             DoubleConstantShows[12].Data,
+                             DoubleConstantShows[13].Data,
+                             DoubleConstantShows[14].Data,
+                             DoubleConstantShows[10].Data);
 end;
 
 procedure TIVchar.SaveClick(Sender: TObject);
@@ -844,7 +911,7 @@ begin
   CalibrMeasuring:= TIVDependence.Create(CBForw,CBRev,PBIV,BIVStop,
                          IVResult,ForwLine,RevLine,ForwLg,RevLg);
 
-  TimeDependence:=TTimeDependence.Create(PBIV,BIVStop,IVResult,
+  TimeDependence:=TTimeDependenceTimer.Create(PBIV,BIVStop,IVResult,
                                        ForwLine,ForwLg,DependTimer);
 
   IVMeasuring.RangeFor:=IVCharRangeFor;
@@ -1941,11 +2008,29 @@ begin
  SettingWriteToIniFile();
 end;
 
+procedure TIVchar.BTermostatResetClick(Sender: TObject);
+begin
+ if SBTermostat.Down then
+    begin
+     if assigned(PID_Termostat) then PID_Termostat.Free;
+     IsPID_Termostat_Created:=False;
+    end;
+end;
+
 procedure TIVchar.Button1Click(Sender: TObject);
 begin
  ET_WriteDAC(0,2);
  showmessage(ET_ErrMsg);
 
+end;
+
+procedure TIVchar.BControlResetClick(Sender: TObject);
+begin
+ if SBControlBegin.Down then
+    begin
+      ControllerThread.Terminate;
+      ControllerThreadCreate()
+    end;
 end;
 
 procedure TIVchar.BDFFA_R2RClick(Sender: TObject);
@@ -2086,6 +2171,7 @@ begin
    then RS232_MediatorTread.Terminate;
 
  if SBTAuto.Down then TemperatureMeasuringThread.Terminate;
+ if SBControlBegin.Down then ControllerThread.Terminate;
 
  if assigned(DependTimer) then DependTimer.Free;
 
@@ -2565,6 +2651,20 @@ begin
 end;
 
 
+procedure TIVchar.SBControlBeginClick(Sender: TObject);
+begin
+ if SBControlBegin.Down then
+    begin
+    ControllerThreadCreate();
+    SBControlBegin.Caption:='Stop Controling';
+    end
+                 else
+    begin
+    ControllerThread.Terminate;
+    SBControlBegin.Caption:='Start Controling';
+    end;
+end;
+
 procedure TIVchar.SBTAutoClick(Sender: TObject);
 begin
  if SBTAuto.Down then
@@ -2592,6 +2692,28 @@ begin
 //     timeKillEvent(TemperatueTimer);
 end;
 
+procedure TIVchar.SBTermostatClick(Sender: TObject);
+begin
+ if SBTermostat.Down then
+    begin
+    IsWorkingTermostat:=True;
+    IsPID_Termostat_Created:=False;
+    SBControlBegin.Caption:='Stop Controling';
+    if not(SBTAuto.Down) then
+        begin
+        SBTAuto.Down:=True;
+        TemperatureThreadCreate()
+        end;
+    end
+                 else
+    begin
+    IsWorkingTermostat:=False;
+    SBControlBegin.Caption:='Start Controling';
+    if assigned(PID_Termostat) then PID_Termostat.Free;
+    IsPID_Termostat_Created:=False;
+    end;
+end;
+
 procedure TIVchar.SettingWriteToIniFile;
 begin
   RangeWriteToIniFile;
@@ -2616,7 +2738,8 @@ begin
   ThermoCuple.Measurement:=TermoCouple_MD.ActiveInterface;
   TemperatureMeasuringThread:=
     TTemperatureMeasuringThread.Create(Temperature_MD.ActiveInterface,
-                                       round(1000*StrToFloat(STTMI.Caption)),
+                                       round(StrToFloat(STTMI.Caption)),
+//                                       round(1000*StrToFloat(STTMI.Caption)),
                                        EventMeasuringEnd);
 //    TTemperatureMeasuringThread.Create(Temperature_MD,round(1000*StrToFloat(STTMI.Caption)),EventMeasuringEnd);
 
@@ -2739,8 +2862,32 @@ begin
   if Mes.WParam=TemperMessage then
     begin
       LTRValue.Caption:=FloatToStrF(Temperature_MD.ActiveInterface.Value,ffFixed, 5, 2);
+      LTermostatCTValue.Caption:=FloatToStrF(Temperature_MD.ActiveInterface.Value,ffFixed, 5, 2);
+      if IsWorkingTermostat then
+        begin
+          if IsPID_Termostat_Created then
+              PID_Termostat.ControlingSignal(Temperature_MD.ActiveInterface.Value)
+                                     else
+            begin
+              PID_Termostat:=TPID.Create(DoubleConstantShows[16].Data,
+                                         DoubleConstantShows[17].Data,
+                                         DoubleConstantShows[18].Data,
+                                         DoubleConstantShows[7].Data,
+                                         Temperature_MD.ActiveInterface.Value,
+                                         DoubleConstantShows[15].Data
+                                         );
+              IsPID_Termostat_Created:=True;
+            end;
+          SettingTermostat.ActiveInterface.Output(PID_Termostat.OutputValue);
+        end;
     end;
-  
+
+
+  if Mes.WParam=ControlMessage then
+    begin
+      LControlCVValue.Caption:=FloatToStrF(Control_MD.ActiveInterface.Value,ffFixed, 4, 3);
+    end;
+
 end;
 
 procedure TIVchar.HookEndReset;
@@ -2891,10 +3038,12 @@ begin
 
   SettingDevice:=TSettingDevice.Create(DevicesSet,CBVS);
   SettingDeviceControl:=TSettingDevice.Create(DevicesSet,CBControlCD);
+  SettingTermostat:=TSettingDevice.Create(DevicesSet,CBTermostatCD);
 end;
 
 procedure TIVchar.DevicesFree;
 begin
+  SettingTermostat.Free;
   SettingDeviceControl.Free;
   SettingDevice.Free;
   Control_MD.Free;
@@ -2911,6 +3060,7 @@ end;
 
 procedure TIVchar.DevicesReadFromIniAndToForm;
 begin
+  SettingTermostat.ReadFromIniFile(ConfigFile,MD_IniSection,'Termostat input');
   SettingDeviceControl.ReadFromIniFile(ConfigFile,MD_IniSection,'Control input');
   SettingDevice.ReadFromIniFile(ConfigFile,MD_IniSection,'Input voltage');
   Temperature_MD.ReadFromIniFile(ConfigFile,MD_IniSection,'Temperature');
@@ -2932,6 +3082,7 @@ procedure TIVchar.DevicesWriteToIniFile;
 begin
   ConfigFile.EraseSection(MD_IniSection);
   SettingDeviceControl.WriteToIniFile(ConfigFile,MD_IniSection,'Control input');
+  SettingTermostat.WriteToIniFile(ConfigFile,MD_IniSection,'Termostat input');
   SettingDevice.WriteToIniFile(ConfigFile,MD_IniSection,'Input voltage');
   Temperature_MD.WriteToIniFile(ConfigFile,MD_IniSection,'Temperature');
   Current_MD.WriteToIniFile(ConfigFile,MD_IniSection,'Current');
@@ -2988,6 +3139,7 @@ begin
   LADCurrentValue.Caption:=Undefined;
   LADInputVoltageValue.Caption:=Undefined;
   LTRValue.Caption:=Undefined;
+  LTermostatCTValue.Caption:=Undefined;
   LTLastValue.Caption:=Undefined;
 
   PC.OnChanging:=nil;
@@ -3016,6 +3168,9 @@ begin
   CBMeasurements.Items.Add(MeasR2RCalib);
   CBMeasurements.Items.Add(MeasTimeD);
   CBMeasurements.ItemIndex:=0;
+
+  IsWorkingTermostat:=False;
+  IsPID_Termostat_Created:=False;
 
 end;
 

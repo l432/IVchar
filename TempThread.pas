@@ -5,6 +5,7 @@ interface
 uses
   Classes, Measurement,SPIdevice, RS232_Meas_Tread;
 
+const VdiodMax=2;
 
 type
 //  TTemperatureMeasuringThread = class(TThread)
@@ -19,7 +20,7 @@ type
    procedure DoSomething;override;
   public
    constructor Create(Measurement:IMeasurement;
-                      Interval:Int64;
+                      Interval:double;
                       WPARAM: word;
                       EventEnd:THandle);
 
@@ -36,10 +37,31 @@ type
     procedure DoSomething;override;
   public
    constructor Create(TemperatureMeasurement:ITemperatureMeasurement;
-                      Interval:Int64;
+                      Interval:double;
                       EventEnd:THandle);
 
   end;
+
+  TControllerThread = class(TTheadCycle)
+  private
+//    fInterval:int64;
+//    fEventEnd:THandle;
+    fMeasurement:IMeasurement;
+    fDAC:IDAC;
+    fPID:TPID;
+    function Mesuring():double;
+  protected
+    procedure DoSomething;override;
+  public
+   destructor Destroy; override;
+   constructor Create(Measurement:IMeasurement;
+                      IDAC:IDAC;
+                      Interval:double;
+                      Kpp,Kii,Kdd,{InitialValue,}NeededValue:double);
+//                      EventEnd:THandle);
+
+  end;
+
 
 implementation
 
@@ -61,7 +83,7 @@ uses
 { TTemperatureMeasuringThread }
 
 constructor TTemperatureMeasuringThread.Create(TemperatureMeasurement:ITemperatureMeasurement;
-                                               Interval:Int64;
+                                               Interval:double;
                                                 EventEnd:THandle);
 begin
 //  inherited Create(True);    // Поток создаем в состоянии «Приостановлен»
@@ -117,7 +139,7 @@ end;
 
 { TMeasuringThread }
 
-constructor TMeasuringThread.Create(Measurement: IMeasurement; Interval: Int64;
+constructor TMeasuringThread.Create(Measurement: IMeasurement; Interval: double;
   WPARAM: word; EventEnd: THandle);
 begin
  inherited Create(Interval);
@@ -130,6 +152,58 @@ end;
 procedure TMeasuringThread.DoSomething;
 begin
   fMeasurement.GetDataThread(fWPARAM, fEventEnd);
+end;
+
+{ TControllerThread }
+
+constructor TControllerThread.Create(Measurement: IMeasurement;
+                                     IDAC: IDAC;
+                                     Interval: double;
+                                     Kpp, Kii, Kdd,
+                                     {InitialValue, }
+                                     NeededValue: double);
+
+begin
+  inherited Create(Interval);
+  fMeasurement:=Measurement;
+  fDAC:=IDAC;
+//  fPID:=TPID.Create(Kpp, Kii, Kdd, Interval, InitialValue, NeededValue);
+  fPID:=TPID.Create(Kpp, Kii, Kdd, Interval, Mesuring(), NeededValue);
+//  fDAC.Output(fPID.OutputValue);
+  if (fDAC.Name='Ch2_ET1255')and
+     (abs(fPID.OutputValue)>VdiodMax)
+          then fDAC.Output(VdiodMax)
+          else fDAC.Output(fPID.OutputValue);
+  _Sleep(fInterval);
+  Resume;
+end;
+
+function TControllerThread.Mesuring:double;
+begin
+  ResetEvent(FEventTerminate);
+  fMeasurement.GetDataThread(ControlMessage, FEventTerminate);
+  WaitForSingleObject(FEventTerminate, INFINITE);
+  ResetEvent(FEventTerminate);
+  Result:=fMeasurement.Value;
+end;
+
+destructor TControllerThread.Destroy;
+begin
+  fPID.Free;
+  inherited Destroy;
+end;
+
+procedure TControllerThread.DoSomething;
+begin
+//  Mesuring;
+//  fPID.ControlingSignal(fMeasurement.Value);
+  fPID.ControlingSignal(Mesuring);
+
+  if (fDAC.Name='Ch2_ET1255')and
+     (abs(fPID.OutputValue)>VdiodMax)
+          then fDAC.Output(VdiodMax)
+          else fDAC.Output(fPID.OutputValue);
+
 end;
 
 end.

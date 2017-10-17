@@ -11,7 +11,7 @@ uses
 type
 
  TTheadSleep = class(TThread)
-  private
+  protected
     FEventTerminate: THandle;
   public
     constructor Create;
@@ -22,11 +22,11 @@ type
 
  TTheadCycle = class(TTheadSleep)
   private
-    fInterval:int64;
   protected
+    fInterval:int64;
     procedure DoSomething;virtual;
   public
-    constructor Create(Interval:Int64);
+    constructor Create(Interval:double);
     procedure Execute; override;
   end;
 
@@ -192,7 +192,8 @@ begin
   FreeOnTerminate := True;
   Self.Priority := tpNormal;
   
-  FEventTerminate := CreateEvent(nil, False, False, nil);
+  FEventTerminate := CreateEvent(nil, True, False, nil);
+//  FEventTerminate := CreateEvent(nil, False, False, nil);
 end;
 
 destructor TTheadSleep.Destroy;
@@ -234,10 +235,10 @@ end;
 
 { TTheadCycle }
 
-constructor TTheadCycle.Create(Interval: Int64);
+constructor TTheadCycle.Create(Interval: double);
 begin
  inherited Create();
- fInterval:=Interval;
+ fInterval:=abs(round(1000*Interval));
 end;
 
 procedure TTheadCycle.DoSomething;
@@ -254,7 +255,7 @@ begin
   begin
     t := Now();
     DoSomething;
-    k := 5000 - Round(MilliSecondSpan(Now(), t));
+    k := fInterval - Round(MilliSecondSpan(Now(), t));
     if k>0 then
       _Sleep(k);
   end;

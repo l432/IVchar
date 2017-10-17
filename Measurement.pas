@@ -12,6 +12,9 @@ Const
 
    TemperMessage=1;
    {WPARAM параметер, який надсилається при вимірюванні температури}
+   ControlMessage=2;
+   {WPARAM параметер, який надсилається при вимірюванні
+   параметра в контроллері процесу}
 
 type
 
@@ -324,8 +327,8 @@ end;
 function TSimulator.GetTemperature: double;
 begin
 // sleep(500);
- fValue:=333;
- result:=333;
+ fValue:=333.00;
+ Result:=333.00;
  // Result:=Random(4000)/10.0;
 end;
 
@@ -875,8 +878,14 @@ end;
 
 function TPID.ControlingSignal(CurrentValue: double): double;
 begin
- DeviationCalculation(CurrentValue);
- fOutputValue:=Kp*(Epsi[1]+Ki*Period*EpsSum+Kd/Period*(Epsi[1]-Epsi[0]));
+ if CurrentValue=ErResult then
+    begin
+     fOutputValue:=0;
+    end                   else
+    begin
+     DeviationCalculation(CurrentValue);
+     fOutputValue:=Kp*(Epsi[1]+Ki*Period*EpsSum+Kd/Period*(Epsi[1]-Epsi[0]));
+    end;
  Result:=fOutputValue;
 end;
 

@@ -49,25 +49,53 @@ private
   class procedure tempVChange(Value: double);
   class function tempI:double;
   class procedure tempIChange(Value: double);
+  procedure PeriodicMeasuring();virtual;
+end;
+
+TTimeDependence=class(TDependence)
+private
+//  Timer:TTimer;
+//  FInterval: integer;
+//  FDuration: int64;
+  fTreadToStop:TThread;
+  fBeginTime:TDateTime;
+  procedure ButtonStopClick(Sender: TObject);override;
+//  procedure SetDuration(const Value: int64);
+//  procedure SetInterval(const Value: integer);
+//  procedure TimerOnTime(Sender: TObject);
+  procedure ActionMeasurement();override;
+//  function MeasurementNumberDetermine(): integer;override;
+ public
+  EventStop: THandle;
+//  property Interval:integer read FInterval write SetInterval;
+//  property Duration:int64 read FDuration write SetDuration;
+  Constructor Create(PB:TProgressBar;
+                     BS: TButton;
+                     Res:PVector;
+                     FLn,FLg:TPointSeries);
+//                     Tim:TTimer);
+  procedure BeginMeasuring();override;
+//  procedure EndMeasuring();override;
+  Procedure Free;
 end;
 
 
-
-TTimeDependence=class(TDependence)
+TTimeDependenceTimer=class(TTimeDependence)
+//TTimeDependenceTimer=class(TDependence)
 private
   Timer:TTimer;
   FInterval: integer;
   FDuration: int64;
-  fTreadToStop:TThread;
-  fBeginTime:TDateTime;
-  procedure ButtonStopClick(Sender: TObject);override;
+//  fTreadToStop:TThread;
+//  fBeginTime:TDateTime;
+//  procedure ButtonStopClick(Sender: TObject);override;
   procedure SetDuration(const Value: int64);
   procedure SetInterval(const Value: integer);
   procedure TimerOnTime(Sender: TObject);
   procedure ActionMeasurement();override;
   function MeasurementNumberDetermine(): integer;override;
  public
-  EventStop: THandle;
+//  EventStop: THandle;
   property Interval:integer read FInterval write SetInterval;
   property Duration:int64 read FDuration write SetDuration;
   Constructor Create(PB:TProgressBar;
@@ -77,7 +105,7 @@ private
                      Tim:TTimer);
   procedure BeginMeasuring();override;
   procedure EndMeasuring();override;
-  Procedure Free;
+//  Procedure Free;
 end;
 
 type
@@ -529,6 +557,109 @@ end;
 { TTimeDependence }
 
 
+procedure TTimeDependenceTimer.ActionMeasurement;
+begin
+//  HookFirstMeas();
+//  ftempV:=round(SecondSpan(Now(),fBeginTime)*10)/10;
+//  HookSecondMeas();
+//
+//  if (ftempV=ErResult)or(ftempI=ErResult) then
+//    begin
+//      SetEvent(EventStop);
+//      Exit;
+//    end;
+//  if fPointNumber>=ProgressBar.Max-1
+//    then ProgressBar.Max :=2*ProgressBar.Max;
+
+  inherited ActionMeasurement;
+
+  if (FDuration>0)and(ftempV>FDuration) then SetEvent(EventStop);
+end;
+
+procedure TTimeDependenceTimer.BeginMeasuring;
+begin
+  inherited BeginMeasuring;
+//  {в HookBeginMeasuring потрібно передати значення Interval nf Duration}
+//  ProgressBar.Max := MeasurementNumberDetermine();
+//
+//
+//  ResetEvent(EventStop);
+//  fTreadToStop:=TTimeDependenceTread.Create(self,EventStop);
+//
+////   Application.ProcessMessages;
+////   inc(fPointNumber);
+////   HookAction();
+////   ActionMeasurement;
+//  fBeginTime:=Now();
+//  DuringMeasuring(ActionMeasurement);
+
+  Timer.Interval:=round(Interval*1000);
+  Timer.OnTimer:=TimerOnTime;
+  Timer.Enabled:=True;
+end;
+
+//procedure TTimeDependenceTimer.ButtonStopClick(Sender: TObject);
+//begin
+// SetEvent(EventStop);
+//end;
+
+constructor TTimeDependenceTimer.Create(PB: TProgressBar;
+                                   BS: TButton;
+                                   Res: PVector;
+                                   FLn, FLg: TPointSeries;
+                                   Tim:TTimer);
+begin
+ inherited Create(PB,BS,Res,FLn, FLg);
+// EventStop := CreateEvent(nil,
+//                          True, // тип сброса TRUE - ручной
+//                          True, // начальное состояние TRUE - сигнальное
+//                          nil);
+ Timer:=Tim;
+ FInterval:=15;
+ FDuration:=0;
+end;
+
+procedure TTimeDependenceTimer.EndMeasuring;
+begin
+ inherited EndMeasuring;
+ Timer.Enabled:=False;
+end;
+
+//procedure TTimeDependenceTimer.Free;
+//begin
+// SetEvent(EventStop);
+// CloseHandle(EventStop);
+//end;
+
+function TTimeDependenceTimer.MeasurementNumberDetermine: integer;
+begin
+ if Duration>0 then Result:=Ceil(Duration/Interval)
+               else Result:=10;
+end;
+
+procedure TTimeDependenceTimer.SetDuration(const Value: int64);
+begin
+  FDuration := abs(Value);
+end;
+
+procedure TTimeDependenceTimer.SetInterval(const Value: integer);
+begin
+  if Value>=1 then FInterval := Value
+             else FInterval := 15;
+end;
+
+procedure TTimeDependenceTimer.TimerOnTime(Sender: TObject);
+begin
+//   Application.ProcessMessages;
+//   inc(fPointNumber);
+//   ActionMeasurement;
+
+// DuringMeasuring(ActionMeasurement);
+   PeriodicMeasuring;
+end;
+
+{ TTimeDependence }
+
 procedure TTimeDependence.ActionMeasurement;
 begin
   HookFirstMeas();
@@ -544,8 +675,6 @@ begin
     then ProgressBar.Max :=2*ProgressBar.Max;
 
   inherited ActionMeasurement;
-
-  if (FDuration>0)and(ftempV>FDuration) then SetEvent(EventStop);
 end;
 
 procedure TTimeDependence.BeginMeasuring;
@@ -554,21 +683,13 @@ begin
   {в HookBeginMeasuring потрібно передати значення Interval nf Duration}
   ProgressBar.Max := MeasurementNumberDetermine();
 
-//  fBeginTime:=Now();
 
   ResetEvent(EventStop);
   fTreadToStop:=TTimeDependenceTread.Create(self,EventStop);
 
-//   Application.ProcessMessages;
-//   inc(fPointNumber);
-//   HookAction();
-//   ActionMeasurement;
   fBeginTime:=Now();
-  DuringMeasuring(ActionMeasurement);
-
-  Timer.Interval:=Interval*1000;
-  Timer.OnTimer:=TimerOnTime;
-  Timer.Enabled:=True;
+//  DuringMeasuring(ActionMeasurement);
+  PeriodicMeasuring;
 end;
 
 procedure TTimeDependence.ButtonStopClick(Sender: TObject);
@@ -576,57 +697,27 @@ begin
  SetEvent(EventStop);
 end;
 
-constructor TTimeDependence.Create(PB: TProgressBar;
-                                   BS: TButton;
-                                   Res: PVector;
-                                   FLn, FLg: TPointSeries;
-                                   Tim:TTimer);
+constructor TTimeDependence.Create(PB: TProgressBar; BS: TButton; Res: PVector;
+  FLn, FLg: TPointSeries);
 begin
  inherited Create(PB,BS,Res,FLn, FLg);
- Timer:=Tim;
  EventStop := CreateEvent(nil,
                           True, // тип сброса TRUE - ручной
                           True, // начальное состояние TRUE - сигнальное
                           nil);
- FInterval:=15;
- FDuration:=0;
 end;
 
-procedure TTimeDependence.EndMeasuring;
-begin
- inherited EndMeasuring;
- Timer.Enabled:=False;
-end;
+//procedure TTimeDependence.EndMeasuring;
+//begin
+//  inherited;
+//
+//end;
 
 procedure TTimeDependence.Free;
 begin
  SetEvent(EventStop);
  CloseHandle(EventStop);
-end;
-
-function TTimeDependence.MeasurementNumberDetermine: integer;
-begin
- if Duration>0 then Result:=Ceil(Duration/Interval)
-               else Result:=10;
-end;
-
-procedure TTimeDependence.SetDuration(const Value: int64);
-begin
-  FDuration := abs(Value);
-end;
-
-procedure TTimeDependence.SetInterval(const Value: integer);
-begin
-  if Value>=1 then FInterval := Value
-             else FInterval := 15;
-end;
-
-procedure TTimeDependence.TimerOnTime(Sender: TObject);
-begin
-//   Application.ProcessMessages;
-//   inc(fPointNumber);
-//   ActionMeasurement;
- DuringMeasuring(ActionMeasurement);
+// inherited Free;
 end;
 
 { TDependence }
@@ -724,6 +815,11 @@ end;
 function TDependence.MeasurementNumberDetermine: integer;
 begin
  Result:=10;
+end;
+
+procedure TDependence.PeriodicMeasuring;
+begin
+  DuringMeasuring(ActionMeasurement);
 end;
 
 class function TDependence.PointNumber: word;

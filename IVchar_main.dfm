@@ -35,7 +35,7 @@ object IVchar: TIVchar
     Top = 0
     Width = 786
     Height = 466
-    ActivePage = Time_Dependence
+    ActivePage = TS_Temper
     Align = alTop
     Font.Charset = RUSSIAN_CHARSET
     Font.Color = clWindowText
@@ -3015,6 +3015,230 @@ object IVchar: TIVchar
           TabOrder = 2
         end
       end
+      object GBTermostat: TGroupBox
+        Left = 3
+        Top = 210
+        Width = 486
+        Height = 167
+        Caption = 'Thermostat Setup'
+        Font.Charset = RUSSIAN_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -13
+        Font.Name = 'Courier'
+        Font.Style = [fsBold]
+        ParentFont = False
+        TabOrder = 5
+        object LTermostatNT: TLabel
+          Left = 178
+          Top = 16
+          Width = 87
+          Height = 30
+          Caption = 'Needed Temperature'
+          Font.Charset = RUSSIAN_CHARSET
+          Font.Color = clMaroon
+          Font.Height = -11
+          Font.Name = 'Verdana'
+          Font.Style = [fsBold]
+          ParentFont = False
+          WordWrap = True
+        end
+        object LTermostatCT: TLabel
+          Left = 306
+          Top = 16
+          Width = 85
+          Height = 26
+          Caption = 'Current Temperature'
+          Font.Charset = RUSSIAN_CHARSET
+          Font.Color = clMaroon
+          Font.Height = -11
+          Font.Name = 'Verdana'
+          Font.Style = [fsBold]
+          ParentFont = False
+          WordWrap = True
+        end
+        object SBTermostat: TSpeedButton
+          Left = 8
+          Top = 78
+          Width = 132
+          Height = 26
+          AllowAllUp = True
+          GroupIndex = 2
+          Caption = 'Start Control'
+          Font.Charset = RUSSIAN_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -13
+          Font.Name = 'Arial'
+          Font.Style = [fsBold]
+          ParentFont = False
+          OnClick = SBTermostatClick
+        end
+        object LTermostatCTValue: TLabel
+          Left = 304
+          Top = 52
+          Width = 93
+          Height = 20
+          Caption = '1.34E+01'
+          Font.Charset = RUSSIAN_CHARSET
+          Font.Color = clBlue
+          Font.Height = -17
+          Font.Name = 'Verdana'
+          Font.Style = [fsBold]
+          ParentFont = False
+        end
+        object LTermostatPID: TLabel
+          Left = 155
+          Top = 82
+          Width = 103
+          Height = 13
+          Caption = 'PID parameters'
+          Font.Charset = RUSSIAN_CHARSET
+          Font.Color = clMaroon
+          Font.Height = -11
+          Font.Name = 'Verdana'
+          Font.Style = [fsBold]
+          ParentFont = False
+        end
+        object LTermostatKp: TLabel
+          Left = 155
+          Top = 103
+          Width = 16
+          Height = 13
+          Caption = 'Kp'
+          Font.Charset = RUSSIAN_CHARSET
+          Font.Color = clMaroon
+          Font.Height = -11
+          Font.Name = 'Verdana'
+          Font.Style = [fsBold]
+          ParentFont = False
+        end
+        object LTermostatKi: TLabel
+          Left = 270
+          Top = 103
+          Width = 12
+          Height = 13
+          Caption = 'Ki'
+          Font.Charset = RUSSIAN_CHARSET
+          Font.Color = clMaroon
+          Font.Height = -11
+          Font.Name = 'Verdana'
+          Font.Style = [fsBold]
+          ParentFont = False
+        end
+        object LTermostatKd: TLabel
+          Left = 385
+          Top = 103
+          Width = 16
+          Height = 13
+          Caption = 'Kd'
+          Font.Charset = RUSSIAN_CHARSET
+          Font.Color = clMaroon
+          Font.Height = -11
+          Font.Name = 'Verdana'
+          Font.Style = [fsBold]
+          ParentFont = False
+        end
+        object CBTermostatCD: TComboBox
+          Tag = 5
+          Left = 8
+          Top = 40
+          Width = 132
+          Height = 24
+          Style = csDropDownList
+          Font.Charset = RUSSIAN_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -13
+          Font.Name = 'Arial'
+          Font.Style = [fsBold]
+          ItemHeight = 16
+          ParentFont = False
+          TabOrder = 0
+        end
+        object STTermostatCD: TStaticText
+          Left = 8
+          Top = 20
+          Width = 97
+          Height = 20
+          Caption = 'Control Device'
+          Font.Charset = RUSSIAN_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -13
+          Font.Name = 'Arial'
+          Font.Style = [fsBold]
+          ParentFont = False
+          TabOrder = 1
+        end
+        object STTermostatNT: TStaticText
+          Left = 178
+          Top = 52
+          Width = 97
+          Height = 24
+          Caption = '1.34E+01'
+          Font.Charset = RUSSIAN_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -17
+          Font.Name = 'Verdana'
+          Font.Style = [fsBold]
+          ParentFont = False
+          TabOrder = 2
+        end
+        object STTermostatKi: TStaticText
+          Left = 270
+          Top = 122
+          Width = 97
+          Height = 24
+          Caption = '1.34E+01'
+          Font.Charset = RUSSIAN_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -17
+          Font.Name = 'Verdana'
+          Font.Style = [fsBold]
+          ParentFont = False
+          TabOrder = 3
+        end
+        object STTermostatKp: TStaticText
+          Left = 155
+          Top = 122
+          Width = 97
+          Height = 24
+          Caption = '1.34E+01'
+          Font.Charset = RUSSIAN_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -17
+          Font.Name = 'Verdana'
+          Font.Style = [fsBold]
+          ParentFont = False
+          TabOrder = 4
+        end
+        object STTermostatKd: TStaticText
+          Left = 385
+          Top = 122
+          Width = 97
+          Height = 24
+          Caption = '1.34E+01'
+          Font.Charset = RUSSIAN_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -17
+          Font.Name = 'Verdana'
+          Font.Style = [fsBold]
+          ParentFont = False
+          TabOrder = 5
+        end
+        object BTermostatReset: TButton
+          Left = 30
+          Top = 120
+          Width = 75
+          Height = 25
+          Caption = 'Reset'
+          Font.Charset = RUSSIAN_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -13
+          Font.Name = 'Arial'
+          Font.Style = [fsBold]
+          ParentFont = False
+          TabOrder = 6
+          OnClick = BTermostatResetClick
+        end
+      end
     end
     object TS_UT70: TTabSheet
       Caption = 'UT70'
@@ -3865,11 +4089,11 @@ object IVchar: TIVchar
         TabOrder = 3
       end
       object GBCSetup: TGroupBox
-        Left = 291
+        Left = 240
         Top = 18
-        Width = 414
+        Width = 497
         Height = 215
-        Caption = 'Controling Setup'
+        Caption = 'Controller Setup'
         Font.Charset = RUSSIAN_CHARSET
         Font.Color = clWindowText
         Font.Height = -13
@@ -3923,14 +4147,14 @@ object IVchar: TIVchar
           Height = 26
           AllowAllUp = True
           GroupIndex = 2
-          Caption = 'Begin Controling'
+          Caption = 'Start Controling'
           Font.Charset = RUSSIAN_CHARSET
           Font.Color = clWindowText
           Font.Height = -13
           Font.Name = 'Arial'
           Font.Style = [fsBold]
           ParentFont = False
-          OnClick = SBTAutoClick
+          OnClick = SBControlBeginClick
         end
         object LControlCVValue: TLabel
           Left = 304
@@ -3951,6 +4175,45 @@ object IVchar: TIVchar
           Width = 103
           Height = 13
           Caption = 'PID parameters'
+          Font.Charset = RUSSIAN_CHARSET
+          Font.Color = clMaroon
+          Font.Height = -11
+          Font.Name = 'Verdana'
+          Font.Style = [fsBold]
+          ParentFont = False
+        end
+        object LControlKp: TLabel
+          Left = 155
+          Top = 119
+          Width = 16
+          Height = 13
+          Caption = 'Kp'
+          Font.Charset = RUSSIAN_CHARSET
+          Font.Color = clMaroon
+          Font.Height = -11
+          Font.Name = 'Verdana'
+          Font.Style = [fsBold]
+          ParentFont = False
+        end
+        object LControlKi: TLabel
+          Left = 270
+          Top = 119
+          Width = 12
+          Height = 13
+          Caption = 'Ki'
+          Font.Charset = RUSSIAN_CHARSET
+          Font.Color = clMaroon
+          Font.Height = -11
+          Font.Name = 'Verdana'
+          Font.Style = [fsBold]
+          ParentFont = False
+        end
+        object LControlKd: TLabel
+          Left = 385
+          Top = 119
+          Width = 16
+          Height = 13
+          Caption = 'Kd'
           Font.Charset = RUSSIAN_CHARSET
           Font.Color = clMaroon
           Font.Height = -11
@@ -4032,6 +4295,34 @@ object IVchar: TIVchar
           ParentFont = False
           TabOrder = 4
         end
+        object STControlKi: TStaticText
+          Left = 270
+          Top = 138
+          Width = 97
+          Height = 24
+          Caption = '1.34E+01'
+          Font.Charset = RUSSIAN_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -17
+          Font.Name = 'Verdana'
+          Font.Style = [fsBold]
+          ParentFont = False
+          TabOrder = 5
+        end
+        object STControlKp: TStaticText
+          Left = 155
+          Top = 138
+          Width = 97
+          Height = 24
+          Caption = '1.34E+01'
+          Font.Charset = RUSSIAN_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -17
+          Font.Name = 'Verdana'
+          Font.Style = [fsBold]
+          ParentFont = False
+          TabOrder = 6
+        end
         object STControlInterval: TStaticText
           Left = 18
           Top = 178
@@ -4044,7 +4335,36 @@ object IVchar: TIVchar
           Font.Name = 'Verdana'
           Font.Style = [fsBold]
           ParentFont = False
-          TabOrder = 5
+          TabOrder = 7
+        end
+        object STControlKd: TStaticText
+          Left = 385
+          Top = 138
+          Width = 97
+          Height = 24
+          Caption = '1.34E+01'
+          Font.Charset = RUSSIAN_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -17
+          Font.Name = 'Verdana'
+          Font.Style = [fsBold]
+          ParentFont = False
+          TabOrder = 8
+        end
+        object BControlReset: TButton
+          Left = 408
+          Top = 176
+          Width = 75
+          Height = 25
+          Caption = 'Reset'
+          Font.Charset = RUSSIAN_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -13
+          Font.Name = 'Arial'
+          Font.Style = [fsBold]
+          ParentFont = False
+          TabOrder = 9
+          OnClick = BControlResetClick
         end
       end
     end
