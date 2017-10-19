@@ -5,7 +5,7 @@ interface
 uses
   Classes, Measurement,SPIdevice, RS232_Meas_Tread;
 
-const VdiodMax=2;
+const VdiodMax=1.3;
 
 type
 //  TTemperatureMeasuringThread = class(TThread)
@@ -50,6 +50,7 @@ type
     fDAC:IDAC;
     fPID:TPID;
     function Mesuring():double;
+    procedure ControllerOutput;
   protected
     procedure DoSomething;override;
   public
@@ -168,14 +169,23 @@ begin
   fMeasurement:=Measurement;
   fDAC:=IDAC;
 //  fPID:=TPID.Create(Kpp, Kii, Kdd, Interval, InitialValue, NeededValue);
+
   fPID:=TPID.Create(Kpp, Kii, Kdd, Interval, Mesuring(), NeededValue);
-//  fDAC.Output(fPID.OutputValue);
-  if (fDAC.Name='Ch2_ET1255')and
-     (abs(fPID.OutputValue)>VdiodMax)
-          then fDAC.Output(VdiodMax)
-          else fDAC.Output(fPID.OutputValue);
+  ControllerOutput;
+
+
   _Sleep(fInterval);
   Resume;
+end;
+
+procedure TControllerThread.ControllerOutput;
+begin
+  //  fDAC.Output(fPID.OutputValue);
+  if (fDAC.Name = 'Ch2_ET1255') and (abs(fPID.OutputValue) > VdiodMax) then
+    fDAC.Output(VdiodMax)
+  else
+    fDAC.Output(fPID.OutputValue);
+  PostMessage(FindWindow('TIVchar', 'IVchar'), WM_MyMeasure, ControlOutputMessage, 0);
 end;
 
 function TControllerThread.Mesuring:double;
@@ -199,10 +209,12 @@ begin
 //  fPID.ControlingSignal(fMeasurement.Value);
   fPID.ControlingSignal(Mesuring);
 
-  if (fDAC.Name='Ch2_ET1255')and
-     (abs(fPID.OutputValue)>VdiodMax)
-          then fDAC.Output(VdiodMax)
-          else fDAC.Output(fPID.OutputValue);
+  ControllerOutput;
+//  if (fDAC.Name='Ch2_ET1255')and
+//     (abs(fPID.OutputValue)>VdiodMax)
+//          then fDAC.Output(VdiodMax)
+//          else fDAC.Output(fPID.OutputValue);
+//  PostMessage(FindWindow ('TIVchar', 'IVchar'), WM_MyMeasure,ControlOutputMessage,0);
 
 end;
 

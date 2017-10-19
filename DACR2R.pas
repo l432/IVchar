@@ -128,6 +128,7 @@ function TDACR2R.IntVoltage(Voltage: double): integer;
      Index,AddIndex:integer;
 begin
  Result:=0;
+ fOutPutValue:=Voltage;
  if TDACR2R_Calibr.VoltToKod(Voltage)=0 then Exit;
 
  tempArrWord:=fCalibration.VoltToArray(Voltage);
@@ -162,12 +163,14 @@ procedure TDACR2R.OutputCalibr(Voltage: double);
 begin
  if Voltage<0 then fData[2]:=DACR2R_Neg
               else fData[2]:=DACR2R_Pos;
+ fOutputValue:=Voltage;
  DataByteToSendFromInteger(TDACR2R_Calibr.VoltToKod(Voltage));
  PacketCreateAndSend();
 end;
 
 Procedure TDACR2R.OutputInt(Kod:integer);
 begin
+ fOutputValue:=Kod;
  if Kod<0 then fData[2]:=DACR2R_Neg
           else fData[2]:=DACR2R_Pos;
  DataByteToSendFromInteger(abs(Kod));

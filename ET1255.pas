@@ -88,9 +88,12 @@ type
  TET1255_DAC=class(TNamedDevice,IDAC)
  private
   fChanelNumber:TET1255_DAC_ChanelNumber;
+  fOutputValue:double;
 //  fError:string;
   Procedure ShowError();
+  function GetOutputValue:double;
  public
+   property OutputValue:double read GetOutputValue;
    procedure Output(Value:double);virtual;
    procedure OutputInt(Kod:integer); virtual;
    Procedure Reset();     virtual;
@@ -132,16 +135,27 @@ begin
 
 end;
 
-procedure TET1255_DAC.Output(Value: double);
+function TET1255_DAC.GetOutputValue: double;
 begin
-// showmessage('ch'+inttostr(fChanelNumber)+' d='+floattostr(Value));
+ Result:=fOutputValue;
+end;
 
+procedure TET1255_DAC.Output(Value: double);
+ var tempValue:double;
+begin
+
+// if Value>ET1255_DAC_MAX
+//    then ET_WriteDAC(ET1255_DAC_MAX,fChanelNumber)
+//    else if Value<ET1255_DAC_MIN
+//            then ET_WriteDAC(ET1255_DAC_MIN,fChanelNumber)
+//            else ET_WriteDAC(Value,fChanelNumber);
  if Value>ET1255_DAC_MAX
-    then ET_WriteDAC(ET1255_DAC_MAX,fChanelNumber)
+    then tempValue:=ET1255_DAC_MAX
     else if Value<ET1255_DAC_MIN
-            then ET_WriteDAC(ET1255_DAC_MIN,fChanelNumber)
-            else ET_WriteDAC(Value,fChanelNumber);
-//ET_WriteDAC(Value,fChanelNumber);
+            then tempValue:=ET1255_DAC_MIN
+            else tempValue:=Value;
+ fOutputValue:=tempValue;
+ ET_WriteDAC(tempValue,fChanelNumber);
  ShowError();
 end;
 

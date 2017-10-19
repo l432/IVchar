@@ -15,6 +15,9 @@ Const
    ControlMessage=2;
    {WPARAM параметер, який надсилається при вимірюванні
    параметра в контроллері процесу}
+   ControlOutputMessage=3;
+   {WPARAM параметер, який надсилається при встановленні
+   керуючого параметра в контроллері процесу}
 
 type
 
@@ -37,6 +40,7 @@ end;
 
 IDAC = interface (IName)
   ['{F729B2E9-AF49-4293-873B-83D53C258E0A}']
+ function GetOutputValue:double;
  procedure Output(Value:double);
  {встановлює на виході напругу Value}
  procedure OutputInt(Kod:integer);
@@ -47,6 +51,7 @@ IDAC = interface (IName)
  {визначає крок при процедурі калібрування залежно від величини напруги Voltage}
  procedure OutputCalibr(Value:double);
  {встановлює на виході напругу Value під час калібрування}
+ property OutputValue:double read GetOutputValue;
 end;
 
 ITemperatureMeasurement = interface (IMeasurement)
@@ -60,14 +65,17 @@ private
  FName: string;
  fValue:double;
  fNewData:boolean;
+ fOutputValue:double;
  function GetName:string;
  function GetNewData:boolean;
  function GetValue:double;
+ function GetOutputValue:double;
  procedure SetNewData(Value:boolean);
 public
  property Name:string read GetName;
  property Value:double read GetValue;
  property NewData:boolean read GetNewData write SetNewData;
+ property OutputValue:double read GetOutputValue;
  Constructor Create();overload;
  Constructor Create(name:string);overload;
  function GetTemperature:double;
@@ -312,6 +320,11 @@ begin
  Result:=fNewData;
 end;
 
+function TSimulator.GetOutputValue: double;
+begin
+ Result:=fOutputValue;
+end;
+
 function TSimulator.GetData: double;
 begin
  Result:=GetTickCount/1e7;
@@ -351,17 +364,17 @@ end;
 
 procedure TSimulator.Output(Value: double);
 begin
-
+ fOutputValue:=Value;
 end;
 
 procedure TSimulator.OutputCalibr(Value: double);
 begin
-
+  fOutputValue:=Value;
 end;
 
 procedure TSimulator.OutputInt(Kod: integer);
 begin
-
+  fOutputValue:=Kod;
 end;
 
 procedure TSimulator.Reset;

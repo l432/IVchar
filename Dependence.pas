@@ -24,6 +24,7 @@ private
   Results:PVector;
   ForwLine: TPointSeries;
   ForwLg: TPointSeries;
+  FisActive: boolean;
   procedure ButtonStopClick(Sender: TObject);virtual;
   procedure BeginMeasuring();virtual;
   procedure EndMeasuring();virtual;
@@ -32,7 +33,9 @@ private
   procedure ActionMeasurement();virtual;
   procedure DataSave();virtual;
   procedure AEmpty;
+
  public
+  property isActive:boolean read FisActive;
   property HookBeginMeasuring:TSimpleEvent read FHookBeginMeasuring write FHookBeginMeasuring;
   property HookEndMeasuring:TSimpleEvent read fHookEndMeasuring write fHookEndMeasuring;
   property HookAction:TSimpleEvent read fHookAction write fHookAction;
@@ -64,8 +67,8 @@ private
 //  procedure SetInterval(const Value: integer);
 //  procedure TimerOnTime(Sender: TObject);
   procedure ActionMeasurement();override;
-//  function MeasurementNumberDetermine(): integer;override;
- public
+//    function MeasurementNumberDetermine(): integer;override;
+  public
   EventStop: THandle;
 //  property Interval:integer read FInterval write SetInterval;
 //  property Duration:int64 read FDuration write SetDuration;
@@ -720,6 +723,7 @@ begin
 // inherited Free;
 end;
 
+
 { TDependence }
 
 procedure TDependence.ActionMeasurement;
@@ -738,6 +742,7 @@ procedure TDependence.BeginMeasuring;
 begin
 //  HookBeginMeasuring();
 
+
   fIVMeasuringToStop:=False;
   ProgressBar.Max := MeasurementNumberDetermine();
   DecimalSeparator:='.';
@@ -752,6 +757,7 @@ begin
   ForwLine.Clear;
   ForwLg.Clear;
 
+  FisActive:=True;
 
   HookBeginMeasuring();
 
@@ -774,6 +780,8 @@ begin
  Results:=Res;
  ForwLine:=FLn;
  ForwLg:=FLg;
+
+ FisActive:=False;
 
  HookBeginMeasuring:=AEmpty;
  HookEndMeasuring:=AEmpty;
@@ -809,6 +817,7 @@ procedure TDependence.EndMeasuring;
 begin
   ButtonStop.Enabled := False;
   HookEndMeasuring();
+  FisActive:=False;
   MelodyLong();
 end;
 

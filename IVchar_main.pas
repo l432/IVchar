@@ -14,6 +14,7 @@ const
   MeasIV='IV characteristic';
   MeasR2RCalib='R2R-DAC Calibration';
   MeasTimeD='Time dependence';
+  MeasControlParametr='Controller vs time';
 
   MD_IniSection='Sources';
 
@@ -359,6 +360,9 @@ type
     STTermostatKp: TStaticText;
     STTermostatKd: TStaticText;
     BTermostatReset: TButton;
+    LControlCCV: TLabel;
+    LControlCCValue: TLabel;
+    LTermostatOutputValue: TLabel;
 
     procedure FormCreate(Sender: TObject);
     procedure PortConnected();
@@ -468,8 +472,10 @@ type
     procedure CalibrHookEnd;
     procedure HookBegin;
     procedure TimeDHookBegin;
+    procedure ControlTimeHookBegin;
     procedure TimeDHookEnd;
     procedure TimeDHookFirstMeas;
+    procedure ControlTimeFirstMeas;
     procedure TimeDHookSecondMeas;
     procedure IVCharHookSetVoltage;
     procedure IVCharHookAction;
@@ -540,6 +546,7 @@ type
     Imax,Imin,R_VtoI,Shift_VtoI:double;
     IVMeasuring,CalibrMeasuring:TIVDependence;
     TimeDependence:TTimeDependenceTimer;
+    ControlParameterTime:TTimeDependence;
     PID_Termostat:TPID;
     IsPID_Termostat_Created:boolean;
 //    TemperatueTimer : integer; // Код мультимедийного таймера для виміру температури
@@ -857,6 +864,23 @@ begin
                              DoubleConstantShows[10].Data);
 end;
 
+procedure TIVchar.ControlTimeFirstMeas;
+begin
+ TDependence.tempIChange(Control_MD.ActiveInterface.Value);
+ LADVoltageValue.Caption:=FloatToStrF(TDependence.tempI,ffFixed, 4, 3);
+end;
+
+procedure TIVchar.ControlTimeHookBegin;
+begin
+  HookBegin();
+
+  LADInputVoltage.Visible:=False;
+  LADInputVoltageValue.Visible:=False;
+  LADRange.Visible:=False;
+  LADVoltage.Caption:='Meauring:';
+  LADCurrent.Caption:='Time:';
+end;
+
 procedure TIVchar.SaveClick(Sender: TObject);
  var last:string;
 begin
@@ -914,6 +938,9 @@ begin
   TimeDependence:=TTimeDependenceTimer.Create(PBIV,BIVStop,IVResult,
                                        ForwLine,ForwLg,DependTimer);
 
+  ControlParameterTime:=TTimeDependence.Create(PBIV,BIVStop,IVResult,
+                                       ForwLine,ForwLg);
+
   IVMeasuring.RangeFor:=IVCharRangeFor;
   IVMeasuring.RangeRev:=IVCharRangeRev;
   CalibrMeasuring.RangeFor:=CalibrRangeFor;
@@ -930,6 +957,7 @@ begin
   IVMeasuring.HookBeginMeasuring:=IVcharHookBegin;
   CalibrMeasuring.HookBeginMeasuring:=HookBegin;
   TimeDependence.HookBeginMeasuring:=TimeDHookBegin;
+  ControlParameterTime.HookBeginMeasuring:=ControlTimeHookBegin;
 
   IVMeasuring.HookSetVoltage:=IVCharHookSetVoltage;
   CalibrMeasuring.HookSetVoltage:=CalibrHookSetVoltage;
@@ -937,10 +965,12 @@ begin
   IVMeasuring.HookSecondMeas:=IVCharCurrentMeasHook;
   CalibrMeasuring.HookSecondMeas:=CalibrHookSecondMeas;
   TimeDependence.HookSecondMeas:=TimeDHookSecondMeas;
+  ControlParameterTime.HookSecondMeas:=TimeDHookSecondMeas;
 
   IVMeasuring.HookFirstMeas:=IVCharVoltageMeasHook;
   CalibrMeasuring.HookFirstMeas:=CalibrHookFirstMeas;
   TimeDependence.HookFirstMeas:=TimeDHookFirstMeas;
+  ControlParameterTime.HookFirstMeas:=ControlTimeFirstMeas;
 
   IVMeasuring.HookDataSave:=IVCharHookDataSave;
   CalibrMeasuring.HookDataSave:=CalibrHookDataSave;
@@ -948,6 +978,7 @@ begin
   IVMeasuring.HookEndMeasuring:=IVcharHookEnd;
   CalibrMeasuring.HookEndMeasuring:=CalibrHookEnd;
   TimeDependence.HookEndMeasuring:=TimeDHookEnd;
+  ControlParameterTime.HookEndMeasuring:=TimeDHookEnd;
 
 end;
 
@@ -955,6 +986,8 @@ procedure TIVchar.DependenceMeasuringFree;
 begin
   IVMeasuring.Free;
   CalibrMeasuring.Free;
+  TimeDependence.Free;
+  ControlParameterTime.Free;
 end;
 
 procedure TIVchar.RangesFree;
@@ -1921,7 +1954,11 @@ begin
      then IVMeasuring.Measuring;
  if CBMeasurements.Items[CBMeasurements.ItemIndex]=MeasTimeD
      then TimeDependence.BeginMeasuring;
+ if CBMeasurements.Items[CBMeasurements.ItemIndex]=MeasControlParametr
+     then
+       begin
 
+       end;
 //if CBCalibr.Checked then CalibrMeasuring.Measuring
 //                    else IVMeasuring.Measuring;
 end;
@@ -2763,23 +2800,18 @@ end;
 
 procedure TIVchar.TimeDHookBegin;
 begin
-  HookBegin();
-//  TimeDependence.Interval:=round(StrToFloatDef(STTimeInterval.Caption,15));
-//  TimeDependence.Duration:=round(StrToFloatDef(STTimeDuration.Caption,0));
-//  showmessage(floattostr(round(StrToFloat(STTimeInterval.Caption))));
-//  temp:=round(StrToFloat(STTimeInterval.Caption));
+//  HookBegin();
+//
+//  LADInputVoltage.Visible:=False;
+//  LADInputVoltageValue.Visible:=False;
+//  LADRange.Visible:=False;
+//  LADVoltage.Caption:='Meauring:';
+//  LADCurrent.Caption:='Time:';
+
+  ControlTimeHookBegin();
+
   TimeDependence.Interval:=round(StrToFloat(STTimeInterval.Caption));
-//  TimeDependence.Interval:=temp;
-//  showmessage(floattostr(TimeDependence.Interval));
-
   TimeDependence.Duration:=round(StrToFloat(STTimeDuration.Caption));
-//  showmessage(floattostr(TimeDependence.Duration));
-
-  LADInputVoltage.Visible:=False;
-  LADInputVoltageValue.Visible:=False;
-  LADRange.Visible:=False;
-  LADVoltage.Caption:='Meauring:';
-  LADCurrent.Caption:='Time:';
 end;
 
 procedure TIVchar.TimeDHookEnd;
@@ -2879,6 +2911,8 @@ begin
               IsPID_Termostat_Created:=True;
             end;
           SettingTermostat.ActiveInterface.Output(PID_Termostat.OutputValue);
+          LTermostatOutputValue.Caption:=
+              FloatToStrF(SettingTermostat.ActiveInterface.OutputValue,ffExponent,4,3);
         end;
     end;
 
@@ -2888,6 +2922,10 @@ begin
       LControlCVValue.Caption:=FloatToStrF(Control_MD.ActiveInterface.Value,ffFixed, 4, 3);
     end;
 
+  if Mes.WParam=ControlOutputMessage then
+    begin
+      LControlCCValue.Caption:=FloatToStrF(SettingDeviceControl.ActiveInterface.OutputValue,ffExponent,4,3);
+    end;
 end;
 
 procedure TIVchar.HookEndReset;
@@ -3167,6 +3205,7 @@ begin
   CBMeasurements.Items.Add(MeasIV);
   CBMeasurements.Items.Add(MeasR2RCalib);
   CBMeasurements.Items.Add(MeasTimeD);
+  CBMeasurements.Items.Add(MeasControlParametr);
   CBMeasurements.ItemIndex:=0;
 
   IsWorkingTermostat:=False;

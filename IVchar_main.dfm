@@ -35,7 +35,7 @@ object IVchar: TIVchar
     Top = 0
     Width = 786
     Height = 466
-    ActivePage = TS_Temper
+    ActivePage = Time_Dependence
     Align = alTop
     Font.Charset = RUSSIAN_CHARSET
     Font.Color = clWindowText
@@ -3031,8 +3031,8 @@ object IVchar: TIVchar
         object LTermostatNT: TLabel
           Left = 178
           Top = 16
-          Width = 87
-          Height = 30
+          Width = 85
+          Height = 26
           Caption = 'Needed Temperature'
           Font.Charset = RUSSIAN_CHARSET
           Font.Color = clMaroon
@@ -3057,8 +3057,8 @@ object IVchar: TIVchar
           WordWrap = True
         end
         object SBTermostat: TSpeedButton
-          Left = 8
-          Top = 78
+          Left = 5
+          Top = 107
           Width = 132
           Height = 26
           AllowAllUp = True
@@ -3133,6 +3133,19 @@ object IVchar: TIVchar
           Font.Charset = RUSSIAN_CHARSET
           Font.Color = clMaroon
           Font.Height = -11
+          Font.Name = 'Verdana'
+          Font.Style = [fsBold]
+          ParentFont = False
+        end
+        object LTermostatOutputValue: TLabel
+          Left = 25
+          Top = 70
+          Width = 93
+          Height = 20
+          Caption = '1.34E+01'
+          Font.Charset = RUSSIAN_CHARSET
+          Font.Color = clBlue
+          Font.Height = -17
           Font.Name = 'Verdana'
           Font.Style = [fsBold]
           ParentFont = False
@@ -3225,7 +3238,7 @@ object IVchar: TIVchar
         end
         object BTermostatReset: TButton
           Left = 30
-          Top = 120
+          Top = 139
           Width = 75
           Height = 25
           Caption = 'Reset'
@@ -4091,7 +4104,7 @@ object IVchar: TIVchar
       object GBCSetup: TGroupBox
         Left = 240
         Top = 18
-        Width = 497
+        Width = 521
         Height = 215
         Caption = 'Controller Setup'
         Font.Charset = RUSSIAN_CHARSET
@@ -4128,8 +4141,8 @@ object IVchar: TIVchar
           ParentFont = False
         end
         object LControlInterval: TLabel
-          Left = 18
-          Top = 159
+          Left = 418
+          Top = 33
           Width = 76
           Height = 13
           Caption = 'Interval (s)'
@@ -4217,6 +4230,32 @@ object IVchar: TIVchar
           Font.Charset = RUSSIAN_CHARSET
           Font.Color = clMaroon
           Font.Height = -11
+          Font.Name = 'Verdana'
+          Font.Style = [fsBold]
+          ParentFont = False
+        end
+        object LControlCCV: TLabel
+          Left = 9
+          Top = 161
+          Width = 140
+          Height = 13
+          Caption = 'Current Control Value'
+          Font.Charset = RUSSIAN_CHARSET
+          Font.Color = clMaroon
+          Font.Height = -11
+          Font.Name = 'Verdana'
+          Font.Style = [fsBold]
+          ParentFont = False
+        end
+        object LControlCCValue: TLabel
+          Left = 12
+          Top = 180
+          Width = 12
+          Height = 20
+          Caption = '0'
+          Font.Charset = RUSSIAN_CHARSET
+          Font.Color = clBlue
+          Font.Height = -17
           Font.Name = 'Verdana'
           Font.Style = [fsBold]
           ParentFont = False
@@ -4324,8 +4363,8 @@ object IVchar: TIVchar
           TabOrder = 6
         end
         object STControlInterval: TStaticText
-          Left = 18
-          Top = 178
+          Left = 418
+          Top = 52
           Width = 97
           Height = 24
           Caption = '1.34E+01'

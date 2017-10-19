@@ -101,9 +101,13 @@ TRS232Meter=class(TRS232Device,IMeasurement)
 
 
 TRS232Setter=class(TRS232Device,IDAC)
- protected
+ private
 
+ protected
+  fOutputValue:double;
+  function GetOutputValue:double;
  public
+   property OutputValue:double read GetOutputValue;
    procedure Output(Value:double);virtual;
    procedure OutputInt(Kod:integer); virtual;
    Procedure Reset();     virtual;
@@ -649,19 +653,24 @@ begin
  Result:=0.01;
 end;
 
+function TRS232Setter.GetOutputValue: double;
+begin
+ Result:=fOutputValue;
+end;
+
 procedure TRS232Setter.Output(Value: double);
 begin
-
+ fOutputValue:=Value;
 end;
 
 procedure TRS232Setter.OutputCalibr(Value: double);
 begin
-
+ fOutputValue:=Value;
 end;
 
 procedure TRS232Setter.OutputInt(Kod: integer);
 begin
-
+  fOutputValue:=Kod;
 end;
 
 procedure TRS232Setter.Reset;
