@@ -67,7 +67,7 @@ constructor TRS232_MediatorTread.Create(ArrayDevice: array of TRS232Device);
 begin
 // inherited Create(True);    // Поток создаем в состоянии «Приостановлен»
 //  FreeOnTerminate := True;  // Поток освободит ресурсы при окончании работы
-
+  inherited Create;
   SetLength(fArrayDevice,High(ArrayDevice)+1);
   for I := 0 to High(ArrayDevice) do
    fArrayDevice[i]:=ArrayDevice[i];

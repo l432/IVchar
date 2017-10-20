@@ -267,7 +267,8 @@ TPID=class
    property Period:double read FPeriod write SetPeriod;
    property Needed:double read FNeeded write SetNeeded;
    property OutputValue:double read fOutputValue;
-   Constructor Create(Kpp,Kii,Kdd,T,InitialValue,NeededValue:double);
+//   Constructor Create(Kpp,Kii,Kdd,T,InitialValue,NeededValue:double);
+   Constructor Create(Kpp,Kii,Kdd,T,NeededValue:double);
    function ControlingSignal(CurrentValue:double):double;
 end;
 
@@ -902,18 +903,19 @@ begin
  Result:=fOutputValue;
 end;
 
-constructor TPID.Create(Kpp, Kii, Kdd, T, InitialValue, NeededValue: double);
+//constructor TPID.Create(Kpp, Kii, Kdd, T, InitialValue, NeededValue: double);
+constructor TPID.Create(Kpp, Kii, Kdd, T, NeededValue: double);
 begin
   inherited Create;
   Kp:=Kpp;
   Ki:=Kii;
-  Kd:=0;
+//  Kd:=0;
   Period:=T;
   Needed:=NeededValue;
   EpsSum:=0;
   Epsi[0]:=0;
   Epsi[1]:=0;
-  ControlingSignal(InitialValue);
+//  ControlingSignal(InitialValue);
   Kd:=Kdd;
 end;
 

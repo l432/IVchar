@@ -6,6 +6,8 @@ uses
   SPIdevice, StdCtrls, ComCtrls, OlegType, Series, Measurement, ShowTypes, 
   ExtCtrls, Classes;
 
+var EventToStopDependence:THandle;
+
 type
 
 TDependence=class
@@ -62,24 +64,24 @@ private
 //  FDuration: int64;
   fTreadToStop:TThread;
   fBeginTime:TDateTime;
-  procedure ButtonStopClick(Sender: TObject);override;
+//  procedure ButtonStopClick(Sender: TObject);override;
 //  procedure SetDuration(const Value: int64);
 //  procedure SetInterval(const Value: integer);
 //  procedure TimerOnTime(Sender: TObject);
   procedure ActionMeasurement();override;
 //    function MeasurementNumberDetermine(): integer;override;
   public
-  EventStop: THandle;
+//  EventStop: THandle;
 //  property Interval:integer read FInterval write SetInterval;
 //  property Duration:int64 read FDuration write SetDuration;
-  Constructor Create(PB:TProgressBar;
-                     BS: TButton;
-                     Res:PVector;
-                     FLn,FLg:TPointSeries);
+//  Constructor Create(PB:TProgressBar;
+//                     BS: TButton;
+//                     Res:PVector;
+//                     FLn,FLg:TPointSeries);
 //                     Tim:TTimer);
   procedure BeginMeasuring();override;
 //  procedure EndMeasuring();override;
-  Procedure Free;
+//  Procedure Free;
 end;
 
 
@@ -116,11 +118,12 @@ type
   private
     { Private declarations }
    fTimeDependence:TTimeDependence;
-   fEventStop:THandle;
+//   fEventStop:THandle;
   protected
     procedure Execute; override;
   public
-    constructor Create(TimeDep:TTimeDependence;EvStop: THandle);
+//    constructor Create(TimeDep:TTimeDependence;EvStop: THandle);
+    constructor Create(TimeDep:TTimeDependence);
   end;
 
 
@@ -373,7 +376,7 @@ begin
     end;
 
    repeat
-//     Application.ProcessMessages;
+     Application.ProcessMessages;
      if fIVMeasuringToStop then Exit;
 //     inc(fPointNumber);
 //     HookAction();
@@ -576,7 +579,10 @@ begin
 
   inherited ActionMeasurement;
 
-  if (FDuration>0)and(ftempV>FDuration) then SetEvent(EventStop);
+//  if (FDuration>0)and(ftempV>FDuration) then SetEvent(EventStop);
+  if (FDuration>0)and(ftempV>FDuration) then SetEvent(EventToStopDependence);
+
+
 end;
 
 procedure TTimeDependenceTimer.BeginMeasuring;
@@ -671,13 +677,16 @@ begin
 
   if (ftempV=ErResult)or(ftempI=ErResult) then
     begin
-      SetEvent(EventStop);
+//      SetEvent(EventStop);
+      SetEvent(EventToStopDependence);
+
       Exit;
     end;
   if fPointNumber>=ProgressBar.Max-1
     then ProgressBar.Max :=2*ProgressBar.Max;
 
   inherited ActionMeasurement;
+//  SetEvent(EventStop);
 end;
 
 procedure TTimeDependence.BeginMeasuring;
@@ -687,28 +696,39 @@ begin
   ProgressBar.Max := MeasurementNumberDetermine();
 
 
-  ResetEvent(EventStop);
-  fTreadToStop:=TTimeDependenceTread.Create(self,EventStop);
+//  ResetEvent(EventStop);
+  ResetEvent(EventToStopDependence);
+
+//  fTreadToStop:=TTimeDependenceTread.Create(self,EventStop);
+//  fTreadToStop:=TTimeDependenceTread.Create(self,EventToStopDependence);
+  fTreadToStop:=TTimeDependenceTread.Create(self);
+
 
   fBeginTime:=Now();
 //  DuringMeasuring(ActionMeasurement);
   PeriodicMeasuring;
 end;
 
-procedure TTimeDependence.ButtonStopClick(Sender: TObject);
-begin
- SetEvent(EventStop);
-end;
+//procedure TTimeDependence.ButtonStopClick(Sender: TObject);
+//begin
+//// showmessage('kk');
+//// SetEvent(EventStop);
+// SetEvent(EventToStopDependence);
+//
+//
+////  showmessage('kk2');
+////   SetEvent(EventStop);
+//end;
 
-constructor TTimeDependence.Create(PB: TProgressBar; BS: TButton; Res: PVector;
-  FLn, FLg: TPointSeries);
-begin
- inherited Create(PB,BS,Res,FLn, FLg);
- EventStop := CreateEvent(nil,
-                          True, // тип сброса TRUE - ручной
-                          True, // начальное состояние TRUE - сигнальное
-                          nil);
-end;
+//constructor TTimeDependence.Create(PB: TProgressBar; BS: TButton; Res: PVector;
+//  FLn, FLg: TPointSeries);
+//begin
+// inherited Create(PB,BS,Res,FLn, FLg);
+//// EventStop := CreateEvent(nil,
+////                          True, // тип сброса TRUE - ручной
+////                          True, // начальное состояние TRUE - сигнальное
+////                          nil);
+//end;
 
 //procedure TTimeDependence.EndMeasuring;
 //begin
@@ -716,12 +736,12 @@ end;
 //
 //end;
 
-procedure TTimeDependence.Free;
-begin
- SetEvent(EventStop);
- CloseHandle(EventStop);
-// inherited Free;
-end;
+//procedure TTimeDependence.Free;
+//begin
+//// SetEvent(EventStop);
+//// CloseHandle(EventStop);
+//// inherited Free;
+//end;
 
 
 { TDependence }
@@ -765,6 +785,7 @@ end;
 
 procedure TDependence.ButtonStopClick(Sender: TObject);
 begin
+  SetEvent(EventToStopDependence);
   fIVMeasuringToStop:=True;
 end;
 
@@ -863,21 +884,39 @@ end;
 
 { TTimeDependenceTread }
 
-constructor TTimeDependenceTread.Create(TimeDep: TTimeDependence;
-  EvStop: THandle);
+//constructor TTimeDependenceTread.Create(TimeDep: TTimeDependence;
+//             EvStop: THandle);
+constructor TTimeDependenceTread.Create(TimeDep: TTimeDependence);
 begin
  inherited Create(True);    // Поток создаем в состоянии «Приостановлен»
   FreeOnTerminate := True;  // Поток освободит ресурсы при окончании работы
   fTimeDependence := TimeDep;
-  fEventStop:=EvStop;
-  Self.Priority := tpNormal;
+//  fEventStop:=EvStop;
+  Priority := tpNormal;
   Resume;
 end;
 
 procedure TTimeDependenceTread.Execute;
 begin
-  WaitForSingleObject(fEventStop, INFINITE);
+//  showmessage('start');
+//  WaitForSingleObject(fEventStop, INFINITE);
+  WaitForSingleObject(EventToStopDependence, INFINITE);
+//  showmessage('finish');
+
   fTimeDependence.EndMeasuring;
 end;
+
+
+initialization
+//  ComPortAlloved:= True;
+  EventToStopDependence := CreateEvent(nil,
+                                 True, // тип сброса TRUE - ручной
+                                 True, // начальное состояние TRUE - сигнальное
+                                 nil);
+
+finalization
+
+  SetEvent(EventToStopDependence);
+  CloseHandle(EventToStopDependence);
 
 end.

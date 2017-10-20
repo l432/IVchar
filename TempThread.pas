@@ -61,13 +61,14 @@ type
                       Kpp,Kii,Kdd,{InitialValue,}NeededValue:double);
 //                      EventEnd:THandle);
 
+   procedure Execute; override;
   end;
 
 
 implementation
 
 uses
-  OlegType, Forms, SysUtils, TemperatureSensor, DateUtils, Windows;
+  OlegType, Forms, SysUtils, TemperatureSensor, DateUtils, Windows, Dialogs;
 
 { Important: Methods and properties of objects in visual components can only be
   used in a method called using Synchronize, for example,
@@ -166,15 +167,21 @@ constructor TControllerThread.Create(Measurement: IMeasurement;
 
 begin
   inherited Create(Interval);
+
   fMeasurement:=Measurement;
   fDAC:=IDAC;
 //  fPID:=TPID.Create(Kpp, Kii, Kdd, Interval, InitialValue, NeededValue);
 
-  fPID:=TPID.Create(Kpp, Kii, Kdd, Interval, Mesuring(), NeededValue);
-  ControllerOutput;
+//   showmessage(inttostr(fInterval));
+
+//  fPID:=TPID.Create(Kpp, Kii, Kdd, Interval, Mesuring(), NeededValue);
+  fPID:=TPID.Create(Kpp, Kii, Kdd, Interval, NeededValue);
+
+//   showmessage(inttostr(fInterval));
+//  ControllerOutput;
 
 
-  _Sleep(fInterval);
+//  _Sleep(fInterval);
   Resume;
 end;
 
@@ -191,8 +198,13 @@ end;
 function TControllerThread.Mesuring:double;
 begin
   ResetEvent(FEventTerminate);
+
+
   fMeasurement.GetDataThread(ControlMessage, FEventTerminate);
+//  showmessage(inttostr(fInterval));
+//  sleep(10);
   WaitForSingleObject(FEventTerminate, INFINITE);
+//    showmessage(inttostr(fInterval+1));
   ResetEvent(FEventTerminate);
   Result:=fMeasurement.Value;
 end;
@@ -216,6 +228,12 @@ begin
 //          else fDAC.Output(fPID.OutputValue);
 //  PostMessage(FindWindow ('TIVchar', 'IVchar'), WM_MyMeasure,ControlOutputMessage,0);
 
+end;
+
+procedure TControllerThread.Execute;
+begin
+//  _Sleep(fInterval);
+  inherited Execute;
 end;
 
 end.

@@ -5,8 +5,6 @@ interface
 uses
   Classes, RS232device;
 
-//var
-//    EventMeasuringEnd: THandle;
 
 type
 
@@ -58,7 +56,8 @@ type
 implementation
 
 uses
-  Windows, OlegType, Measurement, Math, OlegMath, SysUtils, DateUtils, Forms;
+  Windows, OlegType, Measurement, Math, OlegMath, SysUtils, DateUtils, Forms, 
+  Dialogs;
 
 { Important: Methods and properties of objects in visual components can only be
   used in a method called using Synchronize, for example,
@@ -89,6 +88,7 @@ begin
   fEventEnd:=EventEnd;
 //  Self.Priority := tpNormal;
   Resume;
+//   showmessage(inttostr(fEventEnd));
 end;
 
 procedure TRS232MeasuringTread.ExuteBegin;
@@ -121,6 +121,7 @@ end;
 
 procedure TRS232MeasuringTread.Execute;
 begin
+// showmessage(inttostr(fEventEnd));
  ExuteBegin;
  Synchronize(NewData);
  PostMessage(FindWindow ('TIVchar', 'IVchar'), WM_MyMeasure,fWPARAM,0);
@@ -192,8 +193,9 @@ begin
   FreeOnTerminate := True;
   Self.Priority := tpNormal;
   
-  FEventTerminate := CreateEvent(nil, True, False, nil);
-//  FEventTerminate := CreateEvent(nil, False, False, nil);
+//  FEventTerminate := CreateEvent(nil, True, False, nil);
+  FEventTerminate := CreateEvent(nil, False, False, nil);
+//  Application.ModalFinished;
 end;
 
 destructor TTheadSleep.Destroy;
