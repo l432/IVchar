@@ -89,7 +89,6 @@ type
  private
   fChanelNumber:TET1255_DAC_ChanelNumber;
   fOutputValue:double;
-//  fError:string;
   Procedure ShowError();
   function GetOutputValue:double;
  public
@@ -103,13 +102,10 @@ type
    procedure Free;
  end;
 
-//var ET_Error:string;
-
-
 implementation
 
 uses
-  Dialogs, SysUtils;
+  Dialogs;
 
 { TET1255_DAC }
 
@@ -127,7 +123,6 @@ begin
   1:fName:='Ch1_ET1255';
   2:fName:='Ch2_ET1255';
  end;
- // ShowError();
 end;
 
 procedure TET1255_DAC.Free;
@@ -143,12 +138,6 @@ end;
 procedure TET1255_DAC.Output(Value: double);
  var tempValue:double;
 begin
-
-// if Value>ET1255_DAC_MAX
-//    then ET_WriteDAC(ET1255_DAC_MAX,fChanelNumber)
-//    else if Value<ET1255_DAC_MIN
-//            then ET_WriteDAC(ET1255_DAC_MIN,fChanelNumber)
-//            else ET_WriteDAC(Value,fChanelNumber);
  if Value>ET1255_DAC_MAX
     then tempValue:=ET1255_DAC_MAX
     else if Value<ET1255_DAC_MIN
@@ -182,11 +171,8 @@ end;
 
 procedure TET1255_DAC.Reset;
 begin
-//  ET_WriteDAC(0,fChanelNumber);
-//  ShowError();
   Output(0);
 end;
-
 
 procedure TET1255_DAC.ShowError;
 begin
@@ -195,9 +181,6 @@ begin
 end;
 
 initialization
-
-//  if ET_StartDrv()<>'' then
-//   showmessage('ET1255 loading error'+#10#13+ET_ErrMsg);
 
 finalization
 

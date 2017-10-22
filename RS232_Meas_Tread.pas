@@ -30,10 +30,8 @@ type
 
 
 
-//  TRS232MeasuringTread = class(TThread)
   TRS232MeasuringTread = class(TTheadSleep)
   private
-    { Private declarations }
    fRS232Meter:TRS232Meter;
    fWPARAM: word;
    fEventEnd:THandle;
@@ -56,20 +54,7 @@ type
 implementation
 
 uses
-  Windows, OlegType, Measurement, Math, OlegMath, SysUtils, DateUtils, Forms, 
-  Dialogs;
-
-{ Important: Methods and properties of objects in visual components can only be
-  used in a method called using Synchronize, for example,
-
-      Synchronize(UpdateCaption);
-
-  and UpdateCaption could look like,
-
-    procedure RS232Measuring.UpdateCaption;
-    begin
-      Form1.Caption := 'Updated in a thread';
-    end; }
+  Windows, OlegType, Measurement, Math, OlegMath, SysUtils, DateUtils, Forms;
 
 { RS232Measuring }
 
@@ -80,15 +65,11 @@ end;
 
 constructor TRS232MeasuringTread.Create(RS_Meter: TRS232Meter; WPARAM: word; EventEnd: THandle);
 begin
-// inherited Create(True);    // Поток создаем в состоянии «Приостановлен»
-//  FreeOnTerminate := True;  // Поток освободит ресурсы при окончании работы
   inherited Create();
   fRS232Meter := RS_Meter;
   fWPARAM:=WPARAM;
   fEventEnd:=EventEnd;
-//  Self.Priority := tpNormal;
   Resume;
-//   showmessage(inttostr(fEventEnd));
 end;
 
 procedure TRS232MeasuringTread.ExuteBegin;
@@ -121,7 +102,6 @@ end;
 
 procedure TRS232MeasuringTread.Execute;
 begin
-// showmessage(inttostr(fEventEnd));
  ExuteBegin;
  Synchronize(NewData);
  PostMessage(FindWindow ('TIVchar', 'IVchar'), WM_MyMeasure,fWPARAM,0);
@@ -174,17 +154,6 @@ begin
    end;
 end;
 
-//initialization
-//  EventMeasuringEnd := CreateEvent(nil,
-//                                 True, // тип сброса TRUE - ручной
-//                                 True, // начальное состояние TRUE - сигнальное
-//                                 nil);
-//
-//finalization
-//
-//  SetEvent(EventMeasuringEnd);
-//  CloseHandle(EventMeasuringEnd);
-
 { TTheadPeriodic }
 
 constructor TTheadSleep.Create;
@@ -192,10 +161,8 @@ begin
   inherited Create(True);
   FreeOnTerminate := True;
   Self.Priority := tpNormal;
-  
-//  FEventTerminate := CreateEvent(nil, True, False, nil);
+
   FEventTerminate := CreateEvent(nil, False, False, nil);
-//  Application.ModalFinished;
 end;
 
 destructor TTheadSleep.Destroy;
@@ -204,25 +171,6 @@ begin
   inherited;
 end;
 
-//procedure TTheadPeriodic.DoSomething;
-//begin
-//
-//end;
-
-//procedure TTheadPeriodic.Execute;
-//var
-//  t: TDateTime;
-//  k: Int64;
-//begin
-//  while (not Terminated) and (not Application.Terminated) do
-//  begin
-//    t := Now();
-//    DoSomething;
-//    k := 5000 - Round(MilliSecondSpan(Now(), t));
-//    if k>0 then
-//      _Sleep(k);
-//  end;
-//end;
 
 procedure TTheadSleep.Terminate;
 begin

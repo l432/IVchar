@@ -4,7 +4,7 @@ interface
 
 uses
   Measurement, CPort, PacketParameters, ExtCtrls, StdCtrls, Buttons, Windows,
-  Classes,HighResolutionTimer;
+  Classes;
 
 
 const
@@ -15,7 +15,6 @@ const
  UD_Label='=U';
 
 var
-//ComPortAlloved:boolean;
     EventComPortFree: THandle;
     EventMeasuringEnd: THandle;
 
@@ -33,7 +32,6 @@ TRS232Device=class(TNamedDevice)
   {базовий клас для пристроїв, які керуються
   за допомогою COM-порту}
   protected
-//   fName:string;
    fComPort:TComPort;
    fComPacket: TComDataPacket;
    fData:TArrByte;
@@ -72,12 +70,9 @@ TRS232Meter=class(TRS232Device,IMeasurement)
    Procedure MModeDetermination(Data:array of byte); virtual;
    Procedure DiapazonDetermination(Data:array of byte); virtual;
    Procedure ValueDetermination(Data:array of byte);virtual;
-//   Procedure ConvertToValue(Data:array of byte);virtual;
-//   Function ResultProblem(Rez:double):boolean;virtual;
    Function MeasureModeLabelRead():string;virtual;
    Procedure PacketReceiving(Sender: TObject; const Str: string);virtual;
    Function Measurement():double;virtual;
-//   Function MeasurementThread():double;virtual;
    Function GetValue():double;virtual;
    procedure SetNewData(Value:boolean);
   public
@@ -87,11 +82,9 @@ TRS232Meter=class(TRS232Device,IMeasurement)
    property isReceived:boolean read fIsReceived write fIsReceived;
    property MinDelayTime:integer read  fMinDelayTime;
    property MeasureModeLabel:string read MeasureModeLabelRead;
-//   Constructor Create();override;
    Constructor Create(CP:TComPort;Nm:string);override;
    Procedure ConvertToValue();virtual;
    Function ResultProblem(Rez:double):boolean;virtual;
-//   Function Request():boolean;virtual;
    Procedure Request();virtual;
    function GetData():double;virtual;
    procedure MeasurementBegin;
@@ -171,7 +164,6 @@ uses
 constructor TRS232Device.Create;
 begin
   inherited Create();
-//  fName:='';
   fComPacket:=TComDataPacket.Create(fComPort);
   fComPacket.Size:=0;
   fComPacket.MaxBufferSize:=1024;
@@ -191,7 +183,7 @@ end;
 
 procedure TRS232Device.ComPortUsing;
 begin
-// showmessage(Name);
+
 end;
 
 constructor TRS232Device.Create(CP: TComPort; Nm: string);
@@ -203,18 +195,13 @@ end;
 procedure TRS232Device.Free;
 begin
  fComPacket.Free;
-// inherited Free;
 end;
 
 
 procedure TRS232Device.isNeededComPortState;
 begin
-// while (not ComPortAlloved) do HRDelay(1);
-// fisNeededComPort:=True;
-
  if WaitForSingleObject(EventComPortFree,1000)=WAIT_OBJECT_0
   then fisNeededComPort:=True;
-
 end;
 
 function TRS232Device.PortConnected: boolean;
@@ -228,30 +215,7 @@ begin
         end;
 end;
 
-//function TRS232Device.GetName: string;
-//begin
-// Result:=fName;
-//end;
-
 { TRS232Meter }
-
-//procedure TRS232Meter.ConvertToValue(Data: array of byte);
-//begin
-////   ShowData(Data);
-//  MModeDetermination(Data);
-//  if fMeasureMode=-1 then Exit;
-//
-////  showmessage(inttostr(fMeasureMode));
-//  DiapazonDetermination(Data);
-//  if fDiapazon=-1 then Exit;
-////    ShowData(Data);
-////  showmessage(inttostr(fDiapazon));
-//
-//  ValueDetermination(Data);
-//  if Value=ErResult then Exit;
-//
-//  fIsready:=True;
-//end;
 
 procedure TRS232Meter.ConvertToValue();
 begin
@@ -259,32 +223,16 @@ begin
   if fMeasureMode=-1 then Exit;
   DiapazonDetermination(fData);
   if fDiapazon=-1 then Exit;
-//  ShowData(fData);
 
   ValueDetermination(fData);
-//  if Value=ErResult then Exit;
-
   fIsready:=True;
 end;
-
-//constructor TRS232Meter.Create;
-//begin
-//  inherited Create();
-//  fComPacket.OnPacket:=PacketReceiving;
-//
-//  fIsReady:=False;
-//  fIsReceived:=False;
-//  fMinDelayTime:=0;
-//  fMeasureMode:=-1;
-//  fDiapazon:=-1;
-//  fValue:=ErResult;
-//end;
 
 constructor TRS232Meter.Create(CP:TComPort;Nm:string);
 begin
   inherited Create(CP,Nm);
   fComPacket.OnPacket:=PacketReceiving;
-               
+
   fIsReady:=False;
   fIsReceived:=False;
   fMinDelayTime:=0;
@@ -310,24 +258,10 @@ begin
     Result:=Measurement();
     fNewData:=True;
    end;
-//  if not(fComPort.Connected) then
-//   begin
-//    fError:=True;
-//    showmessage('Port is not connected');
-//    Exit;
-//   end;
-//  Result:=Measurement();
-//  fNewData:=True;
 end;
 
 procedure TRS232Meter.GetDataThread(WPARAM: word;EventEnd:THandle);
 begin
-//  if not(fComPort.Connected) then
-//   begin
-//    fError:=True;
-//    showmessage('Port is not connected');
-//    Exit;
-//   end;
  if PortConnected then
    fRS232MeasuringTread:=TRS232MeasuringTread.Create(Self,WPARAM,EventEnd);
 end;
@@ -338,9 +272,6 @@ begin
   fIsReceived:=False;
   fError:=False;
 end;
-
-
-
 
 function TRS232Meter.GetNewData: boolean;
 begin
@@ -359,17 +290,9 @@ var i:integer;
 begin
 
  Result:=ErResult;
-// if not(fComPort.Connected) then
-//   begin
-//    showmessage('Port is not connected');
-//    Exit;
-//   end;
-
  isFirst:=True;
 start:
   MeasurementBegin;
-
-// if not(Request()) then Exit;
   Request();
 
 
@@ -381,8 +304,6 @@ start:
  Application.ProcessMessages;
  until ((i>130)or(fIsReceived)or(fError));
 // showmessage(inttostr((GetTickCount-i0)));
-// if fIsReceived then ConvertToValue(fData);
-//ShowData(fData);
  if fIsReceived then ConvertToValue();
  if fIsReady then Result:=fValue;
 
@@ -392,25 +313,6 @@ start:
       goto start;
     end;
 end;
-
-//function TRS232Meter.Measurement: double;
-//label start;
-//var i:integer;
-//    isFirst:boolean;
-//begin
-//
-// Result:=ErResult;
-// if not(fComPort.Connected) then
-//   begin
-//    showmessage('Port is not connected');
-//    Exit;
-//   end;
-//
-// fRS232MeasuringTread:=TRS232MeasuringTread.Create(Self);
-// if fIsReady then Result:=fValue;
-//
-//end;
-
 
 function TRS232Meter.MeasureModeLabelRead: string;
 begin
@@ -428,15 +330,9 @@ begin
 
 end;
 
-//function TRS232Meter.Request: boolean;
-//begin
-//  Result:=True;
-//end;
-
 procedure TRS232Meter.Request;
 begin
   isNeededComPortState();
-//  fisNeededComPort:=True;
 end;
 
 
@@ -475,8 +371,6 @@ begin
    RS232Meter:=Meter;
    MeasureMode:=MM;
    Range:=R;
-//    MeasureMode.OnClick:=nil;
-//    Range.OnClick:=nil;
    DataLabel:=DL;
    UnitLabel:=UL;
    MeasurementButton:=MB;
@@ -486,18 +380,12 @@ begin
    MeasureModeFill();
 
    IndexToRadioGroup(RS232Meter.fMeasureMode,MeasureMode);
-//   MeasureModeIndex();
    DiapazonFill();
-//   DiapazonIndex();
    UnitLabel.Caption := '';
 
    MeasurementButton.OnClick:=MeasurementButtonClick;
    AutoSpeedButton.OnClick:=AutoSpeedButtonClick;
-//    AdapterMeasureMode:=TAdapterRadioGroupClick.Create(ord((ArduDevice as TVoltmetr).MeasureMode));
-//    AdapterRange:=TAdapterRadioGroupClick.Create(DiapazonSelect((ArduDevice as TVoltmetr).MeasureMode,(ArduDevice as TVoltmetr).Diapazon));
 
-//    AdapterMeasureMode:=TAdapterRadioGroupClick.Create(RS232Meter.MeasureModeIndex);
-//    AdapterRange:=TAdapterRadioGroupClick.Create(RS232Meter.DiapazonIndex);
     AdapterMeasureMode:=TAdapterRadioGroupClick.Create(MeasureMode.Items.Count-1);
     AdapterRange:=TAdapterRadioGroupClick.Create(Range.Items.Count-1);
     MeasureMode.OnClick:=AdapterMeasureMode.RadioGroupClick;
@@ -537,13 +425,8 @@ end;
 
 procedure TMetterShow.MeasurementButtonClick(Sender: TObject);
 begin
-//   if not((SPIDevice as TVoltmetr).fComPort.Connected) then Exit;
  RS232Meter.Measurement();
-//showmessage('kkk');
- MetterDataShow
-
-
-//  if RS232Meter.Measurement()<>ErResult then MetterDataShow();
+ MetterDataShow();
 end;
 
 procedure TMetterShow.MeasureModeFill;
@@ -563,7 +446,6 @@ begin
   MeasureMode.OnClick:=AdapterMeasureMode.RadioGroupClick;
   Range.OnClick:=AdapterRange.RadioGroupClick;
 
-//  if RS232Meter.isReady then
   if RS232Meter.Value<>ErResult then
      begin
        UnitLabel.Caption:=RS232Meter.MeasureModeLabel;
@@ -617,16 +499,8 @@ Function BCDtoDec(BCD:byte; isLow:boolean):byte;
 якщо  isLow=true, то виділення із
 молодшої частини байта}
 begin
-//showmessage('g1');
-//showmessage(inttostr(BCD)+' '+inttostr(BCD Shl 4));
-
-// if isLow then BCD:=BCD Shl 4;
  if isLow then Result:=BCD and $0F
           else Result:= BCD Shr 4;
-// showmessage(inttostr(BCD)+' '+inttostr(BCD Shl 4));
-
- // showmessage('g2');
-// Result:= BCD Shr 4;
 end;
 
 
@@ -686,7 +560,6 @@ begin
 end;
 
 initialization
-//  ComPortAlloved:= True;
   EventComPortFree := CreateEvent(nil,
                                  True, // тип сброса TRUE - ручной
                                  True, // начальное состояние TRUE - сигнальное
@@ -702,7 +575,7 @@ finalization
   SetEvent(EventComPortFree);
   CloseHandle(EventComPortFree);
 
-  
+
   SetEvent(EventMeasuringEnd);
   CloseHandle(EventMeasuringEnd);
 end.

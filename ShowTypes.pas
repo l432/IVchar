@@ -3,8 +3,7 @@ unit ShowTypes;
 interface
 
 uses
-  StdCtrls, IniFiles, Windows, ComCtrls, SPIdevice, OlegType, Series, 
-  Measurement;
+  StdCtrls, IniFiles, Windows, ComCtrls, SPIdevice, OlegType, Series;
 
 const DoubleConstantSection='DoubleConstant';
       NoFile='no file';
@@ -43,7 +42,6 @@ end;
     STData:TStaticText; //величина параметру
     fWindowCaption:string; //назва віконця зміни параметра
     fWindowText:string;  //текст у цьому віконці
-//    fHook:TEvent;
     FDefaulValue:double;
     fDigitNumber:byte;
     procedure ButtonClick(Sender: TObject);
@@ -62,7 +60,6 @@ end;
                        DN:byte=3
     );
     property Data:double read GetData write SetData;
-//    property Hook:TEvent read fHook write fHook;
     procedure ReadFromIniFile(ConfigFile:TIniFile);
     procedure WriteToIniFile(ConfigFile:TIniFile);
   end;  //   TParameterShow=object
@@ -71,7 +68,6 @@ end;
 TLimitShow=class
 private
   UpDownHigh,UpDownLow:TUpDown;
-//  ValueLabelHigh,ValueLabelLow:TLabel;
   fDivisor:byte;
   fDigitNumber:byte;
   fHookForGraphElementApdate:TSimpleEvent;
@@ -111,53 +107,6 @@ private
 public
 end;
 
-//TDependenceMeasuring=class
-//private
-//  fItIsForward,fIVMeasuringToStop:boolean;
-//  fVoltageInput:double;
-//  fVoltageInputReal:double;
-//  fPointNumber:integer;
-//  fDelayTime:double;
-//  fHookBeginMeasuring: TSimpleEvent;
-//  fHookCycle:TBoolDoubleEvent;
-//  fHookStep:TDoubleDoubleEvent;
-//  fHookSetVoltage:TBoolDoubleEvent;
-////  RangeFor:TLimitShow;
-////  RangeRev:TLimitShowRev;
-//  CBForw,CBRev: TCheckBox;
-//  ProgressBar: TProgressBar;
-//  ButtonStop: TButton;
-//  Results:PVector;
-//  ForwLine: TPointSeries;
-//  RevLine: TPointSeries;
-//  ForwLg: TPointSeries;
-//  RevLg: TPointSeries;
-//
-//  procedure Cycle(ItIsForward: Boolean; Action: TSimpleEvent);
-//  procedure FullCycle(Action: TSimpleEvent);
-//  procedure BeginMeasuring();
-//  function MeasurementNumberDetermine(): integer;
-//  procedure ButtonStopClick(Sender: TObject);
-//  procedure ActionMeasurement();
-//  procedure SetVoltage();
-//public
-//  SettingDevice:TSettingDevice;
-//  RangeFor:TLimitShow;
-//  RangeRev:TLimitShowRev;
-//  ButtonSave: TButton;
-//  property HookBeginMeasuring:TSimpleEvent read FHookBeginMeasuring write FHookBeginMeasuring;
-//  property HookCycle:TBoolDoubleEvent read fHookCycle write fHookCycle;
-//  property HookStep:TDoubleDoubleEvent read fHookStep write fHookStep;
-//  property HookSetVoltage:TBoolDoubleEvent read fHookSetVoltage write fHookSetVoltage;
-//  Constructor Create({RF:TLimitShow;
-//                     RR:TLimitShowRev;}
-//                     CBF,CBR: TCheckBox;
-//                     PB:TProgressBar;
-//                     BS,BSave: TButton;
-//                     Res:PVector;
-//                     FLn,RLn,FLg,RLg:TPointSeries);
-//  procedure Measuring();
-//end;
 
 function LastFileName(Mask:string):string;
 {повертає назву (повну, з розширенням) останього файлу в
@@ -174,7 +123,7 @@ Procedure MelodyLong();
 implementation
 
 uses
-  Dialogs, SysUtils, Math, Forms, Controls;
+  Dialogs, SysUtils, Math, Controls;
 
 { TDoubleConstantShow }
 
@@ -306,7 +255,6 @@ begin
   try
     temp:=StrToFloat(st);
     STData.Caption:=ValueToString(temp);
-//    Hook();
   finally
   end;
 end;
@@ -455,7 +403,6 @@ end;
 procedure TLimitShow.WriteToIniFile(ConfigFile: TIniFile; const Section,
   Ident: string);
 begin
-//    ConfigFile.EraseSection(Section);
     WriteIniDef(ConfigFile,Section,Ident+'Max',UpDownHigh.Position,UpDownHigh.Max);
     WriteIniDef(ConfigFile,Section,Ident+'Min',UpDownLow.Position,0);
 end;

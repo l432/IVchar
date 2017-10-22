@@ -3,13 +3,11 @@ unit TempThread;
 interface
 
 uses
-  Classes, Measurement,SPIdevice, RS232_Meas_Tread;
+  Measurement, RS232_Meas_Tread;
 
 const VdiodMax=1.3;
 
 type
-//  TTemperatureMeasuringThread = class(TThread)
-//  TTemperatureMeasuringThread = class(TTheadSleep)
 
   TMeasuringThread = class(TTheadCycle)
   private
@@ -30,7 +28,6 @@ type
 
   TTemperatureMeasuringThread = class(TTheadCycle)
   private
-//    fInterval:int64;
     fEventEnd:THandle;
     fTemperatureMeasurement:ITemperatureMeasurement;
   protected
@@ -44,8 +41,6 @@ type
 
   TControllerThread = class(TTheadCycle)
   private
-//    fInterval:int64;
-//    fEventEnd:THandle;
     fMeasurement:IMeasurement;
     fDAC:IDAC;
     fPID:TPID;
@@ -59,16 +54,13 @@ type
                       IDAC:IDAC;
                       Interval:double;
                       Kpp,Kii,Kdd,{InitialValue,}NeededValue:double);
-//                      EventEnd:THandle);
-
-   procedure Execute; override;
   end;
 
 
 implementation
 
 uses
-  OlegType, Forms, SysUtils, TemperatureSensor, DateUtils, Windows, Dialogs;
+  Windows;
 
 { Important: Methods and properties of objects in visual components can only be
   used in a method called using Synchronize, for example,
@@ -88,56 +80,16 @@ constructor TTemperatureMeasuringThread.Create(TemperatureMeasurement:ITemperatu
                                                Interval:double;
                                                 EventEnd:THandle);
 begin
-//  inherited Create(True);    // Поток создаем в состоянии «Приостановлен»
-//  FreeOnTerminate := True;  // Поток освободит ресурсы при окончании работы
-//  inherited Create();
   inherited Create(Interval);
-//  TemperatureMD:=TemMD;
-//  fInterval:=Interval;
   fTemperatureMeasurement:=TemperatureMeasurement;
   fEventEnd:=EventEnd;
-//  ThermoCuple.Measurement:=TermoCouple_MD.ActiveInterface;
-
-//  Priority:=tpNormal;
   Resume;
 end;
 
-//procedure TTemperatureMeasuringThread.Doing;
 procedure TTemperatureMeasuringThread.DoSomething;
-// var temp:double;
 begin
   fTemperatureMeasurement.GetTemperatureThread(fEventEnd);
-//  TemperatureMD.ActiveInterface.GetTemperatureThread(fEventEnd);
 end;
-
-//procedure TTemperatureMeasuringThread.Execute;
-//begin
-//  while not(Terminated) do
-//  begin
-//    Synchronize(Doing);
-////  if (TemperatureMD.ActiveInterface is TDS18B20) then Sleep(5000);
-//
-//    //    Application.ProcessMessages;
-//  end;
-//end;
-
-//procedure TTemperatureMeasuringThread.Execute;
-//var
-//  t: TDateTime;
-//  k: Int64;
-//begin
-//  while (not Terminated) and (not Application.Terminated) do
-//  begin
-//    t := Now();
-//    Doing;
-//    k := fInterval - Round(MilliSecondSpan(Now(), t));
-//    if k>0 then
-//      _Sleep(k);
-////      sleep(k);
-//  end;
-//end;
-
-
 
 { TMeasuringThread }
 
@@ -162,7 +114,6 @@ constructor TControllerThread.Create(Measurement: IMeasurement;
                                      IDAC: IDAC;
                                      Interval: double;
                                      Kpp, Kii, Kdd,
-                                     {InitialValue, }
                                      NeededValue: double);
 
 begin
@@ -170,24 +121,13 @@ begin
 
   fMeasurement:=Measurement;
   fDAC:=IDAC;
-//  fPID:=TPID.Create(Kpp, Kii, Kdd, Interval, InitialValue, NeededValue);
-
-//   showmessage(inttostr(fInterval));
-
-//  fPID:=TPID.Create(Kpp, Kii, Kdd, Interval, Mesuring(), NeededValue);
   fPID:=TPID.Create(Kpp, Kii, Kdd, Interval, NeededValue);
 
-//   showmessage(inttostr(fInterval));
-//  ControllerOutput;
-
-
-//  _Sleep(fInterval);
   Resume;
 end;
 
 procedure TControllerThread.ControllerOutput;
 begin
-  //  fDAC.Output(fPID.OutputValue);
   if (fDAC.Name = 'Ch2_ET1255') and (abs(fPID.OutputValue) > VdiodMax) then
     fDAC.Output(VdiodMax)
   else
@@ -198,13 +138,8 @@ end;
 function TControllerThread.Mesuring:double;
 begin
   ResetEvent(FEventTerminate);
-
-
   fMeasurement.GetDataThread(ControlMessage, FEventTerminate);
-//  showmessage(inttostr(fInterval));
-//  sleep(10);
   WaitForSingleObject(FEventTerminate, INFINITE);
-//    showmessage(inttostr(fInterval+1));
   ResetEvent(FEventTerminate);
   Result:=fMeasurement.Value;
 end;
@@ -217,23 +152,10 @@ end;
 
 procedure TControllerThread.DoSomething;
 begin
-//  Mesuring;
-//  fPID.ControlingSignal(fMeasurement.Value);
   fPID.ControlingSignal(Mesuring);
 
   ControllerOutput;
-//  if (fDAC.Name='Ch2_ET1255')and
-//     (abs(fPID.OutputValue)>VdiodMax)
-//          then fDAC.Output(VdiodMax)
-//          else fDAC.Output(fPID.OutputValue);
-//  PostMessage(FindWindow ('TIVchar', 'IVchar'), WM_MyMeasure,ControlOutputMessage,0);
-
 end;
 
-procedure TControllerThread.Execute;
-begin
-//  _Sleep(fInterval);
-  inherited Execute;
-end;
 
 end.

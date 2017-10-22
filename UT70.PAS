@@ -3,7 +3,7 @@ unit UT70;
 interface
 
 uses
-  RS232device, ExtCtrls, StdCtrls, Buttons,PacketParameters, CPort;
+  RS232device, ExtCtrls, StdCtrls, Buttons, CPort;
 
 
 type
@@ -70,9 +70,7 @@ type
     {TRUE при автоматичному виборі діапазону вимірювань та FALSE при ручному}
     fOUT: Boolean;
     {TRUE при зашкалюванні}
-//    fMeasureTypeAll:array of string;
     fDiapazoneModeAll:array of string;
-//    procedure ComPortSetup;
     procedure NamesFilling;
     procedure DiapazonFilling(DiapazonNumber:byte;
                               D_Begin, D_End:TUT70_Diapazons);
@@ -84,7 +82,6 @@ type
      Function MeasureModeLabelRead():string;override;
    public
      Constructor Create(CP:TComPort;Nm:string);override;
-//     Function Request():boolean;override;
      procedure Request();override;
   end;
 
@@ -112,18 +109,6 @@ uses
 
 { UT70B }
 
-//procedure TUT70B.ConvertToValue(Data: array of byte);
-//var
-//  i: Integer;
-//begin
-//  if High(Data)<>8 then Exit;
-//  if Data[7]<>48 then Exit;
-//  for i := 0 to 8 do
-//   if (Data[i] shr 4)=3 then Exit;
-//   
-//  inherited ConvertToValue(Data);
-//end;
-
 constructor TUT70B.Create(CP:TComPort;Nm:string);
 begin
  inherited Create(CP,Nm);
@@ -138,7 +123,6 @@ begin
   fAUTO:=((Data[8] and 2)>0);
   fDiapazon:=Data[0];
   if fDiapazon>7 then fDiapazon:=-1;
-//  showmessage(inttostr(fDiapazon));
 end;
 
 procedure TUT70B.DiapazonFilling(DiapazonNumber: byte;
@@ -184,7 +168,6 @@ begin
                                    else fMeasureMode:=ord(UA);
    else fMeasureMode:=-1;
   end;
-//  showmessage(MeasureModeLabelRead);
 end;
 
 procedure TUT70B.PacketReceiving(Sender: TObject; const Str: string);
@@ -201,23 +184,9 @@ begin
     if (fData[i] shr 4)<>3 then Exit;
     fData[i]:=(fData[i] and $0F)
    end;
-//   showmessage(str);
 
  fIsReceived:=True;
 end;
-
-//function TUT70B.Request: boolean;
-//begin
-//  if fComPort.Connected then
-//    begin
-//     fComPort.AbortAllAsync;
-//     fComPort.ClearBuffer(True, True);
-//     fComPort.SetDTR(True);
-//     Result:=True;
-//    end
-//                        else
-//     Result:=False;
-//end;
 
 procedure TUT70B.Request;
 begin
@@ -237,7 +206,6 @@ procedure TUT70B.ValueDetermination(Data: array of byte);
 begin
  fValue:=ErResult;
  fOUT:=((Data[6] and 1)>0);
-// showmessage(booltostr(fOUT)+',False='+booltostr(false));
  if fOUT then Exit;
 
  x:=Data[4]+10*Data[3]+100*Data[2]+1000*Data[1];
@@ -328,7 +296,6 @@ end;
 procedure TUT70B.NamesFilling;
 var
   UT70_MeasureMode: TUT70_MeasureMode;
-//  UT70_MT:TUT70_MeasurementType;
   UT70_DM:TUT70_DiapazoneMode;
 begin
   SetLength(fMeasureModeAll, ord(High(UT70_MeasureModeLabels)) + 1);
@@ -361,28 +328,11 @@ begin
   {G}
   DiapazonFilling(11,TemF,TemF);
 
-//  SetLength(fMeasureTypeAll, ord(High(UT70_MeasureTypeLabels)) + 1);
-//  for UT70_MT := Low(TUT70_MeasurementType) to High(TUT70_MeasurementType) do
-//    fMeasureTypeAll[ord(UT70_MT)] := UT70_MeasureTypeLabels[UT70_MT];
-
-
     SetLength(fDiapazoneModeAll, ord(High(UT70_DiapazoneModeLabels)) + 1);
   for UT70_DM := Low(TUT70_DiapazoneMode) to High(TUT70_DiapazoneMode) do
     fDiapazoneModeAll[ord(UT70_DM)] := UT70_DiapazoneModeLabels[UT70_DM];
 
 end;
-
-//procedure TUT70B.ComPortSetup;
-//begin
-//  fComPacket.StartString := UT70_PacketBeginChar;
-//  fComPacket.StopString := UT70_PacketEndChar;
-//
-////  fComPort.BaudRate := br2400;
-////  fComPort.StopBits := sbOneStopBit;
-////  fComPort.DataBits := dbSeven;
-////  fComPort.DataBits := dbEight;
-////  fComPort.Parity.Bits := prOdd;
-//end;
 
 { TUT70BShow }
 
@@ -412,19 +362,14 @@ end;
 procedure TUT70BShow.MetterDataShow;
 begin
   inherited MetterDataShow;
-//   showmessage(booltostr((RS232Meter as TUT70B).fOUT)+',False='+booltostr(false));
-
 
   DiapazoneMode.OnClick:=nil;
   IndexToRadioGroup(ord((RS232Meter as TUT70B).fAUTO),DiapazoneMode);
   DiapazoneMode.OnClick:=AdapterDiapazoneMode.RadioGroupClick;
 
-//   showmessage(booltostr((RS232Meter as TUT70B).fOUT)+',False='+booltostr(false));
-
   if (RS232Meter as TUT70B).fOUT then
      begin
       DataLabel.Caption:='     .OL';
-//      UnitLabel.Caption:='';
      end;
 
 

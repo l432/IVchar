@@ -38,7 +38,6 @@ end;
 
 
 
-//TDACR2R=class(TArduinoDevice,IDAC)
 TDACR2R=class(TRS232Setter)
   {базовий клас для ЦАП}
 private
@@ -49,9 +48,7 @@ private
  procedure PacketCreateAndSend();
  procedure DataByteToSendFromInteger(IntData: Integer);
 protected
-// Procedure PacketReceiving(Sender: TObject; const Str: string);override;
 public
-// Constructor Create();overload;override;
  Constructor Create(CP:TComPort;Nm:string);override;
  Procedure Free;
  Procedure Output(Voltage:double);override;
@@ -65,41 +62,6 @@ public
  procedure SaveFileWithCalibrData(DataVec:PVector);
  procedure ComPortUsing();override;
 end;
-
-//TDACR2RShow=class(TSPIDeviceShow)
-//private
-// ValueChangeButton,ValueSetButton,
-// KodChangeButton,KodSetButton,ResetButton:TButton;
-// ValueLabel,KodLabel:TLabel;
-// procedure ValueChangeButtonAction(Sender:TObject);
-// procedure ValueSetButtonAction(Sender:TObject);
-// procedure KodChangeButtonAction(Sender:TObject);
-// procedure KodSetButtonAction(Sender:TObject);
-// procedure ResetButtonClick(Sender:TObject);
-//public
-// Constructor Create(DACR2R:TDACR2R;
-//                      CPL,GPL,VL,KL:TLabel;
-//                      SCB,SGB,VCB,VSB,KCB,KSB,RB:TButton;
-//                      PCB:TComboBox);
-//end;
-
-//TDACR2RShow=class(TPinsShow)
-//private
-// DACR2R:TDACR2R;
-// ValueChangeButton,ValueSetButton,
-// KodChangeButton,KodSetButton,ResetButton:TButton;
-// ValueLabel,KodLabel:TLabel;
-// procedure ValueChangeButtonAction(Sender:TObject);
-// procedure ValueSetButtonAction(Sender:TObject);
-// procedure KodChangeButtonAction(Sender:TObject);
-// procedure KodSetButtonAction(Sender:TObject);
-// procedure ResetButtonClick(Sender:TObject);
-//public
-// Constructor Create(DAC:TDACR2R;
-//                      CPL,GPL,VL,KL:TLabel;
-//                      SCB,SGB,VCB,VSB,KCB,KSB,RB:TButton;
-//                      PCB:TComboBox);
-//end;
 
 TDACR2RShow=class(TDAC_Show)
 private
@@ -118,7 +80,7 @@ end;
 implementation
 
 uses
-  SysUtils, PacketParameters, OlegGraph, Graphics, Dialogs, Math, Classes;
+  SysUtils, PacketParameters, OlegGraph, Math, Classes;
 
 
 { TDACR2R }
@@ -183,14 +145,9 @@ begin
   fData[1] := (IntData and $FF);
 end;
 
-//procedure TDACR2R.PacketReceiving(Sender: TObject; const Str: string);
-//begin
-//
-//end;
 
 procedure TDACR2R.Reset;
 begin
-// Output(0);
  fData[2]:=DACR2R_Pos;
  fData[0] := $00;
  fData[1] := $00;
@@ -209,27 +166,9 @@ begin
   DataVec.Write_File(FileName,5);
 end;
 
-//procedure TDACR2R.PacketCreateAndSend(report: string);
-//begin
-//  PacketCreate([DACR2RCommand, PinControl, PinGate, fData[0], fData[1], fData[2]]);
-//  PacketIsSend(fComPort, report);
-//end;
-
-//procedure TDACR2R.PacketCreateAndSend(report: string);
-//begin
-//  PacketCreate([DACR2RCommand, Pins.PinControl, Pins.PinGate, fData[0], fData[1], fData[2]]);
-//  PacketIsSend(fComPort, report);
-//end;
-
 procedure TDACR2R.PacketCreateAndSend();
 begin
-//  PacketCreate([DACR2RCommand, Pins.PinControl, Pins.PinGate, fData[0], fData[1], fData[2]]);
-//  while fisNeededComPort do sleep(100);
-
-//  fisNeededComPort:=True;
   isNeededComPortState();
-
-//  PacketIsSend(fComPort, report);
 end;
 
 procedure TDACR2R.CalibrationFileProcessing(filename: string);
@@ -258,7 +197,6 @@ end;
 
 procedure TDACR2R.ComPortUsing;
 begin
-// inherited ComPortUsing;
  PacketCreate([DACR2RCommand, Pins.PinControl, Pins.PinGate, fData[0], fData[1], fData[2]]);
  PacketIsSend(fComPort, DACR2R_Report);
 end;
@@ -291,32 +229,6 @@ end;
 
 { TDACR2RShow }
 
-//constructor TDACR2RShow.Create(DACR2R: TDACR2R;
-//                               CPL,GPL,VL,KL:TLabel;
-//                               SCB,SGB,VCB,VSB,KCB,KSB,RB:TButton;
-//                               PCB: TComboBox);
-//begin
-// inherited Create(DACR2R,CPL,GPL,SCB,SGB,PCB);
-//  ValueLabel:=VL;
-//  ValueLabel.Caption:='0';
-//  ValueLabel.Font.Color:=clBlack;
-//  ValueChangeButton:=VCB;
-//  ValueChangeButton.OnClick:=ValueChangeButtonAction;
-//  ValueSetButton:=VSB;
-//  ValueSetButton.OnClick:=ValueSetButtonAction;
-//  ResetButton:=RB;
-//  ResetButton.OnClick:=ResetButtonClick;
-//  KodLabel:=KL;
-//  KodLabel.Caption:='0';
-//  KodLabel.Font.Color:=clBlack;
-//  KodChangeButton:=KCB;
-//  KodChangeButton.OnClick:=KodChangeButtonAction;
-//  KodSetButton:=KSB;
-//  KodSetButton.OnClick:=KodSetButtonAction;
-//
-//  CreateFooter();
-//end;
-
 constructor TDACR2RShow.Create(DAC: TDACR2R;
                                CPL,GPL,VL,KL:TLabel;
                                SCB,SGB,VCB,VSB,KCB,KSB,RB:TButton;
@@ -325,73 +237,6 @@ begin
  inherited Create(DAC,VL, KL, VCB, VSB, KCB, KSB, RB);
  PinShow:=TPinsShow.Create(DAC.Pins,CPL,GPL,SCB,SGB,PCB);
 end;
-
-
-//procedure TDACR2RShow.KodChangeButtonAction(Sender: TObject);
-// var value:string;
-//begin
-// if InputQuery('Value', 'Output kod is expect', value) then
-//  begin
-//    try
-//      KodLabel.Caption:=IntToStr(StrToInt(value));
-//      KodLabel.Font.Color:=clBlack;
-//    except
-//
-//    end;
-//  end;
-//end;
-
-//procedure TDACR2RShow.KodSetButtonAction(Sender: TObject);
-//begin
-//   (ArduDevice as TDACR2R).OutputInt(StrToInt(KodLabel.Caption));
-//   KodLabel.Font.Color:=clPurple;
-//   ValueLabel.Font.Color:=clBlack;
-//end;
-//
-//procedure TDACR2RShow.ResetButtonClick(Sender: TObject);
-//begin
-// (ArduDevice as TDACR2R).Reset();
-//end;
-
-//procedure TDACR2RShow.KodSetButtonAction(Sender: TObject);
-//begin
-//   DACR2R.OutputInt(StrToInt(KodLabel.Caption));
-//   KodLabel.Font.Color:=clPurple;
-//   ValueLabel.Font.Color:=clBlack;
-//end;
-//
-//procedure TDACR2RShow.ResetButtonClick(Sender: TObject);
-//begin
-// DACR2R.Reset();
-//end;
-//
-//procedure TDACR2RShow.ValueChangeButtonAction(Sender: TObject);
-// var value:string;
-//begin
-// if InputQuery('Value', 'Output value is expect', value) then
-//  begin
-//    try
-//      ValueLabel.Caption:=FloatToStrF(StrToFloat(value),ffFixed, 6, 4);
-//      ValueLabel.Font.Color:=clBlack;
-//    except
-//
-//    end;
-//  end;
-//end;
-
-//procedure TDACR2RShow.ValueSetButtonAction(Sender: TObject);
-//begin
-//   (ArduDevice as TDACR2R).Output(Strtofloat(ValueLabel.Caption));
-//   ValueLabel.Font.Color:=clPurple;
-//   KodLabel.Font.Color:=clBlack;
-//end;
-
-//procedure TDACR2RShow.ValueSetButtonAction(Sender: TObject);
-//begin
-//   DACR2R.Output(Strtofloat(ValueLabel.Caption));
-//   ValueLabel.Font.Color:=clPurple;
-//   KodLabel.Font.Color:=clBlack;
-//end;
 
 procedure TDACR2R_Calibr.Add(RequiredVoltage, RealVoltage: double);
  var tempArrWord:TArrWord;

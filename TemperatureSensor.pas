@@ -9,7 +9,6 @@ type
   TDS18B20=class(TArduinoMeter,ITemperatureMeasurement)
   {базовий клас для датчика DS18B20}
   protected
-//   Procedure ConvertToValue(Data:array of byte);override;
   public
    Constructor Create(CP:TComPort;Nm:string);override;
    function GetTemperature():double;
@@ -49,7 +48,6 @@ begin
   inherited Create(CP,Nm);
 
   fMetterKod:=DS18B20Command;
-//  SetLength(fPins,1);
   SetLength(Pins.fPins,1);
   fMinDelayTime:=500;
 end;
@@ -66,28 +64,6 @@ procedure TDS18B20.GetTemperatureThread(EventEnd:THandle);
 begin
  GetDataThread(TemperMessage,EventEnd);
 end;
-
-//procedure TDS18B20.ConvertToValue(Data: array of byte);
-// var temp:integer;
-//     sign:byte;
-//begin
-// if High(Data)<>1 then Exit;
-// sign:=(Data[1] and $F8);
-// if sign=$0 then
-//    begin
-//      temp:=(Data[1] and $7) Shl 8 + Data[0];
-//      fValue:=temp/16.0;
-//    end     else
-//      if sign=$F8 then
-//        begin
-//         temp:=(Data[1] and $7) Shl 8 + Data[0]-128;
-//         fValue:=temp/16.0;
-//        end       else
-//         fValue:=ErResult;
-//  if (fValue<-55)or(fValue>125) then fValue:=ErResult
-//                                else fValue:=fValue+273.16;
-// fIsReady:=True;
-//end;
 
 procedure TDS18B20.ConvertToValue();
  var temp:integer;
@@ -142,8 +118,6 @@ function TThermoCuple.GetTemperature: double;
 begin
  Result:=Measurement.GetData;
  if Result<>ErResult then  Result:=T_CuKo(Result);
-
-// Result:=T_CuKo(Measurement.GetData);
 end;
 
 procedure TThermoCuple.GetTemperatureThread(EventEnd:THandle);
