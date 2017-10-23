@@ -318,7 +318,7 @@ type
     STCodeRangeDACR2R: TStaticText;
     DependTimer: TTimer;
     CBMeasurements: TComboBox;
-    Time_Dependence: TTabSheet;
+    TS_Time_Dependence: TTabSheet;
     STTimeMD: TStaticText;
     CBTimeMD: TComboBox;
     LTimeInterval: TLabel;
@@ -364,6 +364,9 @@ type
     LControlCCV: TLabel;
     LControlCCValue: TLabel;
     LTermostatOutputValue: TLabel;
+    TS_D30_06: TTabSheet;
+    RGD30: TRadioGroup;
+    CBD30: TComboBox;
 
     procedure FormCreate(Sender: TObject);
     procedure BConnectClick(Sender: TObject);
