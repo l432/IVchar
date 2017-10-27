@@ -8,11 +8,11 @@ uses
 const DACR2R_MaxValue=65535;
       DACR2R_Factor=10000;
 
-      DACR2R_Pos=$0F; //додатня напруга
-      DACR2R_Neg=$FF; //від'ємна напруга
-      DACR2R_Reset=$AA; //встановлюється нульова напруга
+//      DACR2R_Pos=$0F; //додатня напруга
+//      DACR2R_Neg=$FF; //від'ємна напруга
+//      DACR2R_Reset=$AA; //встановлюється нульова напруга
 
-      DACR2R_Report='DAC R2R output is unsuccessful';
+//      DACR2R_Report='DAC R2R output is unsuccessful';
 
 type
 
@@ -38,29 +38,31 @@ end;
 
 
 
-TDACR2R=class(TRS232Setter)
-  {базовий клас для ЦАП}
+//TDACR2R=class(TRS232Setter,ICalibration)
+TDACR2R=class(TArduinoDAC,ICalibration)
 private
- Pins:TPins;
+// Pins:TPins;
  fCalibration:TDACR2R_Calibr;
- function  IntVoltage(Voltage:double):integer;
- procedure DataByteToSendPrepare(Voltage: Double);
- procedure PacketCreateAndSend();
- procedure DataByteToSendFromInteger(IntData: Integer);
+// procedure DataByteToSendPrepare(Voltage: Double);
+// procedure PacketCreateAndSend();
+// procedure DataByteToSendFromInteger(IntData: Integer);
 protected
+ function  VoltageToKod(Voltage:double):integer;override;
 public
  Constructor Create(CP:TComPort;Nm:string);override;
  Procedure Free;
- Procedure Output(Voltage:double);override;
- Procedure Reset();override;
+// Procedure Output(Voltage:double);override;
+// Procedure Reset();override;
  Procedure CalibrationRead();
  Procedure CalibrationWrite();
  procedure CalibrationFileProcessing(filename:string);
- Procedure OutputInt(Kod:integer);override;
- function CalibrationStep(Voltage:double):double;override;
- procedure OutputCalibr(Voltage:double);override;
+// Procedure OutputInt(Kod:integer);override;
+// function CalibrationStep(Voltage:double):double;override;
+ function CalibrationStep(Voltage:double):double;
+// procedure OutputCalibr(Voltage:double);override;
+ procedure OutputCalibr(Voltage:double);
  procedure SaveFileWithCalibrData(DataVec:PVector);
- procedure ComPortUsing();override;
+// procedure ComPortUsing();override;
 end;
 
 TDACR2RShow=class(TDAC_Show)
@@ -85,7 +87,7 @@ uses
 
 { TDACR2R }
 
-function TDACR2R.IntVoltage(Voltage: double): integer;
+function TDACR2R.VoltageToKod(Voltage: double): integer;
  var tempArrWord:TArrWord;
      Index,AddIndex:integer;
 begin
@@ -113,46 +115,49 @@ begin
 end;
 
 
-procedure TDACR2R.Output(Voltage: double);
-begin
- if Voltage<0 then fData[2]:=DACR2R_Neg
-              else fData[2]:=DACR2R_Pos;
- DataByteToSendPrepare(Voltage);
- PacketCreateAndSend();
-end;
+//procedure TDACR2R.Output(Voltage: double);
+//begin
+// if Voltage<0 then fData[2]:=DACR2R_Neg
+//              else fData[2]:=DACR2R_Pos;
+// DataByteToSendPrepare(Voltage);
+// PacketCreateAndSend();
+//end;
 
 procedure TDACR2R.OutputCalibr(Voltage: double);
 begin
- if Voltage<0 then fData[2]:=DACR2R_Neg
-              else fData[2]:=DACR2R_Pos;
+// if Voltage<0 then fData[2]:=DAC_Neg
+//              else fData[2]:=DAC_Pos;
+// if Voltage<0 then fData[5]:=DAC_Neg
+//              else fData[5]:=DAC_Pos;
+ OutputDataSignDetermination(Voltage);
  fOutputValue:=Voltage;
  DataByteToSendFromInteger(TDACR2R_Calibr.VoltToKod(Voltage));
  PacketCreateAndSend();
 end;
 
-Procedure TDACR2R.OutputInt(Kod:integer);
-begin
- fOutputValue:=Kod;
- if Kod<0 then fData[2]:=DACR2R_Neg
-          else fData[2]:=DACR2R_Pos;
- DataByteToSendFromInteger(abs(Kod));
- PacketCreateAndSend();
-end;
+//Procedure TDACR2R.OutputInt(Kod:integer);
+//begin
+// fOutputValue:=Kod;
+// if Kod<0 then fData[2]:=DACR2R_Neg
+//          else fData[2]:=DACR2R_Pos;
+// DataByteToSendFromInteger(abs(Kod));
+// PacketCreateAndSend();
+//end;
 
-procedure TDACR2R.DataByteToSendFromInteger(IntData: Integer);
-begin
-  fData[0] := ((IntData shr 8) and $FF);
-  fData[1] := (IntData and $FF);
-end;
+//procedure TDACR2R.DataByteToSendFromInteger(IntData: Integer);
+//begin
+//  fData[0] := ((IntData shr 8) and $FF);
+//  fData[1] := (IntData and $FF);
+//end;
 
 
-procedure TDACR2R.Reset;
-begin
- fData[2]:=DACR2R_Pos;
- fData[0] := $00;
- fData[1] := $00;
- PacketCreateAndSend();
-end;
+//procedure TDACR2R.Reset;
+//begin
+// fData[2]:=DACR2R_Pos;
+// fData[0] := $00;
+// fData[1] := $00;
+// PacketCreateAndSend();
+//end;
 
 
 procedure TDACR2R.SaveFileWithCalibrData(DataVec: PVector);
@@ -166,10 +171,10 @@ begin
   DataVec.Write_File(FileName,5);
 end;
 
-procedure TDACR2R.PacketCreateAndSend();
-begin
-  isNeededComPortState();
-end;
+//procedure TDACR2R.PacketCreateAndSend();
+//begin
+//  isNeededComPortState();
+//end;
 
 procedure TDACR2R.CalibrationFileProcessing(filename: string);
  var vec:PVector;
@@ -195,36 +200,40 @@ begin
  fCalibration.WriteToFileData();
 end;
 
-procedure TDACR2R.ComPortUsing;
-begin
- PacketCreate([DACR2RCommand, Pins.PinControl, Pins.PinGate, fData[0], fData[1], fData[2]]);
- PacketIsSend(fComPort, DACR2R_Report);
-end;
+//procedure TDACR2R.ComPortUsing;
+//begin
+// PacketCreate([DACR2RCommand, Pins.PinControl, Pins.PinGate, fData[0], fData[1], fData[2]]);
+// PacketIsSend(fComPort, DACR2R_Report);
+//end;
 
 constructor TDACR2R.Create(CP:TComPort;Nm:string);
 begin
   inherited Create(CP,Nm);
-  Pins:=TPins.Create;
-  Pins.Name:=Nm;
-  fComPacket.StartString:=PacketBeginChar;
-  fComPacket.StopString:=PacketEndChar;
-  SetLength(fData,3);
+  fKodMaxValue:=DACR2R_MaxValue;
+//  Pins:=TPins.Create;
+//  Pins.Name:=Nm;
+//  fComPacket.StartString:=PacketBeginChar;
+//  fComPacket.StopString:=PacketEndChar;
+//  SetLength(fData,3);
   fCalibration:=TDACR2R_Calibr.Create;
+  fMessageError:='DAC R2R '+fMessageError;
+
+  fCommandByte:=DACR2RCommand;
 end;
 
-procedure TDACR2R.DataByteToSendPrepare(Voltage: Double);
-var
-  IntData: Integer;
-begin
-  IntData := IntVoltage(Voltage);
-  DataByteToSendFromInteger(IntData);
-end;
+//procedure TDACR2R.DataByteToSendPrepare(Voltage: Double);
+//var
+//  IntData: Integer;
+//begin
+//  IntData := VoltageToKod(Voltage);
+//  DataByteToSendFromInteger(IntData);
+//end;
 
 procedure TDACR2R.Free;
 begin
- Pins.Free;
+// Pins.Free;
  fCalibration.Free;
- inherited Free;
+// inherited Free;
 end;
 
 { TDACR2RShow }

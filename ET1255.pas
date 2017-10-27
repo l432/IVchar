@@ -96,8 +96,8 @@ type
    procedure Output(Value:double);virtual;
    procedure OutputInt(Kod:integer); virtual;
    Procedure Reset();     virtual;
-   function CalibrationStep(Voltage:double):double;  virtual;
-   procedure OutputCalibr(Value:double); virtual;
+//   function CalibrationStep(Voltage:double):double;  virtual;
+//   procedure OutputCalibr(Value:double); virtual;
    Constructor Create(ChanelNumber:TET1255_DAC_ChanelNumber);
    procedure Free;
  end;
@@ -109,10 +109,10 @@ uses
 
 { TET1255_DAC }
 
-function TET1255_DAC.CalibrationStep(Voltage: double): double;
-begin
- Result:=0.001;
-end;
+//function TET1255_DAC.CalibrationStep(Voltage: double): double;
+//begin
+// Result:=0.001;
+//end;
 
 constructor TET1255_DAC.Create(ChanelNumber: TET1255_DAC_ChanelNumber);
 begin
@@ -148,10 +148,10 @@ begin
  ShowError();
 end;
 
-procedure TET1255_DAC.OutputCalibr(Value: double);
-begin
- Output(Value);
-end;
+//procedure TET1255_DAC.OutputCalibr(Value: double);
+//begin
+// Output(Value);
+//end;
 
 procedure TET1255_DAC.OutputInt(Kod: integer);
 begin

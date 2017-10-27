@@ -11,6 +11,8 @@ const
   PinNames:array[0..3]of string=
    ('Control','Gate','LDAC','CLR');
 
+  DAC_Pos=$0F; //додатня напруга
+  DAC_Neg=$FF; //від'ємна напруга
 
 type
 
@@ -54,7 +56,32 @@ type
    procedure ComPortUsing();override;
   end;
 
-  TSimpleEvent = procedure() of object;
+
+  TArduinoDAC=class(TRS232Setter)
+    {базовий клас для ЦАП, що керується
+    за допомогою Arduino    }
+  private
+   procedure DataByteToSendPrepare(Voltage: Double);
+  protected
+   Pins:TPins;
+   fVoltageMaxValue:double;
+   fKodMaxValue:integer;
+   fMessageError:string;
+   fCommandByte:byte;
+   procedure PacketCreateAndSend();
+   function  VoltageToKod(Voltage:double):integer;virtual;
+   procedure DataByteToSendFromInteger(IntData: Integer);virtual;
+   procedure FinalDataArrayPrepearingToSend;virtual;
+   procedure OutputDataSignDetermination(OutputData: Double);
+  public
+   Constructor Create(CP:TComPort;Nm:string);override;
+   Procedure Free;
+   Procedure Output(Voltage:double);override;
+   Procedure Reset();override;
+   Procedure OutputInt(Kod:integer);override;
+   procedure ComPortUsing();override;
+  end;
+
 
 
   TAdapterSetButton=class
@@ -89,6 +116,9 @@ type
 
 
 implementation
+
+uses
+  Math;
 
 constructor TPinsShow.Create(Ps:TPins;
                                   ControlPinLabel, GatePinLabel: TLabel;
@@ -264,6 +294,111 @@ end;
 procedure TPins.SetPin(Index: integer; value: byte);
 begin
   fPins[Index]:=value;
+end;
+
+{ TArduinoDAC }
+
+procedure TArduinoDAC.ComPortUsing;
+begin
+ FinalDataArrayPrepearingToSend;
+ PacketCreate(fData);
+// PacketCreate([DACR2RCommand, Pins.PinControl, Pins.PinGate, fData[0], fData[1], fData[2]]);
+ PacketIsSend(fComPort, fMessageError);
+end;
+
+procedure TArduinoDAC.OutputDataSignDetermination(OutputData: Double);
+begin
+  // if Voltage<0 then fData[2]:=DAC_Neg
+  //              else fData[2]:=DAC_Pos;
+  if OutputData < 0 then  fData[5] := DAC_Neg
+                    else  fData[5] := DAC_Pos;
+end;
+
+procedure TArduinoDAC.FinalDataArrayPrepearingToSend;
+begin
+  fData[0] := fCommandByte;
+  fData[1] := Pins.PinControl;
+  fData[2] := Pins.PinGate;
+end;
+
+constructor TArduinoDAC.Create(CP: TComPort; Nm: string);
+begin
+  inherited Create(CP,Nm);
+  Pins:=TPins.Create;
+  Pins.Name:=Nm;
+  fComPacket.StartString:=PacketBeginChar;
+  fComPacket.StopString:=PacketEndChar;
+  fVoltageMaxValue:=5;
+  fKodMaxValue:=65535;
+  fMessageError:='Output is unsuccessful';
+  fCommandByte:=$FF;
+//  SetLength(fData,3);
+  SetLength(fData,6);
+//  fData[0]:=fCommandByte;
+end;
+
+procedure TArduinoDAC.DataByteToSendFromInteger(IntData: Integer);
+begin
+  IntData:=min(abs(IntData),fKodMaxValue);
+//  fData[0] := ((IntData shr 8) and $FF);
+//  fData[1] := (IntData and $FF);
+  fData[3] := ((IntData shr 8) and $FF);
+  fData[4] := (IntData and $FF);
+end;
+
+procedure TArduinoDAC.DataByteToSendPrepare(Voltage: Double);
+begin
+  DataByteToSendFromInteger(VoltageToKod(Voltage));
+end;
+
+procedure TArduinoDAC.Free;
+begin
+ Pins.Free;
+ inherited Free;
+end;
+
+procedure TArduinoDAC.Output(Voltage: double);
+begin
+ OutputDataSignDetermination(Voltage);
+ DataByteToSendPrepare(Voltage);
+ PacketCreateAndSend();
+end;
+
+procedure TArduinoDAC.OutputInt(Kod: integer);
+begin
+ inherited OutputInt(Kod);
+// if Kod<0 then fData[2]:=DAC_Neg
+//          else fData[2]:=DAC_Pos;
+ OutputDataSignDetermination(Kod);
+// if Kod<0 then fData[5]:=DAC_Neg
+//          else fData[5]:=DAC_Pos;
+ DataByteToSendFromInteger(abs(Kod));
+ PacketCreateAndSend();
+end;
+
+procedure TArduinoDAC.PacketCreateAndSend;
+begin
+  isNeededComPortState();
+end;
+
+procedure TArduinoDAC.Reset;
+begin
+// fData[2]:=DAC_Pos;
+// fData[0] := $00;
+// fData[1] := $00;
+ fData[5]:=DAC_Pos;
+ fData[3] := $00;
+ fData[4] := $00;
+ PacketCreateAndSend();
+end;
+
+function TArduinoDAC.VoltageToKod(Voltage: double): integer;
+begin
+ fOutPutValue:=Voltage;
+ Voltage:=abs(Voltage);
+ if Voltage>fVoltageMaxValue
+    then Result:=fKodMaxValue
+    else Result:=round(Voltage/fVoltageMaxValue*fKodMaxValue);
 end;
 
 end.

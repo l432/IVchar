@@ -47,18 +47,31 @@ IDAC = interface (IName)
  {встановлює на виході напругу, яка відповідає Kod}
  Procedure Reset();
  {встановлює на виході 0}
+
+ // function CalibrationStep(Voltage:double):double;
+// {визначає крок при процедурі калібрування залежно від величини напруги Voltage}
+// procedure OutputCalibr(Value:double);
+// {встановлює на виході напругу Value під час калібрування}
+
+ property OutputValue:double read GetOutputValue;
+end;
+
+ICalibration = interface
+  ['{88FD380C-1EA7-4EC5-B2C8-1C463E92A625}']
  function CalibrationStep(Voltage:double):double;
  {визначає крок при процедурі калібрування залежно від величини напруги Voltage}
  procedure OutputCalibr(Value:double);
  {встановлює на виході напругу Value під час калібрування}
- property OutputValue:double read GetOutputValue;
 end;
+
 
 ITemperatureMeasurement = interface (IMeasurement)
   ['{DDC24597-B316-4E8B-B246-1DDD0B4D5E5D}']
   function GetTemperature:double;
   procedure GetTemperatureThread(EventEnd:THandle);
 end;
+
+
 
 TSimulator = class (TInterfacedObject,IMeasurement,IDAC,ITemperatureMeasurement)
 private
@@ -82,8 +95,8 @@ public
  function GetData:double;
  procedure Output(Value:double);
  Procedure Reset();
- function CalibrationStep(Voltage:double):double;
- procedure OutputCalibr(Value:double);
+// function CalibrationStep(Voltage:double):double;
+// procedure OutputCalibr(Value:double);
  procedure OutputInt(Kod:integer);
  procedure GetDataThread(WPARAM: word;EventEnd:THandle);
  procedure GetTemperatureThread(EventEnd:THandle);
@@ -132,8 +145,8 @@ public
                     DevCB:TComboBox);
  procedure SetValue(Value:double);
  procedure Reset();
- function CalibrationStep(Voltage:double):double;
- procedure SetValueCalibr(Value:double);
+// function CalibrationStep(Voltage:double):double;
+// procedure SetValueCalibr(Value:double);
 end;
 
 TTemperature_MD =class(TDevice)
@@ -212,10 +225,10 @@ begin
   fName:='Simulation';
 end;
 
-function TSimulator.CalibrationStep(Voltage: double): double;
-begin
- Result:=0.01;
-end;
+//function TSimulator.CalibrationStep(Voltage: double): double;
+//begin
+// Result:=0.01;
+//end;
 
 constructor TSimulator.Create(name: string);
 begin
@@ -278,10 +291,10 @@ begin
  fOutputValue:=Value;
 end;
 
-procedure TSimulator.OutputCalibr(Value: double);
-begin
-  fOutputValue:=Value;
-end;
+//procedure TSimulator.OutputCalibr(Value: double);
+//begin
+//  fOutputValue:=Value;
+//end;
 
 procedure TSimulator.OutputInt(Kod: integer);
 begin
@@ -325,11 +338,11 @@ end;
 
 { TSettingDevice }
 
-function TSettingDevice.CalibrationStep(Voltage: double): double;
-begin
- Result:=0.01;
- ActiveInterface.CalibrationStep(Voltage);
-end;
+//function TSettingDevice.CalibrationStep(Voltage: double): double;
+//begin
+// Result:=0.01;
+// ActiveInterface.CalibrationStep(Voltage);
+//end;
 
 constructor TSettingDevice.Create(const SOI: array of IDAC; DevCB: TComboBox);
 var I: Integer;
@@ -362,10 +375,10 @@ begin
  ActiveInterface.Output(Value);
 end;
 
-procedure TSettingDevice.SetValueCalibr(Value: double);
-begin
-ActiveInterface.OutputCalibr(Value);
-end;
+//procedure TSettingDevice.SetValueCalibr(Value: double);
+//begin
+//ActiveInterface.OutputCalibr(Value);
+//end;
 
 { TDAC_Show }
 

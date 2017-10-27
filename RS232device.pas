@@ -104,8 +104,8 @@ TRS232Setter=class(TRS232Device,IDAC)
    procedure Output(Value:double);virtual;
    procedure OutputInt(Kod:integer); virtual;
    Procedure Reset();     virtual;
-   function CalibrationStep(Voltage:double):double;  virtual;
-   procedure OutputCalibr(Value:double); virtual;
+//   function CalibrationStep(Voltage:double):double;  virtual;
+//   procedure OutputCalibr(Value:double); virtual;
  end;
 
 
@@ -522,10 +522,10 @@ end;
 
 { TRS232Setter }
 
-function TRS232Setter.CalibrationStep(Voltage: double): double;
-begin
- Result:=0.01;
-end;
+//function TRS232Setter.CalibrationStep(Voltage: double): double;
+//begin
+// Result:=0.01;
+//end;
 
 function TRS232Setter.GetOutputValue: double;
 begin
@@ -537,10 +537,10 @@ begin
  fOutputValue:=Value;
 end;
 
-procedure TRS232Setter.OutputCalibr(Value: double);
-begin
- fOutputValue:=Value;
-end;
+//procedure TRS232Setter.OutputCalibr(Value: double);
+//begin
+// fOutputValue:=Value;
+//end;
 
 procedure TRS232Setter.OutputInt(Kod: integer);
 begin
@@ -549,7 +549,7 @@ end;
 
 procedure TRS232Setter.Reset;
 begin
-
+ Output(0);
 end;
 
 { TNamedDevice }

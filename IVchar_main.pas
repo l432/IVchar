@@ -818,7 +818,8 @@ end;
 
 procedure TIVchar.CalibrationHookStep;
 begin
-  TIVDependence.VoltageStepChange(SettingDevice.CalibrationStep(TIVDependence.VoltageInput));
+//  TIVDependence.VoltageStepChange(SettingDevice.CalibrationStep(TIVDependence.VoltageInput));
+  TIVDependence.VoltageStepChange(DACR2R.CalibrationStep(TIVDependence.VoltageInput));
 end;
 
 procedure TIVchar.IVcharHookBegin;
@@ -949,7 +950,8 @@ end;
 procedure TIVchar.CalibrHookSetVoltage;
 begin
  LADInputVoltageValue.Caption:=FloatToStrF(TIVDependence.VoltageInputReal,ffFixed, 6, 4);
- SettingDevice.SetValueCalibr(TIVDependence.VoltageInputReal);
+// SettingDevice.SetValueCalibr(TIVDependence.VoltageInputReal);
+ DACR2R.OutputCalibr(TIVDependence.VoltageInputReal);
 end;
 
 procedure TIVchar.CalibrSaveClick(Sender: TObject);
