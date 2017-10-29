@@ -15,6 +15,7 @@ type
          mV10,mV100,V1,V10,V100,V1000);
 
 const
+  V7_21Command=$1;
 
   V721_MeasureModeLabels:array[TV721_MeasureMode]of string=
    (UD_Label, UA_Label, ID_Label, IA_Label);

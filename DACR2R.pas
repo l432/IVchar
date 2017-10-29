@@ -8,6 +8,8 @@ uses
 const DACR2R_MaxValue=65535;
       DACR2R_Factor=10000;
 
+      DACR2RCommand=$4;
+
 //      DACR2R_Pos=$0F; //додатня напруга
 //      DACR2R_Neg=$FF; //від'ємна напруга
 //      DACR2R_Reset=$AA; //встановлюється нульова напруга
@@ -48,6 +50,7 @@ private
 // procedure DataByteToSendFromInteger(IntData: Integer);
 protected
  function  VoltageToKod(Voltage:double):integer;override;
+ procedure CreateHook;override;
 public
  Constructor Create(CP:TComPort;Nm:string);override;
  Procedure Free;
@@ -209,16 +212,27 @@ end;
 constructor TDACR2R.Create(CP:TComPort;Nm:string);
 begin
   inherited Create(CP,Nm);
-  fKodMaxValue:=DACR2R_MaxValue;
+//  fKodMaxValue:=DACR2R_MaxValue;
 //  Pins:=TPins.Create;
 //  Pins.Name:=Nm;
 //  fComPacket.StartString:=PacketBeginChar;
 //  fComPacket.StopString:=PacketEndChar;
 //  SetLength(fData,3);
   fCalibration:=TDACR2R_Calibr.Create;
-  fMessageError:='DAC R2R '+fMessageError;
+//  fMessageError:='DAC R2R '+fMessageError;
 
-  fCommandByte:=DACR2RCommand;
+//  fCommandByte:=DACR2RCommand;
+end;
+
+procedure TDACR2R.CreateHook;
+begin
+//  Pins:=TPins.Create;
+//  Pins.Name:=self.Name;
+
+  fVoltageMaxValue:=5;
+  fKodMaxValue:=DACR2R_MaxValue;
+  fMessageError:='DAC R2R output is unsuccessful';
+  fSetterKod:=DACR2RCommand;
 end;
 
 //procedure TDACR2R.DataByteToSendPrepare(Voltage: Double);
@@ -233,7 +247,7 @@ procedure TDACR2R.Free;
 begin
 // Pins.Free;
  fCalibration.Free;
-// inherited Free;
+ inherited Free;
 end;
 
 { TDACR2RShow }

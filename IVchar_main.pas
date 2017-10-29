@@ -8,7 +8,7 @@ uses
   TempThread, ShowTypes,OlegGraph, Dependence, V7_21,
   TemperatureSensor, DACR2R, UT70, RS232device,ET1255, RS232_Mediator_Tread,
   CPortCtl, Grids, Chart, TeeProcs, Series, TeEngine, ExtCtrls, Buttons,
-  ComCtrls, CPort, StdCtrls, Dialogs, Controls, Classes;
+  ComCtrls, CPort, StdCtrls, Dialogs, Controls, Classes, D30_06;
 
 const
   MeasIV='IV characteristic';
@@ -312,10 +312,6 @@ type
     BMeas1255Ch2: TButton;
     STMD1255Ch2: TStaticText;
     CBMeasET1255Ch2: TComboBox;
-    STValueRangeDAC1255: TStaticText;
-    STCodeRangeDAC1255: TStaticText;
-    STValueRangeDACR2R: TStaticText;
-    STCodeRangeDACR2R: TStaticText;
     DependTimer: TTimer;
     CBMeasurements: TComboBox;
     TS_Time_Dependence: TTabSheet;
@@ -367,6 +363,30 @@ type
     TS_D30_06: TTabSheet;
     RGD30: TRadioGroup;
     CBD30: TComboBox;
+    LD30PinC: TLabel;
+    BD30SetC: TButton;
+    LD30PinG: TLabel;
+    BD30SetG: TButton;
+    GBMeasD30: TGroupBox;
+    LMeasD30: TLabel;
+    BMeasD30: TButton;
+    STMDD30: TStaticText;
+    CBMeasD30: TComboBox;
+    LOVD30: TLabel;
+    STOVD30: TStaticText;
+    BOVchangeD30: TButton;
+    BOVsetD30: TButton;
+    BD30Reset: TButton;
+    STOKD30: TStaticText;
+    LOKD30: TLabel;
+    BOKchangeD30: TButton;
+    BOKsetD30: TButton;
+    LCodeRangeDACR2R: TLabel;
+    LValueRangeDACR2R: TLabel;
+    LCodeRangeD30: TLabel;
+    LValueRangeD30: TLabel;
+    LValueRangeDAC1255: TLabel;
+    LCodeRangeDAC1255: TLabel;
 
     procedure FormCreate(Sender: TObject);
     procedure BConnectClick(Sender: TObject);
@@ -498,6 +518,8 @@ type
     VolCorrectionNew,TemperData:PVector;
     DACR2R:TDACR2R;
     DACR2RShow:TDACR2RShow;
+    D30_06:TD30_06;
+    D30_06Show:TD30_06Show;
     Simulator:TSimulator;
     UT70B:TUT70B;
     UT70BShow:TUT70BShow;
@@ -506,7 +528,7 @@ type
     Devices:array of IMeasurement;
     DevicesSet:array of IDAC;
     Temperature_MD:TTemperature_MD;
-    Current_MD,VoltageIV_MD,DACR2R_MD,
+    Current_MD,VoltageIV_MD,DACR2R_MD,D30_MD,
     TermoCouple_MD,TimeD_MD,Control_MD:TMeasuringDevice;
     ET1255_DAC_MD:array[TET1255_DAC_ChanelNumber] of TMeasuringDevice;
     SettingDevice,SettingDeviceControl,SettingTermostat:TSettingDevice;
@@ -1527,7 +1549,7 @@ begin
 
 
  RS232_MediatorTread:=TRS232_MediatorTread.Create(
-                 [DACR2R,V721A,V721_I,V721_II,DS18B20]);
+                 [DACR2R,V721A,V721_I,V721_II,DS18B20,D30_06]);
 
  if (ComPort1.Connected)and(SettingDevice.ActiveInterface.Name=DACR2R.Name) then SettingDevice.Reset();
 
@@ -1799,6 +1821,7 @@ begin
      SGRBStep.Cells[1,i+1]:=FloatToStrF(RevSteps^.Y[i],ffGeneral,3,2);
    end;
 end;
+
 
 procedure TIVchar.DelayTimeReadFromIniFile;
  var temp:integer;
@@ -2118,12 +2141,20 @@ begin
                                  BDACR2RSetC,BDACR2RSetG,BOVchangeDACR2R,
                                  BOVsetDACR2R, BOKchangeDACR2R, BOKsetDACR2R,
                                  BDACR2RReset, CBDACR2R);
+  D30_06:=TD30_06.Create(ComPort1,'D30_06');
+  D30_06Show:=TD30_06Show.Create(D30_06,LD30PinC,LD30PinG,LOVD30,LOKD30,LValueRangeD30,
+                                 BD30SetC,BD30SetG,BOVchangeD30,
+                                 BOVsetD30, BOKchangeD30, BOKsetD30,
+                                 BD30Reset, CBD30, RGD30);
+
 end;
 
 procedure TIVchar.DACFree;
 begin
   DACR2RShow.Free;
   if assigned(DACR2R) then DACR2R.Free;
+  D30_06Show.Free;
+  if assigned(D30_06) then D30_06.Free;
 end;
 
 procedure TIVchar.DACReadFromIniFileAndToForm;
@@ -2131,11 +2162,14 @@ begin
   DACR2RShow.PinShow.PinsReadFromIniFile(ConfigFile);
   DACR2RShow.PinShow.NumberPinShow;
   ParametersFileWork(DACR2R.CalibrationRead);
+
+  D30_06Show.ReadFromIniFileAndToForm(ConfigFile);
 end;
 
 procedure TIVchar.DACWriteToIniFile;
 begin
   DACR2RShow.PinShow.PinsWriteToIniFile(ConfigFile);
+  D30_06Show.WriteToIniFile(ConfigFile);
 end;
 
 procedure TIVchar.DevicesCreate;
@@ -2157,6 +2191,8 @@ begin
 
   DACR2R_MD:=TMeasuringDevice.Create(Devices,CBMeasDACR2R,LMeasR2R,srPreciseVoltage);
   DACR2R_MD.AddActionButton(BMeasR2R);
+  D30_MD:=TMeasuringDevice.Create(Devices,CBMeasD30,LMeasD30,srPreciseVoltage);
+  D30_MD.AddActionButton(BMeasD30);
 
   SetLength(Devices,7);
   Devices[5]:=ThermoCuple;
@@ -2187,6 +2223,8 @@ begin
     ET1255_DAC_MD[2].AddActionButton(BMeas1255Ch2);
    end;
 
+  SetLength(DevicesSet,High(DevicesSet)+2);
+  DevicesSet[High(DevicesSet)]:=D30_06;
 
   SettingDevice:=TSettingDevice.Create(DevicesSet,CBVS);
   SettingDeviceControl:=TSettingDevice.Create(DevicesSet,CBControlCD);
@@ -2204,6 +2242,7 @@ begin
   Current_MD.Free;
   VoltageIV_MD.Free;
   DACR2R_MD.Free;
+  D30_MD.Free;
   TermoCouple_MD.Free;
   ET1255_DAC_MD[0].Free;
   ET1255_DAC_MD[1].Free;
@@ -2219,6 +2258,7 @@ begin
   Current_MD.ReadFromIniFile(ConfigFile,MD_IniSection,'Current');
   VoltageIV_MD.ReadFromIniFile(ConfigFile,MD_IniSection,'Voltage');
   DACR2R_MD.ReadFromIniFile(ConfigFile,MD_IniSection,'R2R');
+  D30_MD.ReadFromIniFile(ConfigFile,MD_IniSection,'D30');
   TermoCouple_MD.ReadFromIniFile(ConfigFile,MD_IniSection,'Thermocouple');
   ET1255_DAC_MD[0].ReadFromIniFile(ConfigFile,MD_IniSection,'ET1255_DAC_Ch0');
   ET1255_DAC_MD[1].ReadFromIniFile(ConfigFile,MD_IniSection,'ET1255_DAC_Ch1');
@@ -2237,6 +2277,7 @@ begin
   Current_MD.WriteToIniFile(ConfigFile,MD_IniSection,'Current');
   VoltageIV_MD.WriteToIniFile(ConfigFile,MD_IniSection,'Voltage');
   DACR2R_MD.WriteToIniFile(ConfigFile,MD_IniSection,'R2R');
+  D30_MD.WriteToIniFile(ConfigFile,MD_IniSection,'D30');
   TermoCouple_MD.WriteToIniFile(ConfigFile,MD_IniSection,'Thermocouple');
   ET1255_DAC_MD[0].WriteToIniFile(ConfigFile,MD_IniSection,'ET1255_DAC_Ch0');
   ET1255_DAC_MD[1].WriteToIniFile(ConfigFile,MD_IniSection,'ET1255_DAC_Ch1');

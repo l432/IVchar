@@ -12,10 +12,10 @@ const
   PacketBeginChar=#10;
   PacketEndChar=#255;
 
-  V7_21Command=$1;
+//  V7_21Command=$1;
   ParameterReceiveCommand=$2;
   DACCommand=$3;
-  DACR2RCommand=$4;
+//  DACR2RCommand=$4;
   DS18B20Command=$5;
 
 var

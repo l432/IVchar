@@ -21,7 +21,7 @@ type
    при взаємодії з Аrduino}
   protected
    fName:string;
-   Function GetPinStr(Index:integer):string;
+   Function GetPinStr(Index:integer):string;virtual;
    Function GetPin(Index:integer):byte;
    Procedure SetPin(Index:integer; value:byte);
   public
@@ -61,18 +61,21 @@ type
     {базовий клас для ЦАП, що керується
     за допомогою Arduino    }
   private
-   procedure DataByteToSendPrepare(Voltage: Double);
+//   procedure DataByteToSendPrepare(Voltage: Double);
+
   protected
    Pins:TPins;
    fVoltageMaxValue:double;
    fKodMaxValue:integer;
    fMessageError:string;
-   fCommandByte:byte;
+   fSetterKod:byte;
    procedure PacketCreateAndSend();
    function  VoltageToKod(Voltage:double):integer;virtual;
    procedure DataByteToSendFromInteger(IntData: Integer);virtual;
-   procedure FinalDataArrayPrepearingToSend;virtual;
+   procedure PinsToDataArray;virtual;
    procedure OutputDataSignDetermination(OutputData: Double);
+   procedure CreateHook;virtual;
+   function NormedKod(Kod: Integer):integer;
   public
    Constructor Create(CP:TComPort;Nm:string);override;
    Procedure Free;
@@ -98,12 +101,12 @@ type
 
   TPinsShow=class
   protected
-   Pins:TPins;
    PinLabels:array of TLabel;
    SetPinButtons:array of TButton;
    PinsComboBox:TComboBox;
    procedure CreateFooter;
   public
+   Pins:TPins;
    Constructor Create(Ps:TPins;
                       ControlPinLabel,GatePinLabel:TLabel;
                       SetControlButton,SetGateButton:TButton;
@@ -121,8 +124,9 @@ uses
   Math;
 
 constructor TPinsShow.Create(Ps:TPins;
-                                  ControlPinLabel, GatePinLabel: TLabel;
-                                  SetControlButton, SetGateButton: TButton; PCB: TComboBox);
+                             ControlPinLabel, GatePinLabel: TLabel;
+                             SetControlButton, SetGateButton: TButton;
+                             PCB: TComboBox);
 begin
  inherited Create();
  Pins:=Ps;
@@ -300,10 +304,27 @@ end;
 
 procedure TArduinoDAC.ComPortUsing;
 begin
- FinalDataArrayPrepearingToSend;
+ PinsToDataArray;
  PacketCreate(fData);
 // PacketCreate([DACR2RCommand, Pins.PinControl, Pins.PinGate, fData[0], fData[1], fData[2]]);
  PacketIsSend(fComPort, fMessageError);
+end;
+
+function TArduinoDAC.NormedKod(Kod: Integer):integer;
+begin
+  Result := min(abs(Kod), fKodMaxValue);
+end;
+
+procedure TArduinoDAC.CreateHook;
+begin
+//  Pins:=TPins.Create;
+//  Pins.Name:=self.Name;
+
+  fVoltageMaxValue:=5;
+  fKodMaxValue:=65535;
+  fMessageError:='Output is unsuccessful';
+  fSetterKod:=$FF;
+
 end;
 
 procedure TArduinoDAC.OutputDataSignDetermination(OutputData: Double);
@@ -314,9 +335,9 @@ begin
                     else  fData[5] := DAC_Pos;
 end;
 
-procedure TArduinoDAC.FinalDataArrayPrepearingToSend;
+procedure TArduinoDAC.PinsToDataArray;
 begin
-  fData[0] := fCommandByte;
+//  fData[0] := fCommandByte;
   fData[1] := Pins.PinControl;
   fData[2] := Pins.PinGate;
 end;
@@ -328,28 +349,28 @@ begin
   Pins.Name:=Nm;
   fComPacket.StartString:=PacketBeginChar;
   fComPacket.StopString:=PacketEndChar;
-  fVoltageMaxValue:=5;
-  fKodMaxValue:=65535;
-  fMessageError:='Output is unsuccessful';
-  fCommandByte:=$FF;
+
+  CreateHook;
 //  SetLength(fData,3);
   SetLength(fData,6);
-//  fData[0]:=fCommandByte;
+  fData[0] := fSetterKod;
+  PinsToDataArray();
 end;
 
 procedure TArduinoDAC.DataByteToSendFromInteger(IntData: Integer);
+ var NormedIntData:integer;
 begin
-  IntData:=min(abs(IntData),fKodMaxValue);
+  NormedIntData:=NormedKod(IntData);
 //  fData[0] := ((IntData shr 8) and $FF);
 //  fData[1] := (IntData and $FF);
-  fData[3] := ((IntData shr 8) and $FF);
-  fData[4] := (IntData and $FF);
+  fData[3] := ((NormedIntData shr 8) and $FF);
+  fData[4] := (NormedIntData and $FF);
 end;
 
-procedure TArduinoDAC.DataByteToSendPrepare(Voltage: Double);
-begin
-  DataByteToSendFromInteger(VoltageToKod(Voltage));
-end;
+//procedure TArduinoDAC.DataByteToSendPrepare(Voltage: Double);
+//begin
+//  DataByteToSendFromInteger(VoltageToKod(Voltage));
+//end;
 
 procedure TArduinoDAC.Free;
 begin
@@ -360,7 +381,8 @@ end;
 procedure TArduinoDAC.Output(Voltage: double);
 begin
  OutputDataSignDetermination(Voltage);
- DataByteToSendPrepare(Voltage);
+// DataByteToSendPrepare(Voltage);
+ DataByteToSendFromInteger(VoltageToKod(Voltage));
  PacketCreateAndSend();
 end;
 
