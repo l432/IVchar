@@ -259,6 +259,7 @@ constructor TDACR2RShow.Create(DAC: TDACR2R;
 begin
  inherited Create(DAC,VL, KL, VCB, VSB, KCB, KSB, RB);
  PinShow:=TPinsShow.Create(DAC.Pins,CPL,GPL,SCB,SGB,PCB);
+ PinShow.HookNumberPinShow:=DAC.PinsToDataArray;
 end;
 
 procedure TDACR2R_Calibr.Add(RequiredVoltage, RealVoltage: double);

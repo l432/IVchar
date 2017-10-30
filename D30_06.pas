@@ -124,6 +124,7 @@ constructor TD30_06Show.Create(DAC: TD30_06;
 begin
  inherited Create(DAC,VL, KL, VCB, VSB, KCB, KSB, RB);
  PinShow:=TPins30_06Show.Create(DAC.Pins,CPL,GPL,SCB,SGB,PCB);
+ PinShow.HookNumberPinShow:=DAC.PinsToDataArray;
  fD30_06:=DAC;
  ValueDiapazonLabel:=VDL;
  VoltageOrCurrentRG:=VOCRG;
@@ -173,6 +174,7 @@ procedure TD30_06Show.VoltageOrCurrentRGClick(Sender: TObject);
 begin
  if VoltageOrCurrentRG.ItemIndex<0 then Exit;
  fD30_06.isVoltage:=(VoltageOrCurrentRG.Items[VoltageOrCurrentRG.ItemIndex]=PinNamesD30_06[0]);
+ fD30_06.PinsToDataArray;
  LabelFilling;
  
 end;
@@ -207,6 +209,7 @@ begin
                            else
     PinLabels[i].Caption:=PinLabels[i].Caption+IntToStr(Pins.fPins[i]);
   end;
+ HookNumberPinShow; 
 end;
 
 end.

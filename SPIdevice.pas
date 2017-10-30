@@ -101,12 +101,15 @@ type
 
   TPinsShow=class
   protected
+   fHookNumberPinShow: TSimpleEvent;
    PinLabels:array of TLabel;
    SetPinButtons:array of TButton;
    PinsComboBox:TComboBox;
    procedure CreateFooter;
+   procedure AEmpty;
   public
    Pins:TPins;
+   property HookNumberPinShow:TSimpleEvent read fHookNumberPinShow write fHookNumberPinShow;
    Constructor Create(Ps:TPins;
                       ControlPinLabel,GatePinLabel:TLabel;
                       SetControlButton,SetGateButton:TButton;
@@ -122,6 +125,11 @@ implementation
 
 uses
   Math;
+
+procedure TPinsShow.AEmpty;
+begin
+
+end;
 
 constructor TPinsShow.Create(Ps:TPins;
                              ControlPinLabel, GatePinLabel: TLabel;
@@ -139,6 +147,7 @@ begin
  if High(SetPinButtons)>0 then
     SetPinButtons[1]:=SetGateButton;
  PinsComboBox:=PCB;
+ HookNumberPinShow:=AEmpty;
 
  CreateFooter();
 end;
@@ -148,6 +157,7 @@ begin
    PinLabels[0].Caption:=Pins.PinControlStr;
    if High(PinLabels)>0 then
     PinLabels[1].Caption:=Pins.PinGateStr;
+   HookNumberPinShow; 
 end;
 
 procedure TPinsShow.CreateFooter;
@@ -304,7 +314,7 @@ end;
 
 procedure TArduinoDAC.ComPortUsing;
 begin
- PinsToDataArray;
+// PinsToDataArray;
  PacketCreate(fData);
 // PacketCreate([DACR2RCommand, Pins.PinControl, Pins.PinGate, fData[0], fData[1], fData[2]]);
  PacketIsSend(fComPort, fMessageError);
