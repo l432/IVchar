@@ -1552,7 +1552,7 @@ begin
                  [DACR2R,V721A,V721_I,V721_II,DS18B20,D30_06]);
 
  if (ComPort1.Connected)and(SettingDevice.ActiveInterface.Name=DACR2R.Name) then SettingDevice.Reset();
-
+ if (ComPort1.Connected) then D30_06.Reset;
 end;
 
 procedure TIVchar.FormDestroy(Sender: TObject);

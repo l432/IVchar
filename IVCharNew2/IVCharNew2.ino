@@ -11,19 +11,26 @@ const byte DACCommand = 3;
 const byte DACR2RCommand = 4;
 const byte DAC_Pos = 0x0F;
 const byte DAC_Neg = 0xFF;
-//const byte DACR2R_Reset = 0xAA;
 const byte DS18B20Command = 0x5;
 const byte D30_06Command = 0x6;
 
+//For MEGA
 byte DrivePins[] = {25, 26, 27, 28, 29, 30, 31, 32, 34, 35};
 byte SignPins[] = {33, 40};
+byte DS18B20Pin = 36;
+
+//For UNO
+//byte DrivePins[] = {2, 3, 4, 5, 6, 7};
+//byte SignPins[] = {8, 9};
+//byte DS18B20Pin = 10;
+
+OneWire  ds(DS18B20Pin);
 
 byte incomingByte = 0;
 byte PinControl, PinGate, DeviceId, ActionId;
 byte DACR2RPinSign = SignPins[0];
 byte D30_06PinSign = SignPins[1];
-byte DS18B20Pin = 36;
-OneWire  ds(DS18B20Pin);
+
 
 byte DACDataReceived[3];
 byte D30_06DataReceived[4];
@@ -49,8 +56,11 @@ void setup() {
     pinMode(SignPins[i], OUTPUT);
     digitalWrite(SignPins[i], LOW);
   }
-  //  pinMode(DACR2RPinSign, OUTPUT);
-  //  digitalWrite(DACR2RPinSign, LOW);
+//    pinMode(DACR2RPinSign, OUTPUT);
+//    digitalWrite(DACR2RPinSign, LOW);
+//    pinMode(D30_06PinSignBool, OUTPUT);
+//    digitalWrite(D30_06PinSignBool, HIGH);
+
   DACR2RPinSignBool = false;
   D30_06PinSignBool = false;
   DS18B20delay = false;
@@ -198,11 +208,11 @@ void SendParameters() {
   CreateAndSendPacket(DrivePins, sizeof(DrivePins));
 }
 
-void SPI2ByteTransfer(byte CSPin, byte Data1, byte Data2){
+void SPI2ByteTransfer(byte CSPin, byte Data1, byte Data2) {
   digitalWrite(CSPin, LOW);
   SPI.transfer(Data1);
   SPI.transfer(Data2);
-  digitalWrite(CSPin, HIGH);  
+  digitalWrite(CSPin, HIGH);
 }
 
 void DACR2R() {
@@ -217,11 +227,11 @@ void DACR2R() {
     digitalWrite(DACR2RPinSign, LOW);
     DACR2RPinSignBool = false;
   };
-  SPI2ByteTransfer(PinControl,DACDataReceived[0],DACDataReceived[1]);
-//  digitalWrite(PinControl, LOW);
-//  SPI.transfer(DACDataReceived[0]);
-//  SPI.transfer(DACDataReceived[1]);
-//  digitalWrite(PinControl, HIGH);
+  SPI2ByteTransfer(PinControl, DACDataReceived[0], DACDataReceived[1]);
+  //  digitalWrite(PinControl, LOW);
+  //  SPI.transfer(DACDataReceived[0]);
+  //  SPI.transfer(DACDataReceived[1]);
+  //  digitalWrite(PinControl, HIGH);
 }
 
 void D30_06() {
@@ -230,19 +240,19 @@ void D30_06() {
   {
     EndD30_06delay = millis() + 500;
     D30_06delay = true;
-  SPI2ByteTransfer(D30_06DataReceived[3],0,0);
-//    digitalWrite(D30_06DataReceived[3], LOW);
-//    SPI.transfer(0);
-//    SPI.transfer(0);
-//    digitalWrite(D30_06DataReceived[3], HIGH);
+    SPI2ByteTransfer(D30_06DataReceived[3], 0, 0);
+    //    digitalWrite(D30_06DataReceived[3], LOW);
+    //    SPI.transfer(0);
+    //    SPI.transfer(0);
+    //    digitalWrite(D30_06DataReceived[3], HIGH);
 
   } else {
-    SPI2ByteTransfer(D30_06DataReceived[3],D30_06DataReceived[0],D30_06DataReceived[1]);
+    SPI2ByteTransfer(D30_06DataReceived[3], D30_06DataReceived[0], D30_06DataReceived[1]);
 
-//    digitalWrite(D30_06DataReceived[3], LOW);
-//    SPI.transfer(D30_06DataReceived[0]);
-//    SPI.transfer(D30_06DataReceived[1]);
-//    digitalWrite(D30_06DataReceived[3], HIGH);
+    //    digitalWrite(D30_06DataReceived[3], LOW);
+    //    SPI.transfer(D30_06DataReceived[0]);
+    //    SPI.transfer(D30_06DataReceived[1]);
+    //    digitalWrite(D30_06DataReceived[3], HIGH);
   }
 }
 
@@ -259,11 +269,11 @@ void D30_06_Second() {
     D30_06PinSignBool = false;
   };
   D30_06delay = false;
-  SPI2ByteTransfer(D30_06DataReceived[3],D30_06DataReceived[0],D30_06DataReceived[1]);
-//  digitalWrite(D30_06DataReceived[3], LOW);
-//  SPI.transfer(D30_06DataReceived[0]);
-//  SPI.transfer(D30_06DataReceived[1]);
-//  digitalWrite(D30_06DataReceived[3], HIGH);
+  SPI2ByteTransfer(D30_06DataReceived[3], D30_06DataReceived[0], D30_06DataReceived[1]);
+  //  digitalWrite(D30_06DataReceived[3], LOW);
+  //  SPI.transfer(D30_06DataReceived[0]);
+  //  SPI.transfer(D30_06DataReceived[1]);
+  //  digitalWrite(D30_06DataReceived[3], HIGH);
 
 }
 
