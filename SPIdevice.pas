@@ -106,7 +106,7 @@ type
    SetPinButtons:array of TButton;
    PinsComboBox:TComboBox;
    procedure CreateFooter;
-   procedure AEmpty;
+//   procedure AEmpty;
   public
    Pins:TPins;
    property HookNumberPinShow:TSimpleEvent read fHookNumberPinShow write fHookNumberPinShow;
@@ -126,10 +126,10 @@ implementation
 uses
   Math;
 
-procedure TPinsShow.AEmpty;
-begin
-
-end;
+//procedure TPinsShow.AEmpty;
+//begin
+//
+//end;
 
 constructor TPinsShow.Create(Ps:TPins;
                              ControlPinLabel, GatePinLabel: TLabel;
@@ -147,8 +147,8 @@ begin
  if High(SetPinButtons)>0 then
     SetPinButtons[1]:=SetGateButton;
  PinsComboBox:=PCB;
- HookNumberPinShow:=AEmpty;
-
+// HookNumberPinShow:=AEmpty;
+ HookNumberPinShow:=TSimpleClass.EmptyProcedure;
  CreateFooter();
 end;
 

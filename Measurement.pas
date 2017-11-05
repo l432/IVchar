@@ -325,8 +325,15 @@ end;
 
 procedure TDevice.ReadFromIniFile(ConfigFile: TIniFile; const Section,
   Ident: string);
+  var index:integer;
 begin
-  DevicesComboBox.ItemIndex:=ConfigFile.ReadInteger(Section, Ident, 0);
+  index:=ConfigFile.ReadInteger(Section, Ident, 0);
+  if index>=DevicesComboBox.Items.Count
+     then DevicesComboBox.ItemIndex:=0
+     else DevicesComboBox.ItemIndex:=index;
+
+//  DevicesComboBox.ItemIndex:=ConfigFile.ReadInteger(Section, Ident, 0);
+
 end;
 
 

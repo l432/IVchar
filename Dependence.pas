@@ -31,7 +31,7 @@ private
   function MeasurementNumberDetermine(): integer;virtual;
   procedure ActionMeasurement();virtual;
   procedure DataSave();virtual;
-  procedure AEmpty;
+//  procedure AEmpty;
 
  public
   property isActive:boolean read FisActive;
@@ -59,10 +59,20 @@ private
   fTreadToStop:TThread;
   fBeginTime:TDateTime;
   procedure ActionMeasurement();override;
+  function BadResult:boolean;virtual;
   public
   procedure BeginMeasuring();override;
 end;
 
+TTimeDependenceTread = class(TThread)
+  private
+    { Private declarations }
+   fTimeDependence:TTimeDependence;
+  protected
+    procedure Execute; override;
+  public
+    constructor Create(TimeDep:TTimeDependence);
+  end;
 
 TTimeDependenceTimer=class(TTimeDependence)
 private
@@ -86,16 +96,23 @@ private
   procedure EndMeasuring();override;
 end;
 
-type
-  TTimeDependenceTread = class(TThread)
-  private
-    { Private declarations }
-   fTimeDependence:TTimeDependence;
-  protected
-    procedure Execute; override;
-  public
-    constructor Create(TimeDep:TTimeDependence);
-  end;
+
+TTimeTwoDependenceTimer=class(TTimeDependenceTimer)
+ private
+  function BadResult:boolean;override;
+  procedure DataSave();override;
+ public
+  isTwoValueOnTime:boolean;
+  Constructor Create(PB:TProgressBar;
+                     BS: TButton;
+                     Res:PVector;
+                     FLn,FLg:TPointSeries;
+                     Tim:TTimer);
+  procedure BeginMeasuring();override;
+//  procedure EndMeasuring();override;
+  class function SecondValue:double;
+  class procedure SecondValueChange(Value: double);
+end;
 
 
 TIVDependence=class (TDependence)
@@ -159,7 +176,7 @@ var
   fVoltageInputReal:double;
   fVoltageStep:double;
   fVoltageCorrection:double;
-  ftempV,ftempI:double;
+  ftempV,ftempI,fSecondValue:double;
   fPointNumber:word;
   fDelayTime:integer;
 
@@ -213,9 +230,13 @@ begin
  RevLine:=RLn;
  RevLg:=RLg;
 
- HookCycle:=AEmpty;
- HookStep:=AEmpty;
- HookSetVoltage:=AEmpty;
+ HookCycle:=TSimpleClass.EmptyProcedure;
+ HookStep:=TSimpleClass.EmptyProcedure;
+ HookSetVoltage:=TSimpleClass.EmptyProcedure;
+
+// HookCycle:=AEmpty;
+// HookStep:=AEmpty;
+// HookSetVoltage:=AEmpty;
 end;
 
 procedure TIVDependence.Cycle(ItIsForwardInput: Boolean; Action: TSimpleEvent);
@@ -337,7 +358,8 @@ end;
 function TIVDependence.MeasurementNumberDetermine: integer;
 begin
  fPointNumber:=0;
- FullCycle(AEmpty);
+// FullCycle(AEmpty);
+ FullCycle(TSimpleClass.EmptyProcedure);
  Result:=fPointNumber;
 end;
 
@@ -464,7 +486,8 @@ begin
   ftempV:=round(SecondSpan(Now(),fBeginTime)*10)/10;
   HookSecondMeas();
 
-  if (ftempV=ErResult)or(ftempI=ErResult) then
+//  if (ftempV=ErResult)or(ftempI=ErResult) then
+  if BadResult() then
     begin
       SetEvent(EventToStopDependence);
       Exit;
@@ -473,6 +496,11 @@ begin
     then ProgressBar.Max :=2*ProgressBar.Max;
 
   inherited ActionMeasurement;
+end;
+
+function TTimeDependence.BadResult: boolean;
+begin
+ Result:=(ftempV=ErResult)or(ftempI=ErResult);
 end;
 
 procedure TTimeDependence.BeginMeasuring;
@@ -497,10 +525,10 @@ begin
   MelodyShot();
 end;
 
-procedure TDependence.AEmpty;
-begin
-
-end;
+//procedure TDependence.AEmpty;
+//begin
+//
+//end;
 
 procedure TDependence.BeginMeasuring;
 begin
@@ -517,6 +545,8 @@ begin
 
   ForwLine.Clear;
   ForwLg.Clear;
+  ForwLg.ParentChart.Axes.Left.Logarithmic:=True;
+  ForwLg.ParentChart.Axes.Left.LogarithmicBase:=10;
 
   FisActive:=True;
 
@@ -544,12 +574,19 @@ begin
 
  FisActive:=False;
 
- HookBeginMeasuring:=AEmpty;
- HookEndMeasuring:=AEmpty;
- HookSecondMeas:=AEmpty;
- HookFirstMeas:=AEmpty;
- HookDataSave:=AEmpty;
- HookAction:=AEmpty;
+ HookBeginMeasuring:=TSimpleClass.EmptyProcedure;
+ HookEndMeasuring:=TSimpleClass.EmptyProcedure;
+ HookSecondMeas:=TSimpleClass.EmptyProcedure;
+ HookFirstMeas:=TSimpleClass.EmptyProcedure;
+ HookDataSave:=TSimpleClass.EmptyProcedure;
+ HookAction:=TSimpleClass.EmptyProcedure;
+
+// HookBeginMeasuring:=AEmpty;
+// HookEndMeasuring:=AEmpty;
+// HookSecondMeas:=AEmpty;
+// HookFirstMeas:=AEmpty;
+// HookDataSave:=AEmpty;
+// HookAction:=AEmpty;
 end;
 
 procedure TDependence.DataSave;
@@ -636,6 +673,64 @@ begin
   fTimeDependence.EndMeasuring;
 end;
 
+
+{ TTimeTwoDependenceTimer }
+
+function TTimeTwoDependenceTimer.BadResult: boolean;
+begin
+  Result:=(ftempV=ErResult)or(ftempI=ErResult)or(fSecondValue=ErResult);
+end;
+
+procedure TTimeTwoDependenceTimer.BeginMeasuring;
+begin
+  inherited BeginMeasuring;
+  if isTwoValueOnTime then 
+      ForwLg.ParentChart.Axes.Left.Logarithmic:=False;
+end;
+
+constructor TTimeTwoDependenceTimer.Create(PB: TProgressBar; BS: TButton;
+  Res: PVector; FLn, FLg: TPointSeries; Tim: TTimer);
+begin
+  inherited Create(PB,BS,Res,FLn, FLg, Tim);
+  isTwoValueOnTime:=True;
+end;
+
+procedure TTimeTwoDependenceTimer.DataSave;
+begin
+  Application.ProcessMessages;
+  HookDataSave();
+
+  if isTwoValueOnTime then
+   begin
+    Results.Add(ftempV, ftempI);
+    ForwLine.AddXY(ftempV, ftempI);
+    ForwLg.AddXY(ftempV, fSecondValue);
+   end
+                      else
+   begin
+    Results.Add(fSecondValue, ftempI);
+    ForwLine.AddXY(fSecondValue, ftempI);
+    if abs(ftempI) > 1E-11 then
+      ForwLg.AddXY(fSecondValue, abs(ftempI));
+   end
+end;
+
+//procedure TTimeTwoDependenceTimer.EndMeasuring;
+//begin
+//  ForwLg.ParentChart.Axes.Left.Logarithmic:=True;
+//  ForwLg.ParentChart.Axes.Left.LogarithmicBase:=10;
+//  inherited EndMeasuring;
+//end;
+
+class function TTimeTwoDependenceTimer.SecondValue: double;
+begin
+ Result:=fSecondValue;
+end;
+
+class procedure TTimeTwoDependenceTimer.SecondValueChange(Value: double);
+begin
+ fSecondValue:=Value;
+end;
 
 initialization
   EventToStopDependence := CreateEvent(nil,

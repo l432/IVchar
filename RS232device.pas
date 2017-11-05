@@ -152,7 +152,10 @@ Function BCDtoDec(BCD:byte; isLow:boolean):byte;
 якщо  isLow=true, то виділення із
 молодшої частини байта}
 
-Procedure PortStateToLabel(Port:TComPort;Lab:TLabel;Button: TButton);
+Procedure PortBeginAction(Port:TComPort;Lab:TLabel;Button: TButton);
+
+Procedure PortEndAction(Port:TComPort);
+
 
 implementation
 
@@ -504,20 +507,53 @@ begin
 end;
 
 
-Procedure PortStateToLabel(Port:TComPort;Lab:TLabel;Button: TButton);
+Procedure PortBeginAction(Port:TComPort;Lab:TLabel;Button: TButton);
 begin
+  try
+    Port.Open;
+    Port.AbortAllAsync;
+    Port.ClearBuffer(True, True);
+  finally
    if Port.Connected then
-  begin
-   Lab.Caption:='Port is open';
-   Lab.Font.Color:=clBlue;
-   if Button<>nil then Button.Caption:='To close'
-  end
-                       else
-  begin
-   Lab.Caption:='Port is close';
-   Lab.Font.Color:=clRed;
-   if Button<>nil then Button.Caption:='To open'
-  end
+      begin
+       Lab.Caption:='Port is open';
+       Lab.Font.Color:=clBlue;
+       if Button<>nil then Button.Caption:='To close'
+      end
+                           else
+      begin
+       Lab.Caption:='Port is close';
+       Lab.Font.Color:=clRed;
+       if Button<>nil then Button.Caption:='To open'
+      end
+  end;
+
+
+//   if Port.Connected then
+//  begin
+//   Lab.Caption:='Port is open';
+//   Lab.Font.Color:=clBlue;
+//   if Button<>nil then Button.Caption:='To close'
+//  end
+//                       else
+//  begin
+//   Lab.Caption:='Port is close';
+//   Lab.Font.Color:=clRed;
+//   if Button<>nil then Button.Caption:='To open'
+//  end
+end;
+
+Procedure PortEndAction(Port:TComPort);
+begin
+   try
+  if Port.Connected then
+   begin
+    Port.AbortAllAsync;
+    Port.ClearBuffer(True, True);
+    Port.Close;
+   end;
+ finally
+ end;
 end;
 
 { TRS232Setter }
