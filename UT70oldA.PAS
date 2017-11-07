@@ -386,7 +386,7 @@ Function TUT70C.ReadKod:Boolean;
 var bool:boolean;
     i:byte;
 begin
-ReadKod:·lse;
+ReadKod:=False;
 repeat
 ReadCom;
 until not(GetDR);
@@ -402,8 +402,8 @@ for i:=1 to 12 do
 
   if not(bool) then Break;
   end;
-bool:=bool and (i);
-bool:=bool and (kod[12]);
+bool:=bool and (i=12);
+bool:=bool and (kod[12]=10);
 
 for i:=1 to 5 do kod[i]:=(kod[i] and $7F);
 bool:=bool and (kod[1]=9);
@@ -415,8 +415,8 @@ Function TUT70C.Vymir:Boolean;
     соответствующих полей}
 var b:byte;
 begin
-Vymir:·lse;
-x:U5;
+Vymir:=False;
+x:=555;
 
 if not(ReadKod) then Exit;
 
@@ -434,7 +434,7 @@ case b of
            49:Tp:='j';
          else Exit;
          end; {case kod[2]}
-     0: if kod[2]Ч then Tp:='C' else Exit;
+     0: if kod[2]=97 then Tp:='C' else Exit;
      4: if (kod[2] in [120,112,104,40,41,48,49])
             then Tp:='F' else Exit;
      5: if (kod[2] in [120,112,104,40,41,48,49])
@@ -479,8 +479,8 @@ if REC then
 
 if OUT then Exit;
 
-x:=(kod[10]and$0F)+10*(kod[9]and$0F)M*(kod[8]and$0F)M*(kod[7]and$0F);
-if (Tp='F')and((kod[6]and$0F)<10) then x:=xM*(kod[6]and$0F);
+x:=(kod[10]and$0F)+10*(kod[9]and$0F)+100*(kod[8]and$0F)+1000*(kod[7]and$0F);
+if (Tp='F')and((kod[6]and$0F)<10) then x:=x+10000*(kod[6]and$0F);
 
 case Tp of
  'W':case diap of

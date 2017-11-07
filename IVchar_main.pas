@@ -403,6 +403,10 @@ type
     RGUT70C_RangeM: TRadioGroup;
     STUT70CRort: TStaticText;
     ComCBUT70CPort: TComComboBox;
+    LUT70C_rec: TLabel;
+    LUT70C_Hold: TLabel;
+    LUT70C_AVG: TLabel;
+    LUT70C_AvTime: TLabel;
 
     procedure FormCreate(Sender: TObject);
     procedure BConnectClick(Sender: TObject);
@@ -557,6 +561,8 @@ type
     Simulator:TSimulator;
     UT70B:TUT70B;
     UT70BShow:TUT70BShow;
+    UT70C:TUT70C;
+    UT70CShow:TUT70CShow;
     ET1255_DACs:array[TET1255_DAC_ChanelNumber] of TET1255_DAC;
     ET1255_DACsShow:array[TET1255_DAC_ChanelNumber] of TDAC_Show;
     ET1255isPresent:boolean;
@@ -2340,6 +2346,11 @@ begin
 
   UT70B:=TUT70B.Create(ComPortUT70B, 'UT70B');
   UT70BShow:= TUT70BShow.Create(UT70B, RGUT70B_MM, RGUT70B_Range, RGUT70B_RangeM, LUT70B, LUT70BU, BUT70BMeas, SBUT70BAuto, Time);
+  UT70C:=TUT70C.Create(ComPortUT70C, 'UT70C');
+  UT70CShow:= TUT70CShow.Create(UT70C, RGUT70C_MM,
+       RGUT70C_Range, RGUT70C_RangeM, LUT70C, LUT70CU,
+       BUT70CMeas, SBUT70CAuto, Time,
+       LUT70C_Hold,LUT70C_rec,LUT70C_AvTime,LUT70C_AVG);
 
 end;
 
@@ -2461,6 +2472,9 @@ begin
  UT70BShow.Free;
   if assigned(UT70B) then
     UT70B.Free;
+ UT70CShow.Free;
+  if assigned(UT70C) then
+    UT70C.Free;
 
   ThermoCuple.Free;
   Simulator.Free;
@@ -2484,9 +2498,17 @@ end;
 procedure TIVchar.DACFree;
 begin
   DACR2RShow.Free;
-  if assigned(DACR2R) then DACR2R.Free;
+  if assigned(DACR2R) then
+    begin
+    DACR2R.Free;
+    DACR2R.Reset;
+    end;
   D30_06Show.Free;
-  if assigned(D30_06) then D30_06.Free;
+  if assigned(D30_06) then
+    begin
+    D30_06.Reset;
+    D30_06.Free;
+    end;
 end;
 
 procedure TIVchar.DACReadFromIniFileAndToForm;
@@ -2516,8 +2538,13 @@ begin
   TermoCouple_MD:=TMeasuringDevice.Create(Devices,CBTcVMD,LTRValue,srVoltge);
   Temperature_MD:=TTemperature_MD.Create([Simulator,ThermoCuple,DS18B20],CBTD,LTRValue);
 
-  SetLength(Devices,5);
-  Devices[4]:=UT70B;
+//  SetLength(Devices,5);
+//  Devices[4]:=UT70B;
+
+  SetLength(Devices,High(Devices)+3);
+  Devices[High(Devices)-1]:=UT70B;
+  Devices[High(Devices)]:=UT70C;
+
   Current_MD:=TMeasuringDevice.Create(Devices,CBCMD,LADCurrentValue,srCurrent);
   VoltageIV_MD:=TMeasuringDevice.Create(Devices,CBVMD,LADVoltageValue,srVoltge);
 
@@ -2526,9 +2553,14 @@ begin
   D30_MD:=TMeasuringDevice.Create(Devices,CBMeasD30,LMeasD30,srPreciseVoltage);
   D30_MD.AddActionButton(BMeasD30);
 
-  SetLength(Devices,7);
-  Devices[5]:=ThermoCuple;
-  Devices[6]:=DS18B20;
+
+  SetLength(Devices,High(Devices)+3);
+  Devices[High(Devices)-1]:=ThermoCuple;
+  Devices[High(Devices)]:=DS18B20;
+
+//  SetLength(Devices,7);
+//  Devices[5]:=ThermoCuple;
+//  Devices[6]:=DS18B20;
   TimeD_MD:=
     TMeasuringDevice.Create(Devices,CBTimeMD,LADCurrentValue,srVoltge);
   TimeD_MD2:=
