@@ -518,6 +518,7 @@ begin
   if fDiapazon>7 then fDiapazon:=-1;
   if (fMeasureMode=ord(S_c))or(fMeasureMode=ord(P_c))
                 then fDiapazon:=0;
+  if (Data[0] in [40,41,112]) then fDiapazon:=fDiapazon+2;
 end;
 
 procedure TUT70C.DiapazonFilling(DiapazonNumber: byte;
@@ -759,22 +760,33 @@ begin
          else Exit;
       end;
 
- if fMeasureMode=ord(UD_c) then
-    case Data[0] of
-     112: case fDiapazon of
-           0:x:=x*1e-3;
-           1:x:=x*1e-2;
-           2:x:=x*1e-1;
-           3:;
-           else Exit;
-         end;
-     104:case fDiapazon of
+// if fMeasureMode=ord(UD_c) then
+//    case Data[0] of
+//     112: case fDiapazon of
+//           0:x:=x*1e-3;
+//           1:x:=x*1e-2;
+//           2:x:=x*1e-1;
+//           3:;
+//           else Exit;
+//         end;
+//     104:case fDiapazon of
+//           0:x:=x*1e-5;
+//           1:x:=x*1e-4;
+//           2:;
+//           else Exit;
+//         end;
+//    end;
+
+   if fMeasureMode=ord(UD_c) then
+       case fDiapazon of
            0:x:=x*1e-5;
            1:x:=x*1e-4;
-           2:;
+           2:x:=x*1e-3;
+           3:x:=x*1e-2;
+           4:x:=x*1e-1;
+           5:;
            else Exit;
          end;
-    end;
 
  if fMeasureMode=ord(R_c) then
       case fDiapazon of
@@ -787,7 +799,7 @@ begin
          else Exit;
       end;
 
- if fMeasureMode=ord(C_c) then
+ if fMeasureMode=ord(S_c) then
     if fDiapazon=0 then x:=x*1e-11
                    else Exit;
 
@@ -805,20 +817,29 @@ begin
           else Exit;
       end;
 
+// if (fMeasureMode=ord(ID_c))or
+//    (fMeasureMode=ord(IA_c)) then
+//    case Data[0] of
+//     40,41: case fDiapazon of
+//           0:x:=x*1e-3;
+//           1:x:=x*1e-2;
+//           else Exit;
+//         end;
+//     48,49:case fDiapazon of
+//           0:x:=x*1e-5;
+//           1:x:=x*1e-4;
+//           else Exit;
+//         end;
+//    end;
  if (fMeasureMode=ord(ID_c))or
     (fMeasureMode=ord(IA_c)) then
-    case Data[0] of
-     40,41: case fDiapazon of
-           0:x:=x*1e-3;
-           1:x:=x*1e-2;
-           else Exit;
-         end;
-     48,49:case fDiapazon of
+       case fDiapazon of
            0:x:=x*1e-5;
            1:x:=x*1e-4;
+           2:x:=x*1e-3;
+           3:x:=x*1e-2;
            else Exit;
          end;
-    end;
 
  if fMeasureMode=ord(F_c) then
       case fDiapazon of
