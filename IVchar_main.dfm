@@ -35,7 +35,7 @@ object IVchar: TIVchar
     Top = 0
     Width = 786
     Height = 466
-    ActivePage = TS_UT70
+    ActivePage = TS_Main
     Align = alTop
     Font.Charset = RUSSIAN_CHARSET
     Font.Color = clWindowText
@@ -3616,7 +3616,7 @@ object IVchar: TIVchar
           Top = 145
           Width = 74
           Height = 26
-          ComPort = ComPortUT70B
+          ComPort = ComPortUT70C
           ComProperty = cpPort
           AutoApply = True
           Style = csDropDownList
