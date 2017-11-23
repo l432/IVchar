@@ -74,7 +74,7 @@ begin
   fVoltageMaxValue:=D30_06_MaxVoltage;
   fKodMaxValue:=D30_06_MaxKod;
   fCurrentMaxValue:=D30_06_MaxCurrent;
-  fMessageError:='Output is unsuccessful';
+//  fMessageError:='Output is unsuccessful';
   fSetterKod:=D30_06Command;
   FisVoltage:=True;
 end;
@@ -102,6 +102,8 @@ end;
 
 function TD30_06.VoltageToKod(Voltage: double): integer;
 begin
+ if (not(FisVoltage))and(Voltage<-3) then Voltage:=-3;
+
  fOutPutValue:=Voltage;
  Voltage:=abs(Voltage);
  if FisVoltage then

@@ -9,8 +9,8 @@ type
 const
   PacketBegin=10;
   PacketEnd=255;
-  PacketBeginChar=#10;
-  PacketEndChar=#255;
+//  PacketBeginChar=#10;
+//  PacketEndChar=#255;
 
 //  V7_21Command=$1;
   ParameterReceiveCommand=$2;

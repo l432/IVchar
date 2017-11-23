@@ -37,6 +37,7 @@ TRS232Device=class(TNamedDevice)
    fData:TArrByte;
    fisNeededComPort:boolean;
    fError:boolean;
+   fMessageError:string;
    function PortConnected():boolean;
   public
    property isNeededComPort:boolean read fisNeededComPort write fisNeededComPort;
@@ -193,6 +194,7 @@ constructor TRS232Device.Create(CP: TComPort; Nm: string);
 begin
  Create(CP);
  fName:=Nm;
+ fMessageError:=fName+' connection with ComPort is unsuccessful';
 end;
 
 procedure TRS232Device.Free;

@@ -945,12 +945,19 @@ end;
 
 procedure TIVchar.IVCharHookSetVoltage;
 begin
-  if TIVDependence.ItIsForward then
-    LADInputVoltageValue.Caption:=FloatToStrF(TIVDependence.VoltageInput,ffFixed, 4, 3)+
-    ' '+FloatToStrF(TIVDependence.VoltageInputReal,ffFixed, 4, 3)
-                                       else
-    LADInputVoltageValue.Caption:=FloatToStrF(-TIVDependence.VoltageInput,ffFixed, 4, 3)+
-    ' '+FloatToStrF(TIVDependence.VoltageInputReal,ffFixed, 4, 3);
+
+  LADInputVoltageValue.Caption:=FloatToStrF(TIVDependence.VoltageInput,ffFixed, 4, 3);
+  if not(TIVDependence.ItIsForward) then
+    LADInputVoltageValue.Caption:='-'+LADInputVoltageValue.Caption;
+  LADInputVoltageValue.Caption:=LADInputVoltageValue.Caption+
+                        ' '+FloatToStrF(TIVDependence.VoltageInputReal,ffFixed, 4, 3);
+
+//  if TIVDependence.ItIsForward then
+//    LADInputVoltageValue.Caption:=FloatToStrF(TIVDependence.VoltageInput,ffFixed, 4, 3)+
+//    ' '+FloatToStrF(TIVDependence.VoltageInputReal,ffFixed, 4, 3)
+//                                       else
+//    LADInputVoltageValue.Caption:=FloatToStrF(-TIVDependence.VoltageInput,ffFixed, 4, 3)+
+//    ' '+FloatToStrF(TIVDependence.VoltageInputReal,ffFixed, 4, 3);
 
  if RGDO.ItemIndex=1 then TIVDependence.VoltageInputRealChange(-1*TIVDependence.VoltageInputReal);
  SettingDevice.SetValue(TIVDependence.VoltageInputReal);
@@ -1323,7 +1330,9 @@ procedure TIVchar.CalibrHookFirstMeas;
 begin
   Application.ProcessMessages;;
   if TIVDependence.IVMeasuringToStop then Exit;
-  TDependence.tempVChange(VoltageIV_MD.GetMeasurementResult());
+
+//  TDependence.tempVChange(VoltageIV_MD.GetMeasurementResult());
+  TDependence.tempVChange(TIVDependence.VoltageInputReal);
   LADVoltageValue.Caption:=FloatToStrF(TDependence.tempV,ffFixed, 6, 4);
 end;
 

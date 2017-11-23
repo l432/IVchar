@@ -6,6 +6,8 @@ interface
 
 const
   UndefinedPin=255;
+  PacketBeginChar=#10;
+  PacketEndChar=#255;
 
 
   PinNames:array[0..3]of string=
@@ -41,6 +43,15 @@ type
    Procedure ReadFromIniFile(ConfigFile:TIniFile;Strings:TStrings);overload;
    Procedure WriteToIniFile(ConfigFile:TIniFile);overload;
    Procedure WriteToIniFile(ConfigFile:TIniFile;Strings:TStrings);overload;
+  end;
+
+  TArduinoRS232Device=class(TRS232Device)
+  protected
+   fDeviceKod:byte;
+   Pins:TPins;
+  public
+   Constructor Create(CP:TComPort;Nm:string);override;
+   procedure Free;
   end;
 
   TArduinoMeter=class(TRS232Meter)
@@ -208,7 +219,7 @@ end;
 procedure TArduinoMeter.ComPortUsing;
 begin
   PacketCreate([fMetterKod,Pins.PinControl]);
-  fError:=not(PacketIsSend(fComPort,Name+' measurement is unsuccessful'));
+  fError:=not(PacketIsSend(fComPort,fMessageError));
 end;
 
 Constructor TArduinoMeter.Create(CP:TComPort;Nm:string);
@@ -314,7 +325,6 @@ end;
 
 procedure TArduinoDAC.ComPortUsing;
 begin
-// PinsToDataArray;
  PacketCreate(fData);
 // PacketCreate([DACR2RCommand, Pins.PinControl, Pins.PinGate, fData[0], fData[1], fData[2]]);
  PacketIsSend(fComPort, fMessageError);
@@ -332,7 +342,7 @@ begin
 
   fVoltageMaxValue:=5;
   fKodMaxValue:=65535;
-  fMessageError:='Output is unsuccessful';
+//  fMessageError:='Output is unsuccessful';
   fSetterKod:=$FF;
 
 end;
@@ -431,6 +441,23 @@ begin
  if Voltage>fVoltageMaxValue
     then Result:=fKodMaxValue
     else Result:=round(Voltage/fVoltageMaxValue*fKodMaxValue);
+end;
+
+{ TArduinoRS232Device }
+
+constructor TArduinoRS232Device.Create(CP: TComPort; Nm: string);
+begin
+  inherited Create(CP,Nm);
+  Pins:=TPins.Create;
+  Pins.Name:=Nm;
+  fComPacket.StartString:=PacketBeginChar;
+  fComPacket.StopString:=PacketEndChar;
+end;
+
+procedure TArduinoRS232Device.Free;
+begin
+ Pins.Free;
+ inherited Free;
 end;
 
 end.
