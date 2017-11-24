@@ -13,9 +13,12 @@ const byte DAC_Pos = 0x0F;
 const byte DAC_Neg = 0xFF;
 const byte DS18B20Command = 0x5;
 const byte D30_06Command = 0x6;
+const byte PinChangeCommand = 0x7;
+const byte PinToHigh = 0x0F;
+const byte PinToLow = 0x0F;
 
 //For MEGA
-byte DrivePins[] = {25, 26, 27, 28, 29, 30, 31, 32, 34, 35};
+byte DrivePins[] = {25, 26, 27, 28, 29, 30, 31, 32, 34, 35, 41, 42, 43};
 byte SignPins[] = {33, 40};
 byte DS18B20Pin = 36;
 
@@ -56,10 +59,10 @@ void setup() {
     pinMode(SignPins[i], OUTPUT);
     digitalWrite(SignPins[i], LOW);
   }
-//    pinMode(DACR2RPinSign, OUTPUT);
-//    digitalWrite(DACR2RPinSign, LOW);
-//    pinMode(D30_06PinSignBool, OUTPUT);
-//    digitalWrite(D30_06PinSignBool, HIGH);
+  //    pinMode(DACR2RPinSign, OUTPUT);
+  //    digitalWrite(DACR2RPinSign, LOW);
+  //    pinMode(D30_06PinSignBool, OUTPUT);
+  //    digitalWrite(D30_06PinSignBool, HIGH);
 
   DACR2RPinSignBool = false;
   D30_06PinSignBool = false;
@@ -123,7 +126,11 @@ void loop() {
         PinControl = packet[2];
         DS18B20();
       }
-
+      
+      if (DeviceId == PinChangeCommand) {
+        if (packet[2] == PinToHigh) digitalWrite(packet[1], HIGH); 
+        if (packet[2] == PinToLow)  digitalWrite(packet[1], LOW); 
+      }      
     }
   }
 start:

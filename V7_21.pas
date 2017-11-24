@@ -37,11 +37,12 @@ type
    Procedure DiapazonFilling(DiapazonNumber:byte;
                              D_Begin, D_End:TV721_Diapazons);
    Function MeasureModeLabelRead():string;override;
+   procedure   PacketCreateToSend(); override;
   public
    Procedure ConvertToValue();override;
    Function ResultProblem(Rez:double):boolean;override;
    Constructor Create(CP:TComPort;Nm:string);override;
-   procedure ComPortUsing();override;
+//   procedure ComPortUsing();override;
    function GetData():double;override;
    procedure GetDataThread(WPARAM: word;EventEnd:THandle);override;
   end;
@@ -94,6 +95,7 @@ Constructor TVoltmetr.Create(CP:TComPort;Nm:string);
 begin
   inherited Create(CP,Nm);
   fMetterKod:=V7_21Command;
+
   SetLength(fMeasureModeAll,ord(High(V721_MeasureModeLabels))+1);
   for V721_MeasureMode := Low(TV721_MeasureMode)
       to High(TV721_MeasureMode)
@@ -171,6 +173,11 @@ begin
     then Result:=' V';
 end;
 
+procedure TVoltmetr.PacketCreateToSend;
+begin
+  PacketCreate([fMetterKod,Pins.PinControl,Pins.PinGate]);
+end;
+
 Procedure TVoltmetr.ValueDetermination(Data:array of byte);
  var temp:double;
 begin
@@ -226,11 +233,11 @@ begin
  Result:=(abs(Rez)<1e-14);
 end;
 
-procedure TVoltmetr.ComPortUsing;
-begin
-  PacketCreate([fMetterKod,Pins.PinControl,Pins.PinGate]);
-  fError:=not(PacketIsSend(fComPort,'Voltmetr '+Name+' measurement is unsuccessful'));
-end;
+//procedure TVoltmetr.ComPortUsing;
+//begin
+//  PacketCreate([fMetterKod,Pins.PinControl,Pins.PinGate]);
+//  fError:=not(PacketIsSend(fComPort,'Voltmetr '+Name+' measurement is unsuccessful'));
+//end;
 
 Procedure TVoltmetr.ConvertToValue();
 begin

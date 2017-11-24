@@ -17,6 +17,8 @@ const
   DACCommand=$3;
 //  DACR2RCommand=$4;
   DS18B20Command=$5;
+//  D30_06Command=$6;
+//  PinChangeCommand=$7;
 
 var
   aPacket:array of byte;

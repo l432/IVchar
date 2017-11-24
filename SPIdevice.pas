@@ -16,6 +16,11 @@ const
   DAC_Pos=$0F; //додатня напруга
   DAC_Neg=$FF; //від'ємна напруга
 
+  PinChangeCommand=$7;
+  PinToHigh=$FF;
+  PinToLow=$0F;
+
+
 type
 
   TPins=class
@@ -54,17 +59,27 @@ type
    procedure Free;
   end;
 
+ TArduinoPinChanger=class(TArduinoRS232Device)
+  protected
+   procedure   PacketCreateToSend(); override;
+  public
+   Constructor Create(CP:TComPort;Nm:string);override;
+   procedure PinChangeToHigh();
+   procedure PinChangeToLow();
+  end;
+
   TArduinoMeter=class(TRS232Meter)
   {базовий клас для вимірювальних об'єктів,
   які використовують обмін даних з Arduino}
   protected
    fMetterKod:byte;
    Procedure PacketReceiving(Sender: TObject; const Str: string);override;
+   procedure   PacketCreateToSend(); override;
   public
    Pins:TPins;
    Constructor Create(CP:TComPort;Nm:string);override;
    Procedure Free;
-   procedure ComPortUsing();override;
+//   procedure ComPortUsing();override;
   end;
 
 
@@ -78,7 +93,7 @@ type
    Pins:TPins;
    fVoltageMaxValue:double;
    fKodMaxValue:integer;
-   fMessageError:string;
+//   fMessageError:string;
    fSetterKod:byte;
    procedure PacketCreateAndSend();
    function  VoltageToKod(Voltage:double):integer;virtual;
@@ -87,13 +102,14 @@ type
    procedure OutputDataSignDetermination(OutputData: Double);
    procedure CreateHook;virtual;
    function NormedKod(Kod: Integer):integer;
+   procedure   PacketCreateToSend(); override;
   public
    Constructor Create(CP:TComPort;Nm:string);override;
    Procedure Free;
    Procedure Output(Voltage:double);override;
    Procedure Reset();override;
    Procedure OutputInt(Kod:integer);override;
-   procedure ComPortUsing();override;
+//   procedure ComPortUsing();override;
   end;
 
 
@@ -216,11 +232,11 @@ end;
 
 { TArduinoMeter }
 
-procedure TArduinoMeter.ComPortUsing;
-begin
-  PacketCreate([fMetterKod,Pins.PinControl]);
-  fError:=not(PacketIsSend(fComPort,fMessageError));
-end;
+//procedure TArduinoMeter.ComPortUsing;
+//begin
+//  PacketCreate([fMetterKod,Pins.PinControl]);
+//  fError:=not(PacketIsSend(fComPort,fMessageError));
+//end;
 
 Constructor TArduinoMeter.Create(CP:TComPort;Nm:string);
 begin
@@ -238,6 +254,11 @@ procedure TArduinoMeter.Free;
 begin
  Pins.Free;
  inherited Free;
+end;
+
+procedure TArduinoMeter.PacketCreateToSend;
+begin
+ PacketCreate([fMetterKod,Pins.PinControl]);
 end;
 
 procedure TArduinoMeter.PacketReceiving(Sender: TObject; const Str: string);
@@ -323,12 +344,12 @@ end;
 
 { TArduinoDAC }
 
-procedure TArduinoDAC.ComPortUsing;
-begin
- PacketCreate(fData);
-// PacketCreate([DACR2RCommand, Pins.PinControl, Pins.PinGate, fData[0], fData[1], fData[2]]);
- PacketIsSend(fComPort, fMessageError);
-end;
+//procedure TArduinoDAC.ComPortUsing;
+//begin
+// PacketCreate(fData);
+//// PacketCreate([DACR2RCommand, Pins.PinControl, Pins.PinGate, fData[0], fData[1], fData[2]]);
+// PacketIsSend(fComPort, fMessageError);
+//end;
 
 function TArduinoDAC.NormedKod(Kod: Integer):integer;
 begin
@@ -423,6 +444,11 @@ begin
   isNeededComPortState();
 end;
 
+procedure TArduinoDAC.PacketCreateToSend;
+begin
+ PacketCreate(fData);
+end;
+
 procedure TArduinoDAC.Reset;
 begin
 // fData[2]:=DAC_Pos;
@@ -458,6 +484,33 @@ procedure TArduinoRS232Device.Free;
 begin
  Pins.Free;
  inherited Free;
+end;
+
+{ TArduinoPinChanger }
+
+constructor TArduinoPinChanger.Create(CP: TComPort; Nm: string);
+begin
+ inherited Create(CP,Nm);
+ fDeviceKod:=PinChangeCommand;
+// SetLength(fData,3);
+end;
+
+
+procedure TArduinoPinChanger.PacketCreateToSend;
+begin
+ PacketCreate([fDeviceKod,Pins.PinControl,Pins.PinGate]);
+end;
+
+procedure TArduinoPinChanger.PinChangeToHigh;
+begin
+ Pins.PinGate:=PinToHigh;
+ isNeededComPortState();
+end;
+
+procedure TArduinoPinChanger.PinChangeToLow;
+begin
+ Pins.PinGate:=PinToLow;
+ isNeededComPortState();
 end;
 
 end.

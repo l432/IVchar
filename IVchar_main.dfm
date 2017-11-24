@@ -49,10 +49,6 @@ object IVchar: TIVchar
     OnChanging = PCChanging
     object TS_Main: TTabSheet
       Caption = 'Main'
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object ChLine: TChart
         Left = 0
         Top = 0
@@ -256,7 +252,7 @@ object IVchar: TIVchar
           Top = 18
           Width = 194
           Height = 24
-          ItemHeight = 0
+          ItemHeight = 16
           TabOrder = 7
           OnChange = CBMeasurementsChange
         end
@@ -422,10 +418,6 @@ object IVchar: TIVchar
     object TS_B7_21A: TTabSheet
       Caption = 'B7_21A'
       ImageIndex = 1
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object LV721A: TLabel
         Left = 269
         Top = 19
@@ -583,10 +575,6 @@ object IVchar: TIVchar
     object TS_B7_21: TTabSheet
       Caption = 'B7_21'
       ImageIndex = 2
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object PanelV721_I: TPanel
         Left = 0
         Top = 0
@@ -697,7 +685,7 @@ object IVchar: TIVchar
           Font.Height = -21
           Font.Name = 'Arial'
           Font.Style = [fsBold]
-          ItemHeight = 0
+          ItemHeight = 24
           ParentFont = False
           TabOrder = 1
         end
@@ -868,7 +856,7 @@ object IVchar: TIVchar
           Font.Height = -21
           Font.Name = 'Arial'
           Font.Style = [fsBold]
-          ItemHeight = 0
+          ItemHeight = 24
           ParentFont = False
           TabOrder = 1
         end
@@ -943,10 +931,6 @@ object IVchar: TIVchar
       Caption = 'DAC'
       ImageIndex = 3
       TabVisible = False
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object LDACPinC: TLabel
         Left = 544
         Top = 44
@@ -1585,10 +1569,6 @@ object IVchar: TIVchar
     object TS_DACR2R: TTabSheet
       Caption = 'DAC R-2R'
       ImageIndex = 5
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object LDACR2RPinC: TLabel
         Left = 13
         Top = 60
@@ -2076,10 +2056,6 @@ object IVchar: TIVchar
     object TS_Setting: TTabSheet
       Caption = 'Setting'
       ImageIndex = 4
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object LPR: TLabel
         Left = 17
         Top = 340
@@ -2680,7 +2656,7 @@ object IVchar: TIVchar
           Font.Height = -13
           Font.Name = 'Arial'
           Font.Style = [fsBold]
-          ItemHeight = 0
+          ItemHeight = 16
           ParentFont = False
           TabOrder = 0
         end
@@ -2720,7 +2696,7 @@ object IVchar: TIVchar
           Font.Height = -13
           Font.Name = 'Arial'
           Font.Style = [fsBold]
-          ItemHeight = 0
+          ItemHeight = 16
           ParentFont = False
           TabOrder = 4
         end
@@ -2736,7 +2712,7 @@ object IVchar: TIVchar
           Font.Height = -13
           Font.Name = 'Arial'
           Font.Style = [fsBold]
-          ItemHeight = 0
+          ItemHeight = 16
           ParentFont = False
           TabOrder = 5
         end
@@ -2875,10 +2851,6 @@ object IVchar: TIVchar
     object TS_Temper: TTabSheet
       Caption = 'Temperature'
       ImageIndex = 6
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object LTMI: TLabel
         Left = 14
         Top = 119
@@ -2941,7 +2913,7 @@ object IVchar: TIVchar
           Font.Height = -21
           Font.Name = 'Arial'
           Font.Style = [fsBold]
-          ItemHeight = 0
+          ItemHeight = 24
           ParentFont = False
           TabOrder = 1
         end
@@ -2958,7 +2930,7 @@ object IVchar: TIVchar
         Font.Height = -13
         Font.Name = 'Arial'
         Font.Style = [fsBold]
-        ItemHeight = 0
+        ItemHeight = 16
         ParentFont = False
         TabOrder = 1
       end
@@ -3023,7 +2995,7 @@ object IVchar: TIVchar
           Font.Height = -13
           Font.Name = 'Arial'
           Font.Style = [fsBold]
-          ItemHeight = 0
+          ItemHeight = 16
           ParentFont = False
           TabOrder = 1
         end
@@ -3189,7 +3161,7 @@ object IVchar: TIVchar
           Font.Height = -13
           Font.Name = 'Arial'
           Font.Style = [fsBold]
-          ItemHeight = 0
+          ItemHeight = 16
           ParentFont = False
           TabOrder = 0
         end
@@ -3283,10 +3255,6 @@ object IVchar: TIVchar
     object TS_UT70: TTabSheet
       Caption = 'UT70'
       ImageIndex = 7
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object PanelUT70B: TPanel
         Left = 0
         Top = 0
@@ -3667,10 +3635,6 @@ object IVchar: TIVchar
     object TS_ET1255: TTabSheet
       Caption = 'ET1255'
       ImageIndex = 8
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object PET1255DAC: TPanel
         Left = 3
         Top = 3
@@ -3896,7 +3860,7 @@ object IVchar: TIVchar
               Font.Height = -13
               Font.Name = 'Arial'
               Font.Style = [fsBold]
-              ItemHeight = 0
+              ItemHeight = 16
               ParentFont = False
               TabOrder = 2
             end
@@ -4076,7 +4040,7 @@ object IVchar: TIVchar
               Font.Height = -13
               Font.Name = 'Arial'
               Font.Style = [fsBold]
-              ItemHeight = 0
+              ItemHeight = 16
               ParentFont = False
               TabOrder = 2
             end
@@ -4253,7 +4217,7 @@ object IVchar: TIVchar
               Font.Height = -13
               Font.Name = 'Arial'
               Font.Style = [fsBold]
-              ItemHeight = 0
+              ItemHeight = 16
               ParentFont = False
               TabOrder = 2
             end
@@ -4264,10 +4228,6 @@ object IVchar: TIVchar
     object TS_Time_Dependence: TTabSheet
       Caption = 'Time'
       ImageIndex = 9
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object LTimeInterval: TLabel
         Left = 10
         Top = 87
@@ -4320,7 +4280,7 @@ object IVchar: TIVchar
         Font.Height = -13
         Font.Name = 'Arial'
         Font.Style = [fsBold]
-        ItemHeight = 0
+        ItemHeight = 16
         ParentFont = False
         TabOrder = 1
       end
@@ -4524,7 +4484,7 @@ object IVchar: TIVchar
           Font.Height = -13
           Font.Name = 'Arial'
           Font.Style = [fsBold]
-          ItemHeight = 0
+          ItemHeight = 16
           ParentFont = False
           TabOrder = 0
         end
@@ -4554,7 +4514,7 @@ object IVchar: TIVchar
           Font.Height = -13
           Font.Name = 'Arial'
           Font.Style = [fsBold]
-          ItemHeight = 0
+          ItemHeight = 16
           ParentFont = False
           TabOrder = 2
         end
@@ -4684,7 +4644,7 @@ object IVchar: TIVchar
         Font.Height = -13
         Font.Name = 'Arial'
         Font.Style = [fsBold]
-        ItemHeight = 0
+        ItemHeight = 16
         ParentFont = False
         TabOrder = 6
       end
@@ -4707,10 +4667,6 @@ object IVchar: TIVchar
     object TS_D30_06: TTabSheet
       Caption = 'D30_06'
       ImageIndex = 10
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object LD30PinC: TLabel
         Left = 19
         Top = 188
@@ -4824,7 +4780,7 @@ object IVchar: TIVchar
         Font.Height = -21
         Font.Name = 'Arial'
         Font.Style = [fsBold]
-        ItemHeight = 0
+        ItemHeight = 24
         ParentFont = False
         TabOrder = 1
       end
@@ -4917,7 +4873,7 @@ object IVchar: TIVchar
           Font.Height = -13
           Font.Name = 'Arial'
           Font.Style = [fsBold]
-          ItemHeight = 0
+          ItemHeight = 16
           ParentFont = False
           TabOrder = 2
         end

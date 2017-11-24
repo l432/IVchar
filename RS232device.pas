@@ -13,6 +13,7 @@ const
  ID_Label='=I';
  UA_Label='~U';
  UD_Label='=U';
+ ErrorMes=' connection with ComPort is unsuccessful';
 
 var
     EventComPortFree: THandle;
@@ -28,6 +29,80 @@ TNamedDevice=class(TInterfacedObject)
    property Name:string read GetName;
   end;
 
+IRS232Device = interface
+{для пристроїв, які взаємодіють через
+СОМ-порт}
+['{410A6B6E-2C71-4231-8AA1-F9DA5063AAF5}']
+ function GetComPort:TComPort;
+ function GetComDataPacket:TComDataPacket;
+ function GetError:boolean;
+ procedure SetError(Value:boolean);
+ property ComPort:TComPort read GetComPort;
+ property ComPacket:TComDataPacket read GetComDataPacket;
+ function PortConnected():boolean;
+ property Error:boolean read GetError write SetError;
+end;
+
+IQueueRS232Device = interface (IRS232Device)
+ ['{85742E34-36E3-4320-8C9C-DFE9E3E0A8D7}']
+{ для пристроїв, які по черзі користуються
+ одним СОМ-портом}
+  function GetIsNeededComPort:boolean;
+  procedure SetIsNeededComPort(Value:boolean);
+  property isNeededComPort:boolean read GetIsNeededComPort write SetIsNeededComPort;
+  procedure ComPortUsing();
+  procedure isNeededComPortState();
+end;
+
+TRS232DeviceA=class(TNamedDevice,IRS232Device)
+  {базові функції пристроїв, які керуються
+  за допомогою COM-порту}
+  protected
+   fComPort:TComPort;
+   fComPacket: TComDataPacket;
+   fData:TArrByte;
+   fError:boolean;
+   fMessageError:string;
+   function PortConnected():boolean;
+   function GetComPort:TComPort;
+   function GetComDataPacket:TComDataPacket;
+   function GetError:boolean;
+   procedure SetError(Value:boolean);
+  public
+   property ComPort:TComPort read GetComPort;
+   property ComPacket:TComDataPacket read GetComDataPacket;
+   property Error:boolean read GetError write SetError;
+   property MessageError:string read fMessageError;
+   Constructor Create();overload;
+   Constructor Create(CP:TComPort);overload;
+   Constructor Create(CP:TComPort;Nm:string);overload;
+   Procedure Free;
+  end;
+
+TQueueRS232Device = class(TNamedDevice,IQueueRS232Device)
+  protected
+   fRS232DeviceA:TRS232DeviceA;
+   fisNeededComPort:boolean;
+   function GetIsNeededComPort:boolean;
+   procedure SetIsNeededComPort(Value:boolean);
+   function PortConnected():boolean;
+   function GetComPort:TComPort;
+   function GetComDataPacket:TComDataPacket;
+   function GetError:boolean;
+   procedure SetError(Value:boolean);
+  public
+   Constructor Create(CP:TComPort;Nm:string);
+   property isNeededComPort:boolean read GetIsNeededComPort write SetIsNeededComPort;
+   property ComPort:TComPort read GetComPort;
+   property ComPacket:TComDataPacket read GetComDataPacket;
+   property Error:boolean read GetError write SetError;
+   procedure ComPortUsing();
+   procedure isNeededComPortState();
+end;
+
+
+
+
 TRS232Device=class(TNamedDevice)
   {базовий клас для пристроїв, які керуються
   за допомогою COM-порту}
@@ -39,6 +114,7 @@ TRS232Device=class(TNamedDevice)
    fError:boolean;
    fMessageError:string;
    function PortConnected():boolean;
+   procedure  PacketCreateToSend(); virtual;
   public
    property isNeededComPort:boolean read fisNeededComPort write fisNeededComPort;
    property Error:boolean read fError;
@@ -50,7 +126,7 @@ TRS232Device=class(TNamedDevice)
    procedure isNeededComPortState();
   end;
 
-TRS232Meter=class(TRS232Device,IMeasurement)
+TRS232Meter=class(TRS232Device{TInterfacedObject},IMeasurement)
   {базовий клас для вимірювальних об'єктів,
   які використовують обмін даних з COM-портом}
   protected
@@ -105,8 +181,6 @@ TRS232Setter=class(TRS232Device,IDAC)
    procedure Output(Value:double);virtual;
    procedure OutputInt(Kod:integer); virtual;
    Procedure Reset();     virtual;
-//   function CalibrationStep(Voltage:double):double;  virtual;
-//   procedure OutputCalibr(Value:double); virtual;
  end;
 
 
@@ -187,14 +261,15 @@ end;
 
 procedure TRS232Device.ComPortUsing;
 begin
-
+  PacketCreateToSend();
+  fError:=not(PacketIsSend(fComPort,fMessageError));
 end;
 
 constructor TRS232Device.Create(CP: TComPort; Nm: string);
 begin
  Create(CP);
  fName:=Nm;
- fMessageError:=fName+' connection with ComPort is unsuccessful';
+ fMessageError:=fName+ErrorMes;
 end;
 
 procedure TRS232Device.Free;
@@ -207,6 +282,11 @@ procedure TRS232Device.isNeededComPortState;
 begin
  if WaitForSingleObject(EventComPortFree,1000)=WAIT_OBJECT_0
   then fisNeededComPort:=True;
+end;
+
+procedure TRS232Device.PacketCreateToSend;
+begin
+
 end;
 
 function TRS232Device.PortConnected: boolean;
@@ -595,6 +675,124 @@ end;
 function TNamedDevice.GetName: string;
 begin
    Result:=fName;
+end;
+
+{ TRS232DeviceA }
+
+constructor TRS232DeviceA.Create;
+begin
+  inherited Create();
+  fComPacket:=TComDataPacket.Create(fComPort);
+  fComPacket.Size:=0;
+  fComPacket.MaxBufferSize:=1024;
+  fComPacket.IncludeStrings:=False;
+  fComPacket.CaseInsensitive:=False;
+
+  fError:=False;
+end;
+
+constructor TRS232DeviceA.Create(CP: TComPort);
+begin
+ Create();
+ fComPort:=CP;
+ fComPacket.ComPort:=CP;
+end;
+
+constructor TRS232DeviceA.Create(CP: TComPort; Nm: string);
+begin
+ Create(CP);
+ fName:=Nm;
+ fMessageError:=fName+ErrorMes;
+end;
+
+procedure TRS232DeviceA.Free;
+begin
+  fComPacket.Free;
+end;
+
+function TRS232DeviceA.GetComDataPacket: TComDataPacket;
+begin
+ Result:=fComPacket;
+end;
+
+function TRS232DeviceA.GetComPort: TComPort;
+begin
+ Result:=fComPort;
+end;
+
+function TRS232DeviceA.GetError: boolean;
+begin
+ Result:=fError;
+end;
+
+function TRS232DeviceA.PortConnected: boolean;
+begin
+ if fComPort.Connected then  Result:=True
+                       else
+        begin
+          Result:=False;
+          fError:=True;
+          showmessage('Port is not connected');
+        end;
+end;
+
+procedure TRS232DeviceA.SetError(Value: boolean);
+begin
+ fError:=Value;
+end;
+
+{ TQueueRS232Device }
+
+procedure TQueueRS232Device.ComPortUsing;
+begin
+  Error:=not(PacketIsSend(ComPort,fRS232DeviceA.MessageError));
+end;
+
+constructor TQueueRS232Device.Create(CP: TComPort; Nm: string);
+begin
+ fRS232DeviceA:=TRS232DeviceA.Create(CP,Nm);
+ fisNeededComPort:=False;
+end;
+
+function TQueueRS232Device.GetComDataPacket: TComDataPacket;
+begin
+ Result:=fRS232DeviceA.GetComDataPacket;
+end;
+
+function TQueueRS232Device.GetComPort: TComPort;
+begin
+ Result:=fRS232DeviceA.GetComPort;
+end;
+
+function TQueueRS232Device.GetError: boolean;
+begin
+  Result:=fRS232DeviceA.GetError;
+end;
+
+function TQueueRS232Device.GetIsNeededComPort: boolean;
+begin
+ Result:=fisNeededComPort;
+end;
+
+procedure TQueueRS232Device.isNeededComPortState;
+begin
+ if WaitForSingleObject(EventComPortFree,1000)=WAIT_OBJECT_0
+  then fisNeededComPort:=True;
+end;
+
+function TQueueRS232Device.PortConnected: boolean;
+begin
+ Result:=fRS232DeviceA.PortConnected;
+end;
+
+procedure TQueueRS232Device.SetError(Value: boolean);
+begin
+ fRS232DeviceA.SetError(Value);
+end;
+
+procedure TQueueRS232Device.SetIsNeededComPort(Value: boolean);
+begin
+  fisNeededComPort:=Value;
 end;
 
 initialization
