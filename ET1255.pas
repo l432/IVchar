@@ -83,7 +83,7 @@ procedure ET_SetDeviceNumber(ADevn: integer); stdcall; external 'ET1255.dll';
 
 type
 
- TET1255_DAC_ChanelNumber=0..2;
+ TET1255_DAC_ChanelNumber=0..3;
 
  TET1255_DAC=class(TNamedDevice,IDAC)
  private
@@ -122,6 +122,7 @@ begin
   0:fName:='Ch0_ET1255';
   1:fName:='Ch1_ET1255';
   2:fName:='Ch2_ET1255';
+  3:fName:='Ch3_ET1255';
  end;
 end;
 

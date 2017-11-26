@@ -53,16 +53,19 @@ type
   TArduinoRS232Device=class(TRS232Device)
   protected
    fDeviceKod:byte;
-   Pins:TPins;
+
   public
+   Pins:TPins;
    Constructor Create(CP:TComPort;Nm:string);override;
    procedure Free;
   end;
 
  TArduinoPinChanger=class(TArduinoRS232Device)
   protected
+   fPinUnderControl:byte;
    procedure   PacketCreateToSend(); override;
   public
+   property PinUnderControl:byte read fPinUnderControl write fPinUnderControl;
    Constructor Create(CP:TComPort;Nm:string);override;
    procedure PinChangeToHigh();
    procedure PinChangeToLow();
@@ -146,6 +149,20 @@ type
    procedure NumberPinShow();virtual;
   end;
 
+  TArduinoPinChangerShow=class(TPinsShow)
+  protected
+   ArduinoPinChanger:TArduinoPinChanger;
+   ToChangeButton:TButton;
+   procedure CaptionButtonSynhronize();
+   procedure ToChangeButtonClick(Sender: TObject);
+  public
+   Constructor Create(APC:TArduinoPinChanger;
+                      ControlPinLabel:TLabel;
+                      SetControlButton,TCBut:TButton;
+                      PCB:TComboBox
+                      );
+
+  end;
 
 
 implementation
@@ -492,25 +509,58 @@ constructor TArduinoPinChanger.Create(CP: TComPort; Nm: string);
 begin
  inherited Create(CP,Nm);
  fDeviceKod:=PinChangeCommand;
+ SetLength(Pins.fPins,1);
+ PinUnderControl:=PinToHigh;
 // SetLength(fData,3);
 end;
 
 
 procedure TArduinoPinChanger.PacketCreateToSend;
 begin
- PacketCreate([fDeviceKod,Pins.PinControl,Pins.PinGate]);
+ PacketCreate([fDeviceKod,Pins.PinControl,PinUnderControl]);
 end;
 
 procedure TArduinoPinChanger.PinChangeToHigh;
 begin
- Pins.PinGate:=PinToHigh;
+ PinUnderControl:=PinToHigh;
  isNeededComPortState();
 end;
 
 procedure TArduinoPinChanger.PinChangeToLow;
 begin
- Pins.PinGate:=PinToLow;
+ PinUnderControl:=PinToLow;
  isNeededComPortState();
+end;
+
+{ TArduinoPinChangerShow }
+
+procedure TArduinoPinChangerShow.CaptionButtonSynhronize;
+begin
+ if ArduinoPinChanger.PinUnderControl=PinToHigh
+   then ToChangeButton.Caption:='To LOW'
+   else if ArduinoPinChanger.PinUnderControl=PinToLow
+          then  ToChangeButton.Caption:='To HIGH'
+          else  ToChangeButton.Caption:='U-u-ps';
+end;
+
+constructor TArduinoPinChangerShow.Create(APC: TArduinoPinChanger;
+                                          ControlPinLabel: TLabel;
+                                          SetControlButton, TCBut: TButton;
+                                          PCB: TComboBox);
+begin
+  inherited Create(APC.Pins,ControlPinLabel,nil,SetControlButton,nil,PCB);
+  ArduinoPinChanger:=APC;
+  ToChangeButton:=TCBut;
+  CaptionButtonSynhronize;
+  ToChangeButton.OnClick:=ToChangeButtonClick;
+end;
+
+procedure TArduinoPinChangerShow.ToChangeButtonClick(Sender: TObject);
+begin
+  if ArduinoPinChanger.PinUnderControl=PinToHigh
+    then ArduinoPinChanger.PinChangeToLow
+    else ArduinoPinChanger.PinChangeToHigh;
+  CaptionButtonSynhronize;
 end;
 
 end.

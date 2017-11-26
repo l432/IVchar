@@ -58,10 +58,12 @@ TTimeDependence=class(TDependence)
 private
   fTreadToStop:TThread;
   fBeginTime:TDateTime;
+  fSecondMeasurementTime:single;
   procedure ActionMeasurement();override;
   function BadResult:boolean;virtual;
   public
   procedure BeginMeasuring();override;
+  function TimeFromBegin:single;
 end;
 
 TTimeDependenceTread = class(TThread)
@@ -483,8 +485,10 @@ end;
 procedure TTimeDependence.ActionMeasurement;
 begin
   HookFirstMeas();
-  ftempV:=round(SecondSpan(Now(),fBeginTime)*10)/10;
+//  ftempV:=round(SecondSpan(Now(),fBeginTime)*10)/10;
+  ftempV:=TimeFromBegin();
   HookSecondMeas();
+  fSecondMeasurementTime:=TimeFromBegin();
 
 //  if (ftempV=ErResult)or(ftempI=ErResult) then
   if BadResult() then
@@ -500,7 +504,7 @@ end;
 
 function TTimeDependence.BadResult: boolean;
 begin
- Result:=(ftempV=ErResult)or(ftempI=ErResult);
+ Result:=(ftempI=ErResult);
 end;
 
 procedure TTimeDependence.BeginMeasuring;
@@ -514,6 +518,11 @@ begin
 
   fBeginTime:=Now();
   PeriodicMeasuring;
+end;
+
+function TTimeDependence.TimeFromBegin: single;
+begin
+ Result:=round(SecondSpan(Now(),fBeginTime)*10)/10;
 end;
 
 { TDependence }
@@ -678,7 +687,7 @@ end;
 
 function TTimeTwoDependenceTimer.BadResult: boolean;
 begin
-  Result:=(ftempV=ErResult)or(ftempI=ErResult)or(fSecondValue=ErResult);
+  Result:=(ftempI=ErResult)or(fSecondValue=ErResult);
 end;
 
 procedure TTimeTwoDependenceTimer.BeginMeasuring;
@@ -704,7 +713,7 @@ begin
    begin
     Results.Add(ftempV, ftempI);
     ForwLine.AddXY(ftempV, ftempI);
-    ForwLg.AddXY(ftempV, fSecondValue);
+    ForwLg.AddXY(fSecondMeasurementTime, fSecondValue);
    end
                       else
    begin
