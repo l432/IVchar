@@ -4788,9 +4788,9 @@ object IVchar: TIVchar
         ParentFont = False
         TabOrder = 8
         object LIscResult: TLabel
-          Left = 279
+          Left = 263
           Top = 45
-          Width = 92
+          Width = 139
           Height = 20
           Caption = '-0.0008'
           Font.Charset = RUSSIAN_CHARSET
@@ -4801,9 +4801,9 @@ object IVchar: TIVchar
           ParentFont = False
         end
         object LVocResult: TLabel
-          Left = 279
+          Left = 263
           Top = 93
-          Width = 92
+          Width = 139
           Height = 20
           Caption = '-0.0008'
           Font.Charset = RUSSIAN_CHARSET
@@ -4917,9 +4917,9 @@ object IVchar: TIVchar
           TabOrder = 5
         end
         object BIscMeasure: TButton
-          Left = 386
+          Left = 408
           Top = 44
-          Width = 138
+          Width = 116
           Height = 22
           Caption = 'to measure'
           Font.Charset = RUSSIAN_CHARSET
@@ -4931,9 +4931,9 @@ object IVchar: TIVchar
           TabOrder = 6
         end
         object BVocMeasure: TButton
-          Left = 386
+          Left = 408
           Top = 92
-          Width = 138
+          Width = 116
           Height = 22
           Caption = 'to measure'
           Font.Charset = RUSSIAN_CHARSET

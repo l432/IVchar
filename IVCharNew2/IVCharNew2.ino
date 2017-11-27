@@ -14,7 +14,7 @@ const byte DAC_Neg = 0xFF;
 const byte DS18B20Command = 0x5;
 const byte D30_06Command = 0x6;
 const byte PinChangeCommand = 0x7;
-const byte PinToHigh = 0x0F;
+const byte PinToHigh = 0xFF;
 const byte PinToLow = 0x0F;
 
 //For MEGA
@@ -128,8 +128,8 @@ void loop() {
       }
       
       if (DeviceId == PinChangeCommand) {
-        if (packet[2] == PinToHigh) digitalWrite(packet[1], HIGH); 
-        if (packet[2] == PinToLow)  digitalWrite(packet[1], LOW); 
+        if (packet[3] == PinToHigh) digitalWrite(PinControl, HIGH); 
+        if (packet[3] == PinToLow)  digitalWrite(PinControl, LOW); 
       }      
     }
   }

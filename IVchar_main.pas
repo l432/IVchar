@@ -1508,6 +1508,8 @@ end;
 procedure TIVchar.ActionInSaveButton(Sender: TObject);
  var Key:string;
 begin
+ Key:=CBMeasurements.Items[CBMeasurements.ItemIndex];
+
   if Key=MeasR2RCalib then
   begin
     CalibrSaveClick(Sender);
@@ -2702,7 +2704,7 @@ begin
   Isc_MD:=TMeasuringDevice.Create(Devices,CBIscMD,LIscResult,srCurrent);
   Isc_MD.AddActionButton(BIscMeasure);
   Voc_MD:=TMeasuringDevice.Create(Devices,CBVocMD,LVocResult,srPreciseVoltage);
-  Isc_MD.AddActionButton(BVocMeasure);
+  Voc_MD.AddActionButton(BVocMeasure);
 
   SetLength(Devices,High(Devices)+3);
   Devices[High(Devices)-1]:=ThermoCuple;
