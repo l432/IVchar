@@ -541,8 +541,10 @@ type
     procedure CalibrHookSetVoltage;
     procedure IVCharCurrentMeasHook;
     function IVCharCurrentMeasuring(var Current:double):boolean;
+    function IVCharVoltageMeasuring(var Voltage:double):boolean;
     procedure CalibrHookSecondMeas();
     procedure IVCharVoltageMeasHook;
+    function  IVCorrecrionNeeded(measuredV:double):boolean;
     function  IVCharVoltageMaxDif:double;
     procedure CalibrHookFirstMeas;
     procedure IVCharHookDataSave;
@@ -613,8 +615,12 @@ type
     NumberOfTemperatureMeasuring,IterationNumber: Integer;
     ItIsBegining,IsWorkingTermostat:boolean;
     Temperature
-    ,VoltageInputCorrection,VoltageMeasured
-    ,VoltageInputCorrectionN,VoltageMeasuredN:double;
+    ,VoltageMeasured
+//,VoltageMeasuredN,
+    ,VoltageInputCorrection
+//,VoltageInputCorrectionN
+       :double;
+    VoltageLimit:boolean;
     DoubleConstantShows:array of TParameterShow1;
     Imax,Imin,R_VtoI,Shift_VtoI:double;
     IVMeasuring,CalibrMeasuring:TIVDependence;
@@ -1088,20 +1094,24 @@ begin
  Result:=False;
  Application.ProcessMessages;
  if TIVDependence.IVMeasuringToStop then Exit;
- Current := Current_MD.GetMeasurementResult();
-// ****************************
- if CBVtoI.Checked then
-  begin
-   Current:=(current-Shift_VtoI)/R_VtoI;
-   LADCurrentValue.Caption:=FloatToStrF(Current,ffExponent, 4, 2);
-  end;
 
-//*********************************
+ Current := Current_MD.GetMeasurementResult();
+
  if Current=ErResult then
   begin
    TDependence.tempIChange(Current);
    Exit;
   end;
+
+ // ****************************
+ if CBVtoI.Checked then
+  begin
+   Current:=(Current-Shift_VtoI)/R_VtoI;
+   LADCurrentValue.Caption:=FloatToStrF(Current,ffExponent, 4, 2);
+  end;
+
+//*********************************
+
  if RGDO.ItemIndex=1 then
       begin
          Current:=-Current;
@@ -1110,13 +1120,35 @@ begin
  Result:=True;
 end;
 
+//procedure TIVchar.IVCharHookAction;
+// var Cor:double;
+//begin
+// VoltageInputCorrection:=ErResult;
+// VoltageMeasured:=ErResult;
+// VoltageInputCorrectionN:=ErResult;
+// VoltageMeasuredN:=ErResult;
+//
+// if CBPC.Checked then
+// begin
+//   if TIVDependence.ItIsForward then
+//    Cor:=VolCorrection.Yvalue(TIVDependence.VoltageInput)
+//                                       else
+//    Cor:=VolCorrection.Yvalue(-TIVDependence.VoltageInput);
+//   if Cor<>ErResult then
+//     TIVDependence.VoltageCorrectionChange(Cor)
+// end;
+// IterationNumber:=0;
+//end;
+
+
 procedure TIVchar.IVCharHookAction;
- var Cor:double;
+ var Cor,Iprognoz:double;
 begin
- VoltageInputCorrection:=ErResult;
- VoltageMeasured:=ErResult;
- VoltageInputCorrectionN:=ErResult;
- VoltageMeasuredN:=ErResult;
+ VoltageInputCorrection:=0;
+ VoltageMeasured:=0;
+ VoltageLimit:=False;
+// VoltageInputCorrectionN:=ErResult;
+// VoltageMeasuredN:=ErResult;
 
  if CBPC.Checked then
  begin
@@ -1126,9 +1158,42 @@ begin
     Cor:=VolCorrection.Yvalue(-TIVDependence.VoltageInput);
    if Cor<>ErResult then
      TIVDependence.VoltageCorrectionChange(Cor)
+ end
+                else
+ begin
+  if (IVResult^.n>1)and
+   (IVResult^.X[IVResult^.n-2]*IVResult^.X[IVResult^.n-1]>=0)and
+    (IVResult^.Y[IVResult^.n-1]<>0)
+   then
+    begin
+      if TIVDependence.ItIsForward then
+       Iprognoz:=Y_X0(IVResult^.X[IVResult^.n-2],
+                      IVResult^.Y[IVResult^.n-2],
+                      IVResult^.X[IVResult^.n-1],
+                      IVResult^.Y[IVResult^.n-1],
+                      TIVDependence.VoltageInput)
+                                    else
+       Iprognoz:=Y_X0(IVResult^.X[IVResult^.n-2],
+                      IVResult^.Y[IVResult^.n-2],
+                      IVResult^.X[IVResult^.n-1],
+                      IVResult^.Y[IVResult^.n-1],
+                      -TIVDependence.VoltageInput);
+      if CBVtoI.Checked
+        then Cor:=Iprognoz*R_VtoI
+        else Cor:=TIVDependence.VoltageCorrection*Iprognoz/IVResult^.Y[IVResult^.n-1];
+      TIVDependence.VoltageCorrectionChange(Cor);
+    end;
+
  end;
+
+
  IterationNumber:=0;
+
+//SettingDevice.Reset;
+//sleep(1000);
 end;
+
+
 
 procedure TIVchar.CalibrHookSecondMeas();
 begin
@@ -1163,6 +1228,9 @@ end;
 
 procedure TIVchar.CBMeasurementsChange(Sender: TObject);
 begin
+ RevLine.Clear;
+ RevLg.Clear;
+
  if (CBMeasurements.Items[CBMeasurements.ItemIndex]=MeasR2RCalib)
      or(CBMeasurements.Items[CBMeasurements.ItemIndex]=MeasIV)
      then
@@ -1298,92 +1366,260 @@ begin
     end;
 end;
 
+//procedure TIVchar.IVCharVoltageMeasHook;
+//  var
+//    tmV,MaxDif,NewCorrection,Factor{,V}:double;
+//  ItIsLarge,CorrectionIsNeeded: Boolean;
+// label bbegin;
+//
+//  function y3(x1,x2,x3,y1,y2:double):double;
+//  begin
+//    Result:=x3*(y1-y2)/(x1-x2)+(y2*x1-y1*x2)/(x1-x2);
+//  end;
+//
+//begin
+//  MaxDif:=IVCharVoltageMaxDif();
+//
+//bbegin:
+//  Application.ProcessMessages;
+//  if TIVDependence.IVMeasuringToStop then Exit;
+//  tmV := VoltageIV_MD.GetMeasurementResult();
+//  if tmV=ErResult then
+//    begin
+//     TDependence.tempVChange(tmV);
+//     Exit;
+//    end;
+//
+//  if RGDO.ItemIndex=1 then
+//     begin
+//     tmV:=-tmV;
+//     LADVoltageValue.Caption:=FloatToStrF(tmV,ffFixed, 4, 3);
+//     end;
+//
+//
+//  if TIVDependence.ItIsForward then
+//   CorrectionIsNeeded:=(abs(tmV-TIVDependence.VoltageInput)>=MaxDif)
+//                                       else
+//  CorrectionIsNeeded:=(abs(abs(tmV)-TIVDependence.VoltageInput)>=MaxDif);
+//
+//  if CorrectionIsNeeded then
+//   begin
+//    TIVDependence.SecondMeasIsDoneChange(False);
+//
+//    if (not(TIVDependence.ItIsForward))and(TIVDependence.VoltageInput<>0) then
+//                  tmV:=abs(tmV);
+//    ItIsLarge:=(tmV>TIVDependence.VoltageInput);
+//
+//    if (ItIsLarge)and(abs(-VoltageMeasuredN+tmV)<0.25*MaxDif) then
+//     begin
+//      Randomize;
+//      NewCorrection:=0.15*Random;
+//      VoltageMeasured:=ErResult;
+//      VoltageInputCorrection:=ErResult;
+//      TIVDependence.VoltageCorrectionChange(NewCorrection);
+//      Exit;
+//     end;
+//
+//    if (not(ItIsLarge))and(abs(VoltageMeasured-tmV)<0.25*MaxDif) then
+//     begin
+//      Randomize;
+//      NewCorrection:=0.15*Random;
+//      VoltageMeasuredN:=ErResult;
+//      VoltageInputCorrectionN:=ErResult;
+//      TIVDependence.VoltageCorrectionChange(NewCorrection);
+//      Exit;
+//     end;
+//
+//   if ItIsLarge then Factor:=1
+//                else Factor:=2.5;
+//   if tmV>(TIVDependence.VoltageInput+TIVDependence.VoltageCorrection)
+//     then
+//   if ItIsLarge then Factor:=1.2
+//                else Factor:=0.8;
+//   inc(IterationNumber);
+//   if (IterationNumber mod 7)=0 then
+//   begin
+//    Randomize;
+//    Factor:=Factor*Random;
+//   end;
+//
+//   NewCorrection:=TIVDependence.VoltageCorrection+
+//                     Factor*(TIVDependence.VoltageInput-tmV);
+//
+//    if abs(NewCorrection)>0.3 then NewCorrection:=0.1*NewCorrection/NewCorrection;
+//
+//
+//    TIVDependence.VoltageCorrectionChange(NewCorrection);
+//    Exit;
+//   end;
+//  TDependence.tempVChange(tmV);
+//end;
+
+
 procedure TIVchar.IVCharVoltageMeasHook;
   var
-    tmV,MaxDif,NewCorrection,Factor{,V}:double;
-  ItIsLarge,CorrectionIsNeeded: Boolean;
- label bbegin;
-
-  function y3(x1,x2,x3,y1,y2:double):double;
-  begin
-    Result:=x3*(y1-y2)/(x1-x2)+(y2*x1-y1*x2)/(x1-x2);
-  end;
+    tmV,NewCorrection,Factor,tempI,Rpribor:double;
+  ItIsLarge{,CorrectionIsNeeded}: Boolean;
 
 begin
-  MaxDif:=IVCharVoltageMaxDif();
 
-bbegin:
   Application.ProcessMessages;
   if TIVDependence.IVMeasuringToStop then Exit;
-  tmV := VoltageIV_MD.GetMeasurementResult();
-  if tmV=ErResult then
+
+  if not(IVCharVoltageMeasuring(tmV)) then Exit;
+
+//  CorrectionIsNeeded:=IVCorrecrionNeeded(tmV);
+
+  if IVCorrecrionNeeded(tmV) then
+   begin
+    TIVDependence.SecondMeasIsDoneChange(False);
+
+    VoltageMeasured:=tmV;
+
+    if (not(TIVDependence.ItIsForward))and(TIVDependence.VoltageInput<>0)
+       then tmV:=abs(tmV);
+    ItIsLarge:=(tmV>TIVDependence.VoltageInput);
+
+
+    inc(IterationNumber);
+    if (CBPC.Checked)and(IterationNumber=1)
+     then
+      begin
+//       showmessage(floattostr(tmV-TIVDependence.VoltageInput));
+       if abs(tmV-TIVDependence.VoltageInput)>0.02 then
+        begin
+//         IVCharCurrentMeasuring(tempI);
+         VoltageInputCorrection:=TIVDependence.VoltageCorrection;
+         TIVDependence.VoltageCorrectionChange(TIVDependence.VoltageCorrection+0.2);
+         VoltageLimit:=True;
+        end;
+       Exit;
+      end;
+
+    if VoltageLimit and(IterationNumber=2)
+     then
+      begin
+//       IVCharCurrentMeasuring(tempI);
+//       showmessage('jjj');
+       TIVDependence.VoltageCorrectionChange(VoltageInputCorrection);
+       VoltageInputCorrection:=0;
+       Exit;
+      end;
+
+
+
+   if ItIsLarge then Factor:=1
+//                else Factor:=2.5;
+                else Factor:=2;
+
+   if tmV>(TIVDependence.VoltageInput+TIVDependence.VoltageCorrection)
+     then
+       if ItIsLarge then Factor:=1.2
+                    else Factor:=0.8;
+
+
+   if (IterationNumber mod 13)=0 then
+   begin
+    Randomize;
+    Factor:=Factor*Random;
+    VoltageInputCorrection:=VoltageInputCorrection*Random;
+   end;
+
+
+   NewCorrection:=TIVDependence.VoltageCorrection+
+                     Factor*(TIVDependence.VoltageInput-tmV);
+
+   if not(ItIsLarge) then
     begin
-     TDependence.tempVChange(tmV);
+     VoltageInputCorrection:=TIVDependence.VoltageCorrection;
+//     VoltageMeasured:=tmV;
+     if (IVResult^.n>1)and
+        (IVResult^.X[IVResult^.n-1]*TIVDependence.VoltageInputReal>=0)and
+        (not(IVCharCurrentMeasuring(tempI)))
+        then
+        begin
+          if tempI<>0 then
+           begin
+             if CBVtoI.Checked then Rpribor:=R_VtoI
+                               else Rpribor:=(abs(TIVDependence.VoltageInputReal)-tmV)/tempI;
+
+             if TIVDependence.ItIsForward then
+                NewCorrection:=Rpribor*
+                             Y_X0(IVResult^.X[IVResult^.n-1],
+                               IVResult^.Y[IVResult^.n-1],
+                               tmV,tempI,
+                               TIVDependence.VoltageInput)
+                                       else
+             NewCorrection:=Rpribor*
+                             Y_X0(IVResult^.X[IVResult^.n-1],
+                               IVResult^.Y[IVResult^.n-1],
+                               -tmV,tempI,
+                               -TIVDependence.VoltageInput);
+           end;
+        end;
+    end;
+
+
+   if (IterationNumber>1)and(VoltageInputCorrection<>0) then
+     if ItIsLarge then
+      begin
+       if abs(VoltageMeasured-TIVDependence.VoltageInput)>abs(tmV-TIVDependence.VoltageInput)
+        then  NewCorrection:=VoltageInputCorrection+
+              0.7*(TIVDependence.VoltageCorrection-VoltageInputCorrection)
+        else
+           NewCorrection:=VoltageInputCorrection+
+             0.2*(TIVDependence.VoltageCorrection-VoltageInputCorrection);
+      end;
+
+
+
+
+    if (abs(NewCorrection)>0.3)and
+       (TIVDependence.VoltageInput<0.3)
+         then NewCorrection:=0.1*NewCorrection/NewCorrection;
+
+//    showmessage(inttostr(IVResult^.n));
+    if  (IVResult^.n>1)and
+        (IVResult^.X[IVResult^.n-1]*IVResult^.Y[IVResult^.n-1]>=0)and
+        (NewCorrection<-0.02)
+        then NewCorrection:=-0.02;
+
+    TIVDependence.VoltageCorrectionChange(NewCorrection);
+
+
+    Exit;
+   end;
+  TDependence.tempVChange(tmV);
+end;
+
+function TIVchar.IVCharVoltageMeasuring(var Voltage: double): boolean;
+begin
+  Result:=False;
+
+  Voltage := VoltageIV_MD.GetMeasurementResult();
+  if Voltage=ErResult then
+    begin
+     TDependence.tempVChange(Voltage);
      Exit;
     end;
 
   if RGDO.ItemIndex=1 then
      begin
-     tmV:=-tmV;
-     LADVoltageValue.Caption:=FloatToStrF(tmV,ffFixed, 4, 3);
+     Voltage:=-Voltage;
+     LADVoltageValue.Caption:=FloatToStrF(Voltage,ffFixed, 4, 3);
      end;
+  Result:=True;
+end;
 
-
+function TIVchar.IVCorrecrionNeeded(measuredV:double): boolean;
+ var MaxDif:double;
+begin
+  MaxDif:=IVCharVoltageMaxDif();
   if TIVDependence.ItIsForward then
-   CorrectionIsNeeded:=(abs(tmV-TIVDependence.VoltageInput)>=MaxDif)
+   Result:=(abs(measuredV-TIVDependence.VoltageInput)>=MaxDif)
                                        else
-  CorrectionIsNeeded:=(abs(abs(tmV)-TIVDependence.VoltageInput)>=MaxDif);
+   Result:=(abs(measuredV+TIVDependence.VoltageInput)>=MaxDif);
 
-  if CorrectionIsNeeded then
-   begin
-    TIVDependence.SecondMeasIsDoneChange(False);
-
-    if (not(TIVDependence.ItIsForward))and(TIVDependence.VoltageInput<>0) then
-                  tmV:=abs(tmV);
-    ItIsLarge:=(tmV>TIVDependence.VoltageInput);
-
-    if (ItIsLarge)and(abs(-VoltageMeasuredN+tmV)<0.25*MaxDif) then
-     begin
-      Randomize;
-      NewCorrection:=0.15*Random;
-      VoltageMeasured:=ErResult;
-      VoltageInputCorrection:=ErResult;
-      TIVDependence.VoltageCorrectionChange(NewCorrection);
-      Exit;
-     end;
-
-    if (not(ItIsLarge))and(abs(VoltageMeasured-tmV)<0.25*MaxDif) then
-     begin
-      Randomize;
-      NewCorrection:=0.15*Random;
-      VoltageMeasuredN:=ErResult;
-      VoltageInputCorrectionN:=ErResult;
-      TIVDependence.VoltageCorrectionChange(NewCorrection);
-      Exit;
-     end;
-
-   if ItIsLarge then Factor:=1
-                else Factor:=2.5;
-   if tmV>(TIVDependence.VoltageInput+TIVDependence.VoltageCorrection)
-     then
-   if ItIsLarge then Factor:=1.2
-                else Factor:=0.8;
-   inc(IterationNumber);
-   if (IterationNumber mod 7)=0 then
-   begin
-    Randomize;
-    Factor:=Factor*Random;
-   end;
-
-   NewCorrection:=TIVDependence.VoltageCorrection+
-                     Factor*(TIVDependence.VoltageInput-tmV);
-
-    if abs(NewCorrection)>0.3 then NewCorrection:=0.1*NewCorrection/NewCorrection;
-
-    TIVDependence.VoltageCorrectionChange(NewCorrection);
-    Exit;
-   end;
-  TDependence.tempVChange(tmV);
 end;
 
 procedure TIVchar.LimitsToLabel(LimitShow,LimitShowRev:TLimitShow);
@@ -2563,10 +2799,15 @@ end;
 
 procedure TIVchar.HookEndReset;
 begin
-  SettingDevice.ActiveInterface.Reset;
-//  if TIVDependence.IVMeasuringToStop then
+//  Application.ProcessMessages;
+  SettingDevice.ActiveInterface.Reset();
+
+//  Application.ProcessMessages;
+//  BDACReset.OnClick(BDACReset);
+  //  if TIVDependence.IVMeasuringToStop then
 //    showmessage('Procedure is stopped');
-    showmessage('Measurement is done');
+    sleep(1000);
+//    showmessage('Measurement is done');
 end;
 
 procedure TIVchar.SaveDialogPrepare;

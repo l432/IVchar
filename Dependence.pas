@@ -214,8 +214,8 @@ begin
   inherited BeginMeasuring;
   CBForw.Enabled:=False;
   CBRev.Enabled:=False;
-  ForwLine.Clear;
-  ForwLg.Clear;
+  RevLine.Clear;
+  RevLg.Clear;
 end;
 
 constructor TIVDependence.Create(
