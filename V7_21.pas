@@ -27,7 +27,8 @@ const
     '1 mA','10 mA','100 mA','1000 mA',
      '10 mV','100 mV','1 V','10 V','100 V','1000 V');
 
-
+  TimeToMeasurement=100;
+  LongTimeToMeasurement=300;
 
 type
   TVoltmetr=class(TArduinoMeter)
@@ -131,7 +132,7 @@ function TVoltmetr.GetData(): double;
       Result:=(a+b)/2
      else
       begin
-        sleep(100);
+        sleep(TimeToMeasurement);
         c:=Measurement();
         Result:=MedianFiltr(a,b,c);
       end;
@@ -143,14 +144,14 @@ begin
   if not(PortConnected) then Exit;
 
  a:=Measurement();
- sleep(100);
+ sleep(TimeToMeasurement);
  b:=Measurement();
  Result:=AditionMeasurement(a,b);
  if Result=0 then
    begin
-     sleep(300);
+     sleep(LongTimeToMeasurement);
      a:=Measurement();
-     sleep(100);
+     sleep(TimeToMeasurement);
      b:=Measurement();
      Result:=AditionMeasurement(a,b);
    end;

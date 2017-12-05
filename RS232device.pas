@@ -159,6 +159,7 @@ TRS232Meter=class(TRS232Device{TInterfacedObject},IMeasurement)
    property isReceived:boolean read fIsReceived write fIsReceived;
    property MinDelayTime:integer read  fMinDelayTime;
    property MeasureModeLabel:string read MeasureModeLabelRead;
+   property Diapazon:Shortint read fDiapazon;
    Constructor Create(CP:TComPort;Nm:string);override;
    Procedure ConvertToValue();virtual;
    Function ResultProblem(Rez:double):boolean;virtual;

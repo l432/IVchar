@@ -173,6 +173,9 @@ TIVMeasurementResult=class
     FDeltaToExpected: double;
     FisLarge: boolean;
     FisLargeToApplied: boolean;
+    FCurrentDiapazon: ShortInt;
+    FCorrection: double;
+    FisEmpty: boolean;
     procedure SetCurrentMeasured(const Value: double);
     procedure SetDeltaToExpected(const Value: double);
     procedure SetDeltaToApplied(const Value: double);
@@ -180,6 +183,9 @@ TIVMeasurementResult=class
     procedure SetisLarge(const Value: boolean);
     procedure SetisLargeToApplied(const Value: boolean);
     function GetRpribor:double;
+    procedure SetCurrentDiapazon(const Value: ShortInt);
+    procedure SetCorrection(const Value: double);
+    procedure SetisEmpty(const Value: boolean);
   public
   property VoltageMeasured:double read FVoltageMeasured write SetVoltageMeasured;
   property CurrentMeasured:double read FCurrentMeasured write SetCurrentMeasured;
@@ -187,11 +193,15 @@ TIVMeasurementResult=class
   property DeltaToApplied:double read FDeltaToApplied write SetDeltaToApplied;
   property isLarge:boolean read FisLarge write SetisLarge;
   property isLargeToApplied:boolean read FisLargeToApplied write SetisLargeToApplied;
+  property CurrentDiapazon:ShortInt read FCurrentDiapazon write SetCurrentDiapazon;
+  property Correction:double read FCorrection write SetCorrection;
   property Rpribor:double read GetRpribor;
+  property isEmpty:boolean read FisEmpty write SetisEmpty;
 
   procedure FromVoltageMeasurement();
   procedure FromCurrentMeasurement();
   procedure CopyTo(AnotherIVMR:TIVMeasurementResult);
+  procedure SwapTo(AnotherIVMR:TIVMeasurementResult);
 end;
 
 implementation
@@ -781,6 +791,9 @@ begin
  AnotherIVMR.DeltaToApplied:=FDeltaToApplied;
  AnotherIVMR.isLarge:=FisLarge;
  AnotherIVMR.isLargeToApplied:=FisLargeToApplied;
+ AnotherIVMR.CurrentDiapazon:=FCurrentDiapazon;
+ AnotherIVMR.Correction:=FCorrection;
+ AnotherIVMR.isEmpty:=False;
 end;
 
 procedure TIVMeasurementResult.FromCurrentMeasurement;
@@ -791,6 +804,7 @@ end;
 procedure TIVMeasurementResult.FromVoltageMeasurement;
 begin
  FVoltageMeasured:=ftempV;
+ FCorrection:=fVoltageCorrection;
  DeltaToApplied:=FVoltageMeasured-TIVDependence.VoltageInputReal;
  isLargeToApplied:=abs(FVoltageMeasured)>abs(TIVDependence.VoltageInputReal);
  if TIVDependence.ItIsForward then
@@ -813,6 +827,16 @@ begin
    else Result:=ErResult;
 end;
 
+procedure TIVMeasurementResult.SetCorrection(const Value: double);
+begin
+  FCorrection := Value;
+end;
+
+procedure TIVMeasurementResult.SetCurrentDiapazon(const Value: ShortInt);
+begin
+  FCurrentDiapazon := Value;
+end;
+
 procedure TIVMeasurementResult.SetCurrentMeasured(const Value: double);
 begin
   FCurrentMeasured := Value;
@@ -828,6 +852,11 @@ begin
   FDeltaToApplied := Value;
 end;
 
+procedure TIVMeasurementResult.SetisEmpty(const Value: boolean);
+begin
+  FisEmpty := Value;
+end;
+
 procedure TIVMeasurementResult.SetisLarge(const Value: boolean);
 begin
   FisLarge := Value;
@@ -841,6 +870,16 @@ end;
 procedure TIVMeasurementResult.SetVoltageMeasured(const Value: double);
 begin
   FVoltageMeasured := Value;
+end;
+
+procedure TIVMeasurementResult.SwapTo(AnotherIVMR: TIVMeasurementResult);
+ var tempIVMR:TIVMeasurementResult;
+begin
+ tempIVMR:=TIVMeasurementResult.Create;
+ Self.CopyTo(tempIVMR);
+ AnotherIVMR.CopyTo(Self);
+ tempIVMR.CopyTo(AnotherIVMR);
+ tempIVMR.Free;
 end;
 
 initialization

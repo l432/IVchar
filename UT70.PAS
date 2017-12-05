@@ -7,7 +7,7 @@ uses
 
 
 type
-  TUT70_MeasurementType=(CUR,MAX,MIN,AVE);
+  TUT70_MeasurementType=(CUR,MAXX,MINN,AVE);
   {що саме показує мультиметр:
   поточне значення (CUR), максимальне(MAX),
   мінімальне (MIN) чи середнє(AVE)}
@@ -716,14 +716,14 @@ begin
       b:=((Data[2] shr 3) and $03);
       if fms1 then
          case b of
-          0:fMeasurementType:=MAX;
-          1:fMeasurementType:=MIN;
+          0:fMeasurementType:=MAXX;
+          1:fMeasurementType:=MINN;
          end{case b of}
             else
          case b of
           0:fMeasurementType:=CUR;
-          1:fMeasurementType:=MAX;
-          2:fMeasurementType:=MIN;
+          1:fMeasurementType:=MAXX;
+          2:fMeasurementType:=MINN;
           3:fMeasurementType:=AVE;
          end;
     end   else fMeasurementType:=CUR;
