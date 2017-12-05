@@ -155,7 +155,7 @@ public
   class function VoltageInput:double;
   class procedure VoltageInputChange(Value: double);
   class function VoltageInputReal:double;
-  class procedure VoltageInputRealChange(Value: double);
+//  class procedure VoltageInputRealChange(Value: double);
   class function VoltageStep:double;
   class procedure VoltageStepChange(Value: double);
   class function VoltageCorrection:double;
@@ -164,6 +164,35 @@ public
   class procedure DelayTimeChange(Value: integer);
 end;
 
+
+TIVMeasurementResult=class
+  private
+    FDeltaToApplied: double;
+    FCurrentMeasured: double;
+    FVoltageMeasured: double;
+    FDeltaToExpected: double;
+    FisLarge: boolean;
+    FisLargeToApplied: boolean;
+    procedure SetCurrentMeasured(const Value: double);
+    procedure SetDeltaToExpected(const Value: double);
+    procedure SetDeltaToApplied(const Value: double);
+    procedure SetVoltageMeasured(const Value: double);
+    procedure SetisLarge(const Value: boolean);
+    procedure SetisLargeToApplied(const Value: boolean);
+    function GetRpribor:double;
+  public
+  property VoltageMeasured:double read FVoltageMeasured write SetVoltageMeasured;
+  property CurrentMeasured:double read FCurrentMeasured write SetCurrentMeasured;
+  property DeltaToExpected:double read FDeltaToExpected write SetDeltaToExpected;
+  property DeltaToApplied:double read FDeltaToApplied write SetDeltaToApplied;
+  property isLarge:boolean read FisLarge write SetisLarge;
+  property isLargeToApplied:boolean read FisLargeToApplied write SetisLargeToApplied;
+  property Rpribor:double read GetRpribor;
+
+  procedure FromVoltageMeasurement();
+  procedure FromCurrentMeasurement();
+  procedure CopyTo(AnotherIVMR:TIVMeasurementResult);
+end;
 
 implementation
 
@@ -387,7 +416,8 @@ end;
 
 class procedure TIVDependence.VoltageCorrectionChange(Value: double);
 begin
- fVoltageCorrection:=Value;
+ if Value<>ErResult then
+     fVoltageCorrection:=Value;
 end;
 
 class function TIVDependence.VoltageInput: double;
@@ -405,10 +435,10 @@ begin
   Result:=fVoltageInputReal;
 end;
 
-class procedure TIVDependence.VoltageInputRealChange(Value: double);
-begin
-  fVoltageInputReal:=Value;
-end;
+//class procedure TIVDependence.VoltageInputRealChange(Value: double);
+//begin
+//  fVoltageInputReal:=Value;
+//end;
 
 class function TIVDependence.VoltageStep: double;
 begin
@@ -739,6 +769,78 @@ end;
 class procedure TTimeTwoDependenceTimer.SecondValueChange(Value: double);
 begin
  fSecondValue:=Value;
+end;
+
+{ TIVMeasurementResult }
+
+procedure TIVMeasurementResult.CopyTo(AnotherIVMR: TIVMeasurementResult);
+begin
+ AnotherIVMR.VoltageMeasured:=FVoltageMeasured;
+ AnotherIVMR.CurrentMeasured:=FCurrentMeasured;
+ AnotherIVMR.DeltaToExpected:=FDeltaToExpected;
+ AnotherIVMR.DeltaToApplied:=FDeltaToApplied;
+ AnotherIVMR.isLarge:=FisLarge;
+ AnotherIVMR.isLargeToApplied:=FisLargeToApplied;
+end;
+
+procedure TIVMeasurementResult.FromCurrentMeasurement;
+begin
+ FCurrentMeasured:=ftempI;
+end;
+
+procedure TIVMeasurementResult.FromVoltageMeasurement;
+begin
+ FVoltageMeasured:=ftempV;
+ DeltaToApplied:=FVoltageMeasured-TIVDependence.VoltageInputReal;
+ isLargeToApplied:=abs(FVoltageMeasured)>abs(TIVDependence.VoltageInputReal);
+ if TIVDependence.ItIsForward then
+   begin
+   DeltaToExpected:=FVoltageMeasured-TIVDependence.VoltageInput;
+   isLarge:=(FVoltageMeasured>TIVDependence.VoltageInput);
+   end
+                              else
+   begin
+   DeltaToExpected:=-FVoltageMeasured-TIVDependence.VoltageInput;
+   isLarge:=(FVoltageMeasured<-TIVDependence.VoltageInput);
+   end;
+
+end;
+
+function TIVMeasurementResult.GetRpribor: double;
+begin
+ if abs(FCurrentMeasured)>1e-11
+   then Result:=abs(fDeltaToApplied/FCurrentMeasured)
+   else Result:=ErResult;
+end;
+
+procedure TIVMeasurementResult.SetCurrentMeasured(const Value: double);
+begin
+  FCurrentMeasured := Value;
+end;
+
+procedure TIVMeasurementResult.SetDeltaToExpected(const Value: double);
+begin
+  FDeltaToExpected := Value;
+end;
+
+procedure TIVMeasurementResult.SetDeltaToApplied(const Value: double);
+begin
+  FDeltaToApplied := Value;
+end;
+
+procedure TIVMeasurementResult.SetisLarge(const Value: boolean);
+begin
+  FisLarge := Value;
+end;
+
+procedure TIVMeasurementResult.SetisLargeToApplied(const Value: boolean);
+begin
+  FisLargeToApplied := Value;
+end;
+
+procedure TIVMeasurementResult.SetVoltageMeasured(const Value: double);
+begin
+  FVoltageMeasured := Value;
 end;
 
 initialization
