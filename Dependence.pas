@@ -202,12 +202,13 @@ TIVMeasurementResult=class
   procedure FromCurrentMeasurement();
   procedure CopyTo(AnotherIVMR:TIVMeasurementResult);
   procedure SwapTo(AnotherIVMR:TIVMeasurementResult);
+//  Constructor Create();
 end;
 
 implementation
 
 uses
-  SysUtils, Forms, Windows, Math, DateUtils;
+  SysUtils, Forms, Windows, Math, DateUtils, Dialogs;
 
 var
   fItIsForward:boolean;
@@ -581,22 +582,19 @@ end;
 
 procedure TDependence.BeginMeasuring;
 begin
+
   fIVMeasuringToStop:=False;
   ProgressBar.Max := MeasurementNumberDetermine();
   DecimalSeparator:='.';
-
   ProgressBar.Position := 0;
   ButtonStop.Enabled:=True;
-
   fPointNumber:=0;
   ProgressBar.Position := fPointNumber;
   SetLenVector(Results,fPointNumber);
-
   ForwLine.Clear;
   ForwLg.Clear;
   ForwLg.ParentChart.Axes.Left.Logarithmic:=True;
   ForwLg.ParentChart.Axes.Left.LogarithmicBase:=10;
-
   FisActive:=True;
 
   HookBeginMeasuring();
@@ -795,6 +793,11 @@ begin
  AnotherIVMR.Correction:=FCorrection;
  AnotherIVMR.isEmpty:=False;
 end;
+
+//constructor TIVMeasurementResult.Create;
+//begin
+// inherited;
+//end;
 
 procedure TIVMeasurementResult.FromCurrentMeasurement;
 begin

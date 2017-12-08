@@ -49,10 +49,6 @@ object IVchar: TIVchar
     OnChanging = PCChanging
     object TS_Main: TTabSheet
       Caption = 'Main'
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object ChLine: TChart
         Left = 0
         Top = 0
@@ -255,8 +251,8 @@ object IVchar: TIVchar
           Left = 9
           Top = 18
           Width = 194
-          Height = 27
-          ItemHeight = 0
+          Height = 24
+          ItemHeight = 16
           TabOrder = 7
           OnChange = CBMeasurementsChange
         end
@@ -540,7 +536,7 @@ object IVchar: TIVchar
         Left = 424
         Top = 239
         Width = 92
-        Height = 41
+        Height = 32
         Style = csDropDownList
         Font.Charset = RUSSIAN_CHARSET
         Font.Color = clWindowText
@@ -594,7 +590,6 @@ object IVchar: TIVchar
         Height = 201
         Align = alTop
         TabOrder = 0
-        ExplicitWidth = 780
         object LV721IPin: TLabel
           Left = 540
           Top = 85
@@ -691,7 +686,7 @@ object IVchar: TIVchar
           Left = 555
           Top = 122
           Width = 93
-          Height = 41
+          Height = 32
           Style = csDropDownList
           Font.Charset = RUSSIAN_CHARSET
           Font.Color = clWindowText
@@ -766,8 +761,6 @@ object IVchar: TIVchar
         Height = 201
         Align = alBottom
         TabOrder = 1
-        ExplicitTop = 210
-        ExplicitWidth = 780
         object LV721IIPin: TLabel
           Left = 5
           Top = 90
@@ -864,7 +857,7 @@ object IVchar: TIVchar
           Left = 5
           Top = 122
           Width = 92
-          Height = 41
+          Height = 32
           Style = csDropDownList
           Font.Charset = RUSSIAN_CHARSET
           Font.Color = clWindowText
@@ -946,10 +939,6 @@ object IVchar: TIVchar
       Caption = 'DAC'
       ImageIndex = 3
       TabVisible = False
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object LDACPinC: TLabel
         Left = 544
         Top = 44
@@ -1095,7 +1084,7 @@ object IVchar: TIVchar
           Left = 8
           Top = 106
           Width = 109
-          Height = 33
+          Height = 26
           Style = csDropDownList
           Font.Charset = RUSSIAN_CHARSET
           Font.Color = clWindowText
@@ -1226,7 +1215,7 @@ object IVchar: TIVchar
             Left = 3
             Top = 103
             Width = 111
-            Height = 27
+            Height = 24
             Style = csDropDownList
             ItemHeight = 0
             TabOrder = 2
@@ -1252,7 +1241,7 @@ object IVchar: TIVchar
         Left = 674
         Top = 8
         Width = 93
-        Height = 41
+        Height = 32
         Style = csDropDownList
         Font.Charset = RUSSIAN_CHARSET
         Font.Color = clWindowText
@@ -1432,7 +1421,7 @@ object IVchar: TIVchar
           Left = 8
           Top = 106
           Width = 109
-          Height = 33
+          Height = 26
           Style = csDropDownList
           Font.Charset = RUSSIAN_CHARSET
           Font.Color = clWindowText
@@ -1563,7 +1552,7 @@ object IVchar: TIVchar
             Left = 3
             Top = 103
             Width = 111
-            Height = 27
+            Height = 24
             Style = csDropDownList
             ItemHeight = 0
             TabOrder = 2
@@ -1588,10 +1577,6 @@ object IVchar: TIVchar
     object TS_DACR2R: TTabSheet
       Caption = 'DAC R-2R'
       ImageIndex = 5
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object LDACR2RPinC: TLabel
         Left = 13
         Top = 60
@@ -1679,7 +1664,7 @@ object IVchar: TIVchar
         Left = 10
         Top = 16
         Width = 93
-        Height = 41
+        Height = 32
         Style = csDropDownList
         Font.Charset = RUSSIAN_CHARSET
         Font.Color = clWindowText
@@ -1814,7 +1799,7 @@ object IVchar: TIVchar
           Left = 10
           Top = 117
           Width = 132
-          Height = 27
+          Height = 24
           Style = csDropDownList
           Font.Charset = RUSSIAN_CHARSET
           Font.Color = clWindowText
@@ -2573,6 +2558,7 @@ object IVchar: TIVchar
           ComPort = ComPort1
           ComProperty = cpPort
           AutoApply = True
+          Text = 'COM1'
           Style = csDropDownList
           Font.Charset = RUSSIAN_CHARSET
           Font.Color = clWindowText
@@ -2580,7 +2566,7 @@ object IVchar: TIVchar
           Font.Name = 'Arial'
           Font.Style = [fsBold]
           ItemHeight = 18
-          ItemIndex = -1
+          ItemIndex = 0
           ParentFont = False
           TabOrder = 0
         end
@@ -2592,6 +2578,7 @@ object IVchar: TIVchar
           ComPort = ComPort1
           ComProperty = cpBaudRate
           AutoApply = True
+          Text = '115200'
           Style = csDropDownList
           Font.Charset = RUSSIAN_CHARSET
           Font.Color = clWindowText
@@ -2599,7 +2586,7 @@ object IVchar: TIVchar
           Font.Name = 'Arial'
           Font.Style = [fsBold]
           ItemHeight = 18
-          ItemIndex = -1
+          ItemIndex = 13
           ParentFont = False
           TabOrder = 1
         end
@@ -2676,7 +2663,7 @@ object IVchar: TIVchar
           Left = 9
           Top = 41
           Width = 132
-          Height = 27
+          Height = 24
           Style = csDropDownList
           Font.Charset = RUSSIAN_CHARSET
           Font.Color = clWindowText
@@ -2716,7 +2703,7 @@ object IVchar: TIVchar
           Left = 180
           Top = 41
           Width = 132
-          Height = 27
+          Height = 24
           Style = csDropDownList
           Font.Charset = RUSSIAN_CHARSET
           Font.Color = clWindowText
@@ -2732,7 +2719,7 @@ object IVchar: TIVchar
           Left = 180
           Top = 106
           Width = 132
-          Height = 27
+          Height = 24
           Style = csDropDownList
           Font.Charset = RUSSIAN_CHARSET
           Font.Color = clWindowText
@@ -2878,10 +2865,6 @@ object IVchar: TIVchar
     object TS_Temper: TTabSheet
       Caption = 'Temperature'
       ImageIndex = 6
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object LTMI: TLabel
         Left = 14
         Top = 119
@@ -2937,7 +2920,7 @@ object IVchar: TIVchar
           Left = 52
           Top = 56
           Width = 93
-          Height = 41
+          Height = 32
           Style = csDropDownList
           Font.Charset = RUSSIAN_CHARSET
           Font.Color = clWindowText
@@ -2954,7 +2937,7 @@ object IVchar: TIVchar
         Left = 14
         Top = 41
         Width = 132
-        Height = 27
+        Height = 24
         Style = csDropDownList
         Font.Charset = RUSSIAN_CHARSET
         Font.Color = clWindowText
@@ -3019,7 +3002,7 @@ object IVchar: TIVchar
           Left = 26
           Top = 56
           Width = 132
-          Height = 27
+          Height = 24
           Style = csDropDownList
           Font.Charset = RUSSIAN_CHARSET
           Font.Color = clWindowText
@@ -3185,7 +3168,7 @@ object IVchar: TIVchar
           Left = 8
           Top = 40
           Width = 132
-          Height = 27
+          Height = 24
           Style = csDropDownList
           Font.Charset = RUSSIAN_CHARSET
           Font.Color = clWindowText
@@ -3297,7 +3280,6 @@ object IVchar: TIVchar
         Height = 201
         Align = alTop
         TabOrder = 0
-        ExplicitWidth = 780
         object LUT70B: TLabel
           Left = 212
           Top = 0
@@ -3441,6 +3423,7 @@ object IVchar: TIVchar
           ComPort = ComPortUT70B
           ComProperty = cpPort
           AutoApply = True
+          Text = 'COM1'
           Style = csDropDownList
           Font.Charset = RUSSIAN_CHARSET
           Font.Color = clWindowText
@@ -3448,7 +3431,7 @@ object IVchar: TIVchar
           Font.Name = 'Arial'
           Font.Style = [fsBold]
           ItemHeight = 18
-          ItemIndex = -1
+          ItemIndex = 0
           ParentFont = False
           TabOrder = 5
         end
@@ -3460,7 +3443,6 @@ object IVchar: TIVchar
         Height = 201
         Align = alTop
         TabOrder = 1
-        ExplicitWidth = 780
         object LUT70C: TLabel
           Left = 212
           Top = 0
@@ -3656,6 +3638,7 @@ object IVchar: TIVchar
           ComPort = ComPortUT70C
           ComProperty = cpPort
           AutoApply = True
+          Text = 'COM1'
           Style = csDropDownList
           Font.Charset = RUSSIAN_CHARSET
           Font.Color = clWindowText
@@ -3663,7 +3646,7 @@ object IVchar: TIVchar
           Font.Name = 'Arial'
           Font.Style = [fsBold]
           ItemHeight = 18
-          ItemIndex = -1
+          ItemIndex = 0
           ParentFont = False
           TabOrder = 5
         end
@@ -3672,10 +3655,6 @@ object IVchar: TIVchar
     object TS_ET1255: TTabSheet
       Caption = 'ET1255_DAC'
       ImageIndex = 8
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object PET1255DAC: TPanel
         Left = 3
         Top = 3
@@ -3894,7 +3873,7 @@ object IVchar: TIVchar
               Left = 8
               Top = 67
               Width = 132
-              Height = 27
+              Height = 24
               Style = csDropDownList
               Font.Charset = RUSSIAN_CHARSET
               Font.Color = clWindowText
@@ -4074,7 +4053,7 @@ object IVchar: TIVchar
               Left = 8
               Top = 67
               Width = 132
-              Height = 27
+              Height = 24
               Style = csDropDownList
               Font.Charset = RUSSIAN_CHARSET
               Font.Color = clWindowText
@@ -4251,7 +4230,7 @@ object IVchar: TIVchar
               Left = 8
               Top = 67
               Width = 132
-              Height = 27
+              Height = 24
               Style = csDropDownList
               Font.Charset = RUSSIAN_CHARSET
               Font.Color = clWindowText
@@ -4380,10 +4359,6 @@ object IVchar: TIVchar
     object TS_Time_Dependence: TTabSheet
       Caption = 'Time'
       ImageIndex = 9
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object LTimeInterval: TLabel
         Left = 10
         Top = 87
@@ -4429,14 +4404,14 @@ object IVchar: TIVchar
         Left = 15
         Top = 44
         Width = 132
-        Height = 27
+        Height = 24
         Style = csDropDownList
         Font.Charset = RUSSIAN_CHARSET
         Font.Color = clWindowText
         Font.Height = -13
         Font.Name = 'Arial'
         Font.Style = [fsBold]
-        ItemHeight = 0
+        ItemHeight = 16
         ParentFont = False
         TabOrder = 1
       end
@@ -4633,14 +4608,14 @@ object IVchar: TIVchar
           Left = 8
           Top = 114
           Width = 132
-          Height = 27
+          Height = 24
           Style = csDropDownList
           Font.Charset = RUSSIAN_CHARSET
           Font.Color = clWindowText
           Font.Height = -13
           Font.Name = 'Arial'
           Font.Style = [fsBold]
-          ItemHeight = 0
+          ItemHeight = 16
           ParentFont = False
           TabOrder = 0
         end
@@ -4663,14 +4638,14 @@ object IVchar: TIVchar
           Left = 8
           Top = 52
           Width = 132
-          Height = 27
+          Height = 24
           Style = csDropDownList
           Font.Charset = RUSSIAN_CHARSET
           Font.Color = clWindowText
           Font.Height = -13
           Font.Name = 'Arial'
           Font.Style = [fsBold]
-          ItemHeight = 0
+          ItemHeight = 16
           ParentFont = False
           TabOrder = 2
         end
@@ -4793,14 +4768,14 @@ object IVchar: TIVchar
         Left = 10
         Top = 242
         Width = 131
-        Height = 27
+        Height = 24
         Style = csDropDownList
         Font.Charset = RUSSIAN_CHARSET
         Font.Color = clWindowText
         Font.Height = -13
         Font.Name = 'Arial'
         Font.Style = [fsBold]
-        ItemHeight = 0
+        ItemHeight = 16
         ParentFont = False
         TabOrder = 6
       end
@@ -4878,14 +4853,14 @@ object IVchar: TIVchar
           Left = 64
           Top = 71
           Width = 133
-          Height = 27
+          Height = 24
           Style = csDropDownList
           Font.Charset = RUSSIAN_CHARSET
           Font.Color = clWindowText
           Font.Height = -13
           Font.Name = 'Arial'
           Font.Style = [fsBold]
-          ItemHeight = 0
+          ItemHeight = 16
           ParentFont = False
           TabOrder = 0
         end
@@ -4908,14 +4883,14 @@ object IVchar: TIVchar
           Left = 64
           Top = 34
           Width = 133
-          Height = 27
+          Height = 24
           Style = csDropDownList
           Font.Charset = RUSSIAN_CHARSET
           Font.Color = clWindowText
           Font.Height = -13
           Font.Name = 'Arial'
           Font.Style = [fsBold]
-          ItemHeight = 0
+          ItemHeight = 16
           ParentFont = False
           TabOrder = 2
         end
@@ -4994,14 +4969,14 @@ object IVchar: TIVchar
           Left = 12
           Top = 129
           Width = 94
-          Height = 41
+          Height = 32
           Style = csDropDownList
           Font.Charset = RUSSIAN_CHARSET
           Font.Color = clWindowText
           Font.Height = -21
           Font.Name = 'Arial'
           Font.Style = [fsBold]
-          ItemHeight = 0
+          ItemHeight = 24
           ParentFont = False
           TabOrder = 8
         end
@@ -5148,7 +5123,7 @@ object IVchar: TIVchar
         Left = 16
         Top = 135
         Width = 92
-        Height = 41
+        Height = 32
         Style = csDropDownList
         Font.Charset = RUSSIAN_CHARSET
         Font.Color = clWindowText
@@ -5241,7 +5216,7 @@ object IVchar: TIVchar
           Left = 10
           Top = 117
           Width = 132
-          Height = 27
+          Height = 24
           Style = csDropDownList
           Font.Charset = RUSSIAN_CHARSET
           Font.Color = clWindowText

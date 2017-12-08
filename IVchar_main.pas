@@ -862,9 +862,9 @@ begin
     TemperData.DeleteErResult;
     if TemperData.n>0 then
        Temperature:=TemperData.SumY/TemperData.n;
-    IVMeasResult.Free;
-    IVMRFirst.Free;
-    IVMRSecond.Free;
+//    IVMeasResult.Free;
+//    IVMRFirst.Free;
+//    IVMRSecond.Free;
   end;
 
  BIVSave.OnClick:=ActionInSaveButton;
@@ -953,6 +953,9 @@ begin
 //  TimeTwoDependenceTimer.HookEndMeasuring:=TimeTwoDHookEnd;
 //  ControlParameterTime.HookEndMeasuring:=TimeDHookEnd;
 //  TemperatureOnTime.HookEndMeasuring:=TimeDHookEnd;
+  IVMeasResult:=TIVMeasurementResult.Create;
+  IVMRFirst:=TIVMeasurementResult.Create;
+  IVMRSecond:=TIVMeasurementResult.Create;
 end;
 
 procedure TIVchar.DependenceMeasuringFree;
@@ -964,6 +967,11 @@ begin
   IscVocOnTime.Free;
   ControlParameterTime.Free;
   TemperatureOnTime.Free;
+
+    IVMeasResult.Free;
+    IVMRFirst.Free;
+    IVMRSecond.Free;
+
 end;
 
 procedure TIVchar.RangesFree;
@@ -1024,9 +1032,9 @@ begin
       Temperature:=Temperature_MD.GetMeasurementResult;
       TemperData.Add(0,Temperature);
     end;
-  IVMeasResult:=TIVMeasurementResult.Create;
-  IVMRFirst:=TIVMeasurementResult.Create;
-  IVMRSecond:=TIVMeasurementResult.Create;
+//  IVMeasResult:=TIVMeasurementResult.Create;
+//  IVMRFirst:=TIVMeasurementResult.Create;
+//  IVMRSecond:=TIVMeasurementResult.Create;
 end;
 
 procedure TIVchar.HookBegin;
@@ -1509,7 +1517,7 @@ begin
       end;
 
 
-    IVOldFactorDetermination(Factor);
+   IVOldFactorDetermination(Factor);
 
 
    if (IterationNumber mod 13)=0 then
@@ -1522,6 +1530,40 @@ begin
 
    NewCorrection:=TIVDependence.VoltageCorrection-
                      Factor*IVMeasResult.DeltaToExpected;
+
+//++++++++++++++++++++++++++++++++++++++++++
+   if abs(IVMeasResult.DeltaToApplied)>0.02
+   then
+    begin
+
+      if IVMeasResult.Correction>0
+      then if IVMeasResult.isLarge
+           then NewCorrection:=IVMeasResult.Correction*0.3
+           else NewCorrection:=IVMeasResult.Correction*2;
+    end
+   else
+    begin
+     if IVCharCurrentMeasuring()
+     then
+      begin
+       NewCorrection:=IVForeseeCorrection();
+
+       if ((IVMeasResult.CurrentDiapazon=IVMRFirst.CurrentDiapazon))
+           and
+          (abs(IVMeasResult.DeltaToApplied)<abs(IVMRFirst.DeltaToApplied))
+       then IVMeasResult.CopyTo(IVMRFirst);
+
+       if ((IVMeasResult.CurrentDiapazon<>IVMRFirst.CurrentDiapazon))
+           and
+          (abs(IVMeasResult.DeltaToApplied)<abs(IVMRSecond.DeltaToApplied))
+       then IVMeasResult.CopyTo(IVMRSecond);
+
+      end;
+    end;
+
+//++++++++++++++++++++++++++++++++++++++++++++
+
+
 
 //**********************************************
    if (not(IVMeasResult.isLarge))and(IVCharCurrentMeasuring())
@@ -1643,8 +1685,10 @@ end;
 procedure TIVchar.IVMRFilling;
 begin
  IVMRSecond.isEmpty:=True;
+ IVMRSecond.DeltaToExpected:=ErResult;
  IVMRFirst.isEmpty:=True;
  IVMeasResult.isEmpty:=True;
+ IVMeasResult.DeltaToExpected:=ErResult;
 
  if (IVResult^.n<1) then Exit;
 
@@ -1953,7 +1997,8 @@ begin
       begin
        IVResult.Sorting;
        IVResult.DeleteDuplicate;
-       Write_File(SaveDialog.FileName,IVResult);
+//       Write_File(SaveDialog.FileName,IVResult);
+       ToFileFromTwoVector(SaveDialog.FileName,IVResult,VolCorrectionNew);
        LTLastValue.Caption:=FloatToStrF(Temperature,ffFixed, 5, 2);
        SaveCommentsFile(SaveDialog.FileName);
       end;
@@ -2769,7 +2814,7 @@ begin
     begin
     IsWorkingTermostat:=True;
     IsPID_Termostat_Created:=False;
-    SBControlBegin.Caption:='Stop Controling';
+    SBTermostat.Caption:='Stop Controling';
     if not(SBTAuto.Down) then
         begin
         SBTAuto.Down:=True;
@@ -2779,7 +2824,7 @@ begin
                  else
     begin
     IsWorkingTermostat:=False;
-    SBControlBegin.Caption:='Start Controling';
+    SBTermostat.Caption:='Start Controling';
     if assigned(PID_Termostat) then PID_Termostat.Free;
     IsPID_Termostat_Created:=False;
     end;
@@ -3222,6 +3267,7 @@ begin
     ET1255_DAC_MD[2].ReadFromIniFile(ConfigFile,MD_IniSection,'ET1255_DAC_Ch2');
   end;
   TimeD_MD.ReadFromIniFile(ConfigFile,MD_IniSection,'Time Dependence');
+  TimeD_MD2.ReadFromIniFile(ConfigFile,MD_IniSection,'Time Dependence Two');
   Control_MD.ReadFromIniFile(ConfigFile,MD_IniSection,'Control setup');
 end;
 
@@ -3246,6 +3292,7 @@ begin
     ET1255_DAC_MD[2].WriteToIniFile(ConfigFile,MD_IniSection,'ET1255_DAC_Ch2');
   end;
   TimeD_MD.WriteToIniFile(ConfigFile,MD_IniSection,'Time Dependence');
+  TimeD_MD2.WriteToIniFile(ConfigFile,MD_IniSection,'Time Dependence Two');
   Control_MD.WriteToIniFile(ConfigFile,MD_IniSection,'Control setup');
 end;
 
@@ -3269,15 +3316,14 @@ end;
 
 procedure TIVchar.IVOldFactorDetermination(var Factor: Double);
 begin
-  if IVMeasResult.isLarge then
-    Factor := 1
-  else
-    Factor := 2;
-  if IVMeasResult.isLargeToApplied then
-    if IVMeasResult.isLarge then
-      Factor := 1.2
-    else
-      Factor := 0.8;
+  if IVMeasResult.isLarge
+  then Factor := 1
+  else Factor := 2;
+
+  if IVMeasResult.isLargeToApplied
+  then if IVMeasResult.isLarge
+       then Factor := 1.2
+       else Factor := 0.8;
 end;
 
 procedure TIVchar.IVVoltageInputSignDetermine;
