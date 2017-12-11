@@ -21,14 +21,6 @@ var
 
 type
 
-TNamedDevice=class(TInterfacedObject)
-  protected
-   fName:string;
-   function GetName:string;
-  public
-   property Name:string read GetName;
-  end;
-
 IRS232Device = interface
 {для пристроїв, які взаємодіють через
 СОМ-порт}
@@ -671,12 +663,7 @@ begin
  Output(0);
 end;
 
-{ TNamedDevice }
 
-function TNamedDevice.GetName: string;
-begin
-   Result:=fName;
-end;
 
 { TRS232DeviceA }
 

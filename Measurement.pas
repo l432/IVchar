@@ -27,6 +27,14 @@ IName = interface
   property Name:string read GetName;
 end;
 
+TNamedDevice=class(TInterfacedObject)
+  protected
+   fName:string;
+   function GetName:string;
+  public
+   property Name:string read GetName;
+  end;
+
 IMeasurement = interface (IName)
   ['{7A6DCE4C-9A04-444A-B7FD-39B800BDE6A7}']
  function GetNewData:boolean;
@@ -636,6 +644,13 @@ procedure TPID.SetPeriod(const Value: double);
 begin
   if Value>0 then FPeriod := Value
              else fPeriod :=1;
+end;
+
+{ TNamedDevice }
+
+function TNamedDevice.GetName: string;
+begin
+   Result:=fName;
 end;
 
 end.
