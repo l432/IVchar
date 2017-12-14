@@ -3,7 +3,7 @@ unit Measurement;
 interface
 
 uses
-  StdCtrls, IniFiles, Messages;
+  StdCtrls, IniFiles, Messages, Classes, ExtCtrls, Buttons;
 
 Const
    WM_MyMeasure=WM_USER+1;
@@ -55,12 +55,6 @@ IDAC = interface (IName)
  {встановлює на виході напругу, яка відповідає Kod}
  Procedure Reset();
  {встановлює на виході 0}
-
- // function CalibrationStep(Voltage:double):double;
-// {визначає крок при процедурі калібрування залежно від величини напруги Voltage}
-// procedure OutputCalibr(Value:double);
-// {встановлює на виході напругу Value під час калібрування}
-
  property OutputValue:double read GetOutputValue;
 end;
 
@@ -103,72 +97,10 @@ public
  function GetData:double;
  procedure Output(Value:double);
  Procedure Reset();
-// function CalibrationStep(Voltage:double):double;
-// procedure OutputCalibr(Value:double);
  procedure OutputInt(Kod:integer);
  procedure GetDataThread(WPARAM: word;EventEnd:THandle);
  procedure GetTemperatureThread(EventEnd:THandle);
  procedure Free;
-end;
-
-TDevice=class
-private
- DevicesComboBox:TComboBox;
-public
- Constructor Create(DevCB:TComboBox);
- procedure ReadFromIniFile(ConfigFile:TIniFile;const Section, Ident: string);
- procedure WriteToIniFile(ConfigFile:TIniFile;const Section, Ident: string);
-end;
-
-TMeasuringStringResult=(srCurrent,srVoltge,srPreciseVoltage);
- {клас, який визначає як виводити на мітку результати виміру}
-
-TMeasuringDevice =class(TDevice)
-private
- fSetOfInterface:array of IMeasurement;
- fStringResult:TMeasuringStringResult;
- ResultIndicator:TLabel;
- ActionButton:TButton;
- procedure ActionButtonOnClick(Sender: TObject);
- function GetResult():double;virtual;
- function GetActiveInterface():IMeasurement;
-public
- property ActiveInterface:IMeasurement read GetActiveInterface;
- Constructor Create(const SOI:array of IMeasurement;
-                    DevCB:TComboBox;
-                    RI:TLabel;
-                    SR:TMeasuringStringResult);
- function GetMeasurementResult():double;
- procedure AddActionButton(AB:TButton);
- procedure Add(IO:IMeasurement);
-end;
-
-TSettingDevice =class(TDevice)
-private
- fSetOfInterface:array of IDAC;
- function GetActiveInterface():IDAC;
-public
- property ActiveInterface:IDAC read GetActiveInterface;
- Constructor Create(const SOI:array of IDAC;
-                    DevCB:TComboBox);
- procedure SetValue(Value:double);
- procedure Reset();
-// function CalibrationStep(Voltage:double):double;
-// procedure SetValueCalibr(Value:double);
-end;
-
-TTemperature_MD =class(TDevice)
-private
- fSetOfInterface:array of ITemperatureMeasurement;
- ResultIndicator:TLabel;
- function GetResult():double;virtual;
- function GetActiveInterface():ITemperatureMeasurement;
-public
- property ActiveInterface:ITemperatureMeasurement read GetActiveInterface;
- Constructor Create(const SOI:array of ITemperatureMeasurement;
-                    DevCB:TComboBox;
-                    RI:TLabel);
- function GetMeasurementResult():double;
 end;
 
 TDAC_Show=class
@@ -189,41 +121,79 @@ TDAC_Show=class
                       KSB, RB: TButton);
 end;
 
-
-TPID=class
-  private
-    FKi: double;
-    FKd: double;
-    FKp: double;
-    FPeriod: double;
-    FNeeded: double;
-    EpsSum:double;
-    Epsi:array[0..1]of double;
-    fOutputValue:double;
-    procedure SetKd(const Value: double);
-    procedure SetKi(const Value: double);
-    procedure SetKp(const Value: double);
-    procedure SetPeriod(const Value: double);
-    procedure SetNeeded(const Value: double);
-    procedure DeviationCalculation(CurrentValue:double);
-
- public
-   property Kp:double read FKp write SetKp;
-   property Ki:double read FKi write SetKi;
-   property Kd:double read FKd write SetKd;
-   property Period:double read FPeriod write SetPeriod;
-   property Needed:double read FNeeded write SetNeeded;
-   property OutputValue:double read fOutputValue;
-   Constructor Create(Kpp,Kii,Kdd,T,NeededValue:double);
-   function ControlingSignal(CurrentValue:double):double;
+TMeasurementShow=class
+  protected
+   fMeter:IMeasurement;
+   MeasureMode,Range:TRadioGroup;
+   DataLabel,UnitLabel:TLabel;
+   MeasurementButton:TButton;
+   Time:TTimer;
+//   AdapterMeasureMode,AdapterRange:TAdapterRadioGroupClick;
+   procedure MeasurementButtonClick(Sender: TObject);
+   procedure AutoSpeedButtonClick(Sender: TObject);
+   procedure DiapazonFill;virtual;abstract;
+   procedure MeasureModeFill;virtual;abstract;
+   procedure HookMeasureModeFill();virtual;
+   procedure StringArrayToRadioGroup(SA:array of string;
+                                     RG:TRadioGroup);
+   procedure IndexToRadioGroup(Index:ShortInt;RG:TRadioGroup);
+   function UnitModeLabel():string;virtual;
+  public
+   AutoSpeedButton:TSpeedButton;
+   Constructor Create(Meter:IMeasurement;
+                      MM,R:TRadioGroup;
+                      DL,UL:TLabel;
+                      MB:TButton;
+                      AB:TSpeedButton;
+                      TT:TTimer
+                      );
+//   Procedure Free; virtual;
+   procedure MetterDataShow();virtual;
 end;
+
+
+
+ TTheadSleep = class(TThread)
+  protected
+    FEventTerminate: THandle;
+  public
+    constructor Create;
+    destructor Destroy; override;
+    procedure Terminate;
+    procedure _Sleep(AMilliSeconds: Cardinal);
+  end;
+
+ TTheadCycle = class(TTheadSleep)
+  private
+  protected
+    fInterval:int64;
+    procedure DoSomething;virtual;
+  public
+    constructor Create(Interval:double);
+    procedure Execute; override;
+  end;
+
+  TMeasuringTread=class(TTheadSleep)
+  private
+   fWPARAM: word;
+   fEventEnd:THandle;
+   procedure NewData();
+  protected
+   fMeasurement:IMeasurement;
+   procedure ExuteBegin;virtual;abstract;
+   procedure Execute; override;
+  public
+   constructor Create(Meter:IMeasurement;WPARAM: word; EventEnd: THandle);
+  end;
+
+
 
 
 
 implementation
 
 uses
-  SysUtils, OlegType,Dialogs, Graphics, Windows;
+  SysUtils, OlegType,Dialogs, Graphics, Windows, Forms, DateUtils;
 
 { Simulator }
 
@@ -322,78 +292,6 @@ begin
  fNewData:=Value;
 end;
 
-{ TDevice }
-
-constructor TDevice.Create(DevCB: TComboBox);
-begin
- inherited Create;
- DevicesComboBox:=DevCB;
- DevicesComboBox.Clear;
-end;
-
-procedure TDevice.ReadFromIniFile(ConfigFile: TIniFile; const Section,
-  Ident: string);
-  var index:integer;
-begin
-  index:=ConfigFile.ReadInteger(Section, Ident, 0);
-  if index>=DevicesComboBox.Items.Count
-     then DevicesComboBox.ItemIndex:=0
-     else DevicesComboBox.ItemIndex:=index;
-
-//  DevicesComboBox.ItemIndex:=ConfigFile.ReadInteger(Section, Ident, 0);
-
-end;
-
-
-procedure TDevice.WriteToIniFile(ConfigFile: TIniFile; const Section,
-  Ident: string);
-begin
-  WriteIniDef(ConfigFile,Section, Ident,DevicesComboBox.ItemIndex,0);
-end;
-
-{ TSettingDevice }
-
-//function TSettingDevice.CalibrationStep(Voltage: double): double;
-//begin
-// Result:=0.01;
-// ActiveInterface.CalibrationStep(Voltage);
-//end;
-
-constructor TSettingDevice.Create(const SOI: array of IDAC; DevCB: TComboBox);
-var I: Integer;
-begin
- inherited Create(DevCB);
- if High(SOI)<0 then Exit;
- SetLength(fSetOfInterface,High(SOI)+1);
- for I := 0 to High(SOI) do
-  begin
-   DevicesComboBox.Items.Add(SOI[i].Name);
-   fSetOfInterface[i]:=SOI[i];
-  end;
- if DevicesComboBox.Items.Count>0 then DevicesComboBox.ItemIndex:=0;
-end;
-
-function TSettingDevice.GetActiveInterface: IDAC;
-begin
-  if DevicesComboBox=nil
-   then Result:=nil
-   else Result:=fSetOfInterface[DevicesComboBox.ItemIndex];
-end;
-
-procedure TSettingDevice.Reset;
-begin
- ActiveInterface.Reset;
-end;
-
-procedure TSettingDevice.SetValue(Value: double);
-begin
- ActiveInterface.Output(Value);
-end;
-
-//procedure TSettingDevice.SetValueCalibr(Value: double);
-//begin
-//ActiveInterface.OutputCalibr(Value);
-//end;
 
 { TDAC_Show }
 
@@ -472,185 +370,202 @@ begin
    KodLabel.Font.Color:=clBlack;
 end;
 
-{ TMeasuringDevice }
-
-procedure TMeasuringDevice.ActionButtonOnClick(Sender: TObject);
-begin
- try
-   GetMeasurementResult();
- except
- end;
-end;
-
-procedure TMeasuringDevice.Add(IO: IMeasurement);
-begin
- SetLength(fSetOfInterface,High(fSetOfInterface)+2);
- fSetOfInterface[High(fSetOfInterface)]:=IO;
- DevicesComboBox.Items.Add(fSetOfInterface[High(fSetOfInterface)].Name);
-end;
-
-procedure TMeasuringDevice.AddActionButton(AB: TButton);
-begin
- ActionButton:=AB;
- ActionButton.OnClick:=ActionButtonOnClick;
-end;
-
-constructor TMeasuringDevice.Create(const SOI: array of IMeasurement;
-                                    DevCB: TComboBox; RI: TLabel;
-                                    SR:TMeasuringStringResult);
-var I: Integer;
-begin
- inherited Create(DevCB);
- if High(SOI)<0 then Exit;
- SetLength(fSetOfInterface,High(SOI)+1);
- for I := 0 to High(SOI) do
-  begin
-   DevicesComboBox.Items.Add(SOI[i].Name);
-   fSetOfInterface[i]:=SOI[i];
-  end;
- if DevicesComboBox.Items.Count>0 then DevicesComboBox.ItemIndex:=0;
-
- ResultIndicator:=RI;
- fStringResult:=SR;
-end;
-
-function TMeasuringDevice.GetActiveInterface: IMeasurement;
-begin
- if DevicesComboBox=nil
-   then Result:=nil
-   else Result:=fSetOfInterface[DevicesComboBox.ItemIndex];
-end;
-
-function TMeasuringDevice.GetMeasurementResult(): double;
-begin
- try
- Result:=GetResult();
- if ResultIndicator<>nil then
-    case FStringResult of
-      srCurrent: ResultIndicator.Caption:=FloatToStrF(Result,ffExponent, 4, 2);
-      srVoltge:  ResultIndicator.Caption:=FloatToStrF(Result,ffFixed, 4, 3);
-      srPreciseVoltage:ResultIndicator.Caption:=FloatToStrF(Result,ffFixed, 6, 4);
-    end;
- finally
-
- end;
-end;
-
-function TMeasuringDevice.GetResult(): double;
-begin
- Result:=GetActiveInterface.GetData();
-end;
-
-{ TTemperature_MD }
-
-constructor TTemperature_MD.Create(const SOI: array of ITemperatureMeasurement;
-                                   DevCB: TComboBox; RI: TLabel);
-var I: Integer;
-begin
- inherited Create(DevCB);
- if High(SOI)<0 then Exit;
- SetLength(fSetOfInterface,High(SOI)+1);
- for I := 0 to High(SOI) do
-  begin
-   DevicesComboBox.Items.Add(SOI[i].Name);
-   fSetOfInterface[i]:=SOI[i];
-  end;
- if DevicesComboBox.Items.Count>0 then DevicesComboBox.ItemIndex:=0;
-
- ResultIndicator:=RI;
-end;
-
-function TTemperature_MD.GetActiveInterface: ITemperatureMeasurement;
-begin
- if DevicesComboBox=nil
-   then Result:=nil
-   else Result:=fSetOfInterface[DevicesComboBox.ItemIndex];
-end;
-
-function TTemperature_MD.GetMeasurementResult: double;
-begin
- try
- Result:=GetResult();
- if ResultIndicator<>nil then
-    ResultIndicator.Caption:=FloatToStrF(Result,ffFixed, 5, 2);
- finally
-
- end;
-end;
-
-function TTemperature_MD.GetResult: double;
-begin
-   Result:=GetActiveInterface.GetTemperature();
-end;
-
-{ TPID }
-
-function TPID.ControlingSignal(CurrentValue: double): double;
-begin
- if CurrentValue=ErResult then
-    begin
-     fOutputValue:=0;
-    end                   else
-    begin
-     DeviationCalculation(CurrentValue);
-     fOutputValue:=Kp*(Epsi[1]+Ki*Period*EpsSum+Kd/Period*(Epsi[1]-Epsi[0]));
-    end;
- Result:=fOutputValue;
-end;
-
-constructor TPID.Create(Kpp, Kii, Kdd, T, NeededValue: double);
-begin
-  inherited Create;
-  Kp:=Kpp;
-  Ki:=Kii;
-  Period:=T;
-  Needed:=NeededValue;
-  EpsSum:=0;
-  Epsi[0]:=0;
-  Epsi[1]:=0;
-  Kd:=Kdd;
-end;
-
-procedure TPID.DeviationCalculation(CurrentValue: double);
- var eps:double;
-begin
- eps:=FNeeded-CurrentValue;
- EpsSum:=EpsSum+eps;
- Epsi[0]:=Epsi[1];
- Epsi[1]:=eps;
-end;
-
-procedure TPID.SetKd(const Value: double);
-begin
-  FKd := Value;
-end;
-
-procedure TPID.SetKi(const Value: double);
-begin
-  FKi := Value;
-end;
-
-procedure TPID.SetKp(const Value: double);
-begin
-  FKp := Value;
-end;
-
-procedure TPID.SetNeeded(const Value: double);
-begin
-  FNeeded := Value;
-end;
-
-procedure TPID.SetPeriod(const Value: double);
-begin
-  if Value>0 then FPeriod := Value
-             else fPeriod :=1;
-end;
 
 { TNamedDevice }
 
 function TNamedDevice.GetName: string;
 begin
    Result:=fName;
+end;
+
+
+{ TTheadPeriodic }
+
+constructor TTheadSleep.Create;
+begin
+  inherited Create(True);
+  FreeOnTerminate := True;
+  Self.Priority := tpNormal;
+
+  FEventTerminate := CreateEvent(nil, False, False, nil);
+end;
+
+destructor TTheadSleep.Destroy;
+begin
+  CloseHandle(FEventTerminate);
+  inherited;
+end;
+
+
+procedure TTheadSleep.Terminate;
+begin
+  SetEvent(FEventTerminate);
+  inherited Terminate;
+end;
+
+procedure TTheadSleep._Sleep(AMilliSeconds: Cardinal);
+begin
+ WaitForSingleObject(FEventTerminate, AMilliSeconds);
+end;
+
+{ TTheadCycle }
+
+constructor TTheadCycle.Create(Interval: double);
+begin
+ inherited Create();
+ fInterval:=abs(round(1000*Interval));
+end;
+
+procedure TTheadCycle.DoSomething;
+begin
+
+end;
+
+procedure TTheadCycle.Execute;
+var
+  t: TDateTime;
+  k: Int64;
+begin
+  while (not Terminated) and (not Application.Terminated) do
+  begin
+    t := Now();
+    DoSomething;
+    k := fInterval - Round(MilliSecondSpan(Now(), t));
+    if k>0 then
+      _Sleep(k);
+  end;
+end;
+
+{ TMeasuringTread }
+
+constructor TMeasuringTread.Create(Meter: IMeasurement; WPARAM: word;
+  EventEnd: THandle);
+begin
+  inherited Create();
+  fMeasurement := Meter;
+  fWPARAM:=WPARAM;
+  fEventEnd:=EventEnd;
+  Resume;
+end;
+
+procedure TMeasuringTread.Execute;
+begin
+ ExuteBegin;
+ Synchronize(NewData);
+ PostMessage(FindWindow ('TIVchar', 'IVchar'), WM_MyMeasure,fWPARAM,0);
+ SetEvent(fEventEnd);
+end;
+
+procedure TMeasuringTread.NewData;
+begin
+  fMeasurement.NewData:=True;
+end;
+
+{ TMeasurementShow }
+
+procedure TMeasurementShow.AutoSpeedButtonClick(Sender: TObject);
+begin
+ MeasurementButton.Enabled:=not(AutoSpeedButton.Down);
+ if AutoSpeedButton.Down then Time.OnTimer:=MeasurementButton.OnClick;
+ Time.Enabled:=AutoSpeedButton.Down;
+end;
+
+constructor TMeasurementShow.Create(Meter: IMeasurement;
+                                    MM, R: TRadioGroup;
+                                    DL, UL: TLabel;
+                                    MB: TButton;
+                                    AB: TSpeedButton; TT: TTimer);
+begin
+   inherited Create;
+   fMeter:=Meter;
+   MeasureMode:=MM;
+   Range:=R;
+   DataLabel:=DL;
+   UnitLabel:=UL;
+   MeasurementButton:=MB;
+   AutoSpeedButton:=AB;
+   Time:=TT;
+
+   MeasureModeFill();
+
+   HookMeasureModeFill();
+//   IndexToRadioGroup(RS232Meter.fMeasureMode,MeasureMode);
+   DiapazonFill();
+   UnitLabel.Caption := '';
+
+   MeasurementButton.OnClick:=MeasurementButtonClick;
+   AutoSpeedButton.OnClick:=AutoSpeedButtonClick;
+
+//   AdapterMeasureMode:=TAdapterRadioGroupClick.Create(MeasureMode.Items.Count-1);
+//   AdapterRange:=TAdapterRadioGroupClick.Create(Range.Items.Count-1);
+//   MeasureMode.OnClick:=AdapterMeasureMode.RadioGroupClick;
+//   Range.OnClick:=AdapterRange.RadioGroupClick;
+//   MeasureMode.onEnter:=AdapterMeasureMode.RadioGroupOnEnter;
+//   Range.onEnter:=AdapterRange.RadioGroupOnEnter;
+
+end;
+
+//procedure TMeasurementShow.DiapazonFill;
+//begin
+//
+//end;
+
+
+procedure TMeasurementShow.HookMeasureModeFill;
+begin
+
+end;
+
+procedure TMeasurementShow.IndexToRadioGroup(Index: ShortInt; RG: TRadioGroup);
+begin
+  try
+   RG.ItemIndex:=Index;
+  except
+   RG.ItemIndex:=RG.Items.Count-1;
+  end;
+end;
+
+procedure TMeasurementShow.MeasurementButtonClick(Sender: TObject);
+begin
+ fMeter.GetData();
+ MetterDataShow();
+end;
+
+procedure TMeasurementShow.MetterDataShow;
+begin
+//  MeasureMode.OnClick:=nil;
+//  Range.OnClick:=nil;
+   HookMeasureModeFill();
+   DiapazonFill();
+
+//  MeasureMode.OnClick:=AdapterMeasureMode.RadioGroupClick;
+//  Range.OnClick:=AdapterRange.RadioGroupClick;
+
+  if fMeter.Value<>ErResult then
+     begin
+       UnitLabel.Caption:=UnitModeLabel();
+//       UnitLabel.Caption:=RS232Meter.MeasureModeLabel;
+       DataLabel.Caption:=FloatToStrF(fMeter.Value,ffExponent,4,2)
+     end
+                        else
+     begin
+       UnitLabel.Caption:='';
+       DataLabel.Caption:='    ERROR';
+     end;
+
+end;
+
+procedure TMeasurementShow.StringArrayToRadioGroup(SA: array of string;
+                                                   RG: TRadioGroup);
+ var i:byte;
+begin
+    RG.Items.Clear;
+    for I := 0 to High(SA) do RG.Items.Add(SA[i]);
+end;
+
+function TMeasurementShow.UnitModeLabel: string;
+begin
+ Result:='';
 end;
 
 end.

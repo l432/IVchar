@@ -3,7 +3,7 @@ unit TempThread;
 interface
 
 uses
-  Measurement, RS232_Meas_Tread;
+  Measurement, RS232_Meas_Tread, PID;
 
 const VdiodMax=1.3;
 

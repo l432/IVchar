@@ -178,7 +178,7 @@ type
   end;
 
 
-  TUT70BShow=class(TMetterShow)
+  TUT70BShow=class(TRS232MetterShow)
     protected
      DiapazoneMode:TRadioGroup;
      AdapterDiapazoneMode:TAdapterRadioGroupClick;

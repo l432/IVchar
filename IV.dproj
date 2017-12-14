@@ -41,8 +41,10 @@
     <DCCReference Include="IVchar_main.pas">
       <Form>IVchar</Form>
     </DCCReference>
+    <DCCReference Include="MDevice.pas" />
     <DCCReference Include="Measurement.pas" />
     <DCCReference Include="PacketParameters.pas" />
+    <DCCReference Include="PID.pas" />
     <DCCReference Include="RS232device.pas" />
     <DCCReference Include="RS232_Meas_Tread.pas" />
     <DCCReference Include="RS232_Mediator_Tread.pas" />

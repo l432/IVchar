@@ -111,32 +111,20 @@ type
     FInternalTacktMode: boolean;
     FNoErrorOperation: boolean;
     fMeasThead:TET1255_Measuring_Thead;
-//    procedure SetActiveChannel(const Value: TET1255_ADC_ChanelNumber);
-//    procedure SetFrequency_Takt(const Value: TET1255_Frequency_Tackt);
-//    procedure SetGain(const Value: TET1255_ADC_Gain);
-//    procedure SetMemEnable(const Value: boolean);
-//    procedure SetStartByProgr(const Value: boolean);
     function NoError():boolean;
-//    procedure SetInternalTacktMode(const Value: boolean);
   public
   function SetGain(const Value: TET1255_ADC_Gain):boolean;
   function Gain:TET1255_ADC_Gain;
-//  property Gain:TET1255_ADC_Gain read FGain write SetGain;
   function SetActiveChannel(const Value: TET1255_ADC_ChanelNumber):boolean;
   function ActiveChannel:TET1255_ADC_ChanelNumber;
-//  property ActiveChannel:TET1255_ADC_ChanelNumber read FActiveChannel write SetActiveChannel;
   function SetFrequency_Takt(const Value: TET1255_Frequency_Tackt):boolean;
   function Frequency_Tackt:TET1255_Frequency_Tackt;
-//  property Frequency_Tackt:TET1255_Frequency_Tackt read FFrequency_Tackt write SetFrequency_Takt;
   function SetMemEnable(const Value: boolean):boolean;
   function MemEnable:boolean;
-//  property MemEnable:boolean read FMemEnable write SetMemEnable;
   function SetStartByProgr(const Value: boolean):boolean;
   function StartByProgr:boolean;
-//  property StartByProgr:boolean read FStartByProgr write SetStartByProgr;
   function SetInternalTacktMode(const Value: boolean):boolean;
   function InternalTacktMode:boolean;
-//  property InternalTacktMode:boolean read FInternalTacktMode write SetInternalTacktMode;
   property ErrorOperation:boolean read FNoErrorOperation;
   function SetADCMode(FrT: TET1255_Frequency_Tackt;StBPr, IntTMd, MemE: boolean): boolean;
   constructor Create();
@@ -147,11 +135,10 @@ type
   function ReadMem():double;
  end;
 
-TET1255_ADCChannel=class(TNamedDevice{,IMeasurement})
+TET1255_ADCChannel=class(TNamedDevice,IMeasurement)
  private
-   fValue:double;
-
-//   fRS232MeasuringTread:TThread;
+  fValue:double;
+  fET1255MeasuringTread:TThread;
   fNewData:boolean;
   fChanelNumber: TET1255_ADC_ChanelNumber;
   fParentModule:TET1255_Module;
@@ -160,7 +147,7 @@ TET1255_ADCChannel=class(TNamedDevice{,IMeasurement})
   function GetNewData:boolean;
   function GetValue:double;
   procedure SetNewData(Value:boolean);
-  Function Measurement():double;
+  function Measurement():double;
   procedure SetSerialMeasurements(const Value: boolean);
   procedure SetSerialMeasurementNumber(const Value: byte);
  public
@@ -175,7 +162,24 @@ TET1255_ADCChannel=class(TNamedDevice{,IMeasurement})
   procedure Free;
   function SetGain(Value: TET1255_ADC_Gain):boolean;
   function SetFrequency_Takt(const Value: TET1255_Frequency_Tackt):boolean;
+  function MeasuringStart():boolean;
+  procedure MeasuringStop;
+  procedure ValueInitialization;
+  procedure PrepareToMeasurement;
+  procedure ResultRead();
+  procedure GetDataThread(WPARAM: word;EventEnd:THandle);
 end;
+
+  TET1255_Chanel_MeasuringTread = class(TMeasuringTread)
+  private
+   fET1255_Chan:TET1255_ADCChannel;
+   procedure ValueInitialization;
+   procedure ResultRead;
+  protected
+   procedure ExuteBegin;override;
+  public
+   constructor Create(ET1255_Chan:TET1255_ADCChannel;WPARAM: word; EventEnd: THandle);
+  end;
 
  TET1255_DAC=class(TNamedDevice,IDAC)
  private
@@ -188,8 +192,6 @@ end;
    procedure Output(Value:double);virtual;
    procedure OutputInt(Kod:integer); virtual;
    Procedure Reset();     virtual;
-//   function CalibrationStep(Voltage:double):double;  virtual;
-//   procedure OutputCalibr(Value:double); virtual;
    Constructor Create(ChanelNumber:TET1255_DAC_ChanelNumber);
    procedure Free;
  end;
@@ -318,7 +320,7 @@ begin
  ResetEvent(EventET1255Measurement_Done);
  fMeasThead:=TET1255_Measuring_Thead.Create();
  ET_SetStrob;
- if not(NoError()) then  fMeasThead.Terminate;
+ if not(NoError()) then fMeasThead.Terminate;
  Result:=FNoErrorOperation;
 end;
 
@@ -454,6 +456,12 @@ begin
  fNewData:=True;
 end;
 
+procedure TET1255_ADCChannel.GetDataThread(WPARAM: word; EventEnd: THandle);
+begin
+ fET1255MeasuringTread:=
+   TET1255_Chanel_MeasuringTread.Create(Self,WPARAM,EventEnd);
+end;
+
 function TET1255_ADCChannel.GetNewData: boolean;
 begin
   Result:=fNewData;
@@ -465,49 +473,59 @@ begin
 end;
 
 function TET1255_ADCChannel.Measurement: double;
- var PointNumber,i:Cardinal;
 begin
-  Result:=ErResult;
+ PrepareToMeasurement();
+ ValueInitialization();
+ if MeasuringStart() then
+  if WaitForSingleObject(EventComPortFree,1500)=WAIT_OBJECT_0
+   then  ResultRead()
+   else  MeasuringStop;
+ Result:=fValue;
+end;
 
+function TET1255_ADCChannel.MeasuringStart: boolean;
+begin
+ Result:=fParentModule.MeasuringStart;
+end;
+
+procedure TET1255_ADCChannel.MeasuringStop;
+begin
+  fParentModule.MeasuringStop;
+end;
+
+procedure TET1255_ADCChannel.PrepareToMeasurement;
+begin
   if not(fParentModule.SetActiveChannel(fChanelNumber))
    then Exit;
-
   if not(fParentModule.SetMemEnable(FSerialMeasurements))
    then Exit;
 
-  if FSerialMeasurements
-  then
-   begin
-    PointNumber:=(FSerialMeasurementNumber shl 12);
-    NumberOfMeasurement:=PointNumber;
+  if FSerialMeasurements then
     if not(fParentModule.SetAddr($FF-FSerialMeasurementNumber))
      then Exit;
+end;
 
-    SetLenVector(DataVector,PointNumber);
-    if not(fParentModule.MeasuringStart()) then Exit;
-
-    if WaitForSingleObject(EventComPortFree,1500)=WAIT_OBJECT_0
-     then
+procedure TET1255_ADCChannel.ResultRead;
+ var i:Cardinal;
+begin
+ if FSerialMeasurements
+  then
+   begin
+    if not(fParentModule.SetAddr($FF-FSerialMeasurementNumber))
+      then Exit;
+     for I := 0 to High(DataVector^.X) do
       begin
-       if not(fParentModule.SetAddr($FF-FSerialMeasurementNumber))
-        then Exit;
-       for I := 0 to PointNumber - 1 do
-        DataVector^.Add(i,fParentModule.ReadMem);
-       Result:=ImpulseNoiseSmoothingByNpoint(DataVector^.Y);
-      end
-     else fParentModule.MeasuringStop;
+       DataVector^.X[i]:=i;
+       DataVector^.Y[i]:=fParentModule.ReadMem;
+      end;
+     fValue:=ImpulseNoiseSmoothingByNpoint(DataVector^.Y);
    end
-
   else
    begin
-    NumberOfMeasurement:=1;
-    if not(fParentModule.MeasuringStart()) then Exit;
-    if WaitForSingleObject(EventComPortFree,1500)=WAIT_OBJECT_0
-     then Result:=fParentModule.ReadADC
-     else fParentModule.MeasuringStop;
+    fValue:=fParentModule.ReadADC;
+    DataVector^.X[0]:=0;
+    DataVector^.Y[0]:=fValue;
    end;
-
-
 end;
 
 function TET1255_ADCChannel.SetFrequency_Takt(
@@ -537,6 +555,15 @@ begin
   FSerialMeasurements := Value;
 end;
 
+procedure TET1255_ADCChannel.ValueInitialization;
+begin
+  fValue:=ErResult;
+  if FSerialMeasurements
+   then  SetLenVector(DataVector,(FSerialMeasurementNumber shl 12))
+   else SetLenVector(DataVector,1);
+  NumberOfMeasurement:=DataVector^.n;
+end;
+
 { TET1255_Measuring_Thead }
 
 constructor TET1255_Measuring_Thead.Create;
@@ -558,6 +585,37 @@ begin
        Break;
      end;
   end;
+end;
+
+{ TET1255_MeasuringTread }
+
+constructor TET1255_Chanel_MeasuringTread.Create(ET1255_Chan: TET1255_ADCChannel;
+  WPARAM: word; EventEnd: THandle);
+begin
+  inherited Create(ET1255_Chan,WPARAM,EventEnd);
+  fET1255_Chan := ET1255_Chan;
+  fMeasurement:=fET1255_Chan;
+  Resume;
+end;
+
+procedure TET1255_Chanel_MeasuringTread.ExuteBegin;
+begin
+ fET1255_Chan.PrepareToMeasurement();
+ Synchronize(ValueInitialization);
+ if fET1255_Chan.MeasuringStart() then
+  if WaitForSingleObject(EventComPortFree,1500)=WAIT_OBJECT_0
+   then  Synchronize(ResultRead)
+   else  fET1255_Chan.MeasuringStop;
+end;
+
+procedure TET1255_Chanel_MeasuringTread.ResultRead;
+begin
+ fET1255_Chan.ResultRead
+end;
+
+procedure TET1255_Chanel_MeasuringTread.ValueInitialization;
+begin
+ fET1255_Chan.ValueInitialization();
 end;
 
 initialization

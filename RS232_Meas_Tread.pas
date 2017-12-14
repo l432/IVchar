@@ -3,47 +3,43 @@ unit RS232_Meas_Tread;
 interface
 
 uses
-  Classes, RS232device;
+  Classes, RS232device, Measurement;
 
 
 type
 
- TTheadSleep = class(TThread)
-  protected
-    FEventTerminate: THandle;
-  public
-    constructor Create;
-    destructor Destroy; override;
-    procedure Terminate;
-    procedure _Sleep(AMilliSeconds: Cardinal);
-  end;
-
- TTheadCycle = class(TTheadSleep)
-  private
-  protected
-    fInterval:int64;
-    procedure DoSomething;virtual;
-  public
-    constructor Create(Interval:double);
-    procedure Execute; override;
-  end;
 
 
+//  TRS232MeasuringTread = class(TTheadSleep)
+//  private
+//   fRS232Meter:TRS232Meter;
+//   fWPARAM: word;
+//   fEventEnd:THandle;
+//   procedure FalseStatement();
+//   procedure ConvertToValue();
+//   procedure NewData();
+//   procedure ExuteBegin;virtual;
+//  protected
+//   procedure Execute; override;
+//  public
+//   constructor Create(RS_Meter:TRS232Meter;WPARAM: word; EventEnd: THandle);
+//  end;
 
-  TRS232MeasuringTread = class(TTheadSleep)
+  TRS232MeasuringTread = class(TMeasuringTread)
   private
    fRS232Meter:TRS232Meter;
-   fWPARAM: word;
-   fEventEnd:THandle;
+//   fWPARAM: word;
+//   fEventEnd:THandle;
    procedure FalseStatement();
    procedure ConvertToValue();
-   procedure NewData();
-   procedure ExuteBegin;virtual;
+//   procedure NewData();
   protected
-    procedure Execute; override;
+//   procedure Execute; override;
+   procedure ExuteBegin;override;
   public
-    constructor Create(RS_Meter:TRS232Meter;WPARAM: word; EventEnd: THandle);
+   constructor Create(RS_Meter:TRS232Meter;WPARAM: word; EventEnd: THandle);
   end;
+
 
   TV721_MeasuringTread = class(TRS232MeasuringTread)
   private
@@ -54,7 +50,7 @@ type
 implementation
 
 uses
-  Windows, OlegType, Measurement, Math, OlegMath, SysUtils, DateUtils, Forms;
+  Windows, OlegType, Math, OlegMath, SysUtils, DateUtils, Forms;
 
 { RS232Measuring }
 
@@ -65,10 +61,12 @@ end;
 
 constructor TRS232MeasuringTread.Create(RS_Meter: TRS232Meter; WPARAM: word; EventEnd: THandle);
 begin
-  inherited Create();
+//  inherited Create();
+  inherited Create(RS_Meter,WPARAM,EventEnd);
   fRS232Meter := RS_Meter;
-  fWPARAM:=WPARAM;
-  fEventEnd:=EventEnd;
+  fMeasurement:=fRS232Meter;
+//  fWPARAM:=WPARAM;
+//  fEventEnd:=EventEnd;
   Resume;
 end;
 
@@ -100,13 +98,13 @@ start:
   end;
 end;
 
-procedure TRS232MeasuringTread.Execute;
-begin
- ExuteBegin;
- Synchronize(NewData);
- PostMessage(FindWindow ('TIVchar', 'IVchar'), WM_MyMeasure,fWPARAM,0);
- SetEvent(fEventEnd);
-end;
+//procedure TRS232MeasuringTread.Execute;
+//begin
+// ExuteBegin;
+// Synchronize(NewData);
+// PostMessage(FindWindow ('TIVchar', 'IVchar'), WM_MyMeasure,fWPARAM,0);
+// SetEvent(fEventEnd);
+//end;
 
 
 procedure TRS232MeasuringTread.FalseStatement;
@@ -114,10 +112,10 @@ begin
  fRS232Meter.MeasurementBegin;
 end;
 
-procedure TRS232MeasuringTread.NewData;
-begin
- fRS232Meter.NewData:=True;
-end;
+//procedure TRS232MeasuringTread.NewData;
+//begin
+// fRS232Meter.NewData:=True;
+//end;
 
 { TV721_MeasuringTread }
 
@@ -154,61 +152,5 @@ begin
    end;
 end;
 
-{ TTheadPeriodic }
-
-constructor TTheadSleep.Create;
-begin
-  inherited Create(True);
-  FreeOnTerminate := True;
-  Self.Priority := tpNormal;
-
-  FEventTerminate := CreateEvent(nil, False, False, nil);
-end;
-
-destructor TTheadSleep.Destroy;
-begin
-  CloseHandle(FEventTerminate);
-  inherited;
-end;
-
-
-procedure TTheadSleep.Terminate;
-begin
-  SetEvent(FEventTerminate);
-  inherited Terminate;
-end;
-
-procedure TTheadSleep._Sleep(AMilliSeconds: Cardinal);
-begin
- WaitForSingleObject(FEventTerminate, AMilliSeconds);
-end;
-
-{ TTheadCycle }
-
-constructor TTheadCycle.Create(Interval: double);
-begin
- inherited Create();
- fInterval:=abs(round(1000*Interval));
-end;
-
-procedure TTheadCycle.DoSomething;
-begin
-
-end;
-
-procedure TTheadCycle.Execute;
-var
-  t: TDateTime;
-  k: Int64;
-begin
-  while (not Terminated) and (not Application.Terminated) do
-  begin
-    t := Now();
-    DoSomething;
-    k := fInterval - Round(MilliSecondSpan(Now(), t));
-    if k>0 then
-      _Sleep(k);
-  end;
-end;
 
 end.

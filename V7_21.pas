@@ -27,13 +27,14 @@ const
     '1 mA','10 mA','100 mA','1000 mA',
      '10 mV','100 mV','1 V','10 V','100 V','1000 V');
 
-  TimeToMeasurement=100;
+  TimeToMeasurement=80;
   LongTimeToMeasurement=300;
 
 type
   TVoltmetr=class(TArduinoMeter)
   {базовий клас для вольтметрів серії В7-21}
   protected
+   fTimeToMeasurement:word;
    Procedure ValueDetermination(Data:array of byte);override;
    Procedure DiapazonFilling(DiapazonNumber:byte;
                              D_Begin, D_End:TV721_Diapazons);
@@ -71,7 +72,7 @@ type
   public
   end;
 
-  TVoltmetrShow=class(TMetterShow)
+  TVoltmetrShow=class(TRS232MetterShow)
   protected
   public
    PinShow:TPinsShow;
@@ -96,6 +97,7 @@ Constructor TVoltmetr.Create(CP:TComPort;Nm:string);
 begin
   inherited Create(CP,Nm);
   fMetterKod:=V7_21Command;
+  fTimeToMeasurement:=80;
 
   SetLength(fMeasureModeAll,ord(High(V721_MeasureModeLabels))+1);
   for V721_MeasureMode := Low(TV721_MeasureMode)
@@ -127,14 +129,16 @@ function TVoltmetr.GetData(): double;
  function AditionMeasurement(a,b:double):double;
   var c:double;
   begin
-    if abs(a-b)<1e-5*Max(abs(a),abs(b))
+    if (abs(a-b)<1e-5*Max(abs(a),abs(b)))and(not(ResultProblem(a)))
      then
       Result:=(a+b)/2
      else
       begin
-        sleep(TimeToMeasurement);
+        sleep(fTimeToMeasurement);
         c:=Measurement();
-        Result:=MedianFiltr(a,b,c);
+        if (ResultProblem(a))and(ResultProblem(b))
+         then Result:=c
+         else Result:=MedianFiltr(a,b,c);
       end;
   end;
  var a,b:double;
@@ -144,14 +148,15 @@ begin
   if not(PortConnected) then Exit;
 
  a:=Measurement();
- sleep(TimeToMeasurement);
+ sleep(fTimeToMeasurement);
  b:=Measurement();
  Result:=AditionMeasurement(a,b);
- if Result=0 then
+// if Result=0 then
+ if ResultProblem(Result) then
    begin
      sleep(LongTimeToMeasurement);
      a:=Measurement();
-     sleep(TimeToMeasurement);
+     sleep(fTimeToMeasurement);
      b:=Measurement();
      Result:=AditionMeasurement(a,b);
    end;
@@ -332,6 +337,7 @@ end;
 constructor TV721.Create(CP:TComPort;Nm:string);
 begin
   inherited Create(CP,Nm);
+  fTimeToMeasurement:=60;
   SetLength(fMeasureModeAll,High(fMeasureModeAll));
   fDiapazonAll[0][High(fDiapazonAll[0])]:='500 V';
   fDiapazonAll[1][High(fDiapazonAll[1])]:='500 V';

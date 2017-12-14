@@ -8,7 +8,8 @@ uses
   TempThread, ShowTypes,OlegGraph, Dependence, V7_21,
   TemperatureSensor, DACR2R, UT70, RS232device,ET1255, RS232_Mediator_Tread,
   CPortCtl, Grids, Chart, TeeProcs, Series, TeEngine, ExtCtrls, Buttons,
-  ComCtrls, CPort, StdCtrls, Dialogs, Controls, Classes, D30_06,Math;
+  ComCtrls, CPort, StdCtrls, Dialogs, Controls, Classes, D30_06,Math, PID, 
+  MDevice;
 
 const
   MeasIV='IV characteristic';
@@ -545,7 +546,7 @@ type
     function IVprognozI:double;
     function IVprognozCor:double;
     procedure IVMRFilling;
-//    function IVprognozIsecond:double;
+    function IVprognozIsecond:double;
     function IVRpribor():double;
     procedure CalibrHookSetVoltage;
     procedure IVCharCurrentMeasHook;
@@ -584,7 +585,9 @@ type
     function DiapazonIMeasurement(Measurement:IMeasurement):ShortInt;
     procedure CorrectionLimit(var NewCorrection: Double);
     procedure IVOldFactorDetermination(var Factor: Double);
+    function IVNewFactorDetermination():double;
     procedure IVVoltageInputSignDetermine;
+    procedure IVMR_Refresh;
   public
     V721A:TV721A;
     V721_I,V721_II:TV721;
@@ -634,6 +637,7 @@ type
 //,VoltageMeasuredN,
     ,VoltageInputCorrection
 //,VoltageInputCorrectionN
+    ,MaxDifCoeficient
        :double;
     VoltageLimit:boolean;
     DoubleConstantShows:array of TParameterShow1;
@@ -993,6 +997,15 @@ begin
   except
     TIVDependence.DelayTimeChange(0)
   end;
+
+//   if not(TIVDependence.ItIsForward)
+//      and()
+//   then
+//   if (TIVDependence.VoltageInput=0)
+////  if ItIsBegining
+//   then  ItIsDarkIV:=(TDependence.tempI>-1e-5)
+//  else
+//   if TDependence.tempI>0 then  ItIsDarkIV:=True;
 end;
 
 procedure TIVchar.IVCharHookStep();
@@ -1035,6 +1048,7 @@ begin
 //  IVMeasResult:=TIVMeasurementResult.Create;
 //  IVMRFirst:=TIVMeasurementResult.Create;
 //  IVMRSecond:=TIVMeasurementResult.Create;
+ItIsDarkIV:=False;
 end;
 
 procedure TIVchar.HookBegin;
@@ -1054,7 +1068,11 @@ begin
   if CBMeasurements.Items[CBMeasurements.ItemIndex]=MeasTwoTimeD
    then  MeasurementTimeParameterDetermination(TimeTwoDependenceTimer);
   if CBMeasurements.Items[CBMeasurements.ItemIndex]=MeasIscAndVocOnTime
-   then  MeasurementTimeParameterDetermination(IscVocOnTime);
+   then
+   begin
+   MeasurementTimeParameterDetermination(IscVocOnTime);
+   VolCorrectionNew.Clear;
+   end;
 end;
 
 procedure TIVchar.IVCharHookSetVoltage;
@@ -1092,8 +1110,11 @@ procedure TIVchar.IscVocOnTimeHookSecondMeas;
 begin
  IscVocPinChanger.PinChangeToHigh;
  sleep(1000);
- TTimeTwoDependenceTimer.SecondValueChange(Isc_MD.ActiveInterface.GetData);
+ TTimeTwoDependenceTimer.SecondValueChange(abs(Isc_MD.ActiveInterface.GetData));
  LADInputVoltageValue.Caption:=FloatToStrF(TTimeTwoDependenceTimer.SecondValue,ffExponent, 4, 3);
+ VolCorrectionNew^.Add(TTimeTwoDependenceTimer.tempV,
+                       Voc_MD.ActiveInterface.GetData);
+
  TimeDHookSecondMeas;
 end;
 
@@ -1158,6 +1179,10 @@ begin
  TDependence.tempIChange(Current);
  IVMeasResult.FromCurrentMeasurement();
  IVMeasResult.CurrentDiapazon:=DiapazonIMeasurement(Current_MD.ActiveInterface);
+// if (not(ItIsDarkIV))and(TDependence.tempI>0)
+//   then  ItIsDarkIV:=True;
+
+
  Result:=True;
 end;
 
@@ -1184,6 +1209,7 @@ end;
 
 procedure TIVchar.IVCharHookAction;
 // var {Cor,}Iprognoz,Rpr:double;
+  var newCorrection:double;
 begin
  VoltageInputCorrection:=0;
  VoltageMeasured:=0;
@@ -1194,12 +1220,20 @@ begin
 // Cor:=ErResult;
  VoltageLimit:=False;
 
+ MaxDifCoeficient:=1;
+
  IVVoltageInputSignDetermine;
 
  IVMRFilling();
 
- if CBPC.Checked then IVSavedCorrectionSet()
-                 else TIVDependence.VoltageCorrectionChange(IVForeseeCorrection);
+ newCorrection:=ErResult;
+
+ if CBPC.Checked
+   then newCorrection:=VolCorrection.Yvalue(VoltageInputSign);
+ if (newCorrection=ErResult)
+   then newCorrection:=IVForeseeCorrection;
+
+ TIVDependence.VoltageCorrectionChange(newCorrection);
 //   if ItIsDarkIV then
 //      begin
 //        Iprognoz:=IVprognozI();
@@ -1209,7 +1243,11 @@ begin
 //           (Rpr<>ErResult) then
 //             TIVDependence.VoltageCorrectionChange(abs(Iprognoz*Rpr));
 //      end;
- if not(IVMeasResult.isEmpty) then IVMeasResult.CopyTo(IVMRFirst);
+ if not(IVMeasResult.isEmpty) then
+ begin
+ IVMeasResult.CopyTo(IVMRFirst);
+ IVMRFirst.DeltaToExpected:=ErResult;
+ end;
 
 
  IterationNumber:=0;
@@ -1387,6 +1425,7 @@ begin
         then Result:=10*DoubleConstantShows[4].Data
         else Result:=DoubleConstantShows[4].Data;
     end;
+  Result:=Result*MaxDifCoeficient;
 end;
 
 //procedure TIVchar.IVCharVoltageMeasHook;
@@ -1481,7 +1520,7 @@ end;
 
 procedure TIVchar.IVCharVoltageMeasHook;
   var
-    {tmV,}NewCorrection,Factor,{tempI,Rpribor,Iprognoz,}tempCorrection:double;
+    {tmV,}NewCorrection,Factor,{tempI,}Rpribor,Iprognoz,tempCorrection:double;
 //  ItIsLarge{,CorrectionIsNeeded}: Boolean;
 
 begin
@@ -1525,66 +1564,107 @@ begin
     Randomize;
     Factor:=Factor*Random;
     VoltageInputCorrection:=VoltageInputCorrection*Random;
+    IVMeasResult.Correction:=IVMeasResult.Correction*Random;
+    MaxDifCoeficient:=MaxDifCoeficient*1.2;
    end;
 
-
-   NewCorrection:=TIVDependence.VoltageCorrection-
+//   if ItIsBegining then
+    NewCorrection:=TIVDependence.VoltageCorrection-
                      Factor*IVMeasResult.DeltaToExpected;
+//   cbpc.Caption:=floattostr(NewCorrection);
+//   showmessage('a');
 
 //++++++++++++++++++++++++++++++++++++++++++
-   if abs(IVMeasResult.DeltaToApplied)>0.02
-   then
+//showmessage(booltostr(ItIsDarkIV)+'true='+booltostr(true));
+
+   if not(ItIsBegining) then
     begin
-
-      if IVMeasResult.Correction>0
-      then if IVMeasResult.isLarge
-           then NewCorrection:=IVMeasResult.Correction*0.3
-           else NewCorrection:=IVMeasResult.Correction*2;
-    end
-   else
-    begin
-     if IVCharCurrentMeasuring()
-     then
-      begin
-       NewCorrection:=IVForeseeCorrection();
-
-       if ((IVMeasResult.CurrentDiapazon=IVMRFirst.CurrentDiapazon))
-           and
-          (abs(IVMeasResult.DeltaToApplied)<abs(IVMRFirst.DeltaToApplied))
-       then IVMeasResult.CopyTo(IVMRFirst);
-
-       if ((IVMeasResult.CurrentDiapazon<>IVMRFirst.CurrentDiapazon))
-           and
-          (abs(IVMeasResult.DeltaToApplied)<abs(IVMRSecond.DeltaToApplied))
-       then IVMeasResult.CopyTo(IVMRSecond);
-
-      end;
+      if (abs(IVMeasResult.DeltaToExpected)>0.01)
+       then
+         NewCorrection:=IVMeasResult.Correction*IVNewFactorDetermination
+       else
+         if IVCharCurrentMeasuring()
+          then
+           begin
+           NewCorrection:=IVForeseeCorrection();
+           IVMR_Refresh();
+          end;
     end;
+
+
+//   if (ItIsDarkIV)and(not(ItIsBegining)) then
+//    begin
+//     if (abs(IVMeasResult.DeltaToExpected)>0.01)
+//     then
+//        if IVMeasResult.Correction>0
+//        then if IVMeasResult.isLarge
+//               then NewCorrection:=IVMeasResult.Correction*0.3
+//               else NewCorrection:=IVMeasResult.Correction*2
+//     else
+//      begin
+//       if IVCharCurrentMeasuring()
+//       then
+//        begin
+//         NewCorrection:=IVForeseeCorrection();
+//         IVMR_Refresh();
+//        end;
+//      end;
+//    end;
+//
+//    if (not(ItIsDarkIV))and(not(ItIsBegining))
+//    then
+//     begin
+//      if (abs(IVMeasResult.DeltaToExpected)>0.01)
+//     then
+//        begin
+//        if IVMeasResult.Correction>1e-4
+//        then if IVMeasResult.isLarge
+//               then NewCorrection:=IVMeasResult.Correction*0.3
+//               else NewCorrection:=IVMeasResult.Correction*2;
+//
+//        if IVMeasResult.Correction<-1e-4
+//        then if IVMeasResult.isLarge
+//               then NewCorrection:=IVMeasResult.Correction*2
+//               else NewCorrection:=IVMeasResult.Correction*0.3;
+//
+//        end
+//     else
+//
+//
+//     if IVCharCurrentMeasuring()then
+//     begin
+//
+////         showmessage('korrect');
+//         NewCorrection:=IVForeseeCorrection();
+//        IVMR_Refresh();
+//     end;
+//     end;
+
 
 //++++++++++++++++++++++++++++++++++++++++++++
 
-
+//      showmessage('b');
 
 //**********************************************
-   if (not(IVMeasResult.isLarge))and(IVCharCurrentMeasuring())
-   then
-    begin
-      IVMRSecond.isEmpty:=True;
-      tempCorrection:=IVForeseeCorrection();
-      if tempCorrection<>ErResult then
-        NewCorrection:=tempCorrection;
-      IVMeasResult.CopyTo(IVMRSecond);
-    end;
-
-    if (not(IVMRSecond.isEmpty))and(IVMeasResult.isLarge)
-    then
-      begin
-        if abs(IVMRSecond.DeltaToExpected)>abs(IVMeasResult.DeltaToExpected)
-        then NewCorrection:=IVMRSecond.Correction+
-                0.7*(IVMeasResult.Correction-IVMRSecond.Correction)
-        else NewCorrection:=IVMRSecond.Correction+
-                0.2*(IVMeasResult.Correction-IVMRSecond.Correction);
-      end;
+//   if (not(IVMeasResult.isLarge))and(IVCharCurrentMeasuring())
+//   then
+//    begin
+//      IVMRSecond.isEmpty:=True;
+//      tempCorrection:=IVForeseeCorrection();
+//      if tempCorrection<>ErResult then
+//        NewCorrection:=tempCorrection;
+//      IVMeasResult.CopyTo(IVMRSecond);
+//    end;
+//
+//    if (not(IVMRSecond.isEmpty))and(IVMeasResult.isLarge)
+//    then
+//      begin
+//        if abs(IVMRSecond.DeltaToExpected)>abs(IVMeasResult.DeltaToExpected)
+//        then NewCorrection:=IVMRSecond.Correction+
+//                0.7*(IVMeasResult.Correction-IVMRSecond.Correction)
+//        else NewCorrection:=IVMRSecond.Correction+
+//                0.2*(IVMeasResult.Correction-IVMRSecond.Correction);
+//      end;
 
 
 //   if not(IVMeasResult.isLarge) then
@@ -1600,8 +1680,8 @@ begin
 //              NewCorrection:=abs(Iprognoz*Rpribor);
 //      end;
 //    end;
-
-
+////
+////
 //   if (IterationNumber>1)and(VoltageInputCorrection<>0) then
 //     if IVMeasResult.isLarge then
 //      begin
@@ -1613,6 +1693,19 @@ begin
 //             0.2*(TIVDependence.VoltageCorrection-VoltageInputCorrection);
 //      end;
 //*************************************************
+//  showmessage(floattostr(NewCorrection));
+//  showmessage('VC'+floattostr(TIVDependence.VoltageCorrection));
+//  showmessage('f'+floattostr(Factor));
+//  showmessage('D'+floattostr(IVMeasResult.DeltaToExpected));
+
+   if (NewCorrection=ErResult)
+      or(abs(NewCorrection-IVMeasResult.Correction)<1e-4)
+      or(abs(NewCorrection)>3)
+    then NewCorrection:=TIVDependence.VoltageCorrection-
+                     Factor*IVMeasResult.DeltaToExpected;
+
+//       cbpc.Caption:=floattostr(NewCorrection);
+
     CorrectionLimit(NewCorrection);
 
     TIVDependence.VoltageCorrectionChange(NewCorrection);
@@ -1668,16 +1761,23 @@ function TIVchar.IVForeseeCorrection(): double;
  var Iprognoz,Rprib:double;
 begin
  Result:=ErResult;
- if IVMeasResult.isEmpty then Exit;
 
+// showmessage('a');
+ if IVMeasResult.isEmpty then Exit;
+//        showmessage('s');
    if ItIsDarkIV then
       begin
+
         Iprognoz:=IVprognozI();
+//        if abs(Iprognoz)<1e-7 then Exit;
         Rprib:=IVRpribor();
         if (Iprognoz<>ErResult)and (Rprib<>ErResult) then
              Result:=abs(Iprognoz*Rprib);
+//        if abs(Iprognoz)<1e-9 then Result:=IVprognozCor();
+
       end        else
       begin
+//       showmessage('ivprognozCor');
        Result:=IVprognozCor();
       end;
 end;
@@ -1691,6 +1791,18 @@ begin
  IVMeasResult.DeltaToExpected:=ErResult;
 
  if (IVResult^.n<1) then Exit;
+
+// if ItIsBegining then
+//  begin
+//   IVMRFirst.VoltageMeasured:=IVResult^.X[0];
+//   IVMRFirst.CurrentMeasured:=IVResult^.Y[0];
+//   IVMRFirst.DeltaToApplied:=VolCorrectionNew^.Y[0];
+//   IVMRFirst.DeltaToExpected:=ErResult;
+//   IVMRFirst.Correction:=VolCorrectionNew^.Y[0];
+//   IVMRFirst.CurrentDiapazon:= -1;
+//   IVMRFirst.isEmpty:=False;
+//  end;
+
 
  if (VoltageInputSign*IVResult^.X[IVResult^.n-1]<0) then Exit;
  IVMeasResult.isEmpty:=False;
@@ -1717,35 +1829,140 @@ end;
 //end;
 
 function TIVchar.IVprognozCor: double;
+ var Vec:PVector;
 begin
+// new(Vec);
+// if not(IVMeasResult.isEmpty)
+//  then Vec^.Add(IVMeasResult.CurrentMeasured,IVMeasResult.Correction);
+//
+// if (IVMeasResult.CurrentDiapazon=IVMRFirst.CurrentDiapazon)and
+//    (not(IVMRFirst.isEmpty))
+//  then  Vec^.Add(IVMRFirst.CurrentMeasured,IVMRFirst.Correction);
+//
+// if (IVMeasResult.CurrentDiapazon=IVMRSecond.CurrentDiapazon)and
+//    (not(IVMRSecond.isEmpty))
+//  then  Vec^.Add(IVMRSecond.CurrentMeasured,IVMRSecond.Correction);
+//
+// Result:=LinAproxYvalue(Vec,IVprognozI());
+//
+// dispose(Vec);
+
+// Result:=ErResult;
+//// showmessage('g');
+// if IVMeasResult.isEmpty then Exit;
+//
+//
+// if (IVMeasResult.CurrentDiapazon=IVMRFirst.CurrentDiapazon)and
+//    (not(IVMRFirst.isEmpty)) then
+//   begin
+////   if (IVMeasResult.VoltageMeasured<>IVMRFirst.VoltageMeasured) then
+//     Result:=Y_X0(IVMeasResult.VoltageMeasured,
+//                  IVMeasResult.Correction,
+//                  IVMRFirst.VoltageMeasured,
+//                  IVMRFirst.Correction,
+//                  VoltageInputSign);
+//     Exit;
+//   end;
+//
+// if (IVMeasResult.CurrentDiapazon=IVMRSecond.CurrentDiapazon)and
+//    (not(IVMRSecond.isEmpty)) then
+//   begin
+// //  if (IVMeasResult.VoltageMeasured<>IVMRSecond.VoltageMeasured) then
+//
+//     Result:=Y_X0(IVMeasResult.VoltageMeasured,
+//                  IVMeasResult.Correction,
+//                  IVMRSecond.VoltageMeasured,
+//                  IVMRSecond.Correction,
+//                  VoltageInputSign);
+//   end;
+
  Result:=ErResult;
+// showmessage('g');
  if IVMeasResult.isEmpty then Exit;
+
 
  if (IVMeasResult.CurrentDiapazon=IVMRFirst.CurrentDiapazon)and
     (not(IVMRFirst.isEmpty)) then
    begin
-     Result:=Y_X0(IVMeasResult.VoltageMeasured,
+//   if (IVMeasResult.CurrentMeasured<>IVMRFirst.CurrentMeasured) then
+     Result:=Y_X0(IVMeasResult.CurrentMeasured,
                   IVMeasResult.Correction,
-                  IVMRFirst.VoltageMeasured,
+                  IVMRFirst.CurrentMeasured,
                   IVMRFirst.Correction,
-                  VoltageInputSign);
+                  IVprognozI());
+//      LTRValue.Caption:=floattostr(result);
      Exit;
    end;
 
  if (IVMeasResult.CurrentDiapazon=IVMRSecond.CurrentDiapazon)and
     (not(IVMRSecond.isEmpty)) then
    begin
-     Result:=Y_X0(IVMeasResult.VoltageMeasured,
+//   if (IVMeasResult.CurrentMeasured<>IVMRSecond.CurrentMeasured) then
+
+     Result:=Y_X0(IVMeasResult.CurrentMeasured,
                   IVMeasResult.Correction,
-                  IVMRSecond.VoltageMeasured,
+                  IVMRSecond.CurrentMeasured,
                   IVMRSecond.Correction,
-                  VoltageInputSign);
+                  IVprognozI());
    end;
+
+  if abs(Result)<Imin then Result:=0;
+
+//  Imax := DoubleConstantShows[1].Data;
+//  Imin
+
+// LTRValue.Caption:=floattostr(result);
 end;
 
 function TIVchar.IVprognozI: double;
- var i,j:byte;
+ var
+   i,j:byte;
+   Vector:PVector;
 begin
+// new(Vector);
+//  if (not(IVMeasResult.isEmpty))
+//   then Vector^.Add(IVMeasResult.VoltageMeasured,IVMeasResult.CurrentMeasured);
+//
+//  if (not(IVMRFirst.isEmpty))
+//   then Vector^.Add(IVMRFirst.VoltageMeasured,IVMRFirst.CurrentMeasured);
+//
+//  if (not(IVMRSecond.isEmpty))
+//   then Vector^.Add(IVMRSecond.VoltageMeasured,IVMRSecond.CurrentMeasured);
+//
+////  if (not(IVMRSecond.isEmpty))
+////   then
+////   begin
+////    if Vector^.n=1
+////      then Vector^.Add(IVMRSecond.VoltageMeasured,IVMRSecond.CurrentMeasured)
+////      else if Vector^.n=2
+////           then
+////           begin
+////             if abs(IVMeasResult.DeltaToExpected)>abs(IVMRSecond.DeltaToExpected)
+////             then if abs(IVMeasResult.DeltaToExpected)>abs(IVMRFirst.DeltaToExpected)
+////                then
+////                 begin
+////                   Vector^.Delete(0);
+////                   Vector^.Add(IVMRSecond.VoltageMeasured,IVMRSecond.CurrentMeasured);
+////                 end
+////                else
+////                 begin
+////                   Vector^.Delete(1);
+////                   Vector^.Add(IVMRSecond.VoltageMeasured,IVMRSecond.CurrentMeasured);
+////                 end
+////             else if abs(IVMRFirst.DeltaToExpected)>abs(IVMRSecond.DeltaToExpected)
+////                then
+////                 begin
+////                   Vector^.Delete(1);
+////                   Vector^.Add(IVMRSecond.VoltageMeasured,IVMRSecond.CurrentMeasured);
+////                 end;
+////           end;
+////   end;
+//
+// Result:=LinAproxYvalue(Vector,VoltageInputSign);
+//
+// cbpc.Caption:=floattostr(Result);
+// dispose(Vector);
+
  Result:=ErResult;
  i:=0;j:=0;
  if IVMeasResult.isEmpty then inc(j)
@@ -1754,6 +1971,7 @@ begin
                       else i:=i+2;
  if IVMRSecond.isEmpty then inc(j)
                       else i:=i+4;
+
  if j>1 then Exit;
  if j=1 then
    begin
@@ -1804,23 +2022,24 @@ begin
                            VoltageInputSign)
    end;
 
+//   cbpc.Caption:=floattostr(Result);
  end;
 
 
 
-//function TIVchar.IVprognozIsecond: double;
-//begin
-// Result:=ErResult;
-// if (IVResult^.n<2) then Exit;
-//
-// if (IVResult^.X[IVResult^.n-1]*VoltageInputSign<0) then Exit;
-//
-// Result:=Y_X0(IVResult^.X[IVResult^.n-1],
-//              IVResult^.Y[IVResult^.n-1],
-//              IVMeasResult.VoltageMeasured,
-//              IVMeasResult.CurrentMeasured,
-//              VoltageInputSign);
-//end;
+function TIVchar.IVprognozIsecond: double;
+begin
+ Result:=ErResult;
+ if (IVResult^.n<2) then Exit;
+
+ if (IVResult^.X[IVResult^.n-1]*VoltageInputSign<0) then Exit;
+
+ Result:=Y_X0(IVResult^.X[IVResult^.n-1],
+              IVResult^.Y[IVResult^.n-1],
+              IVMeasResult.VoltageMeasured,
+              IVMeasResult.CurrentMeasured,
+              VoltageInputSign);
+end;
 
 function TIVchar.IVRpribor(): double;
 begin
@@ -1921,6 +2140,13 @@ begin
        Temperature_MD.ActiveInterface.NewData:=False;
       end;
 
+  if (TIVDependence.VoltageInput=0)
+//  if ItIsBegining
+   then  ItIsDarkIV:=(TDependence.tempI>-1e-5)
+  else
+   if TDependence.tempI>0 then  ItIsDarkIV:=True;
+
+
 
   if ItIsBegining then ItIsBegining:=not(ItIsBegining);
 //  if TIVDependence.ItIsForward then
@@ -1929,10 +2155,10 @@ begin
 //     VolCorrectionNew.Add(-TIVDependence.VoltageInput,TIVDependence.VoltageCorrection);
   VolCorrectionNew.Add(VoltageInputSign,TIVDependence.VoltageCorrection);
 
-  if (TIVDependence.VoltageInput=0)and
-     (TDependence.tempI<-1e-5) then ItIsDarkIV:=False
-                               else ItIsDarkIV:=True;
-    
+
+
+
+//  if (TIVDependence.VoltageInput=0) then showmessage(booltostr(ItIsDarkIV)+'true='+booltostr(true))
 end;
 
 //procedure TIVchar.IVcharHookEnd;
@@ -1997,8 +2223,8 @@ begin
       begin
        IVResult.Sorting;
        IVResult.DeleteDuplicate;
-//       Write_File(SaveDialog.FileName,IVResult);
-       ToFileFromTwoVector(SaveDialog.FileName,IVResult,VolCorrectionNew);
+       Write_File(SaveDialog.FileName,IVResult);
+//       ToFileFromTwoVector(SaveDialog.FileName,IVResult,VolCorrectionNew);
        LTLastValue.Caption:=FloatToStrF(Temperature,ffFixed, 5, 2);
        SaveCommentsFile(SaveDialog.FileName);
       end;
@@ -2015,7 +2241,8 @@ begin
 
     if (Key=MeasIscAndVocOnTime) then
       ToFileFromTwoSeries(SaveDialog.FileName,ForwLine,ForwLg,6);
-
+      ToFileFromTwoVector(copy(SaveDialog.FileName,1,Length(SaveDialog.FileName)-4)+'a.dat',
+         IVResult,VolCorrectionNew,6);
      BIVSave.Font.Style:=BIVSave.Font.Style+[fsStrikeOut];
    end;
 end;
@@ -3310,6 +3537,8 @@ procedure TIVchar.CorrectionLimit(var NewCorrection: Double);
 begin
   if (abs(NewCorrection) > 0.3) and (TIVDependence.VoltageInput < 0.3) then
     NewCorrection := 0.1 * NewCorrection / NewCorrection;
+  if (abs(NewCorrection) > 3)
+    then NewCorrection := 0.1 * NewCorrection / NewCorrection;
 
   if ItIsDarkIV then  NewCorrection:=Max(NewCorrection,-0.02)
 end;
@@ -3332,6 +3561,28 @@ begin
     VoltageInputSign := TIVDependence.VoltageInput
   else
     VoltageInputSign := -TIVDependence.VoltageInput;
+end;
+
+procedure TIVchar.IVMR_Refresh;
+begin
+  if ((IVMeasResult.CurrentDiapazon = IVMRFirst.CurrentDiapazon)) and (abs(IVMeasResult.DeltaToExpected) < abs(IVMRFirst.DeltaToExpected)) then
+    IVMeasResult.CopyTo(IVMRFirst);
+  if ((IVMeasResult.CurrentDiapazon <> IVMRFirst.CurrentDiapazon)) and (abs(IVMeasResult.DeltaToExpected) < abs(IVMRSecond.DeltaToExpected)) then
+    IVMeasResult.CopyTo(IVMRSecond);
+end;
+
+function TIVchar.IVNewFactorDetermination: double;
+begin
+ Result:=1;
+ if IVMeasResult.Correction>0
+   then if IVMeasResult.isLarge
+          then Result:=0.3
+          else Result:=2;
+
+ if IVMeasResult.Correction<0
+   then if IVMeasResult.isLarge
+          then Result:=2
+          else Result:=0.3;
 end;
 
 procedure TIVchar.PinsWriteToIniFile;

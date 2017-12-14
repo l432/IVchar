@@ -3,7 +3,7 @@ unit RS232_Mediator_Tread;
 interface
 
 uses
-  RS232device, RS232_Meas_Tread;
+  RS232device,  Measurement;
 
 Const
   ScanningPeriodShot=20;
