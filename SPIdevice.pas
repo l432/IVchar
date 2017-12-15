@@ -438,6 +438,7 @@ end;
 
 procedure TArduinoDAC.Output(Voltage: double);
 begin
+ if Voltage=ErResult then Exit;
  OutputDataSignDetermination(Voltage);
 // DataByteToSendPrepare(Voltage);
  DataByteToSendFromInteger(VoltageToKod(Voltage));

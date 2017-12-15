@@ -233,6 +233,8 @@ end;
 procedure TET1255_DAC.Output(Value: double);
  var tempValue:double;
 begin
+ if Value=ErResult then Exit;
+ 
  if Value>ET1255_DAC_MAX
     then tempValue:=ET1255_DAC_MAX
     else if Value<ET1255_DAC_MIN

@@ -730,7 +730,8 @@ end;
 
 procedure TRS232Setter.Output(Value: double);
 begin
- fOutputValue:=Value;
+ if Value<>ErResult then
+      fOutputValue:=Value;
 end;
 
 //procedure TRS232Setter.OutputCalibr(Value: double);

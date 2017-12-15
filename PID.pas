@@ -30,6 +30,7 @@ TPID=class
    property OutputValue:double read fOutputValue;
    Constructor Create(Kpp,Kii,Kdd,T,NeededValue:double);
    function ControlingSignal(CurrentValue:double):double;
+   procedure SetParametr(Kpp,Kii,Kdd,T,NeededValue:double);
 end;
 
 
@@ -45,7 +46,7 @@ function TPID.ControlingSignal(CurrentValue: double): double;
 begin
  if CurrentValue=ErResult then
     begin
-     fOutputValue:=0;
+     fOutputValue:=ErResult;
     end                   else
     begin
      DeviationCalculation(CurrentValue);
@@ -57,14 +58,15 @@ end;
 constructor TPID.Create(Kpp, Kii, Kdd, T, NeededValue: double);
 begin
   inherited Create;
-  Kp:=Kpp;
-  Ki:=Kii;
-  Period:=T;
-  Needed:=NeededValue;
+  SetParametr(Kpp, Kii, Kdd, T, NeededValue);
+//  Kp:=Kpp;
+//  Ki:=Kii;
+//  Period:=T;
+//  Needed:=NeededValue;
   EpsSum:=0;
   Epsi[0]:=0;
   Epsi[1]:=0;
-  Kd:=Kdd;
+//  Kd:=Kdd;
 end;
 
 procedure TPID.DeviationCalculation(CurrentValue: double);
@@ -94,6 +96,15 @@ end;
 procedure TPID.SetNeeded(const Value: double);
 begin
   FNeeded := Value;
+end;
+
+procedure TPID.SetParametr(Kpp, Kii, Kdd, T, NeededValue: double);
+begin
+  Kp:=Kpp;
+  Ki:=Kii;
+  Period:=T;
+  Needed:=NeededValue;
+  Kd:=Kdd;
 end;
 
 procedure TPID.SetPeriod(const Value: double);

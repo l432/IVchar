@@ -432,6 +432,10 @@ type
     BReset1255Ch3: TButton;
     BOKchange1255Ch3: TButton;
     BOKset1255Ch3: TButton;
+    LTermostatWatchDog: TLabel;
+    TermostatWatchDog: TTimer;
+    LControlWatchDog: TLabel;
+    ControlWatchDog: TTimer;
 
     procedure FormCreate(Sender: TObject);
     procedure BConnectClick(Sender: TObject);
@@ -457,13 +461,15 @@ type
     procedure PCChanging(Sender: TObject; var AllowChange: Boolean);
     procedure BDFFA_R2RClick(Sender: TObject);
     procedure Button1Click(Sender: TObject);
-    procedure DependTimerTimer(Sender: TObject);
+//    procedure DependTimerTimer(Sender: TObject);
     procedure SBControlBeginClick(Sender: TObject);
     procedure BControlResetClick(Sender: TObject);
     procedure SBTermostatClick(Sender: TObject);
     procedure BTermostatResetClick(Sender: TObject);
     procedure CBMeasurementsChange(Sender: TObject);
     procedure CBFvsSClick(Sender: TObject);
+    procedure TermostatWatchDogTimer(Sender: TObject);
+    procedure ControlWatchDogTimer(Sender: TObject);
   private
     procedure ComponentView;
     {початкове налаштування різних компонентів}
@@ -546,7 +552,6 @@ type
     function IVprognozI:double;
     function IVprognozCor:double;
     procedure IVMRFilling;
-    function IVprognozIsecond:double;
     function IVRpribor():double;
     procedure CalibrHookSetVoltage;
     procedure IVCharCurrentMeasHook;
@@ -556,16 +561,11 @@ type
     procedure IVCharVoltageMeasHook;
     function  IVCorrecrionNeeded():boolean;
     function IVCurrentGrowth:boolean;
-//    function  IVCorrecrionNeeded(measuredV:double):boolean;
     function  IVCharVoltageMaxDif:double;
     procedure CalibrHookFirstMeas;
     procedure IVCharHookDataSave;
     procedure CalibrHookDataSave;
     procedure HookEnd;
-//    procedure IVCharSaveClick(Sender: TObject);
-//    procedure SaveClick(Sender: TObject);
-//    procedure SaveClickTimeDep(Sender: TObject);
-//    procedure SaveClickTimeTwoDep(Sender: TObject);
     procedure CalibrSaveClick(Sender: TObject);
     procedure ParametersFileWork(Action: TSimpleEvent);
     procedure ET1255Create;
@@ -599,7 +599,6 @@ type
     ThermoCuple:TThermoCuple;
     IscVocPinChanger:TArduinoPinChanger;
     IscVocPinChangerShow:TArduinoPinChangerShow;
-//    IscVocPinChangerShow:TPinsShow;
     ConfigFile:TIniFile;
     NumberPins:TStringList; // номери пінів, які використовуються як керуючі для SPI
     NumberPinsOneWire:TStringList; // номери пінів, які використовуються для OneWire
@@ -634,9 +633,7 @@ type
     ItIsBegining,IsWorkingTermostat,ItIsDarkIV:boolean;
     Temperature,VoltageInputSign
     ,VoltageMeasured
-//,VoltageMeasuredN,
     ,VoltageInputCorrection
-//,VoltageInputCorrectionN
     ,MaxDifCoeficient
        :double;
     VoltageLimit:boolean;
@@ -646,7 +643,7 @@ type
     TimeDependence:TTimeDependenceTimer;
     ControlParameterTime,TemperatureOnTime:TTimeDependence;
     TimeTwoDependenceTimer,IscVocOnTime:TTimeTwoDependenceTimer;
-    PID_Termostat:TPID;
+    PID_Termostat,PID_Control:TPID;
     IsPID_Termostat_Created:boolean;
     IVMeasResult,IVMRFirst,IVMRSecond:TIVMeasurementResult;
   end;
@@ -760,14 +757,19 @@ procedure TIVchar.ControllerThreadCreate;
 begin
   ThermoCuple.Measurement:=TermoCouple_MD.ActiveInterface;
 
+//  ControllerThread:=
+//    TControllerThread.Create(Control_MD.ActiveInterface,
+//                             SettingDeviceControl.ActiveInterface,
+//                             DoubleConstantShows[11].Data,
+//                             DoubleConstantShows[12].Data,
+//                             DoubleConstantShows[13].Data,
+//                             DoubleConstantShows[14].Data,
+//                             DoubleConstantShows[10].Data);
   ControllerThread:=
     TControllerThread.Create(Control_MD.ActiveInterface,
                              SettingDeviceControl.ActiveInterface,
                              DoubleConstantShows[11].Data,
-                             DoubleConstantShows[12].Data,
-                             DoubleConstantShows[13].Data,
-                             DoubleConstantShows[14].Data,
-                             DoubleConstantShows[10].Data);
+                             PID_Control);
 
 end;
 
@@ -777,55 +779,23 @@ begin
  LADVoltageValue.Caption:=FloatToStrF(TDependence.tempI,ffFixed, 4, 3);
 end;
 
-//procedure TIVchar.ControlTimeHookBegin;
-//begin
-//  HookBegin();
-//
-//  LADInputVoltage.Visible:=False;
-//  LADInputVoltageValue.Visible:=False;
-//  LADRange.Visible:=False;
-//  LADVoltage.Caption:='Value:';
-//  LADCurrent.Caption:='Time:';
-//end;
 
-//procedure TIVchar.SaveClick(Sender: TObject);
-//begin
-//  SaveDialogPrepare;
-//  if SaveDialog.Execute then
-//   begin
-//     IVResult.Sorting;
-//     IVResult.DeleteDuplicate;
-//     Write_File(SaveDialog.FileName,IVResult);
-//
-//     LTLastValue.Caption:=FloatToStrF(Temperature,ffFixed, 5, 2);
-//
-//     BIVSave.Font.Style:=BIVSave.Font.Style+[fsStrikeOut];
-//     SaveCommentsFile(SaveDialog.FileName);
-//   end;
-//end;
-
-//procedure TIVchar.SaveClickTimeDep(Sender: TObject);
-//begin
-//  SaveDialogPrepare;
-//  if SaveDialog.Execute then
-//   begin
-//     Write_File(SaveDialog.FileName,IVResult,6);
-//     BIVSave.Font.Style:=BIVSave.Font.Style+[fsStrikeOut];
-//   end;
-//end;
-
-//procedure TIVchar.SaveClickTimeTwoDep(Sender: TObject);
-//begin
-//  SaveDialogPrepare;
-//  if SaveDialog.Execute then
-//   begin
-//    if TimeTwoDependenceTimer.isTwoValueOnTime then
-//     ToFileFromTwoSeries(SaveDialog.FileName,ForwLine,ForwLg,6)
-//                                               else
-//     Write_File(SaveDialog.FileName,IVResult,6);
-//    BIVSave.Font.Style:=BIVSave.Font.Style+[fsStrikeOut];
-//   end;
-//end;
+procedure TIVchar.ControlWatchDogTimer(Sender: TObject);
+begin
+ if (Control_MD.ActiveInterface.NewData)
+   and(Control_MD.ActiveInterface.Value<>ErResult)
+  then
+    begin
+    LControlWatchDog.Visible:=True;
+    end
+  else
+    begin
+    LControlWatchDog.Visible:=False;
+//    BTermostatResetClick(Sender);
+    end;
+  ControlWatchDog.Interval:=round(StrToFloat(STControlInterval.Caption))*2000;
+  Control_MD.ActiveInterface.NewData:=False;
+end;
 
 procedure TIVchar.SaveCommentsFile(FileName: string);
  var SR : TSearchRec;
@@ -908,9 +878,6 @@ begin
 
   IVMeasuring.HookAction:=IVCharHookAction;
 
-//  IVMeasuring.HookBeginMeasuring:=IVcharHookBegin;
-//  TimeDependence.HookBeginMeasuring:=TimeDHookBegin;
-//  TimeTwoDependenceTimer.HookBeginMeasuring:=TimeTwoDHookBegin;
   IVMeasuring.HookBeginMeasuring:=HookBegin;
   TimeDependence.HookBeginMeasuring:=HookBegin;
   TimeTwoDependenceTimer.HookBeginMeasuring:=HookBegin;
@@ -951,12 +918,6 @@ begin
   TemperatureOnTime.HookEndMeasuring:=DependenceHookEnd;
 
 
-//  IVMeasuring.HookEndMeasuring:=IVcharHookEnd;
-//  CalibrMeasuring.HookEndMeasuring:=CalibrHookEnd;
-//  TimeDependence.HookEndMeasuring:=TimeDHookEnd;
-//  TimeTwoDependenceTimer.HookEndMeasuring:=TimeTwoDHookEnd;
-//  ControlParameterTime.HookEndMeasuring:=TimeDHookEnd;
-//  TemperatureOnTime.HookEndMeasuring:=TimeDHookEnd;
   IVMeasResult:=TIVMeasurementResult.Create;
   IVMRFirst:=TIVMeasurementResult.Create;
   IVMRSecond:=TIVMeasurementResult.Create;
@@ -997,15 +958,6 @@ begin
   except
     TIVDependence.DelayTimeChange(0)
   end;
-
-//   if not(TIVDependence.ItIsForward)
-//      and()
-//   then
-//   if (TIVDependence.VoltageInput=0)
-////  if ItIsBegining
-//   then  ItIsDarkIV:=(TDependence.tempI>-1e-5)
-//  else
-//   if TDependence.tempI>0 then  ItIsDarkIV:=True;
 end;
 
 procedure TIVchar.IVCharHookStep();
@@ -1013,24 +965,15 @@ begin
   TIVDependence.VoltageStepChange(StepDetermine(TIVDependence.VoltageInput,TIVDependence.ItIsForward));
 end;
 
-//procedure TIVchar.IVCharSaveClick(Sender: TObject);
-//begin
-//  VolCorrectionNew.Sorting;
-//  VolCorrectionNew.DeleteDuplicate;
-//  VolCorrectionNew^.Copy(VolCorrection^);
-//
-//  SaveClick(Sender);
-//end;
 
 procedure TIVchar.CalibrationHookStep;
 begin
-//  TIVDependence.VoltageStepChange(SettingDevice.CalibrationStep(TIVDependence.VoltageInput));
   TIVDependence.VoltageStepChange(DACR2R.CalibrationStep(TIVDependence.VoltageInput));
 end;
 
 procedure TIVchar.IVcharHookBegin;
 begin
-//  HookBegin();
+  SBTAuto.Enabled := False;
   NumberOfTemperatureMeasuring := round(PBIV.Max / 2);
   Temperature := ErResult;
   Imax := DoubleConstantShows[1].Data;
@@ -1059,7 +1002,7 @@ begin
   BConnect.Enabled := False;
   BIVSave.Enabled:=False;
   BParamReceive.Enabled := False;
-  SBTAuto.Enabled := False;
+//  SBTAuto.Enabled := False;
 
   if CBMeasurements.Items[CBMeasurements.ItemIndex]=MeasIV
    then  IVcharHookBegin;
@@ -1084,18 +1027,10 @@ begin
   LADInputVoltageValue.Caption:=LADInputVoltageValue.Caption+
                         ' '+FloatToStrF(TIVDependence.VoltageInputReal,ffFixed, 4, 3);
 
-//  if TIVDependence.ItIsForward then
-//    LADInputVoltageValue.Caption:=FloatToStrF(TIVDependence.VoltageInput,ffFixed, 4, 3)+
-//    ' '+FloatToStrF(TIVDependence.VoltageInputReal,ffFixed, 4, 3)
-//                                       else
-//    LADInputVoltageValue.Caption:=FloatToStrF(-TIVDependence.VoltageInput,ffFixed, 4, 3)+
-//    ' '+FloatToStrF(TIVDependence.VoltageInputReal,ffFixed, 4, 3);
 
  if RGDO.ItemIndex=1 then SettingDevice.SetValue(-TIVDependence.VoltageInputReal)
                      else SettingDevice.SetValue(TIVDependence.VoltageInputReal);
 
-// TIVDependence.VoltageInputRealChange(-1*TIVDependence.VoltageInputReal);
-// SettingDevice.SetValue(TIVDependence.VoltageInputReal);
 end;
 
 procedure TIVchar.IscVocOnTimeHookFirstMeas;
@@ -1103,6 +1038,8 @@ begin
  IscVocPinChanger.PinChangeToLow;
  sleep(1000);
  TDependence.tempIChange(Voc_MD.ActiveInterface.GetData);
+ if TDependence.tempI<1e-5
+   then  TDependence.tempIChange(Voc_MD.ActiveInterface.GetData);
  LADVoltageValue.Caption:=FloatToStrF(TDependence.tempI,ffExponent, 4, 3);
 end;
 
@@ -1111,6 +1048,9 @@ begin
  IscVocPinChanger.PinChangeToHigh;
  sleep(1000);
  TTimeTwoDependenceTimer.SecondValueChange(abs(Isc_MD.ActiveInterface.GetData));
+ if TTimeTwoDependenceTimer.SecondValue<1e-7
+   then  TTimeTwoDependenceTimer.SecondValueChange(abs(Isc_MD.ActiveInterface.GetData));
+
  LADInputVoltageValue.Caption:=FloatToStrF(TTimeTwoDependenceTimer.SecondValue,ffExponent, 4, 3);
  VolCorrectionNew^.Add(TTimeTwoDependenceTimer.tempV,
                        Voc_MD.ActiveInterface.GetData);
@@ -1120,7 +1060,6 @@ end;
 
 procedure TIVchar.IVCharCurrentMeasHook;
  var
-//  tmI: Double;
   AtempNumber:byte;
 begin
   AtempNumber := 0;
@@ -1131,17 +1070,9 @@ begin
 
    if (ItIsBegining)or(IVCurrentGrowth()) then Break;
 
-//   if (ItIsBegining)or(High(IVResult^.Y)<0)
-//       then AtempNumber:=AtempNumbermax
-//       else
-//     begin
-//     if (TIVDependence.ItIsForward and (tmI>IVResult^.Y[High(IVResult^.Y)])) then AtempNumber:=AtempNumbermax;
-//     if (not(TIVDependence.ItIsForward) and (tmI<IVResult^.Y[High(IVResult^.Y)])) then AtempNumber:=AtempNumbermax;
-//     end;
    inc(AtempNumber);
   until (AtempNumber>AtempNumbermax);
 
-//  if (CBCurrentValue.Checked and (abs(tmI)>=Imax)) then
   if (CBCurrentValue.Checked and (abs(IVMeasResult.CurrentMeasured)>=Imax)) then
    TIVDependence.VoltageInputChange(Vmax);
 end;
@@ -1179,36 +1110,12 @@ begin
  TDependence.tempIChange(Current);
  IVMeasResult.FromCurrentMeasurement();
  IVMeasResult.CurrentDiapazon:=DiapazonIMeasurement(Current_MD.ActiveInterface);
-// if (not(ItIsDarkIV))and(TDependence.tempI>0)
-//   then  ItIsDarkIV:=True;
-
 
  Result:=True;
 end;
 
-//procedure TIVchar.IVCharHookAction;
-// var Cor:double;
-//begin
-// VoltageInputCorrection:=ErResult;
-// VoltageMeasured:=ErResult;
-// VoltageInputCorrectionN:=ErResult;
-// VoltageMeasuredN:=ErResult;
-//
-// if CBPC.Checked then
-// begin
-//   if TIVDependence.ItIsForward then
-//    Cor:=VolCorrection.Yvalue(TIVDependence.VoltageInput)
-//                                       else
-//    Cor:=VolCorrection.Yvalue(-TIVDependence.VoltageInput);
-//   if Cor<>ErResult then
-//     TIVDependence.VoltageCorrectionChange(Cor)
-// end;
-// IterationNumber:=0;
-//end;
-
 
 procedure TIVchar.IVCharHookAction;
-// var {Cor,}Iprognoz,Rpr:double;
   var newCorrection:double;
 begin
  VoltageInputCorrection:=0;
@@ -1520,9 +1427,7 @@ end;
 
 procedure TIVchar.IVCharVoltageMeasHook;
   var
-    {tmV,}NewCorrection,Factor,{tempI,}Rpribor,Iprognoz,tempCorrection:double;
-//  ItIsLarge{,CorrectionIsNeeded}: Boolean;
-
+    NewCorrection,Factor:double;
 begin
 
   Application.ProcessMessages;
@@ -1568,14 +1473,10 @@ begin
     MaxDifCoeficient:=MaxDifCoeficient*1.2;
    end;
 
-//   if ItIsBegining then
     NewCorrection:=TIVDependence.VoltageCorrection-
                      Factor*IVMeasResult.DeltaToExpected;
-//   cbpc.Caption:=floattostr(NewCorrection);
-//   showmessage('a');
 
 //++++++++++++++++++++++++++++++++++++++++++
-//showmessage(booltostr(ItIsDarkIV)+'true='+booltostr(true));
 
    if not(ItIsBegining) then
     begin
@@ -1592,96 +1493,11 @@ begin
     end;
 
 
-//   if (ItIsDarkIV)and(not(ItIsBegining)) then
-//    begin
-//     if (abs(IVMeasResult.DeltaToExpected)>0.01)
-//     then
-//        if IVMeasResult.Correction>0
-//        then if IVMeasResult.isLarge
-//               then NewCorrection:=IVMeasResult.Correction*0.3
-//               else NewCorrection:=IVMeasResult.Correction*2
-//     else
-//      begin
-//       if IVCharCurrentMeasuring()
-//       then
-//        begin
-//         NewCorrection:=IVForeseeCorrection();
-//         IVMR_Refresh();
-//        end;
-//      end;
-//    end;
-//
-//    if (not(ItIsDarkIV))and(not(ItIsBegining))
-//    then
-//     begin
-//      if (abs(IVMeasResult.DeltaToExpected)>0.01)
-//     then
-//        begin
-//        if IVMeasResult.Correction>1e-4
-//        then if IVMeasResult.isLarge
-//               then NewCorrection:=IVMeasResult.Correction*0.3
-//               else NewCorrection:=IVMeasResult.Correction*2;
-//
-//        if IVMeasResult.Correction<-1e-4
-//        then if IVMeasResult.isLarge
-//               then NewCorrection:=IVMeasResult.Correction*2
-//               else NewCorrection:=IVMeasResult.Correction*0.3;
-//
-//        end
-//     else
-//
-//
-//     if IVCharCurrentMeasuring()then
-//     begin
-//
-////         showmessage('korrect');
-//         NewCorrection:=IVForeseeCorrection();
-//        IVMR_Refresh();
-//     end;
-//     end;
-
 
 //++++++++++++++++++++++++++++++++++++++++++++
 
-//      showmessage('b');
 
 //**********************************************
-//   if (not(IVMeasResult.isLarge))and(IVCharCurrentMeasuring())
-//   then
-//    begin
-//      IVMRSecond.isEmpty:=True;
-//      tempCorrection:=IVForeseeCorrection();
-//      if tempCorrection<>ErResult then
-//        NewCorrection:=tempCorrection;
-//      IVMeasResult.CopyTo(IVMRSecond);
-//    end;
-//
-//    if (not(IVMRSecond.isEmpty))and(IVMeasResult.isLarge)
-//    then
-//      begin
-//        if abs(IVMRSecond.DeltaToExpected)>abs(IVMeasResult.DeltaToExpected)
-//        then NewCorrection:=IVMRSecond.Correction+
-//                0.7*(IVMeasResult.Correction-IVMRSecond.Correction)
-//        else NewCorrection:=IVMRSecond.Correction+
-//                0.2*(IVMeasResult.Correction-IVMRSecond.Correction);
-//      end;
-
-
-//   if not(IVMeasResult.isLarge) then
-//    begin
-//     VoltageInputCorrection:=TIVDependence.VoltageCorrection;
-//     VoltageMeasured:=abs(IVMeasResult.VoltageMeasured);
-//     if (IVCharCurrentMeasuring()) then
-//      begin
-//       Rpribor:=IVRpribor();
-//       Iprognoz:=IVprognozIsecond();
-//       if (Iprognoz<>ErResult)and
-//           (Rpribor<>ErResult) then
-//              NewCorrection:=abs(Iprognoz*Rpribor);
-//      end;
-//    end;
-////
-////
 //   if (IterationNumber>1)and(VoltageInputCorrection<>0) then
 //     if IVMeasResult.isLarge then
 //      begin
@@ -1693,10 +1509,6 @@ begin
 //             0.2*(TIVDependence.VoltageCorrection-VoltageInputCorrection);
 //      end;
 //*************************************************
-//  showmessage(floattostr(NewCorrection));
-//  showmessage('VC'+floattostr(TIVDependence.VoltageCorrection));
-//  showmessage('f'+floattostr(Factor));
-//  showmessage('D'+floattostr(IVMeasResult.DeltaToExpected));
 
    if (NewCorrection=ErResult)
       or(abs(NewCorrection-IVMeasResult.Correction)<1e-4)
@@ -1704,7 +1516,6 @@ begin
     then NewCorrection:=TIVDependence.VoltageCorrection-
                      Factor*IVMeasResult.DeltaToExpected;
 
-//       cbpc.Caption:=floattostr(NewCorrection);
 
     CorrectionLimit(NewCorrection);
 
@@ -1736,17 +1547,9 @@ begin
   Result:=True;
 end;
 
-//function TIVchar.IVCorrecrionNeeded(measuredV:double): boolean;
 function TIVchar.IVCorrecrionNeeded(): boolean;
-// var MaxDif:double;
 begin
-//  MaxDif:=IVCharVoltageMaxDif();
   Result:=abs(IVMeasResult.DeltaToExpected)>=IVCharVoltageMaxDif();
-//  if TIVDependence.ItIsForward then
-//   Result:=(abs(measuredV-TIVDependence.VoltageInput)>=MaxDif)
-//                                       else
-//   Result:=(abs(measuredV+TIVDependence.VoltageInput)>=MaxDif);
-
 end;
 
 function TIVchar.IVCurrentGrowth: boolean;
@@ -1762,22 +1565,17 @@ function TIVchar.IVForeseeCorrection(): double;
 begin
  Result:=ErResult;
 
-// showmessage('a');
  if IVMeasResult.isEmpty then Exit;
-//        showmessage('s');
    if ItIsDarkIV then
       begin
 
         Iprognoz:=IVprognozI();
-//        if abs(Iprognoz)<1e-7 then Exit;
         Rprib:=IVRpribor();
         if (Iprognoz<>ErResult)and (Rprib<>ErResult) then
              Result:=abs(Iprognoz*Rprib);
-//        if abs(Iprognoz)<1e-9 then Result:=IVprognozCor();
 
       end        else
       begin
-//       showmessage('ivprognozCor');
        Result:=IVprognozCor();
       end;
 end;
@@ -1791,17 +1589,6 @@ begin
  IVMeasResult.DeltaToExpected:=ErResult;
 
  if (IVResult^.n<1) then Exit;
-
-// if ItIsBegining then
-//  begin
-//   IVMRFirst.VoltageMeasured:=IVResult^.X[0];
-//   IVMRFirst.CurrentMeasured:=IVResult^.Y[0];
-//   IVMRFirst.DeltaToApplied:=VolCorrectionNew^.Y[0];
-//   IVMRFirst.DeltaToExpected:=ErResult;
-//   IVMRFirst.Correction:=VolCorrectionNew^.Y[0];
-//   IVMRFirst.CurrentDiapazon:= -1;
-//   IVMRFirst.isEmpty:=False;
-//  end;
 
 
  if (VoltageInputSign*IVResult^.X[IVResult^.n-1]<0) then Exit;
@@ -1821,84 +1608,26 @@ begin
 
 end;
 
-//procedure TIVchar.IVCorrectionSet(Rpr,Iprognoz:double);
-//begin
-//  if (Iprognoz<>ErResult)and
-//           (Rpr<>ErResult) then
-//             TIVDependence.VoltageCorrectionChange(Iprognoz*Rpr);
-//end;
 
 function TIVchar.IVprognozCor: double;
- var Vec:PVector;
 begin
-// new(Vec);
-// if not(IVMeasResult.isEmpty)
-//  then Vec^.Add(IVMeasResult.CurrentMeasured,IVMeasResult.Correction);
-//
-// if (IVMeasResult.CurrentDiapazon=IVMRFirst.CurrentDiapazon)and
-//    (not(IVMRFirst.isEmpty))
-//  then  Vec^.Add(IVMRFirst.CurrentMeasured,IVMRFirst.Correction);
-//
-// if (IVMeasResult.CurrentDiapazon=IVMRSecond.CurrentDiapazon)and
-//    (not(IVMRSecond.isEmpty))
-//  then  Vec^.Add(IVMRSecond.CurrentMeasured,IVMRSecond.Correction);
-//
-// Result:=LinAproxYvalue(Vec,IVprognozI());
-//
-// dispose(Vec);
-
-// Result:=ErResult;
-//// showmessage('g');
-// if IVMeasResult.isEmpty then Exit;
-//
-//
-// if (IVMeasResult.CurrentDiapazon=IVMRFirst.CurrentDiapazon)and
-//    (not(IVMRFirst.isEmpty)) then
-//   begin
-////   if (IVMeasResult.VoltageMeasured<>IVMRFirst.VoltageMeasured) then
-//     Result:=Y_X0(IVMeasResult.VoltageMeasured,
-//                  IVMeasResult.Correction,
-//                  IVMRFirst.VoltageMeasured,
-//                  IVMRFirst.Correction,
-//                  VoltageInputSign);
-//     Exit;
-//   end;
-//
-// if (IVMeasResult.CurrentDiapazon=IVMRSecond.CurrentDiapazon)and
-//    (not(IVMRSecond.isEmpty)) then
-//   begin
-// //  if (IVMeasResult.VoltageMeasured<>IVMRSecond.VoltageMeasured) then
-//
-//     Result:=Y_X0(IVMeasResult.VoltageMeasured,
-//                  IVMeasResult.Correction,
-//                  IVMRSecond.VoltageMeasured,
-//                  IVMRSecond.Correction,
-//                  VoltageInputSign);
-//   end;
-
  Result:=ErResult;
-// showmessage('g');
  if IVMeasResult.isEmpty then Exit;
-
 
  if (IVMeasResult.CurrentDiapazon=IVMRFirst.CurrentDiapazon)and
     (not(IVMRFirst.isEmpty)) then
    begin
-//   if (IVMeasResult.CurrentMeasured<>IVMRFirst.CurrentMeasured) then
      Result:=Y_X0(IVMeasResult.CurrentMeasured,
                   IVMeasResult.Correction,
                   IVMRFirst.CurrentMeasured,
                   IVMRFirst.Correction,
                   IVprognozI());
-//      LTRValue.Caption:=floattostr(result);
      Exit;
    end;
 
  if (IVMeasResult.CurrentDiapazon=IVMRSecond.CurrentDiapazon)and
     (not(IVMRSecond.isEmpty)) then
    begin
-//   if (IVMeasResult.CurrentMeasured<>IVMRSecond.CurrentMeasured) then
-
      Result:=Y_X0(IVMeasResult.CurrentMeasured,
                   IVMeasResult.Correction,
                   IVMRSecond.CurrentMeasured,
@@ -1909,60 +1638,12 @@ begin
   if abs(Result)<Imin then Result:=0;
 
 //  Imax := DoubleConstantShows[1].Data;
-//  Imin
-
-// LTRValue.Caption:=floattostr(result);
 end;
 
 function TIVchar.IVprognozI: double;
  var
    i,j:byte;
-   Vector:PVector;
 begin
-// new(Vector);
-//  if (not(IVMeasResult.isEmpty))
-//   then Vector^.Add(IVMeasResult.VoltageMeasured,IVMeasResult.CurrentMeasured);
-//
-//  if (not(IVMRFirst.isEmpty))
-//   then Vector^.Add(IVMRFirst.VoltageMeasured,IVMRFirst.CurrentMeasured);
-//
-//  if (not(IVMRSecond.isEmpty))
-//   then Vector^.Add(IVMRSecond.VoltageMeasured,IVMRSecond.CurrentMeasured);
-//
-////  if (not(IVMRSecond.isEmpty))
-////   then
-////   begin
-////    if Vector^.n=1
-////      then Vector^.Add(IVMRSecond.VoltageMeasured,IVMRSecond.CurrentMeasured)
-////      else if Vector^.n=2
-////           then
-////           begin
-////             if abs(IVMeasResult.DeltaToExpected)>abs(IVMRSecond.DeltaToExpected)
-////             then if abs(IVMeasResult.DeltaToExpected)>abs(IVMRFirst.DeltaToExpected)
-////                then
-////                 begin
-////                   Vector^.Delete(0);
-////                   Vector^.Add(IVMRSecond.VoltageMeasured,IVMRSecond.CurrentMeasured);
-////                 end
-////                else
-////                 begin
-////                   Vector^.Delete(1);
-////                   Vector^.Add(IVMRSecond.VoltageMeasured,IVMRSecond.CurrentMeasured);
-////                 end
-////             else if abs(IVMRFirst.DeltaToExpected)>abs(IVMRSecond.DeltaToExpected)
-////                then
-////                 begin
-////                   Vector^.Delete(1);
-////                   Vector^.Add(IVMRSecond.VoltageMeasured,IVMRSecond.CurrentMeasured);
-////                 end;
-////           end;
-////   end;
-//
-// Result:=LinAproxYvalue(Vector,VoltageInputSign);
-//
-// cbpc.Caption:=floattostr(Result);
-// dispose(Vector);
-
  Result:=ErResult;
  i:=0;j:=0;
  if IVMeasResult.isEmpty then inc(j)
@@ -2021,25 +1702,8 @@ begin
                            IVMRSecond.CurrentMeasured,
                            VoltageInputSign)
    end;
-
-//   cbpc.Caption:=floattostr(Result);
  end;
 
-
-
-function TIVchar.IVprognozIsecond: double;
-begin
- Result:=ErResult;
- if (IVResult^.n<2) then Exit;
-
- if (IVResult^.X[IVResult^.n-1]*VoltageInputSign<0) then Exit;
-
- Result:=Y_X0(IVResult^.X[IVResult^.n-1],
-              IVResult^.Y[IVResult^.n-1],
-              IVMeasResult.VoltageMeasured,
-              IVMeasResult.CurrentMeasured,
-              VoltageInputSign);
-end;
 
 function TIVchar.IVRpribor(): double;
 begin
@@ -2048,21 +1712,9 @@ begin
      else Result:=IVMeasResult.Rpribor;
 end;
 
-//function TIVchar.IVSavedCorrectionSet: double;
 procedure TIVchar.IVSavedCorrectionSet;
 begin
-// if TIVDependence.ItIsForward then
-//   Result:=VolCorrection.Yvalue(TIVDependence.VoltageInput)
-//                              else
-//   Result:=VolCorrection.Yvalue(-TIVDependence.VoltageInput);
-//   TIVDependence.VoltageCorrectionChange(Result);
-// if TIVDependence.ItIsForward then
-//   TIVDependence.VoltageCorrectionChange(VolCorrection.Yvalue(TIVDependence.VoltageInput))
-//                              else
-//   TIVDependence.VoltageCorrectionChange(VolCorrection.Yvalue(-TIVDependence.VoltageInput));
-
  TIVDependence.VoltageCorrectionChange(VolCorrection.Yvalue(VoltageInputSign))
-//   TIVDependence.VoltageCorrectionChange(Result);
 end;
 
 procedure TIVchar.LimitsToLabel(LimitShow,LimitShowRev:TLimitShow);
@@ -2101,19 +1753,12 @@ begin
     dispose(tempVec);
 end;
 
-//procedure TIVchar.CalibrHookEnd;
-//begin
-// HookEndReset();
-// HookEnd();
-// BIVSave.OnClick:=CalibrSaveClick;
-//end;
 
 procedure TIVchar.CalibrHookFirstMeas;
 begin
   Application.ProcessMessages;;
   if TIVDependence.IVMeasuringToStop then Exit;
 
-//  TDependence.tempVChange(VoltageIV_MD.GetMeasurementResult());
   TDependence.tempVChange(TIVDependence.VoltageInputReal);
   LADVoltageValue.Caption:=FloatToStrF(TDependence.tempV,ffFixed, 6, 4);
 end;
@@ -2141,7 +1786,6 @@ begin
       end;
 
   if (TIVDependence.VoltageInput=0)
-//  if ItIsBegining
    then  ItIsDarkIV:=(TDependence.tempI>-1e-5)
   else
    if TDependence.tempI>0 then  ItIsDarkIV:=True;
@@ -2149,35 +1793,9 @@ begin
 
 
   if ItIsBegining then ItIsBegining:=not(ItIsBegining);
-//  if TIVDependence.ItIsForward then
-//     VolCorrectionNew.Add(TIVDependence.VoltageInput,TIVDependence.VoltageCorrection)
-//                                      else
-//     VolCorrectionNew.Add(-TIVDependence.VoltageInput,TIVDependence.VoltageCorrection);
   VolCorrectionNew.Add(VoltageInputSign,TIVDependence.VoltageCorrection);
 
-
-
-
-//  if (TIVDependence.VoltageInput=0) then showmessage(booltostr(ItIsDarkIV)+'true='+booltostr(true))
 end;
-
-//procedure TIVchar.IVcharHookEnd;
-//begin
-// HookEndReset;
-// HookEnd();
-//
-//  if (not(SBTAuto.Down)) then
-//    begin
-//      Temperature:=Temperature_MD.GetMeasurementResult();
-//      TemperData.Add(TDependence.PointNumber,Temperature);
-//    end;
-//
-//  TemperData.DeleteErResult;
-//  if TemperData.n>0 then
-//     Temperature:=TemperData.SumY/TemperData.n;
-//
-// BIVSave.OnClick:=IVCharSaveClick;
-//end;
 
 procedure TIVchar.HookEnd;
 begin
@@ -2188,7 +1806,6 @@ begin
   BConnect.Enabled := True;
   BParamReceive.Enabled := True;
   SBTAuto.Enabled := True;
-//  PC.OnChanging := nil;
   if High(IVResult^.X) > 0 then
   begin
     BIVSave.Enabled := True;
@@ -2445,8 +2062,23 @@ procedure TIVchar.BTermostatResetClick(Sender: TObject);
 begin
  if SBTermostat.Down then
     begin
-     if assigned(PID_Termostat) then PID_Termostat.Free;
-     IsPID_Termostat_Created:=False;
+//     if assigned(PID_Termostat) then PID_Termostat.Free;
+//     IsPID_Termostat_Created:=False;
+     if assigned(PID_Termostat)
+       then PID_Termostat.SetParametr(DoubleConstantShows[16].Data,
+                                      DoubleConstantShows[17].Data,
+                                      DoubleConstantShows[18].Data,
+                                      DoubleConstantShows[7].Data,
+                                      DoubleConstantShows[15].Data);
+     if  SBTAuto.Down then
+      begin
+       TemperatureMeasuringThread.Terminate;
+       TemperatureThreadCreate();
+      end             else
+      begin
+        SBTAuto.Down:=True;
+        TemperatureThreadCreate();
+      end;
     end;
 end;
 
@@ -2461,8 +2093,16 @@ procedure TIVchar.BControlResetClick(Sender: TObject);
 begin
  if SBControlBegin.Down then
     begin
-      ControllerThread.Terminate;
-      ControllerThreadCreate()
+    PID_Control.SetParametr(DoubleConstantShows[12].Data,
+                            DoubleConstantShows[13].Data,
+                            DoubleConstantShows[14].Data,
+                            DoubleConstantShows[11].Data,
+                            DoubleConstantShows[10].Data);
+    ControlWatchDog.Enabled:=False;
+    ControlWatchDog.Interval:=round(StrToFloat(STControlInterval.Caption))*2000;
+    ControlWatchDog.Enabled:=True;
+    ControllerThread.Terminate;
+    ControllerThreadCreate()
     end;
 end;
 
@@ -2581,35 +2221,6 @@ begin
 
  ComPortsEnding([ComPortUT70C,ComPortUT70B,ComPort1]);
 
-// try
-//  if ComPort1.Connected then
-//   begin
-//    Comport1.AbortAllAsync;
-//    ComPort1.ClearBuffer(True, True);
-//    ComPort1.Close;
-//   end;
-// finally
-// end;
-//
-// try
-//  if ComPortUT70C.Connected then
-//   begin
-//    ComPortUT70C.AbortAllAsync;
-//    ComPortUT70C.ClearBuffer(True, True);
-//    ComPortUT70C.Close;
-//   end;
-// finally
-// end;
-//
-// try
-//  if ComPortUT70B.Connected then
-//   begin
-//    ComPortUT70B.AbortAllAsync;
-//    ComPortUT70B.ClearBuffer(True, True);
-//    ComPortUT70B.Close;
-//   end;
-// finally
-// end;
 end;
 
 
@@ -2713,39 +2324,6 @@ begin
   PortBeginAction(ComPort1, LConnected, BConnect);
 
 
-//  ComPortUT70C.LoadSettings(stIniFile, ExtractFilePath(Application.ExeName) + 'IVChar.ini');
-//  ComCBUT70CPort.UpdateSettings;
-//  try
-//    ComPortUT70C.Open;
-//    ComPortUT70C.AbortAllAsync;
-//    ComPortUT70C.ClearBuffer(True, True);
-//  finally
-//    PortBeginAction(ComPortUT70C, LUT70CPort, nil);
-//  end;
-//
-//  ComPortUT70B.LoadSettings(stIniFile, ExtractFilePath(Application.ExeName) + 'IVChar.ini');
-//  ComCBUT70BPort.UpdateSettings;
-//  try
-//    ComPortUT70B.Open;
-//    ComPortUT70B.AbortAllAsync;
-//    ComPortUT70B.ClearBuffer(True, True);
-//  finally
-//    PortBeginAction(ComPortUT70B, LUT70BPort, nil);
-//  end;
-//
-//  ComPort1.LoadSettings(stIniFile, ExtractFilePath(Application.ExeName) + 'IVChar.ini');
-//  ComCBBR.UpdateSettings;
-//  ComCBPort.UpdateSettings;
-//  ComDPacket.StartString := PacketBeginChar;
-//  ComDPacket.StopString := PacketEndChar;
-//  ComDPacket.ComPort := ComPort1;
-//  try
-//    ComPort1.Open;
-//    Comport1.AbortAllAsync;
-//    ComPort1.ClearBuffer(True, True);
-//  finally
-//    PortBeginAction(ComPort1, LConnected, BConnect);
-//  end;
 end;
 
 procedure TIVchar.ComPortsEnding(ComPorts: array of TComPort);
@@ -2787,37 +2365,11 @@ begin
 end;
 
 procedure TIVchar.RangeShow(Sender: TObject);
-// var Start,Finish:string;
-//    LimitShow:TLimitShow;
-//    LimitShowRev:TLimitShowRev;
  begin
   if CBMeasurements.Items[CBMeasurements.ItemIndex]
         =MeasR2RCalib
         then  LimitsToLabel(CalibrRangeFor,CalibrRangeRev)
         else  LimitsToLabel(IVCharRangeFor,IVCharRangeRev);
-//
-//  if CBMeasurements.Items[CBMeasurements.ItemIndex]
-//        =MeasR2RCalib then
-//    begin
-//      LimitShow:=CalibrRangeFor;
-//      LimitShowRev:=CalibrRangeRev;
-//    end               else
-//    begin
-//      LimitShow:=IVCharRangeFor;
-//      LimitShowRev:=IVCharRangeRev;
-//    end;
-//
-//  if CBForw.Checked then Finish:=LimitShow.ValueLabelHigh.Caption
-//                    else Finish:=LimitShowRev.ValueLabelHigh.Caption;
-//  if CBRev.Checked then Start:=LimitShowRev.ValueLabelLow.Caption
-//                   else Start:=LimitShow.ValueLabelLow.Caption;
-//
-//  if (not(CBForw.Checked))and(not(CBRev.Checked))
-//    then begin
-//         Finish:='0';
-//         Start:='0';
-//         end;
-//  LADRange.Caption := 'Range is [' + Start + ' .. '+ Finish + '] V';
 end;
 
 procedure TIVchar.RangeShowLimit;
@@ -2970,7 +2522,6 @@ begin
 
   CBFvsS.Checked:=ConfigFile.ReadBool('Box', CBFvsS.Name,False);
 
-//  CBFvsSClick(Self);
 end;
 
 procedure TIVchar.BoxToIniFile;
@@ -3017,13 +2568,22 @@ procedure TIVchar.SBControlBeginClick(Sender: TObject);
 begin
  if SBControlBegin.Down then
     begin
+    PID_Control:=TPID.Create(DoubleConstantShows[12].Data,
+                             DoubleConstantShows[13].Data,
+                             DoubleConstantShows[14].Data,
+                             DoubleConstantShows[11].Data,
+                             DoubleConstantShows[10].Data);
     ControllerThreadCreate();
+    ControlWatchDog.Interval:=round(StrToFloat(STControlInterval.Caption))*2000;
+    ControlWatchDog.Enabled:=True;
     SBControlBegin.Caption:='Stop Controling';
     end
                  else
     begin
     ControllerThread.Terminate;
+    ControlWatchDog.Enabled:=False;
     SBControlBegin.Caption:='Start Controling';
+    PID_Control.Free;
     end;
 end;
 
@@ -3052,7 +2612,11 @@ begin
     begin
     IsWorkingTermostat:=False;
     SBTermostat.Caption:='Start Controling';
-    if assigned(PID_Termostat) then PID_Termostat.Free;
+    if assigned(PID_Termostat) then
+      begin
+      PID_Termostat.Free;
+      TermostatWatchDog.Enabled:=False;
+      end;
     IsPID_Termostat_Created:=False;
     end;
 end;
@@ -3066,9 +2630,6 @@ begin
   BoxToIniFile;
   ConstantShowToIniFile();
   ComPortsWriteSettings([ComPortUT70C,ComPortUT70B,ComPort1]);
-//  ComPort1.StoreSettings(stIniFile,ExtractFilePath(Application.ExeName)+'IVChar.ini');
-//  ComPortUT70B.StoreSettings(stIniFile,ExtractFilePath(Application.ExeName)+'IVChar.ini');
-//  ComPortUT70C.StoreSettings(stIniFile,ExtractFilePath(Application.ExeName)+'IVChar.ini');
 end;
 
 procedure TIVchar.TemperatureOnTimeFirstMeas;
@@ -3077,11 +2638,6 @@ begin
  LADVoltageValue.Caption:=FloatToStrF(TDependence.tempI,ffFixed, 5, 2);
 end;
 
-//procedure TIVchar.TemperatureOnTimeHookBegin;
-//begin
-//  ControlTimeHookBegin;
-//  LADVoltage.Caption:='Temperature:';
-//end;
 
 procedure TIVchar.TemperatureThreadCreate;
 begin
@@ -3092,17 +2648,6 @@ begin
                                        EventMeasuringEnd);
 end;
 
-//procedure TIVchar.TimeDHookBegin;
-//begin
-//  HookBegin();
-//  MeasurementTimeParameterDetermination(TimeDependence);
-//end;
-
-//procedure TIVchar.TimeDHookEnd;
-//begin
-// HookEnd();
-// BIVSave.OnClick:=SaveClickTimeDep;
-//end;
 
 procedure TIVchar.TimeDHookFirstMeas;
 begin
@@ -3115,27 +2660,11 @@ begin
  LADCurrentValue.Caption:=FloatToStrF(TDependence.tempV,ffExponent, 4, 3);
 end;
 
-//procedure TIVchar.TimeTwoDHookBegin;
-//begin
-//  HookBegin();
-//  MeasurementTimeParameterDetermination(TimeTwoDependenceTimer);
-//end;
-
-//procedure TIVchar.TimeTwoDHookEnd;
-//begin
-// HookEnd();
-// BIVSave.OnClick:=SaveClickTimeTwoDep;
-//end;
 
 procedure TIVchar.TimeTwoDHookFirstMeas;
 begin
  TimeDHookFirstMeas;
 
-// TTimeTwoDependenceTimer.SecondValueChange(TimeD_MD2.ActiveInterface.GetData);
-// if TimeTwoDependenceTimer.isTwoValueOnTime then
-//    LADInputVoltageValue.Caption:=FloatToStrF(TTimeTwoDependenceTimer.SecondValue,ffExponent, 4, 3)
-//                                            else
-//    LADCurrentValue.Caption:=FloatToStrF(TTimeTwoDependenceTimer.SecondValue,ffExponent, 4, 3);
 end;
 
 procedure TIVchar.TimeTwoDHookSecondMeas;
@@ -3149,14 +2678,34 @@ begin
                                             else
     LADCurrentValue.Caption:=FloatToStrF(TTimeTwoDependenceTimer.SecondValue,ffExponent, 4, 3);
 
-//  if TimeTwoDependenceTimer.isTwoValueOnTime then TimeDHookSecondMeas;
 end;
 
-procedure TIVchar.DependTimerTimer(Sender: TObject);
+
+
+procedure TIVchar.TermostatWatchDogTimer(Sender: TObject);
 begin
-  ThermoCuple.Measurement:=TermoCouple_MD.ActiveInterface;
-  Temperature_MD.ActiveInterface.GetDataThread(TemperMessage,EventMeasuringEnd);
+ if (Temperature_MD.ActiveInterface.NewData)
+    and(Temperature_MD.ActiveInterface.Value<>ErResult)
+  then
+    begin
+    LTermostatWatchDog.Visible:=True;
+    end
+  else
+    begin
+    LTermostatWatchDog.Visible:=False;
+    BTermostatResetClick(Sender);
+    end;
+  TermostatWatchDog.Interval:=round(StrToFloat(STTMI.Caption))*2000;
+  Temperature_MD.ActiveInterface.NewData:=False;
 end;
+
+//procedure TIVchar.DependTimerTimer(Sender: TObject);
+//begin
+//
+//  showmessage('DependTimerTimer');
+//  ThermoCuple.Measurement:=TermoCouple_MD.ActiveInterface;
+//  Temperature_MD.ActiveInterface.GetDataThread(TemperMessage,EventMeasuringEnd);
+//end;
 
 procedure TIVchar.VoltmetrsCreate;
 begin
@@ -3176,7 +2725,6 @@ begin
 
   IscVocPinChanger:=TArduinoPinChanger.Create(ComPort1,'IscVocPin');
   IscVocPinChangerShow:=TArduinoPinChangerShow.Create(IscVocPinChanger,LIscVocPin,BIscVocPin,BIscVocPinChange,CBIscVocPin);
-//  IscVocPinChangerShow:=TPinsShow.Create(IscVocPinChanger.Pins,LIscVocPin,nil,BIscVocPin,nil,CBIscVocPin);
 
   UT70B:=TUT70B.Create(ComPortUT70B, 'UT70B');
   UT70BShow:= TUT70BShow.Create(UT70B, RGUT70B_MM, RGUT70B_Range, RGUT70B_RangeM, LUT70B, LUT70BU, BUT70BMeas, SBUT70BAuto, Time);
@@ -3219,6 +2767,10 @@ begin
     begin
       LTRValue.Caption:=FloatToStrF(Temperature_MD.ActiveInterface.Value,ffFixed, 5, 2);
       LTermostatCTValue.Caption:=FloatToStrF(Temperature_MD.ActiveInterface.Value,ffFixed, 5, 2);
+      if LTermostatCTValue.Font.Color=clBlue
+        then LTermostatCTValue.Font.Color:=clRed
+        else LTermostatCTValue.Font.Color:=clBlue;
+      
       if IsWorkingTermostat then
         begin
           if IsPID_Termostat_Created then
@@ -3232,6 +2784,8 @@ begin
                                          DoubleConstantShows[15].Data
                                          );
               IsPID_Termostat_Created:=True;
+              TermostatWatchDog.Interval:=round(StrToFloat(STTMI.Caption))*2000;
+              TermostatWatchDog.Enabled:=True;
             end;
           SettingTermostat.ActiveInterface.Output(PID_Termostat.OutputValue);
           LTermostatOutputValue.Caption:=
@@ -3257,7 +2811,6 @@ end;
 
 procedure TIVchar.HookEndReset;
 begin
-//  Application.ProcessMessages;
   SettingDevice.ActiveInterface.Reset();
 
 //  Application.ProcessMessages;
@@ -3385,9 +2938,6 @@ begin
   TermoCouple_MD:=TMeasuringDevice.Create(Devices,CBTcVMD,LTRValue,srVoltge);
   Temperature_MD:=TTemperature_MD.Create([Simulator,ThermoCuple,DS18B20],CBTD,LTRValue);
 
-//  SetLength(Devices,5);
-//  Devices[4]:=UT70B;
-
   SetLength(Devices,High(Devices)+3);
   Devices[High(Devices)-1]:=UT70B;
   Devices[High(Devices)]:=UT70C;
@@ -3409,9 +2959,6 @@ begin
   Devices[High(Devices)-1]:=ThermoCuple;
   Devices[High(Devices)]:=DS18B20;
 
-//  SetLength(Devices,7);
-//  Devices[5]:=ThermoCuple;
-//  Devices[6]:=DS18B20;
   TimeD_MD:=
     TMeasuringDevice.Create(Devices,CBTimeMD,LADCurrentValue,srVoltge);
   TimeD_MD2:=
@@ -3423,13 +2970,8 @@ begin
   DevicesSet[0]:=Simulator;
   DevicesSet[1]:=DACR2R;
 
-//  if assigned(ET1255_DACs[0]) then
   if ET1255isPresent then
    begin
-//    SetLength(DevicesSet,5);
-//    DevicesSet[2]:=ET1255_DACs[0];
-//    DevicesSet[3]:=ET1255_DACs[1];
-//    DevicesSet[4]:=ET1255_DACs[2];
     SetLength(DevicesSet,High(DevicesSet)+4);
     DevicesSet[High(DevicesSet)-2]:=ET1255_DACs[0];
     DevicesSet[High(DevicesSet)-1]:=ET1255_DACs[1];

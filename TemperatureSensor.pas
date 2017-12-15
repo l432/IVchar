@@ -69,6 +69,7 @@ procedure TDS18B20.ConvertToValue();
  var temp:integer;
      sign:byte;
 begin
+ fValue:=ErResult;
  if High(fData)<>1 then Exit;
  sign:=(fData[1] and $F8);
  if sign=$0 then

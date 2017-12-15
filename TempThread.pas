@@ -44,6 +44,7 @@ type
     fMeasurement:IMeasurement;
     fDAC:IDAC;
     fPID:TPID;
+    fInterialPIDused:boolean;
     function Mesuring():double;
     procedure ControllerOutput;
   protected
@@ -53,7 +54,11 @@ type
    constructor Create(Measurement:IMeasurement;
                       IDAC:IDAC;
                       Interval:double;
-                      Kpp,Kii,Kdd,{InitialValue,}NeededValue:double);
+                      Kpp,Kii,Kdd,NeededValue:double);overload;
+   constructor Create(Measurement:IMeasurement;
+                      IDAC:IDAC;
+                      Interval:double;
+                      PID:TPID);overload;
   end;
 
 
@@ -122,7 +127,7 @@ begin
   fMeasurement:=Measurement;
   fDAC:=IDAC;
   fPID:=TPID.Create(Kpp, Kii, Kdd, Interval, NeededValue);
-
+  fInterialPIDused:=True;
   Resume;
 end;
 
@@ -136,17 +141,33 @@ begin
 end;
 
 function TControllerThread.Mesuring:double;
+ label bb;
 begin
+bb:
   ResetEvent(FEventTerminate);
   fMeasurement.GetDataThread(ControlMessage, FEventTerminate);
-  WaitForSingleObject(FEventTerminate, INFINITE);
-  ResetEvent(FEventTerminate);
-  Result:=fMeasurement.Value;
+//  WaitForSingleObject(FEventTerminate, INFINITE);
+  if WaitForSingleObject(FEventTerminate,5000)<>WAIT_OBJECT_0
+    then goto bb;
+   ResetEvent(FEventTerminate);
+   Result:=fMeasurement.Value;
+end;
+
+constructor TControllerThread.Create(Measurement: IMeasurement; IDAC: IDAC;
+  Interval: double; PID: TPID);
+begin
+  inherited Create(Interval);
+
+  fMeasurement:=Measurement;
+  fDAC:=IDAC;
+  fPID:=PID;
+  fInterialPIDused:=False;
+  Resume;
 end;
 
 destructor TControllerThread.Destroy;
 begin
-  fPID.Free;
+  if fInterialPIDused then fPID.Free;
   inherited Destroy;
 end;
 
