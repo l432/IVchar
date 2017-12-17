@@ -242,6 +242,7 @@ end;
 procedure TSimulator.GetDataThread(WPARAM: word;EventEnd:THandle);
 begin
  fValue:=GetTickCount/1e7;
+ fNewData:=True;
  PostMessage(FindWindow ('TIVchar', 'IVchar'), WM_MyMeasure,WPARAM,0);
  SetEvent(EventEnd);
 end;

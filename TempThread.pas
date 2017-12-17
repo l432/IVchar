@@ -54,7 +54,7 @@ type
    constructor Create(Measurement:IMeasurement;
                       IDAC:IDAC;
                       Interval:double;
-                      Kpp,Kii,Kdd,NeededValue:double);overload;
+                      Kpp,Kii,Kdd,NeededValue,Tolerance:double);overload;
    constructor Create(Measurement:IMeasurement;
                       IDAC:IDAC;
                       Interval:double;
@@ -119,14 +119,14 @@ constructor TControllerThread.Create(Measurement: IMeasurement;
                                      IDAC: IDAC;
                                      Interval: double;
                                      Kpp, Kii, Kdd,
-                                     NeededValue: double);
+                                     NeededValue,Tolerance: double);
 
 begin
   inherited Create(Interval);
 
   fMeasurement:=Measurement;
   fDAC:=IDAC;
-  fPID:=TPID.Create(Kpp, Kii, Kdd, Interval, NeededValue);
+  fPID:=TPID.Create(Kpp, Kii, Kdd, NeededValue,Tolerance, Interval);
   fInterialPIDused:=True;
   Resume;
 end;

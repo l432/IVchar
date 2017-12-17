@@ -336,7 +336,7 @@ type
     LControlInterval: TLabel;
     SBControlBegin: TSpeedButton;
     LControlCVValue: TLabel;
-    LPIDParam: TLabel;
+    LControlTolerance: TLabel;
     STControlKp: TStaticText;
     LControlKp: TLabel;
     STControlInterval: TStaticText;
@@ -349,7 +349,7 @@ type
     LTermostatCT: TLabel;
     SBTermostat: TSpeedButton;
     LTermostatCTValue: TLabel;
-    LTermostatPID: TLabel;
+    LTermostatTolerance: TLabel;
     LTermostatKp: TLabel;
     LTermostatKi: TLabel;
     LTermostatKd: TLabel;
@@ -436,6 +436,8 @@ type
     TermostatWatchDog: TTimer;
     LControlWatchDog: TLabel;
     ControlWatchDog: TTimer;
+    STTermostatTolerance: TStaticText;
+    STControlTolerance: TStaticText;
 
     procedure FormCreate(Sender: TObject);
     procedure BConnectClick(Sender: TObject);
@@ -460,7 +462,6 @@ type
     procedure BIVStartClick(Sender: TObject);
     procedure PCChanging(Sender: TObject; var AllowChange: Boolean);
     procedure BDFFA_R2RClick(Sender: TObject);
-    procedure Button1Click(Sender: TObject);
 //    procedure DependTimerTimer(Sender: TObject);
     procedure SBControlBeginClick(Sender: TObject);
     procedure BControlResetClick(Sender: TObject);
@@ -514,8 +515,10 @@ type
     { Private declarations }
     procedure RangeWriteToIniFile;
     procedure ConstantShowCreate;
+    procedure PIDShowCreateAndFromIniFile;
     procedure ConstantShowFromIniFile;
-    procedure ConstantShowToIniFile;
+    procedure ConstantShowToIniFileAndFree;
+    procedure PIDShowToIniFileAndFree;
     procedure SaveCommentsFile(FileName: string);
     procedure DependenceMeasuringCreate;
     procedure DependenceMeasuringFree;
@@ -644,6 +647,7 @@ type
     ControlParameterTime,TemperatureOnTime:TTimeDependence;
     TimeTwoDependenceTimer,IscVocOnTime:TTimeTwoDependenceTimer;
     PID_Termostat,PID_Control:TPID;
+    PID_Termostat_ParametersShow,PID_Control_ParametersShow:TPID_ParametersShow;
     IsPID_Termostat_Created:boolean;
     IVMeasResult,IVMRFirst,IVMRSecond:TIVMeasurementResult;
   end;
@@ -675,7 +679,7 @@ end;
 procedure TIVchar.ConstantShowCreate;
 begin
 
-  SetLength(DoubleConstantShows, 19);
+  SetLength(DoubleConstantShows, 11);
   DoubleConstantShows[0]:=TParameterShow1.Create(STPR,LPR,
         'Parasitic resistance',
         'Parasitic resistance value is expected',0,3);
@@ -707,34 +711,34 @@ begin
         'Measurement duration (s), 0 - infinite',
         'Full measurement duration',0,2);
 
-  DoubleConstantShows[10]:=TParameterShow1.Create(STControlNV,LControlNV,
-        'Needed Value',
-        'Needed Value',0);
-  DoubleConstantShows[11]:=TParameterShow1.Create(STControlInterval,LControlInterval,
+//  DoubleConstantShows[10]:=TParameterShow1.Create(STControlNV,LControlNV,
+//        'Needed Value',
+//        'Needed Value',0);
+  DoubleConstantShows[10]:=TParameterShow1.Create(STControlInterval,LControlInterval,
         'Controling interval (s)',
         'Controling measurement interval',15,2);
-  DoubleConstantShows[12]:=TParameterShow1.Create(STControlKp,LControlKp,
-        'Kp',
-        'Proportional term of controller',1);
-  DoubleConstantShows[13]:=TParameterShow1.Create(STControlKi,LControlKi,
-        'Ki',
-        'Integral term of controller',0);
-  DoubleConstantShows[14]:=TParameterShow1.Create(STControlKd,LControlKd,
-        'Kd',
-        'Derivative term of controller',0);
+//  DoubleConstantShows[12]:=TParameterShow1.Create(STControlKp,LControlKp,
+//        'Kp',
+//        'Proportional term of controller',1);
+//  DoubleConstantShows[13]:=TParameterShow1.Create(STControlKi,LControlKi,
+//        'Ki',
+//        'Integral term of controller',0);
+//  DoubleConstantShows[14]:=TParameterShow1.Create(STControlKd,LControlKd,
+//        'Kd',
+//        'Derivative term of controller',0);
 
-  DoubleConstantShows[15]:=TParameterShow1.Create(STTermostatNT,LTermostatNT,
-        'Needed Temperature',
-        'Needed Temperature',300);
-  DoubleConstantShows[16]:=TParameterShow1.Create(STTermostatKp,LTermostatKp,
-        'Proportional',
-        'Proportional term of termostat',0.1);
-  DoubleConstantShows[17]:=TParameterShow1.Create(STTermostatKi,LTermostatKi,
-        'Integral',
-        'Integral term of termostat',0);
-  DoubleConstantShows[18]:=TParameterShow1.Create(STTermostatKd,LTermostatKd,
-        'Derivative',
-        'Derivative term of termostat',0);
+//  DoubleConstantShows[15]:=TParameterShow1.Create(STTermostatNT,LTermostatNT,
+//        'Needed Temperature',
+//        'Needed Temperature',300);
+//  DoubleConstantShows[16]:=TParameterShow1.Create(STTermostatKp,LTermostatKp,
+//        'Proportional',
+//        'Proportional term of termostat',0.1);
+//  DoubleConstantShows[17]:=TParameterShow1.Create(STTermostatKi,LTermostatKi,
+//        'Integral',
+//        'Integral term of termostat',0);
+//  DoubleConstantShows[18]:=TParameterShow1.Create(STTermostatKd,LTermostatKd,
+//        'Derivative',
+//        'Derivative term of termostat',0);
 
 end;
 
@@ -745,30 +749,25 @@ begin
    DoubleConstantShows[i].ReadFromIniFile(ConfigFile);
 end;
 
-procedure TIVchar.ConstantShowToIniFile;
+procedure TIVchar.ConstantShowToIniFileAndFree;
  var i:integer;
 begin
   ConfigFile.EraseSection(DoubleConstantSection);
   for I := Low(DoubleConstantShows) to High(DoubleConstantShows) do
+   begin
    DoubleConstantShows[i].WriteToIniFile(ConfigFile);
+   DoubleConstantShows[i].Free;
+   end;
 end;
 
 procedure TIVchar.ControllerThreadCreate;
 begin
   ThermoCuple.Measurement:=TermoCouple_MD.ActiveInterface;
 
-//  ControllerThread:=
-//    TControllerThread.Create(Control_MD.ActiveInterface,
-//                             SettingDeviceControl.ActiveInterface,
-//                             DoubleConstantShows[11].Data,
-//                             DoubleConstantShows[12].Data,
-//                             DoubleConstantShows[13].Data,
-//                             DoubleConstantShows[14].Data,
-//                             DoubleConstantShows[10].Data);
   ControllerThread:=
     TControllerThread.Create(Control_MD.ActiveInterface,
                              SettingDeviceControl.ActiveInterface,
-                             DoubleConstantShows[11].Data,
+                             DoubleConstantShows[10].Data,
                              PID_Control);
 
 end;
@@ -2065,11 +2064,13 @@ begin
 //     if assigned(PID_Termostat) then PID_Termostat.Free;
 //     IsPID_Termostat_Created:=False;
      if assigned(PID_Termostat)
-       then PID_Termostat.SetParametr(DoubleConstantShows[16].Data,
-                                      DoubleConstantShows[17].Data,
-                                      DoubleConstantShows[18].Data,
-                                      DoubleConstantShows[7].Data,
-                                      DoubleConstantShows[15].Data);
+//       then PID_Termostat.SetParametr(DoubleConstantShows[16].Data,
+//                                      DoubleConstantShows[17].Data,
+//                                      DoubleConstantShows[18].Data,
+//                                      DoubleConstantShows[7].Data,
+//                                      DoubleConstantShows[15].Data);
+       then PID_Termostat.SetParametr(PID_Termostat_ParametersShow,
+                                      DoubleConstantShows[7].Data);
      if  SBTAuto.Down then
       begin
        TemperatureMeasuringThread.Terminate;
@@ -2082,23 +2083,15 @@ begin
     end;
 end;
 
-procedure TIVchar.Button1Click(Sender: TObject);
-begin
- ET_WriteDAC(0,2);
- showmessage(ET_ErrMsg);
-
-end;
 
 procedure TIVchar.BControlResetClick(Sender: TObject);
 begin
  if SBControlBegin.Down then
     begin
-    PID_Control.SetParametr(DoubleConstantShows[12].Data,
-                            DoubleConstantShows[13].Data,
-                            DoubleConstantShows[14].Data,
-                            DoubleConstantShows[11].Data,
+    PID_Control.SetParametr(PID_Control_ParametersShow,
                             DoubleConstantShows[10].Data);
     ControlWatchDog.Enabled:=False;
+    LControlWatchDog.Visible:=False;
     ControlWatchDog.Interval:=round(StrToFloat(STControlInterval.Caption))*2000;
     ControlWatchDog.Enabled:=True;
     ControllerThread.Terminate;
@@ -2149,6 +2142,8 @@ begin
 
  ConstantShowCreate();
  ConstantShowFromIniFile();
+
+ PIDShowCreateAndFromIniFile();
 
  BoxFromIniFile();
 
@@ -2243,6 +2238,32 @@ end;
 procedure TIVchar.PCChanging(Sender: TObject; var AllowChange: Boolean);
 begin
  AllowChange:=False;
+end;
+
+procedure TIVchar.PIDShowCreateAndFromIniFile;
+begin
+  PID_Termostat_ParametersShow:=
+   TPID_ParametersShow.Create('PIDTermostat',
+           STTermostatKp,STTermostatKi,STTermostatKd,STTermostatNT,STTermostatTolerance,
+           LTermostatKp,LTermostatKi,LTermostatKd,LTermostatNT,LTermostatTolerance);
+  PID_Termostat_ParametersShow.ReadFromIniFile(ConfigFile);
+
+  PID_Control_ParametersShow:=
+   TPID_ParametersShow.Create('PIDControl',
+           STControlKp,STControlKi,STControlKd,STControlNV,STControlTolerance,
+           LControlKp,LControlKi,LControlKd,LControlNV,LControlTolerance);
+  PID_Control_ParametersShow.ReadFromIniFile(ConfigFile);
+
+
+end;
+
+procedure TIVchar.PIDShowToIniFileAndFree;
+begin
+  ConfigFile.EraseSection(PID_Param);
+  PID_Termostat_ParametersShow.WriteToIniFile(ConfigFile);
+  PID_Control_ParametersShow.WriteToIniFile(ConfigFile);
+  PID_Termostat_ParametersShow.Free;
+  PID_Control_ParametersShow.Free;
 end;
 
 procedure TIVchar.SGFBStepDrawCell(Sender: TObject; ACol, ARow: Integer;
@@ -2568,10 +2589,12 @@ procedure TIVchar.SBControlBeginClick(Sender: TObject);
 begin
  if SBControlBegin.Down then
     begin
-    PID_Control:=TPID.Create(DoubleConstantShows[12].Data,
-                             DoubleConstantShows[13].Data,
-                             DoubleConstantShows[14].Data,
-                             DoubleConstantShows[11].Data,
+//    PID_Control:=TPID.Create(DoubleConstantShows[12].Data,
+//                             DoubleConstantShows[13].Data,
+//                             DoubleConstantShows[14].Data,
+//                             DoubleConstantShows[10].Data,
+//                             DoubleConstantShows[11].Data);
+    PID_Control:=TPID.Create(PID_Control_ParametersShow,
                              DoubleConstantShows[10].Data);
     ControllerThreadCreate();
     ControlWatchDog.Interval:=round(StrToFloat(STControlInterval.Caption))*2000;
@@ -2582,6 +2605,7 @@ begin
     begin
     ControllerThread.Terminate;
     ControlWatchDog.Enabled:=False;
+    LControlWatchDog.Visible:=False;
     SBControlBegin.Caption:='Start Controling';
     PID_Control.Free;
     end;
@@ -2601,7 +2625,7 @@ begin
     begin
     IsWorkingTermostat:=True;
     IsPID_Termostat_Created:=False;
-    SBTermostat.Caption:='Stop Controling';
+    SBTermostat.Caption:='Stop PID Control';
     if not(SBTAuto.Down) then
         begin
         SBTAuto.Down:=True;
@@ -2611,11 +2635,12 @@ begin
                  else
     begin
     IsWorkingTermostat:=False;
-    SBTermostat.Caption:='Start Controling';
+    SBTermostat.Caption:='Start PID Control';
     if assigned(PID_Termostat) then
       begin
       PID_Termostat.Free;
       TermostatWatchDog.Enabled:=False;
+      LTermostatWatchDog.Visible:=False;
       end;
     IsPID_Termostat_Created:=False;
     end;
@@ -2628,7 +2653,8 @@ begin
   DelayTimeWriteToIniFile;
   DevicesWriteToIniFile;
   BoxToIniFile;
-  ConstantShowToIniFile();
+  ConstantShowToIniFileAndFree();
+  PIDShowToIniFileAndFree();
   ComPortsWriteSettings([ComPortUT70C,ComPortUT70B,ComPort1]);
 end;
 
@@ -2777,11 +2803,14 @@ begin
               PID_Termostat.ControlingSignal(Temperature_MD.ActiveInterface.Value)
                                      else
             begin
-              PID_Termostat:=TPID.Create(DoubleConstantShows[16].Data,
-                                         DoubleConstantShows[17].Data,
-                                         DoubleConstantShows[18].Data,
-                                         DoubleConstantShows[7].Data,
-                                         DoubleConstantShows[15].Data
+//              PID_Termostat:=TPID.Create(DoubleConstantShows[16].Data,
+//                                         DoubleConstantShows[17].Data,
+//                                         DoubleConstantShows[18].Data,
+//                                         DoubleConstantShows[15].Data,
+//                                         DoubleConstantShows[7].Data
+//                                         );
+              PID_Termostat:=TPID.Create(PID_Termostat_ParametersShow,
+                                         DoubleConstantShows[7].Data
                                          );
               IsPID_Termostat_Created:=True;
               TermostatWatchDog.Interval:=round(StrToFloat(STTMI.Caption))*2000;

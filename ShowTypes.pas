@@ -62,6 +62,7 @@ end;
     property Data:double read GetData write SetData;
     procedure ReadFromIniFile(ConfigFile:TIniFile);
     procedure WriteToIniFile(ConfigFile:TIniFile);
+    procedure Free;
   end;  //   TParameterShow=object
 
 
@@ -226,7 +227,7 @@ end;
 Constructor TParameterShow1.Create(STD:TStaticText;
                        STC:TLabel;
                        ParametrCaption:string;
-                       {WC,}WT:string;
+                       WT:string;
                        InitValue:double;
                        DN:byte=3
                        );
@@ -241,10 +242,17 @@ begin
   STCaption:=STC;
   STCaption.Caption:=ParametrCaption;
   STCaption.WordWrap:=True;
-//  fWindowCaption:=WC;
   fWindowCaption:=ParametrCaption+' input';
   fWindowText:=WT;
   DefaulValue:=InitValue;
+end;
+
+procedure TParameterShow1.Free;
+begin
+//  STData.OnClick:=nil;
+//  STData:=nil;
+//  STCaption:=nil;
+//  inherited Free;
 end;
 
 procedure TParameterShow1.ButtonClick(Sender: TObject);
