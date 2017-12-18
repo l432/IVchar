@@ -35,7 +35,7 @@ object IVchar: TIVchar
     Top = 0
     Width = 1028
     Height = 609
-    ActivePage = TS_Temper
+    ActivePage = TS_ET1255
     Align = alTop
     Font.Charset = RUSSIAN_CHARSET
     Font.Color = clWindowText
@@ -5043,6 +5043,14 @@ object IVchar: TIVchar
           Font.Style = [fsBold]
           ParentFont = False
           TabOrder = 10
+        end
+        object CBLEDAuto: TCheckBox
+          Left = 240
+          Top = 144
+          Width = 145
+          Height = 17
+          Caption = 'LED auto on'
+          TabOrder = 11
         end
       end
     end

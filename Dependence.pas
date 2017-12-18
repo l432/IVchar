@@ -519,6 +519,7 @@ end;
 procedure TTimeDependenceTimer.TimerOnTime(Sender: TObject);
 begin
    PeriodicMeasuring;
+   Timer.Interval:=round(Interval*1000);
 end;
 
 { TTimeDependence }

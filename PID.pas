@@ -73,7 +73,7 @@ end;
 implementation
 
 uses
-  OlegType;
+  OlegType, Dialogs, SysUtils;
 
 { TPID }
 
@@ -88,6 +88,7 @@ begin
      fOutputValue:=Kp*(Epsi[1]+Ki*Period*EpsSum+Kd/Period*(Epsi[1]-Epsi[0]));
     end;
  Result:=fOutputValue;
+// showmessage(floattostr(Result));
 end;
 
 constructor TPID.Create(Kpp,Kii,Kdd,NeededValue,Tol,Interval:double);
@@ -102,14 +103,19 @@ end;
 constructor TPID.Create(PID_PShow: TPID_ParametersShow; Interval: double);
 begin
  Create(PID_PShow.Kp,PID_PShow.Ki,PID_PShow.Kd,PID_PShow.NeededValue,PID_PShow.Tolerance,Interval);
+//showmessage('kp='+floattostr(Kp)+
+//            ' ki='+floattostr(Ki)+
+//            ' kd='+floattostr(Kd)+
+//            ' NV='+floattostr(Needed)+
+//            ' tol='+floattostr(Tolerance));
 end;
 
 procedure TPID.DeviationCalculation(CurrentValue: double);
  var eps:double;
 begin
  eps:=FNeeded-CurrentValue;
- if abs(eps)>abs(FTolerance)
-   then EpsSum:=EpsSum+eps;
+ if abs(eps)>abs(FTolerance) then
+   EpsSum:=EpsSum+eps;
  Epsi[0]:=Epsi[1];
  Epsi[1]:=eps;
 end;

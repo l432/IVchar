@@ -22,6 +22,8 @@ const
 
   MD_IniSection='Sources';
 
+  IscVocTimeToWait=1500;
+
 
 type
   TIVchar = class(TForm)
@@ -438,6 +440,7 @@ type
     ControlWatchDog: TTimer;
     STTermostatTolerance: TStaticText;
     STControlTolerance: TStaticText;
+    CBLEDAuto: TCheckBox;
 
     procedure FormCreate(Sender: TObject);
     procedure BConnectClick(Sender: TObject);
@@ -790,7 +793,7 @@ begin
   else
     begin
     LControlWatchDog.Visible:=False;
-//    BTermostatResetClick(Sender);
+    BControlResetClick(Sender);
     end;
   ControlWatchDog.Interval:=round(StrToFloat(STControlInterval.Caption))*2000;
   Control_MD.ActiveInterface.NewData:=False;
@@ -1034,8 +1037,13 @@ end;
 
 procedure TIVchar.IscVocOnTimeHookFirstMeas;
 begin
+ if CBLEDAuto.Checked then
+  begin
+    BOVset1255Ch2.OnClick(nil);
+    sleep(3000);
+  end;
  IscVocPinChanger.PinChangeToLow;
- sleep(1000);
+ sleep(IscVocTimeToWait);
  TDependence.tempIChange(Voc_MD.ActiveInterface.GetData);
  if TDependence.tempI<1e-5
    then  TDependence.tempIChange(Voc_MD.ActiveInterface.GetData);
@@ -1045,7 +1053,7 @@ end;
 procedure TIVchar.IscVocOnTimeHookSecondMeas;
 begin
  IscVocPinChanger.PinChangeToHigh;
- sleep(1000);
+ sleep(IscVocTimeToWait);
  TTimeTwoDependenceTimer.SecondValueChange(abs(Isc_MD.ActiveInterface.GetData));
  if TTimeTwoDependenceTimer.SecondValue<1e-7
    then  TTimeTwoDependenceTimer.SecondValueChange(abs(Isc_MD.ActiveInterface.GetData));
@@ -1054,7 +1062,14 @@ begin
  VolCorrectionNew^.Add(TTimeTwoDependenceTimer.tempV,
                        Voc_MD.ActiveInterface.GetData);
 
+ if CBLEDAuto.Checked then
+  begin
+    BReset1255Ch2.OnClick(nil);
+//    sleep(3000);
+  end;
+
  TimeDHookSecondMeas;
+ MeasurementTimeParameterDetermination(IscVocOnTime);
 end;
 
 procedure TIVchar.IVCharCurrentMeasHook;

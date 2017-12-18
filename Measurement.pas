@@ -115,6 +115,8 @@ TDAC_Show=class
    procedure KodSetButtonAction(Sender:TObject);
    procedure ResetButtonClick(Sender:TObject);
   public
+//   procedure ValueSetButtonAction(Sender:TObject);
+//   procedure ResetButtonClick(Sender:TObject);
    Constructor Create(OI: IDAC;
                       VL, KL: TLabel;
                       VCB, VSB, KCB,
