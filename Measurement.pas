@@ -130,12 +130,8 @@ TMeasurementShow=class
    DataLabel,UnitLabel:TLabel;
    MeasurementButton:TButton;
    Time:TTimer;
-//   AdapterMeasureMode,AdapterRange:TAdapterRadioGroupClick;
    procedure MeasurementButtonClick(Sender: TObject);
    procedure AutoSpeedButtonClick(Sender: TObject);
-   procedure DiapazonFill;virtual;abstract;
-   procedure MeasureModeFill;virtual;abstract;
-   procedure HookMeasureModeFill();virtual;
    procedure StringArrayToRadioGroup(SA:array of string;
                                      RG:TRadioGroup);
    procedure IndexToRadioGroup(Index:ShortInt;RG:TRadioGroup);
@@ -488,16 +484,17 @@ begin
    MeasurementButton:=MB;
    AutoSpeedButton:=AB;
    Time:=TT;
-
-   MeasureModeFill();
-
-   HookMeasureModeFill();
-//   IndexToRadioGroup(RS232Meter.fMeasureMode,MeasureMode);
-   DiapazonFill();
    UnitLabel.Caption := '';
-
    MeasurementButton.OnClick:=MeasurementButtonClick;
    AutoSpeedButton.OnClick:=AutoSpeedButtonClick;
+
+
+//   MeasureModeFill();
+//   HookMeasureModeFill();
+//   IndexToRadioGroup(RS232Meter.fMeasureMode,MeasureMode);
+//   DiapazonFill();
+
+
 
 //   AdapterMeasureMode:=TAdapterRadioGroupClick.Create(MeasureMode.Items.Count-1);
 //   AdapterRange:=TAdapterRadioGroupClick.Create(Range.Items.Count-1);
@@ -514,10 +511,10 @@ end;
 //end;
 
 
-procedure TMeasurementShow.HookMeasureModeFill;
-begin
-
-end;
+//procedure TMeasurementShow.HookMeasureModeFill;
+//begin
+//
+//end;
 
 procedure TMeasurementShow.IndexToRadioGroup(Index: ShortInt; RG: TRadioGroup);
 begin
@@ -536,18 +533,10 @@ end;
 
 procedure TMeasurementShow.MetterDataShow;
 begin
-//  MeasureMode.OnClick:=nil;
-//  Range.OnClick:=nil;
-   HookMeasureModeFill();
-   DiapazonFill();
-
-//  MeasureMode.OnClick:=AdapterMeasureMode.RadioGroupClick;
-//  Range.OnClick:=AdapterRange.RadioGroupClick;
 
   if fMeter.Value<>ErResult then
      begin
        UnitLabel.Caption:=UnitModeLabel();
-//       UnitLabel.Caption:=RS232Meter.MeasureModeLabel;
        DataLabel.Caption:=FloatToStrF(fMeter.Value,ffExponent,4,2)
      end
                         else

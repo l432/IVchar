@@ -184,52 +184,21 @@ TAdapterRadioGroupClick=class
     procedure RadioGroupOnEnter(Sender: TObject);
   end;
 
-TRS232MetterShow=class
-  protected
-   RS232Meter:TRS232Meter;
-   MeasureMode,Range:TRadioGroup;
-   DataLabel,UnitLabel:TLabel;
-   MeasurementButton:TButton;
-   Time:TTimer;
-   AdapterMeasureMode,AdapterRange:TAdapterRadioGroupClick;
-   procedure MeasurementButtonClick(Sender: TObject);
-   procedure AutoSpeedButtonClick(Sender: TObject);
-   procedure DiapazonFill();
-   procedure MeasureModeFill();
-   procedure StringArrayToRadioGroup(SA:array of string;
-                                     RG:TRadioGroup);
-   procedure IndexToRadioGroup(Index:ShortInt;RG:TRadioGroup);
-  public
-   AutoSpeedButton:TSpeedButton;
-   Constructor Create(Meter:TRS232Meter;
-                      MM,R:TRadioGroup;
-                      DL,UL:TLabel;
-                      MB:TButton;
-                      AB:TSpeedButton;
-                      TT:TTimer
-                      );
-   Procedure Free; virtual;
-   procedure MetterDataShow();virtual;
-end;
-
-//TRS232MetterShow=class(TMeasurementShow)
+//TRS232MetterShow=class
 //  protected
 //   RS232Meter:TRS232Meter;
-////   MeasureMode,Range:TRadioGroup;
-////   DataLabel,UnitLabel:TLabel;
-////   MeasurementButton:TButton;
-////   Time:TTimer;
+//   MeasureMode,Range:TRadioGroup;
+//   DataLabel,UnitLabel:TLabel;
+//   MeasurementButton:TButton;
+//   Time:TTimer;
 //   AdapterMeasureMode,AdapterRange:TAdapterRadioGroupClick;
-////   procedure MeasurementButtonClick(Sender: TObject);
-////   procedure AutoSpeedButtonClick(Sender: TObject);
-//   procedure DiapazonFill();override;
-//   procedure MeasureModeFill();override;
-//   procedure HookMeasureModeFill();override;
-//   function UnitModeLabel():string;override;
-//
-////   procedure StringArrayToRadioGroup(SA:array of string;
-////                                     RG:TRadioGroup);
-////   procedure IndexToRadioGroup(Index:ShortInt;RG:TRadioGroup);
+//   procedure MeasurementButtonClick(Sender: TObject);
+//   procedure AutoSpeedButtonClick(Sender: TObject);
+//   procedure DiapazonFill();
+//   procedure MeasureModeFill();
+//   procedure StringArrayToRadioGroup(SA:array of string;
+//                                     RG:TRadioGroup);
+//   procedure IndexToRadioGroup(Index:ShortInt;RG:TRadioGroup);
 //  public
 //   AutoSpeedButton:TSpeedButton;
 //   Constructor Create(Meter:TRS232Meter;
@@ -240,8 +209,39 @@ end;
 //                      TT:TTimer
 //                      );
 //   Procedure Free; virtual;
-//   procedure MetterDataShow();override;
+//   procedure MetterDataShow();virtual;
 //end;
+
+TRS232MetterShow=class(TMeasurementShow)
+  protected
+   RS232Meter:TRS232Meter;
+//   MeasureMode,Range:TRadioGroup;
+//   DataLabel,UnitLabel:TLabel;
+//   MeasurementButton:TButton;
+//   Time:TTimer;
+   AdapterMeasureMode,AdapterRange:TAdapterRadioGroupClick;
+//   procedure MeasurementButtonClick(Sender: TObject);
+//   procedure AutoSpeedButtonClick(Sender: TObject);
+   procedure DiapazonFill();
+   procedure MeasureModeFill();
+//   procedure HookMeasureModeFill();override;
+   function UnitModeLabel():string;override;
+
+//   procedure StringArrayToRadioGroup(SA:array of string;
+//                                     RG:TRadioGroup);
+//   procedure IndexToRadioGroup(Index:ShortInt;RG:TRadioGroup);
+  public
+//   AutoSpeedButton:TSpeedButton;
+   Constructor Create(Meter:TRS232Meter;
+                      MM,R:TRadioGroup;
+                      DL,UL:TLabel;
+                      MB:TButton;
+                      AB:TSpeedButton;
+                      TT:TTimer
+                      );
+   Procedure Free; virtual;
+   procedure MetterDataShow();override;
+end;
 
 
 Function BCDtoDec(BCD:byte; isLow:boolean):byte;
@@ -462,47 +462,13 @@ end;
 
 { TMetterVoltmetrShow }
 
-procedure TRS232MetterShow.AutoSpeedButtonClick(Sender: TObject);
-begin
- MeasurementButton.Enabled:=not(AutoSpeedButton.Down);
- if AutoSpeedButton.Down then Time.OnTimer:=MeasurementButton.OnClick;
- Time.Enabled:=AutoSpeedButton.Down;
-end;
-
-
-constructor TRS232MetterShow.Create(Meter: TRS232Meter;
-                                       MM, R: TRadioGroup;
-                                       DL, UL: TLabel;
-                                       MB: TButton;
-                                       AB: TSpeedButton;
-                                       TT: TTimer);
-begin
-   RS232Meter:=Meter;
-   MeasureMode:=MM;
-   Range:=R;
-   DataLabel:=DL;
-   UnitLabel:=UL;
-   MeasurementButton:=MB;
-   AutoSpeedButton:=AB;
-   Time:=TT;
-
-   MeasureModeFill();
-
-   IndexToRadioGroup(RS232Meter.fMeasureMode,MeasureMode);
-   DiapazonFill();
-   UnitLabel.Caption := '';
-
-   MeasurementButton.OnClick:=MeasurementButtonClick;
-   AutoSpeedButton.OnClick:=AutoSpeedButtonClick;
-
-   AdapterMeasureMode:=TAdapterRadioGroupClick.Create(MeasureMode.Items.Count-1);
-   AdapterRange:=TAdapterRadioGroupClick.Create(Range.Items.Count-1);
-   MeasureMode.OnClick:=AdapterMeasureMode.RadioGroupClick;
-   Range.OnClick:=AdapterRange.RadioGroupClick;
-   MeasureMode.onEnter:=AdapterMeasureMode.RadioGroupOnEnter;
-   Range.onEnter:=AdapterRange.RadioGroupOnEnter;
-end;
-
+//procedure TRS232MetterShow.AutoSpeedButtonClick(Sender: TObject);
+//begin
+// MeasurementButton.Enabled:=not(AutoSpeedButton.Down);
+// if AutoSpeedButton.Down then Time.OnTimer:=MeasurementButton.OnClick;
+// Time.Enabled:=AutoSpeedButton.Down;
+//end;
+//
 //constructor TRS232MetterShow.Create(Meter: TRS232Meter;
 //                                       MM, R: TRadioGroup;
 //                                       DL, UL: TLabel;
@@ -511,7 +477,22 @@ end;
 //                                       TT: TTimer);
 //begin
 //   RS232Meter:=Meter;
-//   inherited Create(Meter, MM, R, DL, UL, MB, AB, TT);
+//   MeasureMode:=MM;
+//   Range:=R;
+//   DataLabel:=DL;
+//   UnitLabel:=UL;
+//   MeasurementButton:=MB;
+//   AutoSpeedButton:=AB;
+//   Time:=TT;
+//
+//   MeasureModeFill();
+//
+//   IndexToRadioGroup(RS232Meter.fMeasureMode,MeasureMode);
+//   DiapazonFill();
+//   UnitLabel.Caption := '';
+//
+//   MeasurementButton.OnClick:=MeasurementButtonClick;
+//   AutoSpeedButton.OnClick:=AutoSpeedButtonClick;
 //
 //   AdapterMeasureMode:=TAdapterRadioGroupClick.Create(MeasureMode.Items.Count-1);
 //   AdapterRange:=TAdapterRadioGroupClick.Create(Range.Items.Count-1);
@@ -520,6 +501,54 @@ end;
 //   MeasureMode.onEnter:=AdapterMeasureMode.RadioGroupOnEnter;
 //   Range.onEnter:=AdapterRange.RadioGroupOnEnter;
 //end;
+//
+//procedure TRS232MetterShow.IndexToRadioGroup(Index: ShortInt; RG: TRadioGroup);
+//begin
+//  try
+//   RG.ItemIndex:=Index;
+//  except
+//   RG.ItemIndex:=RG.Items.Count-1;
+//  end;
+//end;
+//
+//procedure TRS232MetterShow.MeasurementButtonClick(Sender: TObject);
+//begin
+// RS232Meter.Measurement();
+// MetterDataShow();
+//end;
+//
+//procedure TRS232MetterShow.MetterDataShow;
+//begin
+//  MeasureMode.OnClick:=nil;
+//  Range.OnClick:=nil;
+//
+//  IndexToRadioGroup(RS232Meter.fMeasureMode,MeasureMode);
+//  DiapazonFill();
+//
+//  MeasureMode.OnClick:=AdapterMeasureMode.RadioGroupClick;
+//  Range.OnClick:=AdapterRange.RadioGroupClick;
+//
+//  if RS232Meter.Value<>ErResult then
+//     begin
+//       UnitLabel.Caption:=RS232Meter.MeasureModeLabel;
+//       DataLabel.Caption:=FloatToStrF(RS232Meter.Value,ffExponent,4,2)
+//     end
+//                        else
+//     begin
+//       UnitLabel.Caption:='';
+//       DataLabel.Caption:='    ERROR';
+//     end;
+//end;
+//
+//procedure TRS232MetterShow.StringArrayToRadioGroup(SA: array of string;
+//                                              RG: TRadioGroup);
+// var i:byte;
+//begin
+//    RG.Items.Clear;
+//    for I := 0 to High(SA) do RG.Items.Add(SA[i]);
+//end;
+
+//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 
 procedure TRS232MetterShow.DiapazonFill;
@@ -541,31 +570,38 @@ begin
  inherited Free;
 end;
 
-//procedure TRS232MetterShow.HookMeasureModeFill;
-//begin
-// IndexToRadioGroup(RS232Meter.fMeasureMode,MeasureMode);
-//end;
-
-procedure TRS232MetterShow.IndexToRadioGroup(Index: ShortInt; RG: TRadioGroup);
-begin
-  try
-   RG.ItemIndex:=Index;
-  except
-   RG.ItemIndex:=RG.Items.Count-1;
-  end;
-end;
-
-procedure TRS232MetterShow.MeasurementButtonClick(Sender: TObject);
-begin
- RS232Meter.Measurement();
- MetterDataShow();
-end;
 
 procedure TRS232MetterShow.MeasureModeFill;
 begin
     StringArrayToRadioGroup(RS232Meter.fMeasureModeAll,MeasureMode);
     MeasureMode.Items.Add(Error);
 end;
+
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+constructor TRS232MetterShow.Create(Meter: TRS232Meter;
+                                       MM, R: TRadioGroup;
+                                       DL, UL: TLabel;
+                                       MB: TButton;
+                                       AB: TSpeedButton;
+                                       TT: TTimer);
+begin
+   inherited Create(Meter, MM, R, DL, UL, MB, AB, TT);
+   RS232Meter:=Meter;
+
+   MeasureModeFill();
+   IndexToRadioGroup(RS232Meter.fMeasureMode,MeasureMode);
+   DiapazonFill();
+
+   AdapterMeasureMode:=TAdapterRadioGroupClick.Create(MeasureMode.Items.Count-1);
+   AdapterRange:=TAdapterRadioGroupClick.Create(Range.Items.Count-1);
+   MeasureMode.OnClick:=AdapterMeasureMode.RadioGroupClick;
+   Range.OnClick:=AdapterRange.RadioGroupClick;
+   MeasureMode.onEnter:=AdapterMeasureMode.RadioGroupOnEnter;
+   Range.onEnter:=AdapterRange.RadioGroupOnEnter;
+end;
+
+
 
 
 procedure TRS232MetterShow.MetterDataShow;
@@ -579,54 +615,12 @@ begin
   MeasureMode.OnClick:=AdapterMeasureMode.RadioGroupClick;
   Range.OnClick:=AdapterRange.RadioGroupClick;
 
-  if RS232Meter.Value<>ErResult then
-     begin
-       UnitLabel.Caption:=RS232Meter.MeasureModeLabel;
-       DataLabel.Caption:=FloatToStrF(RS232Meter.Value,ffExponent,4,2)
-     end
-                        else
-     begin
-       UnitLabel.Caption:='';
-       DataLabel.Caption:='    ERROR';
-     end;
+  inherited  MetterDataShow();
 end;
 
-//procedure TRS232MetterShow.MetterDataShow;
-//begin
-//  MeasureMode.OnClick:=nil;
-//  Range.OnClick:=nil;
-//
-//  inherited  MetterDataShow();
-//
-////  IndexToRadioGroup(RS232Meter.fMeasureMode,MeasureMode);
-////  DiapazonFill();
-//
-//  MeasureMode.OnClick:=AdapterMeasureMode.RadioGroupClick;
-//  Range.OnClick:=AdapterRange.RadioGroupClick;
-//
-////  if RS232Meter.Value<>ErResult then
-////     begin
-////       UnitLabel.Caption:=RS232Meter.MeasureModeLabel;
-////       DataLabel.Caption:=FloatToStrF(RS232Meter.Value,ffExponent,4,2)
-////     end
-////                        else
-////     begin
-////       UnitLabel.Caption:='';
-////       DataLabel.Caption:='    ERROR';
-////     end;
-//end;
-
-//function TRS232MetterShow.UnitModeLabel: string;
-//begin
-// Result:=RS232Meter.MeasureModeLabel;
-//end;
-
-procedure TRS232MetterShow.StringArrayToRadioGroup(SA: array of string;
-                                              RG: TRadioGroup);
- var i:byte;
+function TRS232MetterShow.UnitModeLabel: string;
 begin
-    RG.Items.Clear;
-    for I := 0 to High(SA) do RG.Items.Add(SA[i]);
+ Result:=RS232Meter.MeasureModeLabel;
 end;
 
 { TAdapterRadioGroupClick }

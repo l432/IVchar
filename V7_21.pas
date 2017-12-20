@@ -90,7 +90,8 @@ type
 
 implementation
 
-uses   PacketParameters, Math, SysUtils, OlegMath, OlegType, RS232_Meas_Tread;
+uses   PacketParameters, Math, SysUtils, OlegMath, OlegType, RS232_Meas_Tread, 
+  Dialogs;
 
 Constructor TVoltmetr.Create(CP:TComPort;Nm:string);
  var V721_MeasureMode:TV721_MeasureMode;
@@ -407,8 +408,11 @@ end;
 
 procedure TVoltmetrShow.NumberPinShow();
 begin
+//       showmessage('j1');
  PinShow.NumberPinShow();
- ButtonEnabled()
+//       showmessage('j2');
+ ButtonEnabled();
+//       showmessage('j3');
 end;
 
 procedure TVoltmetrShow.ButtonEnabled();

@@ -9,7 +9,7 @@ uses
   TemperatureSensor, DACR2R, UT70, RS232device,ET1255, RS232_Mediator_Tread,
   CPortCtl, Grids, Chart, TeeProcs, Series, TeEngine, ExtCtrls, Buttons,
   ComCtrls, CPort, StdCtrls, Dialogs, Controls, Classes, D30_06,Math, PID, 
-  MDevice;
+  MDevice, Spin;
 
 const
   MeasIV='IV characteristic';
@@ -22,7 +22,7 @@ const
 
   MD_IniSection='Sources';
 
-  IscVocTimeToWait=1500;
+  IscVocTimeToWait=1000;
 
 
 type
@@ -441,6 +441,21 @@ type
     STTermostatTolerance: TStaticText;
     STControlTolerance: TStaticText;
     CBLEDAuto: TCheckBox;
+    TS_ET1255ADC: TTabSheet;
+    ChET1255: TChart;
+    PointET1255: TPointSeries;
+    RGET1255_MM: TRadioGroup;
+    RGET1255Range: TRadioGroup;
+    LET1255I: TLabel;
+    LET1255U: TLabel;
+    SBET1255Auto: TSpeedButton;
+    BET1255Meas: TButton;
+    CBET1255_SM: TCheckBox;
+    SEET1255_MN: TSpinEdit;
+    STET1255_4096: TStaticText;
+    STET1255_MN: TStaticText;
+    SEET1255_Gain: TSpinEdit;
+    STET122_Gain: TStaticText;
 
     procedure FormCreate(Sender: TObject);
     procedure BConnectClick(Sender: TObject);
@@ -610,27 +625,36 @@ type
     NumberPinsOneWire:TStringList; // номери пінів, які використовуються для OneWire
     ForwSteps,RevSteps,IVResult,VolCorrection,
     VolCorrectionNew,TemperData:PVector;
+
     DACR2R:TDACR2R;
     DACR2RShow:TDACR2RShow;
+
     D30_06:TD30_06;
     D30_06Show:TD30_06Show;
+
     Simulator:TSimulator;
+
     UT70B:TUT70B;
     UT70BShow:TUT70BShow;
     UT70C:TUT70C;
     UT70CShow:TUT70CShow;
+
     ET1255_DACs:array[TET1255_DAC_ChanelNumber] of TET1255_DAC;
     ET1255_DACsShow:array[TET1255_DAC_ChanelNumber] of TDAC_Show;
     ET1255isPresent:boolean;
+    ET1255_ADCModule:TET1255_ModuleAndChan;
+    ET1255_ADCShow:TET1255_ADCShow;
+
     Devices:array of IMeasurement;
     DevicesSet:array of IDAC;
     Temperature_MD:TTemperature_MD;
     Current_MD,VoltageIV_MD,DACR2R_MD,D30_MD,
     TermoCouple_MD,TimeD_MD,Control_MD,TimeD_MD2,
     Isc_MD,Voc_MD:TMeasuringDevice;
-    ET1255_DAC_MD:array[TET1255_DAC_ChanelNumber] of TMeasuringDevice;
+        ET1255_DAC_MD:array[TET1255_DAC_ChanelNumber] of TMeasuringDevice;
     SettingDevice,SettingDeviceControl,SettingTermostat:TSettingDevice;
     RS232_MediatorTread:TRS232_MediatorTread;
+
     TemperatureMeasuringThread:TTemperatureMeasuringThread;
     ControllerThread:TControllerThread;
     IVCharRangeFor,CalibrRangeFor:TLimitShow;
@@ -1045,8 +1069,12 @@ begin
  IscVocPinChanger.PinChangeToLow;
  sleep(IscVocTimeToWait);
  TDependence.tempIChange(Voc_MD.ActiveInterface.GetData);
+  if ForwLine.Count>0 then
+    if abs(TDependence.tempI- ForwLine.YValue[ForwLine.Count-1])>abs(0.1*ForwLine.YValue[ForwLine.Count-1])
+   then  TDependence.tempIChange(Voc_MD.ActiveInterface.GetData);
  if TDependence.tempI<1e-5
    then  TDependence.tempIChange(Voc_MD.ActiveInterface.GetData);
+
  LADVoltageValue.Caption:=FloatToStrF(TDependence.tempI,ffExponent, 4, 3);
 end;
 
@@ -1055,6 +1083,10 @@ begin
  IscVocPinChanger.PinChangeToHigh;
  sleep(IscVocTimeToWait);
  TTimeTwoDependenceTimer.SecondValueChange(abs(Isc_MD.ActiveInterface.GetData));
+  if ForwLg.Count>0 then
+    if abs(TTimeTwoDependenceTimer.SecondValue - ForwLg.YValue[ForwLg.Count-1])>abs(0.1*ForwLg.YValue[ForwLg.Count-1])
+   then  TTimeTwoDependenceTimer.SecondValueChange(abs(Isc_MD.ActiveInterface.GetData));
+
  if TTimeTwoDependenceTimer.SecondValue<1e-7
    then  TTimeTwoDependenceTimer.SecondValueChange(abs(Isc_MD.ActiveInterface.GetData));
 
@@ -1065,7 +1097,6 @@ begin
  if CBLEDAuto.Checked then
   begin
     BReset1255Ch2.OnClick(nil);
-//    sleep(3000);
   end;
 
  TimeDHookSecondMeas;
@@ -1291,38 +1322,23 @@ begin
                     BOKset1255Ch3,BReset1255Ch3);
    end
                     else
+   begin
    PC.Pages[8].TabVisible:=False;
-//   PET1255DAC.Enabled:=False;
+//   PC.Pages[9].TabVisible:=False;
+   end;
 
-//
-//     for I := Low(TET1255_DAC_ChanelNumber) to High(TET1255_DAC_ChanelNumber) do
-//        ET1255_DACs[i]:=TET1255_DAC.Create(i);
-//
-//       ET1255_DACsShow[0]:=TDAC_Show.Create(ET1255_DACs[0],
-//                      LOV1255ch0,LOK1255Ch0,BOVchange1255Ch0,
-//                      BOVset1255Ch0,BOKchange1255Ch0,
-//                      BOKset1255Ch0,BReset1255Ch0);
-//       ET1255_DACsShow[1]:=TDAC_Show.Create(ET1255_DACs[1],
-//                      LOV1255ch1,LOK1255Ch1,BOVchange1255Ch1,
-//                      BOVset1255Ch1,BOKchange1255Ch1,
-//                      BOKset1255Ch1,BReset1255Ch1);
-//       ET1255_DACsShow[2]:=TDAC_Show.Create(ET1255_DACs[2],
-//                      LOV1255ch2,LOK1255Ch2,BOVchange1255Ch2,
-//                      BOVset1255Ch2,BOKchange1255Ch2,
-//                      BOKset1255Ch2,BReset1255Ch2);
-//  if ET_StartDrv <> '' then
-//    showmessage('ET1255 loading error' + #10#13 + ET_ErrMsg)
-//
-//                       else
-//  for I := Low(TET1255_DAC_ChanelNumber) to High(TET1255_DAC_ChanelNumber) do
-//        ET1255_DACs[i].Reset();
+    ET1255_ADCModule:=TET1255_ModuleAndChan.Create;
+    ET1255_ADCShow:=TET1255_ADCShow.Create(ET1255_ADCModule,
+       RGET1255_MM, RGET1255Range, LET1255I, LET1255U, BET1255Meas,
+       SBET1255Auto, Time, SEET1255_Gain, SEET1255_MN,CBET1255_SM, PointET1255);
+
 end;
 
 procedure TIVchar.ET1255Free;
  var I:TET1255_DAC_ChanelNumber;
 begin
   if ET1255isPresent then
-
+   begin
      for I := Low(TET1255_DAC_ChanelNumber) to High(TET1255_DAC_ChanelNumber) do
         if ET1255_DACs[i]<>nil then
            begin
@@ -1330,6 +1346,9 @@ begin
             ET1255_DACs[i].Reset();
             ET1255_DACs[i].Free();
            end;
+   end;
+ ET1255_ADCModule.Free;
+ ET1255_ADCShow.Free;
 end;
 
 
@@ -2076,19 +2095,13 @@ procedure TIVchar.BTermostatResetClick(Sender: TObject);
 begin
  if SBTermostat.Down then
     begin
-//     if assigned(PID_Termostat) then PID_Termostat.Free;
-//     IsPID_Termostat_Created:=False;
      if assigned(PID_Termostat)
-//       then PID_Termostat.SetParametr(DoubleConstantShows[16].Data,
-//                                      DoubleConstantShows[17].Data,
-//                                      DoubleConstantShows[18].Data,
-//                                      DoubleConstantShows[7].Data,
-//                                      DoubleConstantShows[15].Data);
        then PID_Termostat.SetParametr(PID_Termostat_ParametersShow,
                                       DoubleConstantShows[7].Data);
      if  SBTAuto.Down then
       begin
        TemperatureMeasuringThread.Terminate;
+       sleep(500);
        TemperatureThreadCreate();
       end             else
       begin
@@ -2140,6 +2153,8 @@ end;
 
 procedure TIVchar.FormCreate(Sender: TObject);
 begin
+
+
  DecimalSeparator:='.';
  ComponentView();
 
@@ -2148,7 +2163,6 @@ begin
 
  VoltmetrsCreate();
  ET1255Create();
-
 
  NumberPins:=TStringList.Create;
  NumberPinsOneWire:=TStringList.Create;
@@ -2194,6 +2208,8 @@ begin
 
  if (ComPort1.Connected)and(SettingDevice.ActiveInterface.Name=DACR2R.Name) then SettingDevice.Reset();
  if (ComPort1.Connected) then D30_06.Reset;
+
+
 end;
 
 procedure TIVchar.FormDestroy(Sender: TObject);
@@ -2730,12 +2746,16 @@ begin
   then
     begin
     LTermostatWatchDog.Visible:=True;
+    if ((TDependence.PointNumber mod 50)=0)or
+       ((TDependence.PointNumber mod 50)=1)
+     then BTermostatResetClick(Sender);
     end
   else
     begin
     LTermostatWatchDog.Visible:=False;
     BTermostatResetClick(Sender);
     end;
+
   TermostatWatchDog.Interval:=round(StrToFloat(STTMI.Caption))*2000;
   Temperature_MD.ActiveInterface.NewData:=False;
 end;
@@ -2784,8 +2804,9 @@ begin
   begin
   VoltmetrShows[i].PinShow.PinsReadFromIniFile(ConfigFile);
   VoltmetrShows[i].NumberPinShow;
-  VoltmetrShows[i].ButtonEnabled;
+//  VoltmetrShows[i].ButtonEnabled;
   end;
+
  DS18B20show.PinsReadFromIniFile(ConfigFile);
  DS18B20show.NumberPinShow;
 
@@ -2818,12 +2839,6 @@ begin
               PID_Termostat.ControlingSignal(Temperature_MD.ActiveInterface.Value)
                                      else
             begin
-//              PID_Termostat:=TPID.Create(DoubleConstantShows[16].Data,
-//                                         DoubleConstantShows[17].Data,
-//                                         DoubleConstantShows[18].Data,
-//                                         DoubleConstantShows[15].Data,
-//                                         DoubleConstantShows[7].Data
-//                                         );
               PID_Termostat:=TPID.Create(PID_Termostat_ParametersShow,
                                          DoubleConstantShows[7].Data
                                          );

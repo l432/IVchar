@@ -3,7 +3,8 @@ unit ET1255;
 interface
 
 uses
-  RS232device, Measurement, OlegType, Classes, OlegFunction;
+  RS232device, Measurement, OlegType, Classes, OlegFunction, Spin, StdCtrls, 
+  ExtCtrls, Buttons, Series, IniFiles;
 
 const
  ET1255_DAC_MAX=2.5;
@@ -11,6 +12,7 @@ const
  ET1255_DAC_CodeMAX=4096;
  ET1255_DAC_CodeMIN=0;
  ET1255_DAC_CodeReset=2048;
+
 
 
 
@@ -94,6 +96,14 @@ type
  TET1255_ADC_Gain=1..15;
  TET1255_Frequency_Tackt=(mhz833,mhz417,mhz208, mhz104);
 
+const
+ TET1255_Frequency_Tackt_Label:array[TET1255_Frequency_Tackt]of string=
+   ('8.33','4.17','2.08', '1.04');
+
+ ET1255IniSectionName='ET1255ADC';
+
+
+type
  TET1255_Measuring_Thead = class(TThread)
   protected
   public
@@ -101,7 +111,7 @@ type
     procedure Execute; override;
   end;
 
- TET1255_Module=class
+ TET1255_Module=class(TInterfacedObject)
   private
     FStartByProgr: boolean;
     FActiveChannel: TET1255_ADC_ChanelNumber;
@@ -111,13 +121,14 @@ type
     FInternalTacktMode: boolean;
     FNoErrorOperation: boolean;
     fMeasThead:TET1255_Measuring_Thead;
+//    Channels:array[TET1255_ADC_ChanelNumber] of TET1255_ADCChannel;
     function NoError():boolean;
   public
   function SetGain(const Value: TET1255_ADC_Gain):boolean;
   function Gain:TET1255_ADC_Gain;
   function SetActiveChannel(const Value: TET1255_ADC_ChanelNumber):boolean;
   function ActiveChannel:TET1255_ADC_ChanelNumber;
-  function SetFrequency_Takt(const Value: TET1255_Frequency_Tackt):boolean;
+  function SetFrequency_Tackt(const Value: TET1255_Frequency_Tackt):boolean;
   function Frequency_Tackt:TET1255_Frequency_Tackt;
   function SetMemEnable(const Value: boolean):boolean;
   function MemEnable:boolean;
@@ -168,6 +179,8 @@ TET1255_ADCChannel=class(TNamedDevice,IMeasurement)
   procedure PrepareToMeasurement;
   procedure ResultRead();
   procedure GetDataThread(WPARAM: word;EventEnd:THandle);
+  procedure WriteToIniFile(ConfigFile: TIniFile);
+  procedure ReadFromIniFile(ConfigFile:TIniFile);
 end;
 
   TET1255_Chanel_MeasuringTread = class(TMeasuringTread)
@@ -180,6 +193,59 @@ end;
   public
    constructor Create(ET1255_Chan:TET1255_ADCChannel;WPARAM: word; EventEnd: THandle);
   end;
+
+ TET1255_ModuleAndChan=class(TET1255_Module,IMeasurement)
+  private
+   Channels:array[TET1255_ADC_ChanelNumber] of TET1255_ADCChannel;
+   function GetNewData:boolean;
+   function GetValue:double;
+   procedure SetNewData(Value:boolean);
+   function GetName:string;
+  public
+   property NewData:boolean read GetNewData write SetNewData;
+   property Value:double read GetValue;
+   property Name:string read GetName;
+   constructor Create();
+   function GetData:double;
+   procedure GetDataThread(WPARAM: word; EventEnd:THandle);
+   procedure Free;
+   procedure WriteToIniFile(ConfigFile: TIniFile);
+   procedure ReadFromIniFile(ConfigFile:TIniFile);
+ end;
+
+ TET1255_ADCShow=class(TMeasurementShow)
+  private
+   ET1255_ModuleAndChan:TET1255_ModuleAndChan;
+   SEGain:TSpinEdit;
+   SEMeasurementNumber:TSpinEdit;
+   CBSerial:TCheckBox;
+   Graph: TCustomSeries;
+   procedure ElementFill();
+//   procedure ElementAction();
+//   procedure ElementActionNil();
+   procedure GroupChannelsClick(Sender: TObject);
+   procedure GroupFrequencyClick(Sender: TObject);
+   procedure CBSerialClick(Sender: TObject);
+   procedure SEMNChange(Sender: TObject);
+   procedure SEGainChange(Sender: TObject);
+   procedure FromActiveChannelToVisualElement;
+   procedure FromET1255ToVisualElement;
+ protected
+   function UnitModeLabel():string;override;
+  public
+   Constructor Create(ET1255:TET1255_ModuleAndChan;
+                      MM,R:TRadioGroup;
+                      DL,UL:TLabel;
+                      MB:TButton;
+                      AB:TSpeedButton;
+                      TT:TTimer;
+                      SEG,SEMN:TSpinEdit;
+                      CBSer:TCheckBox;
+                      Gr: TCustomSeries
+                      );
+    procedure Free;                  
+    procedure MetterDataShow();override;
+ end;
 
  TET1255_DAC=class(TNamedDevice,IDAC)
  private
@@ -199,7 +265,7 @@ end;
 implementation
 
 uses
-  Dialogs, SysUtils, Windows, Forms;
+  Dialogs, SysUtils, Windows, Forms, OlegGraph;
 
 { TET1255_DAC }
 
@@ -290,16 +356,11 @@ constructor TET1255_Module.Create;
 begin
  inherited Create;
  FNoErrorOperation:=False;
- SetActiveChannel(0);
- SetGain(1);
- SetADCMode(mhz104,True,True,False);
-
-// FStartByProgr:=True;
-// FActiveChannel:=0;
-// FFrequency_Tackt:=mhz104;
-// FMemEnable:=False;
-// FGain:=1;
-// FInternalTacktMode:=True;
+// ++++++++++++++++++++++++++
+ // SetActiveChannel(0);
+// SetGain(1);
+// SetADCMode(mhz104,True,True,False);
+//++++++++++++++++++++++++++++
 end;
 
 function TET1255_Module.Frequency_Tackt: TET1255_Frequency_Tackt;
@@ -390,7 +451,7 @@ begin
  Result:=NoError();
 end;
 
-function TET1255_Module.SetFrequency_Takt(const Value: TET1255_Frequency_Tackt):boolean;
+function TET1255_Module.SetFrequency_Tackt(const Value: TET1255_Frequency_Tackt):boolean;
 begin
   ET_SetADCMode(ord(Value), FStartByProgr, FInternalTacktMode, FMemEnable);
   if NoError() then FFrequency_Tackt := Value;
@@ -449,7 +510,7 @@ end;
 procedure TET1255_ADCChannel.Free;
 begin
  dispose(DataVector);
- inherited;
+// inherited Free;
 end;
 
 function TET1255_ADCChannel.GetData: double;
@@ -507,6 +568,12 @@ begin
      then Exit;
 end;
 
+procedure TET1255_ADCChannel.ReadFromIniFile(ConfigFile: TIniFile);
+begin
+  SerialMeasurements:=ConfigFile.ReadBool(Name, 'SerialMeasurements', False);
+  SerialMeasurementNumber:=ConfigFile.ReadInteger(Name, 'SerialMeasurementsNum', 1);
+end;
+
 procedure TET1255_ADCChannel.ResultRead;
  var i:Cardinal;
 begin
@@ -533,7 +600,7 @@ end;
 function TET1255_ADCChannel.SetFrequency_Takt(
   const Value: TET1255_Frequency_Tackt):boolean;
 begin
- Result:=fParentModule.SetFrequency_Takt(Value);
+ Result:=fParentModule.SetFrequency_Tackt(Value);
 end;
 
 function TET1255_ADCChannel.SetGain(Value: TET1255_ADC_Gain):boolean;
@@ -564,6 +631,16 @@ begin
    then  SetLenVector(DataVector,(FSerialMeasurementNumber shl 12))
    else SetLenVector(DataVector,1);
   NumberOfMeasurement:=DataVector^.n;
+end;
+
+procedure TET1255_ADCChannel.WriteToIniFile(ConfigFile: TIniFile);
+begin
+  ConfigFile.EraseSection(Name);
+// ++++++++++++++++++++++++++
+ // SetActiveChannel(0);
+// SetGain(1);
+// SetADCMode(mhz104,True,True,False);
+//++++++++++++++++++++++++++++
 end;
 
 { TET1255_Measuring_Thead }
@@ -618,6 +695,255 @@ end;
 procedure TET1255_Chanel_MeasuringTread.ValueInitialization;
 begin
  fET1255_Chan.ValueInitialization();
+end;
+
+{ TET1255_ModuleAndChan }
+
+constructor TET1255_ModuleAndChan.Create;
+ var i:TET1255_ADC_ChanelNumber;
+begin
+  inherited Create();
+  for I := Low(TET1255_ADC_ChanelNumber) to High(TET1255_ADC_ChanelNumber) do
+    Channels[i]:=TET1255_ADCChannel.Create(i,Self);
+end;
+
+procedure TET1255_ModuleAndChan.Free;
+ var i:TET1255_ADC_ChanelNumber;
+begin
+  for I := Low(TET1255_ADC_ChanelNumber) to High(TET1255_ADC_ChanelNumber) do
+    Channels[i].Free;
+//  inherited Free;
+end;
+
+function TET1255_ModuleAndChan.GetData: double;
+begin
+ Result:=Channels[ActiveChannel].GetData;
+end;
+
+procedure TET1255_ModuleAndChan.GetDataThread(WPARAM: word; EventEnd: THandle);
+begin
+ Channels[ActiveChannel].GetDataThread(WPARAM,EventEnd);
+end;
+
+function TET1255_ModuleAndChan.GetName: string;
+begin
+ Result:=Channels[ActiveChannel].Name;
+end;
+
+function TET1255_ModuleAndChan.GetNewData: boolean;
+begin
+  Result:=Channels[ActiveChannel].GetNewData;
+end;
+
+function TET1255_ModuleAndChan.GetValue: double;
+begin
+  Result:=Channels[ActiveChannel].GetValue;
+end;
+
+procedure TET1255_ModuleAndChan.ReadFromIniFile(ConfigFile: TIniFile);
+ var i:TET1255_ADC_ChanelNumber;
+begin
+  for I := Low(TET1255_ADC_ChanelNumber) to High(TET1255_ADC_ChanelNumber) do
+    Channels[i].ReadFromIniFile(ConfigFile);
+
+end;
+
+procedure TET1255_ModuleAndChan.SetNewData(Value: boolean);
+begin
+ Channels[ActiveChannel].NewData:=Value;
+end;
+
+procedure TET1255_ModuleAndChan.WriteToIniFile(ConfigFile: TIniFile);
+ var i:TET1255_ADC_ChanelNumber;
+begin
+  for I := Low(TET1255_ADC_ChanelNumber) to High(TET1255_ADC_ChanelNumber) do
+    Channels[i].WriteToIniFile(ConfigFile);
+
+  ConfigFile.EraseSection(ET1255IniSectionName);
+// ++++++++++++++++++++++++++
+ // SetActiveChannel(0);
+// SetGain(1);
+// SetADCMode(mhz104,True,True,False);
+//++++++++++++++++++++++++++++
+
+end;
+
+{ TET1255_ADCShow }
+
+procedure TET1255_ADCShow.CBSerialClick(Sender: TObject);
+begin
+ ET1255_ModuleAndChan.Channels[ET1255_ModuleAndChan.ActiveChannel].SerialMeasurements:=CBSerial.Checked;
+ SEMeasurementNumber.Enabled:=CBSerial.Checked;
+end;
+
+constructor TET1255_ADCShow.Create(ET1255: TET1255_ModuleAndChan;
+                                   MM, R: TRadioGroup;
+                                   DL, UL: TLabel;
+                                   MB: TButton;
+                                   AB: TSpeedButton;
+                                   TT: TTimer;
+                                   SEG, SEMN: TSpinEdit;
+                                   CBSer: TCheckBox;
+                                   Gr: TCustomSeries);
+begin
+ inherited Create(ET1255, MM, R, DL, UL, MB, AB, TT);
+ ET1255_ModuleAndChan:=ET1255;
+ SEGain:=SEG;
+ SEMeasurementNumber:=SEMN;
+ CBSerial:=CBSer;
+ Graph:=Gr;
+
+ ElementFill();
+ FromET1255ToVisualElement;
+// ElementAction();
+end;
+
+//procedure TET1255_ADCShow.ElementAction;
+//begin
+//  Range.OnClick:=GroupChannelsClick;
+//  MeasureMode.OnClick:=GroupFrequencyClick;
+//  CBSerial.OnClick:=CBSerialClick;
+//  SEMeasurementNumber.OnChange:=SEMNChange;
+//  SEGain.OnChange:=SEGainChange;
+//end;
+//
+//procedure TET1255_ADCShow.ElementActionNil;
+//begin
+//  Range.OnClick:=nil;
+//  MeasureMode.OnClick:=nil;
+//  CBSerial.OnClick:=nil;
+//  SEMeasurementNumber.OnChange:=nil;
+//  SEGain.OnChange:=nil;
+//end;
+
+procedure TET1255_ADCShow.ElementFill;
+ var i:TET1255_ADC_ChanelNumber;
+     j:TET1255_Frequency_Tackt;
+begin
+  Range.Caption:='Active Channel';
+  Range.Columns:=2;
+  Range.Items.Clear;
+    for I := Low(TET1255_ADC_ChanelNumber) to High(TET1255_ADC_ChanelNumber)
+      do Range.Items.Add(inttostr(ord(i)));
+  Range.ItemIndex:=Low(TET1255_ADC_ChanelNumber);
+
+  MeasureMode.Caption:='Frequancy (MHz)';
+  MeasureMode.Columns:=2;
+  MeasureMode.Items.Clear;
+    for j := Low(TET1255_Frequency_Tackt) to High(TET1255_Frequency_Tackt)
+      do  MeasureMode.Items.Add(TET1255_Frequency_Tackt_Label[j]);
+  MeasureMode.ItemIndex:=ord(Low(TET1255_Frequency_Tackt));
+
+  SEGain.Increment:=1;
+  SEGain.MinValue:=Low(TET1255_ADC_Gain);
+  SEGain.MaxValue:=High(TET1255_ADC_Gain);
+  SEGain.Value:=SEGain.MinValue;
+  SEGain.EditorEnabled:=False;
+
+  SEMeasurementNumber.Increment:=1;
+  SEMeasurementNumber.MinValue:=Low(byte)+1;
+  SEMeasurementNumber.MaxValue:=High(byte);
+  SEMeasurementNumber.Value:=SEGain.MinValue;
+//  SEMeasurementNumber.EditorEnabled:=False;
+
+end;
+
+procedure TET1255_ADCShow.Free;
+begin
+ 
+end;
+
+procedure TET1255_ADCShow.FromActiveChannelToVisualElement;
+begin
+  CBSerial.OnClick:=nil;
+  SEMeasurementNumber.OnChange:=nil;
+
+  CBSerial.Checked:=ET1255_ModuleAndChan.Channels[ET1255_ModuleAndChan.ActiveChannel].SerialMeasurements;
+  SEMeasurementNumber.Enabled:=CBSerial.Checked;
+  SEMeasurementNumber.Value:= ET1255_ModuleAndChan.Channels[ET1255_ModuleAndChan.ActiveChannel].SerialMeasurementNumber;
+
+  CBSerial.OnClick:=CBSerialClick;
+  SEMeasurementNumber.OnChange:=SEMNChange;
+end;
+
+procedure TET1255_ADCShow.FromET1255ToVisualElement;
+begin
+  Range.OnClick:=nil;
+  MeasureMode.OnClick:=nil;
+  SEGain.OnChange:=nil;
+
+  Range.ItemIndex:=ord(ET1255_ModuleAndChan.ActiveChannel);
+  MeasureMode.ItemIndex:=ord(ET1255_ModuleAndChan.FFrequency_Tackt);
+  SEGain.Value:=byte(ET1255_ModuleAndChan.Gain);
+  FromActiveChannelToVisualElement;
+
+  Range.OnClick:=GroupChannelsClick;
+  MeasureMode.OnClick:=GroupFrequencyClick;
+  SEGain.OnChange:=SEGainChange;
+end;
+
+procedure TET1255_ADCShow.GroupChannelsClick(Sender: TObject);
+begin
+ if ET1255_ModuleAndChan.SetActiveChannel(
+         TET1255_ADC_ChanelNumber(
+           Low(TET1255_ADC_ChanelNumber)+Range.ItemIndex))
+   then
+   else
+    begin
+// showmessage('jjj'+inttostr(TET1255_ADC_ChanelNumber(Range.ItemIndex)));
+     Range.OnClick:=nil;
+     Range.ItemIndex:=ord(ET1255_ModuleAndChan.ActiveChannel);
+     Range.OnClick:=GroupChannelsClick;
+    end;
+end;
+
+procedure TET1255_ADCShow.GroupFrequencyClick(Sender: TObject);
+begin
+ if ET1255_ModuleAndChan.SetFrequency_Tackt(
+         TET1255_Frequency_Tackt(Range.ItemIndex))
+   then
+   else
+    begin
+// showmessage('jjj'+inttostr(TET1255_ADC_ChanelNumber(Range.ItemIndex)));
+     MeasureMode.OnClick:=nil;
+     MeasureMode.ItemIndex:=ord(ET1255_ModuleAndChan.FFrequency_Tackt);
+     MeasureMode.OnClick:=GroupFrequencyClick;
+    end;
+end;
+
+procedure TET1255_ADCShow.MetterDataShow;
+begin
+  inherited MetterDataShow;
+  Graph.Clear;
+    if fMeter.Value<>ErResult then
+     begin
+      VectorToGraph(ET1255_ModuleAndChan.Channels[ET1255_ModuleAndChan.ActiveChannel].DataVector,Graph);
+     end;
+end;
+
+procedure TET1255_ADCShow.SEGainChange(Sender: TObject);
+begin
+if ET1255_ModuleAndChan.SetGain(
+         TET1255_ADC_Gain(SEGain.Value))
+   then
+   else
+    begin
+// showmessage('jjj'+inttostr(TET1255_ADC_ChanelNumber(Range.ItemIndex)));
+     SEGain.OnChange:=nil;
+     SEGain.Value:=byte(ET1255_ModuleAndChan.Gain);
+     SEGain.OnChange:=SEGainChange;
+    end;
+
+end;
+
+procedure TET1255_ADCShow.SEMNChange(Sender: TObject);
+begin
+ ET1255_ModuleAndChan.Channels[ET1255_ModuleAndChan.ActiveChannel].SerialMeasurementNumber:=SEMeasurementNumber.Value;
+end;
+
+function TET1255_ADCShow.UnitModeLabel: string;
+begin
+ Result:='V';
 end;
 
 initialization
