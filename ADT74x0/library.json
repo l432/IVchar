@@ -1,0 +1,12 @@
+{
+  "name": "ADT74x0",
+  "frameworks": "Arduino",
+  "keywords": "temperature, i2c, wire",
+  "description": "library for AnalogDevices temperature sensor (ex. ADT7410, ADT7420)",
+  "url": "https://github.com/PlantFactory/ADT74x0",
+  "repository":
+  {
+    "type": "git",
+    "url": "https://github.com/PlantFactory/ADT74x0.git"
+  }
+}
