@@ -1072,8 +1072,8 @@ begin
   if ForwLine.Count>0 then
     if abs(TDependence.tempI- ForwLine.YValue[ForwLine.Count-1])>abs(0.1*ForwLine.YValue[ForwLine.Count-1])
    then  TDependence.tempIChange(Voc_MD.ActiveInterface.GetData);
- if TDependence.tempI<1e-5
-   then  TDependence.tempIChange(Voc_MD.ActiveInterface.GetData);
+// if TDependence.tempI<1e-5
+//   then  TDependence.tempIChange(Voc_MD.ActiveInterface.GetData);
 
  LADVoltageValue.Caption:=FloatToStrF(TDependence.tempI,ffExponent, 4, 3);
 end;
@@ -1087,8 +1087,8 @@ begin
     if abs(TTimeTwoDependenceTimer.SecondValue - ForwLg.YValue[ForwLg.Count-1])>abs(0.1*ForwLg.YValue[ForwLg.Count-1])
    then  TTimeTwoDependenceTimer.SecondValueChange(abs(Isc_MD.ActiveInterface.GetData));
 
- if TTimeTwoDependenceTimer.SecondValue<1e-7
-   then  TTimeTwoDependenceTimer.SecondValueChange(abs(Isc_MD.ActiveInterface.GetData));
+// if TTimeTwoDependenceTimer.SecondValue<1e-7
+//   then  TTimeTwoDependenceTimer.SecondValueChange(abs(Isc_MD.ActiveInterface.GetData));
 
  LADInputVoltageValue.Caption:=FloatToStrF(TTimeTwoDependenceTimer.SecondValue,ffExponent, 4, 3);
  VolCorrectionNew^.Add(TTimeTwoDependenceTimer.tempV,
@@ -1328,6 +1328,7 @@ begin
    end;
 
     ET1255_ADCModule:=TET1255_ModuleAndChan.Create;
+    ET1255_ADCModule.ReadFromIniFile(ConfigFile);
     ET1255_ADCShow:=TET1255_ADCShow.Create(ET1255_ADCModule,
        RGET1255_MM, RGET1255Range, LET1255I, LET1255U, BET1255Meas,
        SBET1255Auto, Time, SEET1255_Gain, SEET1255_MN,CBET1255_SM, PointET1255);
@@ -1347,6 +1348,7 @@ begin
             ET1255_DACs[i].Free();
            end;
    end;
+// ET1255_ADCModule.WriteToIniFile(ConfigFile);
  ET1255_ADCModule.Free;
  ET1255_ADCShow.Free;
 end;
@@ -2746,9 +2748,17 @@ begin
   then
     begin
     LTermostatWatchDog.Visible:=True;
-    if ((TDependence.PointNumber mod 50)=0)or
-       ((TDependence.PointNumber mod 50)=1)
-     then BTermostatResetClick(Sender);
+    if ((TDependence.PointNumber mod 10)=0)or
+       ((TDependence.PointNumber mod 10)=1)
+     then
+       begin
+       if assigned(TemperatureMeasuringThread) then
+        begin
+         TemperatureMeasuringThread.Terminate;
+         sleep(1000);
+        end;
+       TemperatureThreadCreate();
+       end;
     end
   else
     begin
@@ -2821,6 +2831,7 @@ begin
   VoltmetrShows[i].PinShow.PinsWriteToIniFile(ConfigFile);
  DS18B20show.PinsWriteToIniFile(ConfigFile);
  IscVocPinChangerShow.PinsWriteToIniFile(ConfigFile);
+  ET1255_ADCModule.WriteToIniFile(ConfigFile);
 end;
 
 procedure TIVchar.WMMyMeasure(var Mes: TMessage);

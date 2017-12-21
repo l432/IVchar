@@ -121,7 +121,6 @@ type
     FInternalTacktMode: boolean;
     FNoErrorOperation: boolean;
     fMeasThead:TET1255_Measuring_Thead;
-//    Channels:array[TET1255_ADC_ChanelNumber] of TET1255_ADCChannel;
     function NoError():boolean;
   public
   function SetGain(const Value: TET1255_ADC_Gain):boolean;
@@ -243,7 +242,7 @@ end;
                       CBSer:TCheckBox;
                       Gr: TCustomSeries
                       );
-    procedure Free;                  
+    procedure Free;
     procedure MetterDataShow();override;
  end;
 
@@ -269,10 +268,6 @@ uses
 
 { TET1255_DAC }
 
-//function TET1255_DAC.CalibrationStep(Voltage: double): double;
-//begin
-// Result:=0.001;
-//end;
 
 constructor TET1255_DAC.Create(ChanelNumber: TET1255_DAC_ChanelNumber);
 begin
@@ -300,7 +295,7 @@ procedure TET1255_DAC.Output(Value: double);
  var tempValue:double;
 begin
  if Value=ErResult then Exit;
- 
+
  if Value>ET1255_DAC_MAX
     then tempValue:=ET1255_DAC_MAX
     else if Value<ET1255_DAC_MIN
@@ -311,10 +306,6 @@ begin
  ShowError();
 end;
 
-//procedure TET1255_DAC.OutputCalibr(Value: double);
-//begin
-// Output(Value);
-//end;
 
 procedure TET1255_DAC.OutputInt(Kod: integer);
 begin
@@ -357,9 +348,9 @@ begin
  inherited Create;
  FNoErrorOperation:=False;
 // ++++++++++++++++++++++++++
- // SetActiveChannel(0);
-// SetGain(1);
-// SetADCMode(mhz104,True,True,False);
+  SetActiveChannel(0);
+ SetGain(1);
+ SetADCMode(mhz104,True,True,False);
 //++++++++++++++++++++++++++++
 end;
 
@@ -636,11 +627,8 @@ end;
 procedure TET1255_ADCChannel.WriteToIniFile(ConfigFile: TIniFile);
 begin
   ConfigFile.EraseSection(Name);
-// ++++++++++++++++++++++++++
- // SetActiveChannel(0);
-// SetGain(1);
-// SetADCMode(mhz104,True,True,False);
-//++++++++++++++++++++++++++++
+  WriteIniDef(ConfigFile,Name,'SerialMeasurements', SerialMeasurements);
+  WriteIniDef(ConfigFile,Name,'SerialMeasurementsNum',  SerialMeasurementNumber);
 end;
 
 { TET1255_Measuring_Thead }
@@ -746,6 +734,16 @@ begin
   for I := Low(TET1255_ADC_ChanelNumber) to High(TET1255_ADC_ChanelNumber) do
     Channels[i].ReadFromIniFile(ConfigFile);
 
+  SetActiveChannel(TET1255_ADC_ChanelNumber(
+                    ConfigFile.ReadInteger(ET1255IniSectionName, 'ActiveChannel', 0)));
+  SetGain(TET1255_ADC_Gain(
+                   ConfigFile.ReadInteger(ET1255IniSectionName, 'Gain', 1)));
+
+  SetADCMode(TET1255_Frequency_Tackt(
+                    ConfigFile.ReadInteger(ET1255IniSectionName, 'Frequency_Tackt', 0)),
+              ConfigFile.ReadBool(ET1255IniSectionName, 'StartByProgr', True),
+              ConfigFile.ReadBool(ET1255IniSectionName, 'InternalTacktMode', True),
+              MemEnable);
 end;
 
 procedure TET1255_ModuleAndChan.SetNewData(Value: boolean);
@@ -760,12 +758,11 @@ begin
     Channels[i].WriteToIniFile(ConfigFile);
 
   ConfigFile.EraseSection(ET1255IniSectionName);
-// ++++++++++++++++++++++++++
- // SetActiveChannel(0);
-// SetGain(1);
-// SetADCMode(mhz104,True,True,False);
-//++++++++++++++++++++++++++++
-
+  WriteIniDef(ConfigFile,ET1255IniSectionName,'ActiveChannel', ord(ActiveChannel));
+  WriteIniDef(ConfigFile,ET1255IniSectionName,'Gain',  Gain);
+  WriteIniDef(ConfigFile,ET1255IniSectionName,'Frequency_Tackt', ord(Frequency_Tackt));
+  WriteIniDef(ConfigFile,ET1255IniSectionName,'StartByProgr', StartByProgr);
+  WriteIniDef(ConfigFile,ET1255IniSectionName,'InternalTacktMode', InternalTacktMode);
 end;
 
 { TET1255_ADCShow }
@@ -795,7 +792,6 @@ begin
 
  ElementFill();
  FromET1255ToVisualElement;
-// ElementAction();
 end;
 
 //procedure TET1255_ADCShow.ElementAction;
@@ -850,7 +846,7 @@ end;
 
 procedure TET1255_ADCShow.Free;
 begin
- 
+
 end;
 
 procedure TET1255_ADCShow.FromActiveChannelToVisualElement;
@@ -888,9 +884,9 @@ begin
          TET1255_ADC_ChanelNumber(
            Low(TET1255_ADC_ChanelNumber)+Range.ItemIndex))
    then
+     FromActiveChannelToVisualElement
    else
     begin
-// showmessage('jjj'+inttostr(TET1255_ADC_ChanelNumber(Range.ItemIndex)));
      Range.OnClick:=nil;
      Range.ItemIndex:=ord(ET1255_ModuleAndChan.ActiveChannel);
      Range.OnClick:=GroupChannelsClick;
@@ -904,7 +900,6 @@ begin
    then
    else
     begin
-// showmessage('jjj'+inttostr(TET1255_ADC_ChanelNumber(Range.ItemIndex)));
      MeasureMode.OnClick:=nil;
      MeasureMode.ItemIndex:=ord(ET1255_ModuleAndChan.FFrequency_Tackt);
      MeasureMode.OnClick:=GroupFrequencyClick;
@@ -928,7 +923,6 @@ if ET1255_ModuleAndChan.SetGain(
    then
    else
     begin
-// showmessage('jjj'+inttostr(TET1255_ADC_ChanelNumber(Range.ItemIndex)));
      SEGain.OnChange:=nil;
      SEGain.Value:=byte(ET1255_ModuleAndChan.Gain);
      SEGain.OnChange:=SEGainChange;
