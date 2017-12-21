@@ -405,7 +405,7 @@ end;
 
 function TET1255_Module.ReadADC(): double;
 begin
- Result:=ET_ReadADC;
+ Result:=ET_ReadADC+2.5;
  if not(NoError()) then Result:=ErResult;
 end;
 
