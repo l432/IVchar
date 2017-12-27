@@ -86,8 +86,8 @@ procedure ET_SetDeviceNumber(ADevn: integer); stdcall; external 'ET1255.dll';
 var
     EventET1255Measurement_Done: THandle;
 
-    NumberOfMeasurement:Cardinal;
-
+//    NumberOfMeasurement:Cardinal;
+//    NoM:cardinal;
 
 type
 
@@ -351,6 +351,9 @@ begin
   SetActiveChannel(0);
  SetGain(1);
  SetADCMode(mhz104,True,True,False);
+
+//  showmessage('create'+inttostr(ord(FFrequency_Tackt)));
+
 //++++++++++++++++++++++++++++
 end;
 
@@ -373,9 +376,13 @@ function TET1255_Module.MeasuringStart;
 begin
  ResetEvent(EventET1255Measurement_Done);
  fMeasThead:=TET1255_Measuring_Thead.Create();
- ET_SetStrob;
- if not(NoError()) then fMeasThead.Terminate;
- Result:=FNoErrorOperation;
+// showmessage(inttostr(ord(FFrequency_Tackt)));
+
+// showmessage('false='+booltostr(false)+' memuse='+booltostr(FMemEnable));
+// ET_SetStrob;
+// if not(NoError()) then fMeasThead.Terminate;
+// Result:=FNoErrorOperation;
+ result:=true;
 end;
 
 procedure TET1255_Module.MeasuringStop;
@@ -411,7 +418,7 @@ end;
 
 function TET1255_Module.ReadMem: double;
 begin
- Result:=ET_ReadMem;
+ Result:=ET_ReadMem+2.5;
  if not(NoError()) then Result:=ErResult;
 end;
 
@@ -444,6 +451,8 @@ end;
 
 function TET1255_Module.SetFrequency_Tackt(const Value: TET1255_Frequency_Tackt):boolean;
 begin
+//  showmessage('set'+inttostr(ord(Value)));
+
   ET_SetADCMode(ord(Value), FStartByProgr, FInternalTacktMode, FMemEnable);
   if NoError() then FFrequency_Tackt := Value;
   Result:=FNoErrorOperation;
@@ -531,9 +540,15 @@ begin
  PrepareToMeasurement();
  ValueInitialization();
  if MeasuringStart() then
-  if WaitForSingleObject(EventComPortFree,1500)=WAIT_OBJECT_0
-   then  ResultRead()
+  if WaitForSingleObject(EventET1255Measurement_Done,1500)=WAIT_OBJECT_0
+   then
+   begin
+//    showmessage(' Nom='+inttostr(NoM));
+   ResultRead()
+   end
    else  MeasuringStop;
+// showmessage(' Nom='+inttostr(NoM));
+
  Result:=fValue;
 end;
 
@@ -578,7 +593,11 @@ begin
        DataVector^.X[i]:=i;
        DataVector^.Y[i]:=fParentModule.ReadMem;
       end;
+//     showmessage('1');
      fValue:=ImpulseNoiseSmoothingByNpoint(DataVector^.Y);
+//       fvalue:=0.7;
+//     showmessage('2');
+
    end
   else
    begin
@@ -621,7 +640,9 @@ begin
   if FSerialMeasurements
    then  SetLenVector(DataVector,(FSerialMeasurementNumber shl 12))
    else SetLenVector(DataVector,1);
-  NumberOfMeasurement:=DataVector^.n;
+//  NumberOfMeasurement:=DataVector^.n;
+//NumberOfMeasurement:=1;
+//  showmessage(inttostr(NumberOfMeasurement));
 end;
 
 procedure TET1255_ADCChannel.WriteToIniFile(ConfigFile: TIniFile);
@@ -643,15 +664,33 @@ end;
 
 procedure TET1255_Measuring_Thead.Execute;
 begin
-  while (not Terminated) and (not Application.Terminated) do
-  begin
-    if ET_MeasEnd then NumberOfMeasurement:=NumberOfMeasurement-1;
-    if NumberOfMeasurement<=0 then
-     begin
-       SetEvent(EventET1255Measurement_Done);
-       Break;
-     end;
-  end;
+//  NoM:=0;
+  ET_SetStrob;
+
+  repeat
+//    inc(NoM);
+  until Terminated or Application.Terminated or ET_MeasEnd;
+  SetEvent(EventET1255Measurement_Done);
+
+//  while (not Terminated) and (not Application.Terminated) do
+////  while (True) do
+//  begin
+//    inc(NoM);
+//    if ET_MeasEnd then
+//     begin
+//       SetEvent(EventET1255Measurement_Done);
+//       Break;
+//     end;
+//
+////    if ET_MeasEnd then dec(NumberOfMeasurement);
+//////    :=NumberOfMeasurement-1;
+////
+////    if NumberOfMeasurement<=0 then
+////     begin
+////       SetEvent(EventET1255Measurement_Done);
+////       Break;
+////     end;
+//  end;
 end;
 
 { TET1255_MeasuringTread }
@@ -740,10 +779,12 @@ begin
                    ConfigFile.ReadInteger(ET1255IniSectionName, 'Gain', 1)));
 
   SetADCMode(TET1255_Frequency_Tackt(
-                    ConfigFile.ReadInteger(ET1255IniSectionName, 'Frequency_Tackt', 0)),
+              ConfigFile.ReadInteger(ET1255IniSectionName, 'Frequency_Tackt', 0)),
               ConfigFile.ReadBool(ET1255IniSectionName, 'StartByProgr', True),
               ConfigFile.ReadBool(ET1255IniSectionName, 'InternalTacktMode', True),
               MemEnable);
+//  showmessage('readini'+inttostr(ord(FFrequency_Tackt)));
+
 end;
 
 procedure TET1255_ModuleAndChan.SetNewData(Value: boolean);
@@ -896,7 +937,7 @@ end;
 procedure TET1255_ADCShow.GroupFrequencyClick(Sender: TObject);
 begin
  if ET1255_ModuleAndChan.SetFrequency_Tackt(
-         TET1255_Frequency_Tackt(Range.ItemIndex))
+         TET1255_Frequency_Tackt(MeasureMode.ItemIndex))
    then
    else
     begin

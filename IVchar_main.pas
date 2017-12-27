@@ -456,6 +456,7 @@ type
     STET1255_MN: TStaticText;
     SEET1255_Gain: TSpinEdit;
     STET122_Gain: TStaticText;
+    BET1255_show_save: TButton;
 
     procedure FormCreate(Sender: TObject);
     procedure BConnectClick(Sender: TObject);
@@ -489,6 +490,7 @@ type
     procedure CBFvsSClick(Sender: TObject);
     procedure TermostatWatchDogTimer(Sender: TObject);
     procedure ControlWatchDogTimer(Sender: TObject);
+    procedure BET1255_show_saveClick(Sender: TObject);
   private
     procedure ComponentView;
     {початкове налаштування різних компонентів}
@@ -1320,18 +1322,20 @@ begin
                     LOV1255ch3,LOK1255Ch3,BOVchange1255Ch3,
                     BOVset1255Ch3,BOKchange1255Ch3,
                     BOKset1255Ch3,BReset1255Ch3);
+
+      ET1255_ADCModule:=TET1255_ModuleAndChan.Create;
+      ET1255_ADCModule.ReadFromIniFile(ConfigFile);
+      ET1255_ADCShow:=TET1255_ADCShow.Create(ET1255_ADCModule,
+         RGET1255_MM, RGET1255Range, LET1255I, LET1255U, BET1255Meas,
+         SBET1255Auto, Time, SEET1255_Gain, SEET1255_MN,CBET1255_SM, PointET1255);
+
    end
                     else
    begin
    PC.Pages[8].TabVisible:=False;
-//   PC.Pages[9].TabVisible:=False;
+   PC.Pages[9].TabVisible:=False;
    end;
 
-    ET1255_ADCModule:=TET1255_ModuleAndChan.Create;
-    ET1255_ADCModule.ReadFromIniFile(ConfigFile);
-    ET1255_ADCShow:=TET1255_ADCShow.Create(ET1255_ADCModule,
-       RGET1255_MM, RGET1255Range, LET1255I, LET1255U, BET1255Meas,
-       SBET1255Auto, Time, SEET1255_Gain, SEET1255_MN,CBET1255_SM, PointET1255);
 
 end;
 
@@ -1347,10 +1351,11 @@ begin
             ET1255_DACs[i].Reset();
             ET1255_DACs[i].Free();
            end;
+    ET1255_ADCModule.Free;
+    ET1255_ADCShow.Free;
    end;
 // ET1255_ADCModule.WriteToIniFile(ConfigFile);
- ET1255_ADCModule.Free;
- ET1255_ADCShow.Free;
+
 end;
 
 
@@ -2139,6 +2144,13 @@ begin
        end;
 end;
 
+procedure TIVchar.BET1255_show_saveClick(Sender: TObject);
+begin
+  SaveDialogPrepare;
+  if SaveDialog.Execute then
+    Write_File_Series(SaveDialog.FileName,PointET1255,6);
+end;
+
 procedure TIVchar.ComDPacketPacket(Sender: TObject; const Str: string);
  var Data:TArrByte;
      i:integer;
@@ -2216,8 +2228,8 @@ end;
 
 procedure TIVchar.FormDestroy(Sender: TObject);
 begin
- if RS232_MediatorTread <> nil
-   then RS232_MediatorTread.Terminate;
+// if RS232_MediatorTread <> nil
+//   then RS232_MediatorTread.Terminate;
 
  if SBTAuto.Down then TemperatureMeasuringThread.Terminate;
  if SBControlBegin.Down then ControllerThread.Terminate;
@@ -2241,6 +2253,9 @@ begin
  ET1255Free;
  VoltmetrsFree();
  DACFree();
+
+  if RS232_MediatorTread <> nil
+   then RS232_MediatorTread.Terminate;
 
  VectorsDispose();
  RangesFree();
@@ -2831,6 +2846,7 @@ begin
   VoltmetrShows[i].PinShow.PinsWriteToIniFile(ConfigFile);
  DS18B20show.PinsWriteToIniFile(ConfigFile);
  IscVocPinChangerShow.PinsWriteToIniFile(ConfigFile);
+ if ET1255isPresent then
   ET1255_ADCModule.WriteToIniFile(ConfigFile);
 end;
 
@@ -2967,18 +2983,23 @@ end;
 
 procedure TIVchar.DACFree;
 begin
-  DACR2RShow.Free;
   if assigned(DACR2R) then
     begin
-    DACR2R.Free;
     DACR2R.Reset;
+    sleep(100);
+    DACR2R.Free;
     end;
+    
+  DACR2RShow.Free;
+
   D30_06Show.Free;
   if assigned(D30_06) then
     begin
     D30_06.Reset;
+    sleep(50);
     D30_06.Free;
     end;
+
 end;
 
 procedure TIVchar.DACReadFromIniFileAndToForm;
