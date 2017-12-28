@@ -594,7 +594,7 @@ begin
        DataVector^.Y[i]:=fParentModule.ReadMem;
       end;
 //     showmessage('1');
-     fValue:=ImpulseNoiseSmoothingByNpoint(DataVector^.Y);
+     fValue:=ImpulseNoiseSmoothingByNpoint(DataVector);
 //       fvalue:=0.7;
 //     showmessage('2');
 
