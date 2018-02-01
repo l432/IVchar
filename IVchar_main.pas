@@ -1093,8 +1093,11 @@ begin
 //   then  TTimeTwoDependenceTimer.SecondValueChange(abs(Isc_MD.ActiveInterface.GetData));
 
  LADInputVoltageValue.Caption:=FloatToStrF(TTimeTwoDependenceTimer.SecondValue,ffExponent, 4, 3);
- VolCorrectionNew^.Add(TTimeTwoDependenceTimer.tempV,
+// VolCorrectionNew^.Add(TTimeTwoDependenceTimer.tempV,
+//                       Voc_MD.ActiveInterface.GetData);
+ VolCorrectionNew^.Add(Temperature_MD.ActiveInterface.Value,
                        Voc_MD.ActiveInterface.GetData);
+
 
  if CBLEDAuto.Checked then
   begin
