@@ -1066,7 +1066,7 @@ begin
  if CBLEDAuto.Checked then
   begin
     BOVset1255Ch2.OnClick(nil);
-    sleep(3000);
+    sleep(2000);
   end;
  IscVocPinChanger.PinChangeToLow;
  sleep(IscVocTimeToWait);
@@ -1082,6 +1082,7 @@ end;
 
 procedure TIVchar.IscVocOnTimeHookSecondMeas;
 begin
+ sleep(IscVocTimeToWait);
  IscVocPinChanger.PinChangeToHigh;
  sleep(IscVocTimeToWait);
  TTimeTwoDependenceTimer.SecondValueChange(abs(Isc_MD.ActiveInterface.GetData));
