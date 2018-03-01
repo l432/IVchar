@@ -1,6 +1,7 @@
 #include <SPI.h>
 #include <OneWire.h>
 #include <avr/wdt.h>
+#include <Wire.h>
 
 const byte PacketStart = 10;
 const byte PacketEnd = 255;
@@ -14,6 +15,7 @@ const byte DAC_Neg = 0xFF;
 const byte DS18B20Command = 0x5;
 const byte D30_06Command = 0x6;
 const byte PinChangeCommand = 0x7;
+const byte HTU21DCommand = 0x8;
 const byte PinToHigh = 0xFF;
 const byte PinToLow = 0x0F;
 
@@ -27,7 +29,9 @@ byte DS18B20Pin = 36;
 //byte SignPins[] = {8, 9};
 //byte DS18B20Pin = 10;
 
+
 OneWire  ds(DS18B20Pin);
+
 
 byte incomingByte = 0;
 byte PinControl, PinGate, DeviceId, ActionId;
@@ -43,6 +47,7 @@ boolean DS18B20delay;
 boolean D30_06delay;
 unsigned long EndDS18B20delay;
 unsigned long EndD30_06delay;
+unsigned long EndHTU21Ddelay;
 
 void setup() {
   Serial.begin(115200);
@@ -59,10 +64,6 @@ void setup() {
     pinMode(SignPins[i], OUTPUT);
     digitalWrite(SignPins[i], LOW);
   }
-  //    pinMode(DACR2RPinSign, OUTPUT);
-  //    digitalWrite(DACR2RPinSign, LOW);
-  //    pinMode(D30_06PinSignBool, OUTPUT);
-  //    digitalWrite(D30_06PinSignBool, HIGH);
 
   DACR2RPinSignBool = false;
   D30_06PinSignBool = false;
@@ -70,12 +71,13 @@ void setup() {
   D30_06delay = false;
   EndDS18B20delay = 0;
   EndD30_06delay = 0;
+  EndHTU21Ddelay = 0;
   wdt_enable(WDTO_500MS);
-  //  OneWire  ds(DS18B20Pin);
+  Wire.begin();
 }
 
 void loop() {
-  //start:
+
   if (Serial.available() > 0) {
     // считываем входящий байт:
     incomingByte = Serial.read();
@@ -126,11 +128,15 @@ void loop() {
         PinControl = packet[2];
         DS18B20();
       }
-      
+
       if (DeviceId == PinChangeCommand) {
-        if (packet[3] == PinToHigh) digitalWrite(PinControl, HIGH); 
-        if (packet[3] == PinToLow)  digitalWrite(PinControl, LOW); 
-      }      
+        if (packet[3] == PinToHigh) digitalWrite(PinControl, HIGH);
+        if (packet[3] == PinToLow)  digitalWrite(PinControl, LOW);
+      }
+
+      if (DeviceId == HTU21DCommand)  {
+        HTU21DBegin();
+      }
     }
   }
 start:
@@ -139,6 +145,9 @@ start:
   }
   if (D30_06delay && millis() >= EndD30_06delay) {
     D30_06_Second();
+  }
+  if (EndHTU21Ddelay && millis() >= EndHTU21Ddelay) {
+    HTU21DEnd();
   }
 
   wdt_reset();
@@ -165,13 +174,11 @@ byte FCS (byte Data[], int n)
 
 void GateOpen() {
   digitalWrite(PinGate, LOW);
-  //  delay(1);
   ShortDelay();
 }
 
 void GateClose() {
   digitalWrite(PinGate, HIGH);
-  //  delay(1);
   ShortDelay();
 }
 
@@ -197,7 +204,6 @@ void CreateAndSendPacket(byte DDATA[], int n) {
 
 void V721() {
   GateOpen();
-  //  delay(2000);
   digitalWrite(PinControl, LOW);
   digitalWrite(PinControl, HIGH);
   byte data[4];
@@ -235,10 +241,6 @@ void DACR2R() {
     DACR2RPinSignBool = false;
   };
   SPI2ByteTransfer(PinControl, DACDataReceived[0], DACDataReceived[1]);
-  //  digitalWrite(PinControl, LOW);
-  //  SPI.transfer(DACDataReceived[0]);
-  //  SPI.transfer(DACDataReceived[1]);
-  //  digitalWrite(PinControl, HIGH);
 }
 
 void D30_06() {
@@ -248,18 +250,9 @@ void D30_06() {
     EndD30_06delay = millis() + 500;
     D30_06delay = true;
     SPI2ByteTransfer(D30_06DataReceived[3], 0, 0);
-    //    digitalWrite(D30_06DataReceived[3], LOW);
-    //    SPI.transfer(0);
-    //    SPI.transfer(0);
-    //    digitalWrite(D30_06DataReceived[3], HIGH);
 
   } else {
     SPI2ByteTransfer(D30_06DataReceived[3], D30_06DataReceived[0], D30_06DataReceived[1]);
-
-    //    digitalWrite(D30_06DataReceived[3], LOW);
-    //    SPI.transfer(D30_06DataReceived[0]);
-    //    SPI.transfer(D30_06DataReceived[1]);
-    //    digitalWrite(D30_06DataReceived[3], HIGH);
   }
 }
 
@@ -277,11 +270,6 @@ void D30_06_Second() {
   };
   D30_06delay = false;
   SPI2ByteTransfer(D30_06DataReceived[3], D30_06DataReceived[0], D30_06DataReceived[1]);
-  //  digitalWrite(D30_06DataReceived[3], LOW);
-  //  SPI.transfer(D30_06DataReceived[0]);
-  //  SPI.transfer(D30_06DataReceived[1]);
-  //  digitalWrite(D30_06DataReceived[3], HIGH);
-
 }
 
 void DS18B20() {
@@ -291,23 +279,12 @@ void DS18B20() {
     DS18B20Pin = PinControl;
     OneWire ds(DS18B20Pin);
   };
-  //  byte data[2];
   ds.reset();
   ds.write(0xCC);
   ds.write(0x44);
 
   DS18B20delay = true;
   EndDS18B20delay = millis() + 800;
-  //  delay(800);     // maybe 750ms is enough, maybe not
-  //  ds.reset();
-  //  ds.write(0xCC);
-  //  ds.write(0xBE);
-  //
-  //  for ( byte i = 0; i < 2; i++) {
-  //    data[i] = ds.read();
-  //  }
-  //  ActionId = DS18B20Pin;
-  //  CreateAndSendPacket(data, sizeof(data));
 }
 
 void DS18B20End() {
@@ -325,4 +302,29 @@ void DS18B20End() {
   DS18B20delay = false;
 }
 
+void HTU21DBegin() {
+  Wire.beginTransmission(0x40);
+  Wire.write(0xF3);
+  Wire.endTransmission();
+  EndHTU21Ddelay = millis() + 55;
+}
+
+void HTU21DEnd() {
+  if ((millis() - EndHTU21Ddelay - 2 * 55) > 0) {
+    EndHTU21Ddelay = 0;
+    return;
+  }
+  Wire.requestFrom(0x40, 3);
+  if (Wire.available() < 3) {
+    return;
+  };
+  byte data[3];
+  for ( byte i = 0; i < 3; i++) {
+    data[i] = Wire.read();
+  }
+  DeviceId = HTU21DCommand;
+  ActionId = HTU21DCommand;
+  CreateAndSendPacket(data, sizeof(data)); 
+  EndHTU21Ddelay = 0;
+}
 

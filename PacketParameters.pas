@@ -19,6 +19,7 @@ const
   DS18B20Command=$5;
 //  D30_06Command=$6;
 //  PinChangeCommand=$7;
+  HTU21DCommand=$8;
 
 var
   aPacket:array of byte;
