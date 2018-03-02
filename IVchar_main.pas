@@ -619,6 +619,7 @@ type
     VoltmetrShows:array of TVoltmetrShow;
     DS18B20:TDS18B20;
     DS18B20show:TPinsShow;
+    HTU21D:THTU21D;
     ThermoCuple:TThermoCuple;
     IscVocPinChanger:TArduinoPinChanger;
     IscVocPinChangerShow:TArduinoPinChangerShow;
@@ -1919,6 +1920,10 @@ begin
    end;
  finally
  PortBeginAction(ComPort1,LConnected,BConnect);
+
+// FormDestroy(Sender);
+// FormCreate(Sender);
+
  end;
 end;
 
@@ -2222,7 +2227,9 @@ begin
 
 
  RS232_MediatorTread:=TRS232_MediatorTread.Create(
-                 [DACR2R,V721A,V721_I,V721_II,DS18B20,D30_06,IscVocPinChanger]);
+                 [DACR2R,V721A,V721_I,V721_II,DS18B20,
+                 HTU21D,
+                 D30_06,IscVocPinChanger]);
 
  if (ComPort1.Connected)and(SettingDevice.ActiveInterface.Name=DACR2R.Name) then SettingDevice.Reset();
  if (ComPort1.Connected) then D30_06.Reset;
@@ -2392,9 +2399,11 @@ begin
   ComDPacket.StopString := PacketEndChar;
   ComDPacket.ComPort := ComPort1;
 
-  PortBeginAction(ComPortUT70C, LUT70CPort, nil);
   PortBeginAction(ComPortUT70B, LUT70BPort, nil);
+//  PortBeginAction(ComPortUT70C, LUT70CPort, nil);
+
   PortBeginAction(ComPort1, LConnected, BConnect);
+
 
 
 end;
@@ -2811,6 +2820,8 @@ begin
   DS18B20:=TDS18B20.Create(ComPort1, 'DS18B20');
   DS18B20show:=TPinsShow.Create(DS18B20.Pins,LDS18BPin,nil,BDS18B,nil,CBDS18b20);
 
+  HTU21D:=THTU21D.Create(ComPort1, 'HTU21D');
+
   ThermoCuple:=TThermoCuple.Create;
 
   IscVocPinChanger:=TArduinoPinChanger.Create(ComPort1,'IscVocPin');
@@ -2955,6 +2966,9 @@ begin
   if assigned(DS18B20) then
     DS18B20.Free;
 
+ if assigned(HTU21D) then
+    HTU21D.Free;
+
  IscVocPinChangerShow.Free;
   if assigned(IscVocPinChanger) then
     IscVocPinChanger.Free;
@@ -3031,7 +3045,7 @@ begin
   Devices[3]:=V721_II;
 
   TermoCouple_MD:=TMeasuringDevice.Create(Devices,CBTcVMD,LTRValue,srVoltge);
-  Temperature_MD:=TTemperature_MD.Create([Simulator,ThermoCuple,DS18B20],CBTD,LTRValue);
+  Temperature_MD:=TTemperature_MD.Create([Simulator,ThermoCuple,DS18B20,HTU21D],CBTD,LTRValue);
 
   SetLength(Devices,High(Devices)+3);
   Devices[High(Devices)-1]:=UT70B;
@@ -3050,9 +3064,14 @@ begin
   Voc_MD:=TMeasuringDevice.Create(Devices,CBVocMD,LVocResult,srPreciseVoltage);
   Voc_MD.AddActionButton(BVocMeasure);
 
-  SetLength(Devices,High(Devices)+3);
-  Devices[High(Devices)-1]:=ThermoCuple;
-  Devices[High(Devices)]:=DS18B20;
+//  SetLength(Devices,High(Devices)+3);
+//  Devices[High(Devices)-1]:=ThermoCuple;
+//  Devices[High(Devices)]:=DS18B20;
+
+  SetLength(Devices,High(Devices)+4);
+  Devices[High(Devices)-2]:=ThermoCuple;
+  Devices[High(Devices)-1]:=DS18B20;
+  Devices[High(Devices)]:=HTU21D;
 
   TimeD_MD:=
     TMeasuringDevice.Create(Devices,CBTimeMD,LADCurrentValue,srVoltge);

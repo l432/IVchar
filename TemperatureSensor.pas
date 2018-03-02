@@ -59,7 +59,7 @@ type
 implementation
 
 uses
-  PacketParameters, OlegType;
+  PacketParameters, OlegType, Dialogs;
 
 { TDS18B20 }
 
@@ -199,6 +199,7 @@ function THTU21D.CRCCorrect: boolean;
      tempLongword,DivSor:Longword;
      i:byte;
 begin
+// showmessage('hi');
  DivSor:=$988000;
  tempLongWord:= ((((fData[0] shl 8) or  fData[1]) shl 8)or fData[2]);
 
@@ -224,7 +225,7 @@ end;
 
 procedure THTU21D.PacketCreateToSend;
 begin
-  PacketCreate([fMetterKod]);
+  PacketCreate([fMetterKod,fMetterKod]);
 end;
 
 end.

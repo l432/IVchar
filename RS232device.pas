@@ -664,8 +664,13 @@ end;
 Procedure PortBeginAction(Port:TComPort;Lab:TLabel;Button: TButton);
 begin
   try
+//    if not(Port.Connected) then showmessage('jj');
+//    Port.Close;
+    Port.Open;
     Port.Open;
     Port.AbortAllAsync;
+    Port.AbortAllAsync;
+    Port.ClearBuffer(True, True);
     Port.ClearBuffer(True, True);
   finally
    if Port.Connected then
