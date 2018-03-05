@@ -20,6 +20,7 @@ const
 //  D30_06Command=$6;
 //  PinChangeCommand=$7;
   HTU21DCommand=$8;
+  TMP102Command=$9;
 
 var
   aPacket:array of byte;

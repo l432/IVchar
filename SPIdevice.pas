@@ -144,10 +144,33 @@ type
                       ControlPinLabel,GatePinLabel:TLabel;
                       SetControlButton,SetGateButton:TButton;
                       PCB:TComboBox);
-   procedure PinsReadFromIniFile(ConfigFile:TIniFile);
-   procedure PinsWriteToIniFile(ConfigFile:TIniFile);
+   procedure PinsReadFromIniFile(ConfigFile:TIniFile);virtual;
+   procedure PinsWriteToIniFile(ConfigFile:TIniFile);virtual;
    procedure NumberPinShow();virtual;
   end;
+
+
+  TOnePinsShow=class (TPinsShow)
+  protected
+  public
+   Constructor Create(Ps:TPins;
+                      ControlPinLabel:TLabel;
+                      SetControlButton:TButton;
+                      PCB:TComboBox);
+  end;
+
+  TTMP102PinsShow=class (TOnePinsShow)
+  protected
+  public
+   Constructor Create(Ps:TPins;
+                      ControlPinLabel:TLabel;
+                      SetControlButton:TButton;
+                      PCB:TComboBox);
+   procedure PinsReadFromIniFile(ConfigFile:TIniFile);override;
+   procedure PinsWriteToIniFile(ConfigFile:TIniFile);override;
+   procedure NumberPinShow();override;
+  end;
+
 
   TArduinoPinChangerShow=class(TPinsShow)
   protected
@@ -201,7 +224,7 @@ begin
    PinLabels[0].Caption:=Pins.PinControlStr;
    if High(PinLabels)>0 then
     PinLabels[1].Caption:=Pins.PinGateStr;
-   HookNumberPinShow; 
+   HookNumberPinShow;
 end;
 
 procedure TPinsShow.CreateFooter;
@@ -562,6 +585,66 @@ begin
     then ArduinoPinChanger.PinChangeToLow
     else ArduinoPinChanger.PinChangeToHigh;
   CaptionButtonSynhronize;
+end;
+
+{ TOnePinsShow }
+
+constructor TOnePinsShow.Create(Ps: TPins;
+                                ControlPinLabel: TLabel;
+                                SetControlButton: TButton;
+                                PCB: TComboBox);
+begin
+ inherited Create(Ps,ControlPinLabel,nil,SetControlButton,nil,PCB);
+end;
+
+{ TTMP102PinsShow }
+
+constructor TTMP102PinsShow.Create(Ps: TPins;
+                                  ControlPinLabel: TLabel;
+                                  SetControlButton: TButton;
+                                  PCB: TComboBox);
+begin
+ inherited Create(Ps,ControlPinLabel,SetControlButton,PCB);
+ PCB.Items.Clear;
+ PCB.Items.Add('$48');
+ PCB.Items.Add('$49');
+ PCB.Items.Add('$4A');
+ PCB.Items.Add('$4B');
+ SetControlButton.Caption:=('Set Adress');
+end;
+
+procedure TTMP102PinsShow.NumberPinShow;
+begin
+
+   PinLabels[0].Caption:='Adress is ';
+   if Pins.fPins[0]=UndefinedPin then
+       PinLabels[0].Caption:=
+          PinLabels[0].Caption+'undefined'
+                            else
+       PinLabels[0].Caption:=
+          PinLabels[0].Caption+IntToStr(Pins.fPins[0]);
+end;
+
+procedure TTMP102PinsShow.PinsReadFromIniFile(ConfigFile: TIniFile);
+ var TempPin:integer;
+begin
+  Pins.ReadFromIniFile(ConfigFile,PinsComboBox.Items);
+
+  if Pins.Name='' then Exit;
+  TempPin := ConfigFile.ReadInteger(Pins.Name, 'Adress', -1);
+    if (TempPin > -1) and (TempPin < PinsComboBox.Items.Count) then
+      Pins.fPins[0] := StrToInt(PinsComboBox.Items[TempPin]);
+end;
+
+procedure TTMP102PinsShow.PinsWriteToIniFile(ConfigFile: TIniFile);
+ var i:byte;
+begin
+  Pins.WriteToIniFile(ConfigFile,PinsComboBox.Items);
+  if Pins.Name='' then Exit;
+  ConfigFile.EraseSection(Pins.Name);
+  for I := 0 to PinsComboBox.Items.Count - 1 do
+    if (Pins.fPins[0] = strtoint(PinsComboBox.Items[i])) then
+        ConfigFile.WriteInteger(Pins.Name, 'Adress', i);
 end;
 
 end.

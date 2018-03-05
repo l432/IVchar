@@ -36,6 +36,16 @@ type
    Procedure ConvertToValue();override;
   end;
 
+  TTMP102=class(TTempSensor)
+  {базовий клас для датчика TMP102}
+  protected
+//   Procedure PacketCreateToSend();override;
+  public
+   Constructor Create(CP:TComPort;Nm:string);override;
+   Procedure ConvertToValue();override;
+  end;
+
+
   TThermoCuple=class(TNamedDevice,ITemperatureMeasurement,IMeasurement)
     protected
      function GetNewData:boolean;
@@ -227,5 +237,32 @@ procedure THTU21D.PacketCreateToSend;
 begin
   PacketCreate([fMetterKod,fMetterKod]);
 end;
+
+{ TTMP102 }
+
+procedure TTMP102.ConvertToValue;
+ var temp:Smallint;
+begin
+ fValue:=ErResult;
+ if High(fData)<>1 then Exit;
+
+ temp:=smallint(fData[0] shl 4) or (fData[1] shr 4);
+ if (temp > $7FF) then
+   temp:=Smallint(temp or $F000);
+  fValue:=temp*0.0625;
+ if (fValue<-55)or(fValue>128) then fValue:=ErResult
+                                else fValue:=fValue+273.16;
+ fIsReady:=True;
+end;
+
+constructor TTMP102.Create(CP: TComPort; Nm: string);
+begin
+  inherited Create(CP,Nm);
+  fMetterKod:=TMP102Command;
+  SetLength(Pins.fPins,1);
+  fMinDelayTime:=30;
+end;
+
+
 
 end.

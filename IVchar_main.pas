@@ -9,7 +9,7 @@ uses
   TemperatureSensor, DACR2R, UT70, RS232device,ET1255, RS232_Mediator_Tread,
   CPortCtl, Grids, Chart, TeeProcs, Series, TeEngine, ExtCtrls, Buttons,
   ComCtrls, CPort, StdCtrls, Dialogs, Controls, Classes, D30_06,Math, PID, 
-  MDevice, Spin;
+  MDevice, Spin,HighResolutionTimer;
 
 const
   MeasIV='IV characteristic';
@@ -457,6 +457,11 @@ type
     SEET1255_Gain: TSpinEdit;
     STET122_Gain: TStaticText;
     BET1255_show_save: TButton;
+    GBTMP102: TGroupBox;
+    LTMP102Pin: TLabel;
+    BTMP102: TButton;
+    CBTMP102: TComboBox;
+    SBGenerator: TSpeedButton;
 
     procedure FormCreate(Sender: TObject);
     procedure BConnectClick(Sender: TObject);
@@ -491,6 +496,7 @@ type
     procedure TermostatWatchDogTimer(Sender: TObject);
     procedure ControlWatchDogTimer(Sender: TObject);
     procedure BET1255_show_saveClick(Sender: TObject);
+    procedure SBGeneratorClick(Sender: TObject);
   private
     procedure ComponentView;
     {початкове налаштування різних компонентів}
@@ -618,7 +624,12 @@ type
 //    V721_II:TV721_Brak;
     VoltmetrShows:array of TVoltmetrShow;
     DS18B20:TDS18B20;
-    DS18B20show:TPinsShow;
+//    DS18B20show:TPinsShow;
+    DS18B20show:TOnePinsShow;
+    TMP102:TTMP102;
+    TMP102show:TTMP102PinsShow;
+
+
     HTU21D:THTU21D;
     ThermoCuple:TThermoCuple;
     IscVocPinChanger:TArduinoPinChanger;
@@ -2228,6 +2239,7 @@ begin
 
  RS232_MediatorTread:=TRS232_MediatorTread.Create(
                  [DACR2R,V721A,V721_I,V721_II,DS18B20,
+                 TMP102,
                  HTU21D,
                  D30_06,IscVocPinChanger]);
 
@@ -2400,7 +2412,7 @@ begin
   ComDPacket.ComPort := ComPort1;
 
   PortBeginAction(ComPortUT70B, LUT70BPort, nil);
-//  PortBeginAction(ComPortUT70C, LUT70CPort, nil);
+  PortBeginAction(ComPortUT70C, LUT70CPort, nil);
 
   PortBeginAction(ComPort1, LConnected, BConnect);
 
@@ -2672,6 +2684,27 @@ begin
     end;
 end;
 
+procedure TIVchar.SBGeneratorClick(Sender: TObject);
+ var i:byte;
+begin
+ if SBGenerator.Down then
+  begin
+    repeat
+     for I := 0 to 20 do
+       begin
+         ET1255_DACs[0].Output(i*0.1+0.01*i);
+         HRDelay(1);
+         ET1255_DACs[0].Output(i*0.1);
+         HRDelay(5);
+       end;
+      Application.ProcessMessages;
+    until not(SBGenerator.Down);
+  end
+                     else
+   ET1255_DACs[0].Reset();
+
+end;
+
 procedure TIVchar.SBTAutoClick(Sender: TObject);
 begin
  if SBTAuto.Down then
@@ -2818,7 +2851,12 @@ begin
   VoltmetrShows[2]:= TVoltmetrShow.Create(V721_II, RGV721II_MM, RGV721IIRange, LV721II, LV721IIU, LV721IIPin, LV721IIPinG, BV721IISet, BV721IISetGate, BV721IIMeas, SBV721IIAuto, CBV721II, Time);
 
   DS18B20:=TDS18B20.Create(ComPort1, 'DS18B20');
-  DS18B20show:=TPinsShow.Create(DS18B20.Pins,LDS18BPin,nil,BDS18B,nil,CBDS18b20);
+//  DS18B20show:=TPinsShow.Create(DS18B20.Pins,LDS18BPin,nil,BDS18B,nil,CBDS18b20);
+  DS18B20show:=TOnePinsShow.Create(DS18B20.Pins,LDS18BPin,BDS18B,CBDS18b20);
+
+ TMP102:=TTMP102.Create(ComPort1, 'TMP102');
+ TMP102show:=TTMP102PinsShow.Create(TMP102.Pins,LTMP102Pin,BTMP102,CBTMP102);
+
 
   HTU21D:=THTU21D.Create(ComPort1, 'HTU21D');
 
@@ -2850,6 +2888,10 @@ begin
  DS18B20show.PinsReadFromIniFile(ConfigFile);
  DS18B20show.NumberPinShow;
 
+ TMP102show.PinsReadFromIniFile(ConfigFile);
+ TMP102show.NumberPinShow;
+
+
  IscVocPinChangerShow.PinsReadFromIniFile(ConfigFile);
  IscVocPinChangerShow.NumberPinShow;
 end;
@@ -2860,6 +2902,8 @@ begin
  for I := 0 to High(VoltmetrShows) do
   VoltmetrShows[i].PinShow.PinsWriteToIniFile(ConfigFile);
  DS18B20show.PinsWriteToIniFile(ConfigFile);
+ TMP102show.PinsWriteToIniFile(ConfigFile);
+
  IscVocPinChangerShow.PinsWriteToIniFile(ConfigFile);
  if ET1255isPresent then
   ET1255_ADCModule.WriteToIniFile(ConfigFile);
@@ -2966,6 +3010,11 @@ begin
   if assigned(DS18B20) then
     DS18B20.Free;
 
+ TMP102show.Free;
+  if assigned(TMP102) then
+    TMP102.Free;
+
+
  if assigned(HTU21D) then
     HTU21D.Free;
 
@@ -3045,7 +3094,7 @@ begin
   Devices[3]:=V721_II;
 
   TermoCouple_MD:=TMeasuringDevice.Create(Devices,CBTcVMD,LTRValue,srVoltge);
-  Temperature_MD:=TTemperature_MD.Create([Simulator,ThermoCuple,DS18B20,HTU21D],CBTD,LTRValue);
+  Temperature_MD:=TTemperature_MD.Create([Simulator,ThermoCuple,DS18B20,HTU21D,TMP102],CBTD,LTRValue);
 
   SetLength(Devices,High(Devices)+3);
   Devices[High(Devices)-1]:=UT70B;
@@ -3068,10 +3117,11 @@ begin
 //  Devices[High(Devices)-1]:=ThermoCuple;
 //  Devices[High(Devices)]:=DS18B20;
 
-  SetLength(Devices,High(Devices)+4);
-  Devices[High(Devices)-2]:=ThermoCuple;
-  Devices[High(Devices)-1]:=DS18B20;
-  Devices[High(Devices)]:=HTU21D;
+  SetLength(Devices,High(Devices)+5);
+  Devices[High(Devices)-3]:=ThermoCuple;
+  Devices[High(Devices)-2]:=DS18B20;
+  Devices[High(Devices)-1]:=HTU21D;
+  Devices[High(Devices)]:=TMP102;
 
   TimeD_MD:=
     TMeasuringDevice.Create(Devices,CBTimeMD,LADCurrentValue,srVoltge);

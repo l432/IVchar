@@ -16,6 +16,7 @@ const byte DS18B20Command = 0x5;
 const byte D30_06Command = 0x6;
 const byte PinChangeCommand = 0x7;
 const byte HTU21DCommand = 0x8;
+const byte TMP102Command = 0x9;
 const byte PinToHigh = 0xFF;
 const byte PinToLow = 0x0F;
 
@@ -37,10 +38,12 @@ byte incomingByte = 0;
 byte PinControl, PinGate, DeviceId, ActionId;
 byte DACR2RPinSign = SignPins[0];
 byte D30_06PinSign = SignPins[1];
+byte TMP102_Adress;
 
 
 byte DACDataReceived[3];
 byte D30_06DataReceived[4];
+byte TMP102DataReceived[2];
 boolean DACR2RPinSignBool;
 boolean D30_06PinSignBool;
 //boolean DS18B20delay;
@@ -48,6 +51,8 @@ boolean D30_06PinSignBool;
 unsigned long EndDS18B20delay;
 unsigned long EndD30_06delay;
 unsigned long EndHTU21Ddelay;
+unsigned long EndTMP102delay;
+
 
 void setup() {
   Serial.begin(115200);
@@ -68,11 +73,13 @@ void setup() {
 
   DACR2RPinSignBool = false;
   D30_06PinSignBool = false;
-//  DS18B20delay = false;
-//  D30_06delay = false;
+  //  DS18B20delay = false;
+  //  D30_06delay = false;
   EndDS18B20delay = 0;
   EndD30_06delay = 0;
   EndHTU21Ddelay = 0;
+  EndTMP102delay = 0;
+  TMP102_Adress = 0;
   wdt_enable(WDTO_500MS);
   Wire.begin();
 
@@ -98,8 +105,11 @@ void loop() {
 
       if (packet[0] < 3) goto start;
       DeviceId = packet[1];
-      if (packet[0] > 4) {
+      if (packet[0] > 3) {
         PinControl = packet[2];
+        //        PinGate = packet[3];
+      }
+      if (packet[0] > 4) {
         PinGate = packet[3];
       }
 
@@ -117,7 +127,8 @@ void loop() {
         DACR2R();
       }
 
-      if ((DeviceId == D30_06Command) && (millis() >= EndD30_06delay)) {
+      //      if ((DeviceId == D30_06Command) && (millis() >= EndD30_06delay)) {
+      if ((DeviceId == D30_06Command) && (EndD30_06delay == 0)) {
         if (packet[0] < 8) goto start;
         D30_06DataReceived[0] = packet[4];
         D30_06DataReceived[1] = packet[5];
@@ -126,9 +137,10 @@ void loop() {
         D30_06();
       }
 
-      if ((DeviceId == DS18B20Command) && (millis() >= EndDS18B20delay)) {
+      //      if ((DeviceId == DS18B20Command) && (millis() >= EndDS18B20delay)) {
+      if ((DeviceId == DS18B20Command) && (EndDS18B20delay == 0)) {
         if (packet[0] < 4) goto start;
-        PinControl = packet[2];
+        //        PinControl = packet[2];
         DS18B20();
       }
 
@@ -137,9 +149,15 @@ void loop() {
         if (packet[3] == PinToLow)  digitalWrite(PinControl, LOW);
       }
 
-      if (DeviceId == HTU21DCommand)  {
+      if ((DeviceId == HTU21DCommand) && (EndHTU21Ddelay == 0))  {
         HTU21DBegin();
       }
+
+      if ((DeviceId == TMP102Command) && (EndTMP102delay == 0)) {
+        if (packet[0] < 4) goto start;
+        TMP102First();
+      }
+
     }
   }
 start:
@@ -152,7 +170,9 @@ start:
   if (EndHTU21Ddelay && millis() >= EndHTU21Ddelay) {
     HTU21DEnd();
   }
-
+  if (EndTMP102delay && millis() >= EndTMP102delay) {
+    TMP102Second();
+  }
   wdt_reset();
 }
 
@@ -251,7 +271,7 @@ void D30_06() {
       (D30_06DataReceived[2] == DAC_Pos && D30_06PinSignBool))
   {
     EndD30_06delay = millis() + 500;
-//    D30_06delay = true;
+    //    D30_06delay = true;
     SPI2ByteTransfer(D30_06DataReceived[3], 0, 0);
 
   } else {
@@ -271,8 +291,8 @@ void D30_06_Second() {
     digitalWrite(D30_06PinSign, LOW);
     D30_06PinSignBool = false;
   };
-//  D30_06delay = false;
-  EndD30_06delay=0;
+  //  D30_06delay = false;
+  EndD30_06delay = 0;
   SPI2ByteTransfer(D30_06DataReceived[3], D30_06DataReceived[0], D30_06DataReceived[1]);
 }
 
@@ -287,7 +307,7 @@ void DS18B20() {
   ds.write(0xCC);
   ds.write(0x44);
 
-//  DS18B20delay = true;
+  //  DS18B20delay = true;
   EndDS18B20delay = millis() + 800;
 }
 
@@ -305,6 +325,7 @@ void DS18B20End() {
   CreateAndSendPacket(data, sizeof(data));
   EndDS18B20delay = 0;
 }
+
 
 void HTU21DBegin() {
   Wire.beginTransmission(0x40);
@@ -339,5 +360,75 @@ void ControlBlink() {
   digitalWrite(12, HIGH);
   delay(200);
   digitalWrite(12, LOW);
+}
+
+void TMP3ByteTransfer(byte Data1, byte Data2, byte Data3) {
+  Wire.beginTransmission(TMP102_Adress);
+  Wire.write(Data1);
+  Wire.write(Data2);
+  Wire.write(Data3);
+  Wire.endTransmission();
+}
+
+void TMP2ByteTransfer(byte Data1, byte Data2) {
+  Wire.beginTransmission(TMP102_Adress);
+  Wire.write(Data1);
+  Wire.write(Data2);
+  Wire.endTransmission();
+}
+
+void TMP1ByteTransfer(byte Data1) {
+  Wire.beginTransmission(TMP102_Adress);
+  Wire.write(Data1);
+  Wire.endTransmission();
+}
+
+void TPMDataReceive() {
+  Wire.requestFrom(TMP102_Adress, 2);
+  Wire.endTransmission();
+  TMP102DataReceived[0] = Wire.read();
+  TMP102DataReceived[1] = Wire.read();
+}
+
+
+void TMP102First() {
+  if (PinControl != TMP102_Adress) {
+    TMP102_Adress = PinControl;
+    TMP102Initial();
+  }
+
+  TMP1ByteTransfer(0x01);
+  TPMDataReceive();
+  TMP102DataReceived[0] &= 0x7F;
+  TMP102DataReceived[0] |= 0x80;
+  TMP2ByteTransfer(0x01, TMP102DataReceived[0]);
+  //OS->1
+
+  EndTMP102delay = millis() + 30;
+
+}
+
+void TMP102Second () {
+  TMP1ByteTransfer(0x00);
+  TPMDataReceive();
+
+  DeviceId = TMP102Command;
+  ActionId = TMP102_Adress;
+  CreateAndSendPacket(TMP102DataReceived, sizeof(TMP102DataReceived));
+  EndTMP102delay = 0;
+}
+
+void TMP102Initial() {
+  TMP3ByteTransfer(0x03, 0x7F, 0xF0);
+  // write 127.9375 to Thigh
+  TMP3ByteTransfer(0x02, 0x7E, 0x00);
+  // write 126 to Tlow
+
+  TMP1ByteTransfer(0x01);
+  TPMDataReceive();
+  TMP102DataReceived[0] &= 0xFC;
+  TMP102DataReceived[0] |= 0x03;
+  TMP2ByteTransfer(0x01, TMP102DataReceived[0]);
+  //to sleep-mode, to interrupt mode,
 }
 
