@@ -35,7 +35,7 @@ object IVchar: TIVchar
     Top = 0
     Width = 786
     Height = 466
-    ActivePage = TS_ET1255
+    ActivePage = TS_Setting
     Align = alTop
     Font.Charset = RUSSIAN_CHARSET
     Font.Color = clWindowText
@@ -2644,6 +2644,19 @@ object IVchar: TIVchar
           Font.Style = [fsBold]
           ParentFont = False
         end
+        object LDBtime: TLabel
+          Left = 160
+          Top = 167
+          Width = 31
+          Height = 13
+          Caption = 'L1PR'
+          Font.Charset = RUSSIAN_CHARSET
+          Font.Color = clMaroon
+          Font.Height = -11
+          Font.Name = 'Verdana'
+          Font.Style = [fsBold]
+          ParentFont = False
+        end
         object CBVS: TComboBox
           Tag = 5
           Left = 9
@@ -2759,6 +2772,20 @@ object IVchar: TIVchar
           Font.Style = [fsBold]
           ParentFont = False
           TabOrder = 8
+        end
+        object STDBtime: TStaticText
+          Left = 202
+          Top = 185
+          Width = 97
+          Height = 24
+          Caption = '1.34E+01'
+          Font.Charset = RUSSIAN_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -17
+          Font.Name = 'Verdana'
+          Font.Style = [fsBold]
+          ParentFont = False
+          TabOrder = 9
         end
       end
       object CBCurrentValue: TCheckBox

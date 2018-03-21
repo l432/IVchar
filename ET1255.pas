@@ -195,12 +195,13 @@ end;
 
  TET1255_ModuleAndChan=class(TET1255_Module,IMeasurement)
   private
-   Channels:array[TET1255_ADC_ChanelNumber] of TET1255_ADCChannel;
+//   Channels:array[TET1255_ADC_ChanelNumber] of TET1255_ADCChannel;
    function GetNewData:boolean;
    function GetValue:double;
    procedure SetNewData(Value:boolean);
    function GetName:string;
   public
+   Channels:array[TET1255_ADC_ChanelNumber] of TET1255_ADCChannel;
    property NewData:boolean read GetNewData write SetNewData;
    property Value:double read GetValue;
    property Name:string read GetName;

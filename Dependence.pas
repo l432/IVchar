@@ -7,10 +7,12 @@ uses
   ExtCtrls, Classes;
 
 var EventToStopDependence:THandle;
+//    EventToStopIVMeasurement:THandle;
 
 type
 
-TDependence=class
+
+TFastDependence=class
 private
   fHookBeginMeasuring: TSimpleEvent;
   fHookEndMeasuring: TSimpleEvent;
@@ -18,31 +20,27 @@ private
   fHookFirstMeas:TSimpleEvent;
   fHookDataSave:TSimpleEvent;
   fHookAction:TSimpleEvent;
-  ProgressBar: TProgressBar;
   ButtonStop: TButton;
   Results:PVector;
   ForwLine: TPointSeries;
   ForwLg: TPointSeries;
-  FisActive: boolean;
   procedure ButtonStopClick(Sender: TObject);virtual;
+  procedure SeriesClear();virtual;
   procedure BeginMeasuring();virtual;
   procedure EndMeasuring();virtual;
   procedure DuringMeasuring(Action: TSimpleEvent);
-  function MeasurementNumberDetermine(): integer;virtual;
   procedure ActionMeasurement();virtual;
   procedure DataSave();virtual;
-//  procedure AEmpty;
 
  public
-  property isActive:boolean read FisActive;
+//  property isActive:boolean read FisActive;
   property HookBeginMeasuring:TSimpleEvent read FHookBeginMeasuring write FHookBeginMeasuring;
   property HookEndMeasuring:TSimpleEvent read fHookEndMeasuring write fHookEndMeasuring;
   property HookAction:TSimpleEvent read fHookAction write fHookAction;
   property HookDataSave:TSimpleEvent read fHookDataSave write fHookDataSave;
   property HookSecondMeas:TSimpleEvent read fHookSecondMeas write fHookSecondMeas;
   property HookFirstMeas:TSimpleEvent read fHookFirstMeas write fHookFirstMeas;
-  Constructor Create(PB:TProgressBar;
-                     BS: TButton;
+  Constructor Create(BS: TButton;
                      Res:PVector;
                      FLn,FLg:TPointSeries);
   class function PointNumber:word;
@@ -51,8 +49,58 @@ private
   class procedure tempVChange(Value: double);
   class function tempI:double;
   class procedure tempIChange(Value: double);
+//  procedure PeriodicMeasuring();virtual;
+end;
+
+
+
+
+TDependence=class (TFastDependence)
+private
+//  fHookBeginMeasuring: TSimpleEvent;
+//  fHookEndMeasuring: TSimpleEvent;
+//  fHookSecondMeas:TSimpleEvent;
+//  fHookFirstMeas:TSimpleEvent;
+//  fHookDataSave:TSimpleEvent;
+//  fHookAction:TSimpleEvent;
+  ProgressBar: TProgressBar;
+//  ButtonStop: TButton;
+//  Results:PVector;
+//  ForwLine: TPointSeries;
+//  ForwLg: TPointSeries;
+  FisActive: boolean;
+//  procedure ButtonStopClick(Sender: TObject);virtual;
+//  procedure SeriesClear();virtual;
+  procedure BeginMeasuring();override;
+  procedure EndMeasuring();override;
+//  procedure DuringMeasuring(Action: TSimpleEvent);
+  function MeasurementNumberDetermine(): integer;virtual;
+  procedure ActionMeasurement();override;
+  procedure DataSave();override;
+//  procedure AEmpty;
+
+ public
+  property isActive:boolean read FisActive;
+//  property HookBeginMeasuring:TSimpleEvent read FHookBeginMeasuring write FHookBeginMeasuring;
+//  property HookEndMeasuring:TSimpleEvent read fHookEndMeasuring write fHookEndMeasuring;
+//  property HookAction:TSimpleEvent read fHookAction write fHookAction;
+//  property HookDataSave:TSimpleEvent read fHookDataSave write fHookDataSave;
+//  property HookSecondMeas:TSimpleEvent read fHookSecondMeas write fHookSecondMeas;
+//  property HookFirstMeas:TSimpleEvent read fHookFirstMeas write fHookFirstMeas;
+  Constructor Create(PB:TProgressBar;
+                     BS: TButton;
+                     Res:PVector;
+                     FLn,FLg:TPointSeries);
+//  class function PointNumber:word;
+//  class procedure PointNumberChange(Value: word);
+//  class function tempV:double;
+//  class procedure tempVChange(Value: double);
+//  class function tempI:double;
+//  class procedure tempIChange(Value: double);
   procedure PeriodicMeasuring();virtual;
 end;
+
+
 
 TTimeDependence=class(TDependence)
 private
@@ -165,6 +213,92 @@ public
 end;
 
 
+
+TFastIVDependence=class (TFastDependence)
+private
+  fHookCycle:TSimpleEvent;
+  fHookStep:TSimpleEvent;
+  fHookSetVoltage:TSimpleEvent;
+  FR_VtoI_Used: boolean;
+  fR_VtoI:double;
+
+  fTreadToStop:TThread;
+  fTreadToMeasuring:TThread;
+
+  fBeginBranchNumber:word;
+
+  CBForw,CBRev: TCheckBox;
+  RevLine: TPointSeries;
+  RevLg: TPointSeries;
+   
+  procedure SeriesClear();override;
+//  procedure Cycle(ItIsForwardInput: Boolean; Action: TSimpleEvent);
+//  procedure FullCycle(Action: TSimpleEvent);
+  procedure EndMeasuring();override;
+//  function MeasurementNumberDetermine(): integer;override;
+  procedure ActionMeasurement();override;
+  procedure SetR_VtoI(const Value: double);
+    procedure SetR_VtoI_Used(const Value: boolean);
+//  procedure DataSave();override;
+public
+  RangeFor:TLimitShow;
+  RangeRev:TLimitShowRev;
+  property HookCycle:TSimpleEvent read fHookCycle write fHookCycle;
+  property HookStep:TSimpleEvent read fHookStep write fHookStep;
+  property HookSetVoltage:TSimpleEvent read fHookSetVoltage write fHookSetVoltage;
+  property R_VtoI:double read FR_VtoI write SetR_VtoI;
+  property R_VtoI_Used:boolean read FR_VtoI_Used write SetR_VtoI_Used;
+  Constructor Create(
+                     CBF,CBR: TCheckBox;
+                     BS: TButton;
+                     Res:PVector;
+                     FLn,RLn,FLg,RLg:TPointSeries);
+//  procedure Measuring();
+  procedure SetVoltage();
+  procedure BeginMeasuring();override;
+  procedure Cycle(ItIsForwardInput: Boolean);
+//  procedure ActionMeasurement();override;
+//  class function ItIsForward:boolean;
+//  class procedure ItIsForwardChange(Value: boolean);
+//  class function IVMeasuringToStop:boolean;
+//  class procedure IVMeasuringToStopChange(Value: boolean);
+//  class procedure SecondMeasIsDoneChange(Value: boolean);
+//  class function VoltageInput:double;
+//  class procedure VoltageInputChange(Value: double);
+//  class function VoltageInputReal:double;
+//  class function VoltageStep:double;
+//  class procedure VoltageStepChange(Value: double);
+//  class function VoltageCorrection:double;
+//  class procedure VoltageCorrectionChange(Value: double);
+//  class function DelayTime:integer;
+//  class procedure DelayTimeChange(Value: integer);
+end;
+
+
+TFastIVDependenceAction = class(TThread)
+  private
+    { Private declarations }
+   fFastIV:TFastIVDependence;
+  protected
+    procedure Execute; override;
+  public
+   constructor Create(FastIV:TFastIVDependence);
+  end;
+
+TFastIVDependenceStop = class(TThread)
+  private
+    { Private declarations }
+   fThreadIVAction:TThread;
+   fFastIV:TFastIVDependence;
+  protected
+    procedure Execute; override;
+  public
+   constructor Create(FastIV:TFastIVDependence;
+                      ThreadIVAction:TThread);
+  end;
+
+
+
 TIVMeasurementResult=class
   private
     FDeltaToApplied: double;
@@ -208,7 +342,7 @@ end;
 implementation
 
 uses
-  SysUtils, Forms, Windows, Math, DateUtils, Dialogs;
+  SysUtils, Forms, Windows, Math, DateUtils, Dialogs, OlegGraph;
 
 var
   fItIsForward:boolean;
@@ -571,7 +705,8 @@ end;
 
 procedure TDependence.ActionMeasurement;
 begin
-  DataSave();
+//  DataSave();
+  inherited ActionMeasurement();
   ProgressBar.Position := fPointNumber;
   MelodyShot();
 end;
@@ -584,82 +719,82 @@ end;
 procedure TDependence.BeginMeasuring;
 begin
 
+ 
+
   fIVMeasuringToStop:=False;
-  ProgressBar.Max := MeasurementNumberDetermine();
-  DecimalSeparator:='.';
-  ProgressBar.Position := 0;
-  ButtonStop.Enabled:=True;
-  fPointNumber:=0;
-  ProgressBar.Position := fPointNumber;
-  SetLenVector(Results,fPointNumber);
-  ForwLine.Clear;
-  ForwLg.Clear;
-  ForwLg.ParentChart.Axes.Left.Logarithmic:=True;
-  ForwLg.ParentChart.Axes.Left.LogarithmicBase:=10;
+//  DecimalSeparator:='.';
+//  if ProgressBar<>nil then
+//    begin
+      ProgressBar.Max := MeasurementNumberDetermine();
+      ProgressBar.Position := 0;
+//    end;
+//  ButtonStop.Enabled:=True;
+//  fPointNumber:=0;
+//  ProgressBar.Position := fPointNumber;
+//  SetLenVector(Results,fPointNumber);
+
+//  SeriesClear();
   FisActive:=True;
-
-  HookBeginMeasuring();
+  inherited  BeginMeasuring();
+  
+//  HookBeginMeasuring();
 end;
 
-procedure TDependence.ButtonStopClick(Sender: TObject);
-begin
-  SetEvent(EventToStopDependence);
-  fIVMeasuringToStop:=True;
-end;
+//procedure TDependence.ButtonStopClick(Sender: TObject);
+//begin
+//  SetEvent(EventToStopDependence);
+//  fIVMeasuringToStop:=True;
+//end;
 
 constructor TDependence.Create(PB: TProgressBar;
                                BS: TButton;
                                Res: PVector;
                                FLn, FLg: TPointSeries);
 begin
- inherited Create;
+ inherited Create(BS,Res, FLn, FLg);
  ProgressBar:=PB;
- ButtonStop:=BS;
- ButtonStop.OnClick:=ButtonStopClick;
- Results:=Res;
- ForwLine:=FLn;
- ForwLg:=FLg;
+// ButtonStop:=BS;
+// ButtonStop.OnClick:=ButtonStopClick;
+// Results:=Res;
+// ForwLine:=FLn;
+// ForwLg:=FLg;
 
  FisActive:=False;
 
- HookBeginMeasuring:=TSimpleClass.EmptyProcedure;
- HookEndMeasuring:=TSimpleClass.EmptyProcedure;
- HookSecondMeas:=TSimpleClass.EmptyProcedure;
- HookFirstMeas:=TSimpleClass.EmptyProcedure;
- HookDataSave:=TSimpleClass.EmptyProcedure;
- HookAction:=TSimpleClass.EmptyProcedure;
+// HookBeginMeasuring:=TSimpleClass.EmptyProcedure;
+// HookEndMeasuring:=TSimpleClass.EmptyProcedure;
+// HookSecondMeas:=TSimpleClass.EmptyProcedure;
+// HookFirstMeas:=TSimpleClass.EmptyProcedure;
+// HookDataSave:=TSimpleClass.EmptyProcedure;
+// HookAction:=TSimpleClass.EmptyProcedure;
 
-// HookBeginMeasuring:=AEmpty;
-// HookEndMeasuring:=AEmpty;
-// HookSecondMeas:=AEmpty;
-// HookFirstMeas:=AEmpty;
-// HookDataSave:=AEmpty;
-// HookAction:=AEmpty;
 end;
 
 procedure TDependence.DataSave;
 begin
   Application.ProcessMessages;
-  HookDataSave();
+  inherited DataSave();
 
-  Results.Add(ftempV, ftempI);
+//  HookDataSave();
+//
+//  Results.Add(ftempV, ftempI);
   ForwLine.AddXY(ftempV, ftempI);
   if abs(ftempI) > 1E-11 then
      ForwLg.AddXY(ftempV, abs(ftempI));
 end;
 
-procedure TDependence.DuringMeasuring(Action: TSimpleEvent);
-begin
-   Application.ProcessMessages;
-   inc(fPointNumber);
-   HookAction();
-   Action;
-end;
+//procedure TDependence.DuringMeasuring(Action: TSimpleEvent);
+//begin
+//   Application.ProcessMessages;
+//   inc(fPointNumber);
+//   HookAction();
+//   Action;
+//end;
 
 procedure TDependence.EndMeasuring;
 begin
-  ButtonStop.Enabled := False;
-  HookEndMeasuring();
+  inherited EndMeasuring();
+
   FisActive:=False;
   MelodyLong();
 end;
@@ -674,32 +809,40 @@ begin
   DuringMeasuring(ActionMeasurement);
 end;
 
-class function TDependence.PointNumber: word;
+class function TFastDependence.PointNumber: word;
 begin
    Result:=fPointNumber;
 end;
 
-class procedure TDependence.PointNumberChange(Value: word);
+class procedure TFastDependence.PointNumberChange(Value: word);
 begin
  fPointNumber:=Value;
 end;
 
-class function TDependence.tempI: double;
+//procedure TDependence.SeriesClear;
+//begin
+//  ForwLine.Clear;
+//  ForwLg.Clear;
+//  ForwLg.ParentChart.Axes.Left.Logarithmic:=True;
+//  ForwLg.ParentChart.Axes.Left.LogarithmicBase:=10;
+//end;
+
+class function TFastDependence.tempI: double;
 begin
   Result:=ftempI;
 end;
 
-class procedure TDependence.tempIChange(Value: double);
+class procedure TFastDependence.tempIChange(Value: double);
 begin
   ftempI:=Value;
 end;
 
-class function TDependence.tempV: double;
+class function TFastDependence.tempV: double;
 begin
   Result:=ftempV;
 end;
 
-class procedure TDependence.tempVChange(Value: double);
+class procedure TFastDependence.tempVChange(Value: double);
 begin
   ftempV:=Value;
 end;
@@ -886,15 +1029,358 @@ begin
  tempIVMR.Free;
 end;
 
+{ TFastDependence }
+
+procedure TFastDependence.ActionMeasurement;
+begin
+  DataSave();
+end;
+
+procedure TFastDependence.BeginMeasuring;
+begin
+//  fIVMeasuringToStop:=False;
+  DecimalSeparator:='.';
+  fPointNumber:=0;
+  SetLenVector(Results,fPointNumber);
+  ButtonStop.Enabled:=True;
+//-----------------
+  SeriesClear();
+//  -------------------------
+//  FisActive:=True;
+
+  HookBeginMeasuring();
+end;
+
+procedure TFastDependence.ButtonStopClick(Sender: TObject);
+begin
+  SetEvent(EventToStopDependence);
+  fIVMeasuringToStop:=True;
+end;
+
+constructor TFastDependence.Create(BS: TButton;
+                                   Res: PVector;
+                                   FLn, FLg: TPointSeries);
+begin
+  inherited Create;
+ ButtonStop:=BS;
+ ButtonStop.OnClick:=ButtonStopClick;
+ Results:=Res;
+ ForwLine:=FLn;
+ ForwLg:=FLg;
+
+// FisActive:=False;
+//
+ HookBeginMeasuring:=TSimpleClass.EmptyProcedure;
+ HookEndMeasuring:=TSimpleClass.EmptyProcedure;
+ HookSecondMeas:=TSimpleClass.EmptyProcedure;
+ HookFirstMeas:=TSimpleClass.EmptyProcedure;
+ HookDataSave:=TSimpleClass.EmptyProcedure;
+ HookAction:=TSimpleClass.EmptyProcedure;
+end;
+
+procedure TFastDependence.DataSave;
+begin
+//  Application.ProcessMessages;
+  HookDataSave();
+
+  Results.Add(ftempV, ftempI);
+//----------------------
+//  ForwLine.AddXY(ftempV, ftempI);
+//  if abs(ftempI) > 1E-11 then
+//     ForwLg.AddXY(ftempV, abs(ftempI));
+end;
+
+procedure TFastDependence.DuringMeasuring(Action: TSimpleEvent);
+begin
+   Application.ProcessMessages;
+   inc(fPointNumber);
+   HookAction();
+   Action;
+end;
+
+procedure TFastDependence.EndMeasuring;
+begin
+  ButtonStop.Enabled := False;
+  HookEndMeasuring();
+//  FisActive:=False;
+  MelodyShot();
+end;
+
+procedure TFastDependence.SeriesClear;
+begin
+  ForwLine.Clear;
+  ForwLg.Clear;
+  ForwLg.ParentChart.Axes.Left.Logarithmic:=True;
+  ForwLg.ParentChart.Axes.Left.LogarithmicBase:=10;
+end;
+
+{ TFastIVDependence }
+
+procedure TFastIVDependence.ActionMeasurement;
+begin
+//  repeat
+    SetVoltage();
+//    fSecondMeasIsDone:=True;
+    HookFirstMeas();
+    if ftempV=ErResult then
+      begin
+       SetEvent(EventToStopDependence);
+       sleep(0);
+//       fIVMeasuringToStop:=True;
+       Exit;
+      end;
+//    if not(fSecondMeasIsDone)  then Continue;
+
+//    fSecondMeasIsDone:=True;
+    HookSecondMeas();
+    if ftempI=ErResult then
+      begin
+       SetEvent(EventToStopDependence);
+       sleep(0);
+//       fIVMeasuringToStop:=True;
+//       Exit;
+      end;
+
+
+//  until (fSecondMeasIsDone);
+
+    if FR_VtoI_Used then    
+      ftempI:=ftempI/fR_VtoI;
+
+  inherited ActionMeasurement()
+
+end;
+
+
+procedure TFastIVDependence.BeginMeasuring;
+begin
+  inherited  BeginMeasuring;
+  ResetEvent(EventToStopDependence);
+
+
+  fTreadToMeasuring:=TFastIVDependenceAction.Create(self);
+  fTreadToStop:=TFastIVDependenceStop.Create(self,fTreadToMeasuring);
+  fTreadToMeasuring.Resume;
+
+end;
+
+constructor TFastIVDependence.Create(CBF, CBR: TCheckBox; BS: TButton;Res: PVector; FLn,
+  RLn, FLg, RLg: TPointSeries);
+begin
+  inherited Create(BS,Res,FLn, FLg);
+ CBForw:=CBF;
+ CBRev:=CBR;
+ RevLine:=RLn;
+ RevLg:=RLg;
+
+ HookCycle:=TSimpleClass.EmptyProcedure;
+ HookStep:=TSimpleClass.EmptyProcedure;
+ HookSetVoltage:=TSimpleClass.EmptyProcedure;
+
+ fR_VtoI:=1;
+ FR_VtoI_Used:=True;
+
+end;
+
+procedure TFastIVDependence.Cycle(ItIsForwardInput: Boolean);
+  var Start,Finish:double;
+     Condition:boolean;
+begin
+ fItIsForward:=ItIsForwardInput;
+// fDelayTime:=0;
+// fVoltageCorrection:=0;
+ fBeginBranchNumber:=fPointNumber;
+
+ if fItIsForward then
+   begin
+     Start:=RangeFor.LowValue;
+     Finish:=RangeFor.HighValue;
+     Condition:=CBForw.Checked;
+   end          else
+   begin
+     Start:=RangeRev.LowValue;;
+     Finish:=RangeRev.HighValue;;
+     Condition:=CBRev.Checked;
+  end;
+
+  HookCycle();
+
+ if Condition then
+  begin
+   fVoltageInput:=Start;
+
+//   if not(fItIsForward)
+//      and(fVoltageInput=0)
+//      and(RangeFor.LowValue=0)
+//      and(CBForw.Checked) then
+//    begin
+//     HookStep();
+//     fVoltageInput:=fVoltageInput+fVoltageStep;
+//    end;
+
+   repeat
+//     Application.ProcessMessages;
+//     if fIVMeasuringToStop then Exit;
+     if not(fItIsForward)
+      and(fVoltageInput=0)
+      and(RangeFor.LowValue=0)
+      and(CBForw.Checked)
+        then
+        else  DuringMeasuring(ActionMeasurement);
+     HookStep();
+     fVoltageInput:=fVoltageInput+fVoltageStep;
+   until fVoltageInput>Finish;
+  end;
+
+end;
+
+procedure TFastIVDependence.EndMeasuring;
+ var i:integer;
+begin
+  if CBRev.Checked then
+    for i:=0 to High(Results^.X) do
+      begin
+       if Results^.X[i]<0 then
+            begin
+            RevLine.AddXY(-Results^.X[i], -Results^.Y[i]);
+            if abs(Results^.Y[i]) > 1E-11 then
+             RevLg.AddXY(-Results^.X[i], abs(Results^.Y[i]));
+            end
+                          else
+            begin
+             ForwLine.AddXY(Results^.X[i], Results^.Y[i]);
+             if abs(Results^.Y[i]) > 1E-11 then
+               ForwLg.AddXY(Results^.X[i], abs(Results^.Y[i]));
+            end;
+
+      end
+                   else
+    for i:=0 to High(Results^.X) do
+      begin
+       ForwLine.AddXY(Results^.X[i], Results^.Y[i]);
+       if abs(Results^.Y[i]) > 1E-11 then
+         ForwLg.AddXY(Results^.X[i], abs(Results^.Y[i]));
+      end;
+
+ inherited EndMeasuring;
+end;
+
+//procedure TFastIVDependence.FullCycle(Action: TSimpleEvent);
+//begin
+//  Cycle(True,Action);
+//  Cycle(False,Action);
+//end;
+
+//procedure TFastIVDependence.Measuring;
+//begin
+//  BeginMeasuring();
+//  FullCycle(ActionMeasurement);
+//  EndMeasuring();
+//end;
+
+procedure TFastIVDependence.SeriesClear;
+begin
+  inherited SeriesClear();
+  RevLine.Clear;
+  RevLg.Clear;
+end;
+
+procedure TFastIVDependence.SetR_VtoI(const Value: double);
+begin
+  if Value>0 then FR_VtoI := Value
+             else FR_VtoI := 1;
+end;
+
+procedure TFastIVDependence.SetR_VtoI_Used(const Value: boolean);
+begin
+  FR_VtoI_Used := Value;
+end;
+
+procedure TFastIVDependence.SetVoltage;
+
+begin
+ if fItIsForward then fVoltageInputReal := fVoltageInput
+                 else fVoltageInputReal := -fVoltageInput;
+
+
+ if (FR_VtoI_Used) and((fPointNumber-fBeginBranchNumber)>2)
+  then
+   begin
+   fVoltageCorrection:=abs(X_Y0(Results^.X[fPointNumber-3],
+                            Results^.Y[fPointNumber-3],
+                            Results^.X[fPointNumber-2],
+                            Results^.Y[fPointNumber-2],
+                            fVoltageInputReal))*fR_VtoI;
+   if fItIsForward then fVoltageInputReal := (fVoltageInput+fVoltageCorrection)
+                   else fVoltageInputReal := -(fVoltageInput+fVoltageCorrection);
+   end;
+
+// if fItIsForward then fVoltageInputReal := (fVoltageInput+fVoltageCorrection)
+//                 else fVoltageInputReal := -(fVoltageInput+fVoltageCorrection);
+ HookSetVoltage();
+// sleep(fDelayTime);
+end;
+
+
+{ TFastIVDependenceAction }
+
+constructor TFastIVDependenceAction.Create(FastIV: TFastIVDependence);
+begin
+ inherited Create(True);    // Поток создаем в состоянии «Приостановлен»
+//  FreeOnTerminate := True;  // Поток освободит ресурсы при окончании работы
+   FreeOnTerminate := False;
+  fFastIV := FastIV;
+  Priority := tpNormal;
+//  Resume;
+end;
+
+procedure TFastIVDependenceAction.Execute;
+begin
+  fFastIV.Cycle(True);
+  fFastIV.Cycle(False);
+  SetEvent(EventToStopDependence);
+end;
+
+{ TFastIVDependenceStop }
+
+constructor TFastIVDependenceStop.Create(FastIV: TFastIVDependence;
+  ThreadIVAction: TThread);
+begin
+  inherited Create(True);    // Поток создаем в состоянии «Приостановлен»
+  FreeOnTerminate := True;  // Поток освободит ресурсы при окончании работы
+  fFastIV := FastIV;
+  fThreadIVAction:=ThreadIVAction;
+  Priority := tpNormal;
+  Resume;
+end;
+
+procedure TFastIVDependenceStop.Execute;
+begin
+  WaitForSingleObject(EventToStopDependence, INFINITE);
+
+  fThreadIVAction.Terminate;
+  fThreadIVAction.WaitFor;  //????
+  fThreadIVAction.Free;
+
+  fFastIV.EndMeasuring;
+end;
+
 initialization
   EventToStopDependence := CreateEvent(nil,
                                  True, // тип сброса TRUE - ручной
                                  True, // начальное состояние TRUE - сигнальное
                                  nil);
 
+//  EventToStopIVMeasurement := CreateEvent(nil,
+//                                 True, // тип сброса TRUE - ручной
+//                                 True, // начальное состояние TRUE - сигнальное
+//                                 nil);
+
+
 finalization
 
   SetEvent(EventToStopDependence);
   CloseHandle(EventToStopDependence);
-
+//  SetEvent(EventToStopIVMeasurement);
+//  CloseHandle(EventToStopIVMeasurement);
 end.

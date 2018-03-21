@@ -178,7 +178,7 @@ begin
   fParameterShow[ppKp]:=TParameterShow1.Create(STKp,LKp,'Kp','Proportional term',1);
   fParameterShow[ppKi]:=TParameterShow1.Create(STKi,LKi,'Ki','Integral term',0);
   fParameterShow[ppKd]:=TParameterShow1.Create(STKd,LKd,'Kd','Derivative term',0);
-  fParameterShow[ppNV]:=TParameterShow1.Create(STNV,LNV,'Needed','Needed Value',0);
+  fParameterShow[ppNV]:=TParameterShow1.Create(STNV,LNV,'Needed','Needed Value',0,4);
   fParameterShow[ppTol]:=TParameterShow1.Create(STTol,LTol,'Tolerance','Tolerance to Needed Value',1e-4);
 end;
 

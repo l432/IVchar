@@ -462,6 +462,8 @@ type
     BTMP102: TButton;
     CBTMP102: TComboBox;
     SBGenerator: TSpeedButton;
+    LDBtime: TLabel;
+    STDBtime: TStaticText;
 
     procedure FormCreate(Sender: TObject);
     procedure BConnectClick(Sender: TObject);
@@ -720,7 +722,7 @@ end;
 procedure TIVchar.ConstantShowCreate;
 begin
 
-  SetLength(DoubleConstantShows, 11);
+  SetLength(DoubleConstantShows, 12);
   DoubleConstantShows[0]:=TParameterShow1.Create(STPR,LPR,
         'Parasitic resistance',
         'Parasitic resistance value is expected',0,3);
@@ -758,6 +760,9 @@ begin
   DoubleConstantShows[10]:=TParameterShow1.Create(STControlInterval,LControlInterval,
         'Controling interval (s)',
         'Controling measurement interval',15,2);
+  DoubleConstantShows[11]:=TParameterShow1.Create(STDBtime,LDBtime,
+        'Dragon-back time (ms)',
+        'Dragon-back time (ms)',1,3);
 //  DoubleConstantShows[12]:=TParameterShow1.Create(STControlKp,LControlKp,
 //        'Kp',
 //        'Proportional term of controller',1);
@@ -3100,6 +3105,14 @@ begin
   Devices[High(Devices)-1]:=UT70B;
   Devices[High(Devices)]:=UT70C;
 
+  if ET1255isPresent then
+   begin
+    SetLength(Devices,High(Devices)+4);
+    Devices[High(Devices)-2]:=ET1255_ADCModule.Channels[0];
+    Devices[High(Devices)-1]:=ET1255_ADCModule.Channels[1];
+    Devices[High(Devices)]:=ET1255_ADCModule.Channels[2];
+   end;
+
   Current_MD:=TMeasuringDevice.Create(Devices,CBCMD,LADCurrentValue,srCurrent);
   VoltageIV_MD:=TMeasuringDevice.Create(Devices,CBVMD,LADVoltageValue,srVoltge);
 
@@ -3246,7 +3259,8 @@ begin
   if (abs(NewCorrection) > 3)
     then NewCorrection := 0.1 * NewCorrection / NewCorrection;
 
-  if ItIsDarkIV then  NewCorrection:=Max(NewCorrection,-0.02)
+//  if ItIsDarkIV then  NewCorrection:=Max(NewCorrection,-0.02)
+  if ItIsDarkIV then  NewCorrection:=Max(NewCorrection,-0.2)
 end;
 
 procedure TIVchar.IVOldFactorDetermination(var Factor: Double);
