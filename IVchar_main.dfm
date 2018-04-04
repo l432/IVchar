@@ -35,7 +35,7 @@ object IVchar: TIVchar
     Top = 0
     Width = 786
     Height = 466
-    ActivePage = TS_Setting
+    ActivePage = TS_Time_Dependence
     Align = alTop
     Font.Charset = RUSSIAN_CHARSET
     Font.Color = clWindowText
@@ -2546,6 +2546,7 @@ object IVchar: TIVchar
           ComPort = ComPort1
           ComProperty = cpPort
           AutoApply = True
+          Text = 'COM3'
           Style = csDropDownList
           Font.Charset = RUSSIAN_CHARSET
           Font.Color = clWindowText
@@ -2553,7 +2554,7 @@ object IVchar: TIVchar
           Font.Name = 'Arial'
           Font.Style = [fsBold]
           ItemHeight = 18
-          ItemIndex = -1
+          ItemIndex = 1
           ParentFont = False
           TabOrder = 0
         end
@@ -2565,6 +2566,7 @@ object IVchar: TIVchar
           ComPort = ComPort1
           ComProperty = cpBaudRate
           AutoApply = True
+          Text = '115200'
           Style = csDropDownList
           Font.Charset = RUSSIAN_CHARSET
           Font.Color = clWindowText
@@ -2572,7 +2574,7 @@ object IVchar: TIVchar
           Font.Name = 'Arial'
           Font.Style = [fsBold]
           ItemHeight = 18
-          ItemIndex = -1
+          ItemIndex = 13
           ParentFont = False
           TabOrder = 1
         end
@@ -3512,6 +3514,7 @@ object IVchar: TIVchar
           ComPort = ComPortUT70B
           ComProperty = cpPort
           AutoApply = True
+          Text = 'COM1'
           Style = csDropDownList
           Font.Charset = RUSSIAN_CHARSET
           Font.Color = clWindowText
@@ -3519,7 +3522,7 @@ object IVchar: TIVchar
           Font.Name = 'Arial'
           Font.Style = [fsBold]
           ItemHeight = 18
-          ItemIndex = -1
+          ItemIndex = 0
           ParentFont = False
           TabOrder = 5
         end
@@ -3726,6 +3729,7 @@ object IVchar: TIVchar
           ComPort = ComPortUT70C
           ComProperty = cpPort
           AutoApply = True
+          Text = 'COM1'
           Style = csDropDownList
           Font.Charset = RUSSIAN_CHARSET
           Font.Color = clWindowText
@@ -3733,7 +3737,7 @@ object IVchar: TIVchar
           Font.Name = 'Arial'
           Font.Style = [fsBold]
           ItemHeight = 18
-          ItemIndex = -1
+          ItemIndex = 0
           ParentFont = False
           TabOrder = 5
         end
@@ -4679,7 +4683,7 @@ object IVchar: TIVchar
       ImageIndex = 9
       object LTimeInterval: TLabel
         Left = 10
-        Top = 87
+        Top = 65
         Width = 76
         Height = 13
         Caption = 'Interval (s)'
@@ -4692,7 +4696,7 @@ object IVchar: TIVchar
       end
       object LTimeDuration: TLabel
         Left = 10
-        Top = 143
+        Top = 110
         Width = 79
         Height = 13
         Caption = 'Duration (s)'
@@ -4705,7 +4709,7 @@ object IVchar: TIVchar
       end
       object STTimeMD: TStaticText
         Left = 15
-        Top = 18
+        Top = 10
         Width = 117
         Height = 20
         Caption = 'Measurind Device'
@@ -4720,7 +4724,7 @@ object IVchar: TIVchar
       object CBTimeMD: TComboBox
         Tag = 5
         Left = 15
-        Top = 44
+        Top = 30
         Width = 132
         Height = 24
         Style = csDropDownList
@@ -4735,7 +4739,7 @@ object IVchar: TIVchar
       end
       object STTimeInterval: TStaticText
         Left = 10
-        Top = 106
+        Top = 80
         Width = 97
         Height = 24
         Caption = '1.34E+01'
@@ -4749,7 +4753,7 @@ object IVchar: TIVchar
       end
       object STTimeDuration: TStaticText
         Left = 10
-        Top = 162
+        Top = 130
         Width = 97
         Height = 24
         Caption = '1.34E+01'
@@ -5097,7 +5101,7 @@ object IVchar: TIVchar
       end
       object STTimeMD2: TStaticText
         Left = 10
-        Top = 216
+        Top = 160
         Width = 169
         Height = 20
         Caption = 'Second Measurind Device'
@@ -5112,8 +5116,8 @@ object IVchar: TIVchar
       object CBTimeMD2: TComboBox
         Tag = 5
         Left = 10
-        Top = 242
-        Width = 131
+        Top = 180
+        Width = 111
         Height = 24
         Style = csDropDownList
         Font.Charset = RUSSIAN_CHARSET
@@ -5126,10 +5130,10 @@ object IVchar: TIVchar
         TabOrder = 6
       end
       object CBFvsS: TCheckBox
-        Left = 10
-        Top = 281
-        Width = 131
-        Height = 13
+        Left = 150
+        Top = 173
+        Width = 90
+        Height = 39
         Caption = 'First vs Second '
         Font.Charset = RUSSIAN_CHARSET
         Font.Color = clWindowText
@@ -5138,13 +5142,14 @@ object IVchar: TIVchar
         Font.Style = [fsBold]
         ParentFont = False
         TabOrder = 7
+        WordWrap = True
         OnClick = CBFvsSClick
       end
       object GBIscVoc: TGroupBox
-        Left = 246
+        Left = 5
         Top = 231
-        Width = 410
-        Height = 167
+        Width = 220
+        Height = 172
         Caption = 'Isc Voc vs time'
         Font.Charset = RUSSIAN_CHARSET
         Font.Color = clWindowText
@@ -5154,8 +5159,8 @@ object IVchar: TIVchar
         ParentFont = False
         TabOrder = 8
         object LIscResult: TLabel
-          Left = 201
-          Top = 34
+          Left = 108
+          Top = 64
           Width = 71
           Height = 16
           Caption = '-0.0008'
@@ -5167,8 +5172,8 @@ object IVchar: TIVchar
           ParentFont = False
         end
         object LVocResult: TLabel
-          Left = 201
-          Top = 71
+          Left = 108
+          Top = 141
           Width = 71
           Height = 16
           Caption = '-0.0008'
@@ -5179,25 +5184,10 @@ object IVchar: TIVchar
           Font.Style = [fsBold]
           ParentFont = False
         end
-        object LIscVocPin: TLabel
-          Left = 12
-          Top = 105
-          Width = 270
-          Height = 32
-          AutoSize = False
-          Caption = 'LV721APin'
-          Font.Charset = RUSSIAN_CHARSET
-          Font.Color = clWindowText
-          Font.Height = -17
-          Font.Name = 'Courier'
-          Font.Style = [fsBold]
-          ParentFont = False
-          WordWrap = True
-        end
         object CBVocMD: TComboBox
           Tag = 5
           Left = 64
-          Top = 71
+          Top = 111
           Width = 133
           Height = 24
           Style = csDropDownList
@@ -5209,20 +5199,6 @@ object IVchar: TIVchar
           ItemHeight = 16
           ParentFont = False
           TabOrder = 0
-        end
-        object STResultIsc: TStaticText
-          Left = 229
-          Top = 12
-          Width = 43
-          Height = 20
-          Caption = 'Result'
-          Font.Charset = RUSSIAN_CHARSET
-          Font.Color = clWindowText
-          Font.Height = -13
-          Font.Name = 'Arial'
-          Font.Style = [fsBold]
-          ParentFont = False
-          TabOrder = 1
         end
         object CBIscMD: TComboBox
           Tag = 5
@@ -5238,7 +5214,7 @@ object IVchar: TIVchar
           Font.Style = [fsBold]
           ItemHeight = 16
           ParentFont = False
-          TabOrder = 2
+          TabOrder = 1
         end
         object STControlIsc: TStaticText
           Left = 107
@@ -5252,7 +5228,7 @@ object IVchar: TIVchar
           Font.Name = 'Arial'
           Font.Style = [fsBold]
           ParentFont = False
-          TabOrder = 3
+          TabOrder = 2
         end
         object STIsc: TStaticText
           Left = 12
@@ -5266,11 +5242,11 @@ object IVchar: TIVchar
           Font.Name = 'Courier'
           Font.Style = [fsBold]
           ParentFont = False
-          TabOrder = 4
+          TabOrder = 3
         end
         object STVoc: TStaticText
           Left = 12
-          Top = 71
+          Top = 111
           Width = 43
           Height = 24
           Caption = 'Voc'
@@ -5280,11 +5256,11 @@ object IVchar: TIVchar
           Font.Name = 'Courier'
           Font.Style = [fsBold]
           ParentFont = False
-          TabOrder = 5
+          TabOrder = 4
         end
         object BIscMeasure: TButton
-          Left = 312
-          Top = 34
+          Left = 13
+          Top = 64
           Width = 89
           Height = 16
           Caption = 'to measure'
@@ -5294,11 +5270,11 @@ object IVchar: TIVchar
           Font.Name = 'Arial'
           Font.Style = [fsBold]
           ParentFont = False
-          TabOrder = 6
+          TabOrder = 5
         end
         object BVocMeasure: TButton
-          Left = 312
-          Top = 70
+          Left = 13
+          Top = 141
           Width = 89
           Height = 17
           Caption = 'to measure'
@@ -5308,7 +5284,49 @@ object IVchar: TIVchar
           Font.Name = 'Arial'
           Font.Style = [fsBold]
           ParentFont = False
-          TabOrder = 7
+          TabOrder = 6
+        end
+      end
+      object GBLEDCon: TGroupBox
+        Left = 246
+        Top = 231
+        Width = 282
+        Height = 172
+        Caption = 'LED control'
+        Font.Charset = RUSSIAN_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -13
+        Font.Name = 'Courier'
+        Font.Style = [fsBold]
+        ParentFont = False
+        TabOrder = 9
+        object LIscVocPin: TLabel
+          Left = 19
+          Top = 95
+          Width = 102
+          Height = 32
+          AutoSize = False
+          Caption = 'LV721APin'
+          Font.Charset = RUSSIAN_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -17
+          Font.Name = 'Courier'
+          Font.Style = [fsBold]
+          ParentFont = False
+          WordWrap = True
+        end
+        object LLED_onValue: TLabel
+          Left = 162
+          Top = 78
+          Width = 79
+          Height = 13
+          Caption = 'Duration (s)'
+          Font.Charset = RUSSIAN_CHARSET
+          Font.Color = clMaroon
+          Font.Height = -11
+          Font.Name = 'Verdana'
+          Font.Style = [fsBold]
+          ParentFont = False
         end
         object CBIscVocPin: TComboBox
           Tag = 1
@@ -5324,10 +5342,34 @@ object IVchar: TIVchar
           Font.Style = [fsBold]
           ItemHeight = 24
           ParentFont = False
-          TabOrder = 8
+          TabOrder = 0
+        end
+        object CBLEDAuto: TCheckBox
+          Tag = 7
+          Left = 16
+          Top = 13
+          Width = 89
+          Height = 29
+          Caption = 'LED auto on'
+          TabOrder = 1
+          WordWrap = True
+        end
+        object BIscVocPinChange: TButton
+          Left = 17
+          Top = 48
+          Width = 85
+          Height = 36
+          Caption = 'Ups'
+          Font.Charset = RUSSIAN_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -20
+          Font.Name = 'Arial'
+          Font.Style = [fsBold]
+          ParentFont = False
+          TabOrder = 2
         end
         object BIscVocPin: TButton
-          Left = 117
+          Left = 112
           Top = 136
           Width = 115
           Height = 23
@@ -5338,29 +5380,134 @@ object IVchar: TIVchar
           Font.Name = 'Arial'
           Font.Style = [fsBold]
           ParentFont = False
-          TabOrder = 9
+          TabOrder = 3
         end
-        object BIscVocPinChange: TButton
-          Left = 307
-          Top = 112
+        object STLED_on_CD: TStaticText
+          Left = 135
+          Top = 16
+          Width = 96
+          Height = 20
+          Caption = 'Driving Device'
+          Font.Charset = RUSSIAN_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -13
+          Font.Name = 'Arial'
+          Font.Style = [fsBold]
+          ParentFont = False
+          TabOrder = 4
+        end
+        object CBLED_onCD: TComboBox
+          Tag = 5
+          Left = 135
+          Top = 42
+          Width = 132
+          Height = 24
+          Style = csDropDownList
+          Font.Charset = RUSSIAN_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -13
+          Font.Name = 'Arial'
+          Font.Style = [fsBold]
+          ItemHeight = 16
+          ParentFont = False
+          TabOrder = 5
+        end
+        object STLED_onValue: TStaticText
+          Left = 130
+          Top = 98
+          Width = 97
+          Height = 24
+          Caption = '1.34E+01'
+          Font.Charset = RUSSIAN_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -17
+          Font.Name = 'Verdana'
+          Font.Style = [fsBold]
+          ParentFont = False
+          TabOrder = 6
+        end
+      end
+      object GBLEDOpen: TGroupBox
+        Left = 635
+        Top = 231
+        Width = 126
+        Height = 172
+        Caption = 'LED open'
+        Font.Charset = RUSSIAN_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -13
+        Font.Name = 'Courier'
+        Font.Style = [fsBold]
+        ParentFont = False
+        TabOrder = 10
+        object LLEDOpenPin: TLabel
+          Left = 11
+          Top = 70
+          Width = 102
+          Height = 32
+          AutoSize = False
+          Caption = 'LV721APin'
+          Font.Charset = RUSSIAN_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -17
+          Font.Name = 'Courier'
+          Font.Style = [fsBold]
+          ParentFont = False
+          WordWrap = True
+        end
+        object CBLEDOpenPin: TComboBox
+          Tag = 1
+          Left = 12
+          Top = 108
+          Width = 94
+          Height = 32
+          Style = csDropDownList
+          Font.Charset = RUSSIAN_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -21
+          Font.Name = 'Arial'
+          Font.Style = [fsBold]
+          ItemHeight = 24
+          ParentFont = False
+          TabOrder = 0
+        end
+        object BLEDOpenPinChange: TButton
+          Left = 9
+          Top = 40
           Width = 85
-          Height = 36
+          Height = 20
           Caption = 'Ups'
+          Font.Charset = RUSSIAN_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -17
+          Font.Name = 'Arial'
+          Font.Style = [fsBold]
+          ParentFont = False
+          TabOrder = 1
+        end
+        object BLEDOpenPin: TButton
+          Left = 3
+          Top = 146
+          Width = 115
+          Height = 23
+          Caption = 'set control'
           Font.Charset = RUSSIAN_CHARSET
           Font.Color = clWindowText
           Font.Height = -20
           Font.Name = 'Arial'
           Font.Style = [fsBold]
           ParentFont = False
-          TabOrder = 10
+          TabOrder = 2
         end
-        object CBLEDAuto: TCheckBox
-          Left = 184
-          Top = 110
-          Width = 110
-          Height = 13
-          Caption = 'LED auto on'
-          TabOrder = 11
+        object CBLEDOpenAuto: TCheckBox
+          Tag = 7
+          Left = 16
+          Top = 15
+          Width = 89
+          Height = 21
+          Caption = 'auto'
+          TabOrder = 3
+          WordWrap = True
         end
       end
     end

@@ -413,7 +413,6 @@ type
     LUT70C_AvTime: TLabel;
     GBIscVoc: TGroupBox;
     CBVocMD: TComboBox;
-    STResultIsc: TStaticText;
     CBIscMD: TComboBox;
     STControlIsc: TStaticText;
     STIsc: TStaticText;
@@ -464,6 +463,17 @@ type
     SBGenerator: TSpeedButton;
     LDBtime: TLabel;
     STDBtime: TStaticText;
+    GBLEDCon: TGroupBox;
+    GBLEDOpen: TGroupBox;
+    LLEDOpenPin: TLabel;
+    CBLEDOpenPin: TComboBox;
+    BLEDOpenPinChange: TButton;
+    BLEDOpenPin: TButton;
+    CBLEDOpenAuto: TCheckBox;
+    STLED_on_CD: TStaticText;
+    CBLED_onCD: TComboBox;
+    STLED_onValue: TStaticText;
+    LLED_onValue: TLabel;
 
     procedure FormCreate(Sender: TObject);
     procedure BConnectClick(Sender: TObject);
@@ -634,8 +644,8 @@ type
 
     HTU21D:THTU21D;
     ThermoCuple:TThermoCuple;
-    IscVocPinChanger:TArduinoPinChanger;
-    IscVocPinChangerShow:TArduinoPinChangerShow;
+    IscVocPinChanger,LEDOpenPinChanger:TArduinoPinChanger;
+    IscVocPinChangerShow,LEDOpenPinChangerShow:TArduinoPinChangerShow;
     ConfigFile:TIniFile;
     NumberPins:TStringList; // номери пінів, які використовуються як керуючі для SPI
     NumberPinsOneWire:TStringList; // номери пінів, які використовуються для OneWire
@@ -668,7 +678,8 @@ type
     TermoCouple_MD,TimeD_MD,Control_MD,TimeD_MD2,
     Isc_MD,Voc_MD:TMeasuringDevice;
         ET1255_DAC_MD:array[TET1255_DAC_ChanelNumber] of TMeasuringDevice;
-    SettingDevice,SettingDeviceControl,SettingTermostat:TSettingDevice;
+    SettingDevice,SettingDeviceControl,SettingTermostat,
+    SettingDeviceLED:TSettingDevice;
     RS232_MediatorTread:TRS232_MediatorTread;
 
     TemperatureMeasuringThread:TTemperatureMeasuringThread;
@@ -722,7 +733,7 @@ end;
 procedure TIVchar.ConstantShowCreate;
 begin
 
-  SetLength(DoubleConstantShows, 12);
+  SetLength(DoubleConstantShows, 13);
   DoubleConstantShows[0]:=TParameterShow1.Create(STPR,LPR,
         'Parasitic resistance',
         'Parasitic resistance value is expected',0,3);
@@ -763,6 +774,9 @@ begin
   DoubleConstantShows[11]:=TParameterShow1.Create(STDBtime,LDBtime,
         'Dragon-back time (ms)',
         'Dragon-back time (ms)',1,3);
+  DoubleConstantShows[12]:=TParameterShow1.Create(STLED_onValue,LLED_onValue,
+        'LED voltage (V)',
+        'LED voltage (V)',0.79,5);
 //  DoubleConstantShows[12]:=TParameterShow1.Create(STControlKp,LControlKp,
 //        'Kp',
 //        'Proportional term of controller',1);
@@ -1080,11 +1094,23 @@ end;
 
 procedure TIVchar.IscVocOnTimeHookFirstMeas;
 begin
+ if CBLEDOpenAuto.Checked then
+   begin
+//       showmessage('kk');
+       LEDOpenPinChanger.PinChangeToLow;
+   end;
  if CBLEDAuto.Checked then
   begin
-    BOVset1255Ch2.OnClick(nil);
-    sleep(2000);
+//    BOVset1255Ch2.OnClick(nil);
+  SettingDeviceLED.ActiveInterface.Output(DoubleConstantShows[12].Data);
+//  sleep(2000);
   end;
+
+  if (CBLEDOpenAuto.Checked)or(CBLEDAuto.Checked)
+  then    sleep(2000);
+  
+
+
  IscVocPinChanger.PinChangeToLow;
  sleep(IscVocTimeToWait);
  TDependence.tempIChange(Voc_MD.ActiveInterface.GetData);
@@ -1116,10 +1142,12 @@ begin
  VolCorrectionNew^.Add(Temperature_MD.ActiveInterface.Value,
                        Voc_MD.ActiveInterface.GetData);
 
-
+ if CBLEDOpenAuto.Checked then
+       LEDOpenPinChanger.PinChangeToHigh;
  if CBLEDAuto.Checked then
   begin
-    BReset1255Ch2.OnClick(nil);
+//    BReset1255Ch2.OnClick(nil);
+   SettingDeviceLED.ActiveInterface.Reset;
   end;
 
  TimeDHookSecondMeas;
@@ -1918,9 +1946,11 @@ begin
      end;
 
     if (Key=MeasIscAndVocOnTime) then
+      begin
       ToFileFromTwoSeries(SaveDialog.FileName,ForwLine,ForwLg,6);
       ToFileFromTwoVector(copy(SaveDialog.FileName,1,Length(SaveDialog.FileName)-4)+'a.dat',
          IVResult,VolCorrectionNew,6);
+      end;
      BIVSave.Font.Style:=BIVSave.Font.Style+[fsStrikeOut];
    end;
 end;
@@ -2246,7 +2276,7 @@ begin
                  [DACR2R,V721A,V721_I,V721_II,DS18B20,
                  TMP102,
                  HTU21D,
-                 D30_06,IscVocPinChanger]);
+                 D30_06,IscVocPinChanger,LEDOpenPinChanger]);
 
  if (ComPort1.Connected)and(SettingDevice.ActiveInterface.Name=DACR2R.Name) then SettingDevice.Reset();
  if (ComPort1.Connected) then D30_06.Reset;
@@ -2407,6 +2437,7 @@ end;
 
 procedure TIVchar.ComPortsBegining;
 begin
+//  showmessage('jjj');
   ComPortsLoadSettings([ComPortUT70C,ComPortUT70B,ComPort1]);
   ComCBUT70CPort.UpdateSettings;
   ComCBUT70BPort.UpdateSettings;
@@ -2869,6 +2900,8 @@ begin
 
   IscVocPinChanger:=TArduinoPinChanger.Create(ComPort1,'IscVocPin');
   IscVocPinChangerShow:=TArduinoPinChangerShow.Create(IscVocPinChanger,LIscVocPin,BIscVocPin,BIscVocPinChange,CBIscVocPin);
+  LEDOpenPinChanger:=TArduinoPinChanger.Create(ComPort1,'LEDOpenPin');
+  LEDOpenPinChangerShow:=TArduinoPinChangerShow.Create(LEDOpenPinChanger,LLEDOpenPin,BLEDOpenPin,BLEDOpenPinChange,CBLEDOpenPin);
 
   UT70B:=TUT70B.Create(ComPortUT70B, 'UT70B');
   UT70BShow:= TUT70BShow.Create(UT70B, RGUT70B_MM, RGUT70B_Range, RGUT70B_RangeM, LUT70B, LUT70BU, BUT70BMeas, SBUT70BAuto, Time);
@@ -2899,6 +2932,9 @@ begin
 
  IscVocPinChangerShow.PinsReadFromIniFile(ConfigFile);
  IscVocPinChangerShow.NumberPinShow;
+
+ LEDOpenPinChangerShow.PinsReadFromIniFile(ConfigFile);
+ LEDOpenPinChangerShow.NumberPinShow;
 end;
 
 procedure TIVchar.VoltmetrsWriteToIniFile;
@@ -2910,6 +2946,7 @@ begin
  TMP102show.PinsWriteToIniFile(ConfigFile);
 
  IscVocPinChangerShow.PinsWriteToIniFile(ConfigFile);
+ LEDOpenPinChangerShow.PinsWriteToIniFile(ConfigFile);
  if ET1255isPresent then
   ET1255_ADCModule.WriteToIniFile(ConfigFile);
 end;
@@ -3026,6 +3063,10 @@ begin
  IscVocPinChangerShow.Free;
   if assigned(IscVocPinChanger) then
     IscVocPinChanger.Free;
+
+ LEDOpenPinChangerShow.Free;
+  if assigned(LEDOpenPinChanger) then
+    LEDOpenPinChanger.Free;
 
  UT70BShow.Free;
   if assigned(UT70B) then
@@ -3171,10 +3212,12 @@ begin
   SettingDevice:=TSettingDevice.Create(DevicesSet,CBVS);
   SettingDeviceControl:=TSettingDevice.Create(DevicesSet,CBControlCD);
   SettingTermostat:=TSettingDevice.Create(DevicesSet,CBTermostatCD);
-end;
+  SettingDeviceLED:=TSettingDevice.Create(DevicesSet,CBLED_onCD);
+ end;
 
 procedure TIVchar.DevicesFree;
 begin
+  SettingDeviceLED.Free;
   SettingTermostat.Free;
   SettingDeviceControl.Free;
   SettingDevice.Free;
@@ -3195,6 +3238,7 @@ end;
 
 procedure TIVchar.DevicesReadFromIniAndToForm;
 begin
+  SettingDeviceLED.ReadFromIniFile(ConfigFile,MD_IniSection,'LED output');
   SettingTermostat.ReadFromIniFile(ConfigFile,MD_IniSection,'Termostat input');
   SettingDeviceControl.ReadFromIniFile(ConfigFile,MD_IniSection,'Control input');
   SettingDevice.ReadFromIniFile(ConfigFile,MD_IniSection,'Input voltage');
@@ -3223,6 +3267,7 @@ begin
   SettingDeviceControl.WriteToIniFile(ConfigFile,MD_IniSection,'Control input');
   SettingTermostat.WriteToIniFile(ConfigFile,MD_IniSection,'Termostat input');
   SettingDevice.WriteToIniFile(ConfigFile,MD_IniSection,'Input voltage');
+  SettingDeviceLED.WriteToIniFile(ConfigFile,MD_IniSection,'LED output');
   Temperature_MD.WriteToIniFile(ConfigFile,MD_IniSection,'Temperature');
   Current_MD.WriteToIniFile(ConfigFile,MD_IniSection,'Current');
   VoltageIV_MD.WriteToIniFile(ConfigFile,MD_IniSection,'Voltage');
