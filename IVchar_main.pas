@@ -1152,6 +1152,13 @@ begin
 
  TimeDHookSecondMeas;
  MeasurementTimeParameterDetermination(IscVocOnTime);
+
+  if CBLEDOpenAuto.Checked then
+     begin
+       sleep(500);
+       LEDOpenPinChanger.PinChangeToHigh;
+
+     end;
 end;
 
 procedure TIVchar.IVCharCurrentMeasHook;
