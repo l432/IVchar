@@ -598,11 +598,12 @@ begin
      fValue:=ImpulseNoiseSmoothingByNpoint(DataVector);
 //       fvalue:=0.7;
 //     showmessage('2');
-
+     fValue:=fValue/fParentModule.Gain;
    end
   else
    begin
     fValue:=fParentModule.ReadADC;
+    fValue:=fValue/fParentModule.Gain;
     DataVector^.X[0]:=0;
     DataVector^.Y[0]:=fValue;
    end;
@@ -738,8 +739,8 @@ end;
 procedure TET1255_ModuleAndChan.Free;
  var i:TET1255_ADC_ChanelNumber;
 begin
-  for I := Low(TET1255_ADC_ChanelNumber) to High(TET1255_ADC_ChanelNumber) do
-    Channels[i].Free;
+  for I := Low(TET1255_ADC_ChanelNumber) to High(TET1255_ADC_ChanelNumber)
+     do Channels[i].Free;
 //  inherited Free;
 end;
 

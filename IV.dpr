@@ -21,7 +21,8 @@ uses
   RS232_Mediator_Tread in 'RS232_Mediator_Tread.pas',
   D30_06 in 'D30_06.pas',
   PID in 'PID.pas',
-  MDevice in 'MDevice.pas';
+  MDevice in 'MDevice.pas',
+  MCP3424 in 'MCP3424.pas';
 
 {$R *.res}
 

@@ -9,7 +9,7 @@ uses
   TemperatureSensor, DACR2R, UT70, RS232device,ET1255, RS232_Mediator_Tread,
   CPortCtl, Grids, Chart, TeeProcs, Series, TeEngine, ExtCtrls, Buttons,
   ComCtrls, CPort, StdCtrls, Dialogs, Controls, Classes, D30_06,Math, PID, 
-  MDevice, Spin,HighResolutionTimer;
+  MDevice, Spin,HighResolutionTimer, MCP3424;
 
 const
   MeasIV='IV characteristic';
@@ -474,6 +474,8 @@ type
     CBLED_onCD: TComboBox;
     STLED_onValue: TStaticText;
     LLED_onValue: TLabel;
+    TS_ADC: TTabSheet;
+    Button1: TButton;
 
     procedure FormCreate(Sender: TObject);
     procedure BConnectClick(Sender: TObject);
@@ -509,6 +511,7 @@ type
     procedure ControlWatchDogTimer(Sender: TObject);
     procedure BET1255_show_saveClick(Sender: TObject);
     procedure SBGeneratorClick(Sender: TObject);
+    procedure Button1Click(Sender: TObject);
   private
     procedure ComponentView;
     {початкове налаштування різних компонентів}
@@ -2180,6 +2183,11 @@ begin
     end;
 end;
 
+
+procedure TIVchar.Button1Click(Sender: TObject);
+begin
+ showmessage(inttostr(ord(mcp_g8)));
+end;
 
 procedure TIVchar.BControlResetClick(Sender: TObject);
 begin

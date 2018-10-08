@@ -21,6 +21,7 @@ const
 //  PinChangeCommand=$7;
   HTU21DCommand=$8;
   TMP102Command=$9;
+  MCP3424Command=$A;
 
 var
   aPacket:array of byte;
