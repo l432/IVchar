@@ -118,7 +118,7 @@ TRS232Device=class(TNamedDevice)
    procedure isNeededComPortState();
   end;
 
-TRS232Meter=class(TRS232Device{TInterfacedObject},IMeasurement)
+TRS232Meter=class(TRS232Device,IMeasurement)
   {базовий клас для вимірювальних об'єктів,
   які використовують обмін даних з COM-портом}
   protected
@@ -159,6 +159,50 @@ TRS232Meter=class(TRS232Device{TInterfacedObject},IMeasurement)
    function GetData():double;virtual;
    procedure MeasurementBegin;
    procedure GetDataThread(WPARAM: word;EventEnd:THandle);virtual;
+  end;
+
+
+ TRS232MeterVoltmeter=class(TRS232Meter)
+  {базовий клас для вимірювальних об'єктів,
+  які використовують обмін даних з COM-портом}
+  protected
+//   fValue:double;
+//   fIsReady:boolean;
+//   fIsReceived:boolean;
+//   fMinDelayTime:integer;
+  {інтервал очікування перед початком перевірки
+  вхідного буфера, []=мс}
+
+   fMeasureMode:Shortint;
+   fDiapazon:Shortint;
+   fMeasureModeAll:array of string;
+   fDiapazonAll:array of array of string;
+//   fRS232MeasuringTread:TThread;
+//   fNewData:boolean;
+//   function GetNewData:boolean;
+   Procedure MModeDetermination(Data:array of byte); override;//virtual;
+   Procedure DiapazonDetermination(Data:array of byte);override;// virtual;
+   Procedure ValueDetermination(Data:array of byte);override;//virtual;
+   Function MeasureModeLabelRead():string;override;//virtual;
+//   Procedure PacketReceiving(Sender: TObject; const Str: string);virtual;
+//   Function Measurement():double;virtual;
+//   Function GetValue():double;virtual;
+//   procedure SetNewData(Value:boolean);
+  public
+//   property NewData:boolean read GetNewData write SetNewData;
+//   property Value:double read GetValue write fValue;
+//   property isReady:boolean read fIsReady write fIsReady;
+//   property isReceived:boolean read fIsReceived write fIsReceived;
+//   property MinDelayTime:integer read  fMinDelayTime;
+   property MeasureModeLabel:string read MeasureModeLabelRead;
+   property Diapazon:Shortint read fDiapazon;
+//   Constructor Create(CP:TComPort;Nm:string);override;
+   Procedure ConvertToValue();override;
+//   Function ResultProblem(Rez:double):boolean;virtual;
+//   Procedure Request();virtual;
+//   function GetData():double;virtual;
+//   procedure MeasurementBegin;
+//   procedure GetDataThread(WPARAM: word;EventEnd:THandle);virtual;
   end;
 
 
@@ -459,6 +503,147 @@ procedure TRS232Meter.ValueDetermination(Data: array of byte);
 begin
 
 end;
+
+//******************************************************
+
+{ TRS232MeterVoltmeter }
+
+procedure TRS232MeterVoltmeter.ConvertToValue();
+begin
+  MModeDetermination(fData);
+  if fMeasureMode=-1 then Exit;
+  DiapazonDetermination(fData);
+  if fDiapazon=-1 then Exit;
+
+  ValueDetermination(fData);
+  fIsready:=True;
+end;
+
+//constructor TRS232MeterVoltmeter.Create(CP:TComPort;Nm:string);
+//begin
+//  inherited Create(CP,Nm);
+//  fComPacket.OnPacket:=PacketReceiving;
+//
+//  fIsReady:=False;
+//  fIsReceived:=False;
+//  fMinDelayTime:=0;
+//  fMeasureMode:=-1;
+//  fDiapazon:=-1;
+//  fValue:=ErResult;
+//  fNewData:=False;
+//  fError:=False;
+//end;
+
+
+procedure TRS232MeterVoltmeter.DiapazonDetermination(Data: array of byte);
+begin
+
+end;
+
+
+//function TRS232MeterVoltmeter.GetData: double;
+//begin
+//  Result:=ErResult;
+//  if PortConnected then
+//   begin
+//    Result:=Measurement();
+//    fNewData:=True;
+//   end;
+//end;
+
+//procedure TRS232MeterVoltmeter.GetDataThread(WPARAM: word;EventEnd:THandle);
+//begin
+// if PortConnected then
+//   fRS232MeasuringTread:=TRS232MeasuringTread.Create(Self,WPARAM,EventEnd);
+//end;
+
+//procedure TRS232MeterVoltmeter.MeasurementBegin;
+//begin
+//  fIsReady := False;
+//  fIsReceived:=False;
+//  fError:=False;
+//end;
+
+//function TRS232MeterVoltmeter.GetNewData: boolean;
+//begin
+// Result:=fNewData;
+//end;
+
+//function TRS232MeterVoltmeter.GetValue: double;
+//begin
+// Result:=fValue;
+//end;
+
+//function TRS232MeterVoltmeter.Measurement: double;
+//label start;
+//var i:integer;
+//    isFirst:boolean;
+//begin
+//
+// Result:=ErResult;
+// isFirst:=True;
+//start:
+//  MeasurementBegin;
+//  Request();
+//
+//
+// sleep(fMinDelayTime);
+// i:=0;
+// repeat
+//   sleep(10);
+//   inc(i);
+// Application.ProcessMessages;
+// until ((i>130)or(fIsReceived)or(fError));
+//// showmessage(inttostr((GetTickCount-i0)));
+// if fIsReceived then ConvertToValue();
+// if fIsReady then Result:=fValue;
+//
+// if ((Result=ErResult)or(ResultProblem(Result)))and(isFirst) then
+//    begin
+//      isFirst:=false;
+//      goto start;
+//    end;
+//end;
+
+function TRS232MeterVoltmeter.MeasureModeLabelRead: string;
+begin
+ Result:='';
+end;
+
+
+procedure TRS232MeterVoltmeter.MModeDetermination(Data: array of byte);
+begin
+
+end;
+
+//procedure TRS232MeterVoltmeter.PacketReceiving(Sender: TObject; const Str: string);
+//begin
+//
+//end;
+
+//procedure TRS232MeterVoltmeter.Request;
+//begin
+//  isNeededComPortState();
+//end;
+
+
+//function TRS232MeterVoltmeter.ResultProblem(Rez: double): boolean;
+//begin
+// Result:=False;
+//end;
+
+//procedure TRS232MeterVoltmeter.SetNewData(Value: boolean);
+//begin
+// fNewData:=Value;
+//end;
+
+procedure TRS232MeterVoltmeter.ValueDetermination(Data: array of byte);
+begin
+
+end;
+
+
+//**********************************************************
 
 { TMetterVoltmetrShow }
 

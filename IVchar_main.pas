@@ -2185,8 +2185,12 @@ end;
 
 
 procedure TIVchar.Button1Click(Sender: TObject);
+ var a:integer;
 begin
- showmessage(inttostr(ord(mcp_g8)));
+ a:=-((not($800)+$1)and $3ffff);
+ a:=-((not($800)+$1)and $fff);
+// a:=-((not($20000)+$1)and $3ffff);
+ showmessage(inttostr(a));
 end;
 
 procedure TIVchar.BControlResetClick(Sender: TObject);

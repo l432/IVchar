@@ -20,6 +20,8 @@ const
     (5,18,70,270);
  MCP3424_Gain_Data:array[TMCP3424_Gain]of byte=
     (1,2,4,8);
+ MCP3424_LSB:array[TMCP3424_Resolution]of double=
+    (1e-3,2.5e-4,6.25e-5,1.5625e-5);
  MCP3424IniSectionName='MCP3424';
 
 type
@@ -29,15 +31,22 @@ type
     FActiveChannel: TMCP3424_ChanelNumber;
     FGain: TMCP3424_Gain;
     FResolution: TMCP3424_Resolution;
+    fConfigByte:byte;
+
 //    procedure SetActiveChannel(const Value: TMCP3424_ChanelNumber);
 //    procedure SetGain(const Value: TMCP3424_Gain);
 //    procedure SetResolution(const Value: TMCP3424_Resolution);
+//    FChannels: array[TMCP3424_ChanelNumber] of MCP3424_Channel;
+   procedure Configuration();
+  protected
+   procedure   PacketCreateToSend(); override;
   public
    property  ActiveChannel:TMCP3424_ChanelNumber read FActiveChannel write FActiveChannel;
    property Gain: TMCP3424_Gain read FGain write FGain;
    property Resolution: TMCP3424_Resolution read FResolution write FResolution;
 
    constructor Create(CP:TComPort;Nm:string);override;
+   procedure ConvertToValue();override;
  end;
 
  MCP3424_Channel=class(TArduinoMeter)
@@ -53,9 +62,56 @@ type
 implementation
 
 uses
-  PacketParameters, SysUtils;
+  PacketParameters, SysUtils, OlegType;
 
 { MCP3424_Module }
+
+procedure TMCP3424_Module.Configuration;
+begin
+  fMinDelayTime:=MCP3424_ConversionTime[FResolution];
+  fConfigByte:=0;
+  fConfigByte:=fConfigByte or ((FActiveChannel and $3)shl 5);
+  fConfigByte:=fConfigByte or ($1 shl 4);
+  fConfigByte:=fConfigByte or ((ord(FResolution) and $3)shl 2);
+  fConfigByte:=fConfigByte or (byte(ord(FGain)) and $3);
+end;
+
+procedure TMCP3424_Module.ConvertToValue;
+ var temp:Int64;
+begin
+ fValue:=ErResult;
+ //---------???????????
+// if fdata[High(fData)]<>fConfigByte then Exit;
+
+ case FResolution of
+   mcp_r18b: if High(fData)<>3 then Exit;
+   mcp_r12b,
+   mcp_r14b,
+   mcp_r16b: if High(fData)<>2 then Exit;
+ end;
+
+   temp:=0;
+   temp:=temp+fData[High(fData)-1];
+
+  case FResolution of
+   mcp_r12b: temp:=temp+((fData[High(fData)-2] and $7) shl 8);
+   mcp_r14b: temp:=temp+((fData[High(fData)-2] and $1F) shl 8);
+   mcp_r16b: temp:=temp+((fData[High(fData)-2] and $7F) shl 8);
+   mcp_r18b: temp:=temp+(fData[High(fData)-2] shl 8)+
+                   ((fData[0] and $1) shl 16);
+  end;
+
+  if (fData[0] and $80)>0 then
+    case FResolution of
+     mcp_r12b: temp:=-((not(temp)+$1)and $fff);
+     mcp_r14b: temp:=-((not(temp)+$1)and $3fff);
+     mcp_r16b: temp:=-((not(temp)+$1)and $ffff);
+     mcp_r18b: temp:=-((not(temp)+$1)and $3ffff);
+    end;
+
+  fValue:=temp*MCP3424_LSB[FResolution]/MCP3424_Gain_Data[FGain];
+  fIsReady:=True;
+end;
 
 constructor TMCP3424_Module.Create (CP:TComPort;Nm:string);
 begin
@@ -69,8 +125,15 @@ begin
 
  fMetterKod:=MCP3424Command;
  SetLength(Pins.fPins,1);
- fMinDelayTime:=MCP3424_ConversionTime[FResolution];
+ Configuration();
+// fMinDelayTime:=MCP3424_ConversionTime[FResolution];
 
+end;
+
+procedure TMCP3424_Module.PacketCreateToSend;
+begin
+  Configuration();
+  PacketCreate([fMetterKod,Pins.PinControl,fConfigByte]);
 end;
 
 //procedure TMCP3424_Module.SetActiveChannel(const Value: TMCP3424_ChanelNumber);
@@ -102,5 +165,7 @@ begin
   SetLength(Pins.fPins,1);
   fMinDelayTime:=30;
 end;
+
+
 
 end.
