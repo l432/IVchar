@@ -5,6 +5,11 @@ interface
 uses
   SPIdevice, CPort, Measurement, RS232device;
 
+const
+ TMP102_StartAdress=$48;
+ TMP102_LastAdress=$4B;
+
+
 type
   TTempSensor=class(TArduinoMeter,ITemperatureMeasurement)
   {базовий клас для датчиків температури}

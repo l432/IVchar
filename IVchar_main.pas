@@ -476,6 +476,10 @@ type
     LLED_onValue: TLabel;
     TS_ADC: TTabSheet;
     Button1: TButton;
+    GBMCP3424: TGroupBox;
+    LMCP3424Pin: TLabel;
+    BMCP3424: TButton;
+    CBMCP3424: TComboBox;
 
     procedure FormCreate(Sender: TObject);
     procedure BConnectClick(Sender: TObject);
@@ -544,8 +548,8 @@ type
     procedure DACWriteToIniFile;
     procedure DevicesCreate;
     procedure DevicesFree;
-    procedure DevicesReadFromIniAndToForm;
-    procedure DevicesWriteToIniFile;
+//    procedure DevicesReadFromIniAndToForm;
+//    procedure DevicesWriteToIniFile;
     procedure TemperatureThreadCreate;
     procedure ControllerThreadCreate;
     function StepDetermine(Voltage: Double; ItForward: Boolean):double;
@@ -559,7 +563,7 @@ type
     procedure PIDShowCreateAndFromIniFile;
     procedure ConstantShowFromIniFile;
     procedure ConstantShowToIniFileAndFree;
-    procedure PIDShowToIniFileAndFree;
+//    procedure PIDShowToIniFileAndFree;
     procedure SaveCommentsFile(FileName: string);
     procedure DependenceMeasuringCreate;
     procedure DependenceMeasuringFree;
@@ -613,7 +617,7 @@ type
     procedure CalibrSaveClick(Sender: TObject);
     procedure ParametersFileWork(Action: TSimpleEvent);
     procedure ET1255Create;
-    procedure ET1255Free;
+//    procedure ET1255Free;
     procedure WMMyMeasure (var Mes : TMessage); message WM_MyMeasure;
     procedure HookEndReset;
     procedure SaveDialogPrepare;
@@ -633,6 +637,8 @@ type
     procedure IVVoltageInputSignDetermine;
     procedure IVMR_Refresh;
   public
+    ShowArray:TObjectArray;
+    AnyObjectArray:TObjectArray;
     V721A:TV721A;
     V721_I,V721_II:TV721;
 //    V721_I:TV721;
@@ -642,11 +648,12 @@ type
 //    DS18B20show:TPinsShow;
     DS18B20show:TOnePinsShow;
     TMP102:TTMP102;
-    TMP102show:TTMP102PinsShow;
-
-
+    TMP102show:TI2C_PinsShow;
     HTU21D:THTU21D;
     ThermoCuple:TThermoCuple;
+    MCP3424:TMCP3424_Module;
+    MCP3424show:TI2C_PinsShow;
+
     IscVocPinChanger,LEDOpenPinChanger:TArduinoPinChanger;
     IscVocPinChangerShow,LEDOpenPinChangerShow:TArduinoPinChangerShow;
     ConfigFile:TIniFile;
@@ -1364,6 +1371,7 @@ begin
        begin
         ET1255_DACs[i]:=TET1255_DAC.Create(i);
         ET1255_DACs[i].Reset();
+        AnyObjectArray.Add([ET1255_DACs[i]]);
        end;
      ET1255_DACsShow[0]:=TDAC_Show.Create(ET1255_DACs[0],
                     LOV1255ch0,LOK1255Ch0,BOVchange1255Ch0,
@@ -1382,11 +1390,16 @@ begin
                     BOVset1255Ch3,BOKchange1255Ch3,
                     BOKset1255Ch3,BReset1255Ch3);
 
+      ShowArray.Add([ET1255_DACsShow[0],ET1255_DACsShow[1],
+                     ET1255_DACsShow[2],ET1255_DACsShow[3]]);
+
       ET1255_ADCModule:=TET1255_ModuleAndChan.Create;
       ET1255_ADCModule.ReadFromIniFile(ConfigFile);
       ET1255_ADCShow:=TET1255_ADCShow.Create(ET1255_ADCModule,
          RGET1255_MM, RGET1255Range, LET1255I, LET1255U, BET1255Meas,
          SBET1255Auto, Time, SEET1255_Gain, SEET1255_MN,CBET1255_SM, PointET1255);
+
+      ShowArray.Add([ET1255_ADCModule,ET1255_ADCShow]);
 
    end
                     else
@@ -1398,24 +1411,23 @@ begin
 
 end;
 
-procedure TIVchar.ET1255Free;
- var I:TET1255_DAC_ChanelNumber;
-begin
-  if ET1255isPresent then
-   begin
-     for I := Low(TET1255_DAC_ChanelNumber) to High(TET1255_DAC_ChanelNumber) do
-        if ET1255_DACs[i]<>nil then
-           begin
-            ET1255_DACsShow[i].Free;
-            ET1255_DACs[i].Reset();
-            ET1255_DACs[i].Free();
-           end;
-    ET1255_ADCModule.Free;
-    ET1255_ADCShow.Free;
-   end;
-// ET1255_ADCModule.WriteToIniFile(ConfigFile);
-
-end;
+//procedure TIVchar.ET1255Free;
+// var I:TET1255_DAC_ChanelNumber;
+//begin
+//  if ET1255isPresent then
+//   begin
+//     for I := Low(TET1255_DAC_ChanelNumber) to High(TET1255_DAC_ChanelNumber) do
+//        if ET1255_DACs[i]<>nil then
+//           begin
+//            ET1255_DACsShow[i].Free;
+//            ET1255_DACs[i].Reset();
+//            ET1255_DACs[i].Free();
+//           end;
+//    ET1255_ADCModule.Free;
+//    ET1255_ADCShow.Free;
+//   end;
+//
+//end;
 
 
 function TIVchar.IVCharVoltageMaxDif: double;
@@ -2185,12 +2197,25 @@ end;
 
 
 procedure TIVchar.Button1Click(Sender: TObject);
- var a:integer;
+ var SA:TObjectArray;
+     zero:TObject;
+     ffirsr:first;
+     ssecond:second;
+//     i:integer;
 begin
- a:=-((not($800)+$1)and $3ffff);
- a:=-((not($800)+$1)and $fff);
-// a:=-((not($20000)+$1)and $3ffff);
- showmessage(inttostr(a));
+ SA:=TObjectArray.Create;
+ zero:=TObject.Create;
+ ffirsr:=first.Create;
+ ssecond:=second.Create;
+ SA.Add([zero]);
+ SA.Add([ffirsr]);
+ SA.Add([ssecond]);
+// for I := 0 to High(SA.ObjectArray) do
+//  SA.ObjectArray[i].Free;
+ SA.ObjectArray[0].Free;
+ SA.ObjectArray[1].Free;
+ (SA.ObjectArray[2] as first).Free;
+ SA.Free;
 end;
 
 procedure TIVchar.BControlResetClick(Sender: TObject);
@@ -2247,7 +2272,8 @@ begin
  ComponentView();
 
  ConfigFile:=TIniFile.Create(ExtractFilePath(Application.ExeName)+'IVChar.ini');
-
+ ShowArray:=TObjectArray.Create;
+ AnyObjectArray:=TObjectArray.Create;
 
  VoltmetrsCreate();
  ET1255Create();
@@ -2268,7 +2294,7 @@ begin
  NumberPinsShow();
 
 
- VoltmetrsReadFromIniFileAndToForm();
+// VoltmetrsReadFromIniFileAndToForm();
 
  RangesCreate();
  RangeReadFromIniFile();
@@ -2284,9 +2310,10 @@ begin
  DACReadFromIniFileAndToForm;
 
   DevicesCreate();
-  DevicesReadFromIniAndToForm();
+//  DevicesReadFromIniAndToForm();
 
   DependenceMeasuringCreate();
+ VoltmetrsReadFromIniFileAndToForm();
 
   ComPortsBegining;
 
@@ -2295,7 +2322,8 @@ begin
                  [DACR2R,V721A,V721_I,V721_II,DS18B20,
                  TMP102,
                  HTU21D,
-                 D30_06,IscVocPinChanger,LEDOpenPinChanger]);
+                 D30_06,IscVocPinChanger,LEDOpenPinChanger,
+                 MCP3424]);
 
  if (ComPort1.Connected)and(SettingDevice.ActiveInterface.Name=DACR2R.Name) then SettingDevice.Reset();
  if (ComPort1.Connected) then D30_06.Reset;
@@ -2327,9 +2355,12 @@ begin
 
  DevicesFree();
 
- ET1255Free;
+// ET1255Free;
  VoltmetrsFree();
  DACFree();
+
+ ShowArray.Free;
+ AnyObjectArray.Free;
 
   if RS232_MediatorTread <> nil
    then RS232_MediatorTread.Terminate;
@@ -2371,25 +2402,25 @@ begin
    TPID_ParametersShow.Create('PIDTermostat',
            STTermostatKp,STTermostatKi,STTermostatKd,STTermostatNT,STTermostatTolerance,
            LTermostatKp,LTermostatKi,LTermostatKd,LTermostatNT,LTermostatTolerance);
-  PID_Termostat_ParametersShow.ReadFromIniFile(ConfigFile);
+//  PID_Termostat_ParametersShow.ReadFromIniFile(ConfigFile);
 
   PID_Control_ParametersShow:=
    TPID_ParametersShow.Create('PIDControl',
            STControlKp,STControlKi,STControlKd,STControlNV,STControlTolerance,
            LControlKp,LControlKi,LControlKd,LControlNV,LControlTolerance);
-  PID_Control_ParametersShow.ReadFromIniFile(ConfigFile);
-
+//  PID_Control_ParametersShow.ReadFromIniFile(ConfigFile);
+  ShowArray.Add([PID_Termostat_ParametersShow,PID_Control_ParametersShow]);
 
 end;
 
-procedure TIVchar.PIDShowToIniFileAndFree;
-begin
-  ConfigFile.EraseSection(PID_Param);
-  PID_Termostat_ParametersShow.WriteToIniFile(ConfigFile);
-  PID_Control_ParametersShow.WriteToIniFile(ConfigFile);
-  PID_Termostat_ParametersShow.Free;
-  PID_Control_ParametersShow.Free;
-end;
+//procedure TIVchar.PIDShowToIniFileAndFree;
+//begin
+//  ConfigFile.EraseSection(PID_Param);
+//  PID_Termostat_ParametersShow.WriteToIniFile(ConfigFile);
+//  PID_Control_ParametersShow.WriteToIniFile(ConfigFile);
+//  PID_Termostat_ParametersShow.Free;
+//  PID_Control_ParametersShow.Free;
+//end;
 
 procedure TIVchar.SGFBStepDrawCell(Sender: TObject; ACol, ARow: Integer;
   Rect: TRect; State: TGridDrawState);
@@ -2800,10 +2831,10 @@ begin
   RangeWriteToIniFile;
   StepsWriteToIniFile;
   DelayTimeWriteToIniFile;
-  DevicesWriteToIniFile;
+//  DevicesWriteToIniFile;
   BoxToIniFile;
   ConstantShowToIniFileAndFree();
-  PIDShowToIniFileAndFree();
+//  PIDShowToIniFileAndFree();
   ComPortsWriteSettings([ComPortUT70C,ComPortUT70B,ComPort1]);
 end;
 
@@ -2905,22 +2936,35 @@ begin
   VoltmetrShows[1]:= TVoltmetrShow.Create(V721_I, RGV721I_MM, RGV721IRange, LV721I, LV721IU, LV721IPin, LV721IPinG, BV721ISet, BV721ISetGate, BV721IMeas, SBV721IAuto, CBV721I, Time);
   VoltmetrShows[2]:= TVoltmetrShow.Create(V721_II, RGV721II_MM, RGV721IIRange, LV721II, LV721IIU, LV721IIPin, LV721IIPinG, BV721IISet, BV721IISetGate, BV721IIMeas, SBV721IIAuto, CBV721II, Time);
 
+
+
   DS18B20:=TDS18B20.Create(ComPort1, 'DS18B20');
-//  DS18B20show:=TPinsShow.Create(DS18B20.Pins,LDS18BPin,nil,BDS18B,nil,CBDS18b20);
   DS18B20show:=TOnePinsShow.Create(DS18B20.Pins,LDS18BPin,BDS18B,CBDS18b20);
 
- TMP102:=TTMP102.Create(ComPort1, 'TMP102');
- TMP102show:=TTMP102PinsShow.Create(TMP102.Pins,LTMP102Pin,BTMP102,CBTMP102);
+
+  TMP102:=TTMP102.Create(ComPort1, 'TMP102');
+  TMP102show:=TI2C_PinsShow.Create(TMP102.Pins,LTMP102Pin, BTMP102, CBTMP102,TMP102_StartAdress,TMP102_LastAdress);
 
 
   HTU21D:=THTU21D.Create(ComPort1, 'HTU21D');
 
   ThermoCuple:=TThermoCuple.Create;
 
+  MCP3424:=TMCP3424_Module.Create(ComPort1,'MCP3424');
+  MCP3424show:=TI2C_PinsShow.Create(MCP3424.Pins,LMCP3424Pin, BMCP3424, CBMCP3424,
+                        MCP3424_StartAdress,MCP3424_LastAdress);
+
   IscVocPinChanger:=TArduinoPinChanger.Create(ComPort1,'IscVocPin');
   IscVocPinChangerShow:=TArduinoPinChangerShow.Create(IscVocPinChanger,LIscVocPin,BIscVocPin,BIscVocPinChange,CBIscVocPin);
   LEDOpenPinChanger:=TArduinoPinChanger.Create(ComPort1,'LEDOpenPin');
   LEDOpenPinChangerShow:=TArduinoPinChangerShow.Create(LEDOpenPinChanger,LLEDOpenPin,BLEDOpenPin,BLEDOpenPinChange,CBLEDOpenPin);
+
+
+
+  ShowArray.Add([VoltmetrShows[0],VoltmetrShows[1],VoltmetrShows[2]]);
+  ShowArray.Add([DS18B20show,TMP102show,MCP3424show,IscVocPinChangerShow,LEDOpenPinChangerShow]);
+  AnyObjectArray.Add([V721A,V721_I,V721_II]);
+  AnyObjectArray.Add([DS18B20,TMP102,HTU21D,MCP3424,IscVocPinChanger,LEDOpenPinChanger]);
 
   UT70B:=TUT70B.Create(ComPortUT70B, 'UT70B');
   UT70BShow:= TUT70BShow.Create(UT70B, RGUT70B_MM, RGUT70B_Range, RGUT70B_RangeM, LUT70B, LUT70BU, BUT70BMeas, SBUT70BAuto, Time);
@@ -2930,44 +2974,136 @@ begin
        BUT70CMeas, SBUT70CAuto, Time,
        LUT70C_Hold,LUT70C_rec,LUT70C_AvTime,LUT70C_AVG);
 
+  ShowArray.Add([UT70BShow,UT70CShow]);
+  AnyObjectArray.Add([UT70B,UT70C]);
 end;
 
 procedure TIVchar.VoltmetrsReadFromIniFileAndToForm;
  var i:integer;
 begin
- for I := 0 to High(VoltmetrShows) do
+ for i:=0 to High(ShowArray.ObjectArray) do
   begin
-  VoltmetrShows[i].PinShow.PinsReadFromIniFile(ConfigFile);
-  VoltmetrShows[i].NumberPinShow;
-//  VoltmetrShows[i].ButtonEnabled;
+   if (ShowArray.ObjectArray[i] is TPinsShow) then
+     begin
+      (ShowArray.ObjectArray[i] as TPinsShow).PinsReadFromIniFile(ConfigFile);
+      (ShowArray.ObjectArray[i] as TPinsShow).NumberPinShow;
+      Continue;
+     end;
+   if (ShowArray.ObjectArray[i] is TVoltmetrShow) then
+     begin
+      (ShowArray.ObjectArray[i] as TVoltmetrShow).PinShow.PinsReadFromIniFile(ConfigFile);
+      (ShowArray.ObjectArray[i] as TVoltmetrShow).PinShow.NumberPinShow;
+      Continue;
+     end;
+   if (ShowArray.ObjectArray[i] is TPID_ParametersShow) then
+     begin
+      (ShowArray.ObjectArray[i] as TPID_ParametersShow).ReadFromIniFile(ConfigFile);
+      Continue;
+     end;
+
+   if (ShowArray.ObjectArray[i] is TDevice) then
+     begin
+      (ShowArray.ObjectArray[i] as TDevice).ReadFromIniFile(ConfigFile,MD_IniSection);
+      Continue;
+     end;
   end;
 
- DS18B20show.PinsReadFromIniFile(ConfigFile);
- DS18B20show.NumberPinShow;
 
- TMP102show.PinsReadFromIniFile(ConfigFile);
- TMP102show.NumberPinShow;
-
-
- IscVocPinChangerShow.PinsReadFromIniFile(ConfigFile);
- IscVocPinChangerShow.NumberPinShow;
-
- LEDOpenPinChangerShow.PinsReadFromIniFile(ConfigFile);
- LEDOpenPinChangerShow.NumberPinShow;
+// for I := 0 to High(VoltmetrShows) do
+//  begin
+//  VoltmetrShows[i].PinShow.PinsReadFromIniFile(ConfigFile);
+//  VoltmetrShows[i].NumberPinShow;
+//  end;
+//
+// DS18B20show.PinsReadFromIniFile(ConfigFile);
+// DS18B20show.NumberPinShow;
+//
+// TMP102show.PinsReadFromIniFile(ConfigFile);
+// TMP102show.NumberPinShow;
+//
+// MCP3424show.PinsReadFromIniFile(ConfigFile);
+// MCP3424show.NumberPinShow;
+//
+// IscVocPinChangerShow.PinsReadFromIniFile(ConfigFile);
+// IscVocPinChangerShow.NumberPinShow;
+//
+// LEDOpenPinChangerShow.PinsReadFromIniFile(ConfigFile);
+// LEDOpenPinChangerShow.NumberPinShow;
 end;
 
 procedure TIVchar.VoltmetrsWriteToIniFile;
   var i:integer;
 begin
- for I := 0 to High(VoltmetrShows) do
-  VoltmetrShows[i].PinShow.PinsWriteToIniFile(ConfigFile);
- DS18B20show.PinsWriteToIniFile(ConfigFile);
- TMP102show.PinsWriteToIniFile(ConfigFile);
+// for I := 0 to High(VoltmetrShows) do
+//  VoltmetrShows[i].PinShow.PinsWriteToIniFile(ConfigFile);
+// DS18B20show.PinsWriteToIniFile(ConfigFile);
+// TMP102show.PinsWriteToIniFile(ConfigFile);
+// MCP3424show.PinsWriteToIniFile(ConfigFile);
+//
+// IscVocPinChangerShow.PinsWriteToIniFile(ConfigFile);
+// LEDOpenPinChangerShow.PinsWriteToIniFile(ConfigFile);
 
- IscVocPinChangerShow.PinsWriteToIniFile(ConfigFile);
- LEDOpenPinChangerShow.PinsWriteToIniFile(ConfigFile);
- if ET1255isPresent then
-  ET1255_ADCModule.WriteToIniFile(ConfigFile);
+  ConfigFile.EraseSection(PID_Param);
+  ConfigFile.EraseSection(MD_IniSection);
+
+ for i:=0 to High(ShowArray.ObjectArray) do
+  begin
+   if (ShowArray.ObjectArray[i] is TDevice) then
+    begin
+    (ShowArray.ObjectArray[i] as TDevice).WriteToIniFile(ConfigFile,MD_IniSection);
+    (ShowArray.ObjectArray[i] as TDevice).Free;
+    Continue;
+    end;
+
+   if (ShowArray.ObjectArray[i] is TPID_ParametersShow) then
+    begin
+    (ShowArray.ObjectArray[i] as TPID_ParametersShow).WriteToIniFile(ConfigFile);
+    (ShowArray.ObjectArray[i] as TPID_ParametersShow).Free;
+    Continue;
+    end;
+
+   if (ShowArray.ObjectArray[i] is TPinsShow) then
+    begin
+    (ShowArray.ObjectArray[i] as TPinsShow).PinsWriteToIniFile(ConfigFile);
+    (ShowArray.ObjectArray[i] as TPinsShow).Free;
+    Continue;
+    end;
+
+   if (ShowArray.ObjectArray[i] is TVoltmetrShow) then
+     begin
+      (ShowArray.ObjectArray[i] as TVoltmetrShow).PinShow.PinsWriteToIniFile(ConfigFile);
+      (ShowArray.ObjectArray[i] as TVoltmetrShow).Free;
+      Continue;
+     end;
+
+   if (ShowArray.ObjectArray[i] is TUT70BShow) then
+    begin
+     (ShowArray.ObjectArray[i] as TUT70BShow).Free;
+     Continue;
+    end;
+
+
+   if (ShowArray.ObjectArray[i] is TET1255_ModuleAndChan) then
+    begin
+    (ShowArray.ObjectArray[i] as TET1255_ModuleAndChan).WriteToIniFile(ConfigFile);
+    (ShowArray.ObjectArray[i] as TET1255_ModuleAndChan).Free;
+    Continue;
+    end;
+
+   if (ShowArray.ObjectArray[i] is TET1255_ADCShow) then
+     begin
+      (ShowArray.ObjectArray[i] as TET1255_ADCShow).Free;
+      Continue;
+     end;
+
+   ShowArray.ObjectArray[i].Free;
+  end;
+
+
+
+
+// if ET1255isPresent then
+//  ET1255_ADCModule.WriteToIniFile(ConfigFile);
 end;
 
 procedure TIVchar.WMMyMeasure(var Mes: TMessage);
@@ -3058,41 +3194,92 @@ end;
 procedure TIVchar.VoltmetrsFree;
  var i:integer;
 begin
-  for I := 0 to High(VoltmetrShows) do
-        VoltmetrShows[i].Free;
-  if assigned(V721A) then
-    V721A.Free;
-  if assigned(V721_I) then
-    V721_I.Free;
-  if assigned(V721_II) then
-    V721_II.Free;
-
- DS18B20show.Free;
-  if assigned(DS18B20) then
-    DS18B20.Free;
-
- TMP102show.Free;
-  if assigned(TMP102) then
-    TMP102.Free;
 
 
- if assigned(HTU21D) then
-    HTU21D.Free;
+  for i:=0 to High(AnyObjectArray.ObjectArray) do
+  begin
 
- IscVocPinChangerShow.Free;
-  if assigned(IscVocPinChanger) then
-    IscVocPinChanger.Free;
+   if (AnyObjectArray.ObjectArray[i] is TET1255_DAC) then
+    begin
+    (AnyObjectArray.ObjectArray[i] as TET1255_DAC).Reset();
+    (AnyObjectArray.ObjectArray[i] as TET1255_DAC).Free();
+     Continue;
+    end;
 
- LEDOpenPinChangerShow.Free;
-  if assigned(LEDOpenPinChanger) then
-    LEDOpenPinChanger.Free;
 
- UT70BShow.Free;
-  if assigned(UT70B) then
-    UT70B.Free;
- UT70CShow.Free;
-  if assigned(UT70C) then
-    UT70C.Free;
+   if (AnyObjectArray.ObjectArray[i] is TArduinoMeter) then
+    begin
+    (AnyObjectArray.ObjectArray[i] as TArduinoMeter).Free;
+    Continue;
+    end;
+
+   if (AnyObjectArray.ObjectArray[i] is TArduinoRS232Device) then
+    begin
+    (AnyObjectArray.ObjectArray[i] as TArduinoRS232Device).Free;
+    Continue;
+    end;
+
+   if (AnyObjectArray.ObjectArray[i] is TRS232Device) then
+    begin
+     (AnyObjectArray.ObjectArray[i] as TRS232Device).Free;
+     Continue;
+    end;
+
+    AnyObjectArray.ObjectArray[i].Free;
+  end;
+
+
+//  for i:=0 to High(ShowArray.ObjectArray) do
+//  begin
+//   if (ShowArray.ObjectArray[i] is TPinsShow) then
+//    (ShowArray.ObjectArray[i] as TPinsShow).Free;
+//   if (ShowArray.ObjectArray[i] is TVoltmetrShow) then
+//      (ShowArray.ObjectArray[i] as TVoltmetrShow).Free;
+//  end;
+
+
+
+
+//  for I := 0 to High(VoltmetrShows) do
+//        VoltmetrShows[i].Free;
+//  if assigned(V721A) then
+//    V721A.Free;
+//  if assigned(V721_I) then
+//    V721_I.Free;
+//  if assigned(V721_II) then
+//    V721_II.Free;
+
+// DS18B20show.Free;
+//  if assigned(DS18B20) then
+//    DS18B20.Free;
+
+// TMP102show.Free;
+//  if assigned(TMP102) then
+//    TMP102.Free;
+
+
+// MCP3424show.Free;
+//  if assigned(MCP3424) then
+//    MCP3424.Free;
+
+
+// if assigned(HTU21D) then
+//    HTU21D.Free;
+
+// IscVocPinChangerShow.Free;
+//  if assigned(IscVocPinChanger) then
+//    IscVocPinChanger.Free;
+
+// LEDOpenPinChangerShow.Free;
+//  if assigned(LEDOpenPinChanger) then
+//    LEDOpenPinChanger.Free;
+
+// UT70BShow.Free;
+//  if assigned(UT70B) then
+//    UT70B.Free;
+// UT70CShow.Free;
+//  if assigned(UT70C) then
+//    UT70C.Free;
 
   ThermoCuple.Free;
   Simulator.Free;
@@ -3158,8 +3345,9 @@ begin
   Devices[2]:=V721_I;
   Devices[3]:=V721_II;
 
-  TermoCouple_MD:=TMeasuringDevice.Create(Devices,CBTcVMD,LTRValue,srVoltge);
-  Temperature_MD:=TTemperature_MD.Create([Simulator,ThermoCuple,DS18B20,HTU21D,TMP102],CBTD,LTRValue);
+  TermoCouple_MD:=TMeasuringDevice.Create(Devices, CBTcVMD, 'Thermocouple', LTRValue, srVoltge);
+  Temperature_MD:=TTemperature_MD.Create([Simulator,ThermoCuple,DS18B20,HTU21D,TMP102],CBTD,'Temperature',LTRValue);
+  ShowArray.Add([TermoCouple_MD,Temperature_MD]);
 
   SetLength(Devices,High(Devices)+3);
   Devices[High(Devices)-1]:=UT70B;
@@ -3173,18 +3361,20 @@ begin
     Devices[High(Devices)]:=ET1255_ADCModule.Channels[2];
    end;
 
-  Current_MD:=TMeasuringDevice.Create(Devices,CBCMD,LADCurrentValue,srCurrent);
-  VoltageIV_MD:=TMeasuringDevice.Create(Devices,CBVMD,LADVoltageValue,srVoltge);
+  Current_MD:=TMeasuringDevice.Create(Devices, CBCMD,'Current', LADCurrentValue, srCurrent);
+  VoltageIV_MD:=TMeasuringDevice.Create(Devices, CBVMD,'Voltage', LADVoltageValue, srVoltge);
 
-  DACR2R_MD:=TMeasuringDevice.Create(Devices,CBMeasDACR2R,LMeasR2R,srPreciseVoltage);
+  DACR2R_MD:=TMeasuringDevice.Create(Devices, CBMeasDACR2R,'R2R', LMeasR2R, srPreciseVoltage);
   DACR2R_MD.AddActionButton(BMeasR2R);
-  D30_MD:=TMeasuringDevice.Create(Devices,CBMeasD30,LMeasD30,srPreciseVoltage);
+  D30_MD:=TMeasuringDevice.Create(Devices, CBMeasD30,'D30', LMeasD30, srPreciseVoltage);
   D30_MD.AddActionButton(BMeasD30);
 
-  Isc_MD:=TMeasuringDevice.Create(Devices,CBIscMD,LIscResult,srCurrent);
+  Isc_MD:=TMeasuringDevice.Create(Devices, CBIscMD,'Isc' , LIscResult, srCurrent);
   Isc_MD.AddActionButton(BIscMeasure);
-  Voc_MD:=TMeasuringDevice.Create(Devices,CBVocMD,LVocResult,srPreciseVoltage);
+  Voc_MD:=TMeasuringDevice.Create(Devices, CBVocMD,'Voc' , LVocResult, srPreciseVoltage);
   Voc_MD.AddActionButton(BVocMeasure);
+
+  ShowArray.Add([Current_MD,VoltageIV_MD,DACR2R_MD,D30_MD,Isc_MD,Voc_MD]);
 
 //  SetLength(Devices,High(Devices)+3);
 //  Devices[High(Devices)-1]:=ThermoCuple;
@@ -3197,11 +3387,12 @@ begin
   Devices[High(Devices)]:=TMP102;
 
   TimeD_MD:=
-    TMeasuringDevice.Create(Devices,CBTimeMD,LADCurrentValue,srVoltge);
+    TMeasuringDevice.Create(Devices, CBTimeMD,'Time Dependence', LADCurrentValue, srVoltge);
   TimeD_MD2:=
-    TMeasuringDevice.Create(Devices,CBTimeMD2,LADInputVoltageValue,srVoltge);
+    TMeasuringDevice.Create(Devices, CBTimeMD2,'Time Dependence Two', LADInputVoltageValue, srVoltge);
   Control_MD:=
-    TMeasuringDevice.Create(Devices,CBControlMD,LControlCVValue,srPreciseVoltage);
+    TMeasuringDevice.Create(Devices, CBControlMD,'Control setup', LControlCVValue, srPreciseVoltage);
+  ShowArray.Add([TimeD_MD,TimeD_MD2,Control_MD]);
 
   SetLength(DevicesSet,2);
   DevicesSet[0]:=Simulator;
@@ -3215,96 +3406,99 @@ begin
     DevicesSet[High(DevicesSet)]:=ET1255_DACs[2];
 
     ET1255_DAC_MD[0]:=TMeasuringDevice.Create(Devices,
-                      CBMeasET1255Ch0,LMeas1255Ch0,srPreciseVoltage);
+                      CBMeasET1255Ch0,'ET1255_DAC_Ch0',LMeas1255Ch0,srPreciseVoltage);
     ET1255_DAC_MD[0].AddActionButton(BMeas1255Ch0);
     ET1255_DAC_MD[1]:=TMeasuringDevice.Create(Devices,
-                      CBMeasET1255Ch1,LMeas1255Ch1,srPreciseVoltage);
+                      CBMeasET1255Ch1,'ET1255_DAC_Ch1',LMeas1255Ch1,srPreciseVoltage);
     ET1255_DAC_MD[1].AddActionButton(BMeas1255Ch1);
     ET1255_DAC_MD[2]:=TMeasuringDevice.Create(Devices,
-                      CBMeasET1255Ch2,LMeas1255Ch2,srPreciseVoltage);
+                      CBMeasET1255Ch2,'ET1255_DAC_Ch2',LMeas1255Ch2,srPreciseVoltage);
     ET1255_DAC_MD[2].AddActionButton(BMeas1255Ch2);
+    ShowArray.Add([ET1255_DAC_MD[0],ET1255_DAC_MD[1],ET1255_DAC_MD[2]]);
    end;
 
   SetLength(DevicesSet,High(DevicesSet)+2);
   DevicesSet[High(DevicesSet)]:=D30_06;
 
-  SettingDevice:=TSettingDevice.Create(DevicesSet,CBVS);
-  SettingDeviceControl:=TSettingDevice.Create(DevicesSet,CBControlCD);
-  SettingTermostat:=TSettingDevice.Create(DevicesSet,CBTermostatCD);
-  SettingDeviceLED:=TSettingDevice.Create(DevicesSet,CBLED_onCD);
+  SettingDevice:=TSettingDevice.Create(DevicesSet,CBVS,'Input voltage');
+  SettingDeviceControl:=TSettingDevice.Create(DevicesSet,CBControlCD,'Control input');
+  SettingTermostat:=TSettingDevice.Create(DevicesSet,CBTermostatCD,'Termostat input');
+  SettingDeviceLED:=TSettingDevice.Create(DevicesSet,CBLED_onCD,'LED output');
+  ShowArray.Add([SettingDevice,SettingDeviceControl,SettingTermostat,SettingDeviceLED]);
  end;
 
 procedure TIVchar.DevicesFree;
 begin
-  SettingDeviceLED.Free;
-  SettingTermostat.Free;
-  SettingDeviceControl.Free;
-  SettingDevice.Free;
-  Control_MD.Free;
-  TimeD_MD.Free;
-  Temperature_MD.Free;
-  Current_MD.Free;
-  VoltageIV_MD.Free;
-  DACR2R_MD.Free;
-  D30_MD.Free;
-  Isc_MD.Free;
-  Voc_MD.Free;
-  TermoCouple_MD.Free;
-  ET1255_DAC_MD[0].Free;
-  ET1255_DAC_MD[1].Free;
-  ET1255_DAC_MD[2].Free;
+//  SettingDeviceLED.Free;
+//  SettingTermostat.Free;
+//  SettingDeviceControl.Free;
+//  SettingDevice.Free;
+//  Control_MD.Free;
+//  TimeD_MD.Free;
+//  Temperature_MD.Free;
+//  Current_MD.Free;
+//  VoltageIV_MD.Free;
+//  DACR2R_MD.Free;
+//  D30_MD.Free;
+//  Isc_MD.Free;
+//  Voc_MD.Free;
+//  TermoCouple_MD.Free;
+//  ET1255_DAC_MD[0].Free;
+//  ET1255_DAC_MD[1].Free;
+//  ET1255_DAC_MD[2].Free;
+//  Simulator.Free;
 end;
 
-procedure TIVchar.DevicesReadFromIniAndToForm;
-begin
-  SettingDeviceLED.ReadFromIniFile(ConfigFile,MD_IniSection,'LED output');
-  SettingTermostat.ReadFromIniFile(ConfigFile,MD_IniSection,'Termostat input');
-  SettingDeviceControl.ReadFromIniFile(ConfigFile,MD_IniSection,'Control input');
-  SettingDevice.ReadFromIniFile(ConfigFile,MD_IniSection,'Input voltage');
-  Temperature_MD.ReadFromIniFile(ConfigFile,MD_IniSection,'Temperature');
-  Current_MD.ReadFromIniFile(ConfigFile,MD_IniSection,'Current');
-  VoltageIV_MD.ReadFromIniFile(ConfigFile,MD_IniSection,'Voltage');
-  DACR2R_MD.ReadFromIniFile(ConfigFile,MD_IniSection,'R2R');
-  D30_MD.ReadFromIniFile(ConfigFile,MD_IniSection,'D30');
-  Isc_MD.ReadFromIniFile(ConfigFile,MD_IniSection,'Isc');
-  Voc_MD.ReadFromIniFile(ConfigFile,MD_IniSection,'Voc');
-  TermoCouple_MD.ReadFromIniFile(ConfigFile,MD_IniSection,'Thermocouple');
-  if ET1255isPresent then
-  begin
-    ET1255_DAC_MD[0].ReadFromIniFile(ConfigFile,MD_IniSection,'ET1255_DAC_Ch0');
-    ET1255_DAC_MD[1].ReadFromIniFile(ConfigFile,MD_IniSection,'ET1255_DAC_Ch1');
-    ET1255_DAC_MD[2].ReadFromIniFile(ConfigFile,MD_IniSection,'ET1255_DAC_Ch2');
-  end;
-  TimeD_MD.ReadFromIniFile(ConfigFile,MD_IniSection,'Time Dependence');
-  TimeD_MD2.ReadFromIniFile(ConfigFile,MD_IniSection,'Time Dependence Two');
-  Control_MD.ReadFromIniFile(ConfigFile,MD_IniSection,'Control setup');
-end;
+//procedure TIVchar.DevicesReadFromIniAndToForm;
+//begin
+//  SettingDeviceLED.ReadFromIniFile(ConfigFile,MD_IniSection,'LED output');
+//  SettingTermostat.ReadFromIniFile(ConfigFile,MD_IniSection,'Termostat input');
+//  SettingDeviceControl.ReadFromIniFile(ConfigFile,MD_IniSection,'Control input');
+//  SettingDevice.ReadFromIniFile(ConfigFile,MD_IniSection,'Input voltage');
+//  Temperature_MD.ReadFromIniFile(ConfigFile,MD_IniSection,'Temperature');
+//  Current_MD.ReadFromIniFile(ConfigFile,MD_IniSection,'Current');
+//  VoltageIV_MD.ReadFromIniFile(ConfigFile,MD_IniSection,'Voltage');
+//  DACR2R_MD.ReadFromIniFile(ConfigFile,MD_IniSection,'R2R');
+//  D30_MD.ReadFromIniFile(ConfigFile,MD_IniSection,'D30');
+//  Isc_MD.ReadFromIniFile(ConfigFile,MD_IniSection,'Isc');
+//  Voc_MD.ReadFromIniFile(ConfigFile,MD_IniSection,'Voc');
+//  TermoCouple_MD.ReadFromIniFile(ConfigFile,MD_IniSection,'Thermocouple');
+//  if ET1255isPresent then
+//  begin
+//    ET1255_DAC_MD[0].ReadFromIniFile(ConfigFile,MD_IniSection,'ET1255_DAC_Ch0');
+//    ET1255_DAC_MD[1].ReadFromIniFile(ConfigFile,MD_IniSection,'ET1255_DAC_Ch1');
+//    ET1255_DAC_MD[2].ReadFromIniFile(ConfigFile,MD_IniSection,'ET1255_DAC_Ch2');
+//  end;
+//  TimeD_MD.ReadFromIniFile(ConfigFile,MD_IniSection,'Time Dependence');
+//  TimeD_MD2.ReadFromIniFile(ConfigFile,MD_IniSection,'Time Dependence Two');
+//  Control_MD.ReadFromIniFile(ConfigFile,MD_IniSection,'Control setup');
+//end;
 
-procedure TIVchar.DevicesWriteToIniFile;
-begin
-  ConfigFile.EraseSection(MD_IniSection);
-  SettingDeviceControl.WriteToIniFile(ConfigFile,MD_IniSection,'Control input');
-  SettingTermostat.WriteToIniFile(ConfigFile,MD_IniSection,'Termostat input');
-  SettingDevice.WriteToIniFile(ConfigFile,MD_IniSection,'Input voltage');
-  SettingDeviceLED.WriteToIniFile(ConfigFile,MD_IniSection,'LED output');
-  Temperature_MD.WriteToIniFile(ConfigFile,MD_IniSection,'Temperature');
-  Current_MD.WriteToIniFile(ConfigFile,MD_IniSection,'Current');
-  VoltageIV_MD.WriteToIniFile(ConfigFile,MD_IniSection,'Voltage');
-  DACR2R_MD.WriteToIniFile(ConfigFile,MD_IniSection,'R2R');
-  D30_MD.WriteToIniFile(ConfigFile,MD_IniSection,'D30');
-  Isc_MD.WriteToIniFile(ConfigFile,MD_IniSection,'Isc');
-  Voc_MD.WriteToIniFile(ConfigFile,MD_IniSection,'Voc');
-  TermoCouple_MD.WriteToIniFile(ConfigFile,MD_IniSection,'Thermocouple');
-  if ET1255isPresent then
-  begin
-    ET1255_DAC_MD[0].WriteToIniFile(ConfigFile,MD_IniSection,'ET1255_DAC_Ch0');
-    ET1255_DAC_MD[1].WriteToIniFile(ConfigFile,MD_IniSection,'ET1255_DAC_Ch1');
-    ET1255_DAC_MD[2].WriteToIniFile(ConfigFile,MD_IniSection,'ET1255_DAC_Ch2');
-  end;
-  TimeD_MD.WriteToIniFile(ConfigFile,MD_IniSection,'Time Dependence');
-  TimeD_MD2.WriteToIniFile(ConfigFile,MD_IniSection,'Time Dependence Two');
-  Control_MD.WriteToIniFile(ConfigFile,MD_IniSection,'Control setup');
-end;
+//procedure TIVchar.DevicesWriteToIniFile;
+//begin
+//  ConfigFile.EraseSection(MD_IniSection);
+//  SettingDeviceControl.WriteToIniFile(ConfigFile,MD_IniSection,'Control input');
+//  SettingTermostat.WriteToIniFile(ConfigFile,MD_IniSection,'Termostat input');
+//  SettingDevice.WriteToIniFile(ConfigFile,MD_IniSection,'Input voltage');
+//  SettingDeviceLED.WriteToIniFile(ConfigFile,MD_IniSection,'LED output');
+//  Temperature_MD.WriteToIniFile(ConfigFile,MD_IniSection,'Temperature');
+//  Current_MD.WriteToIniFile(ConfigFile,MD_IniSection,'Current');
+//  VoltageIV_MD.WriteToIniFile(ConfigFile,MD_IniSection,'Voltage');
+//  DACR2R_MD.WriteToIniFile(ConfigFile,MD_IniSection,'R2R');
+//  D30_MD.WriteToIniFile(ConfigFile,MD_IniSection,'D30');
+//  Isc_MD.WriteToIniFile(ConfigFile,MD_IniSection,'Isc');
+//  Voc_MD.WriteToIniFile(ConfigFile,MD_IniSection,'Voc');
+//  TermoCouple_MD.WriteToIniFile(ConfigFile,MD_IniSection,'Thermocouple');
+//  if ET1255isPresent then
+//  begin
+//    ET1255_DAC_MD[0].WriteToIniFile(ConfigFile,MD_IniSection,'ET1255_DAC_Ch0');
+//    ET1255_DAC_MD[1].WriteToIniFile(ConfigFile,MD_IniSection,'ET1255_DAC_Ch1');
+//    ET1255_DAC_MD[2].WriteToIniFile(ConfigFile,MD_IniSection,'ET1255_DAC_Ch2');
+//  end;
+//  TimeD_MD.WriteToIniFile(ConfigFile,MD_IniSection,'Time Dependence');
+//  TimeD_MD2.WriteToIniFile(ConfigFile,MD_IniSection,'Time Dependence Two');
+//  Control_MD.WriteToIniFile(ConfigFile,MD_IniSection,'Control setup');
+//end;
 
 function TIVchar.DiapazonIMeasurement(Measurement:IMeasurement):ShortInt;
 begin

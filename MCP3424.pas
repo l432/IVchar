@@ -3,7 +3,7 @@ unit MCP3424;
 interface
 
 uses
-  SPIdevice, CPort;
+  SPIdevice, CPort, Measurement;
 
 type
 
@@ -22,9 +22,22 @@ const
     (1,2,4,8);
  MCP3424_LSB:array[TMCP3424_Resolution]of double=
     (1e-3,2.5e-4,6.25e-5,1.5625e-5);
- MCP3424IniSectionName='MCP3424';
+// MCP3424IniSectionName='MCP3424';
+ MCP3424_StartAdress=$68;
+ MCP3424_LastAdress=$6F;
 
 type
+
+  first=class
+   public
+    procedure Free();
+  end;
+
+  second=class(first)
+   public
+    procedure Free();
+  end;
+
 
   TMCP3424_Module=class(TArduinoMeter)
   private
@@ -49,20 +62,34 @@ type
    procedure ConvertToValue();override;
  end;
 
- MCP3424_Channel=class(TArduinoMeter)
+ MCP3424_Channel=class(TNamedDevice,IMeasurement)
  private
-  fChanelNumber: TMCP3424_ChanelNumber;
+  fChanelNumber:TMCP3424_ChanelNumber;
   fParentModule:TMCP3424_Module;
+//  FGain: TMCP3424_Gain;
+//  FResolution: TMCP3424_Resolution;
+ protected
+  function GetNewData:boolean;
+  function GetValue:double;
+  procedure SetNewData(Value:boolean);
  public
-  Constructor Create(CP:TComPort;Nm:string;
+  Pins:TPins;
+//  property NewData:boolean read GetNewData write SetNewData;
+  property Value:double read GetValue;
+    Constructor Create(Nm:string;
                      ChanelNumber:TMCP3424_ChanelNumber;
                      MCP3424_Module:TMCP3424_Module);//override;
+  Procedure Free;
+  function GetData:double;
+  procedure GetDataThread(WPARAM: word; EventEnd:THandle);
  end;
+
+
 
 implementation
 
 uses
-  PacketParameters, SysUtils, OlegType;
+  PacketParameters, SysUtils, OlegType, Math, Dialogs;
 
 { MCP3424_Module }
 
@@ -153,19 +180,75 @@ end;
 
 { MCP3424_Channel }
 
-constructor MCP3424_Channel.Create(CP: TComPort; Nm: string;
+constructor MCP3424_Channel.Create(Nm: string;
                          ChanelNumber: TMCP3424_ChanelNumber;
                          MCP3424_Module: TMCP3424_Module);
 begin
-  inherited Create(CP,Nm);
-  fMetterKod:=MCP3424Command;
+  inherited Create();
+  fName:=Nm;
+
+
   fChanelNumber:=ChanelNumber;
   fName:='Ch'+inttostr(ord(ChanelNumber)+1)+'_MCP3424';
   fParentModule:=MCP3424_Module;
-  SetLength(Pins.fPins,1);
-  fMinDelayTime:=30;
+
+  Pins:=TPins.Create(Nm);
+  Pins.PinControl:=0;// зберігатиметься Resolution
+  Pins.PinGate:=0;  // зберігатиметься Gain
+
+//  SetLength(Pins.fPins,1);
 end;
 
 
+
+procedure MCP3424_Channel.Free;
+begin
+ Pins.Free;
+ inherited Free;
+end;
+
+function MCP3424_Channel.GetData: double;
+begin
+ fParentModule.ActiveChannel:=fChanelNumber;
+ fParentModule.Resolution:=TMCP3424_Resolution(round((Pins.PinControl-12)/2) and $3);
+ fParentModule.Gain:=TMCP3424_Gain((round( Log2(Pins.PinGate)) and $3));
+ Result:=fParentModule.GetData;
+end;
+
+procedure MCP3424_Channel.GetDataThread(WPARAM: word; EventEnd: THandle);
+begin
+ fParentModule.GetDataThread(WPARAM,EventEnd);
+end;
+
+function MCP3424_Channel.GetNewData: boolean;
+begin
+ Result:=fParentModule.NewData;
+end;
+
+function MCP3424_Channel.GetValue: double;
+begin
+ Result:=fParentModule.Value;
+end;
+
+procedure MCP3424_Channel.SetNewData(Value: boolean);
+begin
+ fParentModule.NewData:=Value;
+end;
+
+{ first }
+
+procedure first.Free;
+begin
+ showmessage('first');
+ inherited;
+end;
+
+{ second }
+
+procedure second.Free;
+begin
+  showmessage('second');
+ inherited;
+end;
 
 end.

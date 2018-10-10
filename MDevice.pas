@@ -9,10 +9,13 @@ type
 TDevice=class
 private
  DevicesComboBox:TComboBox;
+ fIdentName:string;
 public
- Constructor Create(DevCB:TComboBox);
- procedure ReadFromIniFile(ConfigFile:TIniFile;const Section, Ident: string);
- procedure WriteToIniFile(ConfigFile:TIniFile;const Section, Ident: string);
+ Constructor Create(DevCB: TComboBox; IdentName: string);
+// procedure ReadFromIniFile(ConfigFile:TIniFile;const Section, Ident: string);
+// procedure WriteToIniFile(ConfigFile:TIniFile;const Section, Ident: string);
+ procedure ReadFromIniFile(ConfigFile:TIniFile;const Section: string);
+ procedure WriteToIniFile(ConfigFile:TIniFile;const Section: string);
 end;
 
 TMeasuringStringResult=(srCurrent,srVoltge,srPreciseVoltage);
@@ -29,10 +32,9 @@ private
  function GetActiveInterface():IMeasurement;
 public
  property ActiveInterface:IMeasurement read GetActiveInterface;
- Constructor Create(const SOI:array of IMeasurement;
-                    DevCB:TComboBox;
-                    RI:TLabel;
-                    SR:TMeasuringStringResult);
+ Constructor Create(const SOI: array of IMeasurement;
+                  DevCB: TComboBox; IdentName: string;
+                  RI: TLabel; SR: TMeasuringStringResult);
  function GetMeasurementResult():double;
  procedure AddActionButton(AB:TButton);
  procedure Add(IO:IMeasurement);
@@ -45,7 +47,7 @@ private
 public
  property ActiveInterface:IDAC read GetActiveInterface;
  Constructor Create(const SOI:array of IDAC;
-                    DevCB:TComboBox);
+                    DevCB:TComboBox; IdentName: string);
  procedure SetValue(Value:double);
  procedure Reset();
 end;
@@ -59,7 +61,7 @@ private
 public
  property ActiveInterface:ITemperatureMeasurement read GetActiveInterface;
  Constructor Create(const SOI:array of ITemperatureMeasurement;
-                    DevCB:TComboBox;
+                    DevCB:TComboBox; IdentName: string;
                     RI:TLabel);
  function GetMeasurementResult():double;
 end;
@@ -73,36 +75,36 @@ uses
 
 { TDevice }
 
-constructor TDevice.Create(DevCB: TComboBox);
+constructor TDevice.Create(DevCB: TComboBox; IdentName: string);
 begin
  inherited Create;
  DevicesComboBox:=DevCB;
  DevicesComboBox.Clear;
+ fIdentName:=IdentName;
 end;
 
-procedure TDevice.ReadFromIniFile(ConfigFile: TIniFile; const Section,
-  Ident: string);
+procedure TDevice.ReadFromIniFile(ConfigFile: TIniFile; const Section: string);
   var index:integer;
 begin
-  index:=ConfigFile.ReadInteger(Section, Ident, 0);
+  index:=ConfigFile.ReadInteger(Section, fIdentName, 0);
   if index>=DevicesComboBox.Items.Count
      then DevicesComboBox.ItemIndex:=0
      else DevicesComboBox.ItemIndex:=index;
 end;
 
 
-procedure TDevice.WriteToIniFile(ConfigFile: TIniFile; const Section,
-  Ident: string);
+procedure TDevice.WriteToIniFile(ConfigFile: TIniFile; const Section: string);
 begin
-  WriteIniDef(ConfigFile,Section, Ident,DevicesComboBox.ItemIndex,0);
+  WriteIniDef(ConfigFile,Section, fIdentName,DevicesComboBox.ItemIndex,0);
 end;
 
 { TSettingDevice }
 
-constructor TSettingDevice.Create(const SOI: array of IDAC; DevCB: TComboBox);
+constructor TSettingDevice.Create(const SOI: array of IDAC;
+                               DevCB: TComboBox;IdentName: string);
 var I: Integer;
 begin
- inherited Create(DevCB);
+ inherited Create(DevCB,IdentName);
  if High(SOI)<0 then Exit;
  SetLength(fSetOfInterface,High(SOI)+1);
  for I := 0 to High(SOI) do
@@ -154,11 +156,11 @@ begin
 end;
 
 constructor TMeasuringDevice.Create(const SOI: array of IMeasurement;
-                                    DevCB: TComboBox; RI: TLabel;
-                                    SR:TMeasuringStringResult);
+                            DevCB: TComboBox; IdentName: string;
+                            RI: TLabel; SR: TMeasuringStringResult);
 var I: Integer;
 begin
- inherited Create(DevCB);
+ inherited Create(DevCB,IdentName);
  if High(SOI)<0 then Exit;
  SetLength(fSetOfInterface,High(SOI)+1);
  for I := 0 to High(SOI) do
@@ -202,10 +204,10 @@ end;
 { TTemperature_MD }
 
 constructor TTemperature_MD.Create(const SOI: array of ITemperatureMeasurement;
-                                   DevCB: TComboBox; RI: TLabel);
+                                   DevCB: TComboBox; IdentName: string; RI: TLabel);
 var I: Integer;
 begin
- inherited Create(DevCB);
+ inherited Create(DevCB,IdentName);
  if High(SOI)<0 then Exit;
  SetLength(fSetOfInterface,High(SOI)+1);
  for I := 0 to High(SOI) do

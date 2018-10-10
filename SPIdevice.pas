@@ -43,7 +43,8 @@ type
    property PinControlStr:string Index 0 read GetPinStr;
    property PinGateStr:string Index 1 read GetPinStr;
    property Name:string read fName write fName;
-   Constructor Create();
+   Constructor Create();overload;
+   Constructor Create(Nm:string);overload;
    Procedure ReadFromIniFile(ConfigFile:TIniFile);overload;
    Procedure ReadFromIniFile(ConfigFile:TIniFile;Strings:TStrings);overload;
    Procedure WriteToIniFile(ConfigFile:TIniFile);overload;
@@ -159,13 +160,13 @@ type
                       PCB:TComboBox);
   end;
 
-  TTMP102PinsShow=class (TOnePinsShow)
+  TI2C_PinsShow=class (TOnePinsShow)
   protected
   public
-   Constructor Create(Ps:TPins;
-                      ControlPinLabel:TLabel;
-                      SetControlButton:TButton;
-                      PCB:TComboBox);
+   Constructor Create(Ps: TPins;
+                      ControlPinLabel: TLabel;
+                      SetControlButton: TButton;
+                      PCB: TComboBox; StartAdress, LastAdress: Byte);
    procedure PinsReadFromIniFile(ConfigFile:TIniFile);override;
    procedure PinsWriteToIniFile(ConfigFile:TIniFile);override;
    procedure NumberPinShow();override;
@@ -282,8 +283,8 @@ Constructor TArduinoMeter.Create(CP:TComPort;Nm:string);
 begin
   inherited Create(CP,Nm);
 
-  Pins:=TPins.Create;
-  Pins.fName:=Nm;
+  Pins:=TPins.Create(Nm);
+//  Pins.fName:=Nm;
 
   fComPacket.StartString:=PacketBeginChar;
   fComPacket.StopString:=PacketEndChar;
@@ -321,6 +322,12 @@ begin
   PinControl:=UndefinedPin;
   PinGate:=UndefinedPin;
   fName:='';
+end;
+
+constructor TPins.Create(Nm: string);
+begin
+ Create();
+ fName:=Nm;
 end;
 
 function TPins.GetPin(Index: integer): byte;
@@ -384,12 +391,6 @@ end;
 
 { TArduinoDAC }
 
-//procedure TArduinoDAC.ComPortUsing;
-//begin
-// PacketCreate(fData);
-//// PacketCreate([DACR2RCommand, Pins.PinControl, Pins.PinGate, fData[0], fData[1], fData[2]]);
-// PacketIsSend(fComPort, fMessageError);
-//end;
 
 function TArduinoDAC.NormedKod(Kod: Integer):integer;
 begin
@@ -599,21 +600,24 @@ end;
 
 { TTMP102PinsShow }
 
-constructor TTMP102PinsShow.Create(Ps: TPins;
-                                  ControlPinLabel: TLabel;
-                                  SetControlButton: TButton;
-                                  PCB: TComboBox);
+constructor TI2C_PinsShow.Create(Ps: TPins;
+                 ControlPinLabel: TLabel; SetControlButton: TButton;
+                 PCB: TComboBox; StartAdress, LastAdress: Byte);
+ var adress:byte;
 begin
  inherited Create(Ps,ControlPinLabel,SetControlButton,PCB);
  PCB.Items.Clear;
- PCB.Items.Add('$48');
- PCB.Items.Add('$49');
- PCB.Items.Add('$4A');
- PCB.Items.Add('$4B');
- SetControlButton.Caption:=('Set Adress');
+ for adress := StartAdress to LastAdress do
+   PCB.Items.Add('$'+IntToHex(adress,2));
+
+// PCB.Items.Add('$48');
+// PCB.Items.Add('$49');
+// PCB.Items.Add('$4A');
+// PCB.Items.Add('$4B');
+ SetControlButton.Caption:=('set adress');
 end;
 
-procedure TTMP102PinsShow.NumberPinShow;
+procedure TI2C_PinsShow.NumberPinShow;
 begin
 
    PinLabels[0].Caption:='Adress is ';
@@ -622,10 +626,10 @@ begin
           PinLabels[0].Caption+'undefined'
                             else
        PinLabels[0].Caption:=
-          PinLabels[0].Caption+IntToStr(Pins.fPins[0]);
+          PinLabels[0].Caption+'$'+IntToHex(Pins.fPins[0],2);
 end;
 
-procedure TTMP102PinsShow.PinsReadFromIniFile(ConfigFile: TIniFile);
+procedure TI2C_PinsShow.PinsReadFromIniFile(ConfigFile: TIniFile);
  var TempPin:integer;
 begin
   Pins.ReadFromIniFile(ConfigFile,PinsComboBox.Items);
@@ -636,7 +640,7 @@ begin
       Pins.fPins[0] := StrToInt(PinsComboBox.Items[TempPin]);
 end;
 
-procedure TTMP102PinsShow.PinsWriteToIniFile(ConfigFile: TIniFile);
+procedure TI2C_PinsShow.PinsWriteToIniFile(ConfigFile: TIniFile);
  var i:byte;
 begin
   Pins.WriteToIniFile(ConfigFile,PinsComboBox.Items);
