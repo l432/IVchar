@@ -145,7 +145,7 @@ type
   function ReadMem():double;
  end;
 
-TET1255_ADCChannel=class(TNamedDevice,IMeasurement)
+TET1255_ADCChannel=class(TNamedInterfacedObject,IMeasurement)
  private
   fValue:double;
   fET1255MeasuringTread:TThread;
@@ -247,7 +247,7 @@ end;
     procedure MetterDataShow();override;
  end;
 
- TET1255_DAC=class(TNamedDevice,IDAC)
+ TET1255_DAC=class(TNamedInterfacedObject,IDAC)
  private
   fChanelNumber:TET1255_DAC_ChanelNumber;
   fOutputValue:double;

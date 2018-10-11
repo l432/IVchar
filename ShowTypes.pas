@@ -3,10 +3,12 @@ unit ShowTypes;
 interface
 
 uses
-  StdCtrls, IniFiles, Windows, ComCtrls, SPIdevice, OlegType, Series;
+  StdCtrls, IniFiles, Windows, ComCtrls, SPIdevice, OlegType, Series, 
+  Measurement;
 
 const DoubleConstantSection='DoubleConstant';
       NoFile='no file';
+      RangeSection='Range';
 
 type
 TDoubleConstantShow=class
@@ -66,7 +68,7 @@ end;
   end;  //   TParameterShow=object
 
 
-TLimitShow=class
+TLimitShow=class(TNamedInterfacedObject)
 private
   UpDownHigh,UpDownLow:TUpDown;
   fDivisor:byte;
@@ -86,17 +88,19 @@ public
              read fHookForGraphElementApdate write fHookForGraphElementApdate;
   property HighValue:double read GetHighValue;
   property LowValue:double read GetLowValue;
-  Constructor Create(MaxValue:double;
-                     DigitNumber:byte;
-                     UDH,UDL:TUpDown;
-                     VLH,VLL:TLabel);overload;
-  Constructor Create(MaxValue:double;
+  Constructor Create(Nm: string;
+                     MaxValue: Double;
+                     DigitNumber: Byte;
+                     UDH, UDL: TUpDown;
+                     VLH, VLL: TLabel);overload;
+  Constructor Create(Nm: string;
+                     MaxValue:double;
                      DigitNumber:byte;
                      UDH,UDL:TUpDown;
                      VLH,VLL:TLabel;
                      HookFunction:TSimpleEvent);overload;
- procedure ReadFromIniFile(ConfigFile:TIniFile;const Section, Ident: string);
- procedure WriteToIniFile(ConfigFile:TIniFile;const Section, Ident: string);
+ procedure ReadFromIniFile(ConfigFile: TIniFile);
+ procedure WriteToIniFile(ConfigFile: TIniFile);
 end;
 
 TLimitShowRev=class(TLimitShow)
@@ -306,10 +310,11 @@ end;
 
 { LimitShow }
 
-constructor TLimitShow.Create(MaxValue:double;
-                     DigitNumber:byte;
-                     UDH,UDL:TUpDown;
-                     VLH,VLL:TLabel);
+constructor TLimitShow.Create(Nm: string;
+                              MaxValue: Double;
+                              DigitNumber: Byte;
+                              UDH, UDL: TUpDown;
+                              VLH, VLL: TLabel);
 begin
  inherited Create;
  fDigitNumber:=DigitNumber;
@@ -322,12 +327,17 @@ begin
  UpDownBegin(MaxValue,UpDownLow);
  UpDownHigh.OnClick:=UpDownHighClick;
  UpDownLow.OnClick:=UpDownLowClick;
+ fName:=Nm;
 end;
 
-constructor TLimitShow.Create(MaxValue: double; DigitNumber: byte; UDH,
-  UDL: TUpDown; VLH, VLL: TLabel; HookFunction: TSimpleEvent);
+constructor TLimitShow.Create(Nm: string;
+                              MaxValue: double;
+                              DigitNumber: byte;
+                              UDH,UDL: TUpDown;
+                              VLH, VLL: TLabel;
+                              HookFunction: TSimpleEvent);
 begin
- Create(MaxValue,DigitNumber,UDH,UDL,VLH, VLL);
+ Create(Nm, MaxValue, DigitNumber, UDH, UDL, VLH, VLL);
  HookForGraphElementApdate:=HookFunction;
 end;
 
@@ -356,16 +366,15 @@ begin
  Result:=(UpDownHigh.Position-UpDownLow.Position)<1;
 end;
 
-procedure TLimitShow.ReadFromIniFile(ConfigFile: TIniFile; const Section,
-  Ident: string);
+procedure TLimitShow.ReadFromIniFile(ConfigFile: TIniFile);
   var temp:Smallint;
 begin
 
-  temp:=ConfigFile.ReadInteger(Section,Ident+'Max',UpDownHigh.Max);
+  temp:=ConfigFile.ReadInteger(RangeSection,fName+'Max',UpDownHigh.Max);
   if (temp>UpDownHigh.Max)or(temp<0) then  temp:=UpDownHigh.Max;
   UpDownHigh.Position:=temp;
 
-  temp:=ConfigFile.ReadInteger(Section,Ident+'Min',0);
+  temp:=ConfigFile.ReadInteger(RangeSection,fName+'Min',0);
   if (temp>UpDownHigh.Max)or(temp<0) then  temp:=0;
   UpDownLow.Position:=temp;
 
@@ -408,11 +417,10 @@ begin
   HookForGraphElementApdate();
 end;
 
-procedure TLimitShow.WriteToIniFile(ConfigFile: TIniFile; const Section,
-  Ident: string);
+procedure TLimitShow.WriteToIniFile(ConfigFile: TIniFile);
 begin
-    WriteIniDef(ConfigFile,Section,Ident+'Max',UpDownHigh.Position,UpDownHigh.Max);
-    WriteIniDef(ConfigFile,Section,Ident+'Min',UpDownLow.Position,0);
+    WriteIniDef(ConfigFile,RangeSection,fName+'Max',UpDownHigh.Position,UpDownHigh.Max);
+    WriteIniDef(ConfigFile,RangeSection,fName+'Min',UpDownLow.Position,0);
 end;
 
 { LimitShowRev }

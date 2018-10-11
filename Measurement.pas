@@ -27,7 +27,7 @@ IName = interface
   property Name:string read GetName;
 end;
 
-TNamedDevice=class(TInterfacedObject)
+TNamedInterfacedObject=class(TInterfacedObject)
   protected
    fName:string;
    function GetName:string;
@@ -372,7 +372,7 @@ end;
 
 { TNamedDevice }
 
-function TNamedDevice.GetName: string;
+function TNamedInterfacedObject.GetName: string;
 begin
    Result:=fName;
 end;

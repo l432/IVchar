@@ -62,7 +62,7 @@ type
    procedure ConvertToValue();override;
  end;
 
- MCP3424_Channel=class(TNamedDevice,IMeasurement)
+ MCP3424_Channel=class(TNamedInterfacedObject,IMeasurement)
  private
   fChanelNumber:TMCP3424_ChanelNumber;
   fParentModule:TMCP3424_Module;

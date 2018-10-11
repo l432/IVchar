@@ -51,7 +51,7 @@ type
   end;
 
 
-  TThermoCuple=class(TNamedDevice,ITemperatureMeasurement,IMeasurement)
+  TThermoCuple=class(TNamedInterfacedObject,ITemperatureMeasurement,IMeasurement)
     protected
      function GetNewData:boolean;
      function GetValue:double;

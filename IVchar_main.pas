@@ -528,7 +528,7 @@ type
     procedure RangeShow(Sender: TObject);
     procedure LimitsToLabel(LimitShow,LimitShowRev:TLimitShow);
     procedure RangeShowLimit();
-    procedure RangeReadFromIniFile;
+//    procedure RangeReadFromIniFile;
     procedure RangesCreate;
     procedure StepReadFromIniFile (A:PVector; Ident:string);
     procedure StepsReadFromIniFile;
@@ -539,9 +539,9 @@ type
     procedure DelayTimeWriteToIniFile;
     procedure SettingWriteToIniFile;
     procedure VoltmetrsCreate;
-    procedure VoltmetrsReadFromIniFileAndToForm;
-    procedure VoltmetrsWriteToIniFile;
-    procedure VoltmetrsFree;
+    procedure ShowObjectsReadFromIniFileAndToForm;
+    procedure ShowObjectsWriteToIniFileAndFree;
+    procedure ObjectsFree;
     procedure DACCreate;
     procedure DACFree;
     procedure DACReadFromIniFileAndToForm;
@@ -558,7 +558,7 @@ type
     procedure VectorsCreate;
     procedure VectorsDispose;
     { Private declarations }
-    procedure RangeWriteToIniFile;
+//    procedure RangeWriteToIniFile;
     procedure ConstantShowCreate;
     procedure PIDShowCreateAndFromIniFile;
     procedure ConstantShowFromIniFile;
@@ -566,8 +566,8 @@ type
 //    procedure PIDShowToIniFileAndFree;
     procedure SaveCommentsFile(FileName: string);
     procedure DependenceMeasuringCreate;
-    procedure DependenceMeasuringFree;
-    procedure RangesFree;
+//    procedure DependenceMeasuringFree;
+//    procedure RangesFree;
     procedure IVCharHookCycle();
     procedure CalibrHookCycle();
     procedure IVCharHookStep();
@@ -706,10 +706,12 @@ type
     VoltageLimit:boolean;
     DoubleConstantShows:array of TParameterShow1;
     Imax,Imin,R_VtoI,Shift_VtoI:double;
+
     IVMeasuring,CalibrMeasuring:TIVDependence;
     TimeDependence:TTimeDependenceTimer;
     ControlParameterTime,TemperatureOnTime:TTimeDependence;
     TimeTwoDependenceTimer,IscVocOnTime:TTimeTwoDependenceTimer;
+    Dependencies:Array of TFastDependence;
     PID_Termostat,PID_Control:TPID;
     PID_Termostat_ParametersShow,PID_Control_ParametersShow:TPID_ParametersShow;
     IsPID_Termostat_Created:boolean;
@@ -729,16 +731,16 @@ implementation
 
 {$R *.dfm}
 
-procedure TIVchar.RangeWriteToIniFile;
- var Section:string;
-begin
-    Section:='Range';
-    ConfigFile.EraseSection(Section);
-    IVCharRangeFor.WriteToIniFile(ConfigFile,Section,'IV_Forv');
-    IVCharRangeRev.WriteToIniFile(ConfigFile,Section,'IV_Rev');
-    CalibrRangeFor.WriteToIniFile(ConfigFile,Section,'Calibr_Forv');
-    CalibrRangeRev.WriteToIniFile(ConfigFile,Section,'Calibr_Rev');
-end;
+//procedure TIVchar.RangeWriteToIniFile;
+// var Section:string;
+//begin
+//    Section:='Range';
+//    ConfigFile.EraseSection(Section);
+//    IVCharRangeFor.WriteToIniFile(ConfigFile);
+//    IVCharRangeRev.WriteToIniFile(ConfigFile);
+//    CalibrRangeFor.WriteToIniFile(ConfigFile);
+//    CalibrRangeRev.WriteToIniFile(ConfigFile);
+//end;
 
 procedure TIVchar.ConstantShowCreate;
 begin
@@ -914,6 +916,7 @@ begin
 end;
 
 procedure TIVchar.DependenceMeasuringCreate;
+ var i:byte;
 begin
   IVMeasuring := TIVDependence.Create(CBForw,CBRev,PBIV,BIVStop,
                          IVResult,ForwLine,RevLine,ForwLg,RevLg);
@@ -928,11 +931,20 @@ begin
 
   IscVocOnTime:=TTimeTwoDependenceTimer.Create(PBIV,BIVStop,IVResult,
                                        ForwLine,ForwLg,DependTimer);
-  
+
   ControlParameterTime:=TTimeDependence.Create(PBIV,BIVStop,IVResult,
                                        ForwLine,ForwLg);
   TemperatureOnTime:=TTimeDependence.Create(PBIV,BIVStop,IVResult,
                                        ForwLine,ForwLg);
+
+  SetLength(Dependencies,7);
+  Dependencies[0]:=IVMeasuring;
+  Dependencies[1]:=CalibrMeasuring;
+  Dependencies[2]:=TimeDependence;
+  Dependencies[3]:=TimeTwoDependenceTimer;
+  Dependencies[4]:=IscVocOnTime;
+  Dependencies[5]:=ControlParameterTime;
+  Dependencies[6]:=TemperatureOnTime;
 
   IVMeasuring.RangeFor:=IVCharRangeFor;
   IVMeasuring.RangeRev:=IVCharRangeRev;
@@ -947,13 +959,19 @@ begin
 
   IVMeasuring.HookAction:=IVCharHookAction;
 
-  IVMeasuring.HookBeginMeasuring:=HookBegin;
-  TimeDependence.HookBeginMeasuring:=HookBegin;
-  TimeTwoDependenceTimer.HookBeginMeasuring:=HookBegin;
-  IscVocOnTime.HookBeginMeasuring:=HookBegin;
-  CalibrMeasuring.HookBeginMeasuring:=HookBegin;
-  ControlParameterTime.HookBeginMeasuring:=HookBegin;
-  TemperatureOnTime.HookBeginMeasuring:=HookBegin;
+  for I := 0 to High(Dependencies) do
+    begin
+    Dependencies[i].HookBeginMeasuring:=HookBegin;
+    Dependencies[i].HookEndMeasuring:=DependenceHookEnd;
+    end;
+
+//  IVMeasuring.HookBeginMeasuring:=HookBegin;
+//  TimeDependence.HookBeginMeasuring:=HookBegin;
+//  TimeTwoDependenceTimer.HookBeginMeasuring:=HookBegin;
+//  IscVocOnTime.HookBeginMeasuring:=HookBegin;
+//  CalibrMeasuring.HookBeginMeasuring:=HookBegin;
+//  ControlParameterTime.HookBeginMeasuring:=HookBegin;
+//  TemperatureOnTime.HookBeginMeasuring:=HookBegin;
 
   IVMeasuring.HookSetVoltage:=IVCharHookSetVoltage;
   CalibrMeasuring.HookSetVoltage:=CalibrHookSetVoltage;
@@ -978,43 +996,42 @@ begin
   IVMeasuring.HookDataSave:=IVCharHookDataSave;
   CalibrMeasuring.HookDataSave:=CalibrHookDataSave;
 
-  IVMeasuring.HookEndMeasuring:=DependenceHookEnd;
-  CalibrMeasuring.HookEndMeasuring:=DependenceHookEnd;
-  TimeDependence.HookEndMeasuring:=DependenceHookEnd;
-  TimeTwoDependenceTimer.HookEndMeasuring:=DependenceHookEnd;
-  IscVocOnTime.HookEndMeasuring:=DependenceHookEnd;
-  ControlParameterTime.HookEndMeasuring:=DependenceHookEnd;
-  TemperatureOnTime.HookEndMeasuring:=DependenceHookEnd;
+//  IVMeasuring.HookEndMeasuring:=DependenceHookEnd;
+//  CalibrMeasuring.HookEndMeasuring:=DependenceHookEnd;
+//  TimeDependence.HookEndMeasuring:=DependenceHookEnd;
+//  TimeTwoDependenceTimer.HookEndMeasuring:=DependenceHookEnd;
+//  IscVocOnTime.HookEndMeasuring:=DependenceHookEnd;
+//  ControlParameterTime.HookEndMeasuring:=DependenceHookEnd;
+//  TemperatureOnTime.HookEndMeasuring:=DependenceHookEnd;
 
 
   IVMeasResult:=TIVMeasurementResult.Create;
   IVMRFirst:=TIVMeasurementResult.Create;
   IVMRSecond:=TIVMeasurementResult.Create;
+  AnyObjectArray.Add([IVMeasResult,IVMRFirst,IVMRSecond]);
 end;
 
-procedure TIVchar.DependenceMeasuringFree;
-begin
-  IVMeasuring.Free;
-  CalibrMeasuring.Free;
-  TimeDependence.Free;
-  TimeTwoDependenceTimer.Free;
-  IscVocOnTime.Free;
-  ControlParameterTime.Free;
-  TemperatureOnTime.Free;
+//procedure TIVchar.DependenceMeasuringFree;
+//begin
+//  IVMeasuring.Free;
+//  CalibrMeasuring.Free;
+//  TimeDependence.Free;
+//  TimeTwoDependenceTimer.Free;
+//  IscVocOnTime.Free;
+//  ControlParameterTime.Free;
+//  TemperatureOnTime.Free;
+//    IVMeasResult.Free;
+//    IVMRFirst.Free;
+//    IVMRSecond.Free;
+//end;
 
-    IVMeasResult.Free;
-    IVMRFirst.Free;
-    IVMRSecond.Free;
-
-end;
-
-procedure TIVchar.RangesFree;
-begin
-  IVCharRangeFor.Free;
-  IVCharRangeRev.Free;
-  CalibrRangeFor.Free;
-  CalibrRangeRev.Free;
-end;
+//procedure TIVchar.RangesFree;
+//begin
+//  IVCharRangeFor.Free;
+//  IVCharRangeRev.Free;
+//  CalibrRangeFor.Free;
+//  CalibrRangeRev.Free;
+//end;
 
 procedure TIVchar.IVCharHookCycle;
 begin
@@ -2297,7 +2314,7 @@ begin
 // VoltmetrsReadFromIniFileAndToForm();
 
  RangesCreate();
- RangeReadFromIniFile();
+// RangeReadFromIniFile();
 
 
  StepsReadFromIniFile();
@@ -2313,7 +2330,7 @@ begin
 //  DevicesReadFromIniAndToForm();
 
   DependenceMeasuringCreate();
- VoltmetrsReadFromIniFileAndToForm();
+ ShowObjectsReadFromIniFileAndToForm();
 
   ComPortsBegining;
 
@@ -2344,19 +2361,19 @@ begin
 
 
  DACWriteToIniFile();
- VoltmetrsWriteToIniFile();
+ ShowObjectsWriteToIniFileAndFree();
  PinsWriteToIniFile;
  SettingWriteToIniFile();
  ConfigFile.Free;
 
 
 
- DependenceMeasuringFree();
+// DependenceMeasuringFree();
 
  DevicesFree();
 
 // ET1255Free;
- VoltmetrsFree();
+ ObjectsFree();
  DACFree();
 
  ShowArray.Free;
@@ -2366,7 +2383,7 @@ begin
    then RS232_MediatorTread.Terminate;
 
  VectorsDispose();
- RangesFree();
+// RangesFree();
  NumberPins.Free;
  NumberPinsOneWire.Free;
 
@@ -2409,6 +2426,7 @@ begin
            STControlKp,STControlKi,STControlKd,STControlNV,STControlTolerance,
            LControlKp,LControlKi,LControlKd,LControlNV,LControlTolerance);
 //  PID_Control_ParametersShow.ReadFromIniFile(ConfigFile);
+
   ShowArray.Add([PID_Termostat_ParametersShow,PID_Control_ParametersShow]);
 
 end;
@@ -2557,22 +2575,21 @@ begin
  RangeShow(Self);
 end;
 
-procedure TIVchar.RangeReadFromIniFile;
- var Section:string;
-begin
-  Section:='Range';
-  IVCharRangeFor.ReadFromIniFile(ConfigFile,Section,'IV_Forv');
-  IVCharRangeRev.ReadFromIniFile(ConfigFile,Section,'IV_Rev');
-  CalibrRangeFor.ReadFromIniFile(ConfigFile,Section,'Calibr_Forv');
-  CalibrRangeRev.ReadFromIniFile(ConfigFile,Section,'Calibr_Rev');
-end;
+//procedure TIVchar.RangeReadFromIniFile;
+//begin
+//  IVCharRangeFor.ReadFromIniFile(ConfigFile);
+//  IVCharRangeRev.ReadFromIniFile(ConfigFile);
+//  CalibrRangeFor.ReadFromIniFile(ConfigFile);
+//  CalibrRangeRev.ReadFromIniFile(ConfigFile);
+//end;
 
 procedure TIVchar.RangesCreate;
 begin
-  IVCharRangeFor:=TLimitShow.Create(Vmax,2,UDFBHighLimit,UDFBLowLimit,LFBHighlimitValue,LFBLowlimitValue,RangeShowLimit);
-  IVCharRangeRev:=TLimitShowRev.Create(Vmax,1,UDRBHighLimit,UDRBLowLimit,LRBHighlimitValue,LRBLowlimitValue,RangeShowLimit);
-  CalibrRangeFor:=TLimitShow.Create(Vmax,2,UDFBHighLimitR2R,UDFBLowLimitR2R,LFBHighlimitValueR2R,LFBLowlimitValueR2R,RangeShowLimit);
-  CalibrRangeRev:=TLimitShowRev.Create(Vmax,2,UDRBHighLimitR2R,UDRBLowLimitR2R,LRBHighlimitValueR2R,LRBLowlimitValueR2R,RangeShowLimit);
+  IVCharRangeFor:=TLimitShow.Create('IV_Forv',Vmax,2,UDFBHighLimit,UDFBLowLimit,LFBHighlimitValue,LFBLowlimitValue,RangeShowLimit);
+  IVCharRangeRev:=TLimitShowRev.Create('IV_Rev',Vmax,1,UDRBHighLimit,UDRBLowLimit,LRBHighlimitValue,LRBLowlimitValue,RangeShowLimit);
+  CalibrRangeFor:=TLimitShow.Create('Calibr_Forv',Vmax,2,UDFBHighLimitR2R,UDFBLowLimitR2R,LFBHighlimitValueR2R,LFBLowlimitValueR2R,RangeShowLimit);
+  CalibrRangeRev:=TLimitShowRev.Create('Calibr_Rev',Vmax,2,UDRBHighLimitR2R,UDRBLowLimitR2R,LRBHighlimitValueR2R,LRBLowlimitValueR2R,RangeShowLimit);
+  ShowArray.Add([IVCharRangeFor,IVCharRangeRev,CalibrRangeFor,CalibrRangeRev]);
 end;
 
 
@@ -2828,7 +2845,7 @@ end;
 
 procedure TIVchar.SettingWriteToIniFile;
 begin
-  RangeWriteToIniFile;
+//  RangeWriteToIniFile;
   StepsWriteToIniFile;
   DelayTimeWriteToIniFile;
 //  DevicesWriteToIniFile;
@@ -2978,11 +2995,17 @@ begin
   AnyObjectArray.Add([UT70B,UT70C]);
 end;
 
-procedure TIVchar.VoltmetrsReadFromIniFileAndToForm;
+procedure TIVchar.ShowObjectsReadFromIniFileAndToForm;
  var i:integer;
 begin
  for i:=0 to High(ShowArray.ObjectArray) do
   begin
+   if (ShowArray.ObjectArray[i] is TLimitShow) then
+     begin
+      (ShowArray.ObjectArray[i] as TLimitShow).ReadFromIniFile(ConfigFile);
+      Continue;
+     end;
+
    if (ShowArray.ObjectArray[i] is TPinsShow) then
      begin
       (ShowArray.ObjectArray[i] as TPinsShow).PinsReadFromIniFile(ConfigFile);
@@ -3031,7 +3054,7 @@ begin
 // LEDOpenPinChangerShow.NumberPinShow;
 end;
 
-procedure TIVchar.VoltmetrsWriteToIniFile;
+procedure TIVchar.ShowObjectsWriteToIniFileAndFree;
   var i:integer;
 begin
 // for I := 0 to High(VoltmetrShows) do
@@ -3045,9 +3068,17 @@ begin
 
   ConfigFile.EraseSection(PID_Param);
   ConfigFile.EraseSection(MD_IniSection);
+  ConfigFile.EraseSection(RangeSection);
 
  for i:=0 to High(ShowArray.ObjectArray) do
   begin
+   if (ShowArray.ObjectArray[i] is TLimitShow) then
+    begin
+    (ShowArray.ObjectArray[i] as TLimitShow).WriteToIniFile(ConfigFile);
+    (ShowArray.ObjectArray[i] as TLimitShow).Free;
+    Continue;
+    end;
+
    if (ShowArray.ObjectArray[i] is TDevice) then
     begin
     (ShowArray.ObjectArray[i] as TDevice).WriteToIniFile(ConfigFile,MD_IniSection);
@@ -3191,11 +3222,12 @@ begin
   NameToLabel(LabelNames[2],LADInputVoltage,LADInputVoltageValue);
 end;
 
-procedure TIVchar.VoltmetrsFree;
+procedure TIVchar.ObjectsFree;
  var i:integer;
 begin
 
-
+//вносимо типи, для яких процедура Free переозначена
+//якщо переозначена у нащадка, то він має в цьому циклі зустрітися раніше предка
   for i:=0 to High(AnyObjectArray.ObjectArray) do
   begin
 
@@ -3228,6 +3260,8 @@ begin
     AnyObjectArray.ObjectArray[i].Free;
   end;
 
+  for I := 0 to High(Dependencies) do
+    Dependencies[i].Free;
 
 //  for i:=0 to High(ShowArray.ObjectArray) do
 //  begin
@@ -3375,10 +3409,6 @@ begin
   Voc_MD.AddActionButton(BVocMeasure);
 
   ShowArray.Add([Current_MD,VoltageIV_MD,DACR2R_MD,D30_MD,Isc_MD,Voc_MD]);
-
-//  SetLength(Devices,High(Devices)+3);
-//  Devices[High(Devices)-1]:=ThermoCuple;
-//  Devices[High(Devices)]:=DS18B20;
 
   SetLength(Devices,High(Devices)+5);
   Devices[High(Devices)-3]:=ThermoCuple;

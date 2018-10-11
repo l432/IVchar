@@ -46,7 +46,7 @@ IQueueRS232Device = interface (IRS232Device)
   procedure isNeededComPortState();
 end;
 
-TRS232DeviceA=class(TNamedDevice,IRS232Device)
+TRS232DeviceA=class(TNamedInterfacedObject,IRS232Device)
   {базові функції пристроїв, які керуються
   за допомогою COM-порту}
   protected
@@ -71,7 +71,7 @@ TRS232DeviceA=class(TNamedDevice,IRS232Device)
    Procedure Free;
   end;
 
-TQueueRS232Device = class(TNamedDevice,IQueueRS232Device)
+TQueueRS232Device = class(TNamedInterfacedObject,IQueueRS232Device)
   protected
    fRS232DeviceA:TRS232DeviceA;
    fisNeededComPort:boolean;
@@ -95,7 +95,7 @@ end;
 
 
 
-TRS232Device=class(TNamedDevice)
+TRS232Device=class(TNamedInterfacedObject)
   {базовий клас для пристроїв, які керуються
   за допомогою COM-порту}
   protected
