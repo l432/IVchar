@@ -24,6 +24,7 @@ type
   TDS18B20=class(TTempSensor)
   {базовий клас для датчика DS18B20}
   protected
+   procedure PinsCreate();override;
   public
    Constructor Create(CP:TComPort;Nm:string);override;
 //   function GetTemperature():double;
@@ -45,6 +46,7 @@ type
   {базовий клас для датчика TMP102}
   protected
 //   Procedure PacketCreateToSend();override;
+   procedure PinsCreate();override;
   public
    Constructor Create(CP:TComPort;Nm:string);override;
    Procedure ConvertToValue();override;
@@ -83,11 +85,17 @@ begin
   inherited Create(CP,Nm);
 
   fMetterKod:=DS18B20Command;
-  SetLength(Pins.fPins,1);
+//  SetLength(Pins.fPins,1);
   fMinDelayTime:=500;
 end;
 
 
+
+procedure TDS18B20.PinsCreate;
+begin
+  Pins := TPins.Create(Name,1);
+
+end;
 
 //function TDS18B20.GetTemperature: double;
 //begin
@@ -269,5 +277,10 @@ begin
 end;
 
 
+
+procedure TTMP102.PinsCreate;
+begin
+  Pins := TPins_I2C.Create(Name);
+end;
 
 end.

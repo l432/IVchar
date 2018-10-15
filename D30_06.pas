@@ -20,8 +20,8 @@ TD30_06=class(TArduinoDAC)
  private
   fCurrentMaxValue:double;
   FisVoltage: boolean;
-
  protected
+  procedure PinsCreate();override;
   procedure CreateHook;override;
   procedure DataByteToSendFromInteger(IntData: Integer);override;
   function  VoltageToKod(Voltage:double):integer;override;
@@ -37,7 +37,7 @@ public
                     ControlPinLabel,GatePinLabel:TLabel;
                     SetControlButton,SetGateButton:TButton;
                     PCB:TComboBox);
-procedure NumberPinShow();override;
+//procedure NumberPinShow();override;
 end;
 
 TD30_06Show=class(TDAC_Show)
@@ -50,6 +50,7 @@ private
  procedure ReadFromIniFile(ConfigFile:TIniFile);
  public
  PinShow:TPins30_06Show;
+// PinShow:TPinsShow;
  Constructor Create(DAC:TD30_06;
                       CPL,GPL,VL,KL,VDL:TLabel;
                       SCB,SGB,VCB,VSB,KCB,KSB,RB:TButton;
@@ -85,6 +86,11 @@ begin
   IntData:=NormedKod(IntData);
   fData[3] := ((IntData shr 8) and $3F);
   fData[4] := (IntData and $FF);
+end;
+
+procedure TD30_06.PinsCreate;
+begin
+  Pins := TPins.Create(Name,PinNamesD30_06);
 end;
 
 procedure TD30_06.PinsToDataArray;
@@ -126,6 +132,7 @@ constructor TD30_06Show.Create(DAC: TD30_06;
 begin
  inherited Create(DAC,VL, KL, VCB, VSB, KCB, KSB, RB);
  PinShow:=TPins30_06Show.Create(DAC.Pins,CPL,GPL,SCB,SGB,PCB);
+// PinShow:=TPinsShow.Create(DAC.Pins,CPL,GPL,SCB,SGB,PCB);
  PinShow.HookNumberPinShow:=DAC.PinsToDataArray;
  fD30_06:=DAC;
  ValueDiapazonLabel:=VDL;
@@ -196,22 +203,24 @@ constructor TPins30_06Show.Create(Ps: TPins;
                                   PCB: TComboBox);
 begin
  inherited Create(Ps,ControlPinLabel,GatePinLabel,SetControlButton, SetGateButton,PCB);
- SetPinButtons[0].Caption := 'set '+LowerCase(PinNamesD30_06[0])+' pin';
- SetPinButtons[1].Caption := 'set '+LowerCase(PinNamesD30_06[1])+' pin';
+ SetPinButtons[0].Caption := SetPinButtons[0].Caption+' pin';
+ SetPinButtons[1].Caption := SetPinButtons[1].Caption+' pin';
+// SetPinButtons[0].Caption := 'set '+LowerCase(PinNamesD30_06[0])+' pin';
+// SetPinButtons[1].Caption := 'set '+LowerCase(PinNamesD30_06[1])+' pin';
 end;
 
-procedure TPins30_06Show.NumberPinShow;
- var i:byte;
-begin
- for I := 0 to High(PinLabels) do
-  begin
-   PinLabels[i].Caption:=PinNamesD30_06[i]+' pin is ';
-   if Pins.fPins[i]=UndefinedPin then
-    PinLabels[i].Caption:=PinLabels[i].Caption+'undefined'
-                           else
-    PinLabels[i].Caption:=PinLabels[i].Caption+IntToStr(Pins.fPins[i]);
-  end;
- HookNumberPinShow; 
-end;
+//procedure TPins30_06Show.NumberPinShow;
+// var i:byte;
+//begin
+// for I := 0 to High(PinLabels) do
+//  begin
+//   PinLabels[i].Caption:=PinNamesD30_06[i]+' pin is ';
+//   if Pins.fPins[i]=UndefinedPin then
+//    PinLabels[i].Caption:=PinLabels[i].Caption+'undefined'
+//                           else
+//    PinLabels[i].Caption:=PinLabels[i].Caption+IntToStr(Pins.fPins[i]);
+//  end;
+// HookNumberPinShow;
+//end;
 
 end.

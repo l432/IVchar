@@ -29,10 +29,14 @@ type
   protected
    fName:string;
    Function GetPinStr(Index:integer):string;virtual;
+   Function PinValueToStr(Index:integer):string;virtual;
    Function GetPin(Index:integer):byte;
    Procedure SetPin(Index:integer; value:byte);
+
   public
    fPins:TArrByte;
+   PNames:array of string;
+   PinStrPart:string;
    {номери пінів Arduino;
    в цьому класі масив містить 2 елементи,
    за необхідності в нащадках треба міняти конструктор
@@ -43,18 +47,30 @@ type
    property PinControlStr:string Index 0 read GetPinStr;
    property PinGateStr:string Index 1 read GetPinStr;
    property Name:string read fName write fName;
-   Constructor Create();overload;
+//   Constructor Create();overload;
    Constructor Create(Nm:string);overload;
+   Constructor Create(Nm:string;PNm:array of string;PNumber:byte);overload;
+   Constructor Create(Nm:string;PNm:array of string);overload;
+   Constructor Create(Nm:string;PNumber:byte);overload;
    Procedure ReadFromIniFile(ConfigFile:TIniFile);overload;
    Procedure ReadFromIniFile(ConfigFile:TIniFile;Strings:TStrings);overload;
+   Procedure ReadFromIniFile(ConfigFile:TIniFile;PinsComboBoxs:array of TComboBox);overload;
    Procedure WriteToIniFile(ConfigFile:TIniFile);overload;
    Procedure WriteToIniFile(ConfigFile:TIniFile;Strings:TStrings);overload;
+   Procedure WriteToIniFile(ConfigFile:TIniFile;PinsComboBoxs:array of TComboBox);overload;
+  end;
+
+  TPins_I2C=class(TPins)
+  protected
+   Function PinValueToStr(Index:integer):string;override;
+   public
+   Constructor Create(Nm:string);
   end;
 
   TArduinoRS232Device=class(TRS232Device)
   protected
    fDeviceKod:byte;
-
+   procedure PinsCreate();virtual;
   public
    Pins:TPins;
    Constructor Create(CP:TComPort;Nm:string);override;
@@ -65,6 +81,7 @@ type
   protected
    fPinUnderControl:byte;
    procedure   PacketCreateToSend(); override;
+   procedure PinsCreate();override;
   public
    property PinUnderControl:byte read fPinUnderControl write fPinUnderControl;
    Constructor Create(CP:TComPort;Nm:string);override;
@@ -79,6 +96,7 @@ type
    fMetterKod:byte;
    Procedure PacketReceiving(Sender: TObject; const Str: string);override;
    procedure   PacketCreateToSend(); override;
+   procedure PinsCreate();virtual;
   public
    Pins:TPins;
    Constructor Create(CP:TComPort;Nm:string);override;
@@ -90,15 +108,15 @@ type
   TArduinoDAC=class(TRS232Setter)
     {базовий клас для ЦАП, що керується
     за допомогою Arduino    }
-  private
+//  private
 //   procedure DataByteToSendPrepare(Voltage: Double);
-
   protected
    Pins:TPins;
    fVoltageMaxValue:double;
    fKodMaxValue:integer;
 //   fMessageError:string;
    fSetterKod:byte;
+   procedure PinsCreate();virtual;
    procedure PacketCreateAndSend();
    function  VoltageToKod(Voltage:double):integer;virtual;
    procedure DataByteToSendFromInteger(IntData: Integer);virtual;
@@ -130,28 +148,48 @@ type
    procedure SetButtonClick(Sender: TObject);
   end;
 
-  TPinsShow=class
+  TPinsShowUniversal=class
   protected
    fHookNumberPinShow: TSimpleEvent;
    PinLabels:array of TLabel;
    SetPinButtons:array of TButton;
-   PinsComboBox:TComboBox;
+   PinsComboBoxs:array of TComboBox;
    procedure CreateFooter;
-//   procedure AEmpty;
   public
    Pins:TPins;
    property HookNumberPinShow:TSimpleEvent read fHookNumberPinShow write fHookNumberPinShow;
    Constructor Create(Ps:TPins;
-                      ControlPinLabel,GatePinLabel:TLabel;
-                      SetControlButton,SetGateButton:TButton;
-                      PCB:TComboBox);
+                      PinLs:array of TLabel;
+                      SetPBs:array of TButton;
+                      PinCBs:array of TComboBox);
    procedure PinsReadFromIniFile(ConfigFile:TIniFile);virtual;
    procedure PinsWriteToIniFile(ConfigFile:TIniFile);virtual;
    procedure NumberPinShow();virtual;
   end;
 
 
-  TOnePinsShow=class (TPinsShow)
+  TPinsShow=class(TPinsShowUniversal)
+  protected
+//   fHookNumberPinShow: TSimpleEvent;
+//   PinLabels:array of TLabel;
+//   SetPinButtons:array of TButton;
+//   PinsComboBox:TComboBox;
+//   procedure CreateFooter;
+  public
+//   Pins:TPins;
+//   property HookNumberPinShow:TSimpleEvent read fHookNumberPinShow write fHookNumberPinShow;
+//   property PinsComboBox:TComboBox read  PinsComboBoxs[0];
+   Constructor Create(Ps:TPins;
+                      ControlPinLabel,GatePinLabel:TLabel;
+                      SetControlButton,SetGateButton:TButton;
+                      PCB:TComboBox);
+//   procedure PinsReadFromIniFile(ConfigFile:TIniFile);virtual;
+//   procedure PinsWriteToIniFile(ConfigFile:TIniFile);virtual;
+//   procedure NumberPinShow();virtual;
+  end;
+
+
+  TOnePinsShow=class (TPinsShowUniversal)
   protected
   public
    Constructor Create(Ps:TPins;
@@ -167,13 +205,13 @@ type
                       ControlPinLabel: TLabel;
                       SetControlButton: TButton;
                       PCB: TComboBox; StartAdress, LastAdress: Byte);
-   procedure PinsReadFromIniFile(ConfigFile:TIniFile);override;
-   procedure PinsWriteToIniFile(ConfigFile:TIniFile);override;
-   procedure NumberPinShow();override;
+//   procedure PinsReadFromIniFile(ConfigFile:TIniFile);override;
+//   procedure PinsWriteToIniFile(ConfigFile:TIniFile);override;
+//   procedure NumberPinShow();override;
   end;
 
 
-  TArduinoPinChangerShow=class(TPinsShow)
+  TArduinoPinChangerShow=class(TOnePinsShow)
   protected
    ArduinoPinChanger:TArduinoPinChanger;
    ToChangeButton:TButton;
@@ -194,60 +232,56 @@ implementation
 uses
   Math;
 
-//procedure TPinsShow.AEmpty;
-//begin
-//
-//end;
-
 constructor TPinsShow.Create(Ps:TPins;
                              ControlPinLabel, GatePinLabel: TLabel;
                              SetControlButton, SetGateButton: TButton;
                              PCB: TComboBox);
 begin
- inherited Create();
- Pins:=Ps;
- SetLength(PinLabels,High(Pins.fPins)+1);
- SetLength(SetPinButtons,High(Pins.fPins)+1);
- PinLabels[0]:=ControlPinLabel;
- if High(PinLabels)>0 then
-    PinLabels[1]:=GatePinLabel;
- SetPinButtons[0]:=SetControlButton;
- if High(SetPinButtons)>0 then
-    SetPinButtons[1]:=SetGateButton;
- PinsComboBox:=PCB;
-// HookNumberPinShow:=AEmpty;
- HookNumberPinShow:=TSimpleClass.EmptyProcedure;
- CreateFooter();
+ inherited Create(Ps,[ControlPinLabel, GatePinLabel],
+         [SetControlButton, SetGateButton],[PCB,PCB]);
+// inherited Create();
+// Pins:=Ps;
+// SetLength(PinLabels,High(Pins.fPins)+1);
+// SetLength(SetPinButtons,High(Pins.fPins)+1);
+// PinLabels[0]:=ControlPinLabel;
+// if High(PinLabels)>0 then
+//    PinLabels[1]:=GatePinLabel;
+// SetPinButtons[0]:=SetControlButton;
+// if High(SetPinButtons)>0 then
+//    SetPinButtons[1]:=SetGateButton;
+// PinsComboBox:=PCB;
+// HookNumberPinShow:=TSimpleClass.EmptyProcedure;
+// CreateFooter();
 end;
 
-procedure TPinsShow.NumberPinShow;
-begin
-   PinLabels[0].Caption:=Pins.PinControlStr;
-   if High(PinLabels)>0 then
-    PinLabels[1].Caption:=Pins.PinGateStr;
-   HookNumberPinShow;
-end;
-
-procedure TPinsShow.CreateFooter;
-var
-  i: Integer;
-begin
-  for I := 0 to High(SetPinButtons) do
-    begin
-    SetPinButtons[i].OnClick := TAdapterSetButton.Create(PinsComboBox, Pins, i, NumberPinShow).SetButtonClick;
-    SetPinButtons[i].Caption := 'set ' + LowerCase(PinNames[i]);
-    end;
-end;
-
-procedure TPinsShow.PinsReadFromIniFile(ConfigFile: TIniFile);
-begin
-  Pins.ReadFromIniFile(ConfigFile,PinsComboBox.Items);
-end;
-
-procedure TPinsShow.PinsWriteToIniFile(ConfigFile: TIniFile);
-begin
-  Pins.WriteToIniFile(ConfigFile,PinsComboBox.Items);
-end;
+//procedure TPinsShow.NumberPinShow;
+//begin
+//   PinLabels[0].Caption:=Pins.PinControlStr;
+//   if High(PinLabels)>0 then
+//    PinLabels[1].Caption:=Pins.PinGateStr;
+//   HookNumberPinShow;
+//end;
+//
+//procedure TPinsShow.CreateFooter;
+//var
+//  i: Integer;
+//begin
+//  for I := 0 to High(SetPinButtons) do
+//    begin
+//    SetPinButtons[i].OnClick := TAdapterSetButton.Create(PinsComboBox, Pins, i, NumberPinShow).SetButtonClick;
+//    SetPinButtons[i].Caption := 'set ' + LowerCase(PinNames[i]);
+//    end;
+//end;
+//
+//procedure TPinsShow.PinsReadFromIniFile(ConfigFile: TIniFile);
+//begin
+//  Pins.ReadFromIniFile(ConfigFile,PinsComboBox.Items);
+//end;
+//
+//procedure TPinsShow.PinsWriteToIniFile(ConfigFile: TIniFile);
+//begin
+//  Pins.WriteToIniFile(ConfigFile,PinsComboBox.Items);
+//end;
 
 { TAdapterSetButton }
 
@@ -282,9 +316,7 @@ end;
 Constructor TArduinoMeter.Create(CP:TComPort;Nm:string);
 begin
   inherited Create(CP,Nm);
-
-  Pins:=TPins.Create(Nm);
-//  Pins.fName:=Nm;
+  PinsCreate();
 
   fComPacket.StartString:=PacketBeginChar;
   fComPacket.StopString:=PacketEndChar;
@@ -295,6 +327,11 @@ procedure TArduinoMeter.Free;
 begin
  Pins.Free;
  inherited Free;
+end;
+
+procedure TArduinoMeter.PinsCreate();
+begin
+  Pins := TPins.Create(Name);
 end;
 
 procedure TArduinoMeter.PacketCreateToSend;
@@ -315,19 +352,50 @@ end;
 
 { TPins }
 
-constructor TPins.Create;
-begin
-  inherited;
-  SetLength(fPins,2);
-  PinControl:=UndefinedPin;
-  PinGate:=UndefinedPin;
-  fName:='';
-end;
+//constructor TPins.Create;
+// var i:integer;
+//begin
+//  inherited;
+//  SetLength(fPins,2);
+//  SetLength(PNames,2);
+//  for I := 0 to High(fPins) do
+//   begin
+//    PNames[i]:=PinNames[i];
+//    fPins[i]:=UndefinedPin;
+//   end;
+//  fName:='';
+//end;
 
 constructor TPins.Create(Nm: string);
 begin
- Create();
- fName:=Nm;
+ Create(Nm,PinNames,2);
+// fName:=Nm;
+end;
+
+constructor TPins.Create(Nm: string; PNm: array of string; PNumber: byte);
+  var i:integer;
+begin
+  inherited Create;
+  fName:=Nm;
+  SetLength(fPins,PNumber);
+  SetLength(PNames,PNumber);
+  for I := 0 to High(fPins) do
+   begin
+    if i<=High(PNm) then PNames[i]:=PNm[i]
+                    else PNames[i]:='';
+    fPins[i]:=UndefinedPin;
+   end;
+   PinStrPart:=' pin'
+end;
+
+constructor TPins.Create(Nm: string; PNm: array of string);
+begin
+  Create(Nm,PNm,2);
+end;
+
+constructor TPins.Create(Nm: string; PNumber: byte);
+begin
+ Create(Nm,PinNames,PNumber);
 end;
 
 function TPins.GetPin(Index: integer): byte;
@@ -337,11 +405,33 @@ end;
 
 function TPins.GetPinStr(Index: integer): string;
 begin
-  Result:=PinNames[Index]+' pin is ';
+  Result:=PNames[Index]+PinStrPart+' is ';
   if fPins[Index]=UndefinedPin then
     Result:=Result+'undefined'
                                else
-    Result:=Result+IntToStr(fPins[Index]);
+    Result:=Result+PinValueToStr(Index);
+end;
+
+function TPins.PinValueToStr(Index: integer): string;
+begin
+ Result:=IntToStr(fPins[Index]);
+end;
+
+procedure TPins.ReadFromIniFile(ConfigFile: TIniFile;
+          PinsComboBoxs: array of TComboBox);
+  var i,TempPin:integer;
+begin
+  if Name='' then Exit;
+  for I := 0 to High(fPins) do
+   begin
+    TempPin := ConfigFile.ReadInteger(Name, PNames[i], -1);
+    if (i<=High(PinsComboBoxs))
+        and (TempPin > -1)
+        and (TempPin < PinsComboBoxs[i].Items.Count) then
+          fPins[i] := StrToInt(PinsComboBoxs[i].Items[TempPin])
+                                                     else
+          fPins[i]:=ConfigFile.ReadInteger(Name, PNames[i], UndefinedPin);
+   end;
 end;
 
 procedure TPins.ReadFromIniFile(ConfigFile: TIniFile);
@@ -349,7 +439,7 @@ procedure TPins.ReadFromIniFile(ConfigFile: TIniFile);
 begin
   if Name='' then Exit;
   for I := 0 to High(fPins) do
-      fPins[i]:=ConfigFile.ReadInteger(Name, PinNames[i], UndefinedPin);
+      fPins[i]:=ConfigFile.ReadInteger(Name, PNames[i], UndefinedPin);
 end;
 
 procedure TPins.ReadFromIniFile(ConfigFile: TIniFile; Strings: TStrings);
@@ -358,7 +448,7 @@ begin
   if Name='' then Exit;
   for I := 0 to High(fPins) do
    begin
-    TempPin := ConfigFile.ReadInteger(Name, PinNames[i], -1);
+    TempPin := ConfigFile.ReadInteger(Name, PNames[i], -1);
     if (TempPin > -1) and (TempPin < Strings.Count) then
       fPins[i] := StrToInt(Strings[TempPin]);
    end;
@@ -372,7 +462,7 @@ begin
   for I := 0 to Strings.Count - 1 do
     for j := 0 to High(fPins) do
       if (IntToStr(fPins[j]) = Strings[i]) then
-        ConfigFile.WriteInteger(Name, PinNames[j], i);
+        ConfigFile.WriteInteger(Name, PNames[j], i);
 end;
 
 procedure TPins.WriteToIniFile(ConfigFile: TIniFile);
@@ -381,13 +471,35 @@ begin
   if Name='' then Exit;
   ConfigFile.EraseSection(Name);
   for I := 0 to High(fPins) do
-     WriteIniDef(ConfigFile,Name,PinNames[i], UndefinedPin);
+     WriteIniDef(ConfigFile,Name,PNames[i], UndefinedPin);
 end;
 
 procedure TPins.SetPin(Index: integer; value: byte);
 begin
   fPins[Index]:=value;
 end;
+
+procedure TPins.WriteToIniFile(ConfigFile: TIniFile;
+                PinsComboBoxs: array of TComboBox);
+  var i,j:integer;
+begin
+  if Name='' then Exit;
+  ConfigFile.EraseSection(Name);
+
+   for j := 0 to High(fPins) do
+     begin
+     if j<=High(PinsComboBoxs) then
+        begin
+          for I := 0 to PinsComboBoxs[j].Items.Count - 1 do
+           if (fPins[j] = strtoint( PinsComboBoxs[j].Items[i])) then
+//           if (IntToStr(fPins[j]) = PinsComboBoxs[j].Items[i]) then
+                ConfigFile.WriteInteger(Name, PNames[j], i);
+        end;
+//         else
+//          WriteIniDef(ConfigFile,Name,PNames[j], UndefinedPin);
+     end;
+end;
+
 
 { TArduinoDAC }
 
@@ -427,8 +539,8 @@ end;
 constructor TArduinoDAC.Create(CP: TComPort; Nm: string);
 begin
   inherited Create(CP,Nm);
-  Pins:=TPins.Create;
-  Pins.Name:=Nm;
+  PinsCreate();
+//  Pins.Name:=Nm;
   fComPacket.StartString:=PacketBeginChar;
   fComPacket.StopString:=PacketEndChar;
 
@@ -481,6 +593,11 @@ begin
  PacketCreateAndSend();
 end;
 
+procedure TArduinoDAC.PinsCreate();
+begin
+  Pins := TPins.Create(Name);
+end;
+
 procedure TArduinoDAC.PacketCreateAndSend;
 begin
   isNeededComPortState();
@@ -516,8 +633,7 @@ end;
 constructor TArduinoRS232Device.Create(CP: TComPort; Nm: string);
 begin
   inherited Create(CP,Nm);
-  Pins:=TPins.Create;
-  Pins.Name:=Nm;
+  PinsCreate();
   fComPacket.StartString:=PacketBeginChar;
   fComPacket.StopString:=PacketEndChar;
 end;
@@ -528,13 +644,18 @@ begin
  inherited Free;
 end;
 
+procedure TArduinoRS232Device.PinsCreate();
+begin
+  Pins := TPins.Create(Name);
+end;
+
 { TArduinoPinChanger }
 
 constructor TArduinoPinChanger.Create(CP: TComPort; Nm: string);
 begin
  inherited Create(CP,Nm);
  fDeviceKod:=PinChangeCommand;
- SetLength(Pins.fPins,1);
+// SetLength(Pins.fPins,1);
  PinUnderControl:=PinToHigh;
 // SetLength(fData,3);
 end;
@@ -557,6 +678,11 @@ begin
  isNeededComPortState();
 end;
 
+procedure TArduinoPinChanger.PinsCreate;
+begin
+ Pins := TPins.Create(Name,1);
+end;
+
 { TArduinoPinChangerShow }
 
 procedure TArduinoPinChangerShow.CaptionButtonSynhronize;
@@ -573,7 +699,8 @@ constructor TArduinoPinChangerShow.Create(APC: TArduinoPinChanger;
                                           SetControlButton, TCBut: TButton;
                                           PCB: TComboBox);
 begin
-  inherited Create(APC.Pins,ControlPinLabel,nil,SetControlButton,nil,PCB);
+//  inherited Create(APC.Pins,ControlPinLabel,nil,SetControlButton,nil,PCB);
+  inherited Create(APC.Pins,ControlPinLabel,SetControlButton,PCB);
   ArduinoPinChanger:=APC;
   ToChangeButton:=TCBut;
   CaptionButtonSynhronize;
@@ -595,7 +722,8 @@ constructor TOnePinsShow.Create(Ps: TPins;
                                 SetControlButton: TButton;
                                 PCB: TComboBox);
 begin
- inherited Create(Ps,ControlPinLabel,nil,SetControlButton,nil,PCB);
+ inherited Create(Ps,[ControlPinLabel],[SetControlButton],[PCB]);
+// inherited Create(Ps,ControlPinLabel,nil,SetControlButton,nil,PCB);
 end;
 
 { TTMP102PinsShow }
@@ -614,41 +742,125 @@ begin
 // PCB.Items.Add('$49');
 // PCB.Items.Add('$4A');
 // PCB.Items.Add('$4B');
- SetControlButton.Caption:=('set adress');
+// SetControlButton.Caption:=('set adress');
 end;
 
-procedure TI2C_PinsShow.NumberPinShow;
-begin
+//procedure TI2C_PinsShow.NumberPinShow;
+//begin
+//
+//   PinLabels[0].Caption:='Adress is ';
+//   if Pins.fPins[0]=UndefinedPin then
+//       PinLabels[0].Caption:=
+//          PinLabels[0].Caption+'undefined'
+//                            else
+//       PinLabels[0].Caption:=
+//          PinLabels[0].Caption+'$'+IntToHex(Pins.fPins[0],2);
+//end;
 
-   PinLabels[0].Caption:='Adress is ';
-   if Pins.fPins[0]=UndefinedPin then
-       PinLabels[0].Caption:=
-          PinLabels[0].Caption+'undefined'
-                            else
-       PinLabels[0].Caption:=
-          PinLabels[0].Caption+'$'+IntToHex(Pins.fPins[0],2);
-end;
+//procedure TI2C_PinsShow.PinsReadFromIniFile(ConfigFile: TIniFile);
+// var TempPin:integer;
+//begin
+//  Pins.ReadFromIniFile(ConfigFile,PinsComboBoxs);
+//
+////  Pins.ReadFromIniFile(ConfigFile,PinsComboBoxs[0].Items);
+//  if Pins.Name='' then Exit;
+//  TempPin := ConfigFile.ReadInteger(Pins.Name, 'Adress', -1);
+//    if (TempPin > -1) and (TempPin < PinsComboBoxs[0].Items.Count) then
+//      Pins.fPins[0] := StrToInt(PinsComboBoxs[0].Items[TempPin]);
+//end;
+//
+//procedure TI2C_PinsShow.PinsWriteToIniFile(ConfigFile: TIniFile);
+// var i:byte;
+//begin
+//    Pins.WriteToIniFile(ConfigFile,PinsComboBoxs);
+//
+////    Pins.WriteToIniFile(ConfigFile,PinsComboBox.Items);
+//  if Pins.Name='' then Exit;
+//  ConfigFile.EraseSection(Pins.Name);
+//  for I := 0 to PinsComboBoxs[0].Items.Count - 1 do
+//    if (Pins.fPins[0] = strtoint(PinsComboBoxs[0].Items[i])) then
+//        ConfigFile.WriteInteger(Pins.Name, 'Adress', i);
+//end;
 
-procedure TI2C_PinsShow.PinsReadFromIniFile(ConfigFile: TIniFile);
- var TempPin:integer;
-begin
-  Pins.ReadFromIniFile(ConfigFile,PinsComboBox.Items);
 
-  if Pins.Name='' then Exit;
-  TempPin := ConfigFile.ReadInteger(Pins.Name, 'Adress', -1);
-    if (TempPin > -1) and (TempPin < PinsComboBox.Items.Count) then
-      Pins.fPins[0] := StrToInt(PinsComboBox.Items[TempPin]);
-end;
+//  if Name='' then Exit;
+//  ConfigFile.EraseSection(Name);
+//
+//   for j := 0 to High(fPins) do
+//     begin
+//     if j<=High(PinsComboBoxs) then
+//        begin
+//          for I := 0 to PinsComboBoxs[j].Items.Count - 1 do
+//           if (IntToStr(fPins[j]) = PinsComboBoxs[j].Items[i]) then
+//                ConfigFile.WriteInteger(Name, PNames[j], i);
+//        end;
+//     end;
 
-procedure TI2C_PinsShow.PinsWriteToIniFile(ConfigFile: TIniFile);
+{ TPinsShowUniversal }
+
+constructor TPinsShowUniversal.Create(Ps: TPins; PinLs: array of TLabel;
+      SetPBs: array of TButton; PinCBs: array of TComboBox);
  var i:byte;
 begin
-  Pins.WriteToIniFile(ConfigFile,PinsComboBox.Items);
-  if Pins.Name='' then Exit;
-  ConfigFile.EraseSection(Pins.Name);
-  for I := 0 to PinsComboBox.Items.Count - 1 do
-    if (Pins.fPins[0] = strtoint(PinsComboBox.Items[i])) then
-        ConfigFile.WriteInteger(Pins.Name, 'Adress', i);
+ inherited Create();
+ Pins:=Ps;
+ SetLength(PinLabels,High(PinLs)+1);
+ for I := 0 to High(PinLabels) do
+  PinLabels[i]:=PinLs[i];
+
+ SetLength(SetPinButtons,High(SetPBs)+1);
+ for I := 0 to High(SetPinButtons) do
+  SetPinButtons[i]:=SetPBs[i];
+
+ SetLength(PinsComboBoxs,High(PinCBs)+1);
+ for I := 0 to High(PinsComboBoxs) do
+  PinsComboBoxs[i]:=PinCBs[i];
+
+ HookNumberPinShow:=TSimpleClass.EmptyProcedure;
+ CreateFooter();
+end;
+
+procedure TPinsShowUniversal.CreateFooter;
+ var  i: Integer;
+begin
+  for I := 0 to High(SetPinButtons) do
+    begin
+    SetPinButtons[i].OnClick := TAdapterSetButton.Create(PinsComboBoxs[i], Pins, i, NumberPinShow).SetButtonClick;
+    SetPinButtons[i].Caption := 'set ' + LowerCase(Pins.PNames[i]);
+    end;
+end;
+
+procedure TPinsShowUniversal.NumberPinShow;
+  var i:byte;
+begin
+  for I := 0 to High(PinLabels) do
+   PinLabels[i].Caption:=Pins.GetPinStr(i);
+   HookNumberPinShow;
+end;
+
+procedure TPinsShowUniversal.PinsReadFromIniFile(ConfigFile: TIniFile);
+begin
+  Pins.ReadFromIniFile(ConfigFile,PinsComboBoxs);
+end;
+
+procedure TPinsShowUniversal.PinsWriteToIniFile(ConfigFile: TIniFile);
+begin
+ Pins.WriteToIniFile(ConfigFile,PinsComboBoxs);
+end;
+
+
+
+{ TPins_I2C }
+
+constructor TPins_I2C.Create(Nm: string);
+begin
+  inherited Create(Nm,['Adress'],1);
+  PinStrPart:=''
+end;
+
+function TPins_I2C.PinValueToStr(Index: integer): string;
+begin
+ Result:='$'+IntToHex(fPins[Index],2);
 end;
 
 end.

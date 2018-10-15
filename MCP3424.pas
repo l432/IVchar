@@ -3,7 +3,7 @@ unit MCP3424;
 interface
 
 uses
-  SPIdevice, CPort, Measurement;
+  SPIdevice, CPort, Measurement, StdCtrls;
 
 type
 
@@ -20,23 +20,18 @@ const
     (5,18,70,270);
  MCP3424_Gain_Data:array[TMCP3424_Gain]of byte=
     (1,2,4,8);
+ MCP3424_Resolution_Data:array[TMCP3424_Resolution]of byte=
+    (12,14,16,18);
  MCP3424_LSB:array[TMCP3424_Resolution]of double=
     (1e-3,2.5e-4,6.25e-5,1.5625e-5);
 // MCP3424IniSectionName='MCP3424';
  MCP3424_StartAdress=$68;
  MCP3424_LastAdress=$6F;
 
+// MCP3424PinNames:array [0..1] of string=
+// ('Bits','Gain');
+
 type
-
-  first=class
-   public
-    procedure Free();
-  end;
-
-  second=class(first)
-   public
-    procedure Free();
-  end;
 
 
   TMCP3424_Module=class(TArduinoMeter)
@@ -53,6 +48,7 @@ type
    procedure Configuration();
   protected
    procedure   PacketCreateToSend(); override;
+   procedure PinsCreate();override;
   public
    property  ActiveChannel:TMCP3424_ChanelNumber read FActiveChannel write FActiveChannel;
    property Gain: TMCP3424_Gain read FGain write FGain;
@@ -62,7 +58,7 @@ type
    procedure ConvertToValue();override;
  end;
 
- MCP3424_Channel=class(TNamedInterfacedObject,IMeasurement)
+ TMCP3424_Channel=class(TNamedInterfacedObject,IMeasurement)
  private
   fChanelNumber:TMCP3424_ChanelNumber;
   fParentModule:TMCP3424_Module;
@@ -76,14 +72,22 @@ type
   Pins:TPins;
 //  property NewData:boolean read GetNewData write SetNewData;
   property Value:double read GetValue;
-    Constructor Create(Nm:string;
-                     ChanelNumber:TMCP3424_ChanelNumber;
-                     MCP3424_Module:TMCP3424_Module);//override;
+    Constructor Create(ChanelNumber: TMCP3424_ChanelNumber; MCP3424_Module: TMCP3424_Module);//override;
   Procedure Free;
   function GetData:double;
   procedure GetDataThread(WPARAM: word; EventEnd:THandle);
  end;
 
+ TMCP3424_ChannelShow=class(TPinsShowUniversal)
+   private
+//    ParameterShow:TPinsShowUniversal;
+    fChan:TMCP3424_Channel;
+   public
+    Constructor Create(Chan:TMCP3424_Channel;
+                       LabelBit,LabelGain,LabelMeas:TLabel;
+                       ButBit,ButGain,ButMeas:TButton;
+                       CBBit,CBGain:TComboBox);
+ end;
 
 
 implementation
@@ -151,7 +155,7 @@ begin
 // SetResolution(mcp_r12b);
 
  fMetterKod:=MCP3424Command;
- SetLength(Pins.fPins,1);
+// SetLength(Pins.fPins,1);
  Configuration();
 // fMinDelayTime:=MCP3424_ConversionTime[FResolution];
 
@@ -161,6 +165,11 @@ procedure TMCP3424_Module.PacketCreateToSend;
 begin
   Configuration();
   PacketCreate([fMetterKod,Pins.PinControl,fConfigByte]);
+end;
+
+procedure TMCP3424_Module.PinsCreate;
+begin
+  Pins := TPins_I2C.Create(Name);
 end;
 
 //procedure TMCP3424_Module.SetActiveChannel(const Value: TMCP3424_ChanelNumber);
@@ -180,34 +189,32 @@ end;
 
 { MCP3424_Channel }
 
-constructor MCP3424_Channel.Create(Nm: string;
-                         ChanelNumber: TMCP3424_ChanelNumber;
-                         MCP3424_Module: TMCP3424_Module);
+constructor TMCP3424_Channel.Create(ChanelNumber: TMCP3424_ChanelNumber;
+                                  MCP3424_Module: TMCP3424_Module);
 begin
   inherited Create();
-  fName:=Nm;
-
 
   fChanelNumber:=ChanelNumber;
   fName:='Ch'+inttostr(ord(ChanelNumber)+1)+'_MCP3424';
   fParentModule:=MCP3424_Module;
 
-  Pins:=TPins.Create(Nm);
-  Pins.PinControl:=0;// зберігатиметься Resolution
-  Pins.PinGate:=0;  // зберігатиметься Gain
+  Pins:=TPins.Create(fName,['Bits mode','Gain']);
+  Pins.PinStrPart:='';
+  Pins.PinControl:=12;// зберігатиметься Resolution
+  Pins.PinGate:=1;  // зберігатиметься Gain
 
 //  SetLength(Pins.fPins,1);
 end;
 
 
 
-procedure MCP3424_Channel.Free;
+procedure TMCP3424_Channel.Free;
 begin
  Pins.Free;
  inherited Free;
 end;
 
-function MCP3424_Channel.GetData: double;
+function TMCP3424_Channel.GetData: double;
 begin
  fParentModule.ActiveChannel:=fChanelNumber;
  fParentModule.Resolution:=TMCP3424_Resolution(round((Pins.PinControl-12)/2) and $3);
@@ -215,40 +222,49 @@ begin
  Result:=fParentModule.GetData;
 end;
 
-procedure MCP3424_Channel.GetDataThread(WPARAM: word; EventEnd: THandle);
+procedure TMCP3424_Channel.GetDataThread(WPARAM: word; EventEnd: THandle);
 begin
  fParentModule.GetDataThread(WPARAM,EventEnd);
 end;
 
-function MCP3424_Channel.GetNewData: boolean;
+function TMCP3424_Channel.GetNewData: boolean;
 begin
  Result:=fParentModule.NewData;
 end;
 
-function MCP3424_Channel.GetValue: double;
+function TMCP3424_Channel.GetValue: double;
 begin
  Result:=fParentModule.Value;
 end;
 
-procedure MCP3424_Channel.SetNewData(Value: boolean);
+procedure TMCP3424_Channel.SetNewData(Value: boolean);
 begin
  fParentModule.NewData:=Value;
 end;
 
-{ first }
 
-procedure first.Free;
+{ TMCP3424_ChannelShow }
+
+
+{ TMCP3424_ChannelShow }
+
+constructor TMCP3424_ChannelShow.Create(Chan: TMCP3424_Channel;
+                         LabelBit,LabelGain, LabelMeas: TLabel;
+                         ButBit, ButGain, ButMeas: TButton;
+                         CBBit,CBGain: TComboBox);
+ var i:TMCP3424_Resolution;
+     j:TMCP3424_Gain;
 begin
- showmessage('first');
- inherited;
-end;
+  fChan:=Chan;
+  inherited Create(fChan.Pins,[LabelBit,LabelGain],[ButBit, ButGain],[CBBit,CBGain]);
+  PinsComboBoxs[0].Items.Clear;
+  for i := Low(TMCP3424_Resolution) to High(TMCP3424_Resolution) do
+   PinsComboBoxs[0].Items.Add(inttostr(MCP3424_Resolution_Data[i]));
 
-{ second }
+  PinsComboBoxs[1].Items.Clear;
+  for j := Low(TMCP3424_Gain) to High(TMCP3424_Gain) do
+   PinsComboBoxs[1].Items.Add(inttostr(MCP3424_Gain_Data[j]));
 
-procedure second.Free;
-begin
-  showmessage('second');
- inherited;
 end;
 
 end.

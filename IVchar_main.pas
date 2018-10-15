@@ -480,6 +480,15 @@ type
     LMCP3424Pin: TLabel;
     BMCP3424: TButton;
     CBMCP3424: TComboBox;
+    GBMCP3424_Ch1: TGroupBox;
+    LMCP3424_Ch1bits: TLabel;
+    CBMCP3424_Ch1bits: TComboBox;
+    LMCP3424_Ch1gain: TLabel;
+    BtMCP3424_Ch1bits: TButton;
+    BtMCP3424_Ch1gain: TButton;
+    CBMCP3424_Ch1gain: TComboBox;
+    BMCP3424_Ch1meas: TButton;
+    LMCP3424_Ch1meas: TLabel;
 
     procedure FormCreate(Sender: TObject);
     procedure BConnectClick(Sender: TObject);
@@ -515,7 +524,6 @@ type
     procedure ControlWatchDogTimer(Sender: TObject);
     procedure BET1255_show_saveClick(Sender: TObject);
     procedure SBGeneratorClick(Sender: TObject);
-    procedure Button1Click(Sender: TObject);
   private
     procedure ComponentView;
     {початкове налаштування різних компонентів}
@@ -653,6 +661,9 @@ type
     ThermoCuple:TThermoCuple;
     MCP3424:TMCP3424_Module;
     MCP3424show:TI2C_PinsShow;
+
+    MCP3424_Channel:TMCP3424_Channel;
+    MCP3424_ChannelShow:TMCP3424_ChannelShow;
 
     IscVocPinChanger,LEDOpenPinChanger:TArduinoPinChanger;
     IscVocPinChangerShow,LEDOpenPinChangerShow:TArduinoPinChangerShow;
@@ -2213,28 +2224,6 @@ begin
 end;
 
 
-procedure TIVchar.Button1Click(Sender: TObject);
- var SA:TObjectArray;
-     zero:TObject;
-     ffirsr:first;
-     ssecond:second;
-//     i:integer;
-begin
- SA:=TObjectArray.Create;
- zero:=TObject.Create;
- ffirsr:=first.Create;
- ssecond:=second.Create;
- SA.Add([zero]);
- SA.Add([ffirsr]);
- SA.Add([ssecond]);
-// for I := 0 to High(SA.ObjectArray) do
-//  SA.ObjectArray[i].Free;
- SA.ObjectArray[0].Free;
- SA.ObjectArray[1].Free;
- (SA.ObjectArray[2] as first).Free;
- SA.Free;
-end;
-
 procedure TIVchar.BControlResetClick(Sender: TObject);
 begin
  if SBControlBegin.Down then
@@ -2970,6 +2959,12 @@ begin
   MCP3424:=TMCP3424_Module.Create(ComPort1,'MCP3424');
   MCP3424show:=TI2C_PinsShow.Create(MCP3424.Pins,LMCP3424Pin, BMCP3424, CBMCP3424,
                         MCP3424_StartAdress,MCP3424_LastAdress);
+  MCP3424_Channel:=TMCP3424_Channel.Create(0,MCP3424);
+  MCP3424_ChannelShow:=TMCP3424_ChannelShow.Create(MCP3424_Channel,
+                           LMCP3424_Ch1bits,LMCP3424_Ch1gain,LMCP3424_Ch1meas,
+                           BtMCP3424_Ch1bits,BtMCP3424_Ch1gain,BMCP3424_Ch1meas,
+                           CBMCP3424_Ch1bits,CBMCP3424_Ch1gain);
+
 
   IscVocPinChanger:=TArduinoPinChanger.Create(ComPort1,'IscVocPin');
   IscVocPinChangerShow:=TArduinoPinChangerShow.Create(IscVocPinChanger,LIscVocPin,BIscVocPin,BIscVocPinChange,CBIscVocPin);
@@ -2979,9 +2974,13 @@ begin
 
 
   ShowArray.Add([VoltmetrShows[0],VoltmetrShows[1],VoltmetrShows[2]]);
-  ShowArray.Add([DS18B20show,TMP102show,MCP3424show,IscVocPinChangerShow,LEDOpenPinChangerShow]);
+  ShowArray.Add([DS18B20show,TMP102show,MCP3424show,
+                 MCP3424_ChannelShow,
+                IscVocPinChangerShow,LEDOpenPinChangerShow]);
   AnyObjectArray.Add([V721A,V721_I,V721_II]);
-  AnyObjectArray.Add([DS18B20,TMP102,HTU21D,MCP3424,IscVocPinChanger,LEDOpenPinChanger]);
+  AnyObjectArray.Add([DS18B20,TMP102,HTU21D,MCP3424,
+                      MCP3424_Channel,
+                      IscVocPinChanger,LEDOpenPinChanger]);
 
   UT70B:=TUT70B.Create(ComPortUT70B, 'UT70B');
   UT70BShow:= TUT70BShow.Create(UT70B, RGUT70B_MM, RGUT70B_Range, RGUT70B_RangeM, LUT70B, LUT70BU, BUT70BMeas, SBUT70BAuto, Time);
@@ -3006,12 +3005,21 @@ begin
       Continue;
      end;
 
-   if (ShowArray.ObjectArray[i] is TPinsShow) then
+//   if (ShowArray.ObjectArray[i] is TPinsShow) then
+//     begin
+//      (ShowArray.ObjectArray[i] as TPinsShow).PinsReadFromIniFile(ConfigFile);
+//      (ShowArray.ObjectArray[i] as TPinsShow).NumberPinShow;
+//      Continue;
+//     end;
+
+   if (ShowArray.ObjectArray[i] is TPinsShowUniversal) then
      begin
-      (ShowArray.ObjectArray[i] as TPinsShow).PinsReadFromIniFile(ConfigFile);
-      (ShowArray.ObjectArray[i] as TPinsShow).NumberPinShow;
+      (ShowArray.ObjectArray[i] as TPinsShowUniversal).PinsReadFromIniFile(ConfigFile);
+      (ShowArray.ObjectArray[i] as TPinsShowUniversal).NumberPinShow;
       Continue;
      end;
+
+
    if (ShowArray.ObjectArray[i] is TVoltmetrShow) then
      begin
       (ShowArray.ObjectArray[i] as TVoltmetrShow).PinShow.PinsReadFromIniFile(ConfigFile);
@@ -3093,10 +3101,17 @@ begin
     Continue;
     end;
 
-   if (ShowArray.ObjectArray[i] is TPinsShow) then
+//   if (ShowArray.ObjectArray[i] is TPinsShow) then
+//    begin
+//    (ShowArray.ObjectArray[i] as TPinsShow).PinsWriteToIniFile(ConfigFile);
+//    (ShowArray.ObjectArray[i] as TPinsShow).Free;
+//    Continue;
+//    end;
+
+   if (ShowArray.ObjectArray[i] is TPinsShowUniversal) then
     begin
-    (ShowArray.ObjectArray[i] as TPinsShow).PinsWriteToIniFile(ConfigFile);
-    (ShowArray.ObjectArray[i] as TPinsShow).Free;
+    (ShowArray.ObjectArray[i] as TPinsShowUniversal).PinsWriteToIniFile(ConfigFile);
+    (ShowArray.ObjectArray[i] as TPinsShowUniversal).Free;
     Continue;
     end;
 
