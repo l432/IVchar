@@ -190,8 +190,6 @@ type
     CBDACR2R: TComboBox;
     LDACR2RPinC: TLabel;
     BDACR2RSetC: TButton;
-    LDACR2RPinG: TLabel;
-    BDACR2RSetG: TButton;
     STOVDACR2R: TStaticText;
     LOVDACR2R: TLabel;
     BOVchangeDACR2R: TButton;
@@ -489,6 +487,38 @@ type
     CBMCP3424_Ch1gain: TComboBox;
     BMCP3424_Ch1meas: TButton;
     LMCP3424_Ch1meas: TLabel;
+    GBMCP3424_Ch2: TGroupBox;
+    LMCP3424_Ch2bits: TLabel;
+    LMCP3424_Ch2gain: TLabel;
+    LMCP3424_Ch2meas: TLabel;
+    CBMCP3424_Ch2bits: TComboBox;
+    BtMCP3424_Ch2bits: TButton;
+    BtMCP3424_Ch2gain: TButton;
+    CBMCP3424_Ch2gain: TComboBox;
+    BMCP3424_Ch2meas: TButton;
+    GBMCP3424_Ch3: TGroupBox;
+    LMCP3424_Ch3bits: TLabel;
+    LMCP3424_Ch3gain: TLabel;
+    LMCP3424_Ch3meas: TLabel;
+    CBMCP3424_Ch3bits: TComboBox;
+    BtMCP3424_Ch3bits: TButton;
+    BtMCP3424_Ch3gain: TButton;
+    CBMCP3424_Ch3gain: TComboBox;
+    BMCP3424_Ch3meas: TButton;
+    GBMCP3424_Ch4: TGroupBox;
+    LMCP3424_Ch4bits: TLabel;
+    LMCP3424_Ch4gain: TLabel;
+    LMCP3424_Ch4meas: TLabel;
+    CBMCP3424_Ch4bits: TComboBox;
+    BtMCP3424_Ch4bits: TButton;
+    BtMCP3424_Ch4gain: TButton;
+    CBMCP3424_Ch4gain: TComboBox;
+    BMCP3424_Ch4meas: TButton;
+    STMCP3424_1: TStaticText;
+    STMCP3424_2: TStaticText;
+    STMCP3424_5: TStaticText;
+    STMCP3424_3: TStaticText;
+    STMCP3424_4: TStaticText;
 
     procedure FormCreate(Sender: TObject);
     procedure BConnectClick(Sender: TObject);
@@ -555,7 +585,7 @@ type
     procedure DACReadFromIniFileAndToForm;
     procedure DACWriteToIniFile;
     procedure DevicesCreate;
-    procedure DevicesFree;
+//    procedure DevicesFree;
 //    procedure DevicesReadFromIniAndToForm;
 //    procedure DevicesWriteToIniFile;
     procedure TemperatureThreadCreate;
@@ -644,6 +674,7 @@ type
     function IVNewFactorDetermination():double;
     procedure IVVoltageInputSignDetermine;
     procedure IVMR_Refresh;
+    procedure MCP3424Create;
   public
     ShowArray:TObjectArray;
     AnyObjectArray:TObjectArray;
@@ -662,8 +693,8 @@ type
     MCP3424:TMCP3424_Module;
     MCP3424show:TI2C_PinsShow;
 
-    MCP3424_Channel:TMCP3424_Channel;
-    MCP3424_ChannelShow:TMCP3424_ChannelShow;
+    MCP3424_Channel:array [TMCP3424_ChanelNumber] of TMCP3424_Channel;
+    MCP3424_ChannelShow:array [TMCP3424_ChanelNumber] of TMCP3424_ChannelShow;
 
     IscVocPinChanger,LEDOpenPinChanger:TArduinoPinChanger;
     IscVocPinChangerShow,LEDOpenPinChangerShow:TArduinoPinChangerShow;
@@ -2259,12 +2290,26 @@ end;
 procedure TIVchar.ComDPacketPacket(Sender: TObject; const Str: string);
  var Data:TArrByte;
      i:integer;
+     ToNumberPins:boolean;
 begin
  if PacketIsReceived(Str,Data,ParameterReceiveCommand) then
   begin
    NumberPins.Clear;
+   ToNumberPins:=True;
+   NumberPinsOneWire.Clear;
    for I := 3 to High(Data)-1 do
-    NumberPins.Add(IntToStr(Data[i]));
+    begin
+
+    if Data[i]=100 then
+      begin
+      ToNumberPins:=False;
+      Continue;
+      end;
+    if ToNumberPins then
+        NumberPins.Add(IntToStr(Data[i]))
+                    else
+        NumberPinsOneWire.Add(IntToStr(Data[i]));
+    end;
    NumberPinsShow();
   end;
 
@@ -2359,7 +2404,7 @@ begin
 
 // DependenceMeasuringFree();
 
- DevicesFree();
+// DevicesFree();
 
 // ET1255Free;
  ObjectsFree();
@@ -2504,9 +2549,11 @@ begin
   ComDPacket.StopString := PacketEndChar;
   ComDPacket.ComPort := ComPort1;
 
-  PortBeginAction(ComPortUT70B, LUT70BPort, nil);
-  PortBeginAction(ComPortUT70C, LUT70CPort, nil);
+//to comment on some PC
 
+//  PortBeginAction(ComPortUT70B, LUT70BPort, nil);
+//  PortBeginAction(ComPortUT70C, LUT70CPort, nil);
+//
   PortBeginAction(ComPort1, LConnected, BConnect);
 
 
@@ -2956,16 +3003,6 @@ begin
 
   ThermoCuple:=TThermoCuple.Create;
 
-  MCP3424:=TMCP3424_Module.Create(ComPort1,'MCP3424');
-  MCP3424show:=TI2C_PinsShow.Create(MCP3424.Pins,LMCP3424Pin, BMCP3424, CBMCP3424,
-                        MCP3424_StartAdress,MCP3424_LastAdress);
-  MCP3424_Channel:=TMCP3424_Channel.Create(0,MCP3424);
-  MCP3424_ChannelShow:=TMCP3424_ChannelShow.Create(MCP3424_Channel,
-                           LMCP3424_Ch1bits,LMCP3424_Ch1gain,LMCP3424_Ch1meas,
-                           BtMCP3424_Ch1bits,BtMCP3424_Ch1gain,BMCP3424_Ch1meas,
-                           CBMCP3424_Ch1bits,CBMCP3424_Ch1gain);
-
-
   IscVocPinChanger:=TArduinoPinChanger.Create(ComPort1,'IscVocPin');
   IscVocPinChangerShow:=TArduinoPinChangerShow.Create(IscVocPinChanger,LIscVocPin,BIscVocPin,BIscVocPinChange,CBIscVocPin);
   LEDOpenPinChanger:=TArduinoPinChanger.Create(ComPort1,'LEDOpenPin');
@@ -2974,13 +3011,13 @@ begin
 
 
   ShowArray.Add([VoltmetrShows[0],VoltmetrShows[1],VoltmetrShows[2]]);
-  ShowArray.Add([DS18B20show,TMP102show,MCP3424show,
-                 MCP3424_ChannelShow,
+  ShowArray.Add([DS18B20show,TMP102show,
                 IscVocPinChangerShow,LEDOpenPinChangerShow]);
   AnyObjectArray.Add([V721A,V721_I,V721_II]);
-  AnyObjectArray.Add([DS18B20,TMP102,HTU21D,MCP3424,
-                      MCP3424_Channel,
+  AnyObjectArray.Add([DS18B20,TMP102,HTU21D,
                       IscVocPinChanger,LEDOpenPinChanger]);
+
+  MCP3424Create();
 
   UT70B:=TUT70B.Create(ComPortUT70B, 'UT70B');
   UT70BShow:= TUT70BShow.Create(UT70B, RGUT70B_MM, RGUT70B_Range, RGUT70B_RangeM, LUT70B, LUT70BU, BUT70BMeas, SBUT70BAuto, Time);
@@ -3101,12 +3138,12 @@ begin
     Continue;
     end;
 
-//   if (ShowArray.ObjectArray[i] is TPinsShow) then
-//    begin
-//    (ShowArray.ObjectArray[i] as TPinsShow).PinsWriteToIniFile(ConfigFile);
-//    (ShowArray.ObjectArray[i] as TPinsShow).Free;
-//    Continue;
-//    end;
+   if (ShowArray.ObjectArray[i] is TMCP3424_ChannelShow) then
+    begin
+    (ShowArray.ObjectArray[i] as TMCP3424_ChannelShow).PinsWriteToIniFile(ConfigFile);
+    (ShowArray.ObjectArray[i] as TMCP3424_ChannelShow).Free;
+    Continue;
+    end;
 
    if (ShowArray.ObjectArray[i] is TPinsShowUniversal) then
     begin
@@ -3272,6 +3309,13 @@ begin
      Continue;
     end;
 
+
+   if (AnyObjectArray.ObjectArray[i] is TMCP3424_Channel) then
+    begin
+     (AnyObjectArray.ObjectArray[i] as TMCP3424_Channel).Free;
+     Continue;
+    end;
+
     AnyObjectArray.ObjectArray[i].Free;
   end;
 
@@ -3337,8 +3381,12 @@ end;
 procedure TIVchar.DACCreate;
 begin
   DACR2R:=TDACR2R.Create(ComPort1,'DAC R-2R');
-  DACR2RShow:=TDACR2RShow.Create(DACR2R,LDACR2RPinC,LDACR2RPinG,LOVDACR2R,LOKDACR2R,
-                                 BDACR2RSetC,BDACR2RSetG,BOVchangeDACR2R,
+//  DACR2RShow:=TDACR2RShow.Create(DACR2R,LDACR2RPinC,LDACR2RPinG,LOVDACR2R,LOKDACR2R,
+//                                 BDACR2RSetC,BDACR2RSetG,BOVchangeDACR2R,
+//                                 BOVsetDACR2R, BOKchangeDACR2R, BOKsetDACR2R,
+//                                 BDACR2RReset, CBDACR2R);
+  DACR2RShow:=TDACR2RShow.Create(DACR2R,LDACR2RPinC,{LDACR2RPinG,}LOVDACR2R,LOKDACR2R,
+                                 BDACR2RSetC,{BDACR2RSetG,}BOVchangeDACR2R,
                                  BOVsetDACR2R, BOKchangeDACR2R, BOKsetDACR2R,
                                  BDACR2RReset, CBDACR2R);
   D30_06:=TD30_06.Create(ComPort1,'D30_06');
@@ -3410,6 +3458,12 @@ begin
     Devices[High(Devices)]:=ET1255_ADCModule.Channels[2];
    end;
 
+  SetLength(Devices,High(Devices)+5);
+  Devices[High(Devices)-3]:=MCP3424_Channel[0];
+  Devices[High(Devices)-2]:=MCP3424_Channel[1];
+  Devices[High(Devices)-1]:=MCP3424_Channel[2];
+  Devices[High(Devices)]:=MCP3424_Channel[3];
+
   Current_MD:=TMeasuringDevice.Create(Devices, CBCMD,'Current', LADCurrentValue, srCurrent);
   VoltageIV_MD:=TMeasuringDevice.Create(Devices, CBVMD,'Voltage', LADVoltageValue, srVoltge);
 
@@ -3472,8 +3526,8 @@ begin
   ShowArray.Add([SettingDevice,SettingDeviceControl,SettingTermostat,SettingDeviceLED]);
  end;
 
-procedure TIVchar.DevicesFree;
-begin
+//procedure TIVchar.DevicesFree;
+//begin
 //  SettingDeviceLED.Free;
 //  SettingTermostat.Free;
 //  SettingDeviceControl.Free;
@@ -3492,7 +3546,7 @@ begin
 //  ET1255_DAC_MD[1].Free;
 //  ET1255_DAC_MD[2].Free;
 //  Simulator.Free;
-end;
+//end;
 
 //procedure TIVchar.DevicesReadFromIniAndToForm;
 //begin
@@ -3592,6 +3646,30 @@ begin
     IVMeasResult.CopyTo(IVMRFirst);
   if ((IVMeasResult.CurrentDiapazon <> IVMRFirst.CurrentDiapazon)) and (abs(IVMeasResult.DeltaToExpected) < abs(IVMRSecond.DeltaToExpected)) then
     IVMeasResult.CopyTo(IVMRSecond);
+end;
+
+procedure TIVchar.MCP3424Create;
+ var i:TMCP3424_ChanelNumber;
+begin
+  MCP3424 := TMCP3424_Module.Create(ComPort1, 'MCP3424');
+  MCP3424show := TI2C_PinsShow.Create(MCP3424.Pins, LMCP3424Pin, BMCP3424, CBMCP3424, MCP3424_StartAdress, MCP3424_LastAdress);
+  for I := Low(TMCP3424_ChanelNumber) to High(TMCP3424_ChanelNumber) do
+    MCP3424_Channel[i] := TMCP3424_Channel.Create(i, MCP3424);
+
+  MCP3424_ChannelShow[0]:=
+     TMCP3424_ChannelShow.Create(MCP3424_Channel[0], LMCP3424_Ch1bits, LMCP3424_Ch1gain, LMCP3424_Ch1meas, BtMCP3424_Ch1bits, BtMCP3424_Ch1gain, BMCP3424_Ch1meas, CBMCP3424_Ch1bits, CBMCP3424_Ch1gain);
+  MCP3424_ChannelShow[1]:=
+     TMCP3424_ChannelShow.Create(MCP3424_Channel[1], LMCP3424_Ch2bits, LMCP3424_Ch2gain, LMCP3424_Ch2meas, BtMCP3424_Ch2bits, BtMCP3424_Ch2gain, BMCP3424_Ch2meas, CBMCP3424_Ch2bits, CBMCP3424_Ch2gain);
+  MCP3424_ChannelShow[2]:=
+     TMCP3424_ChannelShow.Create(MCP3424_Channel[2], LMCP3424_Ch3bits, LMCP3424_Ch3gain, LMCP3424_Ch3meas, BtMCP3424_Ch3bits, BtMCP3424_Ch3gain, BMCP3424_Ch3meas, CBMCP3424_Ch3bits, CBMCP3424_Ch3gain);
+  MCP3424_ChannelShow[3]:=
+     TMCP3424_ChannelShow.Create(MCP3424_Channel[3], LMCP3424_Ch4bits, LMCP3424_Ch4gain, LMCP3424_Ch4meas, BtMCP3424_Ch4bits, BtMCP3424_Ch4gain, BMCP3424_Ch4meas, CBMCP3424_Ch4bits, CBMCP3424_Ch4gain);
+
+  ShowArray.Add([MCP3424show,
+                 MCP3424_ChannelShow[0],MCP3424_ChannelShow[1],MCP3424_ChannelShow[2],MCP3424_ChannelShow[3]]);
+  AnyObjectArray.Add([MCP3424,MCP3424_Channel[0],MCP3424_Channel[1],
+                      MCP3424_Channel[2],MCP3424_Channel[3]]);
+
 end;
 
 function TIVchar.IVNewFactorDetermination: double;

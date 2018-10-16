@@ -2,40 +2,45 @@
 #include <OneWire.h>
 #include <avr/wdt.h>
 #include <Wire.h>
+#include "OlegConstant.h"
+#include "OlegPacket.h"
 
-const byte PacketStart = 10;
-const byte PacketEnd = 255;
-const byte PacketMaxLength = 15;
-const byte V7_21Command = 1;
-const byte ParameterReceiveCommand = 2;
-const byte DACCommand = 3;
-const byte DACR2RCommand = 4;
-const byte DAC_Pos = 0x0F;
-const byte DAC_Neg = 0xFF;
-const byte DS18B20Command = 0x5;
-const byte D30_06Command = 0x6;
-const byte PinChangeCommand = 0x7;
-const byte HTU21DCommand = 0x8;
-const byte TMP102Command = 0x9;
-const byte PinToHigh = 0xFF;
-const byte PinToLow = 0x0F;
 
-//For MEGA
-byte DrivePins[] = {25, 26, 27, 28, 29, 30, 31, 32, 34, 35, 41, 42, 43};
-byte SignPins[] = {33, 40};
-byte DS18B20Pin = 36;
+//const byte PacketStart = 10;
+//const byte PacketEnd = 255;
+//const byte PacketMaxLength = 15;
+//const byte V7_21Command = 1;
+//const byte ParameterReceiveCommand = 2;
+//const byte DACCommand = 3;
+//const byte DACR2RCommand = 4;
+//const byte DAC_Pos = 0x0F;
+//const byte DAC_Neg = 0xFF;
+//const byte DS18B20Command = 0x5;
+//const byte D30_06Command = 0x6;
+//const byte PinChangeCommand = 0x7;
+//const byte HTU21DCommand = 0x8;
+//const byte TMP102Command = 0x9;
+//const byte PinToHigh = 0xFF;
+//const byte PinToLow = 0x0F;
 
-//For UNO
-//byte DrivePins[] = {2, 3, 4, 5, 6, 7};
-//byte SignPins[] = {8, 9};
-//byte DS18B20Pin = 10;
+////For MEGA
+//byte DrivePins[] = {25, 26, 27, 28, 29, 30, 31, 32, 34, 35, 41, 42, 43};
+//byte SignPins[] = {33, 40};
+//byte OneWarePins[] = {36, 37};
+//byte DS18B20Pin = 36;
+//
+////For UNO
+////byte DrivePins[] = {2, 3, 4, 5, 6, 7};
+////byte SignPins[] = {8, 9};
+////byte DS18B20Pin = 10;
 
 
 OneWire  ds(DS18B20Pin);
 
 
 byte incomingByte = 0;
-byte PinControl, PinGate, DeviceId, ActionId;
+//byte PinControl, PinGate, DeviceId, ActionId;
+byte DeviceId, ActionId;
 byte DACR2RPinSign = SignPins[0];
 byte D30_06PinSign = SignPins[1];
 byte TMP102_Adress;
@@ -44,6 +49,7 @@ byte TMP102_Adress;
 byte DACDataReceived[3];
 byte D30_06DataReceived[4];
 byte TMP102DataReceived[2];
+
 boolean DACR2RPinSignBool;
 boolean D30_06PinSignBool;
 //boolean DS18B20delay;
@@ -107,7 +113,6 @@ void loop() {
       DeviceId = packet[1];
       if (packet[0] > 3) {
         PinControl = packet[2];
-        //        PinGate = packet[3];
       }
       if (packet[0] > 4) {
         PinGate = packet[3];
@@ -176,54 +181,54 @@ start:
   wdt_reset();
 }
 
-void ShortDelay() {
-  delayMicroseconds(50);
-}
+//void ShortDelay() {
+//  delayMicroseconds(50);
+//}
 
-byte FCS (byte Data[], int n)
-{
-  int  FCS = 0;
-  for (byte i = 0; i < n; i++)
-  {
-    FCS += Data[i];
-    while (FCS > 255)
-    {
-      FCS = (FCS & 0xFF) + ((FCS >> 8) & 0xFF);
-    }
-  };
-  FCS = ~FCS;
-  return byte(FCS & 0xFF);
-}
+//byte FCS (byte Data[], int n)
+//{
+//  int  FCS = 0;
+//  for (byte i = 0; i < n; i++)
+//  {
+//    FCS += Data[i];
+//    while (FCS > 255)
+//    {
+//      FCS = (FCS & 0xFF) + ((FCS >> 8) & 0xFF);
+//    }
+//  };
+//  FCS = ~FCS;
+//  return byte(FCS & 0xFF);
+//}
 
-void GateOpen() {
-  digitalWrite(PinGate, LOW);
-  ShortDelay();
-}
+//void GateOpen() {
+//  digitalWrite(PinGate, LOW);
+//  ShortDelay();
+//}
+//
+//void GateClose() {
+//  digitalWrite(PinGate, HIGH);
+//  ShortDelay();
+//}
 
-void GateClose() {
-  digitalWrite(PinGate, HIGH);
-  ShortDelay();
-}
+//void SendPacket(byte Data[], int n) {
+//  Serial.write(PacketStart);
+//  Serial.write(Data, n);
+//  Serial.write(PacketEnd);
+//}
 
-void SendPacket(byte Data[], int n) {
-  Serial.write(PacketStart);
-  Serial.write(Data, n);
-  Serial.write(PacketEnd);
-}
-
-void CreateAndSendPacket(byte DDATA[], int n) {
-  byte data[n + 4];
-  data[0] = sizeof(data);
-  data[1] = DeviceId;
-  data[2] = ActionId;
-  for (byte i = 0; i < n; i++)
-  {
-    data[i + 3] = DDATA[i];
-  }
-  data[sizeof(data) - 1] = 0;
-  data[sizeof(data) - 1] = FCS(data, data[0]);
-  SendPacket(data, sizeof(data));
-}
+//void CreateAndSendPacket(byte DDATA[], int n) {
+//  byte data[n + 4];
+//  data[0] = sizeof(data);
+//  data[1] = DeviceId;
+//  data[2] = ActionId;
+//  for (byte i = 0; i < n; i++)
+//  {
+//    data[i + 3] = DDATA[i];
+//  }
+//  data[sizeof(data) - 1] = 0;
+//  data[sizeof(data) - 1] = FCS(data, data[0]);
+//  SendPacket(data, sizeof(data));
+//}
 
 void V721() {
   GateOpen();
@@ -241,7 +246,20 @@ void V721() {
 
 void SendParameters() {
   ActionId = 0x00;
-  CreateAndSendPacket(DrivePins, sizeof(DrivePins));
+  int PinsNumber=sizeof(DrivePins)+sizeof(OneWarePins)+1;
+  byte Pins[PinsNumber];
+  for (byte i = 0; i < sizeof(DrivePins); i++)
+  {
+    Pins[i] = DrivePins[i];
+  }  
+  Pins[sizeof(DrivePins)]= 100;
+  for (byte i = 0; i < sizeof(OneWarePins); i++)
+  {
+    Pins[sizeof(DrivePins)+1+i] = OneWarePins[i];
+  }  
+  CreateAndSendPacket(Pins, sizeof(Pins));
+  
+//  CreateAndSendPacket(DrivePins, sizeof(DrivePins));
 }
 
 void SPI2ByteTransfer(byte CSPin, byte Data1, byte Data2) {

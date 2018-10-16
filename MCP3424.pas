@@ -3,7 +3,7 @@ unit MCP3424;
 interface
 
 uses
-  SPIdevice, CPort, Measurement, StdCtrls;
+  SPIdevice, CPort, Measurement, StdCtrls, MDevice;
 
 type
 
@@ -82,11 +82,13 @@ type
    private
 //    ParameterShow:TPinsShowUniversal;
     fChan:TMCP3424_Channel;
+    MeasuringDeviceSimple:TMeasuringDeviceSimple;
    public
     Constructor Create(Chan:TMCP3424_Channel;
                        LabelBit,LabelGain,LabelMeas:TLabel;
                        ButBit,ButGain,ButMeas:TButton;
                        CBBit,CBGain:TComboBox);
+   Procedure Free;
  end;
 
 
@@ -211,7 +213,7 @@ end;
 procedure TMCP3424_Channel.Free;
 begin
  Pins.Free;
- inherited Free;
+// inherited Free;
 end;
 
 function TMCP3424_Channel.GetData: double;
@@ -265,6 +267,15 @@ begin
   for j := Low(TMCP3424_Gain) to High(TMCP3424_Gain) do
    PinsComboBoxs[1].Items.Add(inttostr(MCP3424_Gain_Data[j]));
 
+  MeasuringDeviceSimple:=
+     TMeasuringDeviceSimple.Create(fChan,LabelMeas,srPreciseVoltage,ButMeas);
+
+end;
+
+procedure TMCP3424_ChannelShow.Free;
+begin
+  MeasuringDeviceSimple.Free;
+  inherited Free;
 end;
 
 end.

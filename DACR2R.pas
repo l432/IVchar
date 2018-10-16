@@ -51,6 +51,8 @@ private
 protected
  function  VoltageToKod(Voltage:double):integer;override;
  procedure CreateHook;override;
+ procedure PinsCreate();override;
+ procedure PinsToDataArray;override;
 public
  Constructor Create(CP:TComPort;Nm:string);override;
  Procedure Free;
@@ -71,10 +73,11 @@ end;
 TDACR2RShow=class(TDAC_Show)
 private
 public
- PinShow:TPinsShow;
+// PinShow:TPinsShow;
+ PinShow:TOnePinsShow;
  Constructor Create(DAC:TDACR2R;
-                      CPL,GPL,VL,KL:TLabel;
-                      SCB,SGB,VCB,VSB,KCB,KSB,RB:TButton;
+                      CPL,{GPL,}VL,KL:TLabel;
+                      SCB,{SGB,}VCB,VSB,KCB,KSB,RB:TButton;
                       PCB:TComboBox);
  Procedure Free;
 
@@ -136,6 +139,17 @@ begin
  fOutputValue:=Voltage;
  DataByteToSendFromInteger(TDACR2R_Calibr.VoltToKod(Voltage));
  PacketCreateAndSend();
+end;
+
+procedure TDACR2R.PinsCreate;
+begin
+ Pins := TPins.Create(Name,1);
+end;
+
+procedure TDACR2R.PinsToDataArray;
+begin
+  fData[1] := Pins.PinControl;
+  fData[2] := Pins.PinControl;
 end;
 
 //Procedure TDACR2R.OutputInt(Kod:integer);
@@ -253,12 +267,13 @@ end;
 { TDACR2RShow }
 
 constructor TDACR2RShow.Create(DAC: TDACR2R;
-                               CPL,GPL,VL,KL:TLabel;
-                               SCB,SGB,VCB,VSB,KCB,KSB,RB:TButton;
+                               CPL,{GPL,}VL,KL:TLabel;
+                               SCB,{SGB,}VCB,VSB,KCB,KSB,RB:TButton;
                                PCB: TComboBox);
 begin
  inherited Create(DAC,VL, KL, VCB, VSB, KCB, KSB, RB);
- PinShow:=TPinsShow.Create(DAC.Pins,CPL,GPL,SCB,SGB,PCB);
+// PinShow:=TPinsShow.Create(DAC.Pins,CPL,GPL,SCB,SGB,PCB);
+ PinShow:=TOnePinsShow.Create(DAC.Pins,CPL,SCB,PCB);
  PinShow.HookNumberPinShow:=DAC.PinsToDataArray;
 end;
 

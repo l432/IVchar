@@ -29,7 +29,7 @@ private
  ActionButton:TButton;
  procedure ActionButtonOnClick(Sender: TObject);
  function GetResult():double;virtual;
- function GetActiveInterface():IMeasurement;
+ function GetActiveInterface():IMeasurement;virtual;
 public
  property ActiveInterface:IMeasurement read GetActiveInterface;
  Constructor Create(const SOI: array of IMeasurement;
@@ -38,6 +38,15 @@ public
  function GetMeasurementResult():double;
  procedure AddActionButton(AB:TButton);
  procedure Add(IO:IMeasurement);
+end;
+
+TMeasuringDeviceSimple =class(TMeasuringDevice)
+ private
+  function GetActiveInterface():IMeasurement;override;
+ public
+ Constructor Create(const Measurement:IMeasurement;
+                  RI: TLabel; SR: TMeasuringStringResult;
+                  AB:TButton);
 end;
 
 TSettingDevice =class(TDevice)
@@ -168,7 +177,12 @@ begin
    DevicesComboBox.Items.Add(SOI[i].Name);
    fSetOfInterface[i]:=SOI[i];
   end;
- if DevicesComboBox.Items.Count>0 then DevicesComboBox.ItemIndex:=0;
+// if DevicesComboBox<>nil then
+//   begin
+//   for I := 0 to High(SOI) do
+//        DevicesComboBox.Items.Add(SOI[i].Name);
+  if DevicesComboBox.Items.Count>0 then DevicesComboBox.ItemIndex:=0;
+//   end;
 
  ResultIndicator:=RI;
  fStringResult:=SR;
@@ -244,5 +258,24 @@ begin
 end;
 
 
+
+{ TMeasuringDeviceSimple }
+
+constructor TMeasuringDeviceSimple.Create(const Measurement: IMeasurement;
+                    RI: TLabel; SR: TMeasuringStringResult; AB: TButton);
+begin
+ if Measurement=nil then Exit;
+ SetLength(fSetOfInterface,1);
+ fSetOfInterface[0]:=Measurement;
+ ResultIndicator:=RI;
+ fStringResult:=SR;
+ AddActionButton(AB);
+end;
+
+
+function TMeasuringDeviceSimple.GetActiveInterface: IMeasurement;
+begin
+ Result:=fSetOfInterface[0];
+end;
 
 end.
