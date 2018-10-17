@@ -1,4 +1,4 @@
-
+#include "OlegPacket.h"
 
 byte FCS (byte Data[], int n)
 {
@@ -49,3 +49,18 @@ void GateClose() {
 void ShortDelay() {
   delayMicroseconds(50);
 }
+
+ void PinAndID::CreateAndSendPacket(byte DDATA[], int n) {
+  byte data[n + 4];
+  data[0] = sizeof(data);
+  data[1] = DeviceId;
+  data[2] = ActionId;
+  for (byte i = 0; i < n; i++)
+  {
+    data[i + 3] = DDATA[i];
+  }
+  data[sizeof(data) - 1] = 0;
+  data[sizeof(data) - 1] = FCS(data, data[0]);
+  SendPacket(data, sizeof(data));
+}
+

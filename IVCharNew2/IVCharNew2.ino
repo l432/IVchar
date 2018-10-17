@@ -2,8 +2,16 @@
 #include <OneWire.h>
 #include <avr/wdt.h>
 #include <Wire.h>
+
+
 #include "OlegConstant.h"
-#include "OlegPacket.h"
+
+#if !defined(OLEGPACKET_H) 
+ #include "OlegPacket.h"
+#endif
+
+//#include "OlegPacket.h"
+//#include "OlegTMP102.h"
 
 
 //const byte PacketStart = 10;
@@ -27,8 +35,9 @@
 //byte DrivePins[] = {25, 26, 27, 28, 29, 30, 31, 32, 34, 35, 41, 42, 43};
 //byte SignPins[] = {33, 40};
 //byte OneWarePins[] = {36, 37};
-//byte DS18B20Pin = 36;
-//
+
+byte DS18B20Pin = 36;
+
 ////For UNO
 ////byte DrivePins[] = {2, 3, 4, 5, 6, 7};
 ////byte SignPins[] = {8, 9};
@@ -39,8 +48,8 @@ OneWire  ds(DS18B20Pin);
 
 
 byte incomingByte = 0;
-//byte PinControl, PinGate, DeviceId, ActionId;
-byte DeviceId, ActionId;
+byte PinControl, PinGate, DeviceId, ActionId;
+//byte DeviceId, ActionId;
 byte DACR2RPinSign = SignPins[0];
 byte D30_06PinSign = SignPins[1];
 byte TMP102_Adress;
@@ -52,8 +61,8 @@ byte TMP102DataReceived[2];
 
 boolean DACR2RPinSignBool;
 boolean D30_06PinSignBool;
-//boolean DS18B20delay;
-//boolean D30_06delay;
+
+
 unsigned long EndDS18B20delay;
 unsigned long EndD30_06delay;
 unsigned long EndHTU21Ddelay;
@@ -110,6 +119,8 @@ void loop() {
       if (FCS(packet, sizeof(packet)) != 0) goto start;
 
       if (packet[0] < 3) goto start;
+
+      
       DeviceId = packet[1];
       if (packet[0] > 3) {
         PinControl = packet[2];
