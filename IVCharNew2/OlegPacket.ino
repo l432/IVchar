@@ -21,34 +21,39 @@ void SendPacket(byte Data[], int n) {
   Serial.write(Data, n);
   Serial.write(PacketEnd);
 }
-
-void CreateAndSendPacket(byte DDATA[], int n) {
-  byte data[n + 4];
-  data[0] = sizeof(data);
-  data[1] = DeviceId;
-  data[2] = ActionId;
-  for (byte i = 0; i < n; i++)
-  {
-    data[i + 3] = DDATA[i];
-  }
-  data[sizeof(data) - 1] = 0;
-  data[sizeof(data) - 1] = FCS(data, data[0]);
-  SendPacket(data, sizeof(data));
-}
+//
+//void CreateAndSendPacket(byte DDATA[], int n) {
+//  byte data[n + 4];
+//  data[0] = sizeof(data);
+//  data[1] = DeviceId;
+//  data[2] = ActionId;
+//  for (byte i = 0; i < n; i++)
+//  {
+//    data[i + 3] = DDATA[i];
+//  }
+//  data[sizeof(data) - 1] = 0;
+//  data[sizeof(data) - 1] = FCS(data, data[0]);
+//  SendPacket(data, sizeof(data));
+//}
 
 void GateOpen() {
-  digitalWrite(PinGate, LOW);
+  digitalWrite(PinAndID::PinGate, LOW);
   ShortDelay();
 }
 
 void GateClose() {
-  digitalWrite(PinGate, HIGH);
+  digitalWrite(PinAndID::PinGate, HIGH);
   ShortDelay();
 }
 
 void ShortDelay() {
   delayMicroseconds(50);
 }
+
+byte PinAndID::PinControl = 0;
+byte PinAndID::PinGate = 0;
+byte PinAndID::DeviceId = 0;
+byte PinAndID::ActionId = 0;
 
  void PinAndID::CreateAndSendPacket(byte DDATA[], int n) {
   byte data[n + 4];

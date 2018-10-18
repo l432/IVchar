@@ -6,12 +6,12 @@
 
 #include "OlegConstant.h"
 
-#if !defined(OLEGPACKET_H) 
- #include "OlegPacket.h"
-#endif
+//#if !defined(OLEGPACKET_H) 
+// #include "OlegPacket.h"
+//#endif
 
-//#include "OlegPacket.h"
-//#include "OlegTMP102.h"
+#include "OlegPacket.h"
+#include "OlegTMP102.h"
 
 
 //const byte PacketStart = 10;
@@ -48,7 +48,7 @@ OneWire  ds(DS18B20Pin);
 
 
 byte incomingByte = 0;
-byte PinControl, PinGate, DeviceId, ActionId;
+//byte PinControl, PinGate, DeviceId, ActionId;
 //byte DeviceId, ActionId;
 byte DACR2RPinSign = SignPins[0];
 byte D30_06PinSign = SignPins[1];
@@ -67,6 +67,8 @@ unsigned long EndDS18B20delay;
 unsigned long EndD30_06delay;
 unsigned long EndHTU21Ddelay;
 unsigned long EndTMP102delay;
+
+TMP102o tmp102;
 
 
 void setup() {
@@ -121,21 +123,21 @@ void loop() {
       if (packet[0] < 3) goto start;
 
       
-      DeviceId = packet[1];
+      PinAndID::DeviceId = packet[1];
       if (packet[0] > 3) {
-        PinControl = packet[2];
+        PinAndID::PinControl = packet[2];
       }
       if (packet[0] > 4) {
-        PinGate = packet[3];
+        PinAndID::PinGate = packet[3];
       }
 
-      if (DeviceId == V7_21Command) {
+      if (PinAndID::DeviceId == V7_21Command) {
         if (packet[0] < 5) goto start;
         V721();
       }
-      if (DeviceId == ParameterReceiveCommand) SendParameters();
+      if (PinAndID::DeviceId == ParameterReceiveCommand) SendParameters();
 
-      if (DeviceId == DACR2RCommand) {
+      if (PinAndID::DeviceId == DACR2RCommand) {
         if (packet[0] < 8) goto start;
         DACDataReceived[0] = packet[4];
         DACDataReceived[1] = packet[5];
@@ -143,35 +145,36 @@ void loop() {
         DACR2R();
       }
 
-      //      if ((DeviceId == D30_06Command) && (millis() >= EndD30_06delay)) {
-      if ((DeviceId == D30_06Command) && (EndD30_06delay == 0)) {
+      if ((PinAndID::DeviceId == D30_06Command) && (EndD30_06delay == 0)) {
         if (packet[0] < 8) goto start;
         D30_06DataReceived[0] = packet[4];
         D30_06DataReceived[1] = packet[5];
         D30_06DataReceived[2] = packet[6];
-        D30_06DataReceived[3] = PinControl;
+        D30_06DataReceived[3] = PinAndID::PinControl;
         D30_06();
       }
 
       //      if ((DeviceId == DS18B20Command) && (millis() >= EndDS18B20delay)) {
-      if ((DeviceId == DS18B20Command) && (EndDS18B20delay == 0)) {
+      if ((PinAndID::DeviceId == DS18B20Command) && (EndDS18B20delay == 0)) {
         if (packet[0] < 4) goto start;
         //        PinControl = packet[2];
         DS18B20();
       }
 
-      if (DeviceId == PinChangeCommand) {
-        if (packet[3] == PinToHigh) digitalWrite(PinControl, HIGH);
-        if (packet[3] == PinToLow)  digitalWrite(PinControl, LOW);
+      if (PinAndID::DeviceId == PinChangeCommand) {
+        if (packet[3] == PinToHigh) digitalWrite(PinAndID::PinControl, HIGH);
+        if (packet[3] == PinToLow)  digitalWrite(PinAndID::PinControl, LOW);
       }
 
-      if ((DeviceId == HTU21DCommand) && (EndHTU21Ddelay == 0))  {
+      if ((PinAndID::DeviceId == HTU21DCommand) && (EndHTU21Ddelay == 0))  {
         HTU21DBegin();
       }
 
-      if ((DeviceId == TMP102Command) && (EndTMP102delay == 0)) {
+//      if ((DeviceId == TMP102Command) && (EndTMP102delay == 0)) {
+      if ((PinAndID::DeviceId == TMP102Command) && (tmp102.isReady())) {
         if (packet[0] < 4) goto start;
-        TMP102First();
+        tmp102.Begin();
+//        TMP102First();
       }
 
     }
@@ -186,9 +189,11 @@ start:
   if (EndHTU21Ddelay && millis() >= EndHTU21Ddelay) {
     HTU21DEnd();
   }
-  if (EndTMP102delay && millis() >= EndTMP102delay) {
-    TMP102Second();
-  }
+  
+  tmp102.End();
+//  if (EndTMP102delay && millis() >= EndTMP102delay) {
+//    TMP102Second();
+//  }
   wdt_reset();
 }
 
@@ -243,20 +248,20 @@ start:
 
 void V721() {
   GateOpen();
-  digitalWrite(PinControl, LOW);
-  digitalWrite(PinControl, HIGH);
+  digitalWrite(PinAndID::PinControl, LOW);
+  digitalWrite(PinAndID::PinControl, HIGH);
   byte data[4];
   for (byte i = 0; i < 4; i++)
   {
     data[i] = SPI.transfer(0);
   }
-  ActionId = PinControl;
-  CreateAndSendPacket(data, sizeof(data));
+  PinAndID::ActionId = PinAndID::PinControl;
+  PinAndID::CreateAndSendPacket(data, sizeof(data));
   GateClose();
 }
 
 void SendParameters() {
-  ActionId = 0x00;
+  PinAndID::ActionId = 0x00;
   int PinsNumber=sizeof(DrivePins)+sizeof(OneWarePins)+1;
   byte Pins[PinsNumber];
   for (byte i = 0; i < sizeof(DrivePins); i++)
@@ -268,7 +273,7 @@ void SendParameters() {
   {
     Pins[sizeof(DrivePins)+1+i] = OneWarePins[i];
   }  
-  CreateAndSendPacket(Pins, sizeof(Pins));
+  PinAndID::CreateAndSendPacket(Pins, sizeof(Pins));
   
 //  CreateAndSendPacket(DrivePins, sizeof(DrivePins));
 }
@@ -292,7 +297,7 @@ void DACR2R() {
     digitalWrite(DACR2RPinSign, LOW);
     DACR2RPinSignBool = false;
   };
-  SPI2ByteTransfer(PinControl, DACDataReceived[0], DACDataReceived[1]);
+  SPI2ByteTransfer(PinAndID::PinControl, DACDataReceived[0], DACDataReceived[1]);
 }
 
 void D30_06() {
@@ -326,10 +331,10 @@ void D30_06_Second() {
 }
 
 void DS18B20() {
-  if (DS18B20Pin != PinControl)
+  if (DS18B20Pin != PinAndID::PinControl)
   {
     delete &ds;
-    DS18B20Pin = PinControl;
+    DS18B20Pin = PinAndID::PinControl;
     OneWire ds(DS18B20Pin);
   };
   ds.reset();
@@ -349,9 +354,9 @@ void DS18B20End() {
   for ( byte i = 0; i < 2; i++) {
     data[i] = ds.read();
   }
-  DeviceId = DS18B20Command;
-  ActionId = DS18B20Pin;
-  CreateAndSendPacket(data, sizeof(data));
+  PinAndID::DeviceId = DS18B20Command;
+  PinAndID::ActionId = DS18B20Pin;
+  PinAndID::CreateAndSendPacket(data, sizeof(data));
   EndDS18B20delay = 0;
 }
 
@@ -379,9 +384,9 @@ void HTU21DEnd() {
   for ( byte i = 0; i < 3; i++) {
     data[i] = Wire.read();
   }
-  DeviceId = HTU21DCommand;
-  ActionId = HTU21DCommand;
-  CreateAndSendPacket(data, sizeof(data));
+  PinAndID::DeviceId = HTU21DCommand;
+  PinAndID::ActionId = HTU21DCommand;
+  PinAndID::CreateAndSendPacket(data, sizeof(data));
   EndHTU21Ddelay = 0;
 }
 
@@ -391,73 +396,73 @@ void ControlBlink() {
   digitalWrite(12, LOW);
 }
 
-void TMP3ByteTransfer(byte Data1, byte Data2, byte Data3) {
-  Wire.beginTransmission(TMP102_Adress);
-  Wire.write(Data1);
-  Wire.write(Data2);
-  Wire.write(Data3);
-  Wire.endTransmission();
-}
-
-void TMP2ByteTransfer(byte Data1, byte Data2) {
-  Wire.beginTransmission(TMP102_Adress);
-  Wire.write(Data1);
-  Wire.write(Data2);
-  Wire.endTransmission();
-}
-
-void TMP1ByteTransfer(byte Data1) {
-  Wire.beginTransmission(TMP102_Adress);
-  Wire.write(Data1);
-  Wire.endTransmission();
-}
-
-void TPMDataReceive() {
-  Wire.requestFrom(TMP102_Adress, 2);
-  Wire.endTransmission();
-  TMP102DataReceived[0] = Wire.read();
-  TMP102DataReceived[1] = Wire.read();
-}
-
-
-void TMP102First() {
-  if (PinControl != TMP102_Adress) {
-    TMP102_Adress = PinControl;
-    TMP102Initial();
-  }
-
-  TMP1ByteTransfer(0x01);
-  TPMDataReceive();
-  TMP102DataReceived[0] &= 0x7F;
-  TMP102DataReceived[0] |= 0x80;
-  TMP2ByteTransfer(0x01, TMP102DataReceived[0]);
-  //OS->1
-
-  EndTMP102delay = millis() + 30;
-
-}
-
-void TMP102Second () {
-  TMP1ByteTransfer(0x00);
-  TPMDataReceive();
-
-  DeviceId = TMP102Command;
-  ActionId = TMP102_Adress;
-  CreateAndSendPacket(TMP102DataReceived, sizeof(TMP102DataReceived));
-  EndTMP102delay = 0;
-}
-
-void TMP102Initial() {
-  TMP3ByteTransfer(0x03, 0x7F, 0xF0);
-  // write 127.9375 to Thigh
-  TMP3ByteTransfer(0x02, 0x7E, 0x00);
-  // write 126 to Tlow
-
-  TMP1ByteTransfer(0x01);
-  TPMDataReceive();
-  TMP102DataReceived[0] &= 0xFC;
-  TMP102DataReceived[0] |= 0x03;
-  TMP2ByteTransfer(0x01, TMP102DataReceived[0]);
-  //to sleep-mode, to interrupt mode,
-}
+//void TMP3ByteTransfer(byte Data1, byte Data2, byte Data3) {
+//  Wire.beginTransmission(TMP102_Adress);
+//  Wire.write(Data1);
+//  Wire.write(Data2);
+//  Wire.write(Data3);
+//  Wire.endTransmission();
+//}
+//
+//void TMP2ByteTransfer(byte Data1, byte Data2) {
+//  Wire.beginTransmission(TMP102_Adress);
+//  Wire.write(Data1);
+//  Wire.write(Data2);
+//  Wire.endTransmission();
+//}
+//
+//void TMP1ByteTransfer(byte Data1) {
+//  Wire.beginTransmission(TMP102_Adress);
+//  Wire.write(Data1);
+//  Wire.endTransmission();
+//}
+//
+//void TPMDataReceive() {
+//  Wire.requestFrom(TMP102_Adress, 2);
+//  Wire.endTransmission();
+//  TMP102DataReceived[0] = Wire.read();
+//  TMP102DataReceived[1] = Wire.read();
+//}
+//
+//
+//void TMP102First() {
+//  if (PinControl != TMP102_Adress) {
+//    TMP102_Adress = PinControl;
+//    TMP102Initial();
+//  }
+//
+//  TMP1ByteTransfer(0x01);
+//  TPMDataReceive();
+//  TMP102DataReceived[0] &= 0x7F;
+//  TMP102DataReceived[0] |= 0x80;
+//  TMP2ByteTransfer(0x01, TMP102DataReceived[0]);
+//  //OS->1
+//
+//  EndTMP102delay = millis() + 30;
+//
+//}
+//
+//void TMP102Second () {
+//  TMP1ByteTransfer(0x00);
+//  TPMDataReceive();
+//
+//  DeviceId = TMP102Command;
+//  ActionId = TMP102_Adress;
+//  CreateAndSendPacket(TMP102DataReceived, sizeof(TMP102DataReceived));
+//  EndTMP102delay = 0;
+//}
+//
+//void TMP102Initial() {
+//  TMP3ByteTransfer(0x03, 0x7F, 0xF0);
+//  // write 127.9375 to Thigh
+//  TMP3ByteTransfer(0x02, 0x7E, 0x00);
+//  // write 126 to Tlow
+//
+//  TMP1ByteTransfer(0x01);
+//  TPMDataReceive();
+//  TMP102DataReceived[0] &= 0xFC;
+//  TMP102DataReceived[0] |= 0x03;
+//  TMP2ByteTransfer(0x01, TMP102DataReceived[0]);
+//  //to sleep-mode, to interrupt mode,
+//}
 

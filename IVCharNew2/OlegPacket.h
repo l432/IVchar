@@ -2,9 +2,9 @@
 #define OLEGPACKET_H
 
 #if ARDUINO >= 100
-  #include <Arduino.h>
+#include <Arduino.h>
 #else
-  #include <WProgram.h>
+#include <WProgram.h>
 #endif
 
 const byte PacketStart = 10;
@@ -24,8 +24,9 @@ class PinAndID {
     static byte PinGate;
     static byte DeviceId;
     static byte ActionId;
-    static void CreateAndSendPacket(byte DDATA[], int n); 
+    static void CreateAndSendPacket(byte DDATA[], int n);
 };
+
 
 #endif
 

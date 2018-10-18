@@ -49,6 +49,10 @@ void SmartDelay::Start() {
 void SmartDelay::Stop() {
   state = SMART_DELAY_STOP;
 }
+
+ bool SmartDelay::isReady(){
+  return (state==SMART_DELAY_STOP);
+ }
 //
 //// OOP methods
 void SmartDelay::End() {

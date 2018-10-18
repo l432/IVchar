@@ -19,7 +19,8 @@ class TMP102o: public SmartDelay, public WireObject, public PinAndID
     //    void SetAdress(byte address);
     //    void ByteTransfer(byte Data);
     void DataReceive();
-    void Begin(byte Address);
+    void Begin();
+//    void Begin(byte Address);
     void Process();
 
   private:

@@ -22,13 +22,14 @@ class SmartDelay {
 //    SmartDelay& operator= (const SmartDelay& rhs);
 //    SmartDelay(unsigned long tick);
 
-    bool           Now();
+    bool Now();
 //    unsigned long Get() const;
     void SetInterval(unsigned long tick);
 //    unsigned long Wait();
 //    unsigned long Reset();
     void Stop();
     void Start();
+    bool isReady();        
 //
 //    // ms is better as mks
 //    unsigned long setMs(unsigned long tick) { return Set(tick*1000UL); } 

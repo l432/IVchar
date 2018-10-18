@@ -62,9 +62,14 @@ void TMP102o::Initial() {
   //to sleep-mode, to interrupt mode,
 }
 
-void TMP102o::Begin(byte Address) {
-  if (Address != _address) {
-    SetAdress(Address);
+//void TMP102o::Begin(byte Address) {
+void TMP102o::Begin() {
+//  if (Address != _address) {
+//    SetAdress(Address);
+//    Initial();
+//  }
+  if (PinControl != _address) {
+    SetAdress(PinControl);
     Initial();
   }
 
