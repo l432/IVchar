@@ -25,11 +25,14 @@ class SmartDelay {
     bool Now();
 //    unsigned long Get() const;
     void SetInterval(unsigned long tick);
+    unsigned long GetInterval();
 //    unsigned long Wait();
 //    unsigned long Reset();
     void Stop();
     void Start();
-    bool isReady();        
+    bool isReady();
+     
+    unsigned long TimeFromStart();       
 //
 //    // ms is better as mks
 //    unsigned long setMs(unsigned long tick) { return Set(tick*1000UL); } 

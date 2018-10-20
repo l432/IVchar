@@ -20,11 +20,11 @@ bool SmartDelay::Now() {
   state = SMART_DELAY_STOP;
   return true;
 }
-//
-//unsigned long SmartDelay::Get() const {
-//  return smMicros;
-//}
-//
+
+unsigned long SmartDelay::GetInterval() {
+  return smMilis;
+}
+
 void SmartDelay::SetInterval(unsigned long tick) {
   smMilis = tick;
 }
@@ -46,13 +46,18 @@ void SmartDelay::Start() {
   state = SMART_DELAY_START;
 }
 
+unsigned long SmartDelay::TimeFromStart() {
+  return millis()-smLast;
+  }
+
+
 void SmartDelay::Stop() {
   state = SMART_DELAY_STOP;
 }
 
- bool SmartDelay::isReady(){
-  return (state==SMART_DELAY_STOP);
- }
+bool SmartDelay::isReady() {
+  return (state == SMART_DELAY_STOP);
+}
 //
 //// OOP methods
 void SmartDelay::End() {

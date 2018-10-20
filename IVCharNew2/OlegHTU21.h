@@ -1,5 +1,5 @@
-#ifndef OlegTMP102_H
-#define OlegTMP102_H
+#ifndef OlegHTU21_H
+#define OlegHTU21_H
 
 #if ARDUINO >= 100
   #include <Arduino.h>
@@ -12,19 +12,23 @@
 #include "OlegPacket.h"
 #include "OlegConstant.h"
 
-class TMP102o: public SmartDelay, public WireObject, public PinAndID
+
+class HTU21o: public SmartDelay, public WireObject, public PinAndID
 {
   public:
-    TMP102o();
+    HTU21o();
 //    void DataReceive();
     void Begin();
     void Process();
 
   private:
-//    byte _DataReceived[2];
-    void ModeSetup();
-    void Initial();
+//    byte _DataReceived[3];
+//    void ModeSetup();
+//    void Initial();
 };
 
-#endif
 
+
+
+
+#endif

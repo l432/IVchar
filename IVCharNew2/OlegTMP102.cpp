@@ -3,33 +3,22 @@
 
 TMP102o::TMP102o()
 {
-  //  _address = 0;
   SetInterval(30);
+  SetDataReceivedNumber(2);
 }
 
-//void TMP102o::SetAdress(byte address)
-//{
-//  _address = address;
+
+//void TMP102o::DataReceive() {
+//  Wire.requestFrom(_address, 2);
+//  if (Wire.available() < 2)
+//  { _DataReceived[0] = 0;
+//    _DataReceived[1] = 0;
+//    return;
+//  }
+//  //  Wire.endTransmission();
+//  _DataReceived[0] = Wire.read();
+//  _DataReceived[1] = Wire.read();
 //}
-
-
-//void TMP102o::ByteTransfer(byte Data) {
-//  Wire.beginTransmission(_address);
-//  Wire.write(Data);
-//  Wire.endTransmission();
-//}
-
-void TMP102o::DataReceive() {
-  Wire.requestFrom(_address, 2);
-  if (Wire.available() < 2)
-  { _DataReceived[0] = 0;
-    _DataReceived[1] = 0;
-    return;
-  }
-  //  Wire.endTransmission();
-  _DataReceived[0] = Wire.read();
-  _DataReceived[1] = Wire.read();
-}
 
 void TMP102o::ModeSetup()
 {
@@ -62,12 +51,8 @@ void TMP102o::Initial() {
   //to sleep-mode, to interrupt mode,
 }
 
-//void TMP102o::Begin(byte Address) {
 void TMP102o::Begin() {
-//  if (Address != _address) {
-//    SetAdress(Address);
-//    Initial();
-//  }
+
   if (PinControl != _address) {
     SetAdress(PinControl);
     Initial();
@@ -89,7 +74,7 @@ void TMP102o::Process() {
 
   DeviceId = TMP102Command;
   ActionId = _address;
-  CreateAndSendPacket(_DataReceived, sizeof(_DataReceived));
+  CreateAndSendPacket(_DataReceived, GetDataReceivedNumber());
   Stop();
 }
 

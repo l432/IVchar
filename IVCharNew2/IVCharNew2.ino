@@ -6,13 +6,14 @@
 
 #include "OlegConstant.h"
 
-//#if !defined(OLEGPACKET_H) 
+//#if !defined(OLEGPACKET_H)
 // #include "OlegPacket.h"
 //#endif
 
 #include "OlegPacket.h"
 #include "OlegTMP102.h"
-
+#include "OlegHTU21.h"
+#include "D30_06.h"
 
 //const byte PacketStart = 10;
 //const byte PacketEnd = 255;
@@ -50,25 +51,28 @@ OneWire  ds(DS18B20Pin);
 byte incomingByte = 0;
 //byte PinControl, PinGate, DeviceId, ActionId;
 //byte DeviceId, ActionId;
-byte DACR2RPinSign = SignPins[0];
-byte D30_06PinSign = SignPins[1];
-byte TMP102_Adress;
+//byte DACR2RPinSign = SignPins[0];
+//byte D30_06PinSign = SignPins[1];
+//byte TMP102_Adress;
 
+DACR2R dacR2R(SignPins[0]);
+D30_06 d3006(SignPins[1]);
 
-byte DACDataReceived[3];
-byte D30_06DataReceived[4];
-byte TMP102DataReceived[2];
+//byte DACDataReceived[3];
+//byte D30_06DataReceived[4];
+//byte TMP102DataReceived[2];
 
-boolean DACR2RPinSignBool;
-boolean D30_06PinSignBool;
+//boolean DACR2RPinSignBool;
+//boolean D30_06PinSignBool;
 
 
 unsigned long EndDS18B20delay;
-unsigned long EndD30_06delay;
-unsigned long EndHTU21Ddelay;
-unsigned long EndTMP102delay;
+//unsigned long EndD30_06delay;
+//unsigned long EndHTU21Ddelay;
+//unsigned long EndTMP102delay;
 
 TMP102o tmp102;
+HTU21o  htu21;
 
 
 void setup() {
@@ -82,21 +86,23 @@ void setup() {
     pinMode(DrivePins[i], OUTPUT);
     digitalWrite(DrivePins[i], HIGH);
   }
-  for (byte i = 0; i < sizeof(SignPins); i++)
-  {
-    pinMode(SignPins[i], OUTPUT);
-    digitalWrite(SignPins[i], LOW);
-  }
+  dacR2R.Setup();
+  d3006.Setup();
+  //  for (byte i = 0; i < sizeof(SignPins); i++)
+  //  {
+  //    pinMode(SignPins[i], OUTPUT);
+  //    digitalWrite(SignPins[i], LOW);
+  //  }
 
-  DACR2RPinSignBool = false;
-  D30_06PinSignBool = false;
+  //  DACR2RPinSignBool = false;
+  //  D30_06PinSignBool = false;
   //  DS18B20delay = false;
   //  D30_06delay = false;
   EndDS18B20delay = 0;
-  EndD30_06delay = 0;
-  EndHTU21Ddelay = 0;
-  EndTMP102delay = 0;
-  TMP102_Adress = 0;
+//  EndD30_06delay = 0;
+  //  EndHTU21Ddelay = 0;
+  //  EndTMP102delay = 0;
+  //  TMP102_Adress = 0;
   wdt_enable(WDTO_500MS);
   Wire.begin();
 
@@ -122,7 +128,7 @@ void loop() {
 
       if (packet[0] < 3) goto start;
 
-      
+
       PinAndID::DeviceId = packet[1];
       if (packet[0] > 3) {
         PinAndID::PinControl = packet[2];
@@ -139,19 +145,22 @@ void loop() {
 
       if (PinAndID::DeviceId == DACR2RCommand) {
         if (packet[0] < 8) goto start;
-        DACDataReceived[0] = packet[4];
-        DACDataReceived[1] = packet[5];
-        DACDataReceived[2] = packet[6];
-        DACR2R();
+        //        DACDataReceived[0] = packet[4];
+        //        DACDataReceived[1] = packet[5];
+        //        DACDataReceived[2] = packet[6];
+        //        DACR2R();
+        dacR2R.Begin(packet[4], packet[5], packet[6]);
       }
 
-      if ((PinAndID::DeviceId == D30_06Command) && (EndD30_06delay == 0)) {
+//      if ((PinAndID::DeviceId == D30_06Command) && (EndD30_06delay == 0)) {
+      if ((PinAndID::DeviceId == D30_06Command) && (d3006.isReady())) {
         if (packet[0] < 8) goto start;
-        D30_06DataReceived[0] = packet[4];
-        D30_06DataReceived[1] = packet[5];
-        D30_06DataReceived[2] = packet[6];
-        D30_06DataReceived[3] = PinAndID::PinControl;
-        D30_06();
+//        D30_06DataReceived[0] = packet[4];
+//        D30_06DataReceived[1] = packet[5];
+//        D30_06DataReceived[2] = packet[6];
+//        D30_06DataReceived[3] = PinAndID::PinControl;
+//        D30_06();
+        d3006.Begin(packet[4], packet[5], packet[6]);
       }
 
       //      if ((DeviceId == DS18B20Command) && (millis() >= EndDS18B20delay)) {
@@ -166,15 +175,20 @@ void loop() {
         if (packet[3] == PinToLow)  digitalWrite(PinAndID::PinControl, LOW);
       }
 
-      if ((PinAndID::DeviceId == HTU21DCommand) && (EndHTU21Ddelay == 0))  {
-        HTU21DBegin();
+      //      if ((PinAndID::DeviceId == HTU21DCommand) && (EndHTU21Ddelay == 0))  {
+      //        HTU21DBegin();
+      //      }
+      if ((PinAndID::DeviceId == HTU21DCommand) && (htu21.isReady()))  {
+        htu21.Begin();
       }
 
-//      if ((DeviceId == TMP102Command) && (EndTMP102delay == 0)) {
+
+
+      //      if ((DeviceId == TMP102Command) && (EndTMP102delay == 0)) {
       if ((PinAndID::DeviceId == TMP102Command) && (tmp102.isReady())) {
         if (packet[0] < 4) goto start;
         tmp102.Begin();
-//        TMP102First();
+        //        TMP102First();
       }
 
     }
@@ -183,17 +197,20 @@ start:
   if (EndDS18B20delay && millis() >= EndDS18B20delay) {
     DS18B20End();
   }
-  if (EndD30_06delay && millis() >= EndD30_06delay) {
-    D30_06_Second();
-  }
-  if (EndHTU21Ddelay && millis() >= EndHTU21Ddelay) {
-    HTU21DEnd();
-  }
-  
-  tmp102.End();
-//  if (EndTMP102delay && millis() >= EndTMP102delay) {
-//    TMP102Second();
+//  if (EndD30_06delay && millis() >= EndD30_06delay) {
+//    D30_06_Second();
 //  }
+  d3006.End();
+
+  htu21.End();
+  //  if (EndHTU21Ddelay && millis() >= EndHTU21Ddelay) {
+  //    HTU21DEnd();
+  //  }
+
+  tmp102.End();
+  //  if (EndTMP102delay && millis() >= EndTMP102delay) {
+  //    TMP102Second();
+  //  }
   wdt_reset();
 }
 
@@ -262,73 +279,71 @@ void V721() {
 
 void SendParameters() {
   PinAndID::ActionId = 0x00;
-  int PinsNumber=sizeof(DrivePins)+sizeof(OneWarePins)+1;
+  int PinsNumber = sizeof(DrivePins) + sizeof(OneWarePins) + 1;
   byte Pins[PinsNumber];
   for (byte i = 0; i < sizeof(DrivePins); i++)
   {
     Pins[i] = DrivePins[i];
-  }  
-  Pins[sizeof(DrivePins)]= 100;
+  }
+  Pins[sizeof(DrivePins)] = 100;
   for (byte i = 0; i < sizeof(OneWarePins); i++)
   {
-    Pins[sizeof(DrivePins)+1+i] = OneWarePins[i];
-  }  
-  PinAndID::CreateAndSendPacket(Pins, sizeof(Pins));
-  
-//  CreateAndSendPacket(DrivePins, sizeof(DrivePins));
-}
-
-void SPI2ByteTransfer(byte CSPin, byte Data1, byte Data2) {
-  digitalWrite(CSPin, LOW);
-  SPI.transfer(Data1);
-  SPI.transfer(Data2);
-  digitalWrite(CSPin, HIGH);
-}
-
-void DACR2R() {
-  if (DACDataReceived[2] == DAC_Neg && !DACR2RPinSignBool)
-  {
-    digitalWrite(DACR2RPinSign, HIGH);
-    DACR2RPinSignBool = true;
-  };
-
-  if (DACDataReceived[2] == DAC_Pos && DACR2RPinSignBool)
-  {
-    digitalWrite(DACR2RPinSign, LOW);
-    DACR2RPinSignBool = false;
-  };
-  SPI2ByteTransfer(PinAndID::PinControl, DACDataReceived[0], DACDataReceived[1]);
-}
-
-void D30_06() {
-  if ((D30_06DataReceived[2] == DAC_Neg && !D30_06PinSignBool) ||
-      (D30_06DataReceived[2] == DAC_Pos && D30_06PinSignBool))
-  {
-    EndD30_06delay = millis() + 500;
-    //    D30_06delay = true;
-    SPI2ByteTransfer(D30_06DataReceived[3], 0, 0);
-
-  } else {
-    SPI2ByteTransfer(D30_06DataReceived[3], D30_06DataReceived[0], D30_06DataReceived[1]);
+    Pins[sizeof(DrivePins) + 1 + i] = OneWarePins[i];
   }
+  PinAndID::CreateAndSendPacket(Pins, sizeof(Pins));
 }
 
-void D30_06_Second() {
-  if (D30_06DataReceived[2] == DAC_Neg && !D30_06PinSignBool)
-  {
-    digitalWrite(D30_06PinSign, HIGH);
-    D30_06PinSignBool = true;
-  };
+//void SPI2ByteTransfer(byte CSPin, byte Data1, byte Data2) {
+//  digitalWrite(CSPin, LOW);
+//  SPI.transfer(Data1);
+//  SPI.transfer(Data2);
+//  digitalWrite(CSPin, HIGH);
+//}
 
-  if (D30_06DataReceived[2] == DAC_Pos && D30_06PinSignBool)
-  {
-    digitalWrite(D30_06PinSign, LOW);
-    D30_06PinSignBool = false;
-  };
-  //  D30_06delay = false;
-  EndD30_06delay = 0;
-  SPI2ByteTransfer(D30_06DataReceived[3], D30_06DataReceived[0], D30_06DataReceived[1]);
-}
+//void DACR2R() {
+//  if (DACDataReceived[2] == DAC_Neg && !DACR2RPinSignBool)
+//  {
+//    digitalWrite(DACR2RPinSign, HIGH);
+//    DACR2RPinSignBool = true;
+//  };
+//
+//  if (DACDataReceived[2] == DAC_Pos && DACR2RPinSignBool)
+//  {
+//    digitalWrite(DACR2RPinSign, LOW);
+//    DACR2RPinSignBool = false;
+//  };
+//  SPI2ByteTransfer(PinAndID::PinControl, DACDataReceived[0], DACDataReceived[1]);
+//}
+
+//void D30_06() {
+//  if ((D30_06DataReceived[2] == DAC_Neg && !D30_06PinSignBool) ||
+//      (D30_06DataReceived[2] == DAC_Pos && D30_06PinSignBool))
+//  {
+//    EndD30_06delay = millis() + 500;
+//    //    D30_06delay = true;
+//    SPI2ByteTransfer(D30_06DataReceived[3], 0, 0);
+//
+//  } else {
+//    SPI2ByteTransfer(D30_06DataReceived[3], D30_06DataReceived[0], D30_06DataReceived[1]);
+//  }
+//}
+//
+//void D30_06_Second() {
+//  if (D30_06DataReceived[2] == DAC_Neg && !D30_06PinSignBool)
+//  {
+//    digitalWrite(D30_06PinSign, HIGH);
+//    D30_06PinSignBool = true;
+//  };
+//
+//  if (D30_06DataReceived[2] == DAC_Pos && D30_06PinSignBool)
+//  {
+//    digitalWrite(D30_06PinSign, LOW);
+//    D30_06PinSignBool = false;
+//  };
+//  //  D30_06delay = false;
+//  EndD30_06delay = 0;
+//  SPI2ByteTransfer(D30_06DataReceived[3], D30_06DataReceived[0], D30_06DataReceived[1]);
+//}
 
 void DS18B20() {
   if (DS18B20Pin != PinAndID::PinControl)
@@ -361,34 +376,34 @@ void DS18B20End() {
 }
 
 
-void HTU21DBegin() {
-  Wire.beginTransmission(0x40);
-  Wire.write(0xF3);
-  Wire.endTransmission();
+//void HTU21DBegin() {
+//  Wire.beginTransmission(0x40);
+//  Wire.write(0xF3);
+//  Wire.endTransmission();
+//
+//  EndHTU21Ddelay = millis() + 55;
+//}
 
-  EndHTU21Ddelay = millis() + 55;
-}
-
-void HTU21DEnd() {
-  if ((millis() - EndHTU21Ddelay ) > 2 * 55) {
-    EndHTU21Ddelay = 0;
-    return;
-  }
-
-  Wire.requestFrom(0x40, 3);
-  if (Wire.available() < 3) {
-    return;
-  };
-
-  byte data[3];
-  for ( byte i = 0; i < 3; i++) {
-    data[i] = Wire.read();
-  }
-  PinAndID::DeviceId = HTU21DCommand;
-  PinAndID::ActionId = HTU21DCommand;
-  PinAndID::CreateAndSendPacket(data, sizeof(data));
-  EndHTU21Ddelay = 0;
-}
+//void HTU21DEnd() {
+//  if ((millis() - EndHTU21Ddelay ) > 2 * 55) {
+//    EndHTU21Ddelay = 0;
+//    return;
+//  }
+//
+//  Wire.requestFrom(0x40, 3);
+//  if (Wire.available() < 3) {
+//    return;
+//  };
+//
+//  byte data[3];
+//  for ( byte i = 0; i < 3; i++) {
+//    data[i] = Wire.read();
+//  }
+//  PinAndID::DeviceId = HTU21DCommand;
+//  PinAndID::ActionId = HTU21DCommand;
+//  PinAndID::CreateAndSendPacket(data, sizeof(data));
+//  EndHTU21Ddelay = 0;
+//}
 
 void ControlBlink() {
   digitalWrite(12, HIGH);

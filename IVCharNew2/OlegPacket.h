@@ -24,6 +24,7 @@ class PinAndID {
     static byte PinGate;
     static byte DeviceId;
     static byte ActionId;
+//    static byte packet[PacketMaxLength];
     static void CreateAndSendPacket(byte DDATA[], int n);
 };
 

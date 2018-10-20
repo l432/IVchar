@@ -55,7 +55,8 @@ byte PinAndID::PinGate = 0;
 byte PinAndID::DeviceId = 0;
 byte PinAndID::ActionId = 0;
 
- void PinAndID::CreateAndSendPacket(byte DDATA[], int n) {
+
+void PinAndID::CreateAndSendPacket(byte DDATA[], int n) {
   byte data[n + 4];
   data[0] = sizeof(data);
   data[1] = DeviceId;
