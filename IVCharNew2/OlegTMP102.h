@@ -16,12 +16,10 @@ class TMP102o: public SmartDelay, public WireObject, public PinAndID
 {
   public:
     TMP102o();
-//    void DataReceive();
     void Begin();
     void Process();
 
   private:
-//    byte _DataReceived[2];
     void ModeSetup();
     void Initial();
 };

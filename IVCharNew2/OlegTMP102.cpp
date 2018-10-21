@@ -7,19 +7,6 @@ TMP102o::TMP102o()
   SetDataReceivedNumber(2);
 }
 
-
-//void TMP102o::DataReceive() {
-//  Wire.requestFrom(_address, 2);
-//  if (Wire.available() < 2)
-//  { _DataReceived[0] = 0;
-//    _DataReceived[1] = 0;
-//    return;
-//  }
-//  //  Wire.endTransmission();
-//  _DataReceived[0] = Wire.read();
-//  _DataReceived[1] = Wire.read();
-//}
-
 void TMP102o::ModeSetup()
 {
   Wire.beginTransmission(_address);
@@ -77,4 +64,76 @@ void TMP102o::Process() {
   CreateAndSendPacket(_DataReceived, GetDataReceivedNumber());
   Stop();
 }
+
+
+//void TMP3ByteTransfer(byte Data1, byte Data2, byte Data3) {
+//  Wire.beginTransmission(TMP102_Adress);
+//  Wire.write(Data1);
+//  Wire.write(Data2);
+//  Wire.write(Data3);
+//  Wire.endTransmission();
+//}
+//
+//void TMP2ByteTransfer(byte Data1, byte Data2) {
+//  Wire.beginTransmission(TMP102_Adress);
+//  Wire.write(Data1);
+//  Wire.write(Data2);
+//  Wire.endTransmission();
+//}
+//
+//void TMP1ByteTransfer(byte Data1) {
+//  Wire.beginTransmission(TMP102_Adress);
+//  Wire.write(Data1);
+//  Wire.endTransmission();
+//}
+//
+//void TPMDataReceive() {
+//  Wire.requestFrom(TMP102_Adress, 2);
+//  Wire.endTransmission();
+//  TMP102DataReceived[0] = Wire.read();
+//  TMP102DataReceived[1] = Wire.read();
+//}
+//
+//
+//void TMP102First() {
+//  if (PinControl != TMP102_Adress) {
+//    TMP102_Adress = PinControl;
+//    TMP102Initial();
+//  }
+//
+//  TMP1ByteTransfer(0x01);
+//  TPMDataReceive();
+//  TMP102DataReceived[0] &= 0x7F;
+//  TMP102DataReceived[0] |= 0x80;
+//  TMP2ByteTransfer(0x01, TMP102DataReceived[0]);
+//  //OS->1
+//
+//  EndTMP102delay = millis() + 30;
+//
+//}
+//
+//void TMP102Second () {
+//  TMP1ByteTransfer(0x00);
+//  TPMDataReceive();
+//
+//  DeviceId = TMP102Command;
+//  ActionId = TMP102_Adress;
+//  CreateAndSendPacket(TMP102DataReceived, sizeof(TMP102DataReceived));
+//  EndTMP102delay = 0;
+//}
+//
+//void TMP102Initial() {
+//  TMP3ByteTransfer(0x03, 0x7F, 0xF0);
+//  // write 127.9375 to Thigh
+//  TMP3ByteTransfer(0x02, 0x7E, 0x00);
+//  // write 126 to Tlow
+//
+//  TMP1ByteTransfer(0x01);
+//  TPMDataReceive();
+//  TMP102DataReceived[0] &= 0xFC;
+//  TMP102DataReceived[0] |= 0x03;
+//  TMP2ByteTransfer(0x01, TMP102DataReceived[0]);
+//  //to sleep-mode, to interrupt mode,
+//}
+
 

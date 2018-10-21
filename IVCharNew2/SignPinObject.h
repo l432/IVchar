@@ -1,7 +1,6 @@
 #ifndef SignPinObject_H
 #define SignPinObject_H
 
-#include <Wire.h>
 #include "OlegConstant.h"
 
 #if ARDUINO >= 100
@@ -18,18 +17,13 @@ class SignPinObject {
   public:
     bool signMustBeChanged;
 
-
-//    SignPinObject(byte SignPin) {
-//      _signPin = SignPin;
-//    }
-
     void SetSignPin (byte SignPin) {
       _signPin = SignPin;
     }
 
     bool SignMustBeChangedDetermine (byte Sign) {
       signMustBeChanged =
-        ((Sign == DAC_Neg && !_signIsPositiv) ||
+        ((Sign == DAC_Neg && _signIsPositiv) ||
          (Sign == DAC_Pos && !_signIsPositiv));
       return signMustBeChanged;
     }
@@ -54,8 +48,6 @@ class SignPinObject {
       };
       signMustBeChanged = false;
     }
-
-
 };
 
 #endif

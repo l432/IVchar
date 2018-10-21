@@ -7,11 +7,6 @@ SmartDelay::SmartDelay()
   state    = SMART_DELAY_STOP;
 };
 
-//SmartDelay::SmartDelay(unsigned long tick) {
-//  smMicros = tick;
-//  state    = SMART_DELAY_START;
-//}
-//
 bool SmartDelay::Now() {
   if ((state == SMART_DELAY_STOP) ||
       (millis() - smLast < smMilis))
@@ -28,19 +23,7 @@ unsigned long SmartDelay::GetInterval() {
 void SmartDelay::SetInterval(unsigned long tick) {
   smMilis = tick;
 }
-//
-//unsigned long SmartDelay::Wait() {
-//  unsigned long old = smMicros;
-//  smLast = micros();
-//  return old;
-//}
-//
-//unsigned long SmartDelay::Reset() {
-//  unsigned long old = smMicros;
-//  smLast = 0; // РїСЂРѕ РїРµСЂРµРїРѕР»РЅРµРЅРёРµ С†РµР»РѕРіРѕ РїРѕРјРЅРёС‚СЊ!
-//  return old;
-//}
-//
+
 void SmartDelay::Start() {
   smLast = millis();
   state = SMART_DELAY_START;
@@ -58,8 +41,8 @@ void SmartDelay::Stop() {
 bool SmartDelay::isReady() {
   return (state == SMART_DELAY_STOP);
 }
-//
-//// OOP methods
+
+// OOP methods
 void SmartDelay::End() {
   if (Now()) Process();
 }

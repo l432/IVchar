@@ -18,26 +18,13 @@ class SmartDelay {
 
   public:
     SmartDelay();
-//    SmartDelay(const SmartDelay& rhs);
-//    SmartDelay& operator= (const SmartDelay& rhs);
-//    SmartDelay(unsigned long tick);
-
     bool Now();
-//    unsigned long Get() const;
     void SetInterval(unsigned long tick);
     unsigned long GetInterval();
-//    unsigned long Wait();
-//    unsigned long Reset();
     void Stop();
     void Start();
     bool isReady();
-     
     unsigned long TimeFromStart();       
-//
-//    // ms is better as mks
-//    unsigned long setMs(unsigned long tick) { return Set(tick*1000UL); } 
-// 
-//    // OOP methods
     void End(); // to pun into loop()
     virtual void Process(); // to overload
 };

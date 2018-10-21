@@ -17,18 +17,10 @@ class HTU21o: public SmartDelay, public WireObject, public PinAndID
 {
   public:
     HTU21o();
-//    void DataReceive();
     void Begin();
     void Process();
 
   private:
-//    byte _DataReceived[3];
-//    void ModeSetup();
-//    void Initial();
 };
-
-
-
-
 
 #endif

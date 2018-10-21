@@ -12,8 +12,9 @@ const byte PacketEnd = 255;
 const byte PacketMaxLength = 15;
 
 byte FCS (byte Data[], int n);
+void SendParameters();
 void SendPacket(byte Data[], int n);
-void CreateAndSendPacket(byte DDATA[], int n);
+//void CreateAndSendPacket(byte DDATA[], int n);
 void ShortDelay();
 void GateOpen();
 void GateClose();
