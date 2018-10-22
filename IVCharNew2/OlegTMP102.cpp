@@ -38,7 +38,9 @@ void TMP102o::Initial() {
   //to sleep-mode, to interrupt mode,
 }
 
-void TMP102o::Begin() {
+bool TMP102o::Begin() {
+  if (DeviceId != TMP102Command) return false;
+  if ((NumberByte < 4) || (!isReady())) return true;
 
   if (PinControl != _address) {
     SetAdress(PinControl);
@@ -53,7 +55,14 @@ void TMP102o::Begin() {
   //  TMP2ByteTransfer(0x01, TMP102DataReceived[0]);
   //OS->1
   Start();
+  return true;
 }
+
+
+//      if ((PinAndID::DeviceId == TMP102Command) && (tmp102.isReady())) {
+//        if (packet[0] < 4) goto start;
+//        tmp102.Begin();
+//      }
 
 void TMP102o::Process() {
   ByteTransfer(0x00);

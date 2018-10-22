@@ -14,6 +14,7 @@ const byte HTU21DCommand = 0x8;
 const byte TMP102Command = 0x9;
 const byte PinToHigh = 0xFF;
 const byte PinToLow = 0x0F;
+const byte MCP3424Command=0x0A;
 
 
 

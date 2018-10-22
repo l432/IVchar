@@ -1,19 +1,29 @@
 #include "D30_06.h"
 
-D30_06::D30_06(byte SignPinNumber):DACR2R(SignPinNumber) {
+D30_06::D30_06(byte SignPinNumber): DACR2R(SignPinNumber) {
   SetInterval(500);
 }
 
-void D30_06::Begin(byte Data1, byte Data2, byte Sign) {
-  BeginDataRead(Data1, Data2);
-  if (SignMustBeChangedDetermine(Sign))
+//void D30_06::Begin(byte Data1, byte Data2, byte Sign) {
+bool D30_06::Begin() {
+  if (DeviceId != D30_06Command) return false;
+  if ((NumberByte < 8) || (!isReady())) return true;
+
+  BeginDataRead(Data4, Data5);
+  if (SignMustBeChangedDetermine(Data6))
   {
     Start();
     TwoByteTransfer(0, 0);
   } else {
     DataTransfer();
   }
+  return true;
 }
+
+//      if ((PinAndID::DeviceId == D30_06Command) && (d3006.isReady())) {
+//        if (packet[0] < 8) goto start;
+//        d3006.Begin(packet[4], packet[5], packet[6]);
+//      }
 
 void D30_06::Process() {
   ChangeSign();

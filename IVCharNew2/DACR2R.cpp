@@ -4,13 +4,22 @@ DACR2R::DACR2R(byte SignPinNumber) {
   SetSignPin(SignPinNumber);
 }
 
-void DACR2R::Action(byte Data1, byte Data2, byte Sign) {
-  BeginDataRead(Data1, Data2);
-  if (SignMustBeChangedDetermine(Sign))
+//bool DACR2R::Action(byte Data1, byte Data2, byte Sign) {
+bool DACR2R::Action() {
+  if (DeviceId != DACR2RCommand) return false;
+  if (NumberByte < 8) return true;
+  
+  BeginDataRead(Data4, Data5);
+  if (SignMustBeChangedDetermine(Data6))
     ChangeSign();
   DataTransfer();
+  return true;
 }
 
+//      if (PinAndID::DeviceId == DACR2RCommand) {
+//        if (packet[0] < 8) goto start;
+//        dacR2R.Action(packet[4], packet[5], packet[6]);
+//      }
 
 void DACR2R::DataTransfer() {
   TwoByteTransfer(_DataReceived[0], _DataReceived[1]);

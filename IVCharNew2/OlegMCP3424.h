@@ -1,5 +1,5 @@
-#ifndef DS18B20_H
-#define DS18B20_H
+#ifndef OLEG_MCP3424_H
+#define OLEG_MCP3424_H
 
 #if ARDUINO >= 100
 #include <Arduino.h>
@@ -7,22 +7,20 @@
 #include <WProgram.h>
 #endif
 
-#include <OneWire.h>
 #include "SmartDelay.h"
+#include "WireObject.h"
 #include "OlegPacket.h"
 #include "OlegConstant.h"
 
-const byte DS18B20Pin = 36;
-
-class DS18B20o: public SmartDelay, public PinAndID
+class MCP3424o: public SmartDelay, public WireObject, public PinAndID
 {
-  private:
-    OneWire  ds;
-    byte _pin;
   public:
-    DS18B20o();
+    MCP3424o();
     bool Begin();
     void Process();
+
+  private:
 };
+
 
 #endif

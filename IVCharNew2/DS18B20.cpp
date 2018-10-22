@@ -1,25 +1,34 @@
 #include "DS18B20.h"
 
 
-DS18B20::DS18B20(): ds(DS18B20Pin)
+DS18B20o::DS18B20o(): ds(DS18B20Pin)
 {
   SetInterval(800);
   _pin = DS18B20Pin;
 }
-void DS18B20::Begin()
+bool DS18B20o::Begin()
 {
+  if (DeviceId != DS18B20Command) return false;
+  if ((NumberByte < 4) || (!isReady())) return true;
   if (_pin != PinControl)
   {
-//    delete &ds;
+    //    delete &ds;
     _pin = PinControl;
-//    OneWire ds(_pin);
+    //    OneWire ds(_pin);
   };
   ds.reset();
   ds.write(0xCC);
   ds.write(0x44);
   Start();
+  return true;
 }
-void DS18B20::Process()
+
+//      if ((PinAndID::DeviceId == DS18B20Command) && (ds18b20.isReady())) {
+//        if (packet[0] < 4) goto start;
+//        ds18b20.Begin();
+//      }
+
+void DS18B20o::Process()
 {
   byte data[2];
   ds.reset();

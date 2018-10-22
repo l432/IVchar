@@ -16,7 +16,7 @@ class TMP102o: public SmartDelay, public WireObject, public PinAndID
 {
   public:
     TMP102o();
-    void Begin();
+    bool Begin();
     void Process();
 
   private:

@@ -8,10 +8,17 @@ HTU21o::HTU21o()
   SetDataReceivedNumber(3);
 }
 
-void HTU21o::Begin() {
+bool HTU21o::Begin() {
+  if (DeviceId != HTU21DCommand) return false;
+  if (!isReady()) return true;
   ByteTransfer(0xF3);
   Start();
+  return true;  
 }
+
+    //      if ((PinAndID::DeviceId == HTU21DCommand) && (htu21.isReady()))  {
+    //        htu21.Begin();
+    //      }
 
 void HTU21o::Process() {
   if (TimeFromStart()  > 2 * GetInterval()) {

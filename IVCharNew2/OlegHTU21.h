@@ -17,7 +17,7 @@ class HTU21o: public SmartDelay, public WireObject, public PinAndID
 {
   public:
     HTU21o();
-    void Begin();
+    bool Begin();
     void Process();
 
   private:

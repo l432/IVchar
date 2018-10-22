@@ -17,7 +17,7 @@ const
    ('12 bits, 240 SPS','14 bits, 60 SPS',
    '16 bits, 15 SPS', '18 bits, 3.75 SPS');
  MCP3424_ConversionTime:array[TMCP3424_Resolution]of integer=
-    (5,18,70,270);
+    (5,17,67,270);
  MCP3424_Gain_Data:array[TMCP3424_Gain]of byte=
     (1,2,4,8);
  MCP3424_Resolution_Data:array[TMCP3424_Resolution]of byte=

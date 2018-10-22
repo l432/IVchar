@@ -15,7 +15,8 @@ byte FCS (byte Data[], int n)
   return byte(FCS & 0xFF);
 }
 
-void SendParameters() {
+bool SendParameters() {
+  if (PinAndID::DeviceId != ParameterReceiveCommand) return false;
   PinAndID::ActionId = 0x00;
   int PinsNumber = sizeof(DrivePins) + sizeof(OneWarePins) + 1;
   byte Pins[PinsNumber];
@@ -29,7 +30,10 @@ void SendParameters() {
     Pins[sizeof(DrivePins) + 1 + i] = OneWarePins[i];
   }
   PinAndID::CreateAndSendPacket(Pins, sizeof(Pins));
+  return true;
 }
+
+//      if (PinAndID::DeviceId == ParameterReceiveCommand) SendParameters();
 
 
 void SendPacket(byte Data[], int n) {
@@ -38,19 +42,19 @@ void SendPacket(byte Data[], int n) {
   Serial.write(PacketEnd);
 }
 
-void GateOpen() {
-  digitalWrite(PinAndID::PinGate, LOW);
-  ShortDelay();
-}
-
-void GateClose() {
-  digitalWrite(PinAndID::PinGate, HIGH);
-  ShortDelay();
-}
-
-void ShortDelay() {
-  delayMicroseconds(50);
-}
+//void GateOpen() {
+//  digitalWrite(PinAndID::Data3, LOW);
+//  ShortDelay();
+//}
+//
+//void GateClose() {
+//  digitalWrite(PinAndID::Data3, HIGH);
+//  ShortDelay();
+//}
+//
+//void ShortDelay() {
+//  delayMicroseconds(50);
+//}
 
 void ControlBlink() {
   digitalWrite(LEDPin, HIGH);
@@ -58,10 +62,15 @@ void ControlBlink() {
   digitalWrite(LEDPin, LOW);
 }
 
+byte PinAndID::NumberByte = 0;
 byte PinAndID::PinControl = 0;
-byte PinAndID::PinGate = 0;
+//byte PinAndID::PinGate = 0;
+byte PinAndID::Data3 = 0;
 byte PinAndID::DeviceId = 0;
 byte PinAndID::ActionId = 0;
+byte PinAndID::Data4 = 0;
+byte PinAndID::Data5 = 0;
+byte PinAndID::Data6 = 0;
 
 
 void PinAndID::CreateAndSendPacket(byte DDATA[], int n) {
