@@ -14,6 +14,7 @@ const byte PacketMaxLength = 15;
 byte FCS (byte Data[], int n);
 bool SendParameters();
 void SendPacket(byte Data[], int n);
+void ControlBlink();
 //void CreateAndSendPacket(byte DDATA[], int n);
 //void ShortDelay();
 //void GateOpen();

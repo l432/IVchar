@@ -13,7 +13,7 @@ class WireObject {
   protected:
     byte _address;
     byte _dataReceivedNumber;
-    byte _DataReceived[3];
+    byte _DataReceived[4];
 
   public:
     WireObject()
@@ -23,7 +23,12 @@ class WireObject {
 
     void ByteTransfer(byte Data)
     {
-      Wire.beginTransmission(_address);
+      ByteTransfer(_address, Data);
+    }
+
+    void ByteTransfer(byte Address, byte Data)
+    {
+      Wire.beginTransmission(Address);
       Wire.write(Data);
       Wire.endTransmission();
     }
@@ -32,6 +37,7 @@ class WireObject {
     {
       _address = address;
     }
+    
     void SetDataReceivedNumber(byte DataReceivedNumber) {
       _dataReceivedNumber = DataReceivedNumber;
     }
@@ -43,11 +49,11 @@ class WireObject {
     void DataReceive() {
       Wire.requestFrom(_address, _dataReceivedNumber);
       if (Wire.available() < _dataReceivedNumber)
-      { for (byte i = 0; i < _dataReceivedNumber; i++)
+      { for (uint8_t i = 0; i < _dataReceivedNumber; i++)
           _DataReceived[i] = 0;
         return;
       }
-      for (byte i = 0; i < _dataReceivedNumber; i++)
+      for (uint8_t i = 0; i < _dataReceivedNumber; i++)
         _DataReceived[i] = Wire.read();
     }
 };

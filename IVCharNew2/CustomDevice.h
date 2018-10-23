@@ -32,6 +32,8 @@ class CustomDevice: public PinAndID
       if (DeviceId != V7_21Command) return false;
       if (NumberByte < 5) return true;
 
+       ControlBlink(); 
+
       GateOpen();
       digitalWrite(PinControl, LOW);
       digitalWrite(PinControl, HIGH);

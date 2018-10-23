@@ -28,8 +28,6 @@ const
  MCP3424_StartAdress=$68;
  MCP3424_LastAdress=$6F;
 
-// MCP3424PinNames:array [0..1] of string=
-// ('Bits','Gain');
 
 type
 
@@ -104,9 +102,10 @@ begin
   fMinDelayTime:=MCP3424_ConversionTime[FResolution];
   fConfigByte:=0;
   fConfigByte:=fConfigByte or ((FActiveChannel and $3)shl 5);
-  fConfigByte:=fConfigByte or ($1 shl 4);
+  fConfigByte:=fConfigByte or ($0 shl 4);
   fConfigByte:=fConfigByte or ((ord(FResolution) and $3)shl 2);
   fConfigByte:=fConfigByte or (byte(ord(FGain)) and $3);
+  fConfigByte:=fConfigByte or $80;
 end;
 
 procedure TMCP3424_Module.ConvertToValue;
