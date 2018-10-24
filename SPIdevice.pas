@@ -342,6 +342,7 @@ end;
 procedure TArduinoMeter.PacketReceiving(Sender: TObject; const Str: string);
   var i:integer;
 begin
+// ShowData(fData);
  if not(PacketIsReceived(Str,fData,fMetterKod)) then Exit;
  if fData[2]<>Pins.PinControl then Exit;
  for I := 0 to High(fData)-4 do

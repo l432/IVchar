@@ -124,7 +124,7 @@ Procedure ShowData(Data:array of byte);
      temp:string;
 begin
  temp:='';
- for I := 0 to High(Data) do temp:=temp+inttostr(Data[i])+' ';
+ for I := 0 to High(Data) do temp:=temp+'$'+inttohex(Data[i],2)+' ';
  MessageDlg(temp,mtInformation,[mbOK], 0);
 end;
 

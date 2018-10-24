@@ -1,6 +1,6 @@
 #include "OlegMCP3424.h"
 
-const byte TimeInterval[] = {5, 17, 67, 270};
+const unsigned long TimeInterval[] = {5, 17, 67, 270};
 
 MCP3424o::MCP3424o()
 {
@@ -12,6 +12,7 @@ MCP3424o::MCP3424o()
 bool MCP3424o::Begin() {
   if (DeviceId != MCP3424Command) return false;
   if ((NumberByte < 4) || (!isReady())) return true;
+
   SetAdress(PinControl);
   Config(Data3);
   ByteTransfer(Data3);
@@ -26,7 +27,8 @@ void MCP3424o::Process() {
     ActionId = _address;
     CreateAndSendPacket(_DataReceived, GetDataReceivedNumber());
     Stop();
-  } else {
+  }
+  else {
     if (GetInterval() > TimeInterval[_resolution]) {
       Stop();
     } else {
@@ -50,7 +52,9 @@ void  MCP3424o::Config(byte ConfigByte) {
 }
 
 bool MCP3424o::isConversionFinished() {
+
   DataReceive();
-  return (_DataReceived[_dataReceivedNumber - 1] & 0b10000000);
+  return !(_DataReceived[GetDataReceivedNumber() - 1] & 0x80);
 }
+
 

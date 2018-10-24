@@ -18,6 +18,7 @@ const
    '16 bits, 15 SPS', '18 bits, 3.75 SPS');
  MCP3424_ConversionTime:array[TMCP3424_Resolution]of integer=
     (5,17,67,270);
+//    (10,35,140,550);
  MCP3424_Gain_Data:array[TMCP3424_Gain]of byte=
     (1,2,4,8);
  MCP3424_Resolution_Data:array[TMCP3424_Resolution]of byte=
@@ -38,11 +39,6 @@ type
     FGain: TMCP3424_Gain;
     FResolution: TMCP3424_Resolution;
     fConfigByte:byte;
-
-//    procedure SetActiveChannel(const Value: TMCP3424_ChanelNumber);
-//    procedure SetGain(const Value: TMCP3424_Gain);
-//    procedure SetResolution(const Value: TMCP3424_Resolution);
-//    FChannels: array[TMCP3424_ChanelNumber] of MCP3424_Channel;
    procedure Configuration();
   protected
    procedure   PacketCreateToSend(); override;
@@ -56,19 +52,18 @@ type
    procedure ConvertToValue();override;
  end;
 
+
+
  TMCP3424_Channel=class(TNamedInterfacedObject,IMeasurement)
  private
   fChanelNumber:TMCP3424_ChanelNumber;
   fParentModule:TMCP3424_Module;
-//  FGain: TMCP3424_Gain;
-//  FResolution: TMCP3424_Resolution;
  protected
   function GetNewData:boolean;
   function GetValue:double;
   procedure SetNewData(Value:boolean);
  public
   Pins:TPins;
-//  property NewData:boolean read GetNewData write SetNewData;
   property Value:double read GetValue;
     Constructor Create(ChanelNumber: TMCP3424_ChanelNumber; MCP3424_Module: TMCP3424_Module);//override;
   Procedure Free;
@@ -78,7 +73,6 @@ type
 
  TMCP3424_ChannelShow=class(TPinsShowUniversal)
    private
-//    ParameterShow:TPinsShowUniversal;
     fChan:TMCP3424_Channel;
     MeasuringDeviceSimple:TMeasuringDeviceSimple;
    public
@@ -111,9 +105,8 @@ end;
 procedure TMCP3424_Module.ConvertToValue;
  var temp:Int64;
 begin
+// ShowData(fData);
  fValue:=ErResult;
- //---------???????????
-// if fdata[High(fData)]<>fConfigByte then Exit;
 
  case FResolution of
    mcp_r18b: if High(fData)<>3 then Exit;
@@ -133,12 +126,13 @@ begin
                    ((fData[0] and $1) shl 16);
   end;
 
+
   if (fData[0] and $80)>0 then
     case FResolution of
-     mcp_r12b: temp:=-((not(temp)+$1)and $fff);
-     mcp_r14b: temp:=-((not(temp)+$1)and $3fff);
-     mcp_r16b: temp:=-((not(temp)+$1)and $ffff);
-     mcp_r18b: temp:=-((not(temp)+$1)and $3ffff);
+     mcp_r12b: temp:=-((not(temp)+$01)and $7ff);
+     mcp_r14b: temp:=-((not(temp)+$1)and $1fff);
+     mcp_r16b: temp:=-((not(temp)+$1)and $7fff);
+     mcp_r18b: temp:=-((not(temp)+$1)and $1ffff);
     end;
 
   fValue:=temp*MCP3424_LSB[FResolution]/MCP3424_Gain_Data[FGain];
@@ -151,20 +145,15 @@ begin
  FActiveChannel:=0;
  FGain:=mcp_g1;
  FResolution:=mcp_r12b;
-// SetActiveChannel(0);
-// SetGain(mcp_g1);
-// SetResolution(mcp_r12b);
-
  fMetterKod:=MCP3424Command;
-// SetLength(Pins.fPins,1);
  Configuration();
-// fMinDelayTime:=MCP3424_ConversionTime[FResolution];
-
 end;
+
 
 procedure TMCP3424_Module.PacketCreateToSend;
 begin
   Configuration();
+//  showmessage(inttohex(fConfigByte,2));
   PacketCreate([fMetterKod,Pins.PinControl,fConfigByte]);
 end;
 
@@ -173,20 +162,6 @@ begin
   Pins := TPins_I2C.Create(Name);
 end;
 
-//procedure TMCP3424_Module.SetActiveChannel(const Value: TMCP3424_ChanelNumber);
-//begin
-//  FActiveChannel := Value;
-//end;
-//
-//procedure TMCP3424_Module.SetGain(const Value: TMCP3424_Gain);
-//begin
-//  FGain := Value;
-//end;
-//
-//procedure TMCP3424_Module.SetResolution(const Value: TMCP3424_Resolution);
-//begin
-//  FResolution := Value;
-//end;
 
 { MCP3424_Channel }
 
@@ -204,7 +179,6 @@ begin
   Pins.PinControl:=12;// зберігатиметься Resolution
   Pins.PinGate:=1;  // зберігатиметься Gain
 
-//  SetLength(Pins.fPins,1);
 end;
 
 
