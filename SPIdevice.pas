@@ -55,9 +55,11 @@ type
    Procedure ReadFromIniFile(ConfigFile:TIniFile);overload;
    Procedure ReadFromIniFile(ConfigFile:TIniFile;Strings:TStrings);overload;
    Procedure ReadFromIniFile(ConfigFile:TIniFile;PinsComboBoxs:array of TComboBox);overload;
+   Procedure ReadFromIniFile(ConfigFile:TIniFile;PinsStrings:array of TStringList);overload;
    Procedure WriteToIniFile(ConfigFile:TIniFile);overload;
    Procedure WriteToIniFile(ConfigFile:TIniFile;Strings:TStrings);overload;
    Procedure WriteToIniFile(ConfigFile:TIniFile;PinsComboBoxs:array of TComboBox);overload;
+   Procedure WriteToIniFile(ConfigFile:TIniFile;PinsStrings:array of TStringList);overload;
   end;
 
   TPins_I2C=class(TPins)
@@ -148,6 +150,30 @@ type
    procedure SetButtonClick(Sender: TObject);
   end;
 
+  TPinsShowShot=class
+  protected
+   fHookNumberPinShow: TSimpleEvent;
+   PinLabels:array of TLabel;
+   fPinVariants:array of TStringList;
+   procedure CreateFooter;
+//    function GetVariants(Index: byte): TStringList;
+    procedure SetVariants(Index: byte; const S: TStringList);
+  public
+   Pins:TPins;
+   property HookNumberPinShow:TSimpleEvent read fHookNumberPinShow write fHookNumberPinShow;
+//   property PinVariants[Index: byte]: TStringList read GetVariants write SetVariants;
+   property PinVariants[Index: byte]: TStringList write SetVariants;
+   Constructor Create(Ps:TPins;
+                      PinLs:array of TLabel);
+   procedure PinsReadFromIniFile(ConfigFile:TIniFile);virtual;
+   procedure PinsWriteToIniFile(ConfigFile:TIniFile);virtual;
+   procedure NumberPinShow();virtual;
+   procedure Free();
+   procedure VariantsShowAndSelect(Sender: TObject);
+  end;
+
+
+
   TPinsShowUniversal=class
   protected
    fHookNumberPinShow: TSimpleEvent;
@@ -170,22 +196,11 @@ type
 
   TPinsShow=class(TPinsShowUniversal)
   protected
-//   fHookNumberPinShow: TSimpleEvent;
-//   PinLabels:array of TLabel;
-//   SetPinButtons:array of TButton;
-//   PinsComboBox:TComboBox;
-//   procedure CreateFooter;
   public
-//   Pins:TPins;
-//   property HookNumberPinShow:TSimpleEvent read fHookNumberPinShow write fHookNumberPinShow;
-//   property PinsComboBox:TComboBox read  PinsComboBoxs[0];
    Constructor Create(Ps:TPins;
                       ControlPinLabel,GatePinLabel:TLabel;
                       SetControlButton,SetGateButton:TButton;
                       PCB:TComboBox);
-//   procedure PinsReadFromIniFile(ConfigFile:TIniFile);virtual;
-//   procedure PinsWriteToIniFile(ConfigFile:TIniFile);virtual;
-//   procedure NumberPinShow();virtual;
   end;
 
 
@@ -205,9 +220,6 @@ type
                       ControlPinLabel: TLabel;
                       SetControlButton: TButton;
                       PCB: TComboBox; StartAdress, LastAdress: Byte);
-//   procedure PinsReadFromIniFile(ConfigFile:TIniFile);override;
-//   procedure PinsWriteToIniFile(ConfigFile:TIniFile);override;
-//   procedure NumberPinShow();override;
   end;
 
 
@@ -230,7 +242,7 @@ type
 implementation
 
 uses
-  Math;
+  Math, Forms, Graphics, ExtCtrls, Controls, Dialogs;
 
 constructor TPinsShow.Create(Ps:TPins;
                              ControlPinLabel, GatePinLabel: TLabel;
@@ -239,49 +251,8 @@ constructor TPinsShow.Create(Ps:TPins;
 begin
  inherited Create(Ps,[ControlPinLabel, GatePinLabel],
          [SetControlButton, SetGateButton],[PCB,PCB]);
-// inherited Create();
-// Pins:=Ps;
-// SetLength(PinLabels,High(Pins.fPins)+1);
-// SetLength(SetPinButtons,High(Pins.fPins)+1);
-// PinLabels[0]:=ControlPinLabel;
-// if High(PinLabels)>0 then
-//    PinLabels[1]:=GatePinLabel;
-// SetPinButtons[0]:=SetControlButton;
-// if High(SetPinButtons)>0 then
-//    SetPinButtons[1]:=SetGateButton;
-// PinsComboBox:=PCB;
-// HookNumberPinShow:=TSimpleClass.EmptyProcedure;
-// CreateFooter();
 end;
 
-//procedure TPinsShow.NumberPinShow;
-//begin
-//   PinLabels[0].Caption:=Pins.PinControlStr;
-//   if High(PinLabels)>0 then
-//    PinLabels[1].Caption:=Pins.PinGateStr;
-//   HookNumberPinShow;
-//end;
-//
-//procedure TPinsShow.CreateFooter;
-//var
-//  i: Integer;
-//begin
-//  for I := 0 to High(SetPinButtons) do
-//    begin
-//    SetPinButtons[i].OnClick := TAdapterSetButton.Create(PinsComboBox, Pins, i, NumberPinShow).SetButtonClick;
-//    SetPinButtons[i].Caption := 'set ' + LowerCase(PinNames[i]);
-//    end;
-//end;
-//
-//procedure TPinsShow.PinsReadFromIniFile(ConfigFile: TIniFile);
-//begin
-//  Pins.ReadFromIniFile(ConfigFile,PinsComboBox.Items);
-//end;
-//
-//procedure TPinsShow.PinsWriteToIniFile(ConfigFile: TIniFile);
-//begin
-//  Pins.WriteToIniFile(ConfigFile,PinsComboBox.Items);
-//end;
 
 { TAdapterSetButton }
 
@@ -435,6 +406,23 @@ begin
    end;
 end;
 
+procedure TPins.ReadFromIniFile(ConfigFile: TIniFile;
+  PinsStrings: array of TStringList);
+  var i,TempPin:integer;
+begin
+  if Name='' then Exit;
+  for I := 0 to High(fPins) do
+   begin
+    TempPin := ConfigFile.ReadInteger(Name, PNames[i], -1);
+    if (i<=High(PinsStrings))
+        and (TempPin > -1)
+        and (TempPin < PinsStrings[i].Count) then
+          fPins[i] := StrToInt(PinsStrings[i].Strings[TempPin])
+                                                     else
+          fPins[i]:=ConfigFile.ReadInteger(Name, PNames[i], UndefinedPin);
+   end;
+end;
+
 procedure TPins.ReadFromIniFile(ConfigFile: TIniFile);
  var i:integer;
 begin
@@ -493,12 +481,28 @@ begin
         begin
           for I := 0 to PinsComboBoxs[j].Items.Count - 1 do
            if (fPins[j] = strtoint( PinsComboBoxs[j].Items[i])) then
-//           if (IntToStr(fPins[j]) = PinsComboBoxs[j].Items[i]) then
                 ConfigFile.WriteInteger(Name, PNames[j], i);
         end;
-//         else
-//          WriteIniDef(ConfigFile,Name,PNames[j], UndefinedPin);
      end;
+end;
+
+procedure TPins.WriteToIniFile(ConfigFile: TIniFile;
+  PinsStrings: array of TStringList);
+  var i,j:integer;
+begin
+  if Name='' then Exit;
+  ConfigFile.EraseSection(Name);
+
+   for j := 0 to High(fPins) do
+     begin
+     if j<=High(PinsStrings) then
+        begin
+          for I := 0 to PinsStrings[j].Count - 1 do
+           if (fPins[j] = strtoint( PinsStrings[j].Strings[i])) then
+                ConfigFile.WriteInteger(Name, PNames[j], i);
+        end;
+     end;
+
 end;
 
 
@@ -863,5 +867,160 @@ function TPins_I2C.PinValueToStr(Index: integer): string;
 begin
  Result:='$'+IntToHex(fPins[Index],2);
 end;
+
+{ TPinsShowShot }
+
+constructor TPinsShowShot.Create(Ps: TPins; PinLs: array of TLabel);
+ var i:byte;
+begin
+  inherited Create();
+ Pins:=Ps;
+ SetLength(PinLabels,High(PinLs)+1);
+ for I := 0 to High(PinLabels) do
+  begin
+  PinLabels[i]:=PinLs[i];
+  PinLabels[i].Tag:=i;
+  end;
+ SetLength(fPinVariants,High(PinLs)+1);
+ for I := 0 to High(fPinVariants) do
+  begin
+  fPinVariants[i]:=TStringList.Create;
+  fPinVariants[i].Clear;
+  end;
+
+ HookNumberPinShow:=TSimpleClass.EmptyProcedure;
+ CreateFooter();
+end;
+
+procedure TPinsShowShot.CreateFooter;
+ var  i: Integer;
+begin
+  for I := 0 to High(PinLabels) do
+    begin
+    PinLabels[i].Caption:=Pins.GetPinStr(i);
+    PinLabels[i].Cursor:=crHandPoint;
+    PinLabels[i].OnClick:=VariantsShowAndSelect;
+    end;
+end;
+
+procedure TPinsShowShot.Free;
+ var i:byte;
+begin
+ for I := 0 to High(fPinVariants) do
+   begin
+   fPinVariants[i]:=nil;
+   fPinVariants[i].Free;
+   end;
+// inherited Free;
+end;
+
+//function TPinsShowShot.GetVariants(Index: byte): TStringList;
+//begin
+//  if (Index > High(fPinVariants)) then
+//          Result:=nil
+//                                  else
+//          Result := fPinVariants[Index];
+//end;
+
+procedure TPinsShowShot.NumberPinShow;
+ var i:byte;
+begin
+  for I := 0 to High(PinLabels) do
+   PinLabels[i].Caption:=Pins.GetPinStr(i);
+   HookNumberPinShow;
+end;
+
+procedure TPinsShowShot.PinsReadFromIniFile(ConfigFile: TIniFile);
+begin
+  Pins.ReadFromIniFile(ConfigFile,fPinVariants);
+end;
+
+procedure TPinsShowShot.PinsWriteToIniFile(ConfigFile: TIniFile);
+begin
+ Pins.WriteToIniFile(ConfigFile,fPinVariants);
+end;
+
+procedure TPinsShowShot.SetVariants(Index: byte; const S: TStringList);
+begin
+   if (Index <= High(fPinVariants)) then
+     fPinVariants[Index]:=S;
+end;
+
+procedure TPinsShowShot.VariantsShowAndSelect(Sender: TObject);
+var Form:TForm;
+    ButOk,ButCancel: TButton;
+    RG:TRadioGroup;
+    PinNumber:byte;
+    i:integer;
+begin
+ if (Sender is TLabel) then
+   PinNumber:=(Sender as TLabel).Tag
+                       else
+   PinNumber:=0;
+
+ Form:=TForm.Create(Application);
+ Form.Position:=poMainFormCenter;
+ Form.AutoScroll:=True;
+ Form.BorderIcons:=[biSystemMenu];
+ Form.ParentFont:=True;
+ Form.Font.Style:=[fsBold];
+ Form.Font.Height:=-16;
+ Form.Caption:='Set ' + LowerCase(Pins.PNames[PinNumber]);
+ RG:=TRadioGroup.Create(Form);
+ RG.Parent:=Form;
+ RG.Items:=fPinVariants[PinNumber];
+ for I := 0 to RG.Items.Count - 1 do
+  if StrToInt(RG.Items[i])=Pins.fPins[PinNumber] then
+   begin
+     RG.ItemIndex:=i;
+     Break;
+   end;
+
+
+ if RG.Items.Count>8 then  RG.Columns:=3
+                     else  RG.Columns:=2;
+ RG.Width:=RG.Columns*120+20;
+ RG.Height:=Ceil(RG.Items.Count/RG.Columns)*40+20;
+ Form.Width:=RG.Width;
+ Form.Height:=RG.Height+70;
+  RG.Align:=alTop;
+
+ ButOk:=TButton.Create(Form);
+ ButOk.Parent:=Form;
+ ButOk.ParentFont:=True;
+ ButOk.Height:=30;
+ ButOk.Width:=79;
+ ButOk.Caption:='Ok';
+ ButOk.ModalResult:=mrOk;
+ ButOk.Top:=RG.Height+10;
+ ButOk.Left:=round((Form.Width-2*ButOk.Width)/3.0);
+
+ ButCancel:=TButton.Create(Form);
+ ButCancel.Parent:=Form;
+ ButCancel.ParentFont:=True;
+ ButCancel.Height:=30;
+ ButCancel.Width:=79;
+ ButCancel.Caption:='Cancel';
+ ButCancel.ModalResult:=mrCancel;
+ ButCancel.Top:=RG.Height+10;
+ ButCancel.Left:=2*ButOk.Left+ButOk.Width;
+
+  if Form.ShowModal=mrOk then
+   begin
+    Pins.fPins[PinNumber]:=StrToInt(RG.Items[RG.ItemIndex]);
+    NumberPinShow();
+   end;
+
+// RG.Items:=nil;
+ for I := Form.ComponentCount-1 downto 0 do
+     Form.Components[i].Free;
+ Form.Hide;
+ Form.Release;
+
+end;
+
+
+
+
 
 end.

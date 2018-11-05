@@ -519,6 +519,7 @@ type
     STMCP3424_5: TStaticText;
     STMCP3424_3: TStaticText;
     STMCP3424_4: TStaticText;
+    Label1: TLabel;
 
     procedure FormCreate(Sender: TObject);
     procedure BConnectClick(Sender: TObject);
@@ -683,6 +684,8 @@ type
 //    V721_I:TV721;
 //    V721_II:TV721_Brak;
     VoltmetrShows:array of TVoltmetrShow;
+    PinsShowShot:TPinsShowShot;
+
     DS18B20:TDS18B20;
 //    DS18B20show:TPinsShow;
     DS18B20show:TOnePinsShow;
@@ -1887,6 +1890,7 @@ begin
  TIVDependence.VoltageCorrectionChange(VolCorrection.Yvalue(VoltageInputSign))
 end;
 
+
 procedure TIVchar.LimitsToLabel(LimitShow,LimitShowRev:TLimitShow);
  var Start,Finish:string;
  begin
@@ -2333,6 +2337,9 @@ begin
  NumberPinsOneWire:=TStringList.Create;
  VectorsCreate();
 
+  PinsShowShot:=TPinsShowShot.Create(V721A.Pins,[Label1]);
+  PinsShowShot.PinVariants[0]:=NumberPins;
+  ShowArray.Add([PinsShowShot]);
 
  ConstantShowCreate();
  ConstantShowFromIniFile();
@@ -2418,6 +2425,8 @@ begin
 
  VectorsDispose();
 // RangesFree();
+//PinsShowShot.Free;
+
  NumberPins.Free;
  NumberPinsOneWire.Free;
 
@@ -2989,8 +2998,6 @@ begin
   VoltmetrShows[1]:= TVoltmetrShow.Create(V721_I, RGV721I_MM, RGV721IRange, LV721I, LV721IU, LV721IPin, LV721IPinG, BV721ISet, BV721ISetGate, BV721IMeas, SBV721IAuto, CBV721I, Time);
   VoltmetrShows[2]:= TVoltmetrShow.Create(V721_II, RGV721II_MM, RGV721IIRange, LV721II, LV721IIU, LV721IIPin, LV721IIPinG, BV721IISet, BV721IISetGate, BV721IIMeas, SBV721IIAuto, CBV721II, Time);
 
-
-
   DS18B20:=TDS18B20.Create(ComPort1, 'DS18B20');
   DS18B20show:=TOnePinsShow.Create(DS18B20.Pins,LDS18BPin,BDS18B,CBDS18b20);
 
@@ -3048,6 +3055,14 @@ begin
 //      (ShowArray.ObjectArray[i] as TPinsShow).NumberPinShow;
 //      Continue;
 //     end;
+
+   if (ShowArray.ObjectArray[i] is TPinsShowShot) then
+     begin
+      (ShowArray.ObjectArray[i] as TPinsShowShot).PinsReadFromIniFile(ConfigFile);
+      (ShowArray.ObjectArray[i] as TPinsShowShot).NumberPinShow;
+      Continue;
+     end;
+
 
    if (ShowArray.ObjectArray[i] is TPinsShowUniversal) then
      begin
@@ -3142,6 +3157,13 @@ begin
     begin
     (ShowArray.ObjectArray[i] as TMCP3424_ChannelShow).PinsWriteToIniFile(ConfigFile);
     (ShowArray.ObjectArray[i] as TMCP3424_ChannelShow).Free;
+    Continue;
+    end;
+
+   if (ShowArray.ObjectArray[i] is TPinsShowShot) then
+    begin
+    (ShowArray.ObjectArray[i] as TPinsShowShot).PinsWriteToIniFile(ConfigFile);
+    (ShowArray.ObjectArray[i] as TPinsShowShot).Free;
     Continue;
     end;
 
