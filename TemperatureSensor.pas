@@ -20,16 +20,13 @@ type
   end;
 
 
-//  TDS18B20=class(TArduinoMeter,ITemperatureMeasurement)
   TDS18B20=class(TTempSensor)
   {базовий клас для датчика DS18B20}
   protected
    procedure PinsCreate();override;
   public
    Constructor Create(CP:TComPort;Nm:string);override;
-//   function GetTemperature():double;
    Procedure ConvertToValue();override;
-//   procedure GetTemperatureThread(EventEnd:THandle);
   end;
 
   THTU21D=class(TTempSensor)
@@ -45,7 +42,6 @@ type
   TTMP102=class(TTempSensor)
   {базовий клас для датчика TMP102}
   protected
-//   Procedure PacketCreateToSend();override;
    procedure PinsCreate();override;
   public
    Constructor Create(CP:TComPort;Nm:string);override;
@@ -85,7 +81,6 @@ begin
   inherited Create(CP,Nm);
 
   fMetterKod:=DS18B20Command;
-//  SetLength(Pins.fPins,1);
   fMinDelayTime:=500;
 end;
 
@@ -96,17 +91,6 @@ begin
   Pins := TPins.Create(Name,1);
 
 end;
-
-//function TDS18B20.GetTemperature: double;
-//begin
-// Result:=Measurement();
-//end;
-
-
-//procedure TDS18B20.GetTemperatureThread(EventEnd:THandle);
-//begin
-// GetDataThread(TemperMessage,EventEnd);
-//end;
 
 procedure TDS18B20.ConvertToValue();
  var temp:integer;

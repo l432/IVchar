@@ -166,43 +166,19 @@ TRS232Meter=class(TRS232Device,IMeasurement)
   {базовий клас для вимірювальних об'єктів,
   які використовують обмін даних з COM-портом}
   protected
-//   fValue:double;
-//   fIsReady:boolean;
-//   fIsReceived:boolean;
-//   fMinDelayTime:integer;
-  {інтервал очікування перед початком перевірки
-  вхідного буфера, []=мс}
 
    fMeasureMode:Shortint;
    fDiapazon:Shortint;
    fMeasureModeAll:array of string;
    fDiapazonAll:array of array of string;
-//   fRS232MeasuringTread:TThread;
-//   fNewData:boolean;
-//   function GetNewData:boolean;
    Procedure MModeDetermination(Data:array of byte); override;//virtual;
    Procedure DiapazonDetermination(Data:array of byte);override;// virtual;
    Procedure ValueDetermination(Data:array of byte);override;//virtual;
    Function MeasureModeLabelRead():string;override;//virtual;
-//   Procedure PacketReceiving(Sender: TObject; const Str: string);virtual;
-//   Function Measurement():double;virtual;
-//   Function GetValue():double;virtual;
-//   procedure SetNewData(Value:boolean);
   public
-//   property NewData:boolean read GetNewData write SetNewData;
-//   property Value:double read GetValue write fValue;
-//   property isReady:boolean read fIsReady write fIsReady;
-//   property isReceived:boolean read fIsReceived write fIsReceived;
-//   property MinDelayTime:integer read  fMinDelayTime;
    property MeasureModeLabel:string read MeasureModeLabelRead;
    property Diapazon:Shortint read fDiapazon;
-//   Constructor Create(CP:TComPort;Nm:string);override;
    Procedure ConvertToValue();override;
-//   Function ResultProblem(Rez:double):boolean;virtual;
-//   Procedure Request();virtual;
-//   function GetData():double;virtual;
-//   procedure MeasurementBegin;
-//   procedure GetDataThread(WPARAM: word;EventEnd:THandle);virtual;
   end;
 
 
@@ -228,54 +204,16 @@ TAdapterRadioGroupClick=class
     procedure RadioGroupOnEnter(Sender: TObject);
   end;
 
-//TRS232MetterShow=class
-//  protected
-//   RS232Meter:TRS232Meter;
-//   MeasureMode,Range:TRadioGroup;
-//   DataLabel,UnitLabel:TLabel;
-//   MeasurementButton:TButton;
-//   Time:TTimer;
-//   AdapterMeasureMode,AdapterRange:TAdapterRadioGroupClick;
-//   procedure MeasurementButtonClick(Sender: TObject);
-//   procedure AutoSpeedButtonClick(Sender: TObject);
-//   procedure DiapazonFill();
-//   procedure MeasureModeFill();
-//   procedure StringArrayToRadioGroup(SA:array of string;
-//                                     RG:TRadioGroup);
-//   procedure IndexToRadioGroup(Index:ShortInt;RG:TRadioGroup);
-//  public
-//   AutoSpeedButton:TSpeedButton;
-//   Constructor Create(Meter:TRS232Meter;
-//                      MM,R:TRadioGroup;
-//                      DL,UL:TLabel;
-//                      MB:TButton;
-//                      AB:TSpeedButton;
-//                      TT:TTimer
-//                      );
-//   Procedure Free; virtual;
-//   procedure MetterDataShow();virtual;
-//end;
 
 TRS232MetterShow=class(TMeasurementShow)
   protected
    RS232Meter:TRS232Meter;
-//   MeasureMode,Range:TRadioGroup;
-//   DataLabel,UnitLabel:TLabel;
-//   MeasurementButton:TButton;
-//   Time:TTimer;
    AdapterMeasureMode,AdapterRange:TAdapterRadioGroupClick;
-//   procedure MeasurementButtonClick(Sender: TObject);
-//   procedure AutoSpeedButtonClick(Sender: TObject);
    procedure DiapazonFill();
    procedure MeasureModeFill();
-//   procedure HookMeasureModeFill();override;
    function UnitModeLabel():string;override;
 
-//   procedure StringArrayToRadioGroup(SA:array of string;
-//                                     RG:TRadioGroup);
-//   procedure IndexToRadioGroup(Index:ShortInt;RG:TRadioGroup);
   public
-//   AutoSpeedButton:TSpeedButton;
    Constructor Create(Meter:TRS232Meter;
                       MM,R:TRadioGroup;
                       DL,UL:TLabel;
@@ -519,91 +457,11 @@ begin
   fIsready:=True;
 end;
 
-//constructor TRS232MeterVoltmeter.Create(CP:TComPort;Nm:string);
-//begin
-//  inherited Create(CP,Nm);
-//  fComPacket.OnPacket:=PacketReceiving;
-//
-//  fIsReady:=False;
-//  fIsReceived:=False;
-//  fMinDelayTime:=0;
-//  fMeasureMode:=-1;
-//  fDiapazon:=-1;
-//  fValue:=ErResult;
-//  fNewData:=False;
-//  fError:=False;
-//end;
-
-
 procedure TRS232MeterVoltmeter.DiapazonDetermination(Data: array of byte);
 begin
 
 end;
 
-
-//function TRS232MeterVoltmeter.GetData: double;
-//begin
-//  Result:=ErResult;
-//  if PortConnected then
-//   begin
-//    Result:=Measurement();
-//    fNewData:=True;
-//   end;
-//end;
-
-//procedure TRS232MeterVoltmeter.GetDataThread(WPARAM: word;EventEnd:THandle);
-//begin
-// if PortConnected then
-//   fRS232MeasuringTread:=TRS232MeasuringTread.Create(Self,WPARAM,EventEnd);
-//end;
-
-//procedure TRS232MeterVoltmeter.MeasurementBegin;
-//begin
-//  fIsReady := False;
-//  fIsReceived:=False;
-//  fError:=False;
-//end;
-
-//function TRS232MeterVoltmeter.GetNewData: boolean;
-//begin
-// Result:=fNewData;
-//end;
-
-//function TRS232MeterVoltmeter.GetValue: double;
-//begin
-// Result:=fValue;
-//end;
-
-//function TRS232MeterVoltmeter.Measurement: double;
-//label start;
-//var i:integer;
-//    isFirst:boolean;
-//begin
-//
-// Result:=ErResult;
-// isFirst:=True;
-//start:
-//  MeasurementBegin;
-//  Request();
-//
-//
-// sleep(fMinDelayTime);
-// i:=0;
-// repeat
-//   sleep(10);
-//   inc(i);
-// Application.ProcessMessages;
-// until ((i>130)or(fIsReceived)or(fError));
-//// showmessage(inttostr((GetTickCount-i0)));
-// if fIsReceived then ConvertToValue();
-// if fIsReady then Result:=fValue;
-//
-// if ((Result=ErResult)or(ResultProblem(Result)))and(isFirst) then
-//    begin
-//      isFirst:=false;
-//      goto start;
-//    end;
-//end;
 
 function TRS232MeterVoltmeter.MeasureModeLabelRead: string;
 begin
@@ -616,124 +474,10 @@ begin
 
 end;
 
-//procedure TRS232MeterVoltmeter.PacketReceiving(Sender: TObject; const Str: string);
-//begin
-//
-//end;
-
-//procedure TRS232MeterVoltmeter.Request;
-//begin
-//  isNeededComPortState();
-//end;
-
-
-//function TRS232MeterVoltmeter.ResultProblem(Rez: double): boolean;
-//begin
-// Result:=False;
-//end;
-
-//procedure TRS232MeterVoltmeter.SetNewData(Value: boolean);
-//begin
-// fNewData:=Value;
-//end;
-
 procedure TRS232MeterVoltmeter.ValueDetermination(Data: array of byte);
 begin
 
 end;
-
-
-//**********************************************************
-
-{ TMetterVoltmetrShow }
-
-//procedure TRS232MetterShow.AutoSpeedButtonClick(Sender: TObject);
-//begin
-// MeasurementButton.Enabled:=not(AutoSpeedButton.Down);
-// if AutoSpeedButton.Down then Time.OnTimer:=MeasurementButton.OnClick;
-// Time.Enabled:=AutoSpeedButton.Down;
-//end;
-//
-//constructor TRS232MetterShow.Create(Meter: TRS232Meter;
-//                                       MM, R: TRadioGroup;
-//                                       DL, UL: TLabel;
-//                                       MB: TButton;
-//                                       AB: TSpeedButton;
-//                                       TT: TTimer);
-//begin
-//   RS232Meter:=Meter;
-//   MeasureMode:=MM;
-//   Range:=R;
-//   DataLabel:=DL;
-//   UnitLabel:=UL;
-//   MeasurementButton:=MB;
-//   AutoSpeedButton:=AB;
-//   Time:=TT;
-//
-//   MeasureModeFill();
-//
-//   IndexToRadioGroup(RS232Meter.fMeasureMode,MeasureMode);
-//   DiapazonFill();
-//   UnitLabel.Caption := '';
-//
-//   MeasurementButton.OnClick:=MeasurementButtonClick;
-//   AutoSpeedButton.OnClick:=AutoSpeedButtonClick;
-//
-//   AdapterMeasureMode:=TAdapterRadioGroupClick.Create(MeasureMode.Items.Count-1);
-//   AdapterRange:=TAdapterRadioGroupClick.Create(Range.Items.Count-1);
-//   MeasureMode.OnClick:=AdapterMeasureMode.RadioGroupClick;
-//   Range.OnClick:=AdapterRange.RadioGroupClick;
-//   MeasureMode.onEnter:=AdapterMeasureMode.RadioGroupOnEnter;
-//   Range.onEnter:=AdapterRange.RadioGroupOnEnter;
-//end;
-//
-//procedure TRS232MetterShow.IndexToRadioGroup(Index: ShortInt; RG: TRadioGroup);
-//begin
-//  try
-//   RG.ItemIndex:=Index;
-//  except
-//   RG.ItemIndex:=RG.Items.Count-1;
-//  end;
-//end;
-//
-//procedure TRS232MetterShow.MeasurementButtonClick(Sender: TObject);
-//begin
-// RS232Meter.Measurement();
-// MetterDataShow();
-//end;
-//
-//procedure TRS232MetterShow.MetterDataShow;
-//begin
-//  MeasureMode.OnClick:=nil;
-//  Range.OnClick:=nil;
-//
-//  IndexToRadioGroup(RS232Meter.fMeasureMode,MeasureMode);
-//  DiapazonFill();
-//
-//  MeasureMode.OnClick:=AdapterMeasureMode.RadioGroupClick;
-//  Range.OnClick:=AdapterRange.RadioGroupClick;
-//
-//  if RS232Meter.Value<>ErResult then
-//     begin
-//       UnitLabel.Caption:=RS232Meter.MeasureModeLabel;
-//       DataLabel.Caption:=FloatToStrF(RS232Meter.Value,ffExponent,4,2)
-//     end
-//                        else
-//     begin
-//       UnitLabel.Caption:='';
-//       DataLabel.Caption:='    ERROR';
-//     end;
-//end;
-//
-//procedure TRS232MetterShow.StringArrayToRadioGroup(SA: array of string;
-//                                              RG: TRadioGroup);
-// var i:byte;
-//begin
-//    RG.Items.Clear;
-//    for I := 0 to High(SA) do RG.Items.Add(SA[i]);
-//end;
-
-//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 
 procedure TRS232MetterShow.DiapazonFill;
@@ -849,8 +593,6 @@ end;
 Procedure PortBeginAction(Port:TComPort;Lab:TLabel;Button: TButton);
 begin
   try
-//    if not(Port.Connected) then showmessage('jj');
-//    Port.Close;
     Port.Open;
     Port.Open;
     Port.AbortAllAsync;
@@ -873,18 +615,6 @@ begin
   end;
 
 
-//   if Port.Connected then
-//  begin
-//   Lab.Caption:='Port is open';
-//   Lab.Font.Color:=clBlue;
-//   if Button<>nil then Button.Caption:='To close'
-//  end
-//                       else
-//  begin
-//   Lab.Caption:='Port is close';
-//   Lab.Font.Color:=clRed;
-//   if Button<>nil then Button.Caption:='To open'
-//  end
 end;
 
 Procedure PortEndAction(Port:TComPort);
@@ -902,11 +632,6 @@ end;
 
 { TRS232Setter }
 
-//function TRS232Setter.CalibrationStep(Voltage: double): double;
-//begin
-// Result:=0.01;
-//end;
-
 function TRS232Setter.GetOutputValue: double;
 begin
  Result:=fOutputValue;
@@ -917,11 +642,6 @@ begin
  if Value<>ErResult then
       fOutputValue:=Value;
 end;
-
-//procedure TRS232Setter.OutputCalibr(Value: double);
-//begin
-// fOutputValue:=Value;
-//end;
 
 procedure TRS232Setter.OutputInt(Kod: integer);
 begin

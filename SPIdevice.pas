@@ -2,7 +2,7 @@ unit SPIdevice;
 
 interface
  uses OlegType,CPort,SysUtils,Classes,PacketParameters,
-      StdCtrls, IniFiles, RS232device;
+      StdCtrls, IniFiles, RS232device, ExtCtrls;
 
 const
   UndefinedPin=255;
@@ -47,18 +47,15 @@ type
    property PinControlStr:string Index 0 read GetPinStr;
    property PinGateStr:string Index 1 read GetPinStr;
    property Name:string read fName write fName;
-//   Constructor Create();overload;
    Constructor Create(Nm:string);overload;
    Constructor Create(Nm:string;PNm:array of string;PNumber:byte);overload;
    Constructor Create(Nm:string;PNm:array of string);overload;
    Constructor Create(Nm:string;PNumber:byte);overload;
    Procedure ReadFromIniFile(ConfigFile:TIniFile);overload;
    Procedure ReadFromIniFile(ConfigFile:TIniFile;Strings:TStrings);overload;
-   Procedure ReadFromIniFile(ConfigFile:TIniFile;PinsComboBoxs:array of TComboBox);overload;
    Procedure ReadFromIniFile(ConfigFile:TIniFile;PinsStrings:array of TStringList);overload;
    Procedure WriteToIniFile(ConfigFile:TIniFile);overload;
    Procedure WriteToIniFile(ConfigFile:TIniFile;Strings:TStrings);overload;
-   Procedure WriteToIniFile(ConfigFile:TIniFile;PinsComboBoxs:array of TComboBox);overload;
    Procedure WriteToIniFile(ConfigFile:TIniFile;PinsStrings:array of TStringList);overload;
   end;
 
@@ -103,20 +100,16 @@ type
    Pins:TPins;
    Constructor Create(CP:TComPort;Nm:string);override;
    Procedure Free;
-//   procedure ComPortUsing();override;
   end;
 
 
   TArduinoDAC=class(TRS232Setter)
     {базовий клас для ЦАП, що керується
     за допомогою Arduino    }
-//  private
-//   procedure DataByteToSendPrepare(Voltage: Double);
   protected
    Pins:TPins;
    fVoltageMaxValue:double;
    fKodMaxValue:integer;
-//   fMessageError:string;
    fSetterKod:byte;
    procedure PinsCreate();virtual;
    procedure PacketCreateAndSend();
@@ -133,7 +126,6 @@ type
    Procedure Output(Voltage:double);override;
    Procedure Reset();override;
    Procedure OutputInt(Kod:integer);override;
-//   procedure ComPortUsing();override;
   end;
 
 
@@ -150,21 +142,25 @@ type
    procedure SetButtonClick(Sender: TObject);
   end;
 
-  TPinsShowShot=class
+  TPinsShowUniversal=class
   protected
    fHookNumberPinShow: TSimpleEvent;
-   PinLabels:array of TLabel;
+   PinLabels:array of TPanel;
    fPinVariants:array of TStringList;
    procedure CreateFooter;
-//    function GetVariants(Index: byte): TStringList;
     procedure SetVariants(Index: byte; const S: TStringList);
   public
    Pins:TPins;
    property HookNumberPinShow:TSimpleEvent read fHookNumberPinShow write fHookNumberPinShow;
-//   property PinVariants[Index: byte]: TStringList read GetVariants write SetVariants;
    property PinVariants[Index: byte]: TStringList write SetVariants;
    Constructor Create(Ps:TPins;
-                      PinLs:array of TLabel);
+                      PinLs:array of TPanel);overload;
+   Constructor Create(Ps:TPins;
+                      PinLs:array of TPanel;
+                      PinVar:array of TStringList);overload;
+   Constructor Create(Ps:TPins;
+                      PinLs:array of TPanel;
+                      PinVarSingle: TStringList);overload;
    procedure PinsReadFromIniFile(ConfigFile:TIniFile);virtual;
    procedure PinsWriteToIniFile(ConfigFile:TIniFile);virtual;
    procedure NumberPinShow();virtual;
@@ -173,34 +169,12 @@ type
   end;
 
 
-
-  TPinsShowUniversal=class
-  protected
-   fHookNumberPinShow: TSimpleEvent;
-   PinLabels:array of TLabel;
-   SetPinButtons:array of TButton;
-   PinsComboBoxs:array of TComboBox;
-   procedure CreateFooter;
-  public
-   Pins:TPins;
-   property HookNumberPinShow:TSimpleEvent read fHookNumberPinShow write fHookNumberPinShow;
-   Constructor Create(Ps:TPins;
-                      PinLs:array of TLabel;
-                      SetPBs:array of TButton;
-                      PinCBs:array of TComboBox);
-   procedure PinsReadFromIniFile(ConfigFile:TIniFile);virtual;
-   procedure PinsWriteToIniFile(ConfigFile:TIniFile);virtual;
-   procedure NumberPinShow();virtual;
-  end;
-
-
   TPinsShow=class(TPinsShowUniversal)
   protected
   public
    Constructor Create(Ps:TPins;
-                      ControlPinLabel,GatePinLabel:TLabel;
-                      SetControlButton,SetGateButton:TButton;
-                      PCB:TComboBox);
+                      ControlPinLabel,GatePinLabel:TPanel;
+                      PinVariants:TStringList);
   end;
 
 
@@ -208,18 +182,18 @@ type
   protected
   public
    Constructor Create(Ps:TPins;
-                      ControlPinLabel:TLabel;
-                      SetControlButton:TButton;
-                      PCB:TComboBox);
+                      ControlPinLabel:TPanel;
+                      PinVariants:TStringList);overload;
+   Constructor Create(Ps:TPins;
+                      ControlPinLabel:TPanel);overload;
   end;
 
   TI2C_PinsShow=class (TOnePinsShow)
   protected
   public
    Constructor Create(Ps: TPins;
-                      ControlPinLabel: TLabel;
-                      SetControlButton: TButton;
-                      PCB: TComboBox; StartAdress, LastAdress: Byte);
+                      ControlPinLabel: TPanel;
+                      StartAdress, LastAdress: Byte);
   end;
 
 
@@ -231,9 +205,9 @@ type
    procedure ToChangeButtonClick(Sender: TObject);
   public
    Constructor Create(APC:TArduinoPinChanger;
-                      ControlPinLabel:TLabel;
-                      SetControlButton,TCBut:TButton;
-                      PCB:TComboBox
+                      ControlPinLabel:TPanel;
+                      TCBut:TButton;
+                      PinVariant:TStringList
                       );
 
   end;
@@ -242,15 +216,15 @@ type
 implementation
 
 uses
-  Math, Forms, Graphics, ExtCtrls, Controls, Dialogs;
+  Math, Forms, Graphics, Controls, Dialogs;
 
-constructor TPinsShow.Create(Ps:TPins;
-                             ControlPinLabel, GatePinLabel: TLabel;
-                             SetControlButton, SetGateButton: TButton;
-                             PCB: TComboBox);
+
+Constructor TPinsShow.Create(Ps:TPins;
+                      ControlPinLabel,GatePinLabel:TPanel;
+                      PinVariants:TStringList);
 begin
  inherited Create(Ps,[ControlPinLabel, GatePinLabel],
-         [SetControlButton, SetGateButton],[PCB,PCB]);
+         [PinVariants]);
 end;
 
 
@@ -277,12 +251,6 @@ begin
 end;
 
 { TArduinoMeter }
-
-//procedure TArduinoMeter.ComPortUsing;
-//begin
-//  PacketCreate([fMetterKod,Pins.PinControl]);
-//  fError:=not(PacketIsSend(fComPort,fMessageError));
-//end;
 
 Constructor TArduinoMeter.Create(CP:TComPort;Nm:string);
 begin
@@ -324,24 +292,9 @@ end;
 
 { TPins }
 
-//constructor TPins.Create;
-// var i:integer;
-//begin
-//  inherited;
-//  SetLength(fPins,2);
-//  SetLength(PNames,2);
-//  for I := 0 to High(fPins) do
-//   begin
-//    PNames[i]:=PinNames[i];
-//    fPins[i]:=UndefinedPin;
-//   end;
-//  fName:='';
-//end;
-
 constructor TPins.Create(Nm: string);
 begin
  Create(Nm,PinNames,2);
-// fName:=Nm;
 end;
 
 constructor TPins.Create(Nm: string; PNm: array of string; PNumber: byte);
@@ -387,23 +340,6 @@ end;
 function TPins.PinValueToStr(Index: integer): string;
 begin
  Result:=IntToStr(fPins[Index]);
-end;
-
-procedure TPins.ReadFromIniFile(ConfigFile: TIniFile;
-          PinsComboBoxs: array of TComboBox);
-  var i,TempPin:integer;
-begin
-  if Name='' then Exit;
-  for I := 0 to High(fPins) do
-   begin
-    TempPin := ConfigFile.ReadInteger(Name, PNames[i], -1);
-    if (i<=High(PinsComboBoxs))
-        and (TempPin > -1)
-        and (TempPin < PinsComboBoxs[i].Items.Count) then
-          fPins[i] := StrToInt(PinsComboBoxs[i].Items[TempPin])
-                                                     else
-          fPins[i]:=ConfigFile.ReadInteger(Name, PNames[i], UndefinedPin);
-   end;
 end;
 
 procedure TPins.ReadFromIniFile(ConfigFile: TIniFile;
@@ -468,23 +404,6 @@ begin
   fPins[Index]:=value;
 end;
 
-procedure TPins.WriteToIniFile(ConfigFile: TIniFile;
-                PinsComboBoxs: array of TComboBox);
-  var i,j:integer;
-begin
-  if Name='' then Exit;
-  ConfigFile.EraseSection(Name);
-
-   for j := 0 to High(fPins) do
-     begin
-     if j<=High(PinsComboBoxs) then
-        begin
-          for I := 0 to PinsComboBoxs[j].Items.Count - 1 do
-           if (fPins[j] = strtoint( PinsComboBoxs[j].Items[i])) then
-                ConfigFile.WriteInteger(Name, PNames[j], i);
-        end;
-     end;
-end;
 
 procedure TPins.WriteToIniFile(ConfigFile: TIniFile;
   PinsStrings: array of TStringList);
@@ -516,27 +435,19 @@ end;
 
 procedure TArduinoDAC.CreateHook;
 begin
-//  Pins:=TPins.Create;
-//  Pins.Name:=self.Name;
-
   fVoltageMaxValue:=5;
   fKodMaxValue:=65535;
-//  fMessageError:='Output is unsuccessful';
   fSetterKod:=$FF;
-
 end;
 
 procedure TArduinoDAC.OutputDataSignDetermination(OutputData: Double);
 begin
-  // if Voltage<0 then fData[2]:=DAC_Neg
-  //              else fData[2]:=DAC_Pos;
   if OutputData < 0 then  fData[5] := DAC_Neg
                     else  fData[5] := DAC_Pos;
 end;
 
 procedure TArduinoDAC.PinsToDataArray;
 begin
-//  fData[0] := fCommandByte;
   fData[1] := Pins.PinControl;
   fData[2] := Pins.PinGate;
 end;
@@ -545,12 +456,10 @@ constructor TArduinoDAC.Create(CP: TComPort; Nm: string);
 begin
   inherited Create(CP,Nm);
   PinsCreate();
-//  Pins.Name:=Nm;
   fComPacket.StartString:=PacketBeginChar;
   fComPacket.StopString:=PacketEndChar;
 
   CreateHook;
-//  SetLength(fData,3);
   SetLength(fData,6);
   fData[0] := fSetterKod;
   PinsToDataArray();
@@ -560,16 +469,9 @@ procedure TArduinoDAC.DataByteToSendFromInteger(IntData: Integer);
  var NormedIntData:integer;
 begin
   NormedIntData:=NormedKod(IntData);
-//  fData[0] := ((IntData shr 8) and $FF);
-//  fData[1] := (IntData and $FF);
   fData[3] := ((NormedIntData shr 8) and $FF);
   fData[4] := (NormedIntData and $FF);
 end;
-
-//procedure TArduinoDAC.DataByteToSendPrepare(Voltage: Double);
-//begin
-//  DataByteToSendFromInteger(VoltageToKod(Voltage));
-//end;
 
 procedure TArduinoDAC.Free;
 begin
@@ -581,7 +483,6 @@ procedure TArduinoDAC.Output(Voltage: double);
 begin
  if Voltage=ErResult then Exit;
  OutputDataSignDetermination(Voltage);
-// DataByteToSendPrepare(Voltage);
  DataByteToSendFromInteger(VoltageToKod(Voltage));
  PacketCreateAndSend();
 end;
@@ -589,11 +490,7 @@ end;
 procedure TArduinoDAC.OutputInt(Kod: integer);
 begin
  inherited OutputInt(Kod);
-// if Kod<0 then fData[2]:=DAC_Neg
-//          else fData[2]:=DAC_Pos;
  OutputDataSignDetermination(Kod);
-// if Kod<0 then fData[5]:=DAC_Neg
-//          else fData[5]:=DAC_Pos;
  DataByteToSendFromInteger(abs(Kod));
  PacketCreateAndSend();
 end;
@@ -615,9 +512,6 @@ end;
 
 procedure TArduinoDAC.Reset;
 begin
-// fData[2]:=DAC_Pos;
-// fData[0] := $00;
-// fData[1] := $00;
  fData[5]:=DAC_Pos;
  fData[3] := $00;
  fData[4] := $00;
@@ -660,9 +554,7 @@ constructor TArduinoPinChanger.Create(CP: TComPort; Nm: string);
 begin
  inherited Create(CP,Nm);
  fDeviceKod:=PinChangeCommand;
-// SetLength(Pins.fPins,1);
  PinUnderControl:=PinToHigh;
-// SetLength(fData,3);
 end;
 
 
@@ -700,12 +592,11 @@ begin
 end;
 
 constructor TArduinoPinChangerShow.Create(APC: TArduinoPinChanger;
-                                          ControlPinLabel: TLabel;
-                                          SetControlButton, TCBut: TButton;
-                                          PCB: TComboBox);
+                                          ControlPinLabel: TPanel;
+                                          TCBut: TButton;
+                                          PinVariant:TStringList);
 begin
-//  inherited Create(APC.Pins,ControlPinLabel,nil,SetControlButton,nil,PCB);
-  inherited Create(APC.Pins,ControlPinLabel,SetControlButton,PCB);
+  inherited Create(APC.Pins,ControlPinLabel,PinVariant);
   ArduinoPinChanger:=APC;
   ToChangeButton:=TCBut;
   CaptionButtonSynhronize;
@@ -723,134 +614,30 @@ end;
 { TOnePinsShow }
 
 constructor TOnePinsShow.Create(Ps: TPins;
-                                ControlPinLabel: TLabel;
-                                SetControlButton: TButton;
-                                PCB: TComboBox);
+                                ControlPinLabel: TPanel;
+                                PinVariants:TStringList);
 begin
- inherited Create(Ps,[ControlPinLabel],[SetControlButton],[PCB]);
-// inherited Create(Ps,ControlPinLabel,nil,SetControlButton,nil,PCB);
+ inherited Create(Ps,[ControlPinLabel],[PinVariants]);
 end;
+
+constructor TOnePinsShow.Create(Ps: TPins; ControlPinLabel: TPanel);
+begin
+ inherited Create(Ps,[ControlPinLabel]);
+end;
+
 
 { TTMP102PinsShow }
 
 constructor TI2C_PinsShow.Create(Ps: TPins;
-                 ControlPinLabel: TLabel; SetControlButton: TButton;
-                 PCB: TComboBox; StartAdress, LastAdress: Byte);
+                 ControlPinLabel: TPanel;
+                 StartAdress, LastAdress: Byte);
  var adress:byte;
 begin
- inherited Create(Ps,ControlPinLabel,SetControlButton,PCB);
- PCB.Items.Clear;
+ inherited Create(Ps,[ControlPinLabel]);
+
+ fPinVariants[0].Clear;
  for adress := StartAdress to LastAdress do
-   PCB.Items.Add('$'+IntToHex(adress,2));
-
-// PCB.Items.Add('$48');
-// PCB.Items.Add('$49');
-// PCB.Items.Add('$4A');
-// PCB.Items.Add('$4B');
-// SetControlButton.Caption:=('set adress');
-end;
-
-//procedure TI2C_PinsShow.NumberPinShow;
-//begin
-//
-//   PinLabels[0].Caption:='Adress is ';
-//   if Pins.fPins[0]=UndefinedPin then
-//       PinLabels[0].Caption:=
-//          PinLabels[0].Caption+'undefined'
-//                            else
-//       PinLabels[0].Caption:=
-//          PinLabels[0].Caption+'$'+IntToHex(Pins.fPins[0],2);
-//end;
-
-//procedure TI2C_PinsShow.PinsReadFromIniFile(ConfigFile: TIniFile);
-// var TempPin:integer;
-//begin
-//  Pins.ReadFromIniFile(ConfigFile,PinsComboBoxs);
-//
-////  Pins.ReadFromIniFile(ConfigFile,PinsComboBoxs[0].Items);
-//  if Pins.Name='' then Exit;
-//  TempPin := ConfigFile.ReadInteger(Pins.Name, 'Adress', -1);
-//    if (TempPin > -1) and (TempPin < PinsComboBoxs[0].Items.Count) then
-//      Pins.fPins[0] := StrToInt(PinsComboBoxs[0].Items[TempPin]);
-//end;
-//
-//procedure TI2C_PinsShow.PinsWriteToIniFile(ConfigFile: TIniFile);
-// var i:byte;
-//begin
-//    Pins.WriteToIniFile(ConfigFile,PinsComboBoxs);
-//
-////    Pins.WriteToIniFile(ConfigFile,PinsComboBox.Items);
-//  if Pins.Name='' then Exit;
-//  ConfigFile.EraseSection(Pins.Name);
-//  for I := 0 to PinsComboBoxs[0].Items.Count - 1 do
-//    if (Pins.fPins[0] = strtoint(PinsComboBoxs[0].Items[i])) then
-//        ConfigFile.WriteInteger(Pins.Name, 'Adress', i);
-//end;
-
-
-//  if Name='' then Exit;
-//  ConfigFile.EraseSection(Name);
-//
-//   for j := 0 to High(fPins) do
-//     begin
-//     if j<=High(PinsComboBoxs) then
-//        begin
-//          for I := 0 to PinsComboBoxs[j].Items.Count - 1 do
-//           if (IntToStr(fPins[j]) = PinsComboBoxs[j].Items[i]) then
-//                ConfigFile.WriteInteger(Name, PNames[j], i);
-//        end;
-//     end;
-
-{ TPinsShowUniversal }
-
-constructor TPinsShowUniversal.Create(Ps: TPins; PinLs: array of TLabel;
-      SetPBs: array of TButton; PinCBs: array of TComboBox);
- var i:byte;
-begin
- inherited Create();
- Pins:=Ps;
- SetLength(PinLabels,High(PinLs)+1);
- for I := 0 to High(PinLabels) do
-  PinLabels[i]:=PinLs[i];
-
- SetLength(SetPinButtons,High(SetPBs)+1);
- for I := 0 to High(SetPinButtons) do
-  SetPinButtons[i]:=SetPBs[i];
-
- SetLength(PinsComboBoxs,High(PinCBs)+1);
- for I := 0 to High(PinsComboBoxs) do
-  PinsComboBoxs[i]:=PinCBs[i];
-
- HookNumberPinShow:=TSimpleClass.EmptyProcedure;
- CreateFooter();
-end;
-
-procedure TPinsShowUniversal.CreateFooter;
- var  i: Integer;
-begin
-  for I := 0 to High(SetPinButtons) do
-    begin
-    SetPinButtons[i].OnClick := TAdapterSetButton.Create(PinsComboBoxs[i], Pins, i, NumberPinShow).SetButtonClick;
-    SetPinButtons[i].Caption := 'set ' + LowerCase(Pins.PNames[i]);
-    end;
-end;
-
-procedure TPinsShowUniversal.NumberPinShow;
-  var i:byte;
-begin
-  for I := 0 to High(PinLabels) do
-   PinLabels[i].Caption:=Pins.GetPinStr(i);
-   HookNumberPinShow;
-end;
-
-procedure TPinsShowUniversal.PinsReadFromIniFile(ConfigFile: TIniFile);
-begin
-  Pins.ReadFromIniFile(ConfigFile,PinsComboBoxs);
-end;
-
-procedure TPinsShowUniversal.PinsWriteToIniFile(ConfigFile: TIniFile);
-begin
- Pins.WriteToIniFile(ConfigFile,PinsComboBoxs);
+   fPinVariants[0].Add('$'+IntToHex(adress,2));
 end;
 
 
@@ -870,40 +657,79 @@ end;
 
 { TPinsShowShot }
 
-constructor TPinsShowShot.Create(Ps: TPins; PinLs: array of TLabel);
+constructor TPinsShowUniversal.Create(Ps: TPins;
+                          PinLs: array of TPanel);
  var i:byte;
 begin
   inherited Create();
  Pins:=Ps;
  SetLength(PinLabels,High(PinLs)+1);
  for I := 0 to High(PinLabels) do
-  begin
-  PinLabels[i]:=PinLs[i];
-  PinLabels[i].Tag:=i;
-  end;
+   begin
+     PinLabels[i]:=PinLs[i];
+     PinLabels[i].Tag:=i;
+   end;
+
+
  SetLength(fPinVariants,High(PinLs)+1);
  for I := 0 to High(fPinVariants) do
   begin
   fPinVariants[i]:=TStringList.Create;
   fPinVariants[i].Clear;
+
   end;
 
  HookNumberPinShow:=TSimpleClass.EmptyProcedure;
  CreateFooter();
 end;
 
-procedure TPinsShowShot.CreateFooter;
+constructor TPinsShowUniversal.Create(Ps: TPins;
+                      PinLs: array of TPanel;
+                      PinVar: array of TStringList);
+ var i:byte;
+begin
+  inherited Create();
+ Pins:=Ps;
+ SetLength(PinLabels,High(PinLs)+1);
+ for I := 0 to High(PinLabels) do
+   begin
+     PinLabels[i]:=PinLs[i];
+     PinLabels[i].Tag:=i;
+   end;
+
+ SetLength(fPinVariants,High(PinLabels)+1);
+ for I := 0 to High(fPinVariants) do
+  begin
+  fPinVariants[i]:=TStringList.Create;
+  fPinVariants[i].Clear;
+  if i<High(PinVar) then fPinVariants[i]:=PinVar[i]
+                    else fPinVariants[i]:=PinVar[High(PinVar)];
+  end;
+
+ HookNumberPinShow:=TSimpleClass.EmptyProcedure;
+ CreateFooter();
+end;
+
+constructor TPinsShowUniversal.Create(Ps: TPins;
+                                      PinLs: array of TPanel;
+                                      PinVarSingle: TStringList);
+begin
+ Create(Ps,PinLs,[PinVarSingle]);
+end;
+
+procedure TPinsShowUniversal.CreateFooter;
  var  i: Integer;
 begin
   for I := 0 to High(PinLabels) do
     begin
     PinLabels[i].Caption:=Pins.GetPinStr(i);
     PinLabels[i].Cursor:=crHandPoint;
+    PinLabels[i].Font.Color:=clActiveCaption;
     PinLabels[i].OnClick:=VariantsShowAndSelect;
     end;
 end;
 
-procedure TPinsShowShot.Free;
+procedure TPinsShowUniversal.Free;
  var i:byte;
 begin
  for I := 0 to High(fPinVariants) do
@@ -911,18 +737,10 @@ begin
    fPinVariants[i]:=nil;
    fPinVariants[i].Free;
    end;
-// inherited Free;
 end;
 
-//function TPinsShowShot.GetVariants(Index: byte): TStringList;
-//begin
-//  if (Index > High(fPinVariants)) then
-//          Result:=nil
-//                                  else
-//          Result := fPinVariants[Index];
-//end;
 
-procedure TPinsShowShot.NumberPinShow;
+procedure TPinsShowUniversal.NumberPinShow;
  var i:byte;
 begin
   for I := 0 to High(PinLabels) do
@@ -930,23 +748,23 @@ begin
    HookNumberPinShow;
 end;
 
-procedure TPinsShowShot.PinsReadFromIniFile(ConfigFile: TIniFile);
+procedure TPinsShowUniversal.PinsReadFromIniFile(ConfigFile: TIniFile);
 begin
   Pins.ReadFromIniFile(ConfigFile,fPinVariants);
 end;
 
-procedure TPinsShowShot.PinsWriteToIniFile(ConfigFile: TIniFile);
+procedure TPinsShowUniversal.PinsWriteToIniFile(ConfigFile: TIniFile);
 begin
  Pins.WriteToIniFile(ConfigFile,fPinVariants);
 end;
 
-procedure TPinsShowShot.SetVariants(Index: byte; const S: TStringList);
+procedure TPinsShowUniversal.SetVariants(Index: byte; const S: TStringList);
 begin
    if (Index <= High(fPinVariants)) then
      fPinVariants[Index]:=S;
 end;
 
-procedure TPinsShowShot.VariantsShowAndSelect(Sender: TObject);
+procedure TPinsShowUniversal.VariantsShowAndSelect(Sender: TObject);
 var Form:TForm;
     ButOk,ButCancel: TButton;
     RG:TRadioGroup;
@@ -966,6 +784,7 @@ begin
  Form.Font.Style:=[fsBold];
  Form.Font.Height:=-16;
  Form.Caption:='Set ' + LowerCase(Pins.PNames[PinNumber]);
+ Form.Color:=clMoneyGreen;
  RG:=TRadioGroup.Create(Form);
  RG.Parent:=Form;
  RG.Items:=fPinVariants[PinNumber];
@@ -1011,16 +830,12 @@ begin
     NumberPinShow();
    end;
 
-// RG.Items:=nil;
  for I := Form.ComponentCount-1 downto 0 do
      Form.Components[i].Free;
  Form.Hide;
  Form.Release;
 
 end;
-
-
-
 
 
 end.

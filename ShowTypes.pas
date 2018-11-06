@@ -253,10 +253,7 @@ end;
 
 procedure TParameterShow1.Free;
 begin
-//  STData.OnClick:=nil;
-//  STData:=nil;
-//  STCaption:=nil;
-//  inherited Free;
+
 end;
 
 procedure TParameterShow1.ButtonClick(Sender: TObject);

@@ -46,17 +46,8 @@ type
     RGV721I_MM: TRadioGroup;
     ComDPacket: TComDataPacket;
     BParamReceive: TButton;
-    CBV721A: TComboBox;
-    LV721APin: TLabel;
-    BV721ASet: TButton;
     PanelV721_II: TPanel;
     RGV721II_MM: TRadioGroup;
-    CBV721I: TComboBox;
-    CBV721II: TComboBox;
-    LV721IPin: TLabel;
-    LV721IIPin: TLabel;
-    BV721IISet: TButton;
-    BV721ISet: TButton;
     RGV721IRange: TRadioGroup;
     RGV721IIRange: TRadioGroup;
     LV721I: TLabel;
@@ -126,12 +117,6 @@ type
     STRBDelay: TStaticText;
     BRBDelayInput: TButton;
     BSaveSetting: TButton;
-    LV721IPinG: TLabel;
-    LV721APinG: TLabel;
-    BV721ASetGate: TButton;
-    BV721ISetGate: TButton;
-    LV721IIPinG: TLabel;
-    BV721IISetGate: TButton;
     PanelDACChA: TPanel;
     STChA: TStaticText;
     CBDAC: TComboBox;
@@ -187,9 +172,6 @@ type
     STCOMP: TStaticText;
     STComBR: TStaticText;
     TS_DACR2R: TTabSheet;
-    CBDACR2R: TComboBox;
-    LDACR2RPinC: TLabel;
-    BDACR2RSetC: TButton;
     STOVDACR2R: TStaticText;
     LOVDACR2R: TLabel;
     BOVchangeDACR2R: TButton;
@@ -234,10 +216,7 @@ type
     LADInputVoltageValue: TLabel;
     CBCurrentValue: TCheckBox;
     CBPC: TCheckBox;
-    LDS18BPin: TLabel;
     GBDS18B: TGroupBox;
-    BDS18B: TButton;
-    CBDS18b20: TComboBox;
     TS_Temper: TTabSheet;
     CBVtoI: TCheckBox;
     TS_UT70: TTabSheet;
@@ -365,11 +344,6 @@ type
     LTermostatOutputValue: TLabel;
     TS_D30_06: TTabSheet;
     RGD30: TRadioGroup;
-    CBD30: TComboBox;
-    LD30PinC: TLabel;
-    BD30SetC: TButton;
-    LD30PinG: TLabel;
-    BD30SetG: TButton;
     GBMeasD30: TGroupBox;
     LMeasD30: TLabel;
     BMeasD30: TButton;
@@ -419,9 +393,6 @@ type
     LIscResult: TLabel;
     LVocResult: TLabel;
     BVocMeasure: TButton;
-    CBIscVocPin: TComboBox;
-    LIscVocPin: TLabel;
-    BIscVocPin: TButton;
     BIscVocPinChange: TButton;
     GBET1255DACh3: TGroupBox;
     LOV1255ch3: TLabel;
@@ -455,18 +426,12 @@ type
     STET122_Gain: TStaticText;
     BET1255_show_save: TButton;
     GBTMP102: TGroupBox;
-    LTMP102Pin: TLabel;
-    BTMP102: TButton;
-    CBTMP102: TComboBox;
     SBGenerator: TSpeedButton;
     LDBtime: TLabel;
     STDBtime: TStaticText;
     GBLEDCon: TGroupBox;
     GBLEDOpen: TGroupBox;
-    LLEDOpenPin: TLabel;
-    CBLEDOpenPin: TComboBox;
     BLEDOpenPinChange: TButton;
-    BLEDOpenPin: TButton;
     CBLEDOpenAuto: TCheckBox;
     STLED_on_CD: TStaticText;
     CBLED_onCD: TComboBox;
@@ -475,51 +440,47 @@ type
     TS_ADC: TTabSheet;
     Button1: TButton;
     GBMCP3424: TGroupBox;
-    LMCP3424Pin: TLabel;
-    BMCP3424: TButton;
-    CBMCP3424: TComboBox;
     GBMCP3424_Ch1: TGroupBox;
-    LMCP3424_Ch1bits: TLabel;
-    CBMCP3424_Ch1bits: TComboBox;
-    LMCP3424_Ch1gain: TLabel;
-    BtMCP3424_Ch1bits: TButton;
-    BtMCP3424_Ch1gain: TButton;
-    CBMCP3424_Ch1gain: TComboBox;
     BMCP3424_Ch1meas: TButton;
     LMCP3424_Ch1meas: TLabel;
     GBMCP3424_Ch2: TGroupBox;
-    LMCP3424_Ch2bits: TLabel;
-    LMCP3424_Ch2gain: TLabel;
     LMCP3424_Ch2meas: TLabel;
-    CBMCP3424_Ch2bits: TComboBox;
-    BtMCP3424_Ch2bits: TButton;
-    BtMCP3424_Ch2gain: TButton;
-    CBMCP3424_Ch2gain: TComboBox;
     BMCP3424_Ch2meas: TButton;
     GBMCP3424_Ch3: TGroupBox;
-    LMCP3424_Ch3bits: TLabel;
-    LMCP3424_Ch3gain: TLabel;
     LMCP3424_Ch3meas: TLabel;
-    CBMCP3424_Ch3bits: TComboBox;
-    BtMCP3424_Ch3bits: TButton;
-    BtMCP3424_Ch3gain: TButton;
-    CBMCP3424_Ch3gain: TComboBox;
     BMCP3424_Ch3meas: TButton;
     GBMCP3424_Ch4: TGroupBox;
-    LMCP3424_Ch4bits: TLabel;
-    LMCP3424_Ch4gain: TLabel;
     LMCP3424_Ch4meas: TLabel;
-    CBMCP3424_Ch4bits: TComboBox;
-    BtMCP3424_Ch4bits: TButton;
-    BtMCP3424_Ch4gain: TButton;
-    CBMCP3424_Ch4gain: TComboBox;
     BMCP3424_Ch4meas: TButton;
     STMCP3424_1: TStaticText;
     STMCP3424_2: TStaticText;
     STMCP3424_5: TStaticText;
     STMCP3424_3: TStaticText;
     STMCP3424_4: TStaticText;
-    Label1: TLabel;
+    PV721IPin: TPanel;
+    PV721IPinG: TPanel;
+    PV721IIPin: TPanel;
+    PV721IIPinG: TPanel;
+    PV721APinG: TPanel;
+    PV721APin: TPanel;
+    PDACR2RPinC: TPanel;
+    PTMP102Pin: TPanel;
+    PDS18BPin: TPanel;
+    PMCP3424Pin: TPanel;
+    PMCP3424_Ch1bits: TPanel;
+    PMCP3424_Ch1gain: TPanel;
+    PMCP3424_Ch2bits: TPanel;
+    PMCP3424_Ch2gain: TPanel;
+    PMCP3424_Ch3bits: TPanel;
+    PMCP3424_Ch3gain: TPanel;
+    PMCP3424_Ch4bits: TPanel;
+    PMCP3424_Ch4gain: TPanel;
+    PD30PinC: TPanel;
+    PD30PinG: TPanel;
+    PLEDOpenPin: TPanel;
+    PIscVocPin: TPanel;
+    GBHTU21: TGroupBox;
+    PHTU21: TPanel;
 
     procedure FormCreate(Sender: TObject);
     procedure BConnectClick(Sender: TObject);
@@ -561,7 +522,7 @@ type
     procedure PinsFromIniFile;
     {зчитування номерів пінів, які використовуються загалом}
     procedure PinsWriteToIniFile;
-    Procedure NumberPinsShow();
+//    Procedure NumberPinsShow();
     {відображується вміст NumberPins в усі
     ComboBox з Tag=1}
     procedure RangeShow(Sender: TObject);
@@ -684,7 +645,6 @@ type
 //    V721_I:TV721;
 //    V721_II:TV721_Brak;
     VoltmetrShows:array of TVoltmetrShow;
-    PinsShowShot:TPinsShowShot;
 
     DS18B20:TDS18B20;
 //    DS18B20show:TPinsShow;
@@ -1473,24 +1433,6 @@ begin
 
 end;
 
-//procedure TIVchar.ET1255Free;
-// var I:TET1255_DAC_ChanelNumber;
-//begin
-//  if ET1255isPresent then
-//   begin
-//     for I := Low(TET1255_DAC_ChanelNumber) to High(TET1255_DAC_ChanelNumber) do
-//        if ET1255_DACs[i]<>nil then
-//           begin
-//            ET1255_DACsShow[i].Free;
-//            ET1255_DACs[i].Reset();
-//            ET1255_DACs[i].Free();
-//           end;
-//    ET1255_ADCModule.Free;
-//    ET1255_ADCShow.Free;
-//   end;
-//
-//end;
-
 
 function TIVchar.IVCharVoltageMaxDif: double;
 begin
@@ -1507,95 +1449,6 @@ begin
     end;
   Result:=Result*MaxDifCoeficient;
 end;
-
-//procedure TIVchar.IVCharVoltageMeasHook;
-//  var
-//    tmV,MaxDif,NewCorrection,Factor{,V}:double;
-//  ItIsLarge,CorrectionIsNeeded: Boolean;
-// label bbegin;
-//
-//  function y3(x1,x2,x3,y1,y2:double):double;
-//  begin
-//    Result:=x3*(y1-y2)/(x1-x2)+(y2*x1-y1*x2)/(x1-x2);
-//  end;
-//
-//begin
-//  MaxDif:=IVCharVoltageMaxDif();
-//
-//bbegin:
-//  Application.ProcessMessages;
-//  if TIVDependence.IVMeasuringToStop then Exit;
-//  tmV := VoltageIV_MD.GetMeasurementResult();
-//  if tmV=ErResult then
-//    begin
-//     TDependence.tempVChange(tmV);
-//     Exit;
-//    end;
-//
-//  if RGDO.ItemIndex=1 then
-//     begin
-//     tmV:=-tmV;
-//     LADVoltageValue.Caption:=FloatToStrF(tmV,ffFixed, 4, 3);
-//     end;
-//
-//
-//  if TIVDependence.ItIsForward then
-//   CorrectionIsNeeded:=(abs(tmV-TIVDependence.VoltageInput)>=MaxDif)
-//                                       else
-//  CorrectionIsNeeded:=(abs(abs(tmV)-TIVDependence.VoltageInput)>=MaxDif);
-//
-//  if CorrectionIsNeeded then
-//   begin
-//    TIVDependence.SecondMeasIsDoneChange(False);
-//
-//    if (not(TIVDependence.ItIsForward))and(TIVDependence.VoltageInput<>0) then
-//                  tmV:=abs(tmV);
-//    ItIsLarge:=(tmV>TIVDependence.VoltageInput);
-//
-//    if (ItIsLarge)and(abs(-VoltageMeasuredN+tmV)<0.25*MaxDif) then
-//     begin
-//      Randomize;
-//      NewCorrection:=0.15*Random;
-//      VoltageMeasured:=ErResult;
-//      VoltageInputCorrection:=ErResult;
-//      TIVDependence.VoltageCorrectionChange(NewCorrection);
-//      Exit;
-//     end;
-//
-//    if (not(ItIsLarge))and(abs(VoltageMeasured-tmV)<0.25*MaxDif) then
-//     begin
-//      Randomize;
-//      NewCorrection:=0.15*Random;
-//      VoltageMeasuredN:=ErResult;
-//      VoltageInputCorrectionN:=ErResult;
-//      TIVDependence.VoltageCorrectionChange(NewCorrection);
-//      Exit;
-//     end;
-//
-//   if ItIsLarge then Factor:=1
-//                else Factor:=2.5;
-//   if tmV>(TIVDependence.VoltageInput+TIVDependence.VoltageCorrection)
-//     then
-//   if ItIsLarge then Factor:=1.2
-//                else Factor:=0.8;
-//   inc(IterationNumber);
-//   if (IterationNumber mod 7)=0 then
-//   begin
-//    Randomize;
-//    Factor:=Factor*Random;
-//   end;
-//
-//   NewCorrection:=TIVDependence.VoltageCorrection+
-//                     Factor*(TIVDependence.VoltageInput-tmV);
-//
-//    if abs(NewCorrection)>0.3 then NewCorrection:=0.1*NewCorrection/NewCorrection;
-//
-//
-//    TIVDependence.VoltageCorrectionChange(NewCorrection);
-//    Exit;
-//   end;
-//  TDependence.tempVChange(tmV);
-//end;
 
 
 procedure TIVchar.IVCharVoltageMeasHook;
@@ -2052,9 +1905,6 @@ begin
  finally
  PortBeginAction(ComPort1,LConnected,BConnect);
 
-// FormDestroy(Sender);
-// FormCreate(Sender);
-
  end;
 end;
 
@@ -2314,50 +2164,33 @@ begin
                     else
         NumberPinsOneWire.Add(IntToStr(Data[i]));
     end;
-   NumberPinsShow();
   end;
-
 end;
 
 procedure TIVchar.FormCreate(Sender: TObject);
 begin
-
-
  DecimalSeparator:='.';
  ComponentView();
 
  ConfigFile:=TIniFile.Create(ExtractFilePath(Application.ExeName)+'IVChar.ini');
  ShowArray:=TObjectArray.Create;
  AnyObjectArray:=TObjectArray.Create;
+ NumberPins:=TStringList.Create;
+ NumberPinsOneWire:=TStringList.Create;
+ PinsFromIniFile();
 
  VoltmetrsCreate();
  ET1255Create();
-
- NumberPins:=TStringList.Create;
- NumberPinsOneWire:=TStringList.Create;
  VectorsCreate();
-
-  PinsShowShot:=TPinsShowShot.Create(V721A.Pins,[Label1]);
-  PinsShowShot.PinVariants[0]:=NumberPins;
-  ShowArray.Add([PinsShowShot]);
 
  ConstantShowCreate();
  ConstantShowFromIniFile();
 
  PIDShowCreateAndFromIniFile();
-
  BoxFromIniFile();
 
- PinsFromIniFile();
- NumberPinsShow();
-
-
-// VoltmetrsReadFromIniFileAndToForm();
 
  RangesCreate();
-// RangeReadFromIniFile();
-
-
  StepsReadFromIniFile();
  ForwStepShow();
  RevStepShow();
@@ -2367,13 +2200,11 @@ begin
  DACCreate();
  DACReadFromIniFileAndToForm;
 
-  DevicesCreate();
-//  DevicesReadFromIniAndToForm();
-
-  DependenceMeasuringCreate();
+ DevicesCreate();
+ DependenceMeasuringCreate();
  ShowObjectsReadFromIniFileAndToForm();
 
-  ComPortsBegining;
+ ComPortsBegining;
 
 
  RS232_MediatorTread:=TRS232_MediatorTread.Create(
@@ -2385,21 +2216,15 @@ begin
 
  if (ComPort1.Connected)and(SettingDevice.ActiveInterface.Name=DACR2R.Name) then SettingDevice.Reset();
  if (ComPort1.Connected) then D30_06.Reset;
-
-
 end;
 
 procedure TIVchar.FormDestroy(Sender: TObject);
 begin
-// if RS232_MediatorTread <> nil
-//   then RS232_MediatorTread.Terminate;
 
  if SBTAuto.Down then TemperatureMeasuringThread.Terminate;
  if SBControlBegin.Down then ControllerThread.Terminate;
 
  if assigned(DependTimer) then DependTimer.Free;
-
-
 
  DACWriteToIniFile();
  ShowObjectsWriteToIniFileAndFree();
@@ -2407,13 +2232,6 @@ begin
  SettingWriteToIniFile();
  ConfigFile.Free;
 
-
-
-// DependenceMeasuringFree();
-
-// DevicesFree();
-
-// ET1255Free;
  ObjectsFree();
  DACFree();
 
@@ -2424,17 +2242,12 @@ begin
    then RS232_MediatorTread.Terminate;
 
  VectorsDispose();
-// RangesFree();
-//PinsShowShot.Free;
 
  NumberPins.Free;
  NumberPinsOneWire.Free;
 
  ComPortsEnding([ComPortUT70C,ComPortUT70B,ComPort1]);
-
 end;
-
-
 
 
 procedure TIVchar.PCChange(Sender: TObject);
@@ -2462,26 +2275,15 @@ begin
    TPID_ParametersShow.Create('PIDTermostat',
            STTermostatKp,STTermostatKi,STTermostatKd,STTermostatNT,STTermostatTolerance,
            LTermostatKp,LTermostatKi,LTermostatKd,LTermostatNT,LTermostatTolerance);
-//  PID_Termostat_ParametersShow.ReadFromIniFile(ConfigFile);
 
   PID_Control_ParametersShow:=
    TPID_ParametersShow.Create('PIDControl',
            STControlKp,STControlKi,STControlKd,STControlNV,STControlTolerance,
            LControlKp,LControlKi,LControlKd,LControlNV,LControlTolerance);
-//  PID_Control_ParametersShow.ReadFromIniFile(ConfigFile);
 
   ShowArray.Add([PID_Termostat_ParametersShow,PID_Control_ParametersShow]);
 
 end;
-
-//procedure TIVchar.PIDShowToIniFileAndFree;
-//begin
-//  ConfigFile.EraseSection(PID_Param);
-//  PID_Termostat_ParametersShow.WriteToIniFile(ConfigFile);
-//  PID_Control_ParametersShow.WriteToIniFile(ConfigFile);
-//  PID_Termostat_ParametersShow.Free;
-//  PID_Control_ParametersShow.Free;
-//end;
 
 procedure TIVchar.SGFBStepDrawCell(Sender: TObject; ACol, ARow: Integer;
   Rect: TRect; State: TGridDrawState);
@@ -2548,7 +2350,6 @@ end;
 
 procedure TIVchar.ComPortsBegining;
 begin
-//  showmessage('jjj');
   ComPortsLoadSettings([ComPortUT70C,ComPortUT70B,ComPort1]);
   ComCBUT70CPort.UpdateSettings;
   ComCBUT70BPort.UpdateSettings;
@@ -2562,11 +2363,9 @@ begin
 
 //  PortBeginAction(ComPortUT70B, LUT70BPort, nil);
 //  PortBeginAction(ComPortUT70C, LUT70CPort, nil);
-//
+
+
   PortBeginAction(ComPort1, LConnected, BConnect);
-
-
-
 end;
 
 procedure TIVchar.ComPortsEnding(ComPorts: array of TComPort);
@@ -2592,21 +2391,6 @@ begin
    ComPorts[i].StoreSettings(stIniFile,ExtractFilePath(Application.ExeName)+'IVChar.ini');
 end;
 
-Procedure TIVchar.NumberPinsShow();
- var i:integer;
-begin
- try
- for i := IVchar.ComponentCount - 1 downto 0 do
-   begin
-   if IVchar.Components[i].Tag = 1 then
-    (IVchar.Components[i] as TComboBox).Items:=NumberPins;
-   if IVchar.Components[i].Tag = 11 then
-    (IVchar.Components[i] as TComboBox).Items:=NumberPinsOneWire;
-   end;
- finally
- end;
-end;
-
 procedure TIVchar.RangeShow(Sender: TObject);
  begin
   if CBMeasurements.Items[CBMeasurements.ItemIndex]
@@ -2619,14 +2403,6 @@ procedure TIVchar.RangeShowLimit;
 begin
  RangeShow(Self);
 end;
-
-//procedure TIVchar.RangeReadFromIniFile;
-//begin
-//  IVCharRangeFor.ReadFromIniFile(ConfigFile);
-//  IVCharRangeRev.ReadFromIniFile(ConfigFile);
-//  CalibrRangeFor.ReadFromIniFile(ConfigFile);
-//  CalibrRangeRev.ReadFromIniFile(ConfigFile);
-//end;
 
 procedure TIVchar.RangesCreate;
 begin
@@ -2810,11 +2586,6 @@ procedure TIVchar.SBControlBeginClick(Sender: TObject);
 begin
  if SBControlBegin.Down then
     begin
-//    PID_Control:=TPID.Create(DoubleConstantShows[12].Data,
-//                             DoubleConstantShows[13].Data,
-//                             DoubleConstantShows[14].Data,
-//                             DoubleConstantShows[10].Data,
-//                             DoubleConstantShows[11].Data);
     PID_Control:=TPID.Create(PID_Control_ParametersShow,
                              DoubleConstantShows[10].Data);
     ControllerThreadCreate();
@@ -2890,13 +2661,10 @@ end;
 
 procedure TIVchar.SettingWriteToIniFile;
 begin
-//  RangeWriteToIniFile;
   StepsWriteToIniFile;
   DelayTimeWriteToIniFile;
-//  DevicesWriteToIniFile;
   BoxToIniFile;
   ConstantShowToIniFileAndFree();
-//  PIDShowToIniFileAndFree();
   ComPortsWriteSettings([ComPortUT70C,ComPortUT70B,ComPort1]);
 end;
 
@@ -2948,8 +2716,6 @@ begin
 
 end;
 
-
-
 procedure TIVchar.TermostatWatchDogTimer(Sender: TObject);
 begin
  if (Temperature_MD.ActiveInterface.NewData)
@@ -2979,14 +2745,6 @@ begin
   Temperature_MD.ActiveInterface.NewData:=False;
 end;
 
-//procedure TIVchar.DependTimerTimer(Sender: TObject);
-//begin
-//
-//  showmessage('DependTimerTimer');
-//  ThermoCuple.Measurement:=TermoCouple_MD.ActiveInterface;
-//  Temperature_MD.ActiveInterface.GetDataThread(TemperMessage,EventMeasuringEnd);
-//end;
-
 procedure TIVchar.VoltmetrsCreate;
 begin
   V721A := TV721A.Create(ComPort1, 'B7-21A');
@@ -2994,16 +2752,16 @@ begin
   V721_II := TV721.Create(ComPort1, 'B7-21 (2)');
 //  V721_II := TV721_Brak.Create(ComPort1, 'B7-21 (2)');
   SetLength(VoltmetrShows,3);
-  VoltmetrShows[0]:= TVoltmetrShow.Create(V721A, RGV721A_MM, RGV721ARange, LV721A, LV721AU, LV721APin, LV721APinG, BV721ASet, BV721ASetGate, BV721AMeas, SBV721AAuto, CBV721A, Time);
-  VoltmetrShows[1]:= TVoltmetrShow.Create(V721_I, RGV721I_MM, RGV721IRange, LV721I, LV721IU, LV721IPin, LV721IPinG, BV721ISet, BV721ISetGate, BV721IMeas, SBV721IAuto, CBV721I, Time);
-  VoltmetrShows[2]:= TVoltmetrShow.Create(V721_II, RGV721II_MM, RGV721IIRange, LV721II, LV721IIU, LV721IIPin, LV721IIPinG, BV721IISet, BV721IISetGate, BV721IIMeas, SBV721IIAuto, CBV721II, Time);
+  VoltmetrShows[0]:= TVoltmetrShow.Create(V721A, RGV721A_MM, RGV721ARange, LV721A, LV721AU, PV721APin, PV721APinG, {BV721ASet, BV721ASetGate, }BV721AMeas, SBV721AAuto, NumberPins{CBV721A}, Time);
+  VoltmetrShows[1]:= TVoltmetrShow.Create(V721_I, RGV721I_MM, RGV721IRange, LV721I, LV721IU, PV721IPin, PV721IPinG, {BV721ISet, BV721ISetGate,} BV721IMeas, SBV721IAuto, NumberPins{CBV721I}, Time);
+  VoltmetrShows[2]:= TVoltmetrShow.Create(V721_II, RGV721II_MM, RGV721IIRange, LV721II, LV721IIU, PV721IIPin, PV721IIPinG, {BV721IISet, BV721IISetGate,} BV721IIMeas, SBV721IIAuto, NumberPins{CBV721II}, Time);
 
   DS18B20:=TDS18B20.Create(ComPort1, 'DS18B20');
-  DS18B20show:=TOnePinsShow.Create(DS18B20.Pins,LDS18BPin,BDS18B,CBDS18b20);
+  DS18B20show:=TOnePinsShow.Create(DS18B20.Pins,PDS18BPin,NumberPinsOneWire);
 
 
   TMP102:=TTMP102.Create(ComPort1, 'TMP102');
-  TMP102show:=TI2C_PinsShow.Create(TMP102.Pins,LTMP102Pin, BTMP102, CBTMP102,TMP102_StartAdress,TMP102_LastAdress);
+  TMP102show:=TI2C_PinsShow.Create(TMP102.Pins,PTMP102Pin, TMP102_StartAdress,TMP102_LastAdress);
 
 
   HTU21D:=THTU21D.Create(ComPort1, 'HTU21D');
@@ -3011,11 +2769,9 @@ begin
   ThermoCuple:=TThermoCuple.Create;
 
   IscVocPinChanger:=TArduinoPinChanger.Create(ComPort1,'IscVocPin');
-  IscVocPinChangerShow:=TArduinoPinChangerShow.Create(IscVocPinChanger,LIscVocPin,BIscVocPin,BIscVocPinChange,CBIscVocPin);
+  IscVocPinChangerShow:=TArduinoPinChangerShow.Create(IscVocPinChanger,PIscVocPin,{BIscVocPin,}BIscVocPinChange,{CBIscVocPin}NumberPins);
   LEDOpenPinChanger:=TArduinoPinChanger.Create(ComPort1,'LEDOpenPin');
-  LEDOpenPinChangerShow:=TArduinoPinChangerShow.Create(LEDOpenPinChanger,LLEDOpenPin,BLEDOpenPin,BLEDOpenPinChange,CBLEDOpenPin);
-
-
+  LEDOpenPinChangerShow:=TArduinoPinChangerShow.Create(LEDOpenPinChanger,PLEDOpenPin,{BLEDOpenPin,}BLEDOpenPinChange,{CBLEDOpenPin}NumberPins);
 
   ShowArray.Add([VoltmetrShows[0],VoltmetrShows[1],VoltmetrShows[2]]);
   ShowArray.Add([DS18B20show,TMP102show,
@@ -3049,28 +2805,12 @@ begin
       Continue;
      end;
 
-//   if (ShowArray.ObjectArray[i] is TPinsShow) then
-//     begin
-//      (ShowArray.ObjectArray[i] as TPinsShow).PinsReadFromIniFile(ConfigFile);
-//      (ShowArray.ObjectArray[i] as TPinsShow).NumberPinShow;
-//      Continue;
-//     end;
-
-   if (ShowArray.ObjectArray[i] is TPinsShowShot) then
-     begin
-      (ShowArray.ObjectArray[i] as TPinsShowShot).PinsReadFromIniFile(ConfigFile);
-      (ShowArray.ObjectArray[i] as TPinsShowShot).NumberPinShow;
-      Continue;
-     end;
-
-
    if (ShowArray.ObjectArray[i] is TPinsShowUniversal) then
      begin
       (ShowArray.ObjectArray[i] as TPinsShowUniversal).PinsReadFromIniFile(ConfigFile);
       (ShowArray.ObjectArray[i] as TPinsShowUniversal).NumberPinShow;
       Continue;
      end;
-
 
    if (ShowArray.ObjectArray[i] is TVoltmetrShow) then
      begin
@@ -3091,41 +2831,11 @@ begin
      end;
   end;
 
-
-// for I := 0 to High(VoltmetrShows) do
-//  begin
-//  VoltmetrShows[i].PinShow.PinsReadFromIniFile(ConfigFile);
-//  VoltmetrShows[i].NumberPinShow;
-//  end;
-//
-// DS18B20show.PinsReadFromIniFile(ConfigFile);
-// DS18B20show.NumberPinShow;
-//
-// TMP102show.PinsReadFromIniFile(ConfigFile);
-// TMP102show.NumberPinShow;
-//
-// MCP3424show.PinsReadFromIniFile(ConfigFile);
-// MCP3424show.NumberPinShow;
-//
-// IscVocPinChangerShow.PinsReadFromIniFile(ConfigFile);
-// IscVocPinChangerShow.NumberPinShow;
-//
-// LEDOpenPinChangerShow.PinsReadFromIniFile(ConfigFile);
-// LEDOpenPinChangerShow.NumberPinShow;
 end;
 
 procedure TIVchar.ShowObjectsWriteToIniFileAndFree;
   var i:integer;
 begin
-// for I := 0 to High(VoltmetrShows) do
-//  VoltmetrShows[i].PinShow.PinsWriteToIniFile(ConfigFile);
-// DS18B20show.PinsWriteToIniFile(ConfigFile);
-// TMP102show.PinsWriteToIniFile(ConfigFile);
-// MCP3424show.PinsWriteToIniFile(ConfigFile);
-//
-// IscVocPinChangerShow.PinsWriteToIniFile(ConfigFile);
-// LEDOpenPinChangerShow.PinsWriteToIniFile(ConfigFile);
-
   ConfigFile.EraseSection(PID_Param);
   ConfigFile.EraseSection(MD_IniSection);
   ConfigFile.EraseSection(RangeSection);
@@ -3157,13 +2867,6 @@ begin
     begin
     (ShowArray.ObjectArray[i] as TMCP3424_ChannelShow).PinsWriteToIniFile(ConfigFile);
     (ShowArray.ObjectArray[i] as TMCP3424_ChannelShow).Free;
-    Continue;
-    end;
-
-   if (ShowArray.ObjectArray[i] is TPinsShowShot) then
-    begin
-    (ShowArray.ObjectArray[i] as TPinsShowShot).PinsWriteToIniFile(ConfigFile);
-    (ShowArray.ObjectArray[i] as TPinsShowShot).Free;
     Continue;
     end;
 
@@ -3204,9 +2907,6 @@ begin
    ShowArray.ObjectArray[i].Free;
   end;
 
-
-
-
 // if ET1255isPresent then
 //  ET1255_ADCModule.WriteToIniFile(ConfigFile);
 end;
@@ -3220,7 +2920,7 @@ begin
       if LTermostatCTValue.Font.Color=clBlue
         then LTermostatCTValue.Font.Color:=clRed
         else LTermostatCTValue.Font.Color:=clBlue;
-      
+
       if IsWorkingTermostat then
         begin
           if IsPID_Termostat_Created then
@@ -3259,13 +2959,7 @@ end;
 procedure TIVchar.HookEndReset;
 begin
   SettingDevice.ActiveInterface.Reset();
-
-//  Application.ProcessMessages;
-//  BDACReset.OnClick(BDACReset);
-  //  if TIVDependence.IVMeasuringToStop then
-//    showmessage('Procedure is stopped');
-    sleep(1000);
-//    showmessage('Measurement is done');
+  sleep(1000);
 end;
 
 procedure TIVchar.SaveDialogPrepare;
@@ -3344,58 +3038,6 @@ begin
   for I := 0 to High(Dependencies) do
     Dependencies[i].Free;
 
-//  for i:=0 to High(ShowArray.ObjectArray) do
-//  begin
-//   if (ShowArray.ObjectArray[i] is TPinsShow) then
-//    (ShowArray.ObjectArray[i] as TPinsShow).Free;
-//   if (ShowArray.ObjectArray[i] is TVoltmetrShow) then
-//      (ShowArray.ObjectArray[i] as TVoltmetrShow).Free;
-//  end;
-
-
-
-
-//  for I := 0 to High(VoltmetrShows) do
-//        VoltmetrShows[i].Free;
-//  if assigned(V721A) then
-//    V721A.Free;
-//  if assigned(V721_I) then
-//    V721_I.Free;
-//  if assigned(V721_II) then
-//    V721_II.Free;
-
-// DS18B20show.Free;
-//  if assigned(DS18B20) then
-//    DS18B20.Free;
-
-// TMP102show.Free;
-//  if assigned(TMP102) then
-//    TMP102.Free;
-
-
-// MCP3424show.Free;
-//  if assigned(MCP3424) then
-//    MCP3424.Free;
-
-
-// if assigned(HTU21D) then
-//    HTU21D.Free;
-
-// IscVocPinChangerShow.Free;
-//  if assigned(IscVocPinChanger) then
-//    IscVocPinChanger.Free;
-
-// LEDOpenPinChangerShow.Free;
-//  if assigned(LEDOpenPinChanger) then
-//    LEDOpenPinChanger.Free;
-
-// UT70BShow.Free;
-//  if assigned(UT70B) then
-//    UT70B.Free;
-// UT70CShow.Free;
-//  if assigned(UT70C) then
-//    UT70C.Free;
-
   ThermoCuple.Free;
   Simulator.Free;
 end;
@@ -3403,20 +3045,15 @@ end;
 procedure TIVchar.DACCreate;
 begin
   DACR2R:=TDACR2R.Create(ComPort1,'DAC R-2R');
-//  DACR2RShow:=TDACR2RShow.Create(DACR2R,LDACR2RPinC,LDACR2RPinG,LOVDACR2R,LOKDACR2R,
-//                                 BDACR2RSetC,BDACR2RSetG,BOVchangeDACR2R,
-//                                 BOVsetDACR2R, BOKchangeDACR2R, BOKsetDACR2R,
-//                                 BDACR2RReset, CBDACR2R);
-  DACR2RShow:=TDACR2RShow.Create(DACR2R,LDACR2RPinC,{LDACR2RPinG,}LOVDACR2R,LOKDACR2R,
-                                 BDACR2RSetC,{BDACR2RSetG,}BOVchangeDACR2R,
+  DACR2RShow:=TDACR2RShow.Create(DACR2R,PDACR2RPinC,LOVDACR2R,LOKDACR2R,
+                                 BOVchangeDACR2R,
                                  BOVsetDACR2R, BOKchangeDACR2R, BOKsetDACR2R,
-                                 BDACR2RReset, CBDACR2R);
+                                 BDACR2RReset, NumberPins);
   D30_06:=TD30_06.Create(ComPort1,'D30_06');
-  D30_06Show:=TD30_06Show.Create(D30_06,LD30PinC,LD30PinG,LOVD30,LOKD30,LValueRangeD30,
-                                 BD30SetC,BD30SetG,BOVchangeD30,
+  D30_06Show:=TD30_06Show.Create(D30_06,PD30PinC,PD30PinG,LOVD30,LOKD30,LValueRangeD30,
+                                 BOVchangeD30,
                                  BOVsetD30, BOKchangeD30, BOKsetD30,
-                                 BD30Reset, CBD30, RGD30);
-
+                                 BD30Reset, NumberPins, RGD30);
 end;
 
 procedure TIVchar.DACFree;
@@ -3427,7 +3064,7 @@ begin
     sleep(100);
     DACR2R.Free;
     end;
-    
+
   DACR2RShow.Free;
 
   D30_06Show.Free;
@@ -3548,79 +3185,6 @@ begin
   ShowArray.Add([SettingDevice,SettingDeviceControl,SettingTermostat,SettingDeviceLED]);
  end;
 
-//procedure TIVchar.DevicesFree;
-//begin
-//  SettingDeviceLED.Free;
-//  SettingTermostat.Free;
-//  SettingDeviceControl.Free;
-//  SettingDevice.Free;
-//  Control_MD.Free;
-//  TimeD_MD.Free;
-//  Temperature_MD.Free;
-//  Current_MD.Free;
-//  VoltageIV_MD.Free;
-//  DACR2R_MD.Free;
-//  D30_MD.Free;
-//  Isc_MD.Free;
-//  Voc_MD.Free;
-//  TermoCouple_MD.Free;
-//  ET1255_DAC_MD[0].Free;
-//  ET1255_DAC_MD[1].Free;
-//  ET1255_DAC_MD[2].Free;
-//  Simulator.Free;
-//end;
-
-//procedure TIVchar.DevicesReadFromIniAndToForm;
-//begin
-//  SettingDeviceLED.ReadFromIniFile(ConfigFile,MD_IniSection,'LED output');
-//  SettingTermostat.ReadFromIniFile(ConfigFile,MD_IniSection,'Termostat input');
-//  SettingDeviceControl.ReadFromIniFile(ConfigFile,MD_IniSection,'Control input');
-//  SettingDevice.ReadFromIniFile(ConfigFile,MD_IniSection,'Input voltage');
-//  Temperature_MD.ReadFromIniFile(ConfigFile,MD_IniSection,'Temperature');
-//  Current_MD.ReadFromIniFile(ConfigFile,MD_IniSection,'Current');
-//  VoltageIV_MD.ReadFromIniFile(ConfigFile,MD_IniSection,'Voltage');
-//  DACR2R_MD.ReadFromIniFile(ConfigFile,MD_IniSection,'R2R');
-//  D30_MD.ReadFromIniFile(ConfigFile,MD_IniSection,'D30');
-//  Isc_MD.ReadFromIniFile(ConfigFile,MD_IniSection,'Isc');
-//  Voc_MD.ReadFromIniFile(ConfigFile,MD_IniSection,'Voc');
-//  TermoCouple_MD.ReadFromIniFile(ConfigFile,MD_IniSection,'Thermocouple');
-//  if ET1255isPresent then
-//  begin
-//    ET1255_DAC_MD[0].ReadFromIniFile(ConfigFile,MD_IniSection,'ET1255_DAC_Ch0');
-//    ET1255_DAC_MD[1].ReadFromIniFile(ConfigFile,MD_IniSection,'ET1255_DAC_Ch1');
-//    ET1255_DAC_MD[2].ReadFromIniFile(ConfigFile,MD_IniSection,'ET1255_DAC_Ch2');
-//  end;
-//  TimeD_MD.ReadFromIniFile(ConfigFile,MD_IniSection,'Time Dependence');
-//  TimeD_MD2.ReadFromIniFile(ConfigFile,MD_IniSection,'Time Dependence Two');
-//  Control_MD.ReadFromIniFile(ConfigFile,MD_IniSection,'Control setup');
-//end;
-
-//procedure TIVchar.DevicesWriteToIniFile;
-//begin
-//  ConfigFile.EraseSection(MD_IniSection);
-//  SettingDeviceControl.WriteToIniFile(ConfigFile,MD_IniSection,'Control input');
-//  SettingTermostat.WriteToIniFile(ConfigFile,MD_IniSection,'Termostat input');
-//  SettingDevice.WriteToIniFile(ConfigFile,MD_IniSection,'Input voltage');
-//  SettingDeviceLED.WriteToIniFile(ConfigFile,MD_IniSection,'LED output');
-//  Temperature_MD.WriteToIniFile(ConfigFile,MD_IniSection,'Temperature');
-//  Current_MD.WriteToIniFile(ConfigFile,MD_IniSection,'Current');
-//  VoltageIV_MD.WriteToIniFile(ConfigFile,MD_IniSection,'Voltage');
-//  DACR2R_MD.WriteToIniFile(ConfigFile,MD_IniSection,'R2R');
-//  D30_MD.WriteToIniFile(ConfigFile,MD_IniSection,'D30');
-//  Isc_MD.WriteToIniFile(ConfigFile,MD_IniSection,'Isc');
-//  Voc_MD.WriteToIniFile(ConfigFile,MD_IniSection,'Voc');
-//  TermoCouple_MD.WriteToIniFile(ConfigFile,MD_IniSection,'Thermocouple');
-//  if ET1255isPresent then
-//  begin
-//    ET1255_DAC_MD[0].WriteToIniFile(ConfigFile,MD_IniSection,'ET1255_DAC_Ch0');
-//    ET1255_DAC_MD[1].WriteToIniFile(ConfigFile,MD_IniSection,'ET1255_DAC_Ch1');
-//    ET1255_DAC_MD[2].WriteToIniFile(ConfigFile,MD_IniSection,'ET1255_DAC_Ch2');
-//  end;
-//  TimeD_MD.WriteToIniFile(ConfigFile,MD_IniSection,'Time Dependence');
-//  TimeD_MD2.WriteToIniFile(ConfigFile,MD_IniSection,'Time Dependence Two');
-//  Control_MD.WriteToIniFile(ConfigFile,MD_IniSection,'Control setup');
-//end;
-
 function TIVchar.DiapazonIMeasurement(Measurement:IMeasurement):ShortInt;
 begin
  Result:=0;
@@ -3638,7 +3202,6 @@ begin
   if (abs(NewCorrection) > 3)
     then NewCorrection := 0.1 * NewCorrection / NewCorrection;
 
-//  if ItIsDarkIV then  NewCorrection:=Max(NewCorrection,-0.02)
   if ItIsDarkIV then  NewCorrection:=Max(NewCorrection,-0.2)
 end;
 
@@ -3674,18 +3237,18 @@ procedure TIVchar.MCP3424Create;
  var i:TMCP3424_ChanelNumber;
 begin
   MCP3424 := TMCP3424_Module.Create(ComPort1, 'MCP3424');
-  MCP3424show := TI2C_PinsShow.Create(MCP3424.Pins, LMCP3424Pin, BMCP3424, CBMCP3424, MCP3424_StartAdress, MCP3424_LastAdress);
+  MCP3424show := TI2C_PinsShow.Create(MCP3424.Pins, PMCP3424Pin, MCP3424_StartAdress, MCP3424_LastAdress);
   for I := Low(TMCP3424_ChanelNumber) to High(TMCP3424_ChanelNumber) do
     MCP3424_Channel[i] := TMCP3424_Channel.Create(i, MCP3424);
 
   MCP3424_ChannelShow[0]:=
-     TMCP3424_ChannelShow.Create(MCP3424_Channel[0], LMCP3424_Ch1bits, LMCP3424_Ch1gain, LMCP3424_Ch1meas, BtMCP3424_Ch1bits, BtMCP3424_Ch1gain, BMCP3424_Ch1meas, CBMCP3424_Ch1bits, CBMCP3424_Ch1gain);
+     TMCP3424_ChannelShow.Create(MCP3424_Channel[0], PMCP3424_Ch1bits, PMCP3424_Ch1gain, LMCP3424_Ch1meas, {BtMCP3424_Ch1bits, BtMCP3424_Ch1gain,} BMCP3424_Ch1meas{, CBMCP3424_Ch1bits, CBMCP3424_Ch1gain});
   MCP3424_ChannelShow[1]:=
-     TMCP3424_ChannelShow.Create(MCP3424_Channel[1], LMCP3424_Ch2bits, LMCP3424_Ch2gain, LMCP3424_Ch2meas, BtMCP3424_Ch2bits, BtMCP3424_Ch2gain, BMCP3424_Ch2meas, CBMCP3424_Ch2bits, CBMCP3424_Ch2gain);
+     TMCP3424_ChannelShow.Create(MCP3424_Channel[1], PMCP3424_Ch2bits, PMCP3424_Ch2gain, LMCP3424_Ch2meas, {BtMCP3424_Ch2bits, BtMCP3424_Ch2gain,} BMCP3424_Ch2meas{, CBMCP3424_Ch2bits, CBMCP3424_Ch2gain});
   MCP3424_ChannelShow[2]:=
-     TMCP3424_ChannelShow.Create(MCP3424_Channel[2], LMCP3424_Ch3bits, LMCP3424_Ch3gain, LMCP3424_Ch3meas, BtMCP3424_Ch3bits, BtMCP3424_Ch3gain, BMCP3424_Ch3meas, CBMCP3424_Ch3bits, CBMCP3424_Ch3gain);
+     TMCP3424_ChannelShow.Create(MCP3424_Channel[2], PMCP3424_Ch3bits, PMCP3424_Ch3gain, LMCP3424_Ch3meas, {BtMCP3424_Ch3bits, BtMCP3424_Ch3gain,} BMCP3424_Ch3meas{, CBMCP3424_Ch3bits, CBMCP3424_Ch3gain});
   MCP3424_ChannelShow[3]:=
-     TMCP3424_ChannelShow.Create(MCP3424_Channel[3], LMCP3424_Ch4bits, LMCP3424_Ch4gain, LMCP3424_Ch4meas, BtMCP3424_Ch4bits, BtMCP3424_Ch4gain, BMCP3424_Ch4meas, CBMCP3424_Ch4bits, CBMCP3424_Ch4gain);
+     TMCP3424_ChannelShow.Create(MCP3424_Channel[3], PMCP3424_Ch4bits, PMCP3424_Ch4gain, LMCP3424_Ch4meas, {BtMCP3424_Ch4bits, BtMCP3424_Ch4gain,} BMCP3424_Ch4meas{, CBMCP3424_Ch4bits, CBMCP3424_Ch4gain});
 
   ShowArray.Add([MCP3424show,
                  MCP3424_ChannelShow[0],MCP3424_ChannelShow[1],MCP3424_ChannelShow[2],MCP3424_ChannelShow[3]]);

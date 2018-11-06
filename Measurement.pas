@@ -201,10 +201,6 @@ begin
   fName:='Simulation';
 end;
 
-//function TSimulator.CalibrationStep(Voltage: double): double;
-//begin
-// Result:=0.01;
-//end;
 
 constructor TSimulator.Create(name: string);
 begin
@@ -268,10 +264,6 @@ begin
  fOutputValue:=Value;
 end;
 
-//procedure TSimulator.OutputCalibr(Value: double);
-//begin
-//  fOutputValue:=Value;
-//end;
 
 procedure TSimulator.OutputInt(Kod: integer);
 begin
@@ -487,34 +479,7 @@ begin
    UnitLabel.Caption := '';
    MeasurementButton.OnClick:=MeasurementButtonClick;
    AutoSpeedButton.OnClick:=AutoSpeedButtonClick;
-
-
-//   MeasureModeFill();
-//   HookMeasureModeFill();
-//   IndexToRadioGroup(RS232Meter.fMeasureMode,MeasureMode);
-//   DiapazonFill();
-
-
-
-//   AdapterMeasureMode:=TAdapterRadioGroupClick.Create(MeasureMode.Items.Count-1);
-//   AdapterRange:=TAdapterRadioGroupClick.Create(Range.Items.Count-1);
-//   MeasureMode.OnClick:=AdapterMeasureMode.RadioGroupClick;
-//   Range.OnClick:=AdapterRange.RadioGroupClick;
-//   MeasureMode.onEnter:=AdapterMeasureMode.RadioGroupOnEnter;
-//   Range.onEnter:=AdapterRange.RadioGroupOnEnter;
-
 end;
-
-//procedure TMeasurementShow.DiapazonFill;
-//begin
-//
-//end;
-
-
-//procedure TMeasurementShow.HookMeasureModeFill;
-//begin
-//
-//end;
 
 procedure TMeasurementShow.IndexToRadioGroup(Index: ShortInt; RG: TRadioGroup);
 begin

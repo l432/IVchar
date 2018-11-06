@@ -353,8 +353,6 @@ begin
  SetGain(1);
  SetADCMode(mhz104,True,True,False);
 
-//  showmessage('create'+inttostr(ord(FFrequency_Tackt)));
-
 //++++++++++++++++++++++++++++
 end;
 
@@ -377,12 +375,7 @@ function TET1255_Module.MeasuringStart;
 begin
  ResetEvent(EventET1255Measurement_Done);
  fMeasThead:=TET1255_Measuring_Thead.Create();
-// showmessage(inttostr(ord(FFrequency_Tackt)));
 
-// showmessage('false='+booltostr(false)+' memuse='+booltostr(FMemEnable));
-// ET_SetStrob;
-// if not(NoError()) then fMeasThead.Terminate;
-// Result:=FNoErrorOperation;
  result:=true;
 end;
 
@@ -452,8 +445,6 @@ end;
 
 function TET1255_Module.SetFrequency_Tackt(const Value: TET1255_Frequency_Tackt):boolean;
 begin
-//  showmessage('set'+inttostr(ord(Value)));
-
   ET_SetADCMode(ord(Value), FStartByProgr, FInternalTacktMode, FMemEnable);
   if NoError() then FFrequency_Tackt := Value;
   Result:=FNoErrorOperation;
@@ -594,10 +585,7 @@ begin
        DataVector^.X[i]:=i;
        DataVector^.Y[i]:=fParentModule.ReadMem;
       end;
-//     showmessage('1');
      fValue:=ImpulseNoiseSmoothingByNpoint(DataVector);
-//       fvalue:=0.7;
-//     showmessage('2');
      fValue:=fValue/fParentModule.Gain;
    end
   else
@@ -642,9 +630,6 @@ begin
   if FSerialMeasurements
    then  SetLenVector(DataVector,(FSerialMeasurementNumber shl 12))
    else SetLenVector(DataVector,1);
-//  NumberOfMeasurement:=DataVector^.n;
-//NumberOfMeasurement:=1;
-//  showmessage(inttostr(NumberOfMeasurement));
 end;
 
 procedure TET1255_ADCChannel.WriteToIniFile(ConfigFile: TIniFile);
@@ -666,33 +651,12 @@ end;
 
 procedure TET1255_Measuring_Thead.Execute;
 begin
-//  NoM:=0;
   ET_SetStrob;
 
   repeat
-//    inc(NoM);
   until Terminated or Application.Terminated or ET_MeasEnd;
   SetEvent(EventET1255Measurement_Done);
 
-//  while (not Terminated) and (not Application.Terminated) do
-////  while (True) do
-//  begin
-//    inc(NoM);
-//    if ET_MeasEnd then
-//     begin
-//       SetEvent(EventET1255Measurement_Done);
-//       Break;
-//     end;
-//
-////    if ET_MeasEnd then dec(NumberOfMeasurement);
-//////    :=NumberOfMeasurement-1;
-////
-////    if NumberOfMeasurement<=0 then
-////     begin
-////       SetEvent(EventET1255Measurement_Done);
-////       Break;
-////     end;
-//  end;
 end;
 
 { TET1255_MeasuringTread }
@@ -785,8 +749,6 @@ begin
               ConfigFile.ReadBool(ET1255IniSectionName, 'StartByProgr', True),
               ConfigFile.ReadBool(ET1255IniSectionName, 'InternalTacktMode', True),
               MemEnable);
-//  showmessage('readini'+inttostr(ord(FFrequency_Tackt)));
-
 end;
 
 procedure TET1255_ModuleAndChan.SetNewData(Value: boolean);
@@ -837,24 +799,6 @@ begin
  FromET1255ToVisualElement;
 end;
 
-//procedure TET1255_ADCShow.ElementAction;
-//begin
-//  Range.OnClick:=GroupChannelsClick;
-//  MeasureMode.OnClick:=GroupFrequencyClick;
-//  CBSerial.OnClick:=CBSerialClick;
-//  SEMeasurementNumber.OnChange:=SEMNChange;
-//  SEGain.OnChange:=SEGainChange;
-//end;
-//
-//procedure TET1255_ADCShow.ElementActionNil;
-//begin
-//  Range.OnClick:=nil;
-//  MeasureMode.OnClick:=nil;
-//  CBSerial.OnClick:=nil;
-//  SEMeasurementNumber.OnChange:=nil;
-//  SEGain.OnChange:=nil;
-//end;
-
 procedure TET1255_ADCShow.ElementFill;
  var i:TET1255_ADC_ChanelNumber;
      j:TET1255_Frequency_Tackt;
@@ -883,8 +827,6 @@ begin
   SEMeasurementNumber.MinValue:=Low(byte)+1;
   SEMeasurementNumber.MaxValue:=High(byte);
   SEMeasurementNumber.Value:=SEGain.MinValue;
-//  SEMeasurementNumber.EditorEnabled:=False;
-
 end;
 
 procedure TET1255_ADCShow.Free;

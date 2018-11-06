@@ -12,8 +12,6 @@ private
  fIdentName:string;
 public
  Constructor Create(DevCB: TComboBox; IdentName: string);
-// procedure ReadFromIniFile(ConfigFile:TIniFile;const Section, Ident: string);
-// procedure WriteToIniFile(ConfigFile:TIniFile;const Section, Ident: string);
  procedure ReadFromIniFile(ConfigFile:TIniFile;const Section: string);
  procedure WriteToIniFile(ConfigFile:TIniFile;const Section: string);
 end;
@@ -177,12 +175,8 @@ begin
    DevicesComboBox.Items.Add(SOI[i].Name);
    fSetOfInterface[i]:=SOI[i];
   end;
-// if DevicesComboBox<>nil then
-//   begin
-//   for I := 0 to High(SOI) do
-//        DevicesComboBox.Items.Add(SOI[i].Name);
+
   if DevicesComboBox.Items.Count>0 then DevicesComboBox.ItemIndex:=0;
-//   end;
 
  ResultIndicator:=RI;
  fStringResult:=SR;

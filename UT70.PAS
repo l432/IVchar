@@ -630,7 +630,6 @@ begin
     fData[i]:=ord(str[i+1]);
 
   if High(fData)<>9 then Exit;
-//  if fData[7]<>48 then Exit;
   for i := 0 to 9 do
     fData[i]:=(fData[i] and $7F);
 
@@ -693,18 +692,6 @@ end;
 procedure TUT70C.Request;
 begin
  PushButtom(137);
-//
-//  if fComPort.Connected then
-//    begin
-//     fComPort.AbortAllAsync;
-//     fComPort.ClearBuffer(True, True);
-//     fComPort.SetDTR(True);
-//     SetLength(PacketToSend,1);
-//     PacketToSend[0]:=137;
-//     fError:=(fComPort.Write(PacketToSend[0], 1)<>1);
-//    end
-//                        else
-//     fError:=True;
 end;
 
 procedure TUT70C.MeasurementTypeDetermination(Data: array of Byte);
@@ -760,23 +747,6 @@ begin
          else Exit;
       end;
 
-// if fMeasureMode=ord(UD_c) then
-//    case Data[0] of
-//     112: case fDiapazon of
-//           0:x:=x*1e-3;
-//           1:x:=x*1e-2;
-//           2:x:=x*1e-1;
-//           3:;
-//           else Exit;
-//         end;
-//     104:case fDiapazon of
-//           0:x:=x*1e-5;
-//           1:x:=x*1e-4;
-//           2:;
-//           else Exit;
-//         end;
-//    end;
-
    if fMeasureMode=ord(UD_c) then
        case fDiapazon of
            0:x:=x*1e-5;
@@ -817,20 +787,6 @@ begin
           else Exit;
       end;
 
-// if (fMeasureMode=ord(ID_c))or
-//    (fMeasureMode=ord(IA_c)) then
-//    case Data[0] of
-//     40,41: case fDiapazon of
-//           0:x:=x*1e-3;
-//           1:x:=x*1e-2;
-//           else Exit;
-//         end;
-//     48,49:case fDiapazon of
-//           0:x:=x*1e-5;
-//           1:x:=x*1e-4;
-//           else Exit;
-//         end;
-//    end;
  if (fMeasureMode=ord(ID_c))or
     (fMeasureMode=ord(IA_c)) then
        case fDiapazon of

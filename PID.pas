@@ -103,11 +103,6 @@ end;
 constructor TPID.Create(PID_PShow: TPID_ParametersShow; Interval: double);
 begin
  Create(PID_PShow.Kp,PID_PShow.Ki,PID_PShow.Kd,PID_PShow.NeededValue,PID_PShow.Tolerance,Interval);
-//showmessage('kp='+floattostr(Kp)+
-//            ' ki='+floattostr(Ki)+
-//            ' kd='+floattostr(Kd)+
-//            ' NV='+floattostr(Needed)+
-//            ' tol='+floattostr(Tolerance));
 end;
 
 procedure TPID.DeviationCalculation(CurrentValue: double);

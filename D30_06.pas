@@ -3,7 +3,7 @@ unit D30_06;
 interface
 
 uses
-  SPIdevice, StdCtrls, Measurement, ExtCtrls, IniFiles;
+  SPIdevice, StdCtrls, Measurement, ExtCtrls, IniFiles, Classes;
 
 const D30_06_MaxVoltage=28.75;
       D30_06_MaxCurrent=5.56;
@@ -31,14 +31,18 @@ TD30_06=class(TArduinoDAC)
 end;
 
 
-TPins30_06Show=class(TPinsShow)
-public
- Constructor Create(Ps:TPins;
-                    ControlPinLabel,GatePinLabel:TLabel;
-                    SetControlButton,SetGateButton:TButton;
-                    PCB:TComboBox);
+//TPins30_06Show=class(TPinsShow)
+//public
+//// Constructor Create(Ps:TPins;
+////                    ControlPinLabel,GatePinLabel:TLabel;
+////                    SetControlButton,SetGateButton:TButton;
+////                    PCB:TComboBox);
+// Constructor Create(Ps:TPins;
+//                    ControlPinLabel,GatePinLabel:TLabel;
+//                    PinVariants:TStringList);
+
 //procedure NumberPinShow();override;
-end;
+//end;
 
 TD30_06Show=class(TDAC_Show)
 private
@@ -49,12 +53,14 @@ private
  procedure LabelFilling;
  procedure ReadFromIniFile(ConfigFile:TIniFile);
  public
- PinShow:TPins30_06Show;
-// PinShow:TPinsShow;
+// PinShow:TPins30_06Show;
+ PinShow:TPinsShow;
  Constructor Create(DAC:TD30_06;
-                      CPL,GPL,VL,KL,VDL:TLabel;
-                      SCB,SGB,VCB,VSB,KCB,KSB,RB:TButton;
-                      PCB:TComboBox;
+                      CPL,GPL:TPanel;
+                      VL,KL,VDL:TLabel;
+                      {SCB,SGB,}VCB,VSB,KCB,KSB,RB:TButton;
+{                      PCB:TComboBox;}
+                      PinVariants:TStringList;
                       VOCRG:TRadioGroup);
  Procedure Free;
 
@@ -75,7 +81,6 @@ begin
   fVoltageMaxValue:=D30_06_MaxVoltage;
   fKodMaxValue:=D30_06_MaxKod;
   fCurrentMaxValue:=D30_06_MaxCurrent;
-//  fMessageError:='Output is unsuccessful';
   fSetterKod:=D30_06Command;
   FisVoltage:=True;
 end;
@@ -125,14 +130,15 @@ end;
 { TD30_06Show }
 
 constructor TD30_06Show.Create(DAC: TD30_06;
-                               CPL, GPL, VL, KL, VDL: TLabel;
-                               SCB, SGB, VCB, VSB, KCB, KSB, RB: TButton;
-                               PCB: TComboBox;
+                               CPL, GPL:TPanel;
+                               VL, KL, VDL: TLabel;
+                               VCB, VSB, KCB, KSB, RB: TButton;
+                               PinVariants:TStringList;
                                VOCRG: TRadioGroup);
 begin
  inherited Create(DAC,VL, KL, VCB, VSB, KCB, KSB, RB);
- PinShow:=TPins30_06Show.Create(DAC.Pins,CPL,GPL,SCB,SGB,PCB);
-// PinShow:=TPinsShow.Create(DAC.Pins,CPL,GPL,SCB,SGB,PCB);
+ PinShow:=TPinsShow.Create(DAC.Pins,CPL,GPL,PinVariants);
+
  PinShow.HookNumberPinShow:=DAC.PinsToDataArray;
  fD30_06:=DAC;
  ValueDiapazonLabel:=VDL;
@@ -194,33 +200,5 @@ begin
  if PinShow.Pins.Name='' then Exit;
  ConfigFile.WriteInteger(PinShow.Pins.Name, 'VorC', VoltageOrCurrentRG.ItemIndex);
 end;
-
-{ TPins30_06Show }
-
-constructor TPins30_06Show.Create(Ps: TPins;
-                                  ControlPinLabel, GatePinLabel: TLabel;
-                                  SetControlButton, SetGateButton: TButton;
-                                  PCB: TComboBox);
-begin
- inherited Create(Ps,ControlPinLabel,GatePinLabel,SetControlButton, SetGateButton,PCB);
- SetPinButtons[0].Caption := SetPinButtons[0].Caption+' pin';
- SetPinButtons[1].Caption := SetPinButtons[1].Caption+' pin';
-// SetPinButtons[0].Caption := 'set '+LowerCase(PinNamesD30_06[0])+' pin';
-// SetPinButtons[1].Caption := 'set '+LowerCase(PinNamesD30_06[1])+' pin';
-end;
-
-//procedure TPins30_06Show.NumberPinShow;
-// var i:byte;
-//begin
-// for I := 0 to High(PinLabels) do
-//  begin
-//   PinLabels[i].Caption:=PinNamesD30_06[i]+' pin is ';
-//   if Pins.fPins[i]=UndefinedPin then
-//    PinLabels[i].Caption:=PinLabels[i].Caption+'undefined'
-//                           else
-//    PinLabels[i].Caption:=PinLabels[i].Caption+IntToStr(Pins.fPins[i]);
-//  end;
-// HookNumberPinShow;
-//end;
 
 end.

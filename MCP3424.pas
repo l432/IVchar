@@ -3,14 +3,13 @@ unit MCP3424;
 interface
 
 uses
-  SPIdevice, CPort, Measurement, StdCtrls, MDevice;
+  SPIdevice, CPort, Measurement, StdCtrls, MDevice, ExtCtrls;
 
 type
 
  TMCP3424_ChanelNumber=0..3;
  TMCP3424_Gain=(mcp_g1,mcp_g2,mcp_g4,mcp_g8);
  TMCP3424_Resolution=(mcp_r12b,mcp_r14b,mcp_r16b,mcp_r18b);
-// TET1255_Frequency_Tackt=(mhz833,mhz417,mhz208, mhz104);
 
 const
  MCP3424_Resolution_Label:array[TMCP3424_Resolution]of string=
@@ -25,7 +24,6 @@ const
     (12,14,16,18);
  MCP3424_LSB:array[TMCP3424_Resolution]of double=
     (1e-3,2.5e-4,6.25e-5,1.5625e-5);
-// MCP3424IniSectionName='MCP3424';
  MCP3424_StartAdress=$68;
  MCP3424_LastAdress=$6F;
 
@@ -77,9 +75,9 @@ type
     MeasuringDeviceSimple:TMeasuringDeviceSimple;
    public
     Constructor Create(Chan:TMCP3424_Channel;
-                       LabelBit,LabelGain,LabelMeas:TLabel;
-                       ButBit,ButGain,ButMeas:TButton;
-                       CBBit,CBGain:TComboBox);
+                       LabelBit,LabelGain:TPanel;
+                       LabelMeas:TLabel;
+                       ButMeas:TButton);
    Procedure Free;
  end;
 
@@ -153,7 +151,6 @@ end;
 procedure TMCP3424_Module.PacketCreateToSend;
 begin
   Configuration();
-//  showmessage(inttohex(fConfigByte,2));
   PacketCreate([fMetterKod,Pins.PinControl,fConfigByte]);
 end;
 
@@ -186,7 +183,6 @@ end;
 procedure TMCP3424_Channel.Free;
 begin
  Pins.Free;
-// inherited Free;
 end;
 
 function TMCP3424_Channel.GetData: double;
@@ -224,21 +220,22 @@ end;
 { TMCP3424_ChannelShow }
 
 constructor TMCP3424_ChannelShow.Create(Chan: TMCP3424_Channel;
-                         LabelBit,LabelGain, LabelMeas: TLabel;
-                         ButBit, ButGain, ButMeas: TButton;
-                         CBBit,CBGain: TComboBox);
+                         LabelBit,LabelGain:TPanel;
+                         LabelMeas: TLabel;
+                         ButMeas: TButton);
  var i:TMCP3424_Resolution;
      j:TMCP3424_Gain;
 begin
   fChan:=Chan;
-  inherited Create(fChan.Pins,[LabelBit,LabelGain],[ButBit, ButGain],[CBBit,CBGain]);
-  PinsComboBoxs[0].Items.Clear;
-  for i := Low(TMCP3424_Resolution) to High(TMCP3424_Resolution) do
-   PinsComboBoxs[0].Items.Add(inttostr(MCP3424_Resolution_Data[i]));
+  inherited Create(fChan.Pins,[LabelBit,LabelGain]);
 
-  PinsComboBoxs[1].Items.Clear;
+  fPinVariants[0].Clear;
+  for i := Low(TMCP3424_Resolution) to High(TMCP3424_Resolution) do
+   fPinVariants[0].Add(inttostr(MCP3424_Resolution_Data[i]));
+
+  fPinVariants[1].Clear;
   for j := Low(TMCP3424_Gain) to High(TMCP3424_Gain) do
-   PinsComboBoxs[1].Items.Add(inttostr(MCP3424_Gain_Data[j]));
+   fPinVariants[1].Add(inttostr(MCP3424_Gain_Data[j]));
 
   MeasuringDeviceSimple:=
      TMeasuringDeviceSimple.Create(fChan,LabelMeas,srPreciseVoltage,ButMeas);

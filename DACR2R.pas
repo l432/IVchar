@@ -3,7 +3,8 @@ unit DACR2R;
 interface
 
 uses
-  SPIdevice, Measurement, OlegType, StdCtrls, RS232device, CPort;
+  SPIdevice, Measurement, OlegType, StdCtrls, RS232device, CPort, Classes, 
+  ExtCtrls;
 
 const DACR2R_MaxValue=65535;
       DACR2R_Factor=10000;
@@ -76,9 +77,11 @@ public
 // PinShow:TPinsShow;
  PinShow:TOnePinsShow;
  Constructor Create(DAC:TDACR2R;
-                      CPL,{GPL,}VL,KL:TLabel;
-                      SCB,{SGB,}VCB,VSB,KCB,KSB,RB:TButton;
-                      PCB:TComboBox);
+                      CPL:TPanel;
+                      VL,KL:TLabel;
+                      {SCB,}VCB,VSB,KCB,KSB,RB:TButton;
+//                      PCB:TComboBox
+                      PinVariant:TStringList);
  Procedure Free;
 
 end;
@@ -88,7 +91,7 @@ end;
 implementation
 
 uses
-  SysUtils, PacketParameters, OlegGraph, Math, Classes;
+  SysUtils, PacketParameters, OlegGraph, Math;
 
 
 { TDACR2R }
@@ -267,13 +270,14 @@ end;
 { TDACR2RShow }
 
 constructor TDACR2RShow.Create(DAC: TDACR2R;
-                               CPL,{GPL,}VL,KL:TLabel;
-                               SCB,{SGB,}VCB,VSB,KCB,KSB,RB:TButton;
-                               PCB: TComboBox);
+                               CPL:TPanel;
+                               VL,KL:TLabel;
+                               VCB,VSB,KCB,KSB,RB:TButton;
+                               PinVariant:TStringList
+                               );
 begin
  inherited Create(DAC,VL, KL, VCB, VSB, KCB, KSB, RB);
-// PinShow:=TPinsShow.Create(DAC.Pins,CPL,GPL,SCB,SGB,PCB);
- PinShow:=TOnePinsShow.Create(DAC.Pins,CPL,SCB,PCB);
+ PinShow:=TOnePinsShow.Create(DAC.Pins,CPL,PinVariant);
  PinShow.HookNumberPinShow:=DAC.PinsToDataArray;
 end;
 

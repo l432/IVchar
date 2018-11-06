@@ -10,31 +10,13 @@ type
 
 
 
-//  TRS232MeasuringTread = class(TTheadSleep)
-//  private
-//   fRS232Meter:TRS232Meter;
-//   fWPARAM: word;
-//   fEventEnd:THandle;
-//   procedure FalseStatement();
-//   procedure ConvertToValue();
-//   procedure NewData();
-//   procedure ExuteBegin;virtual;
-//  protected
-//   procedure Execute; override;
-//  public
-//   constructor Create(RS_Meter:TRS232Meter;WPARAM: word; EventEnd: THandle);
-//  end;
 
   TRS232MeasuringTread = class(TMeasuringTread)
   private
    fRS232Meter:TRS232Meter;
-//   fWPARAM: word;
-//   fEventEnd:THandle;
    procedure FalseStatement();
    procedure ConvertToValue();
-//   procedure NewData();
   protected
-//   procedure Execute; override;
    procedure ExuteBegin;override;
   public
    constructor Create(RS_Meter:TRS232Meter;WPARAM: word; EventEnd: THandle);
@@ -61,12 +43,9 @@ end;
 
 constructor TRS232MeasuringTread.Create(RS_Meter: TRS232Meter; WPARAM: word; EventEnd: THandle);
 begin
-//  inherited Create();
   inherited Create(RS_Meter,WPARAM,EventEnd);
   fRS232Meter := RS_Meter;
   fMeasurement:=fRS232Meter;
-//  fWPARAM:=WPARAM;
-//  fEventEnd:=EventEnd;
   Resume;
 end;
 
@@ -98,24 +77,12 @@ start:
   end;
 end;
 
-//procedure TRS232MeasuringTread.Execute;
-//begin
-// ExuteBegin;
-// Synchronize(NewData);
-// PostMessage(FindWindow ('TIVchar', 'IVchar'), WM_MyMeasure,fWPARAM,0);
-// SetEvent(fEventEnd);
-//end;
-
 
 procedure TRS232MeasuringTread.FalseStatement;
 begin
  fRS232Meter.MeasurementBegin;
 end;
 
-//procedure TRS232MeasuringTread.NewData;
-//begin
-// fRS232Meter.NewData:=True;
-//end;
 
 { TV721_MeasuringTread }
 

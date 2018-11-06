@@ -3,7 +3,7 @@ unit V7_21;
 interface
 
 uses
-  SPIdevice, ExtCtrls, StdCtrls, Buttons, RS232device, CPort;
+  SPIdevice, ExtCtrls, StdCtrls, Buttons, RS232device, CPort, Classes;
 
 
 
@@ -44,7 +44,6 @@ type
    Procedure ConvertToValue();override;
    Function ResultProblem(Rez:double):boolean;override;
    Constructor Create(CP:TComPort;Nm:string);override;
-//   procedure ComPortUsing();override;
    function GetData():double;override;
    procedure GetDataThread(WPARAM: word;EventEnd:THandle);override;
   end;
@@ -78,10 +77,11 @@ type
    PinShow:TPinsShow;
    Constructor Create(V:TVoltmetr;
                       MM,R:TRadioGroup;
-                      DL,UL,CPL,GPL:TLabel;
-                      SCB,SGB,MB:TButton;
+                      DL,UL: TLabel;
+                      CPL,GPL:TPanel;
+                      MB:TButton;
                       AB:TSpeedButton;
-                      PCB:TComboBox;
+                      PinVariants:TStringList;
                       TT:TTimer);
    Procedure Free; override;
    procedure NumberPinShow();
@@ -90,7 +90,7 @@ type
 
 implementation
 
-uses   PacketParameters, Math, SysUtils, OlegMath, OlegType, RS232_Meas_Tread, 
+uses   PacketParameters, Math, SysUtils, OlegMath, OlegType, RS232_Meas_Tread,
   Dialogs;
 
 Constructor TVoltmetr.Create(CP:TComPort;Nm:string);
@@ -152,7 +152,7 @@ begin
  sleep(fTimeToMeasurement);
  b:=Measurement();
  Result:=AditionMeasurement(a,b);
-// if Result=0 then
+
  if ResultProblem(Result) then
    begin
      sleep(LongTimeToMeasurement);
@@ -239,12 +239,6 @@ function TVoltmetr.ResultProblem(Rez: double): boolean;
 begin
  Result:=(abs(Rez)<1e-14);
 end;
-
-//procedure TVoltmetr.ComPortUsing;
-//begin
-//  PacketCreate([fMetterKod,Pins.PinControl,Pins.PinGate]);
-//  fError:=not(PacketIsSend(fComPort,'Voltmetr '+Name+' measurement is unsuccessful'));
-//end;
 
 Procedure TVoltmetr.ConvertToValue();
 begin
@@ -390,14 +384,15 @@ end;
 
 Constructor TVoltmetrShow.Create(V:TVoltmetr;
                       MM,R:TRadioGroup;
-                      DL,UL,CPL,GPL:TLabel;
-                      SCB,SGB,MB:TButton;
+                      DL,UL:TLabel;
+                      CPL,GPL:TPanel;
+                      MB:TButton;
                       AB:TSpeedButton;
-                      PCB:TComboBox;
+                      PinVariants:TStringList;
                       TT:TTimer);
 begin
   inherited Create(V,MM,R,DL,UL,MB,AB,TT);
-  PinShow:=TPinsShow.Create(V.Pins,CPL,GPL,SCB,SGB,PCB);
+  PinShow:=TPinsShow.Create(V.Pins,CPL,GPL,PinVariants);
 end;
 
 procedure TVoltmetrShow.Free;
@@ -408,11 +403,8 @@ end;
 
 procedure TVoltmetrShow.NumberPinShow();
 begin
-//       showmessage('j1');
  PinShow.NumberPinShow();
-//       showmessage('j2');
  ButtonEnabled();
-//       showmessage('j3');
 end;
 
 procedure TVoltmetrShow.ButtonEnabled();
