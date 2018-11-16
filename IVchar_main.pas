@@ -516,6 +516,7 @@ type
     procedure ControlWatchDogTimer(Sender: TObject);
     procedure BET1255_show_saveClick(Sender: TObject);
     procedure SBGeneratorClick(Sender: TObject);
+    procedure Button1Click(Sender: TObject);
   private
     procedure ComponentView;
     {початкове налаштування різних компонентів}
@@ -2108,6 +2109,11 @@ begin
     end;
 end;
 
+
+procedure TIVchar.Button1Click(Sender: TObject);
+begin
+ showmessage(inttostr(ord(mcp_g4)));
+end;
 
 procedure TIVchar.BControlResetClick(Sender: TObject);
 begin

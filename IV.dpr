@@ -22,7 +22,8 @@ uses
   D30_06 in 'D30_06.pas',
   PID in 'PID.pas',
   MDevice in 'MDevice.pas',
-  MCP3424 in 'MCP3424.pas';
+  MCP3424 in 'MCP3424.pas',
+  ArduinoADC in 'ArduinoADC.pas';
 
 {$R *.res}
 
