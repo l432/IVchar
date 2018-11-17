@@ -33,6 +33,7 @@
       <MainSource>MainSource</MainSource>
     </DelphiCompile>
     <DCCReference Include="AD5752R.pas" />
+    <DCCReference Include="ADS1115.pas" />
     <DCCReference Include="ArduinoADC.pas" />
     <DCCReference Include="D30_06.pas" />
     <DCCReference Include="DACR2R.pas" />

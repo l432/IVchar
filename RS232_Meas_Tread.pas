@@ -25,8 +25,8 @@ type
 
   TV721_MeasuringTread = class(TRS232MeasuringTread)
   private
-   procedure ExuteBegin;override;
   protected
+   procedure ExuteBegin;override;
   end;
 
 implementation
@@ -64,10 +64,10 @@ start:
   _Sleep(fRS232Meter.MinDelayTime);
   i := 0;
   repeat
-//    sleep(10);
-    _Sleep(10);
+//    sleep(fRS232Meter.DelayTimeStep);
+    _Sleep(fRS232Meter.DelayTimeStep);
     inc(i);
-  until ((i > 130) or (fRS232Meter.IsReceived) or (fRS232Meter.Error));
+  until ((i > fRS232Meter.DelayTimeMax) or (fRS232Meter.IsReceived) or (fRS232Meter.Error));
   if fRS232Meter.IsReceived then
     Synchronize(ConvertToValue);
   if ((fRS232Meter.Value = ErResult) or (fRS232Meter.ResultProblem(fRS232Meter.Value))) and (isFirst) then

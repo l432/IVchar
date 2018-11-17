@@ -23,7 +23,8 @@ uses
   PID in 'PID.pas',
   MDevice in 'MDevice.pas',
   MCP3424 in 'MCP3424.pas',
-  ArduinoADC in 'ArduinoADC.pas';
+  ArduinoADC in 'ArduinoADC.pas',
+  ADS1115 in 'ADS1115.pas';
 
 {$R *.res}
 

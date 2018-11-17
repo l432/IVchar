@@ -127,8 +127,15 @@ TRS232Meter=class(TRS232Device,IMeasurement)
    fIsReceived:boolean;
    fMinDelayTime:integer;
   {інтервал очікування перед початком перевірки
-  вхідного буфера, []=мс}
-
+  вхідного буфера, []=мс, за замовлуванням 0}
+   fDelayTimeStep:integer;
+   {проміжок часу, через який перевіряється
+   надходження даних, []=мс, за замовлуванням 10}
+   fDelayTimeMax:integer;
+   {максимальна кількість перевірок
+   надходження даних, []=штук, за замовлуванням 130,
+   тобто за замовлуванням інтервал очікуввання
+   складає 0+10*130=1300 мс}
    fMeasureMode:Shortint;
    fDiapazon:Shortint;
    fMeasureModeAll:array of string;
@@ -150,6 +157,8 @@ TRS232Meter=class(TRS232Device,IMeasurement)
    property isReady:boolean read fIsReady write fIsReady;
    property isReceived:boolean read fIsReceived write fIsReceived;
    property MinDelayTime:integer read  fMinDelayTime;
+   property DelayTimeStep:integer read  fDelayTimeStep;
+   property DelayTimeMax:integer read  fDelayTimeMax;
    property MeasureModeLabel:string read MeasureModeLabelRead;
    property Diapazon:Shortint read fDiapazon;
    Constructor Create(CP:TComPort;Nm:string);override;
@@ -327,6 +336,8 @@ begin
   fIsReady:=False;
   fIsReceived:=False;
   fMinDelayTime:=0;
+  fDelayTimeStep:=10;
+  fDelayTimeMax:=130;
   fMeasureMode:=-1;
   fDiapazon:=-1;
   fValue:=ErResult;
@@ -390,10 +401,10 @@ start:
  sleep(fMinDelayTime);
  i:=0;
  repeat
-   sleep(10);
+   sleep(fDelayTimeStep);
    inc(i);
  Application.ProcessMessages;
- until ((i>130)or(fIsReceived)or(fError));
+ until ((i>fDelayTimeMax)or(fIsReceived)or(fError));
 // showmessage(inttostr((GetTickCount-i0)));
  if fIsReceived then ConvertToValue();
  if fIsReady then Result:=fValue;

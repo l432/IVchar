@@ -18,6 +18,10 @@ const
  MCP3424_ConversionTime:array[TMCP3424_Resolution]of integer=
     (5,17,67,270);
 //    (10,35,140,550);
+ MCP3424_DelayTimeStep:array[TMCP3424_Resolution]of integer=
+    (1,1,2,5);
+ MCP3424_DelayTimeMax:array[TMCP3424_Resolution]of integer=
+    (5,10,20,25);
  MCP3424_Gain_Data:array[TMCP3424_Gain]of byte=
     (1,2,4,8);
  MCP3424_Resolution_Data:array[TMCP3424_Resolution]of byte=
@@ -150,6 +154,8 @@ uses
 procedure TMCP3424_Module.Configuration;
 begin
   fMinDelayTime:=MCP3424_ConversionTime[FResolution];
+  fDelayTimeStep:=MCP3424_DelayTimeStep[FResolution];
+  fDelayTimeMax:=MCP3424_DelayTimeMax[FResolution];
   fConfigByte:=0;
   fConfigByte:=fConfigByte or ((FActiveChannel and $3)shl 5);
   fConfigByte:=fConfigByte or ($0 shl 4);
@@ -170,6 +176,8 @@ begin
    mcp_r14b,
    mcp_r16b: if High(fData)<>2 then Exit;
  end;
+
+   FGain:=TMCP3424_Gain(High(fData)and $3);
 
    temp:=0;
    temp:=temp+fData[High(fData)-1];

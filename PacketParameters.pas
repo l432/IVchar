@@ -22,7 +22,7 @@ const
   HTU21DCommand=$8;
   TMP102Command=$9;
   MCP3424Command=$A;
-
+  ADS1115Command=$B;
 var
   aPacket:array of byte;
 
