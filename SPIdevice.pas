@@ -30,6 +30,8 @@ type
    fName:string;
    Function GetPinStr(Index:integer):string;virtual;
    Function PinValueToStr(Index:integer):string;virtual;
+   Function StrToPinValue(Str: string):integer;virtual;
+   procedure SetStrToPinValue(Str: string;Index:integer);
    Function GetPin(Index:integer):byte;
    Procedure SetPin(Index:integer; value:byte);
 
@@ -147,9 +149,10 @@ type
    fHookNumberPinShow: TSimpleEvent;
    PinLabels:array of TPanel;
    fPinVariants:array of TStringList;
-   procedure CreateFooter;
+   procedure CreateFooter;virtual;
     procedure SetVariants(Index: byte; const S: TStringList);
   public
+//   fPinVariants:array of TStringList;
    Pins:TPins;
    property HookNumberPinShow:TSimpleEvent read fHookNumberPinShow write fHookNumberPinShow;
    property PinVariants[Index: byte]: TStringList write SetVariants;
@@ -346,14 +349,17 @@ procedure TPins.ReadFromIniFile(ConfigFile: TIniFile;
   PinsStrings: array of TStringList);
   var i,TempPin:integer;
 begin
+//    showmessage('Name='+Name);
   if Name='' then Exit;
   for I := 0 to High(fPins) do
    begin
     TempPin := ConfigFile.ReadInteger(Name, PNames[i], -1);
+//    showmessage('TempPin='+inttostr(TempPin));
     if (i<=High(PinsStrings))
         and (TempPin > -1)
         and (TempPin < PinsStrings[i].Count) then
-          fPins[i] := StrToInt(PinsStrings[i].Strings[TempPin])
+//          fPins[i] := StrToInt(PinsStrings[i].Strings[TempPin])
+          SetStrToPinValue (PinsStrings[i].Strings[TempPin],i )
                                                      else
           fPins[i]:=ConfigFile.ReadInteger(Name, PNames[i], UndefinedPin);
    end;
@@ -405,6 +411,18 @@ begin
 end;
 
 
+function TPins.StrToPinValue(Str: string): integer;
+begin
+//  showmessage(Str);
+ Result:=StrToInt(Str);
+end;
+
+procedure TPins.SetStrToPinValue(Str: string;Index:integer);
+begin
+//   showmessage(Str+'hhh');
+ fPins[Index]:=StrToPinValue(Str);
+end;
+
 procedure TPins.WriteToIniFile(ConfigFile: TIniFile;
   PinsStrings: array of TStringList);
   var i,j:integer;
@@ -417,7 +435,8 @@ begin
      if j<=High(PinsStrings) then
         begin
           for I := 0 to PinsStrings[j].Count - 1 do
-           if (fPins[j] = strtoint( PinsStrings[j].Strings[i])) then
+//           if (fPins[j] = strtoint( PinsStrings[j].Strings[i])) then
+           if (fPins[j] = StrToPinValue ( PinsStrings[j].Strings[i])) then
                 ConfigFile.WriteInteger(Name, PNames[j], i);
         end;
      end;
@@ -708,6 +727,7 @@ begin
 
  HookNumberPinShow:=TSimpleClass.EmptyProcedure;
  CreateFooter();
+
 end;
 
 constructor TPinsShowUniversal.Create(Ps: TPins;
@@ -771,8 +791,8 @@ var Form:TForm;
     PinNumber:byte;
     i:integer;
 begin
- if (Sender is TLabel) then
-   PinNumber:=(Sender as TLabel).Tag
+ if (Sender is TPanel) then
+   PinNumber:=(Sender as TPanel).Tag
                        else
    PinNumber:=0;
 
@@ -783,13 +803,14 @@ begin
  Form.ParentFont:=True;
  Form.Font.Style:=[fsBold];
  Form.Font.Height:=-16;
- Form.Caption:='Set ' + LowerCase(Pins.PNames[PinNumber]);
+ Form.Caption:='Set ' + LowerCase(Pins.PNames[PinNumber]+Pins.PinStrPart);
  Form.Color:=clMoneyGreen;
  RG:=TRadioGroup.Create(Form);
  RG.Parent:=Form;
  RG.Items:=fPinVariants[PinNumber];
  for I := 0 to RG.Items.Count - 1 do
-  if StrToInt(RG.Items[i])=Pins.fPins[PinNumber] then
+//  if StrToInt(RG.Items[i])=Pins.fPins[PinNumber] then
+  if Pins.StrToPinValue(RG.Items[i])=Pins.fPins[PinNumber] then
    begin
      RG.ItemIndex:=i;
      Break;
@@ -798,10 +819,10 @@ begin
 
  if RG.Items.Count>8 then  RG.Columns:=3
                      else  RG.Columns:=2;
- RG.Width:=RG.Columns*120+20;
- RG.Height:=Ceil(RG.Items.Count/RG.Columns)*40+20;
+ RG.Width:=RG.Columns*180+20;
+ RG.Height:=Ceil(RG.Items.Count/RG.Columns)*50+20;
  Form.Width:=RG.Width;
- Form.Height:=RG.Height+70;
+ Form.Height:=RG.Height+100;
   RG.Align:=alTop;
 
  ButOk:=TButton.Create(Form);
@@ -826,7 +847,8 @@ begin
 
   if Form.ShowModal=mrOk then
    begin
-    Pins.fPins[PinNumber]:=StrToInt(RG.Items[RG.ItemIndex]);
+//    Pins.fPins[PinNumber]:=StrToInt(RG.Items[RG.ItemIndex]);
+    Pins.SetStrToPinValue(RG.Items[RG.ItemIndex],PinNumber);
     NumberPinShow();
    end;
 

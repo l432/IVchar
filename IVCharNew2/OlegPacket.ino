@@ -18,7 +18,7 @@ byte FCS (byte Data[], int n)
 bool SendParameters() {
   if (PinAndID::DeviceId != ParameterReceiveCommand) return false;
   PinAndID::ActionId = 0x00;
-  int PinsNumber = sizeof(DrivePins) + sizeof(OneWarePins) + 1;
+  int PinsNumber = sizeof(DrivePins) + sizeof(OneWarePins) + 1 + sizeof(InterruptPins) + 1;
   byte Pins[PinsNumber];
   for (byte i = 0; i < sizeof(DrivePins); i++)
   {
@@ -28,6 +28,11 @@ bool SendParameters() {
   for (byte i = 0; i < sizeof(OneWarePins); i++)
   {
     Pins[sizeof(DrivePins) + 1 + i] = OneWarePins[i];
+  }
+  Pins[sizeof(DrivePins) + sizeof(OneWarePins) + 1] = 100;
+  for (byte i = 0; i < sizeof(InterruptPins); i++)
+  {
+    Pins[sizeof(DrivePins) + sizeof(OneWarePins) + 2 + i] = InterruptPins[i];
   }
   PinAndID::CreateAndSendPacket(Pins, sizeof(Pins));
   return true;
@@ -61,6 +66,16 @@ void ControlBlink() {
   delay(200);
   digitalWrite(LEDPin, LOW);
 }
+
+byte PinToInterruptNumber(byte PinNumber) {
+  if (PinNumber == 2) return 0;
+  if (PinNumber == 3) return 1;
+  if (PinNumber == 18) return 5;
+  if (PinNumber == 19) return 4;
+  if (PinNumber == 20) return 3;
+  if (PinNumber == 21) return 2;
+}
+
 
 byte PinAndID::NumberByte = 0;
 byte PinAndID::PinControl = 0;

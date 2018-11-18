@@ -11,13 +11,14 @@ type
 
   TArduinoADC_Module=class(TArduinoMeter)
   private
+
   protected
     FActiveChannel: byte;
     fConfigByte:byte;
    procedure PacketCreateToSend(); override;
-   procedure PinsCreate();override;
    procedure Configuration();virtual;
    procedure Intitiation();virtual;
+   procedure FinalPacketCreateToSend();virtual;
  public
    property  ActiveChannel:byte read FActiveChannel write FActiveChannel;
    constructor Create(CP:TComPort;Nm:string);override;
@@ -32,32 +33,34 @@ type
   function GetNewData:boolean;
   function GetValue:double;
   procedure SetNewData(Value:boolean);
-  procedure PinsCreate();virtual;abstract;
+//  procedure PinsCreate();virtual;abstract;
   procedure SetModuleParameters;virtual;
  public
-  Pins:TPins;
+//  Pins:TPins;
   property Value:double read GetValue;
   Constructor Create(ChanelNumber: byte; Module: TArduinoADC_Module);//override;
-  Procedure Free;
+//  Procedure Free;
   function GetData:double;
   procedure GetDataThread(WPARAM: word; EventEnd:THandle);
  end;
 
 
 
- TArduinoADC_ChannelShow=class(TPinsShowUniversal)
-   private
-    fChan:TArduinoADC_Channel;
-    MeasuringDeviceSimple:TMeasuringDeviceSimple;
-   protected
-    procedure LabelsFilling;virtual;
-   public
-    Constructor Create(Chan:TArduinoADC_Channel;
-                       Labels:Array of TPanel;
-                       LabelMeas:TLabel;
-                       ButMeas:TButton);
-    Procedure Free;
- end;
+// TArduinoADC_ChannelShow=class(TPinsShowUniversal)
+//   private
+////    fChan:TArduinoADC_Channel;
+////    MeasuringDeviceSimple:TMeasuringDeviceSimple;
+//   protected
+//    fChan:TArduinoADC_Channel;
+//    MeasuringDeviceSimple:TMeasuringDeviceSimple;
+//    procedure LabelsFilling;virtual;
+//   public
+//    Constructor Create(Chan:TArduinoADC_Channel;
+//                       Labels:Array of TPanel;
+//                       LabelMeas:TLabel;
+//                       ButMeas:TButton);
+//    Procedure Free;
+// end;
 
 
 
@@ -82,6 +85,11 @@ begin
  Intitiation();
 end;
 
+procedure TArduinoADC_Module.FinalPacketCreateToSend;
+begin
+  PacketCreate([fMetterKod, Pins.PinControl, fConfigByte]);
+end;
+
 procedure TArduinoADC_Module.Intitiation;
 begin
 
@@ -90,13 +98,9 @@ end;
 procedure TArduinoADC_Module.PacketCreateToSend;
 begin
   Configuration();
-  PacketCreate([fMetterKod,Pins.PinControl,fConfigByte]);
+  FinalPacketCreateToSend();
 end;
 
-procedure TArduinoADC_Module.PinsCreate;
-begin
-  Pins := TPins_I2C.Create(Name);
-end;
 
 { TArduinoADC_Channel }
 
@@ -107,13 +111,13 @@ begin
   fChanelNumber:=ChanelNumber;
   fParentModule:=Module;
   fName:='Ch'+inttostr(ChanelNumber+1)+'_'+Module.Name;
-  PinsCreate();
+//  PinsCreate();
 end;
 
-procedure TArduinoADC_Channel.Free;
-begin
-  Pins.Free;
-end;
+//procedure TArduinoADC_Channel.Free;
+//begin
+//  Pins.Free;
+//end;
 
 function TArduinoADC_Channel.GetData: double;
 begin
@@ -151,29 +155,30 @@ end;
 
 { TArduinoADC_ChannelShow }
 
-constructor TArduinoADC_ChannelShow.Create(Chan: TArduinoADC_Channel;
-                  Labels: array of TPanel;
-                  LabelMeas: TLabel;
-                  ButMeas: TButton);
-begin
-   fChan:=Chan;
-  inherited Create(fChan.Pins,Labels);
-  LabelsFilling;
-
-  MeasuringDeviceSimple:=
-     TMeasuringDeviceSimple.Create(fChan,LabelMeas,srPreciseVoltage,ButMeas);
-
-end;
-
-procedure TArduinoADC_ChannelShow.Free;
-begin
-  MeasuringDeviceSimple.Free;
-  inherited Free;
-end;
-
-procedure TArduinoADC_ChannelShow.LabelsFilling;
-begin
-
-end;
+//constructor TArduinoADC_ChannelShow.Create(Chan: TArduinoADC_Channel;
+//                  Labels: array of TPanel;
+//                  LabelMeas: TLabel;
+//                  ButMeas: TButton);
+//begin
+//   fChan:=Chan;
+//  inherited Create(fChan.Pins,Labels);
+//  LabelsFilling;
+//
+//  MeasuringDeviceSimple:=
+//     TMeasuringDeviceSimple.Create(fChan,LabelMeas,srPreciseVoltage,ButMeas);
+//end;
+//
+//procedure TArduinoADC_ChannelShow.Free;
+//begin
+//  MeasuringDeviceSimple.Free;
+//  inherited Free;
+//end;
+//
+//procedure TArduinoADC_ChannelShow.LabelsFilling;
+// var i:byte;
+//begin
+// for i := 0 to High(fPinVariants) do
+//   fPinVariants[i].Clear;
+//end;
 
 end.

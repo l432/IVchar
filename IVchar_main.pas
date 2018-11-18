@@ -481,6 +481,28 @@ type
     PIscVocPin: TPanel;
     GBHTU21: TGroupBox;
     PHTU21: TPanel;
+    GBads1115: TGroupBox;
+    GBads1115_Ch1: TGroupBox;
+    Lads1115_Ch1meas: TLabel;
+    Bads1115_Ch1meas: TButton;
+    Pads1115_Ch1dr: TPanel;
+    Pads1115_Ch1gain: TPanel;
+    GBads1115_Ch2: TGroupBox;
+    Lads1115_Ch2meas: TLabel;
+    Bads1115_Ch2meas: TButton;
+    Pads1115_Ch2dr: TPanel;
+    Pads1115_Ch2gain: TPanel;
+    GBads1115_Ch3: TGroupBox;
+    Lads1115_Ch3meas: TLabel;
+    Bads1115_Ch3meas: TButton;
+    Pads1115_Ch3dr: TPanel;
+    Pads1115_Ch3gain: TPanel;
+    StaticText1: TStaticText;
+    StaticText2: TStaticText;
+    StaticText3: TStaticText;
+    StaticText4: TStaticText;
+    StaticText5: TStaticText;
+    Panel9: TPanel;
 
     procedure FormCreate(Sender: TObject);
     procedure BConnectClick(Sender: TObject);
@@ -665,6 +687,7 @@ type
     ConfigFile:TIniFile;
     NumberPins:TStringList; // номери пінів, які використовуються як керуючі для SPI
     NumberPinsOneWire:TStringList; // номери пінів, які використовуються для OneWire
+    NumberPinsInterrupt:TStringList; // номери пінів, які можуть бути викристані для переривань
     ForwSteps,RevSteps,IVResult,VolCorrection,
     VolCorrectionNew,TemperData:PVector;
 
@@ -2112,7 +2135,9 @@ end;
 
 procedure TIVchar.Button1Click(Sender: TObject);
 begin
- showmessage(inttostr(ord(mcp_g4)));
+// showmessage(inttostr(MCP3424_Channel[0].Pins.PinControl)+ '  '+MCP3424_Channel[0].Pins.PNames[0]);
+// showmessage(inttostr(MCP3424_Channel[0].Pins.PinControl)+
+// '  '+MCP3424_ChannelShow[0].fPinVariants[0].Strings[0]);
 end;
 
 procedure TIVchar.BControlResetClick(Sender: TObject);
@@ -2150,13 +2175,15 @@ end;
 procedure TIVchar.ComDPacketPacket(Sender: TObject; const Str: string);
  var Data:TArrByte;
      i:integer;
-     ToNumberPins:boolean;
+     ToNumberPins,ToNumberPinsOneWire:boolean;
 begin
  if PacketIsReceived(Str,Data,ParameterReceiveCommand) then
   begin
    NumberPins.Clear;
    ToNumberPins:=True;
    NumberPinsOneWire.Clear;
+   ToNumberPinsOneWire:=True;
+   NumberPinsInterrupt.Clear;
    for I := 3 to High(Data)-1 do
     begin
 
@@ -2165,10 +2192,19 @@ begin
       ToNumberPins:=False;
       Continue;
       end;
+    if Data[i]=200 then
+      begin
+      ToNumberPinsOneWire:=False;
+      Continue;
+      end;
+
     if ToNumberPins then
         NumberPins.Add(IntToStr(Data[i]))
                     else
-        NumberPinsOneWire.Add(IntToStr(Data[i]));
+        if ToNumberPinsOneWire then
+           NumberPinsOneWire.Add(IntToStr(Data[i]))
+                               else
+           NumberPinsInterrupt.Add(IntToStr(Data[i]));
     end;
   end;
 end;
@@ -2183,6 +2219,7 @@ begin
  AnyObjectArray:=TObjectArray.Create;
  NumberPins:=TStringList.Create;
  NumberPinsOneWire:=TStringList.Create;
+ NumberPinsInterrupt:=TStringList.Create;
  PinsFromIniFile();
 
  VoltmetrsCreate();
@@ -2251,6 +2288,7 @@ begin
 
  NumberPins.Free;
  NumberPinsOneWire.Free;
+ NumberPinsInterrupt.Free;
 
  ComPortsEnding([ComPortUT70C,ComPortUT70B,ComPort1]);
 end;
@@ -2811,6 +2849,14 @@ begin
       Continue;
      end;
 
+   if (ShowArray.ObjectArray[i] is  TMCP3424_ChannelShow) then
+     begin
+      (ShowArray.ObjectArray[i] as  TMCP3424_ChannelShow).PinsReadFromIniFile(ConfigFile);
+      (ShowArray.ObjectArray[i] as  TMCP3424_ChannelShow).NumberPinShow;
+      Continue;
+     end;
+
+
    if (ShowArray.ObjectArray[i] is TPinsShowUniversal) then
      begin
       (ShowArray.ObjectArray[i] as TPinsShowUniversal).PinsReadFromIniFile(ConfigFile);
@@ -3290,6 +3336,11 @@ begin
   ConfigFile.WriteInteger('PinNumbersOneWire', 'PinCount', NumberPinsOneWire.Count);
   for I := 0 to NumberPinsOneWire.Count - 1 do
     ConfigFile.WriteString('PinNumbersOneWire', 'Pin' + IntToStr(i), NumberPinsOneWire[i]);
+
+  ConfigFile.EraseSection('NumberPinsInterrupt');
+  ConfigFile.WriteInteger('NumberPinsInterrupt', 'PinCount', NumberPinsInterrupt.Count);
+  for I := 0 to NumberPinsInterrupt.Count - 1 do
+    ConfigFile.WriteString('NumberPinsInterrupt', 'Pin' + IntToStr(i), NumberPinsInterrupt[i]);
 end;
 
 procedure TIVchar.PinsFromIniFile;
@@ -3300,6 +3351,8 @@ begin
     NumberPins.Add(ConfigFile.ReadString('PinNumbers', 'Pin' + IntToStr(i), IntToStr(UndefinedPin)));
   for I := 0 to ConfigFile.ReadInteger('PinNumbersOneWire', 'PinCount', 1) - 1 do
     NumberPinsOneWire.Add(ConfigFile.ReadString('PinNumbersOneWire', 'Pin' + IntToStr(i), IntToStr(UndefinedPin)));
+  for I := 0 to ConfigFile.ReadInteger('NumberPinsInterrupt', 'PinCount', 3) - 1 do
+    NumberPinsInterrupt.Add(ConfigFile.ReadString('NumberPinsInterrupt', 'Pin' + IntToStr(i), IntToStr(UndefinedPin)));
 end;
 
 procedure TIVchar.ComponentView;

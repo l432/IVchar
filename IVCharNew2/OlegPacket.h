@@ -15,6 +15,7 @@ byte FCS (byte Data[], int n);
 bool SendParameters();
 void SendPacket(byte Data[], int n);
 void ControlBlink();
+byte PinToInterruptNumber(byte PinNumber);
 //void CreateAndSendPacket(byte DDATA[], int n);
 //void ShortDelay();
 //void GateOpen();
@@ -26,7 +27,6 @@ class PinAndID {
     static byte DeviceId;
     static byte ActionId;
     static byte PinControl;//PinControl;
-//    static byte PinGate;//PinControl;  
     static byte Data3;//PinGate;PinToChange
     static byte Data4;//DAC_Data1
     static byte Data5;//DAC_Data2

@@ -1,9 +1,11 @@
 unit MCP3424;
 
+
 interface
 
 uses
-  SPIdevice, {CPort, {Measurement,} StdCtrls, {MDevice,} ExtCtrls, ArduinoADC;
+  SPIdevice, CPort, Measurement, StdCtrls, MDevice, ExtCtrls, ArduinoADC, 
+  IniFiles;
 
 type
 
@@ -21,9 +23,12 @@ const
  MCP3424_DelayTimeStep:array[TMCP3424_Resolution]of integer=
     (1,1,2,5);
  MCP3424_DelayTimeMax:array[TMCP3424_Resolution]of integer=
-    (5,10,20,25);
+    (15,15,20,25);
+
  MCP3424_Gain_Data:array[TMCP3424_Gain]of byte=
     (1,2,4,8);
+ MCP3424_Diapazons:array[TMCP3424_Gain]of string=
+    ('2.048','1.024','0.512','0.256');
  MCP3424_Resolution_Data:array[TMCP3424_Resolution]of byte=
     (12,14,16,18);
  MCP3424_LSB:array[TMCP3424_Resolution]of double=
@@ -46,7 +51,7 @@ type
    procedure Intitiation; override;
 
 //   procedure   PacketCreateToSend(); override;
-//   procedure PinsCreate();override;
+   procedure PinsCreate();override;
   public
 //   property  ActiveChannel:TMCP3424_ChanelNumber read FActiveChannel write FActiveChannel;
    property Gain: TMCP3424_Gain read FGain write FGain;
@@ -76,6 +81,16 @@ type
 //   procedure ConvertToValue();override;
 // end;
 
+
+TPins_MCP3424=class(TPins)
+  protected
+   Function GetPinStr(Index:integer):string;override;
+   Function StrToPinValue(Str: string):integer;override;
+   Function PinValueToStr(Index:integer):string;override;
+  public
+   Constructor Create(Nm:string);
+  end;
+
  TMCP3424_Channel=class(TArduinoADC_Channel)
  private
 //  fChanelNumber:TMCP3424_ChanelNumber;
@@ -84,14 +99,14 @@ type
 //  function GetNewData:boolean;
 //  function GetValue:double;
 //  procedure SetNewData(Value:boolean);
-  procedure PinsCreate;override;
+//  procedure PinsCreate;override;
   procedure SetModuleParameters;override;
  public
-  Pins:TPins;
-  property Value:double read GetValue;
+  Pins:TPins_MCP3424;
+//  property Value:double read GetValue;
    Constructor Create(ChanelNumber: TMCP3424_ChanelNumber;
                       MCP3424_Module: TMCP3424_Module);//override;
-//  Procedure Free;
+  Procedure Free;
 //  function GetData:double;
 //  procedure GetDataThread(WPARAM: word; EventEnd:THandle);
  end;
@@ -115,39 +130,41 @@ type
 //  procedure GetDataThread(WPARAM: word; EventEnd:THandle);
 // end;
 
- TMCP3424_ChannelShow=class(TArduinoADC_ChannelShow)
+// TMCP3424_ChannelShow=class(TArduinoADC_ChannelShow)
+//   private
+////    fChan:TMCP3424_Channel;
+////    MeasuringDeviceSimple:TMeasuringDeviceSimple;
+//   protected
+//    procedure LabelsFilling;override;
+//   public
+//   Constructor Create(Chan:TMCP3424_Channel;
+//                       LabelBit,LabelGain:TPanel;
+//                       LabelMeas:TLabel;
+//                       ButMeas:TButton);
+////   Procedure Free;
+// end;
+
+ TMCP3424_ChannelShow=class(TPinsShowUniversal)
    private
-//    fChan:TMCP3424_Channel;
-//    MeasuringDeviceSimple:TMeasuringDeviceSimple;
+    fChan:TMCP3424_Channel;
+    MeasuringDeviceSimple:TMeasuringDeviceSimple;
    protected
-    procedure LabelsFilling;override;
+    procedure LabelsFilling;
    public
     Constructor Create(Chan:TMCP3424_Channel;
                        LabelBit,LabelGain:TPanel;
                        LabelMeas:TLabel;
                        ButMeas:TButton);
-//   Procedure Free;
+//   procedure PinsReadFromIniFile(ConfigFile:TIniFile);override;
+//   procedure PinsWriteToIniFile(ConfigFile:TIniFile);override;
+   Procedure Free;
  end;
-
-// TMCP3424_ChannelShow=class(TPinsShowUniversal)
-//   private
-//    fChan:TMCP3424_Channel;
-//    MeasuringDeviceSimple:TMeasuringDeviceSimple;
-//   protected
-//    procedure LabelsFilling;
-//   public
-//    Constructor Create(Chan:TMCP3424_Channel;
-//                       LabelBit,LabelGain:TPanel;
-//                       LabelMeas:TLabel;
-//                       ButMeas:TButton);
-//   Procedure Free;
-// end;
 
 
 implementation
 
 uses
-  PacketParameters, SysUtils, OlegType, Math{, Dialogs};
+  PacketParameters, SysUtils, OlegType, Math, Dialogs{, Dialogs};
 
 { MCP3424_Module }
 
@@ -217,18 +234,18 @@ end;
 // Intitiation();
 //// Configuration();
 //end;
-
-
+//
+//
 //procedure TMCP3424_Module.PacketCreateToSend;
 //begin
 //  Configuration();
 //  PacketCreate([fMetterKod,Pins.PinControl,fConfigByte]);
 //end;
 
-//procedure TMCP3424_Module.PinsCreate;
-//begin
-//  Pins := TPins_I2C.Create(Name);
-//end;
+procedure TMCP3424_Module.PinsCreate;
+begin
+  Pins := TPins_I2C.Create(Name);
+end;
 
 
 { MCP3424_Channel }
@@ -237,7 +254,7 @@ constructor TMCP3424_Channel.Create(ChanelNumber: TMCP3424_ChanelNumber;
                                   MCP3424_Module: TMCP3424_Module);
 begin
   inherited Create(ChanelNumber,MCP3424_Module);
-
+  Pins:=TPins_MCP3424.Create(fName);
 //  fChanelNumber:=ChanelNumber;
 //  fName:='Ch'+inttostr(ord(ChanelNumber)+1)+'_MCP3424';
 //  fParentModule:=MCP3424_Module;
@@ -247,10 +264,10 @@ end;
 
 
 
-//procedure TMCP3424_Channel.Free;
-//begin
-// Pins.Free;
-//end;
+procedure TMCP3424_Channel.Free;
+begin
+ Pins.Free;
+end;
 //
 //function TMCP3424_Channel.GetData: double;
 //begin
@@ -275,15 +292,16 @@ begin
 //  fParentModule.Gain := TMCP3424_Gain((round(Log2(Pins.PinGate)) and $3));
 end;
 
-procedure TMCP3424_Channel.PinsCreate;
-begin
-  Pins := TPins.Create(fName, ['Bits mode', 'Gain']);
-  Pins.PinStrPart := '';
-  Pins.PinControl := 12;
-  // зберігатиметься Resolution
-  Pins.PinGate := 1;
-  // зберігатиметься Gain
-end;
+//procedure TMCP3424_Channel.PinsCreate;
+//begin
+//  Pins:=TPins_MCP3424.Create(fName);
+////  Pins := TPins.Create(fName, ['Bits mode', 'Gain']);
+////  Pins.PinStrPart := '';
+////  Pins.PinControl := 12;
+////  // зберігатиметься Resolution
+////  Pins.PinGate := 1;
+////  // зберігатиметься Gain
+//end;
 
 //function TMCP3424_Channel.GetNewData: boolean;
 //begin
@@ -309,33 +327,110 @@ constructor TMCP3424_ChannelShow.Create(Chan: TMCP3424_Channel;
                          LabelMeas: TLabel;
                          ButMeas: TButton);
 begin
- inherited Create(Chan,[LabelBit,LabelGain],LabelMeas,ButMeas);
-//  fChan:=Chan;
-//  inherited Create(fChan.Pins,[LabelBit,LabelGain]);
-//  LabelsFilling;
-//
-//  MeasuringDeviceSimple:=
-//     TMeasuringDeviceSimple.Create(fChan,LabelMeas,srPreciseVoltage,ButMeas);
+// inherited Create(Chan,[LabelBit,LabelGain],LabelMeas,ButMeas);
 
+  fChan:=Chan;
+  inherited Create(fChan.Pins,[LabelBit,LabelGain]);
+  LabelsFilling;
+
+  MeasuringDeviceSimple:=
+     TMeasuringDeviceSimple.Create(fChan,LabelMeas,srPreciseVoltage,ButMeas);
 end;
 
-//procedure TMCP3424_ChannelShow.Free;
-//begin
-//  MeasuringDeviceSimple.Free;
-//  inherited Free;
-//end;
+procedure TMCP3424_ChannelShow.Free;
+begin
+  MeasuringDeviceSimple.Free;
+  inherited Free;
+end;
 
 procedure TMCP3424_ChannelShow.LabelsFilling;
 var
   i: TMCP3424_Resolution;
   j: TMCP3424_Gain;
 begin
+//  inherited LabelsFilling;
+
   fPinVariants[0].Clear;
-  for i := Low(TMCP3424_Resolution) to High(TMCP3424_Resolution) do
-    fPinVariants[0].Add(inttostr(MCP3424_Resolution_Data[i]));
   fPinVariants[1].Clear;
+  for i := Low(TMCP3424_Resolution) to High(TMCP3424_Resolution) do
+//    fPinVariants[0].Add(inttostr(MCP3424_Resolution_Data[i]));
+    fPinVariants[0].Add(MCP3424_Resolution_Label[i]);
   for j := Low(TMCP3424_Gain) to High(TMCP3424_Gain) do
-    fPinVariants[1].Add(inttostr(MCP3424_Gain_Data[j]));
+//    fPinVariants[1].Add(inttostr(MCP3424_Gain_Data[j]));
+    fPinVariants[1].Add('+/-'+MCP3424_Diapazons[j]+' V');
+end;
+
+//procedure TMCP3424_ChannelShow.PinsReadFromIniFile(ConfigFile: TIniFile);
+//begin
+// showmessage('jj');
+//  inherited PinsReadFromIniFile(ConfigFile);
+//
+//end;
+
+{ TPins_MCP3424 }
+
+constructor TPins_MCP3424.Create(Nm: string);
+begin
+  inherited Create(Nm, ['Bits mode', 'Diapazon']);
+  PinStrPart := '';
+  PinControl := 12;
+  // зберігатиметься Resolution
+  PinGate := 1;
+  // зберігатиметься Gain
+end;
+
+function TPins_MCP3424.GetPinStr(Index: integer): string;
+begin
+ if fPins[Index]=UndefinedPin then
+   Result:=PNames[Index] +' is undefined'
+                              else
+   Result:=PinValueToStr(Index);
+end;
+
+function TPins_MCP3424.PinValueToStr(Index: integer): string;
+ var i:TMCP3424_Gain;
+     j:TMCP3424_Resolution;
+begin
+ if index=0 then
+  begin
+  for J := Low(TMCP3424_Resolution) to High(TMCP3424_Resolution) do
+    if fPins[Index]=MCP3424_Resolution_Data[j] then
+     begin
+     Result:=MCP3424_Resolution_Label[j];
+     Exit;
+     end;
+  end      else
+  begin
+  for i := Low(TMCP3424_Gain) to High(TMCP3424_Gain) do
+    if fPins[Index]=MCP3424_Gain_Data[i] then
+     begin
+     Result:='+/-'+MCP3424_Diapazons[i]+' V';
+     Exit;
+     end;
+  end;
+  Result:='u-u-ups';
+end;
+
+function TPins_MCP3424.StrToPinValue(Str: string): integer;
+ var i:TMCP3424_Gain;
+     j:TMCP3424_Resolution;
+begin
+// showmessage(Str);
+ for I := Low(TMCP3424_Gain) to High(TMCP3424_Gain) do
+  if AnsiPos( MCP3424_Diapazons[i],Str)>0 then
+   begin
+     Result:=MCP3424_Gain_Data[i];
+     Exit;
+   end;
+
+ for J := Low(TMCP3424_Resolution) to High(TMCP3424_Resolution) do
+  if AnsiPos( MCP3424_Resolution_Label[j],Str)>0 then
+   begin
+     Result:=MCP3424_Resolution_Data[j];
+     Exit;
+   end;
+
+ Result:=UndefinedPin;
 end;
 
 end.
