@@ -30,8 +30,8 @@ void SmartDelay::Start() {
 }
 
 unsigned long SmartDelay::TimeFromStart() {
-  return millis()-smLast;
-  }
+  return millis() - smLast;
+}
 
 
 void SmartDelay::Stop() {

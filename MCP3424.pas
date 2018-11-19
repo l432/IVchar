@@ -99,14 +99,14 @@ TPins_MCP3424=class(TPins)
 //  function GetNewData:boolean;
 //  function GetValue:double;
 //  procedure SetNewData(Value:boolean);
-//  procedure PinsCreate;override;
+  procedure PinsCreate;override;
   procedure SetModuleParameters;override;
  public
-  Pins:TPins_MCP3424;
+//  Pins:TPins_MCP3424;
 //  property Value:double read GetValue;
    Constructor Create(ChanelNumber: TMCP3424_ChanelNumber;
                       MCP3424_Module: TMCP3424_Module);//override;
-  Procedure Free;
+//  Procedure Free;
 //  function GetData:double;
 //  procedure GetDataThread(WPARAM: word; EventEnd:THandle);
  end;
@@ -254,7 +254,8 @@ constructor TMCP3424_Channel.Create(ChanelNumber: TMCP3424_ChanelNumber;
                                   MCP3424_Module: TMCP3424_Module);
 begin
   inherited Create(ChanelNumber,MCP3424_Module);
-  Pins:=TPins_MCP3424.Create(fName);
+//  Pins:=TPins_MCP3424.Create(fName);
+
 //  fChanelNumber:=ChanelNumber;
 //  fName:='Ch'+inttostr(ord(ChanelNumber)+1)+'_MCP3424';
 //  fParentModule:=MCP3424_Module;
@@ -264,10 +265,10 @@ end;
 
 
 
-procedure TMCP3424_Channel.Free;
-begin
- Pins.Free;
-end;
+//procedure TMCP3424_Channel.Free;
+//begin
+// Pins.Free;
+//end;
 //
 //function TMCP3424_Channel.GetData: double;
 //begin
@@ -292,16 +293,16 @@ begin
 //  fParentModule.Gain := TMCP3424_Gain((round(Log2(Pins.PinGate)) and $3));
 end;
 
-//procedure TMCP3424_Channel.PinsCreate;
-//begin
-//  Pins:=TPins_MCP3424.Create(fName);
-////  Pins := TPins.Create(fName, ['Bits mode', 'Gain']);
-////  Pins.PinStrPart := '';
-////  Pins.PinControl := 12;
-////  // зберігатиметься Resolution
-////  Pins.PinGate := 1;
-////  // зберігатиметься Gain
-//end;
+procedure TMCP3424_Channel.PinsCreate;
+begin
+  Pins:=TPins_MCP3424.Create(fName);
+//  Pins := TPins.Create(fName, ['Bits mode', 'Gain']);
+//  Pins.PinStrPart := '';
+//  Pins.PinControl := 12;
+//  // зберігатиметься Resolution
+//  Pins.PinGate := 1;
+//  // зберігатиметься Gain
+end;
 
 //function TMCP3424_Channel.GetNewData: boolean;
 //begin

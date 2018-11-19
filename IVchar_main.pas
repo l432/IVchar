@@ -9,7 +9,7 @@ uses
   TemperatureSensor, DACR2R, UT70, RS232device,ET1255, RS232_Mediator_Tread,
   CPortCtl, Grids, Chart, TeeProcs, Series, TeEngine, ExtCtrls, Buttons,
   ComCtrls, CPort, StdCtrls, Dialogs, Controls, Classes, D30_06,Math, PID, 
-  MDevice, Spin,HighResolutionTimer, MCP3424;
+  MDevice, Spin,HighResolutionTimer, MCP3424, ADS1115;
 
 const
   MeasIV='IV characteristic';
@@ -497,12 +497,8 @@ type
     Bads1115_Ch3meas: TButton;
     Pads1115_Ch3dr: TPanel;
     Pads1115_Ch3gain: TPanel;
-    StaticText1: TStaticText;
-    StaticText2: TStaticText;
-    StaticText3: TStaticText;
-    StaticText4: TStaticText;
-    StaticText5: TStaticText;
-    Panel9: TPanel;
+    Pads1115_ready: TPanel;
+    Pads1115_adr: TPanel;
 
     procedure FormCreate(Sender: TObject);
     procedure BConnectClick(Sender: TObject);
@@ -660,6 +656,7 @@ type
     procedure IVVoltageInputSignDetermine;
     procedure IVMR_Refresh;
     procedure MCP3424Create;
+    procedure ADS1115Create;
   public
     ShowArray:TObjectArray;
     AnyObjectArray:TObjectArray;
@@ -679,8 +676,14 @@ type
     MCP3424:TMCP3424_Module;
     MCP3424show:TI2C_PinsShow;
 
-    MCP3424_Channel:array [TMCP3424_ChanelNumber] of TMCP3424_Channel;
-    MCP3424_ChannelShow:array [TMCP3424_ChanelNumber] of TMCP3424_ChannelShow;
+    MCP3424_Channels:array [TMCP3424_ChanelNumber] of TMCP3424_Channel;
+    MCP3424_ChannelShows:array [TMCP3424_ChanelNumber] of TMCP3424_ChannelShow;
+
+    ADS11115module:TADS1115_Module;
+    ADS11115show:TDS1115_ModuleShow;
+
+    ADS11115_Channels:array [TADS1115_ChanelNumber] of TADS1115_Channel;
+    ADS11115_ChannelShows:array [TADS1115_ChanelNumber] of TADS1115_ChannelShow;
 
     IscVocPinChanger,LEDOpenPinChanger:TArduinoPinChanger;
     IscVocPinChangerShow,LEDOpenPinChangerShow:TArduinoPinChangerShow;
@@ -1917,6 +1920,27 @@ begin
    end;
 end;
 
+procedure TIVchar.ADS1115Create;
+ var i:TADS1115_ChanelNumber;
+begin
+  ADS11115module := TADS1115_Module.Create(ComPort1, 'ADS1115');
+  ADS11115show := TDS1115_ModuleShow.Create(ADS11115module.Pins, Pads1115_adr, Pads1115_ready, NumberPinsInterrupt);
+//  ADS11115show := TDS1115_ModuleShow.Create(ADS11115module.Pins, Pads1115_adr, Pads1115_ready, NumberPinsOneWire);
+
+  for I := Low(TADS1115_ChanelNumber) to High(TADS1115_ChanelNumber) do
+    ADS11115_Channels[i] := TADS1115_Channel.Create(i, ADS11115module);
+
+  ADS11115_ChannelShows[0]:=
+     TADS1115_ChannelShow.Create(ADS11115_Channels[0], Pads1115_Ch1dr, Pads1115_Ch1gain, Lads1115_Ch1meas, Bads1115_Ch1meas);
+  ADS11115_ChannelShows[1]:=
+     TADS1115_ChannelShow.Create(ADS11115_Channels[1], Pads1115_Ch2dr, Pads1115_Ch2gain, Lads1115_Ch2meas, Bads1115_Ch2meas);
+  ADS11115_ChannelShows[2]:=
+     TADS1115_ChannelShow.Create(ADS11115_Channels[2], Pads1115_Ch3dr, Pads1115_Ch3gain, Lads1115_Ch3meas,  Bads1115_Ch3meas);
+
+  ShowArray.Add([ADS11115show,ADS11115_ChannelShows[0],ADS11115_ChannelShows[1],ADS11115_ChannelShows[2]]);
+  AnyObjectArray.Add([ADS11115module, ADS11115_Channels[0],ADS11115_Channels[1],ADS11115_Channels[2]]);
+end;
+
 procedure TIVchar.BConnectClick(Sender: TObject);
 begin
  try
@@ -2255,7 +2279,7 @@ begin
                  TMP102,
                  HTU21D,
                  D30_06,IscVocPinChanger,LEDOpenPinChanger,
-                 MCP3424]);
+                 MCP3424,ADS11115module]);
 
  if (ComPort1.Connected)and(SettingDevice.ActiveInterface.Name=DACR2R.Name) then SettingDevice.Reset();
  if (ComPort1.Connected) then D30_06.Reset;
@@ -2798,7 +2822,7 @@ begin
   SetLength(VoltmetrShows,3);
   VoltmetrShows[0]:= TVoltmetrShow.Create(V721A, RGV721A_MM, RGV721ARange, LV721A, LV721AU, PV721APin, PV721APinG, {BV721ASet, BV721ASetGate, }BV721AMeas, SBV721AAuto, NumberPins{CBV721A}, Time);
   VoltmetrShows[1]:= TVoltmetrShow.Create(V721_I, RGV721I_MM, RGV721IRange, LV721I, LV721IU, PV721IPin, PV721IPinG, {BV721ISet, BV721ISetGate,} BV721IMeas, SBV721IAuto, NumberPins{CBV721I}, Time);
-  VoltmetrShows[2]:= TVoltmetrShow.Create(V721_II, RGV721II_MM, RGV721IIRange, LV721II, LV721IIU, PV721IIPin, PV721IIPinG, {BV721IISet, BV721IISetGate,} BV721IIMeas, SBV721IIAuto, NumberPins{CBV721II}, Time);
+  VoltmetrShows[2]:= TVoltmetrShow.Create(V721_II, RGV721II_MM, RGV721IIRange, LV721II, LV721IIU, PV721IIPin, PV721IIPinG, {BV721IISet, BV721IISetGate,} BV721IIMeas, SBV721IIAuto, NumberPins, Time);
 
   DS18B20:=TDS18B20.Create(ComPort1, 'DS18B20');
   DS18B20show:=TOnePinsShow.Create(DS18B20.Pins,PDS18BPin,NumberPinsOneWire);
@@ -2825,6 +2849,7 @@ begin
                       IscVocPinChanger,LEDOpenPinChanger]);
 
   MCP3424Create();
+  ADS1115Create();
 
   UT70B:=TUT70B.Create(ComPortUT70B, 'UT70B');
   UT70BShow:= TUT70BShow.Create(UT70B, RGUT70B_MM, RGUT70B_Range, RGUT70B_RangeM, LUT70B, LUT70BU, BUT70BMeas, SBUT70BAuto, Time);
@@ -2849,12 +2874,12 @@ begin
       Continue;
      end;
 
-   if (ShowArray.ObjectArray[i] is  TMCP3424_ChannelShow) then
-     begin
-      (ShowArray.ObjectArray[i] as  TMCP3424_ChannelShow).PinsReadFromIniFile(ConfigFile);
-      (ShowArray.ObjectArray[i] as  TMCP3424_ChannelShow).NumberPinShow;
-      Continue;
-     end;
+//   if (ShowArray.ObjectArray[i] is  TMCP3424_ChannelShow) then
+//     begin
+//      (ShowArray.ObjectArray[i] as  TMCP3424_ChannelShow).PinsReadFromIniFile(ConfigFile);
+//      (ShowArray.ObjectArray[i] as  TMCP3424_ChannelShow).NumberPinShow;
+//      Continue;
+//     end;
 
 
    if (ShowArray.ObjectArray[i] is TPinsShowUniversal) then
@@ -2919,6 +2944,13 @@ begin
     begin
     (ShowArray.ObjectArray[i] as TMCP3424_ChannelShow).PinsWriteToIniFile(ConfigFile);
     (ShowArray.ObjectArray[i] as TMCP3424_ChannelShow).Free;
+    Continue;
+    end;
+
+   if (ShowArray.ObjectArray[i] is TADS1115_ChannelShow) then
+    begin
+    (ShowArray.ObjectArray[i] as TADS1115_ChannelShow).PinsWriteToIniFile(ConfigFile);
+    (ShowArray.ObjectArray[i] as TADS1115_ChannelShow).Free;
     Continue;
     end;
 
@@ -3084,6 +3116,12 @@ begin
      Continue;
     end;
 
+   if (AnyObjectArray.ObjectArray[i] is TADS1115_Channel) then
+    begin
+     (AnyObjectArray.ObjectArray[i] as TADS1115_Channel).Free;
+     Continue;
+    end;
+
     AnyObjectArray.ObjectArray[i].Free;
   end;
 
@@ -3170,10 +3208,15 @@ begin
    end;
 
   SetLength(Devices,High(Devices)+5);
-  Devices[High(Devices)-3]:=MCP3424_Channel[0];
-  Devices[High(Devices)-2]:=MCP3424_Channel[1];
-  Devices[High(Devices)-1]:=MCP3424_Channel[2];
-  Devices[High(Devices)]:=MCP3424_Channel[3];
+  Devices[High(Devices)-3]:=MCP3424_Channels[0];
+  Devices[High(Devices)-2]:=MCP3424_Channels[1];
+  Devices[High(Devices)-1]:=MCP3424_Channels[2];
+  Devices[High(Devices)]:=MCP3424_Channels[3];
+
+  SetLength(Devices,High(Devices)+4);
+  Devices[High(Devices)-2]:=ADS11115_Channels[0];
+  Devices[High(Devices)-1]:=ADS11115_Channels[1];
+  Devices[High(Devices)]:=ADS11115_Channels[2];
 
   Current_MD:=TMeasuringDevice.Create(Devices, CBCMD,'Current', LADCurrentValue, srCurrent);
   VoltageIV_MD:=TMeasuringDevice.Create(Devices, CBVMD,'Voltage', LADVoltageValue, srVoltge);
@@ -3291,21 +3334,21 @@ begin
   MCP3424 := TMCP3424_Module.Create(ComPort1, 'MCP3424');
   MCP3424show := TI2C_PinsShow.Create(MCP3424.Pins, PMCP3424Pin, MCP3424_StartAdress, MCP3424_LastAdress);
   for I := Low(TMCP3424_ChanelNumber) to High(TMCP3424_ChanelNumber) do
-    MCP3424_Channel[i] := TMCP3424_Channel.Create(i, MCP3424);
+    MCP3424_Channels[i] := TMCP3424_Channel.Create(i, MCP3424);
 
-  MCP3424_ChannelShow[0]:=
-     TMCP3424_ChannelShow.Create(MCP3424_Channel[0], PMCP3424_Ch1bits, PMCP3424_Ch1gain, LMCP3424_Ch1meas, {BtMCP3424_Ch1bits, BtMCP3424_Ch1gain,} BMCP3424_Ch1meas{, CBMCP3424_Ch1bits, CBMCP3424_Ch1gain});
-  MCP3424_ChannelShow[1]:=
-     TMCP3424_ChannelShow.Create(MCP3424_Channel[1], PMCP3424_Ch2bits, PMCP3424_Ch2gain, LMCP3424_Ch2meas, {BtMCP3424_Ch2bits, BtMCP3424_Ch2gain,} BMCP3424_Ch2meas{, CBMCP3424_Ch2bits, CBMCP3424_Ch2gain});
-  MCP3424_ChannelShow[2]:=
-     TMCP3424_ChannelShow.Create(MCP3424_Channel[2], PMCP3424_Ch3bits, PMCP3424_Ch3gain, LMCP3424_Ch3meas, {BtMCP3424_Ch3bits, BtMCP3424_Ch3gain,} BMCP3424_Ch3meas{, CBMCP3424_Ch3bits, CBMCP3424_Ch3gain});
-  MCP3424_ChannelShow[3]:=
-     TMCP3424_ChannelShow.Create(MCP3424_Channel[3], PMCP3424_Ch4bits, PMCP3424_Ch4gain, LMCP3424_Ch4meas, {BtMCP3424_Ch4bits, BtMCP3424_Ch4gain,} BMCP3424_Ch4meas{, CBMCP3424_Ch4bits, CBMCP3424_Ch4gain});
+  MCP3424_ChannelShows[0]:=
+     TMCP3424_ChannelShow.Create(MCP3424_Channels[0], PMCP3424_Ch1bits, PMCP3424_Ch1gain, LMCP3424_Ch1meas, {BtMCP3424_Ch1bits, BtMCP3424_Ch1gain,} BMCP3424_Ch1meas{, CBMCP3424_Ch1bits, CBMCP3424_Ch1gain});
+  MCP3424_ChannelShows[1]:=
+     TMCP3424_ChannelShow.Create(MCP3424_Channels[1], PMCP3424_Ch2bits, PMCP3424_Ch2gain, LMCP3424_Ch2meas, {BtMCP3424_Ch2bits, BtMCP3424_Ch2gain,} BMCP3424_Ch2meas{, CBMCP3424_Ch2bits, CBMCP3424_Ch2gain});
+  MCP3424_ChannelShows[2]:=
+     TMCP3424_ChannelShow.Create(MCP3424_Channels[2], PMCP3424_Ch3bits, PMCP3424_Ch3gain, LMCP3424_Ch3meas, {BtMCP3424_Ch3bits, BtMCP3424_Ch3gain,} BMCP3424_Ch3meas{, CBMCP3424_Ch3bits, CBMCP3424_Ch3gain});
+  MCP3424_ChannelShows[3]:=
+     TMCP3424_ChannelShow.Create(MCP3424_Channels[3], PMCP3424_Ch4bits, PMCP3424_Ch4gain, LMCP3424_Ch4meas, {BtMCP3424_Ch4bits, BtMCP3424_Ch4gain,} BMCP3424_Ch4meas{, CBMCP3424_Ch4bits, CBMCP3424_Ch4gain});
 
   ShowArray.Add([MCP3424show,
-                 MCP3424_ChannelShow[0],MCP3424_ChannelShow[1],MCP3424_ChannelShow[2],MCP3424_ChannelShow[3]]);
-  AnyObjectArray.Add([MCP3424,MCP3424_Channel[0],MCP3424_Channel[1],
-                      MCP3424_Channel[2],MCP3424_Channel[3]]);
+                 MCP3424_ChannelShows[0],MCP3424_ChannelShows[1],MCP3424_ChannelShows[2],MCP3424_ChannelShows[3]]);
+  AnyObjectArray.Add([MCP3424,MCP3424_Channels[0],MCP3424_Channels[1],
+                      MCP3424_Channels[2],MCP3424_Channels[3]]);
 
 end;
 

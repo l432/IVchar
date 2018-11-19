@@ -33,13 +33,13 @@ type
   function GetNewData:boolean;
   function GetValue:double;
   procedure SetNewData(Value:boolean);
-//  procedure PinsCreate();virtual;abstract;
+  procedure PinsCreate();virtual;abstract;
   procedure SetModuleParameters;virtual;
  public
-//  Pins:TPins;
+  Pins:TPins;
   property Value:double read GetValue;
   Constructor Create(ChanelNumber: byte; Module: TArduinoADC_Module);//override;
-//  Procedure Free;
+  Procedure Free;
   function GetData:double;
   procedure GetDataThread(WPARAM: word; EventEnd:THandle);
  end;
@@ -111,13 +111,13 @@ begin
   fChanelNumber:=ChanelNumber;
   fParentModule:=Module;
   fName:='Ch'+inttostr(ChanelNumber+1)+'_'+Module.Name;
-//  PinsCreate();
+  PinsCreate();
 end;
 
-//procedure TArduinoADC_Channel.Free;
-//begin
-//  Pins.Free;
-//end;
+procedure TArduinoADC_Channel.Free;
+begin
+  Pins.Free;
+end;
 
 function TArduinoADC_Channel.GetData: double;
 begin

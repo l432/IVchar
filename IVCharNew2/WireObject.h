@@ -33,6 +33,23 @@ class WireObject {
       Wire.endTransmission();
     }
 
+    void TwoByteTransfer(byte Data1, byte Data2)
+    {
+      Wire.beginTransmission(_address);
+      Wire.write(Data1);
+      Wire.write(Data2);
+      Wire.endTransmission();
+    }
+
+    void ThreeByteTransfer(byte Data1, byte Data2, byte Data3)
+    {
+      Wire.beginTransmission(_address);
+      Wire.write(Data1);
+      Wire.write(Data2);
+      Wire.write(Data3);
+      Wire.endTransmission();
+    }
+
     void SetAdress(byte address)
     {
       _address = address;

@@ -819,7 +819,7 @@ begin
 
  if RG.Items.Count>8 then  RG.Columns:=3
                      else  RG.Columns:=2;
- RG.Width:=RG.Columns*180+20;
+ RG.Width:=RG.Columns*200+20;
  RG.Height:=Ceil(RG.Items.Count/RG.Columns)*50+20;
  Form.Width:=RG.Width;
  Form.Height:=RG.Height+100;
