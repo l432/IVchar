@@ -42,7 +42,7 @@ type
    procedure   PacketCreateToSend(); override;
   public
    Procedure ConvertToValue();override;
-   Function ResultProblem(Rez:double):boolean;override;
+   Function ResultProblem(Rez:double):boolean;//override;
    Constructor Create(CP:TComPort;Nm:string);override;
    function GetData():double;override;
    procedure GetDataThread(WPARAM: word;EventEnd:THandle);override;
@@ -97,6 +97,7 @@ Constructor TVoltmetr.Create(CP:TComPort;Nm:string);
  var V721_MeasureMode:TV721_MeasureMode;
 begin
   inherited Create(CP,Nm);
+  RepeatInErrorCase:=True;
   fMetterKod:=V7_21Command;
   fTimeToMeasurement:=80;
 

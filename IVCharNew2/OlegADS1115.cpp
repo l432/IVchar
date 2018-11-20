@@ -31,7 +31,7 @@ bool ADS1115o::Begin() {
 
 void ADS1115o::Process() {
 //  if (isConversionFinished()) {
-
+  ControlBlink();
         ByteTransfer(ADS1115_REG_POINTER_CONFIG);
         DataReceive();
         _DataReceived[GetDataReceivedNumber()] = _DataReceived[0];

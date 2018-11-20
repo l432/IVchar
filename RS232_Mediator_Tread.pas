@@ -48,6 +48,7 @@ begin
       begin
       fArrayDevice[i].ComPortUsing();
       fArrayDevice[i].isNeededComPort:=False;
+//      inc(fArrayDevice[i].ttt);
       end;
 end;
 

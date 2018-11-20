@@ -2158,10 +2158,28 @@ end;
 
 
 procedure TIVchar.Button1Click(Sender: TObject);
+ var ArrayDevice:array of TRS232Device;
+//  i:byte;
+//  str:string;
 begin
-// showmessage(inttostr(MCP3424_Channel[0].Pins.PinControl)+ '  '+MCP3424_Channel[0].Pins.PNames[0]);
-// showmessage(inttostr(MCP3424_Channel[0].Pins.PinControl)+
-// '  '+MCP3424_ChannelShow[0].fPinVariants[0].Strings[0]);
+ SetLength(ArrayDevice,12);
+  ArrayDevice[0]:=DACR2R;
+  ArrayDevice[1]:=V721A;
+  ArrayDevice[2]:=V721_I;
+  ArrayDevice[3]:=V721_II;
+  ArrayDevice[4]:=DS18B20;
+  ArrayDevice[5]:=TMP102;
+  ArrayDevice[6]:=HTU21D;
+  ArrayDevice[7]:=D30_06;
+  ArrayDevice[8]:=IscVocPinChanger;
+  ArrayDevice[9]:=LEDOpenPinChanger;
+  ArrayDevice[10]:=MCP3424;
+  ArrayDevice[11]:=ADS11115module;
+//  str:='';
+//  for I := 0 to 11 do
+//    str:=str+ArrayDevice[i].Name+' '+inttostr(ArrayDevice[i].ttt)+#10+#13;
+//  showmessage(str);
+
 end;
 
 procedure TIVchar.BControlResetClick(Sender: TObject);

@@ -17,13 +17,21 @@ const
  MCP3424_Resolution_Label:array[TMCP3424_Resolution]of string=
    ('12 bits, 240 SPS','14 bits, 60 SPS',
    '16 bits, 15 SPS', '18 bits, 3.75 SPS');
+// MCP3424_ConversionTime:array[TMCP3424_Resolution]of integer=
+//    (5,17,67,270);
+////    (10,35,140,550);
+// MCP3424_DelayTimeStep:array[TMCP3424_Resolution]of integer=
+//    (1,1,2,5);
+// MCP3424_DelayTimeMax:array[TMCP3424_Resolution]of integer=
+//    (15,15,20,25);
+
  MCP3424_ConversionTime:array[TMCP3424_Resolution]of integer=
     (5,17,67,270);
 //    (10,35,140,550);
  MCP3424_DelayTimeStep:array[TMCP3424_Resolution]of integer=
     (1,1,2,5);
  MCP3424_DelayTimeMax:array[TMCP3424_Resolution]of integer=
-    (15,15,20,25);
+    (20,20,20,25);
 
  MCP3424_Gain_Data:array[TMCP3424_Gain]of byte=
     (1,2,4,8);
@@ -47,10 +55,10 @@ type
     FResolution: TMCP3424_Resolution;
 //    fConfigByte:byte;
   protected
-//   procedure Configuration();override;
+   procedure Configuration();override;
    procedure Intitiation; override;
 
-   procedure   PacketCreateToSend(); override;
+//   procedure   PacketCreateToSend(); override;
    procedure PinsCreate();override;
   public
 //   property  ActiveChannel:TMCP3424_ChanelNumber read FActiveChannel write FActiveChannel;
@@ -168,18 +176,18 @@ uses
 
 { MCP3424_Module }
 
-//procedure TMCP3424_Module.Configuration;
-//begin
-//  fMinDelayTime:=MCP3424_ConversionTime[FResolution];
-//  fDelayTimeStep:=MCP3424_DelayTimeStep[FResolution];
-//  fDelayTimeMax:=MCP3424_DelayTimeMax[FResolution];
-//  fConfigByte:=0;
-//  fConfigByte:=fConfigByte or ((FActiveChannel and $3)shl 5);
-//  fConfigByte:=fConfigByte or ($0 shl 4);
-//  fConfigByte:=fConfigByte or ((ord(FResolution) and $3)shl 2);
-//  fConfigByte:=fConfigByte or (byte(ord(FGain)) and $3);
-//  fConfigByte:=fConfigByte or $80;
-//end;
+procedure TMCP3424_Module.Configuration;
+begin
+  fMinDelayTime:=MCP3424_ConversionTime[FResolution];
+  fDelayTimeStep:=MCP3424_DelayTimeStep[FResolution];
+  fDelayTimeMax:=MCP3424_DelayTimeMax[FResolution];
+  fConfigByte:=0;
+  fConfigByte:=fConfigByte or ((FActiveChannel and $3)shl 5);
+  fConfigByte:=fConfigByte or ($0 shl 4);
+  fConfigByte:=fConfigByte or ((ord(FResolution) and $3)shl 2);
+  fConfigByte:=fConfigByte or (byte(ord(FGain)) and $3);
+  fConfigByte:=fConfigByte or $80;
+end;
 
 procedure TMCP3424_Module.ConvertToValue;
  var temp:Int64;
@@ -236,20 +244,20 @@ end;
 //end;
 //
 //
-procedure TMCP3424_Module.PacketCreateToSend;
-begin
-  fMinDelayTime:=MCP3424_ConversionTime[FResolution];
-  fDelayTimeStep:=MCP3424_DelayTimeStep[FResolution];
-  fDelayTimeMax:=MCP3424_DelayTimeMax[FResolution];
-  fConfigByte:=0;
-  fConfigByte:=fConfigByte or ((FActiveChannel and $3)shl 5);
-  fConfigByte:=fConfigByte or ($0 shl 4);
-  fConfigByte:=fConfigByte or ((ord(FResolution) and $3)shl 2);
-  fConfigByte:=fConfigByte or (byte(ord(FGain)) and $3);
-  fConfigByte:=fConfigByte or $80;
-//  Configuration();
-  PacketCreate([fMetterKod,Pins.PinControl,fConfigByte]);
-end;
+//procedure TMCP3424_Module.PacketCreateToSend;
+//begin
+//  fMinDelayTime:=MCP3424_ConversionTime[FResolution];
+//  fDelayTimeStep:=MCP3424_DelayTimeStep[FResolution];
+//  fDelayTimeMax:=MCP3424_DelayTimeMax[FResolution];
+//  fConfigByte:=0;
+//  fConfigByte:=fConfigByte or ((FActiveChannel and $3)shl 5);
+//  fConfigByte:=fConfigByte or ($0 shl 4);
+//  fConfigByte:=fConfigByte or ((ord(FResolution) and $3)shl 2);
+//  fConfigByte:=fConfigByte or (byte(ord(FGain)) and $3);
+//  fConfigByte:=fConfigByte or $80;
+////  Configuration();
+//  PacketCreate([fMetterKod,Pins.PinControl,fConfigByte]);
+//end;
 
 procedure TMCP3424_Module.PinsCreate;
 begin

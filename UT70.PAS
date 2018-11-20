@@ -225,6 +225,7 @@ uses
 constructor TUT70B.Create(CP:TComPort;Nm:string);
 begin
  inherited Create(CP,Nm);
+ RepeatInErrorCase:=True;
  fComPacket.StartString := UT70_PacketBeginChar;
  fComPacket.StopString := UT70_PacketEndChar;
  NamesFilling;

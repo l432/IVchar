@@ -8,7 +8,6 @@
 #endif
 
 #include "OlegPacket.h"
-#include "OlegConstant.h"
 
 class CustomDevice: public PinAndID
 {

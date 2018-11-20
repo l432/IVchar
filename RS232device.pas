@@ -108,6 +108,7 @@ TRS232Device=class(TNamedInterfacedObject)
    function PortConnected():boolean;
    procedure  PacketCreateToSend(); virtual;
   public
+//   ttt:integer;
    property isNeededComPort:boolean read fisNeededComPort write fisNeededComPort;
    property Error:boolean read fError;
    Constructor Create();overload;
@@ -152,6 +153,7 @@ TRS232Meter=class(TRS232Device,IMeasurement)
    Function GetValue():double;virtual;
    procedure SetNewData(Value:boolean);
   public
+   RepeatInErrorCase:boolean;
    property NewData:boolean read GetNewData write SetNewData;
    property Value:double read GetValue write fValue;
    property isReady:boolean read fIsReady write fIsReady;
@@ -163,7 +165,7 @@ TRS232Meter=class(TRS232Device,IMeasurement)
    property Diapazon:Shortint read fDiapazon;
    Constructor Create(CP:TComPort;Nm:string);override;
    Procedure ConvertToValue();virtual;
-   Function ResultProblem(Rez:double):boolean;virtual;
+//   Function ResultProblem(Rez:double):boolean;virtual;
    Procedure Request();virtual;
    function GetData():double;virtual;
    procedure MeasurementBegin;
@@ -264,6 +266,7 @@ begin
   fComPacket.CaseInsensitive:=False;
 
   fisNeededComPort:=False;
+//  ttt:=0;
   fError:=False;
 end;
 
@@ -295,8 +298,9 @@ end;
 
 procedure TRS232Device.isNeededComPortState;
 begin
- if WaitForSingleObject(EventComPortFree,1000)=WAIT_OBJECT_0
-  then fisNeededComPort:=True;
+ fisNeededComPort:=(WaitForSingleObject(EventComPortFree,1000)=WAIT_OBJECT_0);
+// if WaitForSingleObject(EventComPortFree,1000)=WAIT_OBJECT_0
+//  then fisNeededComPort:=True;
 end;
 
 procedure TRS232Device.PacketCreateToSend;
@@ -343,6 +347,7 @@ begin
   fValue:=ErResult;
   fNewData:=False;
   fError:=False;
+  RepeatInErrorCase:=False;
 end;
 
 
@@ -409,7 +414,8 @@ start:
  if fIsReceived then ConvertToValue();
  if fIsReady then Result:=fValue;
 
- if ((Result=ErResult)or(ResultProblem(Result)))and(isFirst) then
+// if ((Result=ErResult)or(ResultProblem(Result)))and(isFirst) then
+ if (RepeatInErrorCase) and (Result=ErResult)and(isFirst) then
     begin
       isFirst:=false;
       goto start;
@@ -438,10 +444,10 @@ begin
 end;
 
 
-function TRS232Meter.ResultProblem(Rez: double): boolean;
-begin
- Result:=False;
-end;
+//function TRS232Meter.ResultProblem(Rez: double): boolean;
+//begin
+// Result:=False;
+//end;
 
 procedure TRS232Meter.SetNewData(Value: boolean);
 begin
@@ -765,8 +771,9 @@ end;
 
 procedure TQueueRS232Device.isNeededComPortState;
 begin
- if WaitForSingleObject(EventComPortFree,1000)=WAIT_OBJECT_0
-  then fisNeededComPort:=True;
+ fisNeededComPort:=(WaitForSingleObject(EventComPortFree,1000)=WAIT_OBJECT_0);
+// if WaitForSingleObject(EventComPortFree,1000)=WAIT_OBJECT_0
+//  then fisNeededComPort:=True;
 end;
 
 function TQueueRS232Device.PortConnected: boolean;

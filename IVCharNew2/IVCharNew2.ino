@@ -48,14 +48,12 @@ void setup() {
   mcp3424.Setup();
 
   wdt_enable(WDTO_500MS);
-//attachInterrupt(0,ControlBlink,CHANGE);
 }
 
 void loop() {
 
   if (Serial.available() > 0) {
     if (ParameterReceive()) {
-//      ControlBlink();
       if (cd.V721()) goto start;
       if (SendParameters()) goto start;
       if (dacR2R.Action()) goto start;

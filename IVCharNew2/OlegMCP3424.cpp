@@ -1,5 +1,6 @@
 #include "OlegMCP3424.h"
 
+//const unsigned long TimeInterval[] = {5000, 17000, 67000, 270000};
 const unsigned long TimeInterval[] = {5000, 17000, 67000, 270000};
 
 MCP3424o::MCP3424o()

@@ -70,7 +70,8 @@ start:
   until ((i > fRS232Meter.DelayTimeMax) or (fRS232Meter.IsReceived) or (fRS232Meter.Error));
   if fRS232Meter.IsReceived then
     Synchronize(ConvertToValue);
-  if ((fRS232Meter.Value = ErResult) or (fRS232Meter.ResultProblem(fRS232Meter.Value))) and (isFirst) then
+//  if ((fRS232Meter.Value = ErResult) or (fRS232Meter.ResultProblem(fRS232Meter.Value))) and (isFirst) then
+  if (fRS232Meter.RepeatInErrorCase) and (fRS232Meter.Value = ErResult) and (isFirst) then
   begin
     isFirst := false;
     goto start;

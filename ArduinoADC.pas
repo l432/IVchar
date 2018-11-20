@@ -15,10 +15,10 @@ type
   protected
     FActiveChannel: byte;
     fConfigByte:byte;
-//   procedure PacketCreateToSend(); override;
-//   procedure Configuration();virtual;
+   procedure PacketCreateToSend(); override;
+   procedure Configuration();virtual;
    procedure Intitiation();virtual;
-//   procedure FinalPacketCreateToSend();virtual;
+   procedure FinalPacketCreateToSend();virtual;
  public
    property  ActiveChannel:byte read FActiveChannel write FActiveChannel;
    constructor Create(CP:TComPort;Nm:string);override;
@@ -73,10 +73,10 @@ uses
 
 { TArduinoADC_Module }
 
-//procedure TArduinoADC_Module.Configuration;
-//begin
-//
-//end;
+procedure TArduinoADC_Module.Configuration;
+begin
+
+end;
 
 constructor TArduinoADC_Module.Create(CP: TComPort; Nm: string);
 begin
@@ -85,22 +85,22 @@ begin
  Intitiation();
 end;
 
-//procedure TArduinoADC_Module.FinalPacketCreateToSend;
-//begin
-//  PacketCreate([fMetterKod, Pins.PinControl, fConfigByte]);
-//end;
+procedure TArduinoADC_Module.FinalPacketCreateToSend;
+begin
+  PacketCreate([fMetterKod, Pins.PinControl, fConfigByte]);
+end;
 
 procedure TArduinoADC_Module.Intitiation;
 begin
 
 end;
 
-//procedure TArduinoADC_Module.PacketCreateToSend;
-//begin
-//  Configuration();
+procedure TArduinoADC_Module.PacketCreateToSend;
+begin
+  Configuration();
 //  PacketCreate([fMetterKod, Pins.PinControl, fConfigByte]);
-////  FinalPacketCreateToSend();
-//end;
+  FinalPacketCreateToSend();
+end;
 
 
 { TArduinoADC_Channel }

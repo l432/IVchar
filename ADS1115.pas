@@ -27,11 +27,11 @@ type
 const
 
  ADS1115_ConversionTime:array[TADS1115_DataRate]of integer=
-    (120,58,28,14,7,4,2,20);
+    (120,58,28,14,7,4,2,2);
  ADS1115_DelayTimeStep:array[TADS1115_DataRate]of integer=
-    (5,2,5,5,1,1,1,1);
+    (5,5,2,2,1,1,1,1);
  ADS1115_DelayTimeMax:array[TADS1115_DataRate]of integer=
-    (5,5,5,5,20,20,20,20);
+    (5,5,10,10,20,20,20,20);
 
  ADS1115_Gain_Data:array[TADS1115_Gain]of double=
     (1.5,1,0.5,0.25,0.125,0.0625);
@@ -67,11 +67,11 @@ type
     FDataRate: TADS1115_DataRate;
 //    procedure FinalPacketCreateToSend;
   protected
-//   procedure Configuration();override;
+   procedure Configuration();override;
    procedure Intitiation(); override;
    procedure PinsCreate();override;
-   procedure PacketCreateToSend();override;
-//   procedure FinalPacketCreateToSend();override;
+//   procedure PacketCreateToSend();override;
+   procedure FinalPacketCreateToSend();override;
   public
    property Gain: TADS1115_Gain read FGain write FGain;
    property DataRate: TADS1115_DataRate read FDataRate write FDataRate;
@@ -135,20 +135,20 @@ uses
 
 { ADS1115_Module }
 
-//procedure TADS1115_Module.Configuration;
-//begin
-//  fMinDelayTime:=ADS1115_ConversionTime[FDataRate];
-//  fDelayTimeStep:=ADS1115_DelayTimeStep[FDataRate];
-//  fDelayTimeMax:=ADS1115_DelayTimeMax[FDataRate];
-//
-//  fConfigByte:=$81;
-//  fConfigByte:=fConfigByte or ADS1115_Gain_Kod[FGain];
-//  fConfigByte:=fConfigByte or ADS1115_Chanel_Kod[FActiveChannel];
-//
-//  fConfigByteTwo:=$08;
-//  fConfigByteTwo:=fConfigByteTwo or ADS1115_DataRate_Kod[FDataRate];
-////   ShowData([fConfigByte,fConfigByteTwo]);
-//end;
+procedure TADS1115_Module.Configuration;
+begin
+  fMinDelayTime:=ADS1115_ConversionTime[FDataRate];
+  fDelayTimeStep:=ADS1115_DelayTimeStep[FDataRate];
+  fDelayTimeMax:=ADS1115_DelayTimeMax[FDataRate];
+
+  fConfigByte:=$81;
+  fConfigByte:=fConfigByte or ADS1115_Gain_Kod[FGain];
+  fConfigByte:=fConfigByte or ADS1115_Chanel_Kod[FActiveChannel];
+
+  fConfigByteTwo:=$08;
+  fConfigByteTwo:=fConfigByteTwo or ADS1115_DataRate_Kod[FDataRate];
+//   ShowData([fConfigByte,fConfigByteTwo]);
+end;
 
 procedure TADS1115_Module.ConvertToValue;
  var temp:Int64;
@@ -172,11 +172,11 @@ begin
   fIsReady:=True;
 end;
 
-//procedure TADS1115_Module.FinalPacketCreateToSend;
-//begin
-//  PacketCreate([fMetterKod, Pins.PinControl, Pins.PinGate, fConfigByte, fConfigByteTwo]);
-////  ShowData(aPacket);
-//end;
+procedure TADS1115_Module.FinalPacketCreateToSend;
+begin
+  PacketCreate([fMetterKod, Pins.PinControl, Pins.PinGate, fConfigByte, fConfigByteTwo]);
+//  ShowData(aPacket);
+end;
 
 procedure TADS1115_Module.Intitiation;
 begin
@@ -186,24 +186,24 @@ begin
 end;
 
 
-procedure TADS1115_Module.PacketCreateToSend;
-begin
-  fMinDelayTime:=ADS1115_ConversionTime[FDataRate];
-  fDelayTimeStep:=ADS1115_DelayTimeStep[FDataRate];
-  fDelayTimeMax:=ADS1115_DelayTimeMax[FDataRate];
-
-  fConfigByte:=$81;
-  fConfigByte:=fConfigByte or ADS1115_Gain_Kod[FGain];
-  fConfigByte:=fConfigByte or ADS1115_Chanel_Kod[FActiveChannel];
-
-  fConfigByteTwo:=$08;
-  fConfigByteTwo:=fConfigByteTwo or ADS1115_DataRate_Kod[FDataRate];
-
-//  Configuration();
-//  showmessage(inttostr(Pins.PinControl)+' '+inttostr(Pins.PinGate));
-
-  PacketCreate([fMetterKod, Pins.PinControl, Pins.PinGate, fConfigByte, fConfigByteTwo]);
-end;
+//procedure TADS1115_Module.PacketCreateToSend;
+//begin
+//  fMinDelayTime:=ADS1115_ConversionTime[FDataRate];
+//  fDelayTimeStep:=ADS1115_DelayTimeStep[FDataRate];
+//  fDelayTimeMax:=ADS1115_DelayTimeMax[FDataRate];
+//
+//  fConfigByte:=$81;
+//  fConfigByte:=fConfigByte or ADS1115_Gain_Kod[FGain];
+//  fConfigByte:=fConfigByte or ADS1115_Chanel_Kod[FActiveChannel];
+//
+//  fConfigByteTwo:=$08;
+//  fConfigByteTwo:=fConfigByteTwo or ADS1115_DataRate_Kod[FDataRate];
+//
+////  Configuration();
+////  showmessage(inttostr(Pins.PinControl)+' '+inttostr(Pins.PinGate));
+//
+//  PacketCreate([fMetterKod, Pins.PinControl, Pins.PinGate, fConfigByte, fConfigByteTwo]);
+//end;
 
 procedure TADS1115_Module.PinsCreate;
 begin
