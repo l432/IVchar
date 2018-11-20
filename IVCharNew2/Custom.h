@@ -9,6 +9,7 @@
 
 #include "OlegPacket.h"
 
+
 bool ParameterReceive() {
   byte incomingByte = Serial.read();
   if (incomingByte = PacketStart)
@@ -18,11 +19,15 @@ bool ParameterReceive() {
       packet[i] = 0;
     byte number = Serial.readBytesUntil(PacketEnd, packet, PacketMaxLength);
 
+
+//     PinAndID::CreateAndSendPacket(packet, sizeof(packet));
+
     if (number != packet[0] + 1) return false;
     packet[packet[0]] = 0;
-
+    ControlBlink();
     if (FCS(packet, sizeof(packet)) != 0) return false;
-
+//  ControlBlink();
+  
     if (packet[0] < 3) return false;
 
     PinAndID::NumberByte = packet[0];
@@ -33,9 +38,13 @@ bool ParameterReceive() {
     if (packet[0] > 4) {
       PinAndID::Data3 = packet[3];
     }
-    if (packet[0] > 6) {
+    if (packet[0] > 5) {
       PinAndID::Data4 = packet[4];
+    }
+    if (packet[0] > 6) {
       PinAndID::Data5 = packet[5];
+    }
+    if (packet[0] > 7) {
       PinAndID::Data6 = packet[6];
     }
     return true;

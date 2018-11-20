@@ -48,6 +48,7 @@ class WireObject {
       Wire.write(Data2);
       Wire.write(Data3);
       Wire.endTransmission();
+//      delayMicroseconds(25);
     }
 
     void SetAdress(byte address)

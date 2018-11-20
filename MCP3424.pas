@@ -47,10 +47,10 @@ type
     FResolution: TMCP3424_Resolution;
 //    fConfigByte:byte;
   protected
-   procedure Configuration();override;
+//   procedure Configuration();override;
    procedure Intitiation; override;
 
-//   procedure   PacketCreateToSend(); override;
+   procedure   PacketCreateToSend(); override;
    procedure PinsCreate();override;
   public
 //   property  ActiveChannel:TMCP3424_ChanelNumber read FActiveChannel write FActiveChannel;
@@ -168,18 +168,18 @@ uses
 
 { MCP3424_Module }
 
-procedure TMCP3424_Module.Configuration;
-begin
-  fMinDelayTime:=MCP3424_ConversionTime[FResolution];
-  fDelayTimeStep:=MCP3424_DelayTimeStep[FResolution];
-  fDelayTimeMax:=MCP3424_DelayTimeMax[FResolution];
-  fConfigByte:=0;
-  fConfigByte:=fConfigByte or ((FActiveChannel and $3)shl 5);
-  fConfigByte:=fConfigByte or ($0 shl 4);
-  fConfigByte:=fConfigByte or ((ord(FResolution) and $3)shl 2);
-  fConfigByte:=fConfigByte or (byte(ord(FGain)) and $3);
-  fConfigByte:=fConfigByte or $80;
-end;
+//procedure TMCP3424_Module.Configuration;
+//begin
+//  fMinDelayTime:=MCP3424_ConversionTime[FResolution];
+//  fDelayTimeStep:=MCP3424_DelayTimeStep[FResolution];
+//  fDelayTimeMax:=MCP3424_DelayTimeMax[FResolution];
+//  fConfigByte:=0;
+//  fConfigByte:=fConfigByte or ((FActiveChannel and $3)shl 5);
+//  fConfigByte:=fConfigByte or ($0 shl 4);
+//  fConfigByte:=fConfigByte or ((ord(FResolution) and $3)shl 2);
+//  fConfigByte:=fConfigByte or (byte(ord(FGain)) and $3);
+//  fConfigByte:=fConfigByte or $80;
+//end;
 
 procedure TMCP3424_Module.ConvertToValue;
  var temp:Int64;
@@ -236,11 +236,20 @@ end;
 //end;
 //
 //
-//procedure TMCP3424_Module.PacketCreateToSend;
-//begin
+procedure TMCP3424_Module.PacketCreateToSend;
+begin
+  fMinDelayTime:=MCP3424_ConversionTime[FResolution];
+  fDelayTimeStep:=MCP3424_DelayTimeStep[FResolution];
+  fDelayTimeMax:=MCP3424_DelayTimeMax[FResolution];
+  fConfigByte:=0;
+  fConfigByte:=fConfigByte or ((FActiveChannel and $3)shl 5);
+  fConfigByte:=fConfigByte or ($0 shl 4);
+  fConfigByte:=fConfigByte or ((ord(FResolution) and $3)shl 2);
+  fConfigByte:=fConfigByte or (byte(ord(FGain)) and $3);
+  fConfigByte:=fConfigByte or $80;
 //  Configuration();
-//  PacketCreate([fMetterKod,Pins.PinControl,fConfigByte]);
-//end;
+  PacketCreate([fMetterKod,Pins.PinControl,fConfigByte]);
+end;
 
 procedure TMCP3424_Module.PinsCreate;
 begin

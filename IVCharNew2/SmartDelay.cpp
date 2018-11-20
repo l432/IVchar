@@ -2,35 +2,39 @@
 
 SmartDelay::SmartDelay()
 {
-  smMilis = 0;
+  smMikros = 0;
   smLast = 0 ;
   state    = SMART_DELAY_STOP;
 };
 
 bool SmartDelay::Now() {
   if ((state == SMART_DELAY_STOP) ||
-      (millis() - smLast < smMilis))
-    return false;
+      (TimeFromStart() < smMikros)) return false;
 
   state = SMART_DELAY_STOP;
   return true;
 }
 
 unsigned long SmartDelay::GetInterval() {
-  return smMilis;
+  return smMikros;
 }
 
 void SmartDelay::SetInterval(unsigned long tick) {
-  smMilis = tick;
+  smMikros = tick;
 }
 
 void SmartDelay::Start() {
-  smLast = millis();
+  smLast = micros();
   state = SMART_DELAY_START;
 }
 
 unsigned long SmartDelay::TimeFromStart() {
-  return millis() - smLast;
+  unsigned long mcs = micros();
+  if (mcs >= smLast) {
+    return (mcs - smLast);
+  } else {
+    return (0xffff - mcs + smLast);
+  }
 }
 
 

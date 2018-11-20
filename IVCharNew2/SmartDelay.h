@@ -12,7 +12,7 @@ class SmartDelay {
       SMART_DELAY_STOP
     };
 
-    unsigned long smMilis;
+    unsigned long smMikros;
     unsigned long smLast;
     SMART_DELAY_STATE state;
 

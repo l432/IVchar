@@ -3,7 +3,7 @@
 
 DS18B20o::DS18B20o(): ds(DS18B20Pin)
 {
-  SetInterval(800);
+  SetInterval(800000);
   _pin = DS18B20Pin;
 }
 bool DS18B20o::Begin()

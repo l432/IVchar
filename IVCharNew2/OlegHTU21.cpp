@@ -3,7 +3,7 @@
 
 HTU21o::HTU21o()
 {
-  SetInterval(55);
+  SetInterval(55000);
   SetAdress(0x40);
   SetDataReceivedNumber(3);
 }
@@ -21,10 +21,10 @@ bool HTU21o::Begin() {
     //      }
 
 void HTU21o::Process() {
-  if (TimeFromStart()  > 2 * GetInterval()) {
-    Stop();
-    return;
-  }
+//  if (TimeFromStart()  > 2 * GetInterval()) {
+//    Stop();
+//    return;
+//  }
   DataReceive();
   DeviceId = HTU21DCommand;
   ActionId = HTU21DCommand;

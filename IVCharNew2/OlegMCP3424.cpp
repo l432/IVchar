@@ -1,6 +1,6 @@
 #include "OlegMCP3424.h"
 
-const unsigned long TimeInterval[] = {5, 17, 67, 270};
+const unsigned long TimeInterval[] = {5000, 17000, 67000, 270000};
 
 MCP3424o::MCP3424o()
 {
@@ -32,7 +32,7 @@ void MCP3424o::Process() {
     if (GetInterval() > TimeInterval[_resolution]) {
       Stop();
     } else {
-      SetInterval(round(GetInterval() * 0.35));
+      SetInterval(round(GetInterval() * 1.35));
     }
   }
 }

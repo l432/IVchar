@@ -23,23 +23,15 @@ type
                     ads_dr250, // 250 samples per second
                     ads_dr475,// 475 samples per second
                     ads_dr860);// 860 samples per second
-// TADS1115_DataRate=(ads_dr8=$00, // 8 samples per second
-//                    ads_dr16=$20,  // 16 samples per second
-//                    ads_dr32=$40,  // 32 samples per second
-//                    ads_dr64=$60,  // 64 samples per second
-//                    ads_dr128=$80, // 128 samples per second
-//                    ads_dr250=$A0, // 250 samples per second
-//                    ads_dr475=$C0,// 475 samples per second
-//                    ads_dr860=$E0);// 860 samples per second
 
 const
 
  ADS1115_ConversionTime:array[TADS1115_DataRate]of integer=
-    (120,58,28,14,7,4,2,1);
+    (120,58,28,14,7,4,2,20);
  ADS1115_DelayTimeStep:array[TADS1115_DataRate]of integer=
-    (5,2,2,1,1,1,1,1);
+    (5,2,5,5,1,1,1,1);
  ADS1115_DelayTimeMax:array[TADS1115_DataRate]of integer=
-    (5,10,10,20,20,20,20,20);
+    (5,5,5,5,20,20,20,20);
 
  ADS1115_Gain_Data:array[TADS1115_Gain]of double=
     (1.5,1,0.5,0.25,0.125,0.0625);
@@ -54,7 +46,7 @@ const
  ADS1115_DataRate_Kod:array[TADS1115_DataRate]of byte=
     ($00,$20,$40,$60,$80,$A0,$C0,$E0);
  ADS1115_DataRate_Label:array[TADS1115_DataRate]of string=
-   ('8 SPS','16 SPS','32 SPS','64 SPS',
+   (' 8 SPS','16 SPS','32 SPS','64 SPS',
    '128 SPS','250 SPS','475 SPS','860 SPS');
 
  ADS1115_Chanel_Kod:array[TADS1115_ChanelNumber]of byte=
@@ -73,11 +65,13 @@ type
     fConfigByteTwo:byte;
     FGain: TADS1115_Gain;
     FDataRate: TADS1115_DataRate;
+//    procedure FinalPacketCreateToSend;
   protected
-   procedure Configuration();override;
+//   procedure Configuration();override;
    procedure Intitiation(); override;
    procedure PinsCreate();override;
-   procedure FinalPacketCreateToSend();override;
+   procedure PacketCreateToSend();override;
+//   procedure FinalPacketCreateToSend();override;
   public
    property Gain: TADS1115_Gain read FGain write FGain;
    property DataRate: TADS1115_DataRate read FDataRate write FDataRate;
@@ -113,7 +107,7 @@ TPins_ADS1115_Chanel=class(TPins)
  private
  protected
   procedure SetModuleParameters;override;
-  procedure PinsCreate;override;  
+  procedure PinsCreate;override;
  public
   Constructor Create(ChanelNumber: TADS1115_ChanelNumber;
                       ADS1115_Module: TADS1115_Module);//override;
@@ -137,29 +131,30 @@ TPins_ADS1115_Chanel=class(TPins)
 implementation
 
 uses
-  PacketParameters, SysUtils, OlegType, Math;
+  PacketParameters, SysUtils, OlegType, Math, Dialogs;
 
 { ADS1115_Module }
 
-procedure TADS1115_Module.Configuration;
-begin
-  fMinDelayTime:=ADS1115_ConversionTime[FDataRate];
-  fDelayTimeStep:=ADS1115_DelayTimeStep[FDataRate];
-  fDelayTimeMax:=ADS1115_DelayTimeMax[FDataRate];
-
-  fConfigByte:=$81;
-  fConfigByte:=fConfigByte or ADS1115_Gain_Kod[FGain];
-  fConfigByte:=fConfigByte or ADS1115_Chanel_Kod[FActiveChannel];
-
-  fConfigByteTwo:=$8C;
-  fConfigByteTwo:=fConfigByteTwo or ADS1115_DataRate_Kod[FDataRate]
-
-end;
+//procedure TADS1115_Module.Configuration;
+//begin
+//  fMinDelayTime:=ADS1115_ConversionTime[FDataRate];
+//  fDelayTimeStep:=ADS1115_DelayTimeStep[FDataRate];
+//  fDelayTimeMax:=ADS1115_DelayTimeMax[FDataRate];
+//
+//  fConfigByte:=$81;
+//  fConfigByte:=fConfigByte or ADS1115_Gain_Kod[FGain];
+//  fConfigByte:=fConfigByte or ADS1115_Chanel_Kod[FActiveChannel];
+//
+//  fConfigByteTwo:=$08;
+//  fConfigByteTwo:=fConfigByteTwo or ADS1115_DataRate_Kod[FDataRate];
+////   ShowData([fConfigByte,fConfigByteTwo]);
+//end;
 
 procedure TADS1115_Module.ConvertToValue;
  var temp:Int64;
 begin
  fValue:=ErResult;
+  ShowData(fData);
  if High(fData)<>2 then Exit;
  case (fData[High(fData)]and $0E) of
    $00:FGain:=ads_g2_3;
@@ -177,10 +172,11 @@ begin
   fIsReady:=True;
 end;
 
-procedure TADS1115_Module.FinalPacketCreateToSend;
-begin
-  PacketCreate([fMetterKod, Pins.PinControl, Pins.PinGate, fConfigByte, fConfigByteTwo]);
-end;
+//procedure TADS1115_Module.FinalPacketCreateToSend;
+//begin
+//  PacketCreate([fMetterKod, Pins.PinControl, Pins.PinGate, fConfigByte, fConfigByteTwo]);
+////  ShowData(aPacket);
+//end;
 
 procedure TADS1115_Module.Intitiation;
 begin
@@ -189,6 +185,25 @@ begin
   fMetterKod := ADS1115Command;
 end;
 
+
+procedure TADS1115_Module.PacketCreateToSend;
+begin
+  fMinDelayTime:=ADS1115_ConversionTime[FDataRate];
+  fDelayTimeStep:=ADS1115_DelayTimeStep[FDataRate];
+  fDelayTimeMax:=ADS1115_DelayTimeMax[FDataRate];
+
+  fConfigByte:=$81;
+  fConfigByte:=fConfigByte or ADS1115_Gain_Kod[FGain];
+  fConfigByte:=fConfigByte or ADS1115_Chanel_Kod[FActiveChannel];
+
+  fConfigByteTwo:=$08;
+  fConfigByteTwo:=fConfigByteTwo or ADS1115_DataRate_Kod[FDataRate];
+
+//  Configuration();
+//  showmessage(inttostr(Pins.PinControl)+' '+inttostr(Pins.PinGate));
+
+  PacketCreate([fMetterKod, Pins.PinControl, Pins.PinGate, fConfigByte, fConfigByteTwo]);
+end;
 
 procedure TADS1115_Module.PinsCreate;
 begin
@@ -376,7 +391,7 @@ begin
   if Pins.PinGate=ADS1115_Gain_Kod[i] then
    begin
      (fParentModule as TADS1115_Module).Gain :=
-        TADS1115_Gain(j);
+        TADS1115_Gain(i);
       Break;
    end;
 end;

@@ -3,7 +3,7 @@
 
 TMP102o::TMP102o()
 {
-  SetInterval(30);
+  SetInterval(30000);
   SetDataReceivedNumber(2);
 }
 

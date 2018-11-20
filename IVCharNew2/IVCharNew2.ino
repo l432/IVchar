@@ -13,6 +13,7 @@
 #include "CustomDevice.h"
 #include "Custom.h"
 #include "OlegMCP3424.h"
+#include "OlegADS1115.h"
 
 DS18B20o ds18b20;
 CustomDevice cd;
@@ -21,6 +22,7 @@ D30_06 d3006(SignPins[1]);
 TMP102o tmp102;
 HTU21o  htu21;
 MCP3424o mcp3424;
+ADS1115o ads1115;
 
 
 void setup() {
@@ -36,18 +38,24 @@ void setup() {
     digitalWrite(DrivePins[i], HIGH);
   }
   pinMode(LEDPin, OUTPUT);
+ for (byte i = 0; i < sizeof(InputPins); i++)
+  {
+    pinMode(InputPins[i], INPUT);
+  }
+   
   dacR2R.Setup();
   d3006.Setup();
   mcp3424.Setup();
 
   wdt_enable(WDTO_500MS);
-
+//attachInterrupt(0,ControlBlink,CHANGE);
 }
 
 void loop() {
 
   if (Serial.available() > 0) {
     if (ParameterReceive()) {
+//      ControlBlink();
       if (cd.V721()) goto start;
       if (SendParameters()) goto start;
       if (dacR2R.Action()) goto start;
@@ -57,6 +65,7 @@ void loop() {
       if (htu21.Begin()) goto start;
       if (tmp102.Begin()) goto start;
       if (mcp3424.Begin()) goto start;
+      if (ads1115.Begin()) goto start;      
     }
   }
 start:
@@ -65,6 +74,7 @@ start:
   htu21.End();
   tmp102.End();
   mcp3424.End();
+  ads1115.End();
   wdt_reset();
 }
 

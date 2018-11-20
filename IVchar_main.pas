@@ -690,7 +690,7 @@ type
     ConfigFile:TIniFile;
     NumberPins:TStringList; // номери пінів, які використовуються як керуючі для SPI
     NumberPinsOneWire:TStringList; // номери пінів, які використовуються для OneWire
-    NumberPinsInterrupt:TStringList; // номери пінів, які можуть бути викристані для переривань
+    NumberPinsInput:TStringList; // номери пінів, які можуть бути викристані для переривань
     ForwSteps,RevSteps,IVResult,VolCorrection,
     VolCorrectionNew,TemperData:PVector;
 
@@ -1924,7 +1924,7 @@ procedure TIVchar.ADS1115Create;
  var i:TADS1115_ChanelNumber;
 begin
   ADS11115module := TADS1115_Module.Create(ComPort1, 'ADS1115');
-  ADS11115show := TDS1115_ModuleShow.Create(ADS11115module.Pins, Pads1115_adr, Pads1115_ready, NumberPinsInterrupt);
+  ADS11115show := TDS1115_ModuleShow.Create(ADS11115module.Pins, Pads1115_adr, Pads1115_ready, NumberPinsInput);
 //  ADS11115show := TDS1115_ModuleShow.Create(ADS11115module.Pins, Pads1115_adr, Pads1115_ready, NumberPinsOneWire);
 
   for I := Low(TADS1115_ChanelNumber) to High(TADS1115_ChanelNumber) do
@@ -2207,7 +2207,7 @@ begin
    ToNumberPins:=True;
    NumberPinsOneWire.Clear;
    ToNumberPinsOneWire:=True;
-   NumberPinsInterrupt.Clear;
+   NumberPinsInput.Clear;
    for I := 3 to High(Data)-1 do
     begin
 
@@ -2228,7 +2228,7 @@ begin
         if ToNumberPinsOneWire then
            NumberPinsOneWire.Add(IntToStr(Data[i]))
                                else
-           NumberPinsInterrupt.Add(IntToStr(Data[i]));
+           NumberPinsInput.Add(IntToStr(Data[i]));
     end;
   end;
 end;
@@ -2243,7 +2243,7 @@ begin
  AnyObjectArray:=TObjectArray.Create;
  NumberPins:=TStringList.Create;
  NumberPinsOneWire:=TStringList.Create;
- NumberPinsInterrupt:=TStringList.Create;
+ NumberPinsInput:=TStringList.Create;
  PinsFromIniFile();
 
  VoltmetrsCreate();
@@ -2312,7 +2312,7 @@ begin
 
  NumberPins.Free;
  NumberPinsOneWire.Free;
- NumberPinsInterrupt.Free;
+ NumberPinsInput.Free;
 
  ComPortsEnding([ComPortUT70C,ComPortUT70B,ComPort1]);
 end;
@@ -3380,10 +3380,10 @@ begin
   for I := 0 to NumberPinsOneWire.Count - 1 do
     ConfigFile.WriteString('PinNumbersOneWire', 'Pin' + IntToStr(i), NumberPinsOneWire[i]);
 
-  ConfigFile.EraseSection('NumberPinsInterrupt');
-  ConfigFile.WriteInteger('NumberPinsInterrupt', 'PinCount', NumberPinsInterrupt.Count);
-  for I := 0 to NumberPinsInterrupt.Count - 1 do
-    ConfigFile.WriteString('NumberPinsInterrupt', 'Pin' + IntToStr(i), NumberPinsInterrupt[i]);
+  ConfigFile.EraseSection('NumberPinsInput');
+  ConfigFile.WriteInteger('NumberPinsInput', 'PinCount', NumberPinsInput.Count);
+  for I := 0 to NumberPinsInput.Count - 1 do
+    ConfigFile.WriteString('NumberPinsInput', 'Pin' + IntToStr(i), NumberPinsInput[i]);
 end;
 
 procedure TIVchar.PinsFromIniFile;
@@ -3394,8 +3394,8 @@ begin
     NumberPins.Add(ConfigFile.ReadString('PinNumbers', 'Pin' + IntToStr(i), IntToStr(UndefinedPin)));
   for I := 0 to ConfigFile.ReadInteger('PinNumbersOneWire', 'PinCount', 1) - 1 do
     NumberPinsOneWire.Add(ConfigFile.ReadString('PinNumbersOneWire', 'Pin' + IntToStr(i), IntToStr(UndefinedPin)));
-  for I := 0 to ConfigFile.ReadInteger('NumberPinsInterrupt', 'PinCount', 3) - 1 do
-    NumberPinsInterrupt.Add(ConfigFile.ReadString('NumberPinsInterrupt', 'Pin' + IntToStr(i), IntToStr(UndefinedPin)));
+  for I := 0 to ConfigFile.ReadInteger('NumberPinsInput', 'PinCount', 1) - 1 do
+    NumberPinsInput.Add(ConfigFile.ReadString('NumberPinsInput', 'Pin' + IntToStr(i), IntToStr(UndefinedPin)));
 end;
 
 procedure TIVchar.ComponentView;

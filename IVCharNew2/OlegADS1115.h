@@ -7,7 +7,7 @@
 #include <WProgram.h>
 #endif
 
-//#include "SmartDelay.h"
+#include "SmartDelay.h"
 #include "WireObject.h"
 #include "OlegPacket.h"
 #include "OlegConstant.h"
@@ -17,7 +17,19 @@
 #define ADS1115_REG_POINTER_LOWTHRESH   (0x02)
 #define ADS1115_REG_POINTER_HITHRESH    (0x03)
 
-class ADS1115o:/*{public SmartDelay,*/ public WireObject, public PinAndID
+typedef enum  {
+  ADS_DR8 = 0x00,
+  ADS_DR16 = 0x20,
+  ADS_DR32 = 0x40,
+  ADS_DR64 = 0x60,
+  ADS_DR128 = 0x80,
+  ADS_DR250 = 0xA0,
+  ADS_DR475 = 0xC0,
+  ADS_DR860 = 0xE0
+} ads_DATA_RATE_t;
+
+
+class ADS1115o: public SmartDelay, public WireObject, public PinAndID
 {
   public:
     ADS1115o();
@@ -25,11 +37,13 @@ class ADS1115o:/*{public SmartDelay,*/ public WireObject, public PinAndID
     void Process();
     void Setup(); //AlRT/RDY pin to Ready state
   private:
-    byte _SetupIsNotDone;
-    byte _AlertPin;
+    byte            _SetupIsNotDone;
+    byte            _AlertPin;
+    ads_DATA_RATE_t _dataRate;
     //    byte _resolution; //0 - 12 bits, 1 - 14 bits, 2 - 16 bits, 3 - 18 bits
-    //    void Config(byte ConfigByte);
-    //    bool isConversionFinished();
+    void Config(byte ConfigByte);
+    bool isConversionFinished();
+    unsigned long DelayTime();    
 };
 
 

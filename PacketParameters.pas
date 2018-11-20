@@ -70,6 +70,7 @@ end;
 
 Function PacketIsSend(ComPort:TComPort; report:string):boolean;
 begin
+//  ShowData(aPacket);
   if ComPort.Connected then
    begin
     ComPort.ClearBuffer(True, True);

@@ -1,7 +1,7 @@
 #include "D30_06.h"
 
 D30_06::D30_06(byte SignPinNumber): DACR2R(SignPinNumber) {
-  SetInterval(500);
+  SetInterval(500000);
 }
 
 //void D30_06::Begin(byte Data1, byte Data2, byte Sign) {

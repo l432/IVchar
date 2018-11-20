@@ -18,7 +18,7 @@ byte FCS (byte Data[], int n)
 bool SendParameters() {
   if (PinAndID::DeviceId != ParameterReceiveCommand) return false;
   PinAndID::ActionId = 0x00;
-  int PinsNumber = sizeof(DrivePins) + sizeof(OneWarePins) + 1 + sizeof(InterruptPins) + 1;
+  int PinsNumber = sizeof(DrivePins) + sizeof(OneWarePins) + 1 + sizeof(InputPins) + 1;
   byte Pins[PinsNumber];
   for (byte i = 0; i < sizeof(DrivePins); i++)
   {
@@ -29,10 +29,10 @@ bool SendParameters() {
   {
     Pins[sizeof(DrivePins) + 1 + i] = OneWarePins[i];
   }
-  Pins[sizeof(DrivePins) + sizeof(OneWarePins) + 1] = 100;
-  for (byte i = 0; i < sizeof(InterruptPins); i++)
+  Pins[sizeof(DrivePins) + sizeof(OneWarePins) + 1] = 200;
+  for (byte i = 0; i < sizeof(InputPins); i++)
   {
-    Pins[sizeof(DrivePins) + sizeof(OneWarePins) + 2 + i] = InterruptPins[i];
+    Pins[sizeof(DrivePins) + sizeof(OneWarePins) + 2 + i] = InputPins[i];
   }
   PinAndID::CreateAndSendPacket(Pins, sizeof(Pins));
   return true;
