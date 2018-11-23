@@ -92,13 +92,12 @@ end;
 
 procedure TArduinoADC_Module.Intitiation;
 begin
-
+   fDelayTimeMax:=20;
 end;
 
 procedure TArduinoADC_Module.PacketCreateToSend;
 begin
   Configuration();
-//  PacketCreate([fMetterKod, Pins.PinControl, fConfigByte]);
   FinalPacketCreateToSend();
 end;
 
@@ -154,32 +153,5 @@ begin
  fParentModule.NewData:=Value;
 end;
 
-{ TArduinoADC_ChannelShow }
-
-//constructor TArduinoADC_ChannelShow.Create(Chan: TArduinoADC_Channel;
-//                  Labels: array of TPanel;
-//                  LabelMeas: TLabel;
-//                  ButMeas: TButton);
-//begin
-//   fChan:=Chan;
-//  inherited Create(fChan.Pins,Labels);
-//  LabelsFilling;
-//
-//  MeasuringDeviceSimple:=
-//     TMeasuringDeviceSimple.Create(fChan,LabelMeas,srPreciseVoltage,ButMeas);
-//end;
-//
-//procedure TArduinoADC_ChannelShow.Free;
-//begin
-//  MeasuringDeviceSimple.Free;
-//  inherited Free;
-//end;
-//
-//procedure TArduinoADC_ChannelShow.LabelsFilling;
-// var i:byte;
-//begin
-// for i := 0 to High(fPinVariants) do
-//   fPinVariants[i].Clear;
-//end;
 
 end.

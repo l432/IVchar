@@ -35,12 +35,11 @@ class ADS1115o: public SmartDelay, public WireObject, public PinAndID
     ADS1115o();
     bool Begin();
     void Process();
-    void Setup(); //AlRT/RDY pin to Ready state
+//    void Setup(); //AlRT/RDY pin to Ready state
   private:
-    byte            _SetupIsNotDone;
-    byte            _AlertPin;
+//    byte            _SetupIsNotDone;
+//    byte            _AlertPin;
     ads_DATA_RATE_t _dataRate;
-    //    byte _resolution; //0 - 12 bits, 1 - 14 bits, 2 - 16 bits, 3 - 18 bits
     void Config(byte ConfigByte);
     bool isConversionFinished();
     unsigned long DelayTime();    

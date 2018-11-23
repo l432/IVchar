@@ -497,7 +497,6 @@ type
     Bads1115_Ch3meas: TButton;
     Pads1115_Ch3dr: TPanel;
     Pads1115_Ch3gain: TPanel;
-    Pads1115_ready: TPanel;
     Pads1115_adr: TPanel;
 
     procedure FormCreate(Sender: TObject);
@@ -680,7 +679,8 @@ type
     MCP3424_ChannelShows:array [TMCP3424_ChanelNumber] of TMCP3424_ChannelShow;
 
     ADS11115module:TADS1115_Module;
-    ADS11115show:TDS1115_ModuleShow;
+//    ADS11115show:TDS1115_ModuleShow;
+    ADS11115show:TI2C_PinsShow;
 
     ADS11115_Channels:array [TADS1115_ChanelNumber] of TADS1115_Channel;
     ADS11115_ChannelShows:array [TADS1115_ChanelNumber] of TADS1115_ChannelShow;
@@ -1924,8 +1924,8 @@ procedure TIVchar.ADS1115Create;
  var i:TADS1115_ChanelNumber;
 begin
   ADS11115module := TADS1115_Module.Create(ComPort1, 'ADS1115');
-  ADS11115show := TDS1115_ModuleShow.Create(ADS11115module.Pins, Pads1115_adr, Pads1115_ready, NumberPinsInput);
-//  ADS11115show := TDS1115_ModuleShow.Create(ADS11115module.Pins, Pads1115_adr, Pads1115_ready, NumberPinsOneWire);
+//  ADS11115show := TDS1115_ModuleShow.Create(ADS11115module.Pins, Pads1115_adr, Pads1115_ready, NumberPinsInput);
+  ADS11115show := TI2C_PinsShow.Create(ADS11115module.Pins, Pads1115_adr, ADS1115_StartAdress,ADS1115_LastAdress);
 
   for I := Low(TADS1115_ChanelNumber) to High(TADS1115_ChanelNumber) do
     ADS11115_Channels[i] := TADS1115_Channel.Create(i, ADS11115module);

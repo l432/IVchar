@@ -28,10 +28,10 @@ const
 
  ADS1115_ConversionTime:array[TADS1115_DataRate]of integer=
     (120,58,28,14,7,4,2,2);
- ADS1115_DelayTimeStep:array[TADS1115_DataRate]of integer=
-    (5,5,2,2,1,1,1,1);
- ADS1115_DelayTimeMax:array[TADS1115_DataRate]of integer=
-    (5,5,10,10,20,20,20,20);
+// ADS1115_DelayTimeStep:array[TADS1115_DataRate]of integer=
+//    (5,5,5,5,5,5,5,5);
+// ADS1115_DelayTimeMax:array[TADS1115_DataRate]of integer=
+//    (5,5,10,10,20,20,20,20);
 
  ADS1115_Gain_Data:array[TADS1115_Gain]of double=
     (1.5,1,0.5,0.25,0.125,0.0625);
@@ -65,18 +65,27 @@ type
     fConfigByteTwo:byte;
     FGain: TADS1115_Gain;
     FDataRate: TADS1115_DataRate;
-//    procedure FinalPacketCreateToSend;
   protected
    procedure Configuration();override;
    procedure Intitiation(); override;
    procedure PinsCreate();override;
-//   procedure PacketCreateToSend();override;
    procedure FinalPacketCreateToSend();override;
   public
    property Gain: TADS1115_Gain read FGain write FGain;
    property DataRate: TADS1115_DataRate read FDataRate write FDataRate;
    procedure ConvertToValue();override;
  end;
+
+//--------------------------------------------------
+{наступні два класи були потрібні, коли збирався
+використовувати AlertPin. Але переривання
+на нього повісити не вдалося,
+готовність визначалася і при непідключеному
+АЦП, конфігурація все одно зчитується, щоб відправити
+поточний gain. Тому визначення готовності проводиться
+по бітам в конфігураційному байті і ці два класи стали непотрібні.
+Надалі залишилося закоментованим ще й те, що потрібно було
+для використання AlertPin.
 
   TPins_ADS1115_Module=class(TPins)
   protected
@@ -93,6 +102,7 @@ type
                       AdressPanel, ReadyPinPanel: TPanel;
                       DataForReadyPinPanel: TStringList);
  end;
+}
 
 TPins_ADS1115_Chanel=class(TPins)
   protected
@@ -138,23 +148,21 @@ uses
 procedure TADS1115_Module.Configuration;
 begin
   fMinDelayTime:=ADS1115_ConversionTime[FDataRate];
-  fDelayTimeStep:=ADS1115_DelayTimeStep[FDataRate];
-  fDelayTimeMax:=ADS1115_DelayTimeMax[FDataRate];
 
   fConfigByte:=$81;
   fConfigByte:=fConfigByte or ADS1115_Gain_Kod[FGain];
   fConfigByte:=fConfigByte or ADS1115_Chanel_Kod[FActiveChannel];
 
-  fConfigByteTwo:=$08;
+//  fConfigByteTwo:=$08;
+  fConfigByteTwo:=$03;
   fConfigByteTwo:=fConfigByteTwo or ADS1115_DataRate_Kod[FDataRate];
-//   ShowData([fConfigByte,fConfigByteTwo]);
 end;
 
 procedure TADS1115_Module.ConvertToValue;
  var temp:Int64;
 begin
  fValue:=ErResult;
-  ShowData(fData);
+//  ShowData(fData);
  if High(fData)<>2 then Exit;
  case (fData[High(fData)]and $0E) of
    $00:FGain:=ads_g2_3;
@@ -174,8 +182,8 @@ end;
 
 procedure TADS1115_Module.FinalPacketCreateToSend;
 begin
-  PacketCreate([fMetterKod, Pins.PinControl, Pins.PinGate, fConfigByte, fConfigByteTwo]);
-//  ShowData(aPacket);
+  PacketCreate([fMetterKod, Pins.PinControl, fConfigByte, fConfigByteTwo]);
+//  PacketCreate([fMetterKod, Pins.PinControl, Pins.PinGate, fConfigByte, fConfigByteTwo]);
 end;
 
 procedure TADS1115_Module.Intitiation;
@@ -183,111 +191,46 @@ begin
   FGain := ads_g1;
   FDataRate:=ads_dr128;
   fMetterKod := ADS1115Command;
+  fDelayTimeMax:=20;
 end;
 
 
-//procedure TADS1115_Module.PacketCreateToSend;
-//begin
-//  fMinDelayTime:=ADS1115_ConversionTime[FDataRate];
-//  fDelayTimeStep:=ADS1115_DelayTimeStep[FDataRate];
-//  fDelayTimeMax:=ADS1115_DelayTimeMax[FDataRate];
-//
-//  fConfigByte:=$81;
-//  fConfigByte:=fConfigByte or ADS1115_Gain_Kod[FGain];
-//  fConfigByte:=fConfigByte or ADS1115_Chanel_Kod[FActiveChannel];
-//
-//  fConfigByteTwo:=$08;
-//  fConfigByteTwo:=fConfigByteTwo or ADS1115_DataRate_Kod[FDataRate];
-//
-////  Configuration();
-////  showmessage(inttostr(Pins.PinControl)+' '+inttostr(Pins.PinGate));
-//
-//  PacketCreate([fMetterKod, Pins.PinControl, Pins.PinGate, fConfigByte, fConfigByteTwo]);
-//end;
 
 procedure TADS1115_Module.PinsCreate;
 begin
-  Pins :=TPins_ADS1115_Module.Create(Name);
+  Pins := TPins_I2C.Create(Name);
+//  Pins :=TPins_ADS1115_Module.Create(Name);
 end;
 
 { ADS1115_Channel }
 
-//constructor TADS1115_Channel.Create(ChanelNumber: TADS1115_ChanelNumber;
-//                                  ADS1115_Module: TADS1115_Module);
-//begin
-//  inherited Create(ChanelNumber,ADS1115_Module);
-//end;
-//
-//
-//procedure TADS1115_Channel.SetModuleParameters;
-//begin
-//  inherited SetModuleParameters();
-//  (fParentModule as TADS1115_Module).Resolution := TADS1115_Resolution(round((Pins.PinControl - 12) / 2) and $3);
-//  (fParentModule as TADS1115_Module).Gain := TADS1115_Gain((round(Log2(Pins.PinGate)) and $3));
-//
-//end;
-//
-//procedure TADS1115_Channel.PinsCreate;
-//begin
-//  Pins := TPins.Create(fName, ['Bits mode', 'Gain']);
-//  Pins.PinStrPart := '';
-//  Pins.PinControl := 12;
-//  // зберігатиметься Resolution
-//  Pins.PinGate := 1;
-//  // зберігатиметься Gain
-//end;
-//
-//{ TADS1115_ChannelShow }
-//
-//constructor TADS1115_ChannelShow.Create(Chan: TADS1115_Channel;
-//                         LabelBit,LabelGain:TPanel;
-//                         LabelMeas: TLabel;
-//                         ButMeas: TButton);
-//begin
-// inherited Create(Chan,[LabelBit,LabelGain],LabelMeas,ButMeas);
-//end;
-//
-//procedure TADS1115_ChannelShow.LabelsFilling;
-//var
-//  i: TADS1115_Resolution;
-//  j: TADS1115_Gain;
-//begin
-//  fPinVariants[0].Clear;
-//  for i := Low(TADS1115_Resolution) to High(TADS1115_Resolution) do
-//    fPinVariants[0].Add(inttostr(ADS1115_Resolution_Data[i]));
-//  fPinVariants[1].Clear;
-//  for j := Low(TADS1115_Gain) to High(TADS1115_Gain) do
-//    fPinVariants[1].Add(inttostr(MADS1115_Gain_Data[j]));
-//end;
-
 { TDS1115_ModuleShow }
 
-constructor TDS1115_ModuleShow.Create(Ps: TPins;
-                                 AdressPanel,ReadyPinPanel: TPanel;
-                                 DataForReadyPinPanel: TStringList);
- var adress:byte;
-begin
- inherited Create(Ps, [AdressPanel,ReadyPinPanel]);
-// fPinVariants[1].Clear;
- fPinVariants[1]:=DataForReadyPinPanel;
- for adress := ADS1115_StartAdress to ADS1115_LastAdress do
-   fPinVariants[0].Add('$'+IntToHex(adress,2));
-end;
+//constructor TDS1115_ModuleShow.Create(Ps: TPins;
+//                                 AdressPanel,ReadyPinPanel: TPanel;
+//                                 DataForReadyPinPanel: TStringList);
+// var adress:byte;
+//begin
+// inherited Create(Ps, [AdressPanel,ReadyPinPanel]);
+// fPinVariants[1]:=DataForReadyPinPanel;
+// for adress := ADS1115_StartAdress to ADS1115_LastAdress do
+//   fPinVariants[0].Add('$'+IntToHex(adress,2));
+//end;
 
 { TPins_ADS1115_Module }
 
-constructor TPins_ADS1115_Module.Create(Nm: string);
-begin
- inherited Create(Nm,['Adress','Ready pin']);
- PinStrPart:=''
-end;
-
-function TPins_ADS1115_Module.PinValueToStr(Index: integer): string;
-begin
- if index=0 then Result:='$'+IntToHex(fPins[Index],2)
-            else Result:=inherited PinValueToStr(Index);
-
-end;
+//constructor TPins_ADS1115_Module.Create(Nm: string);
+//begin
+// inherited Create(Nm,['Adress','Ready pin']);
+// PinStrPart:=''
+//end;
+//
+//function TPins_ADS1115_Module.PinValueToStr(Index: integer): string;
+//begin
+// if index=0 then Result:='$'+IntToHex(fPins[Index],2)
+//            else Result:=inherited PinValueToStr(Index);
+//
+//end;
 
 { TPins_ADS1115_Chanel }
 
@@ -362,13 +305,7 @@ constructor TADS1115_Channel.Create(ChanelNumber: TADS1115_ChanelNumber;
   ADS1115_Module: TADS1115_Module);
 begin
   inherited Create(ChanelNumber,ADS1115_Module);
-//  Pins:=TPins_ADS1115_Chanel.Create(fName);
 end;
-
-//procedure TADS1115_Channel.Free;
-//begin
-// Pins.Free;
-//end;
 
 procedure TADS1115_Channel.PinsCreate;
 begin
