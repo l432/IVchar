@@ -2,7 +2,7 @@ unit SPIdevice;
 
 interface
  uses OlegType,CPort,SysUtils,Classes,PacketParameters,
-      StdCtrls, IniFiles, RS232device, ExtCtrls;
+      StdCtrls, IniFiles, RS232device, ExtCtrls, Measurement;
 
 const
   UndefinedPin=255;
@@ -105,29 +105,49 @@ type
   end;
 
 
-  TArduinoDAC=class(TRS232Setter)
-    {базовий клас для ЦАП, що керується
+  TArduinoSetter=class(TRS232Device)
+    {базовий клас для джерел сигналів, що керуються
     за допомогою Arduino    }
   protected
    Pins:TPins;
-   fVoltageMaxValue:double;
-   fKodMaxValue:integer;
    fSetterKod:byte;
    procedure PinsCreate();virtual;
-   procedure PacketCreateAndSend();
-   function  VoltageToKod(Voltage:double):integer;virtual;
-   procedure DataByteToSendFromInteger(IntData: Integer);virtual;
+//   procedure PacketCreateAndSend();
    procedure PinsToDataArray;virtual;
-   procedure OutputDataSignDetermination(OutputData: Double);
    procedure CreateHook;virtual;
-   function NormedKod(Kod: Integer):integer;
-   procedure   PacketCreateToSend(); override;
+   procedure PacketCreateToSend(); override;
   public
    Constructor Create(CP:TComPort;Nm:string);override;
    Procedure Free;
-   Procedure Output(Voltage:double);override;
-   Procedure Reset();override;
-   Procedure OutputInt(Kod:integer);override;
+  end;
+
+
+  TArduinoDAC=class(TArduinoSetter,IDAC)
+    {базовий клас для ЦАП, що керується
+    за допомогою Arduino    }
+  protected
+   fOutputValue:double;
+//   Pins:TPins;
+   fVoltageMaxValue:double;
+   fKodMaxValue:integer;
+//   fSetterKod:byte;
+//   procedure PinsCreate();virtual;
+//   procedure PacketCreateAndSend();
+   function  VoltageToKod(Voltage:double):integer;virtual;
+   procedure DataByteToSendFromInteger(IntData: Integer);virtual;
+//   procedure PinsToDataArray;virtual;
+   procedure OutputDataSignDetermination(OutputData: Double);
+   procedure CreateHook;override;
+   function NormedKod(Kod: Integer):integer;
+//   procedure   PacketCreateToSend(); override;
+   function GetOutputValue:double;
+  public
+   property OutputValue:double read GetOutputValue;
+//   Constructor Create(CP:TComPort;Nm:string);override;
+//   Procedure Free;
+   Procedure Output(Voltage:double);virtual;
+   Procedure Reset();virtual;
+   Procedure OutputInt(Kod:integer);virtual;
   end;
 
 
@@ -349,16 +369,13 @@ procedure TPins.ReadFromIniFile(ConfigFile: TIniFile;
   PinsStrings: array of TStringList);
   var i,TempPin:integer;
 begin
-//    showmessage('Name='+Name);
   if Name='' then Exit;
   for I := 0 to High(fPins) do
    begin
     TempPin := ConfigFile.ReadInteger(Name, PNames[i], -1);
-//    showmessage('TempPin='+inttostr(TempPin));
     if (i<=High(PinsStrings))
         and (TempPin > -1)
         and (TempPin < PinsStrings[i].Count) then
-//          fPins[i] := StrToInt(PinsStrings[i].Strings[TempPin])
           SetStrToPinValue (PinsStrings[i].Strings[TempPin],i )
                                                      else
           fPins[i]:=ConfigFile.ReadInteger(Name, PNames[i], UndefinedPin);
@@ -413,13 +430,11 @@ end;
 
 function TPins.StrToPinValue(Str: string): integer;
 begin
-//  showmessage(Str);
  Result:=StrToInt(Str);
 end;
 
 procedure TPins.SetStrToPinValue(Str: string;Index:integer);
 begin
-//   showmessage(Str+'hhh');
  fPins[Index]:=StrToPinValue(Str);
 end;
 
@@ -435,7 +450,6 @@ begin
      if j<=High(PinsStrings) then
         begin
           for I := 0 to PinsStrings[j].Count - 1 do
-//           if (fPins[j] = strtoint( PinsStrings[j].Strings[i])) then
            if (fPins[j] = StrToPinValue ( PinsStrings[j].Strings[i])) then
                 ConfigFile.WriteInteger(Name, PNames[j], i);
         end;
@@ -454,9 +468,9 @@ end;
 
 procedure TArduinoDAC.CreateHook;
 begin
+  inherited CreateHook;
   fVoltageMaxValue:=5;
   fKodMaxValue:=65535;
-  fSetterKod:=$FF;
 end;
 
 procedure TArduinoDAC.OutputDataSignDetermination(OutputData: Double);
@@ -465,24 +479,24 @@ begin
                     else  fData[5] := DAC_Pos;
 end;
 
-procedure TArduinoDAC.PinsToDataArray;
-begin
-  fData[1] := Pins.PinControl;
-  fData[2] := Pins.PinGate;
-end;
+//procedure TArduinoDAC.PinsToDataArray;
+//begin
+//  fData[1] := Pins.PinControl;
+//  fData[2] := Pins.PinGate;
+//end;
 
-constructor TArduinoDAC.Create(CP: TComPort; Nm: string);
-begin
-  inherited Create(CP,Nm);
-  PinsCreate();
-  fComPacket.StartString:=PacketBeginChar;
-  fComPacket.StopString:=PacketEndChar;
-
-  CreateHook;
-  SetLength(fData,6);
-  fData[0] := fSetterKod;
-  PinsToDataArray();
-end;
+//constructor TArduinoDAC.Create(CP: TComPort; Nm: string);
+//begin
+//  inherited Create(CP,Nm);
+//  PinsCreate();
+//  fComPacket.StartString:=PacketBeginChar;
+//  fComPacket.StopString:=PacketEndChar;
+//
+//  CreateHook;
+//  SetLength(fData,6);
+//  fData[0] := fSetterKod;
+//  PinsToDataArray();
+//end;
 
 procedure TArduinoDAC.DataByteToSendFromInteger(IntData: Integer);
  var NormedIntData:integer;
@@ -492,10 +506,15 @@ begin
   fData[4] := (NormedIntData and $FF);
 end;
 
-procedure TArduinoDAC.Free;
+//procedure TArduinoDAC.Free;
+//begin
+// Pins.Free;
+// inherited Free;
+//end;
+
+function TArduinoDAC.GetOutputValue: double;
 begin
- Pins.Free;
- inherited Free;
+  Result:=fOutputValue;
 end;
 
 procedure TArduinoDAC.Output(Voltage: double);
@@ -503,38 +522,42 @@ begin
  if Voltage=ErResult then Exit;
  OutputDataSignDetermination(Voltage);
  DataByteToSendFromInteger(VoltageToKod(Voltage));
- PacketCreateAndSend();
+ isNeededComPortState();
+// PacketCreateAndSend();
 end;
 
 procedure TArduinoDAC.OutputInt(Kod: integer);
 begin
- inherited OutputInt(Kod);
+// inherited OutputInt(Kod);
+ fOutputValue:=Kod;
  OutputDataSignDetermination(Kod);
  DataByteToSendFromInteger(abs(Kod));
- PacketCreateAndSend();
+// PacketCreateAndSend();
+ isNeededComPortState();
 end;
 
-procedure TArduinoDAC.PinsCreate();
-begin
-  Pins := TPins.Create(Name);
-end;
+//procedure TArduinoDAC.PinsCreate();
+//begin
+//  Pins := TPins.Create(Name);
+//end;
 
-procedure TArduinoDAC.PacketCreateAndSend;
-begin
-  isNeededComPortState();
-end;
+//procedure TArduinoDAC.PacketCreateAndSend;
+//begin
+//  isNeededComPortState();
+//end;
 
-procedure TArduinoDAC.PacketCreateToSend;
-begin
- PacketCreate(fData);
-end;
+//procedure TArduinoDAC.PacketCreateToSend;
+//begin
+// PacketCreate(fData);
+//end;
 
 procedure TArduinoDAC.Reset;
 begin
  fData[5]:=DAC_Pos;
  fData[3] := $00;
  fData[4] := $00;
- PacketCreateAndSend();
+// PacketCreateAndSend();
+ isNeededComPortState();
 end;
 
 function TArduinoDAC.VoltageToKod(Voltage: double): integer;
@@ -809,7 +832,6 @@ begin
  RG.Parent:=Form;
  RG.Items:=fPinVariants[PinNumber];
  for I := 0 to RG.Items.Count - 1 do
-//  if StrToInt(RG.Items[i])=Pins.fPins[PinNumber] then
   if Pins.StrToPinValue(RG.Items[i])=Pins.fPins[PinNumber] then
    begin
      RG.ItemIndex:=i;
@@ -847,7 +869,6 @@ begin
 
   if Form.ShowModal=mrOk then
    begin
-//    Pins.fPins[PinNumber]:=StrToInt(RG.Items[RG.ItemIndex]);
     Pins.SetStrToPinValue(RG.Items[RG.ItemIndex],PinNumber);
     NumberPinShow();
    end;
@@ -859,5 +880,51 @@ begin
 
 end;
 
+
+{ TArduinoSetter }
+
+constructor TArduinoSetter.Create(CP: TComPort; Nm: string);
+begin
+  inherited Create(CP,Nm);
+  PinsCreate();
+  fComPacket.StartString:=PacketBeginChar;
+  fComPacket.StopString:=PacketEndChar;
+  SetLength(fData,6);
+
+  CreateHook;
+  fData[0] := fSetterKod;
+  PinsToDataArray();
+end;
+
+procedure TArduinoSetter.CreateHook;
+begin
+  fSetterKod:=$FF;
+end;
+
+procedure TArduinoSetter.Free;
+begin
+ Pins.Free;
+ inherited Free;
+end;
+
+//procedure TArduinoSetter.PacketCreateAndSend;
+//begin
+//  isNeededComPortState();
+//end;
+
+procedure TArduinoSetter.PacketCreateToSend;
+begin
+ PacketCreate(fData);
+end;
+
+procedure TArduinoSetter.PinsCreate;
+begin
+  Pins := TPins.Create(Name);
+end;
+
+procedure TArduinoSetter.PinsToDataArray;
+begin
+  fData[1] := Pins.PinControl;
+end;
 
 end.

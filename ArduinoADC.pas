@@ -46,25 +46,6 @@ type
 
 
 
-// TArduinoADC_ChannelShow=class(TPinsShowUniversal)
-//   private
-////    fChan:TArduinoADC_Channel;
-////    MeasuringDeviceSimple:TMeasuringDeviceSimple;
-//   protected
-//    fChan:TArduinoADC_Channel;
-//    MeasuringDeviceSimple:TMeasuringDeviceSimple;
-//    procedure LabelsFilling;virtual;
-//   public
-//    Constructor Create(Chan:TArduinoADC_Channel;
-//                       Labels:Array of TPanel;
-//                       LabelMeas:TLabel;
-//                       ButMeas:TButton);
-//    Procedure Free;
-// end;
-
-
-
-
 implementation
 
 uses

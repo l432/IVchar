@@ -31,19 +31,6 @@ TD30_06=class(TArduinoDAC)
 end;
 
 
-//TPins30_06Show=class(TPinsShow)
-//public
-//// Constructor Create(Ps:TPins;
-////                    ControlPinLabel,GatePinLabel:TLabel;
-////                    SetControlButton,SetGateButton:TButton;
-////                    PCB:TComboBox);
-// Constructor Create(Ps:TPins;
-//                    ControlPinLabel,GatePinLabel:TLabel;
-//                    PinVariants:TStringList);
-
-//procedure NumberPinShow();override;
-//end;
-
 TD30_06Show=class(TDAC_Show)
 private
  VoltageOrCurrentRG:TRadioGroup;
@@ -53,13 +40,11 @@ private
  procedure LabelFilling;
  procedure ReadFromIniFile(ConfigFile:TIniFile);
  public
-// PinShow:TPins30_06Show;
  PinShow:TPinsShow;
  Constructor Create(DAC:TD30_06;
                       CPL,GPL:TPanel;
                       VL,KL,VDL:TLabel;
-                      {SCB,SGB,}VCB,VSB,KCB,KSB,RB:TButton;
-{                      PCB:TComboBox;}
+                      VCB,VSB,KCB,KSB,RB:TButton;
                       PinVariants:TStringList;
                       VOCRG:TRadioGroup);
  Procedure Free;
@@ -191,7 +176,7 @@ begin
  fD30_06.isVoltage:=(VoltageOrCurrentRG.Items[VoltageOrCurrentRG.ItemIndex]=PinNamesD30_06[0]);
  fD30_06.PinsToDataArray;
  LabelFilling;
- 
+
 end;
 
 procedure TD30_06Show.WriteToIniFile(ConfigFile: TIniFile);

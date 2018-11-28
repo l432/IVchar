@@ -108,7 +108,6 @@ TRS232Device=class(TNamedInterfacedObject)
    function PortConnected():boolean;
    procedure  PacketCreateToSend(); virtual;
   public
-//   ttt:integer;
    property isNeededComPort:boolean read fisNeededComPort write fisNeededComPort;
    property Error:boolean read fError;
    Constructor Create();overload;
@@ -194,18 +193,18 @@ TRS232Meter=class(TRS232Device,IMeasurement)
 
 
 
-TRS232Setter=class(TRS232Device,IDAC)
- private
-
- protected
-  fOutputValue:double;
-  function GetOutputValue:double;
- public
-   property OutputValue:double read GetOutputValue;
-   procedure Output(Value:double);virtual;
-   procedure OutputInt(Kod:integer); virtual;
-   Procedure Reset();     virtual;
- end;
+//TRS232Setter=class(TRS232Device,IDAC)
+// private
+//
+// protected
+//  fOutputValue:double;
+//  function GetOutputValue:double;
+// public
+//   property OutputValue:double read GetOutputValue;
+//   procedure Output(Value:double);virtual;
+//   procedure OutputInt(Kod:integer); virtual;
+//   Procedure Reset();     virtual;
+// end;
 
 
 TAdapterRadioGroupClick=class
@@ -266,7 +265,6 @@ begin
   fComPacket.CaseInsensitive:=False;
 
   fisNeededComPort:=False;
-//  ttt:=0;
   fError:=False;
 end;
 
@@ -299,8 +297,6 @@ end;
 procedure TRS232Device.isNeededComPortState;
 begin
  fisNeededComPort:=(WaitForSingleObject(EventComPortFree,1000)=WAIT_OBJECT_0);
-// if WaitForSingleObject(EventComPortFree,1000)=WAIT_OBJECT_0
-//  then fisNeededComPort:=True;
 end;
 
 procedure TRS232Device.PacketCreateToSend;
@@ -443,11 +439,6 @@ begin
   isNeededComPortState();
 end;
 
-
-//function TRS232Meter.ResultProblem(Rez: double): boolean;
-//begin
-// Result:=False;
-//end;
 
 procedure TRS232Meter.SetNewData(Value: boolean);
 begin
@@ -649,26 +640,26 @@ end;
 
 { TRS232Setter }
 
-function TRS232Setter.GetOutputValue: double;
-begin
- Result:=fOutputValue;
-end;
-
-procedure TRS232Setter.Output(Value: double);
-begin
- if Value<>ErResult then
-      fOutputValue:=Value;
-end;
-
-procedure TRS232Setter.OutputInt(Kod: integer);
-begin
-  fOutputValue:=Kod;
-end;
-
-procedure TRS232Setter.Reset;
-begin
- Output(0);
-end;
+//function TRS232Setter.GetOutputValue: double;
+//begin
+// Result:=fOutputValue;
+//end;
+//
+//procedure TRS232Setter.Output(Value: double);
+//begin
+// if Value<>ErResult then
+//      fOutputValue:=Value;
+//end;
+//
+//procedure TRS232Setter.OutputInt(Kod: integer);
+//begin
+//  fOutputValue:=Kod;
+//end;
+//
+//procedure TRS232Setter.Reset;
+//begin
+// Output(0);
+//end;
 
 
 

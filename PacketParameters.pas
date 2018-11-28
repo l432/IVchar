@@ -23,6 +23,8 @@ const
   TMP102Command=$9;
   MCP3424Command=$A;
   ADS1115Command=$B;
+  AD9833Command=$C;
+
 var
   aPacket:array of byte;
 

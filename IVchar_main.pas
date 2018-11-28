@@ -761,6 +761,9 @@ var
 
 implementation
 
+uses
+  AD9833;
+
 {$R *.dfm}
 
 //procedure TIVchar.RangeWriteToIniFile;
@@ -2158,28 +2161,9 @@ end;
 
 
 procedure TIVchar.Button1Click(Sender: TObject);
- var ArrayDevice:array of TRS232Device;
-//  i:byte;
-//  str:string;
-begin
- SetLength(ArrayDevice,12);
-  ArrayDevice[0]:=DACR2R;
-  ArrayDevice[1]:=V721A;
-  ArrayDevice[2]:=V721_I;
-  ArrayDevice[3]:=V721_II;
-  ArrayDevice[4]:=DS18B20;
-  ArrayDevice[5]:=TMP102;
-  ArrayDevice[6]:=HTU21D;
-  ArrayDevice[7]:=D30_06;
-  ArrayDevice[8]:=IscVocPinChanger;
-  ArrayDevice[9]:=LEDOpenPinChanger;
-  ArrayDevice[10]:=MCP3424;
-  ArrayDevice[11]:=ADS11115module;
-//  str:='';
-//  for I := 0 to 11 do
-//    str:=str+ArrayDevice[i].Name+' '+inttostr(ArrayDevice[i].ttt)+#10+#13;
-//  showmessage(str);
 
+begin
+ showmessage(inttostr(round(min(400,AD9833_MaxFreq)*$10000000/25e6)and $0FFFFFFF));
 end;
 
 procedure TIVchar.BControlResetClick(Sender: TObject);
@@ -2892,13 +2876,6 @@ begin
       Continue;
      end;
 
-//   if (ShowArray.ObjectArray[i] is  TMCP3424_ChannelShow) then
-//     begin
-//      (ShowArray.ObjectArray[i] as  TMCP3424_ChannelShow).PinsReadFromIniFile(ConfigFile);
-//      (ShowArray.ObjectArray[i] as  TMCP3424_ChannelShow).NumberPinShow;
-//      Continue;
-//     end;
-
 
    if (ShowArray.ObjectArray[i] is TPinsShowUniversal) then
      begin
@@ -3009,8 +2986,6 @@ begin
    ShowArray.ObjectArray[i].Free;
   end;
 
-// if ET1255isPresent then
-//  ET1255_ADCModule.WriteToIniFile(ConfigFile);
 end;
 
 procedure TIVchar.WMMyMeasure(var Mes: TMessage);

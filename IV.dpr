@@ -24,7 +24,8 @@ uses
   MDevice in 'MDevice.pas',
   MCP3424 in 'MCP3424.pas',
   ArduinoADC in 'ArduinoADC.pas',
-  ADS1115 in 'ADS1115.pas';
+  ADS1115 in 'ADS1115.pas',
+  AD9833 in 'AD9833.pas';
 
 {$R *.res}
 

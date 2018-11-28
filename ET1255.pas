@@ -86,8 +86,6 @@ procedure ET_SetDeviceNumber(ADevn: integer); stdcall; external 'ET1255.dll';
 var
     EventET1255Measurement_Done: THandle;
 
-//    NumberOfMeasurement:Cardinal;
-//    NoM:cardinal;
 
 type
 
@@ -195,7 +193,6 @@ end;
 
  TET1255_ModuleAndChan=class(TET1255_Module,IMeasurement)
   private
-//   Channels:array[TET1255_ADC_ChanelNumber] of TET1255_ADCChannel;
    function GetNewData:boolean;
    function GetValue:double;
    procedure SetNewData(Value:boolean);
@@ -221,8 +218,6 @@ end;
    CBSerial:TCheckBox;
    Graph: TCustomSeries;
    procedure ElementFill();
-//   procedure ElementAction();
-//   procedure ElementActionNil();
    procedure GroupChannelsClick(Sender: TObject);
    procedure GroupFrequencyClick(Sender: TObject);
    procedure CBSerialClick(Sender: TObject);
@@ -535,11 +530,9 @@ begin
   if WaitForSingleObject(EventET1255Measurement_Done,1500)=WAIT_OBJECT_0
    then
    begin
-//    showmessage(' Nom='+inttostr(NoM));
    ResultRead()
    end
    else  MeasuringStop;
-// showmessage(' Nom='+inttostr(NoM));
 
  Result:=fValue;
 end;
