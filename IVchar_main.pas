@@ -736,7 +736,7 @@ type
     ,MaxDifCoeficient
        :double;
     VoltageLimit:boolean;
-    DoubleConstantShows:array of TParameterShow1;
+    DoubleConstantShows:array of TDoubleParameterShow;
     Imax,Imin,R_VtoI,Shift_VtoI:double;
 
     IVMeasuring,CalibrMeasuring:TIVDependence;
@@ -781,47 +781,47 @@ procedure TIVchar.ConstantShowCreate;
 begin
 
   SetLength(DoubleConstantShows, 13);
-  DoubleConstantShows[0]:=TParameterShow1.Create(STPR,LPR,
+  DoubleConstantShows[0]:=TDoubleParameterShow.Create(STPR,LPR,
         'Parasitic resistance',
         'Parasitic resistance value is expected',0,3);
-  DoubleConstantShows[1]:=TParameterShow1.Create(STMC,LMC,
+  DoubleConstantShows[1]:=TDoubleParameterShow.Create(STMC,LMC,
         'Maximum current',
         'Maximum current for I-V characteristic measurement is expected',2e-2,2);
-  DoubleConstantShows[2]:=TParameterShow1.Create(STMinC,LMinC,
+  DoubleConstantShows[2]:=TDoubleParameterShow.Create(STMinC,LMinC,
         'Minimum current',
         'Minimum current for I-V characteristic measurement is expected',5e-11,2);
-  DoubleConstantShows[3]:=TParameterShow1.Create(STFVP,LFVP,
+  DoubleConstantShows[3]:=TDoubleParameterShow.Create(STFVP,LFVP,
         'Forward voltage precision',
         'Voltage precision for forward I-V characteristic is expected',0.001,4);
-  DoubleConstantShows[4]:=TParameterShow1.Create(STRVP,LRVP,
+  DoubleConstantShows[4]:=TDoubleParameterShow.Create(STRVP,LRVP,
         'Reverse voltage precision',
         'Reverse precision for forward I-V characteristic is expected',0.005,4);
-  DoubleConstantShows[5]:=TParameterShow1.Create(STRVtoI,LRVtoI,
+  DoubleConstantShows[5]:=TDoubleParameterShow.Create(STRVtoI,LRVtoI,
         'Resistance V -> I',
         'Resistance for V to I transformation is expected',10,4);
-  DoubleConstantShows[6]:=TParameterShow1.Create(STVVtoI,LVVtoI,
+  DoubleConstantShows[6]:=TDoubleParameterShow.Create(STVVtoI,LVVtoI,
         'Shift Voltage for V -> I',
         'Shift Voltage for V to I transformation is expected',-0.503,4);
-  DoubleConstantShows[7]:=TParameterShow1.Create(STTMI,LTMI,
+  DoubleConstantShows[7]:=TDoubleParameterShow.Create(STTMI,LTMI,
         'Temperature measurement interval (s)',
         'Temperature measurement interval',5,2);
-  DoubleConstantShows[8]:=TParameterShow1.Create(STTimeInterval,LTimeInterval,
+  DoubleConstantShows[8]:=TDoubleParameterShow.Create(STTimeInterval,LTimeInterval,
         'Measurement interval, (s)',
         'Time dependence measurement interval',15,2);
-  DoubleConstantShows[9]:=TParameterShow1.Create(STTimeDuration,LTimeDuration,
+  DoubleConstantShows[9]:=TDoubleParameterShow.Create(STTimeDuration,LTimeDuration,
         'Measurement duration (s), 0 - infinite',
         'Full measurement duration',0,2);
 
 //  DoubleConstantShows[10]:=TParameterShow1.Create(STControlNV,LControlNV,
 //        'Needed Value',
 //        'Needed Value',0);
-  DoubleConstantShows[10]:=TParameterShow1.Create(STControlInterval,LControlInterval,
+  DoubleConstantShows[10]:=TDoubleParameterShow.Create(STControlInterval,LControlInterval,
         'Controling interval (s)',
         'Controling measurement interval',15,2);
-  DoubleConstantShows[11]:=TParameterShow1.Create(STDBtime,LDBtime,
+  DoubleConstantShows[11]:=TDoubleParameterShow.Create(STDBtime,LDBtime,
         'Dragon-back time (ms)',
         'Dragon-back time (ms)',1,3);
-  DoubleConstantShows[12]:=TParameterShow1.Create(STLED_onValue,LLED_onValue,
+  DoubleConstantShows[12]:=TDoubleParameterShow.Create(STLED_onValue,LLED_onValue,
         'LED voltage (V)',
         'LED voltage (V)',0.79,5);
 //  DoubleConstantShows[12]:=TParameterShow1.Create(STControlKp,LControlKp,

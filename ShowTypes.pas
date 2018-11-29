@@ -3,7 +3,7 @@ unit ShowTypes;
 interface
 
 uses
-  StdCtrls, IniFiles, Windows, ComCtrls, SPIdevice, OlegType, Series, 
+  StdCtrls, IniFiles, Windows, ComCtrls, SPIdevice, OlegType, Series,
   Measurement;
 
 const DoubleConstantSection='DoubleConstant';
@@ -11,31 +11,10 @@ const DoubleConstantSection='DoubleConstant';
       RangeSection='Range';
 
 type
-TDoubleConstantShow=class
-private
-    FHint: string;
-    FCaption: string;
-    Lab:TLabel;
-    Button:TButton;
-    FDefaulValue: double;
-    procedure SetCaption(const Value: string);
-    procedure SetHint(const Value: string);
-    procedure ButtonClick(Sender: TObject);
-    procedure SetDefaulValue(const Value: double);
-public
- property Caption:string read FCaption write SetCaption;
- property Hint:string read FHint write SetHint;
- property DefaulValue:double read FDefaulValue write SetDefaulValue;
- Constructor Create(L:TLabel;
-                    B:TButton;
-                    Cap,H:string;
-                    DV:double);
- procedure ReadFromIniFile(ConfigFile:TIniFile);
- procedure WriteToIniFile(ConfigFile:TIniFile);
- function GetValue:double;
-end;
+//TDoubleConstantShow=class
 
-  TParameterShow1=class
+
+  TDoubleParameterShow=class
 //  для відображення на формі
 //  а) значення параметру
 //  б) його назви
@@ -57,7 +36,7 @@ end;
     Constructor Create(STD:TStaticText;
                        STC:TLabel;
                        ParametrCaption:string;
-                       {WC,}WT:string;
+                       WT:string;
                        InitValue:double;
                        DN:byte=3
     );
@@ -130,66 +109,6 @@ implementation
 uses
   Dialogs, SysUtils, Math, Controls;
 
-{ TDoubleConstantShow }
-
-procedure TDoubleConstantShow.ButtonClick(Sender: TObject);
- var value:string;
-begin
- if InputQuery(Caption, Hint, value) then
-  begin
-    try
-      Lab.Caption:=FloatToStrF(StrToFloat(value),ffExponent, 4, 3);
-    except
-
-    end;
-  end;
-end;
-
-constructor TDoubleConstantShow.Create(L: TLabel; B: TButton;
-  Cap, H: string;DV:double);
-begin
-  Lab:=L;
-  Button:=B;
-  FCaption:=Cap;
-  FHint:=H;
-  Button.OnClick:=ButtonClick;
-  DefaulValue:=DV;
-end;
-
-function TDoubleConstantShow.GetValue: double;
-begin
- try
-  Result:=StrToFloat(Lab.Caption);
- except
-  Result:=DefaulValue;
- end;
-end;
-
-procedure TDoubleConstantShow.ReadFromIniFile(ConfigFile: TIniFile);
-begin
- Lab.Caption:=FloatToStrF(ConfigFile.ReadFloat(DoubleConstantSection, Caption,DefaulValue),
-                          ffExponent, 4, 3);
-end;
-
-procedure TDoubleConstantShow.SetCaption(const Value: string);
-begin
-  FCaption := Value;
-end;
-
-procedure TDoubleConstantShow.SetDefaulValue(const Value: double);
-begin
-  FDefaulValue := Value;
-end;
-
-procedure TDoubleConstantShow.SetHint(const Value: string);
-begin
-  FHint := Value;
-end;
-
-procedure TDoubleConstantShow.WriteToIniFile(ConfigFile: TIniFile);
-begin
- WriteIniDef(ConfigFile, DoubleConstantSection, Caption, StrToFloat(Lab.Caption),DefaulValue)
-end;
 
 function LastFileName(Mask:string):string;
  var SR : TSearchRec;
@@ -228,7 +147,7 @@ begin
 end;
 
 
-Constructor TParameterShow1.Create(STD:TStaticText;
+Constructor TDoubleParameterShow.Create(STD:TStaticText;
                        STC:TLabel;
                        ParametrCaption:string;
                        WT:string;
@@ -251,12 +170,12 @@ begin
   DefaulValue:=InitValue;
 end;
 
-procedure TParameterShow1.Free;
+procedure TDoubleParameterShow.Free;
 begin
 
 end;
 
-procedure TParameterShow1.ButtonClick(Sender: TObject);
+procedure TDoubleParameterShow.ButtonClick(Sender: TObject);
  var temp:double;
      st:string;
 begin
@@ -268,12 +187,12 @@ begin
   end;
 end;
 
-function TParameterShow1.GetData:double;
+function TDoubleParameterShow.GetData:double;
 begin
  Result:=StrToFloat(STData.Caption);
 end;
 
-procedure TParameterShow1.SetData(value:double);
+procedure TDoubleParameterShow.SetData(value:double);
 begin
   try
     STData.Caption:=ValueToString(value);
@@ -282,22 +201,22 @@ begin
   end;
 end;
 
-procedure TParameterShow1.ReadFromIniFile(ConfigFile:TIniFile);
+procedure TDoubleParameterShow.ReadFromIniFile(ConfigFile:TIniFile);
 begin
  STData.Caption:=ValueToString(ConfigFile.ReadFloat(DoubleConstantSection,STCaption.Caption,DefaulValue));
 end;
 
-procedure TParameterShow1.WriteToIniFile(ConfigFile:TIniFile);
+procedure TDoubleParameterShow.WriteToIniFile(ConfigFile:TIniFile);
 begin
  WriteIniDef(ConfigFile, DoubleConstantSection, STCaption.Caption, StrToFloat(STData.Caption),DefaulValue)
 end;
 
-procedure TParameterShow1.SetDefaulValue(const Value: double);
+procedure TDoubleParameterShow.SetDefaulValue(const Value: double);
 begin
   FDefaulValue := Value;
 end;
 
-function TParameterShow1.ValueToString(Value:double):string;
+function TDoubleParameterShow.ValueToString(Value:double):string;
 begin
   if (Frac(Value)=0)and(Int(Value/Power(10,fDigitNumber+1))=0)
     then Result:=FloatToStrF(Value,ffGeneral,fDigitNumber,fDigitNumber-1)

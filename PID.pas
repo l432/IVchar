@@ -15,7 +15,7 @@ TPID_Parameters=(ppKp,ppKi,ppKd,ppNV,ppTol);
 TPID_ParametersShow=class
   private
     FName: string;
-    fParameterShow:array[TPID_Parameters]of TParameterShow1;
+    fParameterShow:array[TPID_Parameters]of TDoubleParameterShow;
     procedure SetName(const Value: string);
     function GetParameter(Index:TPID_Parameters):double;
  public
@@ -170,11 +170,11 @@ constructor TPID_ParametersShow.Create(Name: string;
 begin
    inherited Create;
   FName:=Name;
-  fParameterShow[ppKp]:=TParameterShow1.Create(STKp,LKp,'Kp','Proportional term',1);
-  fParameterShow[ppKi]:=TParameterShow1.Create(STKi,LKi,'Ki','Integral term',0);
-  fParameterShow[ppKd]:=TParameterShow1.Create(STKd,LKd,'Kd','Derivative term',0);
-  fParameterShow[ppNV]:=TParameterShow1.Create(STNV,LNV,'Needed','Needed Value',0,4);
-  fParameterShow[ppTol]:=TParameterShow1.Create(STTol,LTol,'Tolerance','Tolerance to Needed Value',1e-4);
+  fParameterShow[ppKp]:=TDoubleParameterShow.Create(STKp,LKp,'Kp','Proportional term',1);
+  fParameterShow[ppKi]:=TDoubleParameterShow.Create(STKi,LKi,'Ki','Integral term',0);
+  fParameterShow[ppKd]:=TDoubleParameterShow.Create(STKd,LKd,'Kd','Derivative term',0);
+  fParameterShow[ppNV]:=TDoubleParameterShow.Create(STNV,LNV,'Needed','Needed Value',0,4);
+  fParameterShow[ppTol]:=TDoubleParameterShow.Create(STTol,LTol,'Tolerance','Tolerance to Needed Value',1e-4);
 end;
 
 procedure TPID_ParametersShow.Free;

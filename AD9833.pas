@@ -21,12 +21,14 @@ type
 
  TAD9833=class(TArduinoSetter)
   private
-    procedure ToControlRegisterWrite;
     procedure PrepareToPhaseChange;
     procedure PrepareToFreqChange;
     procedure PrepareToModeChange;
     procedure SetActiveChanel(const Value: TAD9833_ChanelNumber);
     procedure SetMode(const Value: TAD9833_Mode);
+    procedure AddWordToSendArray;overload;
+    procedure AddWordToSendArray(HighByte:byte;LowByte:byte=$00);overload;
+    procedure AddFreqHalfKodToSendArray(FreqLow: Word);
   protected
    fMode:TAD9833_Mode;
    fFreq:array[TAD9833_ChanelNumber] of LongWord;
@@ -47,6 +49,7 @@ type
    procedure SetPhase(chan:TAD9833_ChanelNumber; Phase:double);
    procedure Reset();
    procedure Generate();
+   procedure Action();
  end;
 
 implementation
@@ -55,6 +58,13 @@ uses
   PacketParameters, Math;
 
 { TAD9833 }
+
+procedure TAD9833.AddWordToSendArray(HighByte:byte;LowByte:byte=$00);
+begin
+ fControlByteLow:=LowByte;
+ fControlByteHigh:=HighByte;
+ AddWordToSendArray();
+end;
 
 function TAD9833.ConvertFreqValueToKod(Freq: double): LongWord;
 begin
@@ -101,6 +111,36 @@ begin
  isNeededComPortState();
 end;
 
+procedure TAD9833.Action;
+begin
+ SetLength(fData,2);
+ if fMode<>ad9833_mode_off then
+  begin
+   PrepareToPhaseChange();
+   PrepareToFreqChange();
+  end;
+ PrepareToModeChange();
+ isNeededComPortState();
+end;
+
+procedure TAD9833.AddFreqHalfKodToSendArray(FreqLow: Word);
+begin
+  if fActiveChanel = 0 then
+    fControlByteHigh := $40
+  else
+    fControlByteHigh := $80;
+  fControlByteHigh := fControlByteHigh + (byte(FreqLow shr 8) and $3F);
+  fControlByteLow := byte(FreqLow and $FF);
+  AddWordToSendArray();
+end;
+
+procedure TAD9833.AddWordToSendArray;
+begin
+  SetLength(fData, High(fData) + 3);
+  fData[High(fData) - 1] := fControlByteHigh;
+  fData[High(fData)] := fControlByteLow;
+end;
+
 procedure TAD9833.PrepareToFreqChange;
  var FreqLow,FreqHigh,FreqLastLow,FreqLastHigh:word;
 begin
@@ -112,46 +152,23 @@ begin
 
  if ((FreqLow<>FreqLastLow)and((FreqHigh<>FreqLastHigh))) then
   begin
-   SetLength(fData, High(fData) + 7);
-   fData[High(fData) - 5]:=$20; //(D15, D14 = 00), B28 (D13) = 1
-   fData[High(fData) - 4]:=$00;
-   if fActiveChanel = 0 then
-     begin
-       fData[High(fData) - 3]:=$40;
-       fData[High(fData) - 1]:=$40;
-     end                else
-     begin
-       fData[High(fData) - 3]:=$80;
-       fData[High(fData) - 1]:=$80;
-     end;
-   fData[High(fData) - 3]:=fData[High(fData) - 3]+(byte(FreqLow shr 8) and $3F);
-   fData[High(fData) - 2]:=byte(FreqLow and $00FF);
-   fData[High(fData) - 1]:=fData[High(fData) - 1]+(byte(FreqHigh shr 8) and $3F);
-   fData[High(fData)]:=byte(FreqHigh and $00FF);
+   AddWordToSendArray($20);   //(D15, D14 = 00), B28 (D13) = 1
+   AddFreqHalfKodToSendArray(FreqLow);
+   AddFreqHalfKodToSendArray(FreqHigh);
    Exit;
   end;
 
  if FreqLow<>FreqLastLow then
   begin
-   SetLength(fData, High(fData) + 5);
-   fData[High(fData) - 3]:=0;  //(D15, D14 = 00), B28 (D13) = 0, HLB (D12) = 0
-   fData[High(fData) - 2]:=0;
-   if fActiveChanel = 0 then fData[High(fData) - 1]:=$40
-                        else fData[High(fData) - 1]:=$80;
-   fData[High(fData) - 1]:=fData[High(fData) - 1]+(byte(FreqLow shr 8) and $3F);
-   fData[High(fData)]:=byte(FreqLow and $00FF);
+   AddWordToSendArray($00);//(D15, D14 = 00), B28 (D13) = 0, HLB (D12) = 0
+   AddFreqHalfKodToSendArray(FreqLow);
    Exit;
   end;
 
  if FreqHigh<>FreqLastHigh then
   begin
-   SetLength(fData, High(fData) + 5);
-   fData[High(fData) - 3]:=$10;  //(D15, D14 = 00), B28 (D13) = 0, HLB (D12) = 1
-   fData[High(fData) - 2]:=$00;
-   if fActiveChanel = 0 then fData[High(fData) - 1]:=$40
-                        else fData[High(fData) - 1]:=$80;
-   fData[High(fData) - 1]:=fData[High(fData) - 1]+(byte(FreqHigh shr 8) and $3F);
-   fData[High(fData)]:=byte(FreqHigh and $00FF);
+   AddWordToSendArray($10); //(D15, D14 = 00), B28 (D13) = 0, HLB (D12) = 1
+   AddFreqHalfKodToSendArray(FreqHigh);
    Exit;
   end;
 
@@ -159,32 +176,34 @@ end;
 
 procedure TAD9833.PrepareToModeChange;
 begin
- fControlByteHigh := $00;
- fControlByteLow := $00;
- if fActiveChanel = 1 then
-  fControlByteHigh :=fControlByteHigh +$0C;
- case fMode of
-   ad9833_mode_triangle: fControlByteLow := fControlByteLow + $02;
-   ad9833_mode_square: fControlByteLow := fControlByteLow + $28;
- end;
- SetLength(fData, High(fData) + 3);
- fData[High(fData) - 1] := fControlByteHigh;
- fData[High(fData)] := fControlByteLow;
+ if fMode=ad9833_mode_off then
+  begin
+   fControlByteHigh := fControlByteHigh and $3F; // Control Bits (D15, D14) to 00
+   fControlByteLow:=fControlByteLow or $C0;  // SLEEP1 (D7) and SLEEP12(D6) to 1
+  end                     else
+  begin
+   fControlByteHigh := $00;
+   fControlByteLow := $00;
+   if fActiveChanel = 1 then
+    fControlByteHigh :=fControlByteHigh +$0C;
+   case fMode of
+     ad9833_mode_triangle: fControlByteLow := fControlByteLow + $02;
+     ad9833_mode_square: fControlByteLow := fControlByteLow + $28;
+   end;
+  end;
+ AddWordToSendArray;
 end;
 
 procedure TAD9833.PrepareToPhaseChange;
 begin
   if fPhase[fActiveChanel] <> fPhaseLast[fActiveChanel] then
     begin
-      SetLength(fData, High(fData) + 3);
-      fControlByteHigh := $C0;
-      // Control Bits (D15, D14) to 11, Phase Register
+      fControlByteHigh := $C0; // Control Bits (D15, D14) to 11, Phase Register
       if fActiveChanel = 1 then
-        fControlByteHigh := fControlByteHigh + $20;
-      // D13=1
-      fControlByteHigh := (fControlByteHigh and $F0) + (byte((fPhase[fActiveChanel] shr 8)) and $F);
-      fData[High(fData) - 1] := fControlByteHigh;
-      fData[High(fData)] := byte(fPhase[fActiveChanel] and $FF);
+        fControlByteHigh := fControlByteHigh + $20; // D13=1
+      fControlByteHigh := (fControlByteHigh and $F0) + (byte((fPhase[fActiveChanel] shr 8)) and $0F);
+      fControlByteLow := byte(fPhase[fActiveChanel] and $00FF);
+      AddWordToSendArray;
       fPhaseLast[fActiveChanel]:=fPhase[fActiveChanel];
     end;
 end;
@@ -197,19 +216,16 @@ end;
 procedure TAD9833.Reset;
 begin
  fMode:=ad9833_mode_off;
- ToControlRegisterWrite();
- fControlByteLow:=fControlByteLow or $C0;  // SLEEP1 (D7) and SLEEP12(D6) to 1
- SetLength(fData,4);
- fData[2] := fControlByteHigh;
- fData[3] := fControlByteLow;
- isNeededComPortState();
+ Action();
+// fMode:=ad9833_mode_off;
+//  fControlByteHigh := fControlByteHigh and $3F; // Control Bits (D15, D14) to 00
+// fControlByteLow:=fControlByteLow or $C0;  // SLEEP1 (D7) and SLEEP12(D6) to 1
+// SetLength(fData,4);
+// fData[2] := fControlByteHigh;
+// fData[3] := fControlByteLow;
+// isNeededComPortState();
 end;
 
-procedure TAD9833.ToControlRegisterWrite;
-begin
-  fControlByteHigh := fControlByteHigh and $3F;
- // Control Bits (D15, D14) to 00
-end;
 
 procedure TAD9833.SetActiveChanel(const Value: TAD9833_ChanelNumber);
 begin
