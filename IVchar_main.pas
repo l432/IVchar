@@ -795,7 +795,7 @@ begin
         'Voltage precision for forward I-V characteristic is expected',0.001,4);
   DoubleConstantShows[4]:=TDoubleParameterShow.Create(STRVP,LRVP,
         'Reverse voltage precision',
-        'Reverse precision for forward I-V characteristic is expected',0.005,4);
+        'Voltage precision for reverse I-V characteristic is expected',0.005,4);
   DoubleConstantShows[5]:=TDoubleParameterShow.Create(STRVtoI,LRVtoI,
         'Resistance V -> I',
         'Resistance for V to I transformation is expected',10,4);
@@ -812,9 +812,6 @@ begin
         'Measurement duration (s), 0 - infinite',
         'Full measurement duration',0,2);
 
-//  DoubleConstantShows[10]:=TParameterShow1.Create(STControlNV,LControlNV,
-//        'Needed Value',
-//        'Needed Value',0);
   DoubleConstantShows[10]:=TDoubleParameterShow.Create(STControlInterval,LControlInterval,
         'Controling interval (s)',
         'Controling measurement interval',15,2);
@@ -824,28 +821,6 @@ begin
   DoubleConstantShows[12]:=TDoubleParameterShow.Create(STLED_onValue,LLED_onValue,
         'LED voltage (V)',
         'LED voltage (V)',0.79,5);
-//  DoubleConstantShows[12]:=TParameterShow1.Create(STControlKp,LControlKp,
-//        'Kp',
-//        'Proportional term of controller',1);
-//  DoubleConstantShows[13]:=TParameterShow1.Create(STControlKi,LControlKi,
-//        'Ki',
-//        'Integral term of controller',0);
-//  DoubleConstantShows[14]:=TParameterShow1.Create(STControlKd,LControlKd,
-//        'Kd',
-//        'Derivative term of controller',0);
-
-//  DoubleConstantShows[15]:=TParameterShow1.Create(STTermostatNT,LTermostatNT,
-//        'Needed Temperature',
-//        'Needed Temperature',300);
-//  DoubleConstantShows[16]:=TParameterShow1.Create(STTermostatKp,LTermostatKp,
-//        'Proportional',
-//        'Proportional term of termostat',0.1);
-//  DoubleConstantShows[17]:=TParameterShow1.Create(STTermostatKi,LTermostatKi,
-//        'Integral',
-//        'Integral term of termostat',0);
-//  DoubleConstantShows[18]:=TParameterShow1.Create(STTermostatKd,LTermostatKd,
-//        'Derivative',
-//        'Derivative term of termostat',0);
 
 end;
 
@@ -3164,7 +3139,7 @@ procedure TIVchar.DACReadFromIniFileAndToForm;
 begin
   DACR2RShow.PinShow.PinsReadFromIniFile(ConfigFile);
   DACR2RShow.PinShow.NumberPinShow;
-  ParametersFileWork(DACR2R.CalibrationRead);
+//  ParametersFileWork(DACR2R.CalibrationRead);
 
   D30_06Show.ReadFromIniFileAndToForm(ConfigFile);
 end;

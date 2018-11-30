@@ -894,6 +894,7 @@ begin
   CreateHook;
   fData[0] := fSetterKod;
   PinsToDataArray();
+//showmessage(Name);
 end;
 
 procedure TArduinoSetter.CreateHook;

@@ -9,23 +9,24 @@ uses
 const DoubleConstantSection='DoubleConstant';
       NoFile='no file';
       RangeSection='Range';
+      WindowCaptionFooter=' input';
+      WindowTextFooter=' value is expected';
 
 type
 //TDoubleConstantShow=class
 
 
-  TDoubleParameterShow=class
+  TDoubleParameterShow=class (TNamedInterfacedObject)
 //  дл€ в≥дображенн€ на форм≥
 //  а) значенн€ параметру
 //  б) його назви
 //кл≥к на значенн≥ викликаЇ по€ву в≥конц€ дл€ його зм≥ни
    private
     STData:TStaticText; //величина параметру
-    fWindowCaption:string; //назва в≥конц€ зм≥ни параметра
-    fWindowText:string;  //текст у цьому в≥конц≥
+    fWindowText:string;  //текст у в≥конц≥ зм≥ни параметру
     FDefaulValue:double;
     fDigitNumber:byte;
-    procedure ButtonClick(Sender: TObject);
+    procedure ParameterClick(Sender: TObject);
     function GetData:double;
     procedure SetData(value:double);
     procedure SetDefaulValue(const Value: double);
@@ -39,7 +40,13 @@ type
                        WT:string;
                        InitValue:double;
                        DN:byte=3
-    );
+    );overload;
+    Constructor Create(STD:TStaticText;
+                       STC:TLabel;
+                       ParametrCaption:string;
+                       InitValue:double;
+                       DN:byte=3
+    );overload;
     property Data:double read GetData write SetData;
     procedure ReadFromIniFile(ConfigFile:TIniFile);
     procedure WriteToIniFile(ConfigFile:TIniFile);
@@ -160,14 +167,23 @@ begin
 
   STData:=STD;
   STData.Caption:=ValueToString(InitValue);
-  STData.OnClick:=ButtonClick;
+  STData.OnClick:=ParameterClick;
   STData.Cursor:=crHandPoint;
   STCaption:=STC;
   STCaption.Caption:=ParametrCaption;
   STCaption.WordWrap:=True;
-  fWindowCaption:=ParametrCaption+' input';
   fWindowText:=WT;
   DefaulValue:=InitValue;
+  fName:=DoubleConstantSection;
+end;
+
+constructor TDoubleParameterShow.Create(STD: TStaticText;
+                                        STC: TLabel;
+                                        ParametrCaption: string;
+                                        InitValue: double;
+                                        DN: byte);
+begin
+ Create(STD,STC,ParametrCaption,'',InitValue,DN);
 end;
 
 procedure TDoubleParameterShow.Free;
@@ -175,11 +191,12 @@ begin
 
 end;
 
-procedure TDoubleParameterShow.ButtonClick(Sender: TObject);
+procedure TDoubleParameterShow.ParameterClick(Sender: TObject);
  var temp:double;
      st:string;
 begin
-  st:=InputBox(fWindowCaption,fWindowText,STData.Caption);
+  st:=InputBox(STCaption.Caption+WindowCaptionFooter,
+               fWindowText,STData.Caption);
   try
     temp:=StrToFloat(st);
     STData.Caption:=ValueToString(temp);
@@ -203,12 +220,12 @@ end;
 
 procedure TDoubleParameterShow.ReadFromIniFile(ConfigFile:TIniFile);
 begin
- STData.Caption:=ValueToString(ConfigFile.ReadFloat(DoubleConstantSection,STCaption.Caption,DefaulValue));
+ STData.Caption:=ValueToString(ConfigFile.ReadFloat(fName,STCaption.Caption,DefaulValue));
 end;
 
 procedure TDoubleParameterShow.WriteToIniFile(ConfigFile:TIniFile);
 begin
- WriteIniDef(ConfigFile, DoubleConstantSection, STCaption.Caption, StrToFloat(STData.Caption),DefaulValue)
+ WriteIniDef(ConfigFile, fName, STCaption.Caption, StrToFloat(STData.Caption),DefaulValue)
 end;
 
 procedure TDoubleParameterShow.SetDefaulValue(const Value: double);

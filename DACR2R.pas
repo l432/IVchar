@@ -78,7 +78,7 @@ end;
 implementation
 
 uses
-  SysUtils, PacketParameters, OlegGraph, Math;
+  SysUtils, PacketParameters, OlegGraph, Math, Dialogs;
 
 
 { TDACR2R }
@@ -170,6 +170,7 @@ end;
 constructor TDACR2R.Create(CP:TComPort;Nm:string);
 begin
   inherited Create(CP,Nm);
+//  showmessage(Name);
   fCalibration:=TDACR2R_Calibr.Create;
 end;
 
@@ -225,14 +226,17 @@ constructor TDACR2R_Calibr.Create;
  var i:integer;
 begin
  inherited Create;
+//showmessage('hhh');
  SetLength(pos01,10000);
+//showmessage('hhh3');
  SetLength(neg01,10000);
  SetLength(pos16,5500);
  SetLength(neg16,5500);
+
  for I := Low(pos01) to High(pos01) do pos01[i]:=0;
- for I := Low(pos16) to High(pos16) do pos01[i]:=0;
- for I := Low(neg01) to High(neg01) do pos01[i]:=0;
- for I := Low(neg16) to High(neg16) do pos01[i]:=0;
+ for I := Low(pos16) to High(pos16) do pos16[i]:=0;
+ for I := Low(neg01) to High(neg01) do neg01[i]:=0;
+ for I := Low(neg16) to High(neg16) do neg16[i]:=0;
 end;
 
 procedure TDACR2R_Calibr.ReadFromFile(FileName: string; arr: TArrWord);
