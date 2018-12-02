@@ -226,9 +226,7 @@ constructor TDACR2R_Calibr.Create;
  var i:integer;
 begin
  inherited Create;
-//showmessage('hhh');
  SetLength(pos01,10000);
-//showmessage('hhh3');
  SetLength(neg01,10000);
  SetLength(pos16,5500);
  SetLength(neg16,5500);

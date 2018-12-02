@@ -97,18 +97,19 @@ end;
 
 procedure TAD9833.Generate;
 begin
- if fMode=ad9833_mode_off then
-  begin
-   Reset();
-   Exit;
-  end;
- SetLength(fData,2);
-
- PrepareToPhaseChange();
- PrepareToFreqChange();
- PrepareToModeChange();
-
- isNeededComPortState();
+  Action();
+// if fMode=ad9833_mode_off then
+//  begin
+//   Reset();
+//   Exit;
+//  end;
+// SetLength(fData,2);
+//
+// PrepareToPhaseChange();
+// PrepareToFreqChange();
+// PrepareToModeChange();
+//
+// isNeededComPortState();
 end;
 
 procedure TAD9833.Action;

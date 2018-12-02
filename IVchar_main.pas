@@ -498,6 +498,7 @@ type
     Pads1115_Ch3dr: TPanel;
     Pads1115_Ch3gain: TPanel;
     Pads1115_adr: TPanel;
+    GBD3006: TGroupBox;
 
     procedure FormCreate(Sender: TObject);
     procedure BConnectClick(Sender: TObject);
@@ -781,9 +782,11 @@ procedure TIVchar.ConstantShowCreate;
 begin
 
   SetLength(DoubleConstantShows, 13);
+//  DoubleConstantShows[0]:=TDoubleParameterShow.Create(STPR,LPR,
+//        'Parasitic resistance',
+//        'Parasitic resistance value is expected',0,3);
   DoubleConstantShows[0]:=TDoubleParameterShow.Create(STPR,LPR,
-        'Parasitic resistance',
-        'Parasitic resistance value is expected',0,3);
+        'Parasitic resistance',0,3);
   DoubleConstantShows[1]:=TDoubleParameterShow.Create(STMC,LMC,
         'Maximum current',
         'Maximum current for I-V characteristic measurement is expected',2e-2,2);
@@ -796,15 +799,21 @@ begin
   DoubleConstantShows[4]:=TDoubleParameterShow.Create(STRVP,LRVP,
         'Reverse voltage precision',
         'Voltage precision for reverse I-V characteristic is expected',0.005,4);
+//  DoubleConstantShows[5]:=TDoubleParameterShow.Create(STRVtoI,LRVtoI,
+//        'V -> I Resistance',
+//        'Resistance for V to I transformation is expected',10,4);
+//  DoubleConstantShows[6]:=TDoubleParameterShow.Create(STVVtoI,LVVtoI,
+//        'V -> I Shift Voltage',
+//        'Shift Voltage for V to I transformation is expected',-0.503,4);
+//  DoubleConstantShows[7]:=TDoubleParameterShow.Create(STTMI,LTMI,
+//        'Temperature measurement interval (s)',
+//        'Temperature measurement interval',5,2);
   DoubleConstantShows[5]:=TDoubleParameterShow.Create(STRVtoI,LRVtoI,
-        'Resistance V -> I',
-        'Resistance for V to I transformation is expected',10,4);
+        'V -> I Resistance',10,4);
   DoubleConstantShows[6]:=TDoubleParameterShow.Create(STVVtoI,LVVtoI,
-        'Shift Voltage for V -> I',
-        'Shift Voltage for V to I transformation is expected',-0.503,4);
+        'V -> I Shift Voltage',-0.503,4);
   DoubleConstantShows[7]:=TDoubleParameterShow.Create(STTMI,LTMI,
-        'Temperature measurement interval (s)',
-        'Temperature measurement interval',5,2);
+        'Temperature measurement interval (s)',5,2);
   DoubleConstantShows[8]:=TDoubleParameterShow.Create(STTimeInterval,LTimeInterval,
         'Measurement interval, (s)',
         'Time dependence measurement interval',15,2);
@@ -815,11 +824,15 @@ begin
   DoubleConstantShows[10]:=TDoubleParameterShow.Create(STControlInterval,LControlInterval,
         'Controling interval (s)',
         'Controling measurement interval',15,2);
+//  DoubleConstantShows[11]:=TDoubleParameterShow.Create(STDBtime,LDBtime,
+//        'Dragon-back time (ms)',
+//        'Dragon-back time (ms)',1,3);
+//  DoubleConstantShows[12]:=TDoubleParameterShow.Create(STLED_onValue,LLED_onValue,
+//        'LED voltage (V)',
+//        'LED voltage (V)',0.79,5);
   DoubleConstantShows[11]:=TDoubleParameterShow.Create(STDBtime,LDBtime,
-        'Dragon-back time (ms)',
         'Dragon-back time (ms)',1,3);
   DoubleConstantShows[12]:=TDoubleParameterShow.Create(STLED_onValue,LLED_onValue,
-        'LED voltage (V)',
         'LED voltage (V)',0.79,5);
 
 end;
@@ -3139,7 +3152,7 @@ procedure TIVchar.DACReadFromIniFileAndToForm;
 begin
   DACR2RShow.PinShow.PinsReadFromIniFile(ConfigFile);
   DACR2RShow.PinShow.NumberPinShow;
-//  ParametersFileWork(DACR2R.CalibrationRead);
+  ParametersFileWork(DACR2R.CalibrationRead);
 
   D30_06Show.ReadFromIniFileAndToForm(ConfigFile);
 end;
