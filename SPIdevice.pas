@@ -109,16 +109,17 @@ type
     {базовий клас для джерел сигналів, що керуються
     за допомогою Arduino    }
   protected
-   Pins:TPins;
    fSetterKod:byte;
    procedure PinsCreate();virtual;
 //   procedure PacketCreateAndSend();
-   procedure PinsToDataArray;virtual;
+
    procedure CreateHook;virtual;
    procedure PacketCreateToSend(); override;
   public
+   Pins:TPins;
    Constructor Create(CP:TComPort;Nm:string);override;
    Procedure Free;
+   procedure PinsToDataArray;virtual;   
   end;
 
 
@@ -235,6 +236,22 @@ type
 
   end;
 
+  TArduinoSetterShow=class
+  protected
+   fArduinoSetter:TArduinoSetter;
+   PinShow:TPinsShowUniversal;
+   procedure CreatePinShow(PinLs: array of TPanel;
+                   PinVariant:TStringList);virtual;
+   procedure  SetHookNumberPinShow();virtual;                
+  public
+   Constructor Create(ArdSet:TArduinoSetter;
+                       PinLs: array of TPanel;
+                       PinVariant:TStringList);
+   Procedure Free;
+   procedure ReadFromIniFile(ConfigFile:TIniFile);virtual;
+   procedure ReadFromIniFileAndToForm(ConfigFile:TIniFile);
+   Procedure WriteToIniFile(ConfigFile:TIniFile);virtual;
+  end;
 
 implementation
 
@@ -927,5 +944,52 @@ procedure TArduinoSetter.PinsToDataArray;
 begin
   fData[1] := Pins.PinControl;
 end;
+
+{ TArduinoSetterShow }
+
+constructor TArduinoSetterShow.Create(ArdSet: TArduinoSetter;
+                                     PinLs: array of TPanel;
+                                     PinVariant:TStringList);
+begin
+ inherited Create();
+ fArduinoSetter:=ArdSet;
+ CreatePinShow(PinLs,PinVariant);
+// SetHookNumberPinShow();
+ PinShow.HookNumberPinShow:=fArduinoSetter.PinsToDataArray;
+end;
+
+procedure TArduinoSetterShow.CreatePinShow(PinLs: array of TPanel;
+                                        PinVariant:TStringList);
+begin
+ PinShow:=TPinsShowUniversal.Create(fArduinoSetter.Pins,PinLs,[PinVariant]);
+end;
+
+procedure TArduinoSetterShow.Free;
+begin
+ PinShow.Free;
+ inherited Free;
+end;
+
+procedure TArduinoSetterShow.ReadFromIniFile(ConfigFile: TIniFile);
+begin
+ PinShow.PinsReadFromIniFile(ConfigFile);
+end;
+
+procedure TArduinoSetterShow.ReadFromIniFileAndToForm(ConfigFile: TIniFile);
+begin
+ ReadFromIniFile(ConfigFile);
+ PinShow.NumberPinShow;
+end;
+
+procedure TArduinoSetterShow.SetHookNumberPinShow;
+begin
+ PinShow.HookNumberPinShow:=fArduinoSetter.PinsToDataArray;
+end;
+
+procedure TArduinoSetterShow.WriteToIniFile(ConfigFile: TIniFile);
+begin
+  PinShow.PinsWriteToIniFile(ConfigFile);
+end;
+
 
 end.

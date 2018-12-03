@@ -3116,15 +3116,25 @@ end;
 procedure TIVchar.DACCreate;
 begin
   DACR2R:=TDACR2R.Create(ComPort1,'DAC R-2R');
-  DACR2RShow:=TDACR2RShow.Create(DACR2R,PDACR2RPinC,LOVDACR2R,LOKDACR2R,
-                                 BOVchangeDACR2R,
-                                 BOVsetDACR2R, BOKchangeDACR2R, BOKsetDACR2R,
+//  DACR2RShow:=TDACR2RShow.Create(DACR2R,PDACR2RPinC,LOVDACR2R,LOKDACR2R,
+//                                 BOVchangeDACR2R,
+//                                 BOVsetDACR2R, BOKchangeDACR2R, BOKsetDACR2R,
+//                                 BDACR2RReset, NumberPins);
+  DACR2RShow:=TDACR2RShow.Create(DACR2R,PDACR2RPinC,
+                                 STOVDACR2R,STOKDACR2R,
+                                 LOVDACR2R,LOKDACR2R,
+                                 BOVsetDACR2R, BOKsetDACR2R,
                                  BDACR2RReset, NumberPins);
   D30_06:=TD30_06.Create(ComPort1,'D30_06');
-  D30_06Show:=TD30_06Show.Create(D30_06,PD30PinC,PD30PinG,LOVD30,LOKD30,LValueRangeD30,
-                                 BOVchangeD30,
-                                 BOVsetD30, BOKchangeD30, BOKsetD30,
-                                 BD30Reset, NumberPins, RGD30);
+//  D30_06Show:=TD30_06Show.Create(D30_06,PD30PinC,PD30PinG,LOVD30,LOKD30,LValueRangeD30,
+//                                 BOVchangeD30,
+//                                 BOVsetD30, BOKchangeD30, BOKsetD30,
+//                                 BD30Reset, NumberPins, RGD30);
+  D30_06Show:=TD30_06Show.Create(D30_06,PD30PinC,PD30PinG,
+                                 LOVD30,LOKD30,LValueRangeD30,
+                                 STOVD30,STOKD30,
+                                 BOVsetD30, BOKsetD30,BD30Reset,
+                                 NumberPins, RGD30);
 end;
 
 procedure TIVchar.DACFree;
@@ -3150,8 +3160,9 @@ end;
 
 procedure TIVchar.DACReadFromIniFileAndToForm;
 begin
-  DACR2RShow.PinShow.PinsReadFromIniFile(ConfigFile);
-  DACR2RShow.PinShow.NumberPinShow;
+//  DACR2RShow.PinShow.PinsReadFromIniFile(ConfigFile);
+//  DACR2RShow.PinShow.NumberPinShow;
+  DACR2RShow.ReadFromIniFileAndToForm(ConfigFile);
   ParametersFileWork(DACR2R.CalibrationRead);
 
   D30_06Show.ReadFromIniFileAndToForm(ConfigFile);
@@ -3159,7 +3170,8 @@ end;
 
 procedure TIVchar.DACWriteToIniFile;
 begin
-  DACR2RShow.PinShow.PinsWriteToIniFile(ConfigFile);
+//  DACR2RShow.PinShow.PinsWriteToIniFile(ConfigFile);
+  DACR2RShow.WriteToIniFile(ConfigFile);
   D30_06Show.WriteToIniFile(ConfigFile);
 end;
 

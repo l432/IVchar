@@ -103,6 +103,7 @@ public
  procedure Free;
 end;
 
+
 TDAC_Show=class
   private
    fOutputInterface: IDAC;

@@ -3,7 +3,7 @@ unit D30_06;
 interface
 
 uses
-  SPIdevice, StdCtrls, Measurement, ExtCtrls, IniFiles, Classes;
+  SPIdevice, StdCtrls, Measurement, ExtCtrls, IniFiles, Classes, ShowTypes;
 
 const D30_06_MaxVoltage=28.75;
       D30_06_MaxCurrent=5.56;
@@ -25,34 +25,59 @@ TD30_06=class(TArduinoDAC)
   procedure CreateHook;override;
   procedure DataByteToSendFromInteger(IntData: Integer);override;
   function  VoltageToKod(Voltage:double):integer;override;
-  procedure PinsToDataArray;override;
  public
+  procedure PinsToDataArray;override;
   property isVoltage:boolean read FisVoltage write FisVoltage;
 end;
 
 
-TD30_06Show=class(TDAC_Show)
+//TD30_06Show=class(TDAC_Show)
+//private
+// VoltageOrCurrentRG:TRadioGroup;
+// ValueDiapazonLabel:TLabel;
+// fD30_06:TD30_06;
+// procedure VoltageOrCurrentRGClick(Sender: TObject);
+// procedure LabelFilling;
+// procedure ReadFromIniFile(ConfigFile:TIniFile);
+// public
+// PinShow:TPinsShow;
+// Constructor Create(DAC:TD30_06;
+//                      CPL,GPL:TPanel;
+//                      VL,KL,VDL:TLabel;
+//                      VCB,VSB,KCB,KSB,RB:TButton;
+//                      PinVariants:TStringList;
+//                      VOCRG:TRadioGroup);
+// Procedure Free;
+//
+// procedure ReadFromIniFileAndToForm(ConfigFile:TIniFile);
+// Procedure WriteToIniFile(ConfigFile:TIniFile);
+//end;
+
+TD30_06Show=class(TArduinoDACShow)
 private
  VoltageOrCurrentRG:TRadioGroup;
  ValueDiapazonLabel:TLabel;
  fD30_06:TD30_06;
  procedure VoltageOrCurrentRGClick(Sender: TObject);
  procedure LabelFilling;
- procedure ReadFromIniFile(ConfigFile:TIniFile);
+// procedure ReadFromIniFile(ConfigFile:TIniFile);
+ protected
+  procedure CreatePinShow(PinLs: array of TPanel;
+                             PinVariant:TStringList);override;
  public
  PinShow:TPinsShow;
- Constructor Create(DAC:TD30_06;
-                      CPL,GPL:TPanel;
-                      VL,KL,VDL:TLabel;
-                      VCB,VSB,KCB,KSB,RB:TButton;
-                      PinVariants:TStringList;
-                      VOCRG:TRadioGroup);
- Procedure Free;
-
- procedure ReadFromIniFileAndToForm(ConfigFile:TIniFile);
- Procedure WriteToIniFile(ConfigFile:TIniFile);
+ Constructor Create(DAC: TD30_06;
+                     CPL, GPL:TPanel;
+                     VL, KL, VDL: TLabel;
+                     VData,KData:TStaticText;
+                     VSB, KSB, RB: TButton;
+                     PinVariant:TStringList;
+                     VOCRG: TRadioGroup);
+// Procedure Free;
+ procedure ReadFromIniFile(ConfigFile:TIniFile);override;
+// procedure ReadFromIniFileAndToForm(ConfigFile:TIniFile);
+ Procedure WriteToIniFile(ConfigFile:TIniFile);override;
 end;
-
 
 implementation
 
@@ -114,33 +139,50 @@ end;
 
 { TD30_06Show }
 
+//constructor TD30_06Show.Create(DAC: TD30_06;
+//                               CPL, GPL:TPanel;
+//                               VL, KL, VDL: TLabel;
+//                               VCB, VSB, KCB, KSB, RB: TButton;
+//                               PinVariants:TStringList;
+//                               VOCRG: TRadioGroup);
 constructor TD30_06Show.Create(DAC: TD30_06;
                                CPL, GPL:TPanel;
                                VL, KL, VDL: TLabel;
-                               VCB, VSB, KCB, KSB, RB: TButton;
-                               PinVariants:TStringList;
+                               VData,KData:TStaticText;
+                               VSB, KSB, RB: TButton;
+                               PinVariant:TStringList;
                                VOCRG: TRadioGroup);
-begin
- inherited Create(DAC,VL, KL, VCB, VSB, KCB, KSB, RB);
- PinShow:=TPinsShow.Create(DAC.Pins,CPL,GPL,PinVariants);
 
- PinShow.HookNumberPinShow:=DAC.PinsToDataArray;
- fD30_06:=DAC;
+begin
+// inherited Create(DAC,VL, KL, VCB, VSB, KCB, KSB, RB);
+// PinShow:=TPinsShow.Create(DAC.Pins,CPL,GPL,PinVariants);
+
+// PinShow.HookNumberPinShow:=DAC.PinsToDataArray;
+
+// fD30_06:=DAC;
+
+ inherited Create(DAC,[CPL, GPL], PinVariant, VData, KData, VL, KL, VSB, KSB, RB);
  ValueDiapazonLabel:=VDL;
  VoltageOrCurrentRG:=VOCRG;
  VoltageOrCurrentRG.OnClick:=VoltageOrCurrentRGClick;
 end;
 
-procedure TD30_06Show.ReadFromIniFileAndToForm(ConfigFile: TIniFile);
-begin
- ReadFromIniFile(ConfigFile);
- PinShow.NumberPinShow;
-end;
+//procedure TD30_06Show.ReadFromIniFileAndToForm(ConfigFile: TIniFile);
+//begin
+// ReadFromIniFile(ConfigFile);
+// PinShow.NumberPinShow;
+//end;
 
-procedure TD30_06Show.Free;
+//procedure TD30_06Show.Free;
+//begin
+// PinShow.Free;
+// inherited Free;
+//end;
+
+procedure TD30_06Show.CreatePinShow(PinLs: array of TPanel;
+  PinVariant: TStringList);
 begin
- PinShow.Free;
- inherited Free;
+  PinShow:=TPinsShow.Create(fArduinoSetter.Pins,PinLs[0],PinLs[1],PinVariant);
 end;
 
 procedure TD30_06Show.LabelFilling;
@@ -160,7 +202,8 @@ end;
 procedure TD30_06Show.ReadFromIniFile(ConfigFile: TIniFile);
  var TempItemIndex:integer;
 begin
- PinShow.PinsReadFromIniFile(ConfigFile);
+// PinShow.PinsReadFromIniFile(ConfigFile);
+ inherited ReadFromIniFile(ConfigFile);
  if PinShow.Pins.Name='' then Exit;
  TempItemIndex := ConfigFile.ReadInteger(PinShow.Pins.Name, 'VorC', -1);
  if (TempItemIndex > -1) and (TempItemIndex < VoltageOrCurrentRG.Items.Count) then
@@ -181,7 +224,8 @@ end;
 
 procedure TD30_06Show.WriteToIniFile(ConfigFile: TIniFile);
 begin
- PinShow.PinsWriteToIniFile(ConfigFile);
+// PinShow.PinsWriteToIniFile(ConfigFile);
+ inherited WriteToIniFile(ConfigFile);
  if PinShow.Pins.Name='' then Exit;
  ConfigFile.WriteInteger(PinShow.Pins.Name, 'VorC', VoltageOrCurrentRG.ItemIndex);
 end;

@@ -4,7 +4,7 @@ interface
 
 uses
   StdCtrls, IniFiles, Windows, ComCtrls, SPIdevice, OlegType, Series,
-  Measurement;
+  Measurement, ExtCtrls, Classes;
 
 const DoubleConstantSection='DoubleConstant';
       NoFile='no file';
@@ -13,28 +13,53 @@ const DoubleConstantSection='DoubleConstant';
       WindowTextFooter=' value is expected';
 
 type
-//TDoubleConstantShow=class
 
-
-  TDoubleParameterShow=class (TNamedInterfacedObject)
-//  TDoubleParameterShow=class
-//  дл€ в≥дображенн€ на форм≥
-//  а) значенн€ параметру
-//  б) його назви
-//кл≥к на значенн≥ викликаЇ по€ву в≥конц€ дл€ його зм≥ни
+  TParameterShow=class (TNamedInterfacedObject)
+{  дл€ в≥дображенн€ на форм≥
+  а) значенн€ параметру
+  б) його назви
+  кл≥к на значенн≥ викликаЇ по€ву в≥конц€ дл€ його зм≥ни,
+  базовий клас, дл€ збереженн€ параметр≥в р≥зних тип≥в
+  див. нащадк≥в}
    private
-    STData:TStaticText; //величина параметру
+//    STData:TStaticText; //величина параметру
+    fHookParameterChange: TSimpleEvent;
     fWindowCaption:string; //назва в≥конц€ зм≥ни параметра
     fWindowText:string;  //текст у в≥конц≥ зм≥ни параметру
+    function StringToExpectedStringConvertion(str:string):string;virtual;abstract;
+    {перетворенн€ str в р€док, де число
+    у потр≥бному формат≥,
+    можлив≥ помилки не в≥дловлюютьс€, див. ParameterClick}
+    procedure ParameterClick(Sender: TObject);
+   public
+    STData:TStaticText; //величина параметру
+    STCaption:TLabel; //назва параметру
+    property HookParameterChange:TSimpleEvent read FHookParameterChange write FHookParameterChange;
+    Constructor Create(STD:TStaticText;
+                       STC:TLabel;
+                       ParametrCaption:string;
+                       WT:string);//overload;
+    procedure ReadFromIniFile(ConfigFile:TIniFile);virtual;abstract;
+    procedure WriteToIniFile(ConfigFile:TIniFile);virtual;abstract;
+    procedure Free;
+  end;  //   TParameterShow=object
+
+//  TDoubleParameterShow=class (TNamedInterfacedObject)
+  TDoubleParameterShow=class (TParameterShow)
+   private
+//    STData:TStaticText; //величина параметру
+//    fWindowCaption:string; //назва в≥конц€ зм≥ни параметра
+//    fWindowText:string;  //текст у в≥конц≥ зм≥ни параметру
     FDefaulValue:double;
     fDigitNumber:byte;
-    procedure ParameterClick(Sender: TObject);
+    function StringToExpectedStringConvertion(str:string):string;override;
+//    procedure ParameterClick(Sender: TObject);
     function GetData:double;
     procedure SetData(value:double);
     procedure SetDefaulValue(const Value: double);
     function ValueToString(Value:double):string;
    public
-    STCaption:TLabel;
+//    STCaption:TLabel;
     property DefaulValue:double read FDefaulValue write SetDefaulValue;
     Constructor Create(STD:TStaticText;
                        STC:TLabel;
@@ -50,10 +75,35 @@ type
                        DN:byte=3
     );overload;
     property Data:double read GetData write SetData;
-    procedure ReadFromIniFile(ConfigFile:TIniFile);
-    procedure WriteToIniFile(ConfigFile:TIniFile);
-    procedure Free;
-  end;  //   TParameterShow=object
+    procedure ReadFromIniFile(ConfigFile:TIniFile);override;
+    procedure WriteToIniFile(ConfigFile:TIniFile);override;
+//    procedure Free;
+  end;  //   TDoubleParameterShow=object
+
+  TIntegerParameterShow=class (TParameterShow)
+    FDefaulValue:integer;
+    function StringToExpectedStringConvertion(str:string):string;override;
+    function GetData:integer;
+    procedure SetData(value:integer);
+    procedure SetDefaulValue(const Value: integer);
+   public
+    property DefaulValue:integer read FDefaulValue write SetDefaulValue;
+    Constructor Create(STD:TStaticText;
+                       STC:TLabel;
+                       ParametrCaption:string;
+                       WT:string;
+                       InitValue:integer
+    );overload;
+    Constructor Create(STD:TStaticText;
+                       STC:TLabel;
+                       ParametrCaption:string;
+                       InitValue:integer
+    );overload;
+    property Data:integer read GetData write SetData;
+    procedure ReadFromIniFile(ConfigFile:TIniFile);override;
+    procedure WriteToIniFile(ConfigFile:TIniFile);override;
+//    procedure Free;
+  end;  //   TIntegerParameterShow=object
 
 
 TLimitShow=class(TNamedInterfacedObject)
@@ -100,6 +150,47 @@ private
 public
 end;
 
+TDAC_ShowNew=class
+  private
+   fOutputInterface: IDAC;
+   fValueShow:TDoubleParameterShow;
+   fKodShow:TIntegerParameterShow;
+   ValueSetButton,KodSetButton,ResetButton:TButton;
+//   procedure ValueChangeButtonAction(Sender:TObject);
+   procedure ValueSetButtonAction(Sender:TObject);
+//   procedure KodChangeButtonAction(Sender:TObject);
+   procedure KodSetButtonAction(Sender:TObject);
+   procedure ResetButtonClick(Sender:TObject);
+   procedure ValueColorToNonActive();
+   procedure KodColorToNonActive();
+   procedure ValueColorToActive();
+   procedure KodColorToActive();
+  public
+   Constructor Create(OI: IDAC;
+                      VData,KData:TStaticText;
+                      VL, KL: TLabel;
+                      VSB, KSB, RB: TButton);
+    procedure ReadFromIniFile(ConfigFile:TIniFile);virtual;
+    procedure WriteToIniFile(ConfigFile:TIniFile);virtual;
+    procedure Free;
+end;
+
+  TArduinoDACShow=class(TArduinoSetterShow)
+  private
+//   procedure CreatePinShow(PinLs: array of TPanel);
+   fDAC_Show:TDAC_ShowNew;
+  public
+   Constructor Create(ArdDAC:TArduinoDAC;
+                       PinLs: array of TPanel;
+                       PinVariant:TStringList;
+                       VData,KData:TStaticText;
+                       VL, KL: TLabel;
+                       VSB, KSB, RB: TButton);
+   Procedure Free;
+   procedure ReadFromIniFile(ConfigFile:TIniFile);override;
+//   procedure ReadFromIniFileAndToForm(ConfigFile:TIniFile);
+   Procedure WriteToIniFile(ConfigFile:TIniFile);override;
+  end;
 
 function LastFileName(Mask:string):string;
 {повертаЇ назву (повну, з розширенн€м) останього файлу в
@@ -113,10 +204,12 @@ Procedure MelodyShot();
 
 Procedure MelodyLong();
 
+
+
 implementation
 
 uses
-  Dialogs, SysUtils, Math, Controls;
+  Dialogs, SysUtils, Math, Controls, Graphics;
 
 
 function LastFileName(Mask:string):string;
@@ -164,20 +257,26 @@ Constructor TDoubleParameterShow.Create(STD:TStaticText;
                        DN:byte=3
                        );
 begin
-  inherited Create;
+  inherited Create(STD,STC,ParametrCaption,WT);
   fDigitNumber:=DN;
-
-  STData:=STD;
   STData.Caption:=ValueToString(InitValue);
-  STData.OnClick:=ParameterClick;
-  STData.Cursor:=crHandPoint;
-  STCaption:=STC;
-  STCaption.Caption:=ParametrCaption;
-  STCaption.WordWrap:=True;
-  fWindowText:=WT;
-  fWindowCaption:=ParametrCaption+WindowCaptionFooter;
   DefaulValue:=InitValue;
-  fName:=DoubleConstantSection;
+
+
+//  inherited Create;
+//  fDigitNumber:=DN;
+//
+//  STData:=STD;
+//  STData.Caption:=ValueToString(InitValue);
+//  STData.OnClick:=ParameterClick;
+//  STData.Cursor:=crHandPoint;
+//  STCaption:=STC;
+//  STCaption.Caption:=ParametrCaption;
+//  STCaption.WordWrap:=True;
+//  fWindowText:=WT;
+//  fWindowCaption:=ParametrCaption+WindowCaptionFooter;
+//  DefaulValue:=InitValue;
+//  fName:=DoubleConstantSection;
 end;
 
 constructor TDoubleParameterShow.Create(STD: TStaticText;
@@ -189,23 +288,25 @@ begin
  Create(STD,STC,ParametrCaption,ParametrCaption+WindowTextFooter,InitValue,DN);
 end;
 
-procedure TDoubleParameterShow.Free;
-begin
+//procedure TDoubleParameterShow.Free;
+//begin
+//
+//end;
 
-end;
-
-procedure TDoubleParameterShow.ParameterClick(Sender: TObject);
- var temp:double;
-     st:string;
-begin
-  st:=InputBox(fWindowCaption,
-               fWindowText,STData.Caption);
-  try
-    temp:=StrToFloat(st);
-    STData.Caption:=ValueToString(temp);
-  finally
-  end;
-end;
+//procedure TDoubleParameterShow.ParameterClick(Sender: TObject);
+//// var temp:double;
+////     st:string;
+//begin
+////  st:=InputBox(fWindowCaption,
+////               fWindowText,STData.Caption);
+//  try
+////    temp:=StrToFloat(st);
+////    STData.Caption:=ValueToString(temp);
+//    STData.Caption:=ValueToString(StrToFloat
+//        (InputBox(fWindowCaption,fWindowText,STData.Caption)));
+//  finally
+//  end;
+//end;
 
 function TDoubleParameterShow.GetData:double;
 begin
@@ -223,13 +324,11 @@ end;
 
 procedure TDoubleParameterShow.ReadFromIniFile(ConfigFile:TIniFile);
 begin
-// STData.Caption:=ValueToString(ConfigFile.ReadFloat(DoubleConstantSection,STCaption.Caption,DefaulValue));
  STData.Caption:=ValueToString(ConfigFile.ReadFloat(fName,STCaption.Caption,DefaulValue));
 end;
 
 procedure TDoubleParameterShow.WriteToIniFile(ConfigFile:TIniFile);
 begin
-// WriteIniDef(ConfigFile, DoubleConstantSection, STCaption.Caption, StrToFloat(STData.Caption),DefaulValue)
  WriteIniDef(ConfigFile, fName, STCaption.Caption, StrToFloat(STData.Caption),DefaulValue)
 end;
 
@@ -238,11 +337,19 @@ begin
   FDefaulValue := Value;
 end;
 
+function TDoubleParameterShow.StringToExpectedStringConvertion(
+  str: string): string;
+begin
+ Result:=ValueToString(StrToFloat(str));
+end;
+
 function TDoubleParameterShow.ValueToString(Value:double):string;
 begin
-  if (Frac(Value)=0)and(Int(Value/Power(10,fDigitNumber+1))=0)
-    then Result:=FloatToStrF(Value,ffGeneral,fDigitNumber,fDigitNumber-1)
-    else Result:=FloatToStrF(Value,ffExponent,fDigitNumber,fDigitNumber-1);
+//  if (Frac(Value)=0)and(Int(Value/Power(10,fDigitNumber+1))=0)
+//    then Result:=FloatToStrF(Value,ffGeneral,fDigitNumber,fDigitNumber-1)
+//    then
+    Result:=FloatToStrF(Value,ffGeneral,fDigitNumber,fDigitNumber-1)
+//    else Result:=FloatToStrF(Value,ffExponent,fDigitNumber,fDigitNumber-1);
 end;
 
 
@@ -383,5 +490,234 @@ begin
   Result:=FloatToStrF(-GetValue(UpDown),ffFixed, 4, fDigitNumber);
 end;
 
- 
+
+{ TIntegerParameterShow }
+
+constructor TIntegerParameterShow.Create(STD: TStaticText; STC: TLabel;
+  ParametrCaption, WT: string; InitValue: integer);
+begin
+  inherited Create(STD,STC,ParametrCaption,WT);
+  STData.Caption:=IntToStr(InitValue);
+  DefaulValue:=InitValue;
+end;
+
+constructor TIntegerParameterShow.Create(STD: TStaticText; STC: TLabel;
+  ParametrCaption: string; InitValue: integer);
+begin
+  Create(STD,STC,ParametrCaption,ParametrCaption+WindowTextFooter,InitValue);
+end;
+
+function TIntegerParameterShow.GetData: integer;
+begin
+  Result:=StrToInt(STData.Caption);
+end;
+
+
+procedure TIntegerParameterShow.ReadFromIniFile(ConfigFile: TIniFile);
+begin
+ STData.Caption:=IntToStr(ConfigFile.ReadInteger(fName,STCaption.Caption,DefaulValue));
+end;
+
+procedure TIntegerParameterShow.SetData(value: integer);
+begin
+  try
+    STData.Caption:=IntToStr(value);
+  finally
+
+  end;
+end;
+
+procedure TIntegerParameterShow.SetDefaulValue(const Value: integer);
+begin
+ FDefaulValue := Value;
+end;
+
+function TIntegerParameterShow.StringToExpectedStringConvertion(str: string): string;
+begin
+ Result:=IntToStr(StrToInt(str));
+end;
+
+procedure TIntegerParameterShow.WriteToIniFile(ConfigFile: TIniFile);
+begin
+ WriteIniDef(ConfigFile, fName, STCaption.Caption, StrToInt(STData.Caption),DefaulValue)
+end;
+
+{ TParameterShow }
+
+constructor TParameterShow.Create(STD:TStaticText;
+                       STC:TLabel;
+                       ParametrCaption:string;
+                       WT:string);
+begin
+  inherited Create;
+  STData:=STD;
+//  STData.Caption:=ValueToString(InitValue);
+  STData.OnClick:=ParameterClick;
+  STData.Cursor:=crHandPoint;
+  STCaption:=STC;
+  STCaption.Caption:=ParametrCaption;
+  STCaption.WordWrap:=True;
+  fWindowText:=WT;
+  fWindowCaption:=ParametrCaption+WindowCaptionFooter;
+//  DefaulValue:=InitValue;
+  fName:=DoubleConstantSection;
+  HookParameterChange:=TSimpleClass.EmptyProcedure;
+end;
+
+
+procedure TParameterShow.Free;
+begin
+
+end;
+
+
+procedure TParameterShow.ParameterClick(Sender: TObject);
+begin
+   try
+    STData.Caption:=StringToExpectedStringConvertion(InputBox(fWindowCaption,fWindowText,STData.Caption));
+    HookParameterChange;
+  finally
+  end;
+end;
+
+
+{ TDAC_ShowNew }
+
+constructor TDAC_ShowNew.Create(OI: IDAC;
+                                VData, KData: TStaticText;
+                                VL, KL: TLabel;
+                                VSB, KSB, RB: TButton);
+begin
+  fOutputInterface:=OI;
+  fValueShow:=TDoubleParameterShow.Create(VData,VL,'Output value',0,5);
+  fValueShow.fName:=OI.Name;
+  ValueColorToNonActive();
+//  fValueShow.STData.Font.Color:=clBlack;
+  fValueShow.HookParameterChange:=ValueColorToNonActive;
+
+//  ValueChangeButton:=VCB;
+//  ValueChangeButton.OnClick:=ValueChangeButtonAction;
+  ValueSetButton:=VSB;
+  ValueSetButton.OnClick:=ValueSetButtonAction;
+  ValueSetButton.Caption:='Set value';
+  ResetButton:=RB;
+  ResetButton.OnClick:=ResetButtonClick;
+  ResetButton.Caption:='Reset';
+
+  fKodShow:=TIntegerParameterShow.Create(KData,KL,'Output code',0);
+  fKodShow.fName:=OI.Name;
+  KodColorToNonActive();
+//  fKodShow.STData.Font.Color:=clBlack;
+  fKodShow.HookParameterChange:=KodColorToNonActive;
+
+//  KodChangeButton:=KCB;
+//  KodChangeButton.OnClick:=KodChangeButtonAction;
+  KodSetButton:=KSB;
+  KodSetButton.OnClick:=KodSetButtonAction;
+  KodSetButton.Caption:='Set code';
+end;
+
+//procedure TDAC_ShowNew.KodChangeButtonAction(Sender: TObject);
+//begin
+//
+//end;
+
+procedure TDAC_ShowNew.Free;
+begin
+ fKodShow.Free;
+ fValueShow.Free;
+end;
+
+procedure TDAC_ShowNew.KodColorToActive;
+begin
+ fKodShow.STData.Font.Color:=clPurple;
+end;
+
+procedure TDAC_ShowNew.KodColorToNonActive;
+begin
+ fKodShow.STData.Font.Color:=clBlack;
+end;
+
+procedure TDAC_ShowNew.KodSetButtonAction(Sender: TObject);
+begin
+   fOutputInterface.OutputInt(fKodShow.Data);
+   KodColorToActive();
+   ValueColorToNonActive();
+end;
+
+procedure TDAC_ShowNew.ReadFromIniFile(ConfigFile: TIniFile);
+begin
+   fValueShow.ReadFromIniFile(ConfigFile);
+   fKodShow.ReadFromIniFile(ConfigFile);
+end;
+
+procedure TDAC_ShowNew.ResetButtonClick(Sender: TObject);
+begin
+ fOutputInterface.Reset();
+ KodColorToNonActive();
+ ValueColorToNonActive();
+end;
+
+//procedure TDAC_ShowNew.ValueChangeButtonAction(Sender: TObject);
+//begin
+//
+//end;
+
+procedure TDAC_ShowNew.ValueColorToActive;
+begin
+ fValueShow.STData.Font.Color:=clPurple;
+end;
+
+procedure TDAC_ShowNew.ValueColorToNonActive;
+begin
+ fValueShow.STData.Font.Color:=clBlack;
+end;
+
+procedure TDAC_ShowNew.ValueSetButtonAction(Sender: TObject);
+begin
+ fOutputInterface.Output(fValueShow.Data);
+ ValueColorToActive();
+ KodColorToNonActive();
+end;
+
+procedure TDAC_ShowNew.WriteToIniFile(ConfigFile: TIniFile);
+begin
+   fValueShow.WriteToIniFile(ConfigFile);
+   fKodShow.WriteToIniFile(ConfigFile);
+end;
+
+
+{ TArduinoDACShow }
+
+constructor TArduinoDACShow.Create(ArdDAC: TArduinoDAC;
+                                  PinLs: array of TPanel;
+                                  PinVariant:TStringList;
+                                  VData, KData: TStaticText;
+                                  VL, KL: TLabel;
+                                  VSB, KSB, RB: TButton);
+begin
+ inherited Create(ArdDAC,PinLs,PinVariant);
+// PinShow.HookNumberPinShow:=ArdDAC.PinsToDataArray;
+ fDAC_Show:=TDAC_ShowNew.Create(ArdDAC,VData, KData,VL, KL, VSB, KSB, RB);
+end;
+
+procedure TArduinoDACShow.Free;
+begin
+ fDAC_Show.Free;
+ inherited Free;
+end;
+
+procedure TArduinoDACShow.ReadFromIniFile(ConfigFile: TIniFile);
+begin
+  inherited ReadFromIniFile(ConfigFile);
+  fDAC_Show.ReadFromIniFile(ConfigFile);
+end;
+
+procedure TArduinoDACShow.WriteToIniFile(ConfigFile: TIniFile);
+begin
+  inherited WriteToIniFile(ConfigFile);
+  fDAC_Show.WriteToIniFile(ConfigFile);
+end;
+
+
 end.
