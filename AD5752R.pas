@@ -3,7 +3,7 @@ unit AD5752R;
 interface
 //
 //uses
-//  SPIdevice, IniFiles, StdCtrls, Buttons, ExtCtrls;
+//  ArduinoDevice, IniFiles, StdCtrls, Buttons, ExtCtrls;
 //
 //type
 //  TOutputRange=(p050,p100,p108,pm050,pm100,pm108);

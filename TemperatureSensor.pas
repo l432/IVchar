@@ -3,7 +3,7 @@ unit TemperatureSensor;
 interface
 
 uses
-  SPIdevice, CPort, Measurement, RS232device;
+  ArduinoDevice, CPort, Measurement, RS232device;
 
 const
  TMP102_StartAdress=$48;

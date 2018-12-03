@@ -3,7 +3,7 @@ unit DACR2R;
 interface
 
 uses
-  SPIdevice, Measurement, OlegType, StdCtrls, RS232device, CPort, Classes, 
+  ArduinoDevice, Measurement, OlegType, StdCtrls, RS232device, CPort, Classes, 
   ExtCtrls, ShowTypes, IniFiles;
 
 const DACR2R_MaxValue=65535;
@@ -87,6 +87,7 @@ TDACR2RShow=class(TArduinoDACShow)
 protected
    procedure CreatePinShow(PinLs: array of TPanel;
                              PinVariant:TStringList);override;
+   procedure  SetHookNumberPinShow();override;
 public
  Constructor Create(DAC:TDACR2R;
                      CPL:TPanel;
@@ -101,7 +102,7 @@ end;
 implementation
 
 uses
-  SysUtils, PacketParameters, OlegGraph, Math, Dialogs;
+  SysUtils, PacketParameters, OlegGraph, Math, Dialogs, ArduinoDeviceShow;
 
 
 { TDACR2R }
@@ -381,6 +382,11 @@ procedure TDACR2RShow.CreatePinShow(PinLs: array of TPanel;
                         PinVariant: TStringList);
 begin
   PinShow:=TOnePinsShow.Create(fArduinoSetter.Pins,PinLs[0],PinVariant);
+end;
+
+procedure TDACR2RShow.SetHookNumberPinShow;
+begin
+ PinShow.HookNumberPinShow:=(fArduinoSetter as TDACR2R).PinsToDataArray;
 end;
 
 //procedure TDACR2RShow.Free;

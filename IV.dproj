@@ -36,6 +36,8 @@
     <DCCReference Include="AD9833.pas" />
     <DCCReference Include="ADS1115.pas" />
     <DCCReference Include="ArduinoADC.pas" />
+    <DCCReference Include="ArduinoDevice.pas" />
+    <DCCReference Include="ArduinoDeviceShow.pas" />
     <DCCReference Include="D30_06.pas" />
     <DCCReference Include="DACR2R.pas" />
     <DCCReference Include="Dependence.pas" />
@@ -53,7 +55,6 @@
     <DCCReference Include="RS232_Meas_Tread.pas" />
     <DCCReference Include="RS232_Mediator_Tread.pas" />
     <DCCReference Include="ShowTypes.pas" />
-    <DCCReference Include="SPIdevice.pas" />
     <DCCReference Include="TemperatureSensor.pas" />
     <DCCReference Include="TempThread.pas" />
     <DCCReference Include="UT70.pas" />

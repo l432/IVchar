@@ -3,8 +3,8 @@ unit ShowTypes;
 interface
 
 uses
-  StdCtrls, IniFiles, Windows, ComCtrls, SPIdevice, OlegType, Series,
-  Measurement, ExtCtrls, Classes;
+  StdCtrls, IniFiles, Windows, ComCtrls, ArduinoDevice, OlegType, Series,
+  Measurement, ExtCtrls, Classes, ArduinoDeviceShow;
 
 const DoubleConstantSection='DoubleConstant';
       NoFile='no file';
@@ -156,9 +156,7 @@ TDAC_ShowNew=class
    fValueShow:TDoubleParameterShow;
    fKodShow:TIntegerParameterShow;
    ValueSetButton,KodSetButton,ResetButton:TButton;
-//   procedure ValueChangeButtonAction(Sender:TObject);
    procedure ValueSetButtonAction(Sender:TObject);
-//   procedure KodChangeButtonAction(Sender:TObject);
    procedure KodSetButtonAction(Sender:TObject);
    procedure ResetButtonClick(Sender:TObject);
    procedure ValueColorToNonActive();
@@ -178,8 +176,9 @@ end;
   TArduinoDACShow=class(TArduinoSetterShow)
   private
 //   procedure CreatePinShow(PinLs: array of TPanel);
-   fDAC_Show:TDAC_ShowNew;
+//   fDAC_Show:TDAC_ShowNew;
   public
+  fDAC_Show:TDAC_ShowNew;
    Constructor Create(ArdDAC:TArduinoDAC;
                        PinLs: array of TPanel;
                        PinVariant:TStringList;
@@ -665,6 +664,7 @@ end;
 
 procedure TDAC_ShowNew.ValueColorToActive;
 begin
+//  showmessage(fOutputInterface.Name);
  fValueShow.STData.Font.Color:=clPurple;
 end;
 
@@ -709,6 +709,7 @@ end;
 
 procedure TArduinoDACShow.ReadFromIniFile(ConfigFile: TIniFile);
 begin
+//   showmessage(PinShow.Pins.Name+'ll');
   inherited ReadFromIniFile(ConfigFile);
   fDAC_Show.ReadFromIniFile(ConfigFile);
 end;

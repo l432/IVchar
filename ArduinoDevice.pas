@@ -1,4 +1,4 @@
-unit SPIdevice;
+unit ArduinoDevice;
 
 interface
  uses OlegType,CPort,SysUtils,Classes,PacketParameters,
@@ -61,12 +61,42 @@ type
    Procedure WriteToIniFile(ConfigFile:TIniFile;PinsStrings:array of TStringList);overload;
   end;
 
+
   TPins_I2C=class(TPins)
   protected
    Function PinValueToStr(Index:integer):string;override;
    public
    Constructor Create(Nm:string);
   end;
+
+
+  TPinsShowUniversal=class
+  protected
+   fHookNumberPinShow: TSimpleEvent;
+   PinLabels:array of TPanel;
+   fPinVariants:array of TStringList;
+   procedure CreateFooter;virtual;
+    procedure SetVariants(Index: byte; const S: TStringList);
+  public
+//   fPinVariants:array of TStringList;
+   Pins:TPins;
+   property HookNumberPinShow:TSimpleEvent read fHookNumberPinShow write fHookNumberPinShow;
+   property PinVariants[Index: byte]: TStringList write SetVariants;
+   Constructor Create(Ps:TPins;
+                      PinLs:array of TPanel);overload;
+   Constructor Create(Ps:TPins;
+                      PinLs:array of TPanel;
+                      PinVar:array of TStringList);overload;
+   Constructor Create(Ps:TPins;
+                      PinLs:array of TPanel;
+                      PinVarSingle: TStringList);overload;
+   procedure PinsReadFromIniFile(ConfigFile:TIniFile);virtual;
+   procedure PinsWriteToIniFile(ConfigFile:TIniFile);virtual;
+   procedure NumberPinShow();virtual;
+   procedure Free();
+   procedure VariantsShowAndSelect(Sender: TObject);
+  end;
+
 
   TArduinoRS232Device=class(TRS232Device)
   protected
@@ -153,142 +183,12 @@ type
 
 
 
-  TAdapterSetButton=class
-  private
-    FSimpleAction: TSimpleEvent;
-    PinsComboBox:TComboBox;
-    Pins:TPins;
-    fi:integer;
-  public
-   property SimpleAction:TSimpleEvent read FSimpleAction write FSimpleAction;
-   Constructor Create(PCB:TComboBox;Ps:TPins;i:integer;Action:TSimpleEvent);
-   procedure SetButtonClick(Sender: TObject);
-  end;
-
-  TPinsShowUniversal=class
-  protected
-   fHookNumberPinShow: TSimpleEvent;
-   PinLabels:array of TPanel;
-   fPinVariants:array of TStringList;
-   procedure CreateFooter;virtual;
-    procedure SetVariants(Index: byte; const S: TStringList);
-  public
-//   fPinVariants:array of TStringList;
-   Pins:TPins;
-   property HookNumberPinShow:TSimpleEvent read fHookNumberPinShow write fHookNumberPinShow;
-   property PinVariants[Index: byte]: TStringList write SetVariants;
-   Constructor Create(Ps:TPins;
-                      PinLs:array of TPanel);overload;
-   Constructor Create(Ps:TPins;
-                      PinLs:array of TPanel;
-                      PinVar:array of TStringList);overload;
-   Constructor Create(Ps:TPins;
-                      PinLs:array of TPanel;
-                      PinVarSingle: TStringList);overload;
-   procedure PinsReadFromIniFile(ConfigFile:TIniFile);virtual;
-   procedure PinsWriteToIniFile(ConfigFile:TIniFile);virtual;
-   procedure NumberPinShow();virtual;
-   procedure Free();
-   procedure VariantsShowAndSelect(Sender: TObject);
-  end;
-
-
-  TPinsShow=class(TPinsShowUniversal)
-  protected
-  public
-   Constructor Create(Ps:TPins;
-                      ControlPinLabel,GatePinLabel:TPanel;
-                      PinVariants:TStringList);
-  end;
-
-
-  TOnePinsShow=class (TPinsShowUniversal)
-  protected
-  public
-   Constructor Create(Ps:TPins;
-                      ControlPinLabel:TPanel;
-                      PinVariants:TStringList);overload;
-   Constructor Create(Ps:TPins;
-                      ControlPinLabel:TPanel);overload;
-  end;
-
-  TI2C_PinsShow=class (TOnePinsShow)
-  protected
-  public
-   Constructor Create(Ps: TPins;
-                      ControlPinLabel: TPanel;
-                      StartAdress, LastAdress: Byte);
-  end;
-
-
-  TArduinoPinChangerShow=class(TOnePinsShow)
-  protected
-   ArduinoPinChanger:TArduinoPinChanger;
-   ToChangeButton:TButton;
-   procedure CaptionButtonSynhronize();
-   procedure ToChangeButtonClick(Sender: TObject);
-  public
-   Constructor Create(APC:TArduinoPinChanger;
-                      ControlPinLabel:TPanel;
-                      TCBut:TButton;
-                      PinVariant:TStringList
-                      );
-
-  end;
-
-  TArduinoSetterShow=class
-  protected
-   fArduinoSetter:TArduinoSetter;
-   PinShow:TPinsShowUniversal;
-   procedure CreatePinShow(PinLs: array of TPanel;
-                   PinVariant:TStringList);virtual;
-   procedure  SetHookNumberPinShow();virtual;                
-  public
-   Constructor Create(ArdSet:TArduinoSetter;
-                       PinLs: array of TPanel;
-                       PinVariant:TStringList);
-   Procedure Free;
-   procedure ReadFromIniFile(ConfigFile:TIniFile);virtual;
-   procedure ReadFromIniFileAndToForm(ConfigFile:TIniFile);
-   Procedure WriteToIniFile(ConfigFile:TIniFile);virtual;
-  end;
 
 implementation
 
 uses
-  Math, Forms, Graphics, Controls, Dialogs;
+  Math, Forms, Graphics, Controls;
 
-
-Constructor TPinsShow.Create(Ps:TPins;
-                      ControlPinLabel,GatePinLabel:TPanel;
-                      PinVariants:TStringList);
-begin
- inherited Create(Ps,[ControlPinLabel, GatePinLabel],
-         [PinVariants]);
-end;
-
-
-{ TAdapterSetButton }
-
-constructor TAdapterSetButton.Create(PCB: TComboBox;Ps:TPins;i:integer;
-  Action: TSimpleEvent);
-begin
-  inherited Create;
-  PinsComboBox:=PCB;
-  Pins:=Ps;
-  SimpleAction:=Action;
-  fi:=i;
-end;
-
-procedure TAdapterSetButton.SetButtonClick(Sender: TObject);
-begin
-  if PinsComboBox.ItemIndex<0 then Exit;
-  if PinsComboBox.Items[PinsComboBox.ItemIndex]<>IntToStr(Pins.fPins[fi]) then
-    begin
-     Pins.fPins[fi]:=StrToInt(PinsComboBox.Items[PinsComboBox.ItemIndex]);
-     SimpleAction();
-    end;
-end;
 
 { TArduinoMeter }
 
@@ -639,67 +539,6 @@ begin
  Pins := TPins.Create(Name,1);
 end;
 
-{ TArduinoPinChangerShow }
-
-procedure TArduinoPinChangerShow.CaptionButtonSynhronize;
-begin
- if ArduinoPinChanger.PinUnderControl=PinToHigh
-   then ToChangeButton.Caption:='To LOW'
-   else if ArduinoPinChanger.PinUnderControl=PinToLow
-          then  ToChangeButton.Caption:='To HIGH'
-          else  ToChangeButton.Caption:='U-u-ps';
-end;
-
-constructor TArduinoPinChangerShow.Create(APC: TArduinoPinChanger;
-                                          ControlPinLabel: TPanel;
-                                          TCBut: TButton;
-                                          PinVariant:TStringList);
-begin
-  inherited Create(APC.Pins,ControlPinLabel,PinVariant);
-  ArduinoPinChanger:=APC;
-  ToChangeButton:=TCBut;
-  CaptionButtonSynhronize;
-  ToChangeButton.OnClick:=ToChangeButtonClick;
-end;
-
-procedure TArduinoPinChangerShow.ToChangeButtonClick(Sender: TObject);
-begin
-  if ArduinoPinChanger.PinUnderControl=PinToHigh
-    then ArduinoPinChanger.PinChangeToLow
-    else ArduinoPinChanger.PinChangeToHigh;
-  CaptionButtonSynhronize;
-end;
-
-{ TOnePinsShow }
-
-constructor TOnePinsShow.Create(Ps: TPins;
-                                ControlPinLabel: TPanel;
-                                PinVariants:TStringList);
-begin
- inherited Create(Ps,[ControlPinLabel],[PinVariants]);
-end;
-
-constructor TOnePinsShow.Create(Ps: TPins; ControlPinLabel: TPanel);
-begin
- inherited Create(Ps,[ControlPinLabel]);
-end;
-
-
-{ TTMP102PinsShow }
-
-constructor TI2C_PinsShow.Create(Ps: TPins;
-                 ControlPinLabel: TPanel;
-                 StartAdress, LastAdress: Byte);
- var adress:byte;
-begin
- inherited Create(Ps,[ControlPinLabel]);
-
- fPinVariants[0].Clear;
- for adress := StartAdress to LastAdress do
-   fPinVariants[0].Add('$'+IntToHex(adress,2));
-end;
-
-
 
 { TPins_I2C }
 
@@ -712,6 +551,54 @@ end;
 function TPins_I2C.PinValueToStr(Index: integer): string;
 begin
  Result:='$'+IntToHex(fPins[Index],2);
+end;
+
+
+{ TArduinoSetter }
+
+constructor TArduinoSetter.Create(CP: TComPort; Nm: string);
+begin
+  inherited Create(CP,Nm);
+  PinsCreate();
+  fComPacket.StartString:=PacketBeginChar;
+  fComPacket.StopString:=PacketEndChar;
+  SetLength(fData,6);
+
+  CreateHook;
+  fData[0] := fSetterKod;
+  PinsToDataArray();
+//showmessage(Name);
+end;
+
+procedure TArduinoSetter.CreateHook;
+begin
+  fSetterKod:=$FF;
+end;
+
+procedure TArduinoSetter.Free;
+begin
+ Pins.Free;
+ inherited Free;
+end;
+
+//procedure TArduinoSetter.PacketCreateAndSend;
+//begin
+//  isNeededComPortState();
+//end;
+
+procedure TArduinoSetter.PacketCreateToSend;
+begin
+ PacketCreate(fData);
+end;
+
+procedure TArduinoSetter.PinsCreate;
+begin
+  Pins := TPins.Create(Name);
+end;
+
+procedure TArduinoSetter.PinsToDataArray;
+begin
+  fData[1] := Pins.PinControl;
 end;
 
 { TPinsShowShot }
@@ -897,99 +784,6 @@ begin
 
 end;
 
-
-{ TArduinoSetter }
-
-constructor TArduinoSetter.Create(CP: TComPort; Nm: string);
-begin
-  inherited Create(CP,Nm);
-  PinsCreate();
-  fComPacket.StartString:=PacketBeginChar;
-  fComPacket.StopString:=PacketEndChar;
-  SetLength(fData,6);
-
-  CreateHook;
-  fData[0] := fSetterKod;
-  PinsToDataArray();
-//showmessage(Name);
-end;
-
-procedure TArduinoSetter.CreateHook;
-begin
-  fSetterKod:=$FF;
-end;
-
-procedure TArduinoSetter.Free;
-begin
- Pins.Free;
- inherited Free;
-end;
-
-//procedure TArduinoSetter.PacketCreateAndSend;
-//begin
-//  isNeededComPortState();
-//end;
-
-procedure TArduinoSetter.PacketCreateToSend;
-begin
- PacketCreate(fData);
-end;
-
-procedure TArduinoSetter.PinsCreate;
-begin
-  Pins := TPins.Create(Name);
-end;
-
-procedure TArduinoSetter.PinsToDataArray;
-begin
-  fData[1] := Pins.PinControl;
-end;
-
-{ TArduinoSetterShow }
-
-constructor TArduinoSetterShow.Create(ArdSet: TArduinoSetter;
-                                     PinLs: array of TPanel;
-                                     PinVariant:TStringList);
-begin
- inherited Create();
- fArduinoSetter:=ArdSet;
- CreatePinShow(PinLs,PinVariant);
-// SetHookNumberPinShow();
- PinShow.HookNumberPinShow:=fArduinoSetter.PinsToDataArray;
-end;
-
-procedure TArduinoSetterShow.CreatePinShow(PinLs: array of TPanel;
-                                        PinVariant:TStringList);
-begin
- PinShow:=TPinsShowUniversal.Create(fArduinoSetter.Pins,PinLs,[PinVariant]);
-end;
-
-procedure TArduinoSetterShow.Free;
-begin
- PinShow.Free;
- inherited Free;
-end;
-
-procedure TArduinoSetterShow.ReadFromIniFile(ConfigFile: TIniFile);
-begin
- PinShow.PinsReadFromIniFile(ConfigFile);
-end;
-
-procedure TArduinoSetterShow.ReadFromIniFileAndToForm(ConfigFile: TIniFile);
-begin
- ReadFromIniFile(ConfigFile);
- PinShow.NumberPinShow;
-end;
-
-procedure TArduinoSetterShow.SetHookNumberPinShow;
-begin
- PinShow.HookNumberPinShow:=fArduinoSetter.PinsToDataArray;
-end;
-
-procedure TArduinoSetterShow.WriteToIniFile(ConfigFile: TIniFile);
-begin
-  PinShow.PinsWriteToIniFile(ConfigFile);
-end;
 
 
 end.

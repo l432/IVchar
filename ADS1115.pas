@@ -3,7 +3,8 @@ unit ADS1115;
 interface
 
 uses
-  SPIdevice, StdCtrls, ExtCtrls, ArduinoADC, Classes, MDevice;
+  ArduinoDevice, StdCtrls, ExtCtrls, ArduinoADC, Classes, MDevice, 
+  ArduinoDeviceShow;
 
 type
 

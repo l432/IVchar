@@ -3,7 +3,7 @@ unit AD9833;
 interface
 
 uses
-  SPIdevice;
+  ArduinoDevice;
 
 const
      AD9833_MaxFreq=12.5e6;

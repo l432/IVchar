@@ -3,7 +3,7 @@ program IV;
 uses
   Forms,
   IVchar_main in 'IVchar_main.pas' {IVchar},
-  SPIdevice in 'SPIdevice.pas',
+  ArduinoDevice in 'ArduinoDevice.pas',
   PacketParameters in 'PacketParameters.pas',
   Measurement in 'Measurement.pas',
   TempThread in 'TempThread.pas',
@@ -25,7 +25,8 @@ uses
   MCP3424 in 'MCP3424.pas',
   ArduinoADC in 'ArduinoADC.pas',
   ADS1115 in 'ADS1115.pas',
-  AD9833 in 'AD9833.pas';
+  AD9833 in 'AD9833.pas',
+  ArduinoDeviceShow in 'ArduinoDeviceShow.pas';
 
 {$R *.res}
 

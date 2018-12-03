@@ -3,7 +3,7 @@ unit Dependence;
 interface
 
 uses
-  SPIdevice, StdCtrls, ComCtrls, OlegType, Series, ShowTypes,
+  ArduinoDevice, StdCtrls, ComCtrls, OlegType, Series, ShowTypes,
   ExtCtrls, Classes;
 
 var EventToStopDependence:THandle;

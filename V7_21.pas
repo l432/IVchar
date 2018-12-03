@@ -3,7 +3,8 @@ unit V7_21;
 interface
 
 uses
-  SPIdevice, ExtCtrls, StdCtrls, Buttons, RS232device, CPort, Classes;
+  ArduinoDevice, ExtCtrls, StdCtrls, Buttons, RS232device, CPort, Classes, 
+  ArduinoDeviceShow;
 
 
 

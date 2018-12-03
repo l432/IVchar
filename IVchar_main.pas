@@ -3,13 +3,13 @@ unit IVchar_main;
 interface
 
 uses
-  Windows, Messages, SysUtils, Graphics, Forms,SPIdevice, IniFiles,PacketParameters,
+  Windows, Messages, SysUtils, Graphics, Forms,ArduinoDevice, IniFiles,PacketParameters,
   OlegType, OlegMath,Measurement,
   TempThread, ShowTypes,OlegGraph, Dependence, V7_21,
   TemperatureSensor, DACR2R, UT70, RS232device,ET1255, RS232_Mediator_Tread,
   CPortCtl, Grids, Chart, TeeProcs, Series, TeEngine, ExtCtrls, Buttons,
   ComCtrls, CPort, StdCtrls, Dialogs, Controls, Classes, D30_06,Math, PID, 
-  MDevice, Spin,HighResolutionTimer, MCP3424, ADS1115;
+  MDevice, Spin,HighResolutionTimer, MCP3424, ADS1115, ArduinoDeviceShow;
 
 const
   MeasIV='IV characteristic';
