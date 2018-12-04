@@ -104,24 +104,6 @@ public
 end;
 
 
-TDAC_Show=class
-  private
-   fOutputInterface: IDAC;
-   ValueChangeButton,ValueSetButton,
-   KodChangeButton,KodSetButton,ResetButton:TButton;
-   ValueLabel,KodLabel:TLabel;
-   procedure ValueChangeButtonAction(Sender:TObject);
-   procedure ValueSetButtonAction(Sender:TObject);
-   procedure KodChangeButtonAction(Sender:TObject);
-   procedure KodSetButtonAction(Sender:TObject);
-   procedure ResetButtonClick(Sender:TObject);
-  public
-   Constructor Create(OI: IDAC;
-                      VL, KL: TLabel;
-                      VCB, VSB, KCB,
-                      KSB, RB: TButton);
-end;
-
 TMeasurementShow=class
   protected
    fMeter:IMeasurement;
@@ -279,84 +261,6 @@ end;
 procedure TSimulator.SetNewData(Value: boolean);
 begin
  fNewData:=Value;
-end;
-
-
-{ TDAC_Show }
-
-constructor TDAC_Show.Create(OI: IDAC;
-                               VL, KL: TLabel;
-                               VCB, VSB, KCB,
-                               KSB, RB: TButton);
-
-begin
-  fOutputInterface:=OI;
-  ValueLabel:=VL;
-  ValueLabel.Caption:='0';
-  ValueLabel.Font.Color:=clBlack;
-  ValueChangeButton:=VCB;
-  ValueChangeButton.OnClick:=ValueChangeButtonAction;
-  ValueSetButton:=VSB;
-  ValueSetButton.OnClick:=ValueSetButtonAction;
-  ResetButton:=RB;
-  ResetButton.OnClick:=ResetButtonClick;
-  KodLabel:=KL;
-  KodLabel.Caption:='0';
-  KodLabel.Font.Color:=clBlack;
-  KodChangeButton:=KCB;
-  KodChangeButton.OnClick:=KodChangeButtonAction;
-  KodSetButton:=KSB;
-  KodSetButton.OnClick:=KodSetButtonAction;
-end;
-
-procedure TDAC_Show.KodChangeButtonAction(Sender: TObject);
- var value:string;
-begin
- if InputQuery('Value', 'Output kod is expect', value) then
-  begin
-    try
-      KodLabel.Caption:=IntToStr(StrToInt(value));
-      KodLabel.Font.Color:=clBlack;
-    except
-
-    end;
-  end;
-
-end;
-
-procedure TDAC_Show.KodSetButtonAction(Sender: TObject);
-begin
-   fOutputInterface.OutputInt(StrToInt(KodLabel.Caption));
-   KodLabel.Font.Color:=clPurple;
-   ValueLabel.Font.Color:=clBlack;
-end;
-
-procedure TDAC_Show.ResetButtonClick(Sender: TObject);
-begin
- fOutputInterface.Reset();
-   KodLabel.Font.Color:=clBlack;
-   ValueLabel.Font.Color:=clBlack;
-end;
-
-procedure TDAC_Show.ValueChangeButtonAction(Sender: TObject);
- var value:string;
-begin
- if InputQuery('Value', 'Output value is expect', value) then
-  begin
-    try
-      ValueLabel.Caption:=FloatToStrF(StrToFloat(value),ffFixed, 6, 4);
-      ValueLabel.Font.Color:=clBlack;
-    except
-
-    end;
-  end;
-end;
-
-procedure TDAC_Show.ValueSetButtonAction(Sender: TObject);
-begin
-   fOutputInterface.Output(StrToFloat(ValueLabel.Caption));
-   ValueLabel.Font.Color:=clPurple;
-   KodLabel.Font.Color:=clBlack;
 end;
 
 

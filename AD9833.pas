@@ -3,7 +3,8 @@ unit AD9833;
 interface
 
 uses
-  ArduinoDevice;
+  ArduinoDevice, ArduinoDeviceShow, Buttons, ShowTypes, Classes, ExtCtrls, 
+  StdCtrls, IniFiles;
 
 const
      AD9833_MaxFreq=12.5e6;
@@ -18,6 +19,12 @@ type
                ad9833_mode_sine,
                ad9833_mode_triangle,
                ad9833_mode_square);
+
+const
+ AD9833_ModeLabel:array[TAD9833_Mode]of string=
+  ('Off', 'Sine', 'Triangle','Square');
+
+type
 
  TAD9833=class(TArduinoSetter)
   private
@@ -52,10 +59,39 @@ type
    procedure Action();
  end;
 
+TAD9833Show=class(TArduinoSetterShow)
+ private
+   fSBStop:TSpeedButton;
+   fSBGenerateChan1:TSpeedButton;
+   fSBGenerateChan2:TSpeedButton;
+   fFreqCh1Show:TDoubleParameterShow;
+   fFreqCh2Show:TDoubleParameterShow;
+   fPhaseCh1Show:TDoubleParameterShow;
+   fPhaseCh2Show:TDoubleParameterShow;
+   fMode:TRadioGroup;
+   procedure ResetButtonClick(Sender:TObject);
+   procedure GenerateButtonClick(Sender:TObject);
+   procedure SetParameters(ChanNumber: TAD9833_ChanelNumber);
+ protected
+   procedure CreatePinShow(PinLs: array of TPanel;
+                   PinVariant:TStringList);override;
+ public
+  Constructor Create(AD9833:TAD9833;
+                     CPL:TPanel;
+                     PinVariant:TStringList;
+                     Fr1Data,Ph1Data,Fr2Data,Ph2Data:TStaticText;
+                     Fr1L,Ph1L,Fr2L,Ph2L:TLabel;
+                     Gen1SB,Gen2SB,StopSB:TSpeedButton;
+                     RGM:TRadioGroup);
+  Procedure Free;
+  procedure ReadFromIniFile(ConfigFile:TIniFile);override;
+  Procedure WriteToIniFile(ConfigFile:TIniFile);override;
+ end;
+
 implementation
 
 uses
-  PacketParameters, Math;
+  PacketParameters, Math, OlegType;
 
 { TAD9833 }
 
@@ -246,6 +282,128 @@ end;
 procedure TAD9833.SetPhase(chan: TAD9833_ChanelNumber; Phase: double);
 begin
  fPhase[chan]:=ConvertPhaseValueToKod(Phase);
+end;
+
+{ TAD9833Show }
+
+constructor TAD9833Show.Create(AD9833: TAD9833;
+                       CPL: TPanel;
+                       PinVariant: TStringList;
+                       Fr1Data, Ph1Data, Fr2Data, Ph2Data: TStaticText;
+                       Fr1L, Ph1L, Fr2L, Ph2L: TLabel;
+                       Gen1SB, Gen2SB, StopSB: TSpeedButton;
+                       RGM:TRadioGroup);
+var
+  I: TAD9833_Mode;
+begin
+ inherited Create(AD9833,[CPL],PinVariant);
+ fFreqCh1Show:=TDoubleParameterShow.Create(Fr1Data,Fr1L,'Freq I (Hz):',AD9833_Defaulf_Freq,9);
+ fFreqCh1Show.ForUseInShowObject(fArduinoSetter);
+
+ fFreqCh2Show:=TDoubleParameterShow.Create(Fr2Data,Fr2L,'Freq II (Hz):',AD9833_Defaulf_Freq,9);
+ fFreqCh2Show.ForUseInShowObject(fArduinoSetter);
+
+ fPhaseCh1Show:=TDoubleParameterShow.Create(Ph1Data,Ph1L,'Phase I (grad):',AD9833_Defaulf_Phase,4);
+ fPhaseCh1Show.ForUseInShowObject(fArduinoSetter);
+
+ fPhaseCh2Show:=TDoubleParameterShow.Create(Ph2Data,Ph2L,'Phase II (grad):',AD9833_Defaulf_Phase,4);
+ fPhaseCh2Show.ForUseInShowObject(fArduinoSetter);
+
+ fMode:=RGM;
+ fMode.Items.Clear;
+ for I :=Low(AD9833_ModeLabel) to High(AD9833_ModeLabel) do
+    fMode.Items.Add(AD9833_ModeLabel[i]);
+
+ fSBStop:=StopSB;
+ fSBGenerateChan1:=Gen1SB;
+ fSBGenerateChan2:=Gen2SB;
+ fSBStop.Caption:='Stop';
+ fSBGenerateChan1.Caption:='Generate, I chan';
+ fSBGenerateChan2.Caption:='Generate, II chan';
+ fSBStop.GroupIndex:=AD9833Command;
+ fSBGenerateChan1.GroupIndex:=AD9833Command;
+ fSBGenerateChan2.GroupIndex:=AD9833Command;
+
+ fSBStop.AllowAllUp:=false;
+ fSBGenerateChan1.AllowAllUp:=false;
+ fSBGenerateChan2.AllowAllUp:=false;
+ fSBStop.Down:=true;
+
+ fSBStop.OnClick:=ResetButtonClick;
+ fSBGenerateChan1.OnClick:=GenerateButtonClick;
+ fSBGenerateChan2.OnClick:=GenerateButtonClick;
+end;
+
+procedure TAD9833Show.CreatePinShow(PinLs: array of TPanel;
+                                    PinVariant: TStringList);
+begin
+  PinShow:=TOnePinsShow.Create(fArduinoSetter.Pins,PinLs[0],PinVariant);
+end;
+
+procedure TAD9833Show.Free;
+begin
+ fPhaseCh2Show.Free;
+ fPhaseCh1Show.Free;
+ fFreqCh2Show.Free;
+ fFreqCh1Show.Free;
+ inherited Free;
+end;
+
+procedure TAD9833Show.GenerateButtonClick(Sender: TObject);
+begin
+  if Sender=fSBGenerateChan1 then
+    begin
+     SetParameters(0);
+     fPhaseCh2Show.ColorToActive(false);
+     fPhaseCh1Show.ColorToActive(true);
+     fFreqCh2Show.ColorToActive(false);
+     fFreqCh1Show.ColorToActive(true);
+    end                       else
+    begin
+     SetParameters(1);
+     fPhaseCh2Show.ColorToActive(true);
+     fPhaseCh1Show.ColorToActive(false);
+     fFreqCh2Show.ColorToActive(true);
+     fFreqCh1Show.ColorToActive(false);
+    end;
+ (fArduinoSetter as TAD9833).Generate();
+end;
+
+procedure TAD9833Show.ReadFromIniFile(ConfigFile: TIniFile);
+begin
+  inherited ReadFromIniFile(ConfigFile);
+  fPhaseCh2Show.ReadFromIniFile(ConfigFile);
+  fPhaseCh1Show.ReadFromIniFile(ConfigFile);
+  fFreqCh2Show.ReadFromIniFile(ConfigFile);
+  fFreqCh1Show.ReadFromIniFile(ConfigFile);
+  fMode.ItemIndex:= ConfigFile.ReadInteger(fArduinoSetter.Name, 'Mode',0);
+end;
+
+procedure TAD9833Show.ResetButtonClick(Sender: TObject);
+begin
+ (fArduinoSetter as TAD9833).Reset();
+ fPhaseCh2Show.ColorToActive(false);
+ fPhaseCh1Show.ColorToActive(false);
+ fFreqCh2Show.ColorToActive(false);
+ fFreqCh1Show.ColorToActive(false);
+end;
+
+procedure TAD9833Show.WriteToIniFile(ConfigFile: TIniFile);
+begin
+  inherited WriteToIniFile(ConfigFile);
+  fPhaseCh2Show.WriteToIniFile(ConfigFile);
+  fPhaseCh1Show.WriteToIniFile(ConfigFile);
+  fFreqCh2Show.WriteToIniFile(ConfigFile);
+  fFreqCh1Show.WriteToIniFile(ConfigFile);
+  WriteIniDef(ConfigFile, fArduinoSetter.Name, 'Mode', fMode.ItemIndex);
+end;
+
+procedure TAD9833Show.SetParameters(ChanNumber: TAD9833_ChanelNumber);
+begin
+  (fArduinoSetter as TAD9833).Mode:=TAD9833_Mode(fMode.ItemIndex);
+  (fArduinoSetter as TAD9833).SetActiveChanel(ChanNumber);
+  (fArduinoSetter as TAD9833).SetFreq(ChanNumber, fFreqCh1Show.Data);
+  (fArduinoSetter as TAD9833).SetFreq(ChanNumber, fPhaseCh1Show.Data);
 end;
 
 end.

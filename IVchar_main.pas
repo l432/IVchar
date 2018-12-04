@@ -9,7 +9,8 @@ uses
   TemperatureSensor, DACR2R, UT70, RS232device,ET1255, RS232_Mediator_Tread,
   CPortCtl, Grids, Chart, TeeProcs, Series, TeEngine, ExtCtrls, Buttons,
   ComCtrls, CPort, StdCtrls, Dialogs, Controls, Classes, D30_06,Math, PID, 
-  MDevice, Spin,HighResolutionTimer, MCP3424, ADS1115, ArduinoDeviceShow;
+  MDevice, Spin,HighResolutionTimer, MCP3424, ADS1115, ArduinoDeviceShow, 
+  AD9833;
 
 const
   MeasIV='IV characteristic';
@@ -174,7 +175,6 @@ type
     TS_DACR2R: TTabSheet;
     STOVDACR2R: TStaticText;
     LOVDACR2R: TLabel;
-    BOVchangeDACR2R: TButton;
     BOVsetDACR2R: TButton;
     GBMeasR2R: TGroupBox;
     LMeasR2R: TLabel;
@@ -211,7 +211,6 @@ type
     UDRBLowLimitR2R: TUpDown;
     STOKDACR2R: TStaticText;
     LOKDACR2R: TLabel;
-    BOKchangeDACR2R: TButton;
     LADInputVoltage: TLabel;
     LADInputVoltageValue: TLabel;
     CBCurrentValue: TCheckBox;
@@ -256,12 +255,8 @@ type
     PET1255DAC: TPanel;
     STDAC: TStaticText;
     GBET1255DACh0: TGroupBox;
-    LOV1255ch0: TLabel;
     BOVset1255Ch0: TButton;
-    BOVchange1255Ch0: TButton;
     BReset1255Ch0: TButton;
-    LOK1255Ch0: TLabel;
-    BOKchange1255Ch0: TButton;
     BOKset1255Ch0: TButton;
     GBMeas1255Ch0: TGroupBox;
     LMeas1255Ch0: TLabel;
@@ -269,12 +264,8 @@ type
     STMD1255Ch0: TStaticText;
     CBMeasET1255Ch0: TComboBox;
     GBET1255DACh1: TGroupBox;
-    LOV1255ch1: TLabel;
-    LOK1255Ch1: TLabel;
     BOVset1255Ch1: TButton;
-    BOVchange1255Ch1: TButton;
     BReset1255Ch1: TButton;
-    BOKchange1255Ch1: TButton;
     BOKset1255Ch1: TButton;
     GBMeas1255Ch1: TGroupBox;
     LMeas1255Ch1: TLabel;
@@ -282,12 +273,8 @@ type
     STMD1255Ch1: TStaticText;
     CBMeasET1255Ch1: TComboBox;
     GBET1255DACh2: TGroupBox;
-    LOV1255ch2: TLabel;
-    LOK1255Ch2: TLabel;
     BOVset1255Ch2: TButton;
-    BOVchange1255Ch2: TButton;
     BReset1255Ch2: TButton;
-    BOKchange1255Ch2: TButton;
     BOKset1255Ch2: TButton;
     GBMeas1255Ch2: TGroupBox;
     LMeas1255Ch2: TLabel;
@@ -343,25 +330,8 @@ type
     LControlCCValue: TLabel;
     LTermostatOutputValue: TLabel;
     TS_D30_06: TTabSheet;
-    RGD30: TRadioGroup;
-    GBMeasD30: TGroupBox;
-    LMeasD30: TLabel;
-    BMeasD30: TButton;
-    STMDD30: TStaticText;
-    CBMeasD30: TComboBox;
-    LOVD30: TLabel;
-    STOVD30: TStaticText;
-    BOVchangeD30: TButton;
-    BOVsetD30: TButton;
-    BD30Reset: TButton;
-    STOKD30: TStaticText;
-    LOKD30: TLabel;
-    BOKchangeD30: TButton;
-    BOKsetD30: TButton;
     LCodeRangeDACR2R: TLabel;
     LValueRangeDACR2R: TLabel;
-    LCodeRangeD30: TLabel;
-    LValueRangeD30: TLabel;
     LValueRangeDAC1255: TLabel;
     LCodeRangeDAC1255: TLabel;
     STTimeMD2: TStaticText;
@@ -395,12 +365,8 @@ type
     BVocMeasure: TButton;
     BIscVocPinChange: TButton;
     GBET1255DACh3: TGroupBox;
-    LOV1255ch3: TLabel;
-    LOK1255Ch3: TLabel;
     BOVset1255Ch3: TButton;
-    BOVchange1255Ch3: TButton;
     BReset1255Ch3: TButton;
-    BOKchange1255Ch3: TButton;
     BOKset1255Ch3: TButton;
     LTermostatWatchDog: TLabel;
     TermostatWatchDog: TTimer;
@@ -475,8 +441,6 @@ type
     PMCP3424_Ch3gain: TPanel;
     PMCP3424_Ch4bits: TPanel;
     PMCP3424_Ch4gain: TPanel;
-    PD30PinC: TPanel;
-    PD30PinG: TPanel;
     PLEDOpenPin: TPanel;
     PIscVocPin: TPanel;
     GBHTU21: TGroupBox;
@@ -498,7 +462,58 @@ type
     Pads1115_Ch3dr: TPanel;
     Pads1115_Ch3gain: TPanel;
     Pads1115_adr: TPanel;
+    GBR2R: TGroupBox;
     GBD3006: TGroupBox;
+    LCodeRangeD30: TLabel;
+    LValueRangeD30: TLabel;
+    GBMeasD30: TGroupBox;
+    LMeasD30: TLabel;
+    BMeasD30: TButton;
+    STMDD30: TStaticText;
+    CBMeasD30: TComboBox;
+    BD30Reset: TButton;
+    BOKsetD30: TButton;
+    BOVsetD30: TButton;
+    PD30PinC: TPanel;
+    PD30PinG: TPanel;
+    RGD30: TRadioGroup;
+    LOVD30: TLabel;
+    STOVD30: TStaticText;
+    LOKD30: TLabel;
+    STOKD30: TStaticText;
+    LOV1255ch0: TLabel;
+    STOV1255ch0: TStaticText;
+    LOK1255Ch0: TLabel;
+    STOK1255Ch0: TStaticText;
+    LOV1255ch1: TLabel;
+    LOV1255ch2: TLabel;
+    LOV1255ch3: TLabel;
+    LOK1255Ch1: TLabel;
+    LOK1255Ch2: TLabel;
+    LOK1255Ch3: TLabel;
+    STOV1255ch1: TStaticText;
+    STOV1255ch2: TStaticText;
+    STOV1255ch3: TStaticText;
+    STOK1255Ch1: TStaticText;
+    STOK1255Ch2: TStaticText;
+    STOK1255Ch3: TStaticText;
+    GBAD9866ch0: TGroupBox;
+    LPhaseRangeAD9866: TLabel;
+    L9833PhaseCh0: TLabel;
+    L9833FreqCh0: TLabel;
+    LFreqRangeAD9866: TLabel;
+    PAD9833PinC: TPanel;
+    ST9866PhaseCh0: TStaticText;
+    ST9866FreqCh0: TStaticText;
+    SBAD9833GenCh0: TSpeedButton;
+    SBAD9833Stop: TSpeedButton;
+    GBAD9866ch1: TGroupBox;
+    L9833PhaseCh1: TLabel;
+    L9833FreqCh1: TLabel;
+    SBAD9833GenCh1: TSpeedButton;
+    ST9866PhaseCh1: TStaticText;
+    ST9866FreqCh1: TStaticText;
+    RGAD9833Mode: TRadioGroup;
 
     procedure FormCreate(Sender: TObject);
     procedure BConnectClick(Sender: TObject);
@@ -701,6 +716,9 @@ type
     D30_06:TD30_06;
     D30_06Show:TD30_06Show;
 
+    AD9833:TAD9833;
+    AD9833Show:TAD9833Show;
+
     Simulator:TSimulator;
 
     UT70B:TUT70B;
@@ -761,9 +779,6 @@ var
   IVchar: TIVchar;
 
 implementation
-
-uses
-  AD9833;
 
 {$R *.dfm}
 
@@ -1405,6 +1420,7 @@ procedure TIVchar.ET1255Create;
  var I:TET1255_DAC_ChanelNumber;
 begin
   ET1255isPresent:=(ET_StartDrv = '');
+//  ET1255isPresent:=true;
   if ET1255isPresent then
    begin
      for I := Low(TET1255_DAC_ChanelNumber) to High(TET1255_DAC_ChanelNumber) do
@@ -1414,24 +1430,25 @@ begin
         AnyObjectArray.Add([ET1255_DACs[i]]);
        end;
      ET1255_DACsShow[0]:=TDAC_Show.Create(ET1255_DACs[0],
-                    LOV1255ch0,LOK1255Ch0,BOVchange1255Ch0,
-                    BOVset1255Ch0,BOKchange1255Ch0,
-                    BOKset1255Ch0,BReset1255Ch0);
+                    STOV1255ch0,STOK1255Ch0,
+                    LOV1255ch0,LOK1255Ch0,
+                    BOVset1255Ch0,BOKset1255Ch0,BReset1255Ch0);
      ET1255_DACsShow[1]:=TDAC_Show.Create(ET1255_DACs[1],
-                    LOV1255ch1,LOK1255Ch1,BOVchange1255Ch1,
-                    BOVset1255Ch1,BOKchange1255Ch1,
-                    BOKset1255Ch1,BReset1255Ch1);
+                    STOV1255ch1,STOK1255Ch1,
+                    LOV1255ch1,LOK1255Ch1,
+                    BOVset1255Ch1,BOKset1255Ch1,BReset1255Ch1);
      ET1255_DACsShow[2]:=TDAC_Show.Create(ET1255_DACs[2],
-                    LOV1255ch2,LOK1255Ch2,BOVchange1255Ch2,
-                    BOVset1255Ch2,BOKchange1255Ch2,
-                    BOKset1255Ch2,BReset1255Ch2);
+                    STOV1255ch2,STOK1255Ch2,
+                    LOV1255ch2,LOK1255Ch2,
+                    BOVset1255Ch2,BOKset1255Ch2,BReset1255Ch2);
      ET1255_DACsShow[3]:=TDAC_Show.Create(ET1255_DACs[3],
-                    LOV1255ch3,LOK1255Ch3,BOVchange1255Ch3,
-                    BOVset1255Ch3,BOKchange1255Ch3,
-                    BOKset1255Ch3,BReset1255Ch3);
+                    STOV1255ch3,STOK1255Ch3,
+                    LOV1255ch3,LOK1255Ch3,
+                    BOVset1255Ch3,BOKset1255Ch3,BReset1255Ch3);
 
       ShowArray.Add([ET1255_DACsShow[0],ET1255_DACsShow[1],
                      ET1255_DACsShow[2],ET1255_DACsShow[3]]);
+
 
       ET1255_ADCModule:=TET1255_ModuleAndChan.Create;
       ET1255_ADCModule.ReadFromIniFile(ConfigFile);
@@ -2269,10 +2286,11 @@ begin
                  TMP102,
                  HTU21D,
                  D30_06,IscVocPinChanger,LEDOpenPinChanger,
-                 MCP3424,ADS11115module]);
+                 MCP3424,ADS11115module,AD9833]);
 
  if (ComPort1.Connected)and(SettingDevice.ActiveInterface.Name=DACR2R.Name) then SettingDevice.Reset();
  if (ComPort1.Connected) then D30_06.Reset;
+// if (ComPort1.Connected) then AD9833.Reset;
 end;
 
 procedure TIVchar.FormDestroy(Sender: TObject);
@@ -2889,6 +2907,12 @@ begin
       (ShowArray.ObjectArray[i] as TDevice).ReadFromIniFile(ConfigFile,MD_IniSection);
       Continue;
      end;
+
+   if (ShowArray.ObjectArray[i] is TDAC_Show) then
+     begin
+      (ShowArray.ObjectArray[i] as TDAC_Show).ReadFromIniFile(ConfigFile);
+      Continue;
+     end;
   end;
 
 end;
@@ -2906,6 +2930,13 @@ begin
     begin
     (ShowArray.ObjectArray[i] as TLimitShow).WriteToIniFile(ConfigFile);
     (ShowArray.ObjectArray[i] as TLimitShow).Free;
+    Continue;
+    end;
+
+   if (ShowArray.ObjectArray[i] is TDAC_Show) then
+    begin
+    (ShowArray.ObjectArray[i] as TDAC_Show).WriteToIniFile(ConfigFile);
+    (ShowArray.ObjectArray[i] as TDAC_Show).Free;
     Continue;
     end;
 
@@ -3116,25 +3147,26 @@ end;
 procedure TIVchar.DACCreate;
 begin
   DACR2R:=TDACR2R.Create(ComPort1,'DAC R-2R');
-//  DACR2RShow:=TDACR2RShow.Create(DACR2R,PDACR2RPinC,LOVDACR2R,LOKDACR2R,
-//                                 BOVchangeDACR2R,
-//                                 BOVsetDACR2R, BOKchangeDACR2R, BOKsetDACR2R,
-//                                 BDACR2RReset, NumberPins);
+
   DACR2RShow:=TDACR2RShow.Create(DACR2R,PDACR2RPinC,
                                  STOVDACR2R,STOKDACR2R,
                                  LOVDACR2R,LOKDACR2R,
                                  BOVsetDACR2R, BOKsetDACR2R,
                                  BDACR2RReset, NumberPins);
   D30_06:=TD30_06.Create(ComPort1,'D30_06');
-//  D30_06Show:=TD30_06Show.Create(D30_06,PD30PinC,PD30PinG,LOVD30,LOKD30,LValueRangeD30,
-//                                 BOVchangeD30,
-//                                 BOVsetD30, BOKchangeD30, BOKsetD30,
-//                                 BD30Reset, NumberPins, RGD30);
   D30_06Show:=TD30_06Show.Create(D30_06,PD30PinC,PD30PinG,
                                  LOVD30,LOKD30,LValueRangeD30,
                                  STOVD30,STOKD30,
                                  BOVsetD30, BOKsetD30,BD30Reset,
                                  NumberPins, RGD30);
+
+  AD9833:=TAD9833.Create(ComPort1,'AD9833');
+  AD9833Show:=TAD9833Show.Create(AD9833,
+                                 PAD9833PinC,NumberPins,
+                                 ST9866FreqCh0,ST9866PhaseCh0,ST9866FreqCh1,ST9866PhaseCh1,
+                                 L9833FreqCh0,L9833PhaseCh0,L9833FreqCh1,L9833PhaseCh1,
+                                 SBAD9833GenCh0,SBAD9833GenCh1,SBAD9833Stop,
+                                 RGAD9833Mode);
 end;
 
 procedure TIVchar.DACFree;
@@ -3156,6 +3188,13 @@ begin
     D30_06.Free;
     end;
 
+  AD9833Show.Free;
+  if assigned(AD9833) then
+    begin
+    AD9833.Reset;
+    sleep(50);
+    AD9833.Free;
+    end;
 end;
 
 procedure TIVchar.DACReadFromIniFileAndToForm;
@@ -3166,6 +3205,7 @@ begin
   ParametersFileWork(DACR2R.CalibrationRead);
 
   D30_06Show.ReadFromIniFileAndToForm(ConfigFile);
+  AD9833Show.ReadFromIniFileAndToForm(ConfigFile);
 end;
 
 procedure TIVchar.DACWriteToIniFile;
@@ -3173,6 +3213,7 @@ begin
 //  DACR2RShow.PinShow.PinsWriteToIniFile(ConfigFile);
   DACR2RShow.WriteToIniFile(ConfigFile);
   D30_06Show.WriteToIniFile(ConfigFile);
+  AD9833Show.WriteToIniFile(ConfigFile);
 end;
 
 procedure TIVchar.DevicesCreate;

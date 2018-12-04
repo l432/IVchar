@@ -48,7 +48,6 @@ protected
  function  VoltageToKod(Voltage:double):integer;override;
  procedure CreateHook;override;
  procedure PinsCreate();override;
-// procedure PinsToDataArray;override;
 public
  Constructor Create(CP:TComPort;Nm:string);override;
  Procedure Free;
@@ -58,36 +57,13 @@ public
  function CalibrationStep(Voltage:double):double;
  procedure OutputCalibr(Voltage:double);
  procedure SaveFileWithCalibrData(DataVec:PVector);
- procedure PinsToDataArray;override; 
+ procedure PinsToDataArray;override;
 end;
-
-//TDACR2RShow=class(TDAC_Show)
-//TDACR2RShow=class(TDAC_ShowNew)
-//private
-//public
-// PinShow:TOnePinsShow;
-//// Constructor Create(DAC:TDACR2R;
-////                      CPL:TPanel;
-////                      VL,KL:TLabel;
-////                      VCB,VSB,KCB,KSB,RB:TButton;
-////                      PinVariant:TStringList);
-// Constructor Create(DAC:TDACR2R;
-//                     CPL:TPanel;
-//                     VData,KData:TStaticText;
-//                     VL,KL:TLabel;
-//                     VSB,KSB,RB:TButton;
-//                     PinVariant:TStringList);
-// Procedure Free;
-// procedure ReadFromIniFile(ConfigFile:TIniFile);override;
-// procedure ReadFromIniFileAndToForm(ConfigFile:TIniFile);
-// Procedure WriteToIniFile(ConfigFile:TIniFile);override;
-//end;
 
 TDACR2RShow=class(TArduinoDACShow)
 protected
    procedure CreatePinShow(PinLs: array of TPanel;
                              PinVariant:TStringList);override;
-   procedure  SetHookNumberPinShow();override;
 public
  Constructor Create(DAC:TDACR2R;
                      CPL:TPanel;
@@ -95,7 +71,6 @@ public
                      VL,KL:TLabel;
                      VSB,KSB,RB:TButton;
                      PinVariant:TStringList);
-
 end;
 
 
@@ -140,7 +115,6 @@ begin
  OutputDataSignDetermination(Voltage);
  fOutputValue:=Voltage;
  DataByteToSendFromInteger(TDACR2R_Calibr.VoltToKod(Voltage));
-// PacketCreateAndSend();
  isNeededComPortState();
 end;
 
@@ -194,7 +168,6 @@ end;
 constructor TDACR2R.Create(CP:TComPort;Nm:string);
 begin
   inherited Create(CP,Nm);
-//  showmessage(Name);
   fCalibration:=TDACR2R_Calibr.Create;
 end;
 
@@ -216,12 +189,6 @@ end;
 
 { TDACR2RShow }
 
-//constructor TDACR2RShow.Create(DAC: TDACR2R;
-//                               CPL:TPanel;
-//                               VL,KL:TLabel;
-//                               VCB,VSB,KCB,KSB,RB:TButton;
-//                               PinVariant:TStringList
-//                               );
 Constructor TDACR2RShow.Create(DAC:TDACR2R;
                      CPL:TPanel;
                      VData,KData:TStaticText;
@@ -229,13 +196,7 @@ Constructor TDACR2RShow.Create(DAC:TDACR2R;
                      VSB,KSB,RB:TButton;
                      PinVariant:TStringList);
 begin
-// inherited Create(DAC,VL, KL, VCB, VSB, KCB, KSB, RB);
-// inherited Create(DAC, VData, KData, VL, KL, VSB, KSB, RB);
-// PinShow:=TOnePinsShow.Create(DAC.Pins,CPL,PinVariant);
-// PinShow.HookNumberPinShow:=DAC.PinsToDataArray;
-
  inherited Create(DAC,[CPL],PinVariant,VData, KData, VL, KL, VSB, KSB, RB)
-
 end;
 
 procedure TDACR2R_Calibr.Add(RequiredVoltage, RealVoltage: double);
@@ -383,34 +344,5 @@ procedure TDACR2RShow.CreatePinShow(PinLs: array of TPanel;
 begin
   PinShow:=TOnePinsShow.Create(fArduinoSetter.Pins,PinLs[0],PinVariant);
 end;
-
-procedure TDACR2RShow.SetHookNumberPinShow;
-begin
- PinShow.HookNumberPinShow:=(fArduinoSetter as TDACR2R).PinsToDataArray;
-end;
-
-//procedure TDACR2RShow.Free;
-//begin
-// PinShow.Free;
-// inherited Free;
-//end;
-//
-//procedure TDACR2RShow.ReadFromIniFile(ConfigFile: TIniFile);
-//begin
-// inherited ReadFromIniFile(ConfigFile);
-// PinShow.PinsReadFromIniFile(ConfigFile);
-//end;
-//
-//procedure TDACR2RShow.ReadFromIniFileAndToForm(ConfigFile: TIniFile);
-//begin
-// ReadFromIniFile(ConfigFile);
-// PinShow.NumberPinShow;
-//end;
-//
-//procedure TDACR2RShow.WriteToIniFile(ConfigFile: TIniFile);
-//begin
-// PinShow.PinsWriteToIniFile(ConfigFile);
-// inherited WriteToIniFile(ConfigFile);
-//end;
 
 end.

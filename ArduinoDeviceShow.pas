@@ -4,22 +4,6 @@ interface
  uses OlegType,SysUtils,Classes,
       StdCtrls, IniFiles,  ExtCtrls,  ArduinoDevice;
 
-const
-  UndefinedPin=255;
-  PacketBeginChar=#10;
-  PacketEndChar=#255;
-
-
-  PinNames:array[0..3]of string=
-   ('Control','Gate','LDAC','CLR');
-
-  DAC_Pos=$0F; //додатня напруга
-  DAC_Neg=$FF; //від'ємна напруга
-
-  PinChangeCommand=$7;
-  PinToHigh=$FF;
-  PinToLow=$0F;
-
 
 type
 
@@ -86,7 +70,6 @@ type
    PinShow:TPinsShowUniversal;
    procedure CreatePinShow(PinLs: array of TPanel;
                    PinVariant:TStringList);virtual;
-   procedure  SetHookNumberPinShow();virtual;
   public
    Constructor Create(ArdSet:TArduinoSetter;
                        PinLs: array of TPanel;
@@ -98,9 +81,6 @@ type
   end;
 
 implementation
-
-uses
-  Dialogs, D30_06;
 
 
 Constructor TPinsShow.Create(Ps:TPins;
@@ -206,11 +186,7 @@ begin
  inherited Create();
  fArduinoSetter:=ArdSet;
  CreatePinShow(PinLs,PinVariant);
- SetHookNumberPinShow();
-
-//if (fArduinoSetter is TD30_06) then   showmessage(fArduinoSetter.Name + ' jjj')
-//                               else   showmessage(fArduinoSetter.Name);
-// PinShow.HookNumberPinShow:=fArduinoSetter.PinsToDataArray;
+ PinShow.HookNumberPinShow:=fArduinoSetter.PinsToDataArray;
 end;
 
 procedure TArduinoSetterShow.CreatePinShow(PinLs: array of TPanel;
@@ -227,8 +203,6 @@ end;
 
 procedure TArduinoSetterShow.ReadFromIniFile(ConfigFile: TIniFile);
 begin
-// showmessage(PinShow.Pins.Name);
- showmessage(PinShow.Pins.Name+'ll');
  PinShow.PinsReadFromIniFile(ConfigFile);
 end;
 
@@ -238,15 +212,9 @@ begin
  PinShow.NumberPinShow;
 end;
 
-procedure TArduinoSetterShow.SetHookNumberPinShow;
-begin
- PinShow.HookNumberPinShow:=fArduinoSetter.PinsToDataArray;
-end;
-
 procedure TArduinoSetterShow.WriteToIniFile(ConfigFile: TIniFile);
 begin
   PinShow.PinsWriteToIniFile(ConfigFile);
 end;
-
 
 end.
