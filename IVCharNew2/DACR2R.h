@@ -17,7 +17,6 @@ class DACR2R: public SignPinObject,
 {
   public:
     DACR2R(byte SignPinNumber);
-//    void Action(byte Data1, byte Data2, byte Sign);
     bool Action();
     void DataTransfer();
     void BeginDataRead(byte Data1, byte Data2);

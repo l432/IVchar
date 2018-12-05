@@ -9,10 +9,14 @@ bool DACR2R::Action() {
   if (DeviceId != DACR2RCommand) return false;
   if (NumberByte < 8) return true;
   
-  BeginDataRead(Data4, Data5);
-  if (SignMustBeChangedDetermine(Data6))
+//  BeginDataRead(Data4, Data5);
+  SetPin(PinControl);
+//  if (SignMustBeChangedDetermine(Data6))
+  if (SignMustBeChangedDetermine(DataFromPC[6]))
     ChangeSign();
-  DataTransfer();
+//  DataTransfer();
+  TwoByteTransfer(DataFromPC[4], DataFromPC[5]);  
+//  TwoByteTransfer(Data4, Data5);  
   return true;
 }
 

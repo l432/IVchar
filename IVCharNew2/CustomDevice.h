@@ -17,13 +17,15 @@ class CustomDevice: public PinAndID
     }
 
     void GateOpen() {
-      digitalWrite(Data3, LOW);
+//      digitalWrite(Data3, LOW);
+      digitalWrite(DataFromPC[3], LOW);
       ShortDelay();
     }
 
     void GateClose() {
-      digitalWrite(Data3, HIGH);
-      ShortDelay();
+//      digitalWrite(Data3, HIGH);
+        digitalWrite(DataFromPC[3], HIGH);
+       ShortDelay();
     }
 
   public:
@@ -48,8 +50,10 @@ class CustomDevice: public PinAndID
     }
     bool PinChange() {
       if (DeviceId != PinChangeCommand) return false;
-      if (Data3 == PinToHigh) digitalWrite(PinControl, HIGH);
-      if (Data3 == PinToLow)  digitalWrite(PinControl, LOW);
+//      if (Data3 == PinToHigh) digitalWrite(PinControl, HIGH);
+//      if (Data3 == PinToLow)  digitalWrite(PinControl, LOW);
+      if (DataFromPC[3] == PinToHigh) digitalWrite(PinControl, HIGH);
+      if (DataFromPC[3] == PinToLow)  digitalWrite(PinControl, LOW);
       return true;
     }
 };

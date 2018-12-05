@@ -27,11 +27,12 @@ class PinAndID {
     static byte DeviceId;
     static byte ActionId;
     static byte PinControl;//PinControl;
-    static byte Data3;//PinGate;PinToChange
-    static byte Data4;//DAC_Data1
-    static byte Data5;//DAC_Data2
-    static byte Data6;//DAC_Sign  
+//    static byte Data3;//PinGate;PinToChange
+//    static byte Data4;//DAC_Data1
+//    static byte Data5;//DAC_Data2
+//    static byte Data6;//DAC_Sign  
     static void CreateAndSendPacket(byte DDATA[], int n);
+    static byte DataFromPC[PacketMaxLength];
 };
 
 

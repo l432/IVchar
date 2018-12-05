@@ -33,6 +33,13 @@ class SPIObject {
       digitalWrite(_pin, HIGH);
     }
 
+    void WordTransfer(byte HighByte, byte LowByte) {
+      uint16_t data = (HighByte << 8) + LowByte;
+      digitalWrite(_pin, LOW);
+      SPI.transfer16(data);
+      digitalWrite(_pin, HIGH);
+    }
+
 };
 
 #endif

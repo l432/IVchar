@@ -15,8 +15,10 @@ bool MCP3424o::Begin() {
   if ((NumberByte < 4) || (!isReady())) return true;
 
   SetAdress(PinControl);
-  Config(Data3);
-  ByteTransfer(Data3);
+//  Config(Data3);
+//  ByteTransfer(Data3);
+  Config(DataFromPC[3]);
+  ByteTransfer(DataFromPC[3]);
   Start();
   return true;
 }

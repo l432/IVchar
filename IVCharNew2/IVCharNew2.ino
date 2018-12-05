@@ -14,6 +14,7 @@
 #include "Custom.h"
 #include "OlegMCP3424.h"
 #include "OlegADS1115.h"
+#include "OlegAD9833.h"
 
 DS18B20o ds18b20;
 CustomDevice cd;
@@ -23,6 +24,7 @@ TMP102o tmp102;
 HTU21o  htu21;
 MCP3424o mcp3424;
 ADS1115o ads1115;
+AD9833o ad9833;
 
 
 void setup() {
@@ -63,7 +65,8 @@ void loop() {
       if (htu21.Begin()) goto start;
       if (tmp102.Begin()) goto start;
       if (mcp3424.Begin()) goto start;
-      if (ads1115.Begin()) goto start;      
+      if (ads1115.Begin()) goto start; 
+      if (ad9833.Action()) goto start;     
     }
   }
 start:

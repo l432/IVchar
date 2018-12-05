@@ -15,7 +15,6 @@ class D30_06: public DACR2R,
 {
   public:
     D30_06(byte SignPinNumber);
-//    void Begin(byte Data1, byte Data2, byte Sign);
     bool Begin();
     void Process();
 

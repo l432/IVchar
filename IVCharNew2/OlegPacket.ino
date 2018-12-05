@@ -80,12 +80,13 @@ byte PinToInterruptNumber(byte PinNumber) {
 byte PinAndID::NumberByte = 0;
 byte PinAndID::PinControl = 0;
 //byte PinAndID::PinGate = 0;
-byte PinAndID::Data3 = 0;
+//byte PinAndID::Data3 = 0;
 byte PinAndID::DeviceId = 0;
 byte PinAndID::ActionId = 0;
-byte PinAndID::Data4 = 0;
-byte PinAndID::Data5 = 0;
-byte PinAndID::Data6 = 0;
+//byte PinAndID::Data4 = 0;
+//byte PinAndID::Data5 = 0;
+//byte PinAndID::Data6 = 0;
+byte PinAndID::DataFromPC[PacketMaxLength]={0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
 
 
 void PinAndID::CreateAndSendPacket(byte DDATA[], int n) {

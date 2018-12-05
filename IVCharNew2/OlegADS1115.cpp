@@ -21,8 +21,10 @@ bool ADS1115o::Begin() {
 //  _AlertPin = Data3;
 //  Config(Data5);
 //  ThreeByteTransfer(ADS1115_REG_POINTER_CONFIG, Data4, Data5);
-  Config(Data4);
-  ThreeByteTransfer(ADS1115_REG_POINTER_CONFIG, Data3, Data4);
+//  Config(Data4);
+//  ThreeByteTransfer(ADS1115_REG_POINTER_CONFIG, Data3, Data4);
+  Config(DataFromPC[4]);
+  ThreeByteTransfer(ADS1115_REG_POINTER_CONFIG, DataFromPC[3], DataFromPC[4]);  
   Start();
   return true;
 }

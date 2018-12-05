@@ -9,8 +9,10 @@ bool D30_06::Begin() {
   if (DeviceId != D30_06Command) return false;
   if ((NumberByte < 8) || (!isReady())) return true;
 
-  BeginDataRead(Data4, Data5);
-  if (SignMustBeChangedDetermine(Data6))
+//  BeginDataRead(Data4, Data5);
+  BeginDataRead(DataFromPC[4], DataFromPC[5]);
+//  if (SignMustBeChangedDetermine(Data6))
+  if (SignMustBeChangedDetermine(DataFromPC[6]))
   {
     Start();
     TwoByteTransfer(0, 0);
