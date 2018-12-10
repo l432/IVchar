@@ -104,7 +104,7 @@ end;
 
 function TAD9833.ConvertFreqValueToKod(Freq: double): LongWord;
 begin
- Result:=round(min(Freq,AD9833_MaxFreq)*$10000000/25e6)and $0FFFFFFF;
+ Result:=round(min(Freq,AD9833_MaxFreq)*$10000000/25.0e6)and $0FFFFFFF;
 end;
 
 function TAD9833.ConvertPhaseValueToKod(Phase: double): word;
@@ -134,18 +134,6 @@ end;
 procedure TAD9833.Generate;
 begin
   Action();
-// if fMode=ad9833_mode_off then
-//  begin
-//   Reset();
-//   Exit;
-//  end;
-// SetLength(fData,2);
-//
-// PrepareToPhaseChange();
-// PrepareToFreqChange();
-// PrepareToModeChange();
-//
-// isNeededComPortState();
 end;
 
 procedure TAD9833.Action;
@@ -157,6 +145,7 @@ begin
    PrepareToFreqChange();
   end;
  PrepareToModeChange();
+// ShowData(fData);
  isNeededComPortState();
 end;
 
@@ -186,6 +175,8 @@ begin
  FreqLastLow:=word (fFreqLast[fActiveChanel] and $3FFF);
  FreqLastHigh:=word ((fFreqLast[fActiveChanel] shr 14)and $3FFF);
  fFreqLast[fActiveChanel]:=fFreq[fActiveChanel];
+
+
 
  if ((FreqLow<>FreqLastLow)and((FreqHigh<>FreqLastHigh))) then
   begin
@@ -254,13 +245,6 @@ procedure TAD9833.Reset;
 begin
  fMode:=ad9833_mode_off;
  Action();
-// fMode:=ad9833_mode_off;
-//  fControlByteHigh := fControlByteHigh and $3F; // Control Bits (D15, D14) to 00
-// fControlByteLow:=fControlByteLow or $C0;  // SLEEP1 (D7) and SLEEP12(D6) to 1
-// SetLength(fData,4);
-// fData[2] := fControlByteHigh;
-// fData[3] := fControlByteLow;
-// isNeededComPortState();
 end;
 
 
@@ -402,8 +386,16 @@ procedure TAD9833Show.SetParameters(ChanNumber: TAD9833_ChanelNumber);
 begin
   (fArduinoSetter as TAD9833).Mode:=TAD9833_Mode(fMode.ItemIndex);
   (fArduinoSetter as TAD9833).SetActiveChanel(ChanNumber);
-  (fArduinoSetter as TAD9833).SetFreq(ChanNumber, fFreqCh1Show.Data);
-  (fArduinoSetter as TAD9833).SetFreq(ChanNumber, fPhaseCh1Show.Data);
+  if ChanNumber=0 then
+   begin
+    (fArduinoSetter as TAD9833).SetFreq(ChanNumber, fFreqCh1Show.Data);
+    (fArduinoSetter as TAD9833).SetPhase(ChanNumber, fPhaseCh1Show.Data);
+   end            else
+   begin
+    (fArduinoSetter as TAD9833).SetFreq(ChanNumber, fFreqCh2Show.Data);
+    (fArduinoSetter as TAD9833).SetPhase(ChanNumber, fPhaseCh2Show.Data);
+   end;
+
 end;
 
 end.
