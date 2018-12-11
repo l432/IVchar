@@ -167,6 +167,7 @@ end;
 constructor TPID_ParametersShow.Create(Name: string;
                                        STKp, STKi, STKd, STNV, STTol: TStaticText;
                                        LKp, LKi, LKd, LNV, LTol: TLabel);
+ var i:TPID_Parameters;
 begin
    inherited Create;
   FName:=Name;
@@ -175,6 +176,8 @@ begin
   fParameterShow[ppKd]:=TDoubleParameterShow.Create(STKd,LKd,'Kd','Derivative term',0);
   fParameterShow[ppNV]:=TDoubleParameterShow.Create(STNV,LNV,'Needed','Needed Value',0,4);
   fParameterShow[ppTol]:=TDoubleParameterShow.Create(STTol,LTol,'Tolerance','Tolerance to Needed Value',1e-4);
+  for I := Low(TPID_Parameters) to High(TPID_Parameters) do
+   fParameterShow[i].SetName(FName);
 end;
 
 procedure TPID_ParametersShow.Free;
@@ -191,9 +194,11 @@ procedure TPID_ParametersShow.ReadFromIniFile(ConfigFile: TIniFile);
  var i:TPID_Parameters;
 begin
  for I := Low(TPID_Parameters) to High(TPID_Parameters) do
-  fParameterShow[i].Data:=ConfigFile.ReadFloat(PID_Param,
-                         fName+fParameterShow[i].STCaption.Caption,
-                         fParameterShow[i].DefaulValue);
+  fParameterShow[i].ReadFromIniFile(ConfigFile);
+//  fParameterShow[i].Data:=ConfigFile.ReadFloat(PID_Param,
+//                         fName+fParameterShow[i].STCaption.Caption,
+//                         fParameterShow[i].DefaulValue);
+
 end;
 
 procedure TPID_ParametersShow.SetName(const Value: string);
@@ -205,8 +210,9 @@ procedure TPID_ParametersShow.WriteToIniFile(ConfigFile: TIniFile);
  var i:TPID_Parameters;
 begin
  for I := Low(TPID_Parameters) to High(TPID_Parameters) do
-  WriteIniDef(ConfigFile, PID_Param, fName+fParameterShow[i].STCaption.Caption,
-              fParameterShow[i].Data,fParameterShow[i].DefaulValue);
+  fParameterShow[i].WriteToIniFile(ConfigFile);
+//  WriteIniDef(ConfigFile, PID_Param, fName+fParameterShow[i].STCaption.Caption,
+//              fParameterShow[i].Data,fParameterShow[i].DefaulValue);
 end;
 
 end.
