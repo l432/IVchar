@@ -93,7 +93,7 @@ TQueueRS232Device = class(TNamedInterfacedObject,IQueueRS232Device)
 end;
 
 
-
+//  http://www.sql.ru/forum/681753/delegirovanie-realizacii-metodov-interfeysa-drugomu-klassu
 
 TRS232Device=class(TNamedInterfacedObject)
   {базовий клас для пристроїв, які керуються
@@ -127,10 +127,10 @@ TRS232Meter=class(TRS232Device,IMeasurement)
    fIsReceived:boolean;
    fMinDelayTime:integer;
   {інтервал очікування перед початком перевірки
-  вхідного буфера, []=мс, за замовлуванням 0}
+  вхідного буфера, []=мс, за замовчуванням 0}
    fDelayTimeStep:integer;
    {проміжок часу, через який перевіряється
-   надходження даних, []=мс, за замовлуванням 10}
+   надходження даних, []=мс, за замовчуванням 10}
    fDelayTimeMax:integer;
    {максимальна кількість перевірок
    надходження даних, []=штук, за замовлуванням 130,

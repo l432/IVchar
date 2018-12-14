@@ -26,7 +26,8 @@ uses
   ArduinoADC in 'ArduinoADC.pas',
   ADS1115 in 'ADS1115.pas',
   AD9833 in 'AD9833.pas',
-  ArduinoDeviceShow in 'ArduinoDeviceShow.pas';
+  ArduinoDeviceShow in 'ArduinoDeviceShow.pas',
+  GDS_806S in 'GDS_806S.pas';
 
 {$R *.res}
 

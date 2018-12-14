@@ -10,7 +10,7 @@ uses
   CPortCtl, Grids, Chart, TeeProcs, Series, TeEngine, ExtCtrls, Buttons,
   ComCtrls, CPort, StdCtrls, Dialogs, Controls, Classes, D30_06,Math, PID, 
   MDevice, Spin,HighResolutionTimer, MCP3424, ADS1115, ArduinoDeviceShow, 
-  AD9833;
+  AD9833, GDS_806S;
 
 const
   MeasIV='IV characteristic';
@@ -514,6 +514,18 @@ type
     ST9866PhaseCh1: TStaticText;
     ST9866FreqCh1: TStaticText;
     RGAD9833Mode: TRadioGroup;
+    ComPortGDS: TComPort;
+    TS_GDS: TTabSheet;
+    GB_GDS_Com: TGroupBox;
+    ComCBGDS_Port: TComComboBox;
+    ComCBGDS_Baud: TComComboBox;
+    ST_GDS_Rate: TStaticText;
+    ST_GDS_StopBits: TStaticText;
+    ComCBGDS_Stop: TComComboBox;
+    ST_GDS_Parity: TStaticText;
+    ComCBGDS_Parity: TComComboBox;
+    LGDSPort: TLabel;
+    Button2: TButton;
 
     procedure FormCreate(Sender: TObject);
     procedure BConnectClick(Sender: TObject);
@@ -550,6 +562,7 @@ type
     procedure BET1255_show_saveClick(Sender: TObject);
     procedure SBGeneratorClick(Sender: TObject);
     procedure Button1Click(Sender: TObject);
+    procedure Button2Click(Sender: TObject);
   private
     procedure ComponentView;
     {початкове налаштування різних компонентів}
@@ -700,6 +713,8 @@ type
 
     ADS11115_Channels:array [TADS1115_ChanelNumber] of TADS1115_Channel;
     ADS11115_ChannelShows:array [TADS1115_ChanelNumber] of TADS1115_ChannelShow;
+
+    GDS_806S:TGDS_806S;
 
     IscVocPinChanger,LEDOpenPinChanger:TArduinoPinChanger;
     IscVocPinChangerShow,LEDOpenPinChangerShow:TArduinoPinChangerShow;
@@ -2171,6 +2186,11 @@ begin
  showmessage(inttostr(round(min(400,AD9833_MaxFreq)*$10000000/25e6)and $0FFFFFFF));
 end;
 
+procedure TIVchar.Button2Click(Sender: TObject);
+begin
+  GDS_806S.GetData;
+end;
+
 procedure TIVchar.BControlResetClick(Sender: TObject);
 begin
  if SBControlBegin.Down then
@@ -2426,11 +2446,16 @@ end;
 
 procedure TIVchar.ComPortsBegining;
 begin
-  ComPortsLoadSettings([ComPortUT70C,ComPortUT70B,ComPort1]);
+  ComPortsLoadSettings([ComPortUT70C,ComPortUT70B,ComPort1,ComPortGDS]);
   ComCBUT70CPort.UpdateSettings;
   ComCBUT70BPort.UpdateSettings;
   ComCBBR.UpdateSettings;
   ComCBPort.UpdateSettings;
+  ComCBGDS_Port.UpdateSettings;
+  ComCBGDS_Baud.UpdateSettings;
+  ComCBGDS_Stop.UpdateSettings;
+  ComCBGDS_Parity.UpdateSettings;
+
   ComDPacket.StartString := PacketBeginChar;
   ComDPacket.StopString := PacketEndChar;
   ComDPacket.ComPort := ComPort1;
@@ -2440,6 +2465,7 @@ begin
 //  PortBeginAction(ComPortUT70B, LUT70BPort, nil);
 //  PortBeginAction(ComPortUT70C, LUT70CPort, nil);
 
+  PortBeginAction(ComPortGDS, LGDSPort, nil);
 
   PortBeginAction(ComPort1, LConnected, BConnect);
 end;
@@ -2741,7 +2767,7 @@ begin
   DelayTimeWriteToIniFile;
   BoxToIniFile;
   ConstantShowToIniFileAndFree();
-  ComPortsWriteSettings([ComPortUT70C,ComPortUT70B,ComPort1]);
+  ComPortsWriteSettings([ComPortUT70C,ComPortUT70B,ComPort1,ComPortGDS]);
 end;
 
 procedure TIVchar.TemperatureOnTimeFirstMeas;
@@ -2867,8 +2893,10 @@ begin
        BUT70CMeas, SBUT70CAuto, Time,
        LUT70C_Hold,LUT70C_rec,LUT70C_AvTime,LUT70C_AVG);
 
+  GDS_806S:=TGDS_806S.Create(ComPortGDS,'GDS-806');
+
   ShowArray.Add([UT70BShow,UT70CShow]);
-  AnyObjectArray.Add([UT70B,UT70C]);
+  AnyObjectArray.Add([UT70B,UT70C,GDS_806S]);
 end;
 
 procedure TIVchar.ShowObjectsReadFromIniFileAndToForm;
@@ -3199,8 +3227,7 @@ end;
 
 procedure TIVchar.DACReadFromIniFileAndToForm;
 begin
-//  DACR2RShow.PinShow.PinsReadFromIniFile(ConfigFile);
-//  DACR2RShow.PinShow.NumberPinShow;
+
   DACR2RShow.ReadFromIniFileAndToForm(ConfigFile);
   ParametersFileWork(DACR2R.CalibrationRead);
 
@@ -3210,7 +3237,6 @@ end;
 
 procedure TIVchar.DACWriteToIniFile;
 begin
-//  DACR2RShow.PinShow.PinsWriteToIniFile(ConfigFile);
   DACR2RShow.WriteToIniFile(ConfigFile);
   D30_06Show.WriteToIniFile(ConfigFile);
   AD9833Show.WriteToIniFile(ConfigFile);
