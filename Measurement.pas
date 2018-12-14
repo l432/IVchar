@@ -378,6 +378,8 @@ begin
    MeasurementButton:=MB;
    AutoSpeedButton:=AB;
    Time:=TT;
+//   Time:=TTimer.Create(nil);
+//   Time.Interval:=3000;
    UnitLabel.Caption := '';
    MeasurementButton.OnClick:=MeasurementButtonClick;
    AutoSpeedButton.OnClick:=AutoSpeedButtonClick;

@@ -133,8 +133,8 @@ TRS232Meter=class(TRS232Device,IMeasurement)
    надходження даних, []=мс, за замовчуванням 10}
    fDelayTimeMax:integer;
    {максимальна кількість перевірок
-   надходження даних, []=штук, за замовлуванням 130,
-   тобто за замовлуванням інтервал очікуввання
+   надходження даних, []=штук, за замовчуванням 130,
+   тобто за замовчуванням інтервал очікуввання
    складає 0+10*130=1300 мс}
    fMeasureMode:Shortint;
    fDiapazon:Shortint;
@@ -155,7 +155,7 @@ TRS232Meter=class(TRS232Device,IMeasurement)
    RepeatInErrorCase:boolean;
    property NewData:boolean read GetNewData write SetNewData;
    property Value:double read GetValue write fValue;
-   property isReady:boolean read fIsReady write fIsReady;
+//   property isReady:boolean read fIsReady write fIsReady;
    property isReceived:boolean read fIsReceived write fIsReceived;
    property MinDelayTime:integer read  fMinDelayTime;
    property DelayTimeStep:integer read  fDelayTimeStep;
@@ -172,24 +172,24 @@ TRS232Meter=class(TRS232Device,IMeasurement)
   end;
 
 
- TRS232MeterVoltmeter=class(TRS232Meter)
-  {базовий клас для вимірювальних об'єктів,
-  які використовують обмін даних з COM-портом}
-  protected
-
-   fMeasureMode:Shortint;
-   fDiapazon:Shortint;
-   fMeasureModeAll:array of string;
-   fDiapazonAll:array of array of string;
-   Procedure MModeDetermination(Data:array of byte); override;//virtual;
-   Procedure DiapazonDetermination(Data:array of byte);override;// virtual;
-   Procedure ValueDetermination(Data:array of byte);override;//virtual;
-   Function MeasureModeLabelRead():string;override;//virtual;
-  public
-   property MeasureModeLabel:string read MeasureModeLabelRead;
-   property Diapazon:Shortint read fDiapazon;
-   Procedure ConvertToValue();override;
-  end;
+// TRS232MeterVoltmeter=class(TRS232Meter)
+//  {базовий клас для вимірювальних об'єктів,
+//  які використовують обмін даних з COM-портом}
+//  protected
+//
+//   fMeasureMode:Shortint;
+//   fDiapazon:Shortint;
+//   fMeasureModeAll:array of string;
+//   fDiapazonAll:array of array of string;
+//   Procedure MModeDetermination(Data:array of byte); override;//virtual;
+//   Procedure DiapazonDetermination(Data:array of byte);override;// virtual;
+//   Procedure ValueDetermination(Data:array of byte);override;//virtual;
+//   Function MeasureModeLabelRead():string;override;//virtual;
+//  public
+//   property MeasureModeLabel:string read MeasureModeLabelRead;
+//   property Diapazon:Shortint read fDiapazon;
+//   Procedure ConvertToValue();override;
+//  end;
 
 
 
@@ -452,40 +452,40 @@ end;
 
 //******************************************************
 
-{ TRS232MeterVoltmeter }
-
-procedure TRS232MeterVoltmeter.ConvertToValue();
-begin
-  MModeDetermination(fData);
-  if fMeasureMode=-1 then Exit;
-  DiapazonDetermination(fData);
-  if fDiapazon=-1 then Exit;
-
-  ValueDetermination(fData);
-  fIsready:=True;
-end;
-
-procedure TRS232MeterVoltmeter.DiapazonDetermination(Data: array of byte);
-begin
-
-end;
-
-
-function TRS232MeterVoltmeter.MeasureModeLabelRead: string;
-begin
- Result:='';
-end;
-
-
-procedure TRS232MeterVoltmeter.MModeDetermination(Data: array of byte);
-begin
-
-end;
-
-procedure TRS232MeterVoltmeter.ValueDetermination(Data: array of byte);
-begin
-
-end;
+//{ TRS232MeterVoltmeter }
+//
+//procedure TRS232MeterVoltmeter.ConvertToValue();
+//begin
+//  MModeDetermination(fData);
+//  if fMeasureMode=-1 then Exit;
+//  DiapazonDetermination(fData);
+//  if fDiapazon=-1 then Exit;
+//
+//  ValueDetermination(fData);
+//  fIsready:=True;
+//end;
+//
+//procedure TRS232MeterVoltmeter.DiapazonDetermination(Data: array of byte);
+//begin
+//
+//end;
+//
+//
+//function TRS232MeterVoltmeter.MeasureModeLabelRead: string;
+//begin
+// Result:='';
+//end;
+//
+//
+//procedure TRS232MeterVoltmeter.MModeDetermination(Data: array of byte);
+//begin
+//
+//end;
+//
+//procedure TRS232MeterVoltmeter.ValueDetermination(Data: array of byte);
+//begin
+//
+//end;
 
 
 procedure TRS232MetterShow.DiapazonFill;
