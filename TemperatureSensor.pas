@@ -112,7 +112,7 @@ begin
          fValue:=ErResult;
   if (fValue<-55)or(fValue>125) then fValue:=ErResult
                                 else fValue:=fValue+273.16;
- fIsReady:=True;
+// fIsReady:=True;
 end;
 
 { TThermoCuple }
@@ -198,7 +198,7 @@ begin
 
  if (fValue<-40)or(fValue>125) then fValue:=ErResult
                                 else fValue:=fValue+273.16;
- fIsReady:=True;
+// fIsReady:=True;
 end;
 
 function THTU21D.CRCCorrect: boolean;
@@ -249,7 +249,7 @@ begin
   fValue:=temp*0.0625;
  if (fValue<-55)or(fValue>128) then fValue:=ErResult
                                 else fValue:=fValue+273.16;
- fIsReady:=True;
+// fIsReady:=True;
 end;
 
 constructor TTMP102.Create(CP: TComPort; Nm: string);

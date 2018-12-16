@@ -144,7 +144,7 @@ begin
     end;
 
   fValue:=temp*MCP3424_LSB[FResolution]/MCP3424_Gain_Data[FGain];
-  fIsReady:=True;
+//  fIsReady:=True;
 end;
 
 procedure TMCP3424_Module.Intitiation;

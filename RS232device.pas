@@ -123,7 +123,7 @@ TRS232Meter=class(TRS232Device,IMeasurement)
   які використовують обмін даних з COM-портом}
   protected
    fValue:double;
-   fIsReady:boolean;
+//   fIsReady:boolean;
    fIsReceived:boolean;
    fMinDelayTime:integer;
   {інтервал очікування перед початком перевірки
@@ -172,24 +172,27 @@ TRS232Meter=class(TRS232Device,IMeasurement)
   end;
 
 
-// TRS232MeterVoltmeter=class(TRS232Meter)
-//  {базовий клас для вимірювальних об'єктів,
-//  які використовують обмін даних з COM-портом}
-//  protected
-//
-//   fMeasureMode:Shortint;
-//   fDiapazon:Shortint;
-//   fMeasureModeAll:array of string;
-//   fDiapazonAll:array of array of string;
-//   Procedure MModeDetermination(Data:array of byte); override;//virtual;
-//   Procedure DiapazonDetermination(Data:array of byte);override;// virtual;
-//   Procedure ValueDetermination(Data:array of byte);override;//virtual;
-//   Function MeasureModeLabelRead():string;override;//virtual;
-//  public
-//   property MeasureModeLabel:string read MeasureModeLabelRead;
-//   property Diapazon:Shortint read fDiapazon;
-//   Procedure ConvertToValue();override;
-//  end;
+
+ TRS232MeterComplexDevice=class(TInterfacedObject,IMeasurement)
+  {базовий клас для вимірювальних об'єктів,
+  які використовують обмін даних з COM-портом}
+   procedure ConvertAction;
+  protected
+   fMeasureMode:Shortint;
+   fDiapazon:Shortint;
+   fMeasureModeAll:array of string;
+   fDiapazonAll:array of array of string;
+   fRS232Meter:TRS232Meter;
+   Procedure MModeDetermination(Data:array of byte); virtual;abstract;
+   Procedure DiapazonDetermination(Data:array of byte);virtual;abstract;
+   Procedure ValueDetermination(Data:array of byte);virtual;abstract;
+   Function MeasureModeLabelRead():string;virtual;abstract;
+  public
+   property MeasureModeLabel:string read MeasureModeLabelRead;
+   property Diapazon:Shortint read fDiapazon;
+   property RS232Meter:TRS232Meter read fRS232Meter implements IMeasurement;
+   Constructor Create(RS232Meter:TRS232Meter);
+  end;
 
 
 
@@ -325,7 +328,7 @@ begin
   if fDiapazon=-1 then Exit;
 
   ValueDetermination(fData);
-  fIsready:=True;
+//  fIsready:=True;
 end;
 
 constructor TRS232Meter.Create(CP:TComPort;Nm:string);
@@ -333,7 +336,7 @@ begin
   inherited Create(CP,Nm);
   fComPacket.OnPacket:=PacketReceiving;
 
-  fIsReady:=False;
+//  fIsReady:=False;
   fIsReceived:=False;
   fMinDelayTime:=0;
   fDelayTimeStep:=10;
@@ -371,7 +374,7 @@ end;
 
 procedure TRS232Meter.MeasurementBegin;
 begin
-  fIsReady := False;
+//  fIsReady := False;
   fIsReceived:=False;
   fError:=False;
 end;
@@ -392,7 +395,8 @@ var i:integer;
     isFirst:boolean;
 begin
 
- Result:=ErResult;
+// Result:=ErResult;
+ fValue:=ErResult;
  isFirst:=True;
 start:
   MeasurementBegin;
@@ -408,7 +412,8 @@ start:
  until ((i>fDelayTimeMax)or(fIsReceived)or(fError));
 // showmessage(inttostr((GetTickCount-i0)));
  if fIsReceived then ConvertToValue();
- if fIsReady then Result:=fValue;
+// if fIsReady then
+ Result:=fValue;
 
 // if ((Result=ErResult)or(ResultProblem(Result)))and(isFirst) then
  if (RepeatInErrorCase) and (Result=ErResult)and(isFirst) then
@@ -780,6 +785,25 @@ end;
 procedure TQueueRS232Device.SetIsNeededComPort(Value: boolean);
 begin
   fisNeededComPort:=Value;
+end;
+
+{ TRS232MeterComplexDevice }
+
+procedure TRS232MeterComplexDevice.ConvertAction;
+begin
+  fRS232Meter.fValue:=ErResult;
+  MModeDetermination(fRS232Meter.fData);
+  if fMeasureMode=-1 then Exit;
+  DiapazonDetermination(fRS232Meter.fData);
+  if fDiapazon=-1 then Exit;
+
+  ValueDetermination(fRS232Meter.fData);
+end;
+
+constructor TRS232MeterComplexDevice.Create(RS232Meter: TRS232Meter);
+begin
+ fRS232Meter:=RS232Meter;
+// fRS232Meter.ConvertToValue:=ConvertAction;
 end;
 
 initialization

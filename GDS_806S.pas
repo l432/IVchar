@@ -60,7 +60,7 @@ procedure TGDS_806S.PacketReceiving(Sender: TObject; const Str: string);
 begin
 showmessage(STR);
 fIsReceived:=True;
-fIsReady:=True;
+//fIsReady:=True;
 fValue:=0;
 
 end;

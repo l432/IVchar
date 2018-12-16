@@ -178,7 +178,7 @@ begin
     temp:=-((not(temp)+$1)and $7fff);
 
   fValue:=temp*ADS1115_LSB*ADS1115_Gain_Data[FGain];
-  fIsReady:=True;
+//  fIsReady:=True;
 end;
 
 procedure TADS1115_Module.FinalPacketCreateToSend;

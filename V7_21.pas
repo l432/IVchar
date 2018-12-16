@@ -249,10 +249,10 @@ begin
 end;
 
 Procedure TV721A.MModeDetermination(Data:array of byte);
- var temp:byte;
+// var temp:byte;
 begin
- temp:=Data[2] and $0F;
-  case temp of
+// temp:=Data[2] and $0F;
+  case (Data[2] and $0F) of
    1: fMeasureMode:=ord(UD);
    2: fMeasureMode:=ord(UA);
    4: fMeasureMode:=ord(ID);
@@ -262,10 +262,10 @@ begin
 end;
 
 Procedure TV721.MModeDetermination(Data:array of byte);
- var temp:byte;
+// var temp:byte;
 begin
- temp:=Data[2] and $0F;
-  case temp of
+// temp:=Data[2] and $0F;
+  case (Data[2] and $0F) of
    7: fMeasureMode:=ord(UD);
    5: fMeasureMode:=ord(UA);
    3: fMeasureMode:=ord(ID);
