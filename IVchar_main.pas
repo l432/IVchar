@@ -526,6 +526,12 @@ type
     ComCBGDS_Parity: TComComboBox;
     LGDSPort: TLabel;
     Button2: TButton;
+    GB_GDS_Set: TGroupBox;
+    LGDS_Mode: TLabel;
+    STGDS_Mode: TStaticText;
+    B_GDS_SetSet: TButton;
+    B_GDS_SetGet: TButton;
+    B_GDS_Test: TButton;
 
     procedure FormCreate(Sender: TObject);
     procedure BConnectClick(Sender: TObject);
@@ -715,6 +721,7 @@ type
     ADS11115_ChannelShows:array [TADS1115_ChanelNumber] of TADS1115_ChannelShow;
 
     GDS_806S:TGDS_806S;
+    GDS_806S_Show:TGDS_806S_Show;
 
     IscVocPinChanger,LEDOpenPinChanger:TArduinoPinChanger;
     IscVocPinChangerShow,LEDOpenPinChangerShow:TArduinoPinChangerShow;
@@ -2188,7 +2195,8 @@ end;
 
 procedure TIVchar.Button2Click(Sender: TObject);
 begin
-  GDS_806S.GetData;
+ showmessage(inttostr(GDS_806S_Show.Help));
+//  GDS_806S.GetData;
 end;
 
 procedure TIVchar.BControlResetClick(Sender: TObject);
@@ -2894,8 +2902,11 @@ begin
        LUT70C_Hold,LUT70C_rec,LUT70C_AvTime,LUT70C_AVG);
 
   GDS_806S:=TGDS_806S.Create(ComPortGDS,'GDS-806');
+  GDS_806S_Show:=TGDS_806S_Show.Create(GDS_806S,
+                  STGDS_Mode,LGDS_Mode,
+                  B_GDS_SetSet,B_GDS_SetGet,B_GDS_Test);
 
-  ShowArray.Add([UT70BShow,UT70CShow]);
+  ShowArray.Add([UT70BShow,UT70CShow,GDS_806S_Show]);
   AnyObjectArray.Add([UT70B,UT70C,GDS_806S]);
 end;
 
@@ -2941,6 +2952,13 @@ begin
       (ShowArray.ObjectArray[i] as TDAC_Show).ReadFromIniFile(ConfigFile);
       Continue;
      end;
+
+   if (ShowArray.ObjectArray[i] is TGDS_806S_Show) then
+     begin
+      (ShowArray.ObjectArray[i] as TGDS_806S_Show).ReadFromIniFile(ConfigFile);
+      (ShowArray.ObjectArray[i] as TGDS_806S_Show).SettingToObject();
+      Continue;
+     end;
   end;
 
 end;
@@ -2965,6 +2983,13 @@ begin
     begin
     (ShowArray.ObjectArray[i] as TDAC_Show).WriteToIniFile(ConfigFile);
     (ShowArray.ObjectArray[i] as TDAC_Show).Free;
+    Continue;
+    end;
+
+   if (ShowArray.ObjectArray[i] is TGDS_806S_Show) then
+    begin
+    (ShowArray.ObjectArray[i] as TGDS_806S_Show).WriteToIniFile(ConfigFile);
+    (ShowArray.ObjectArray[i] as TGDS_806S_Show).Free;
     Continue;
     end;
 

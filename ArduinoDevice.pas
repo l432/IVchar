@@ -187,7 +187,7 @@ type
 implementation
 
 uses
-  Math, Forms, Graphics, Controls;
+  Math, Forms, Graphics, Controls, OlegFunction;
 
 
 { TArduinoMeter }
@@ -712,10 +712,11 @@ begin
 end;
 
 procedure TPinsShowUniversal.VariantsShowAndSelect(Sender: TObject);
-var Form:TForm;
-    ButOk,ButCancel: TButton;
-    RG:TRadioGroup;
+var //Form:TForm;
+//    ButOk,ButCancel: TButton;
+//    RG:TRadioGroup;
     PinNumber:byte;
+    index:shortint;
     i:integer;
 begin
  if (Sender is TPanel) then
@@ -723,64 +724,87 @@ begin
                        else
    PinNumber:=0;
 
- Form:=TForm.Create(Application);
- Form.Position:=poMainFormCenter;
- Form.AutoScroll:=True;
- Form.BorderIcons:=[biSystemMenu];
- Form.ParentFont:=True;
- Form.Font.Style:=[fsBold];
- Form.Font.Height:=-16;
- Form.Caption:='Set ' + LowerCase(Pins.PNames[PinNumber]+Pins.PinStrPart);
- Form.Color:=clMoneyGreen;
- RG:=TRadioGroup.Create(Form);
- RG.Parent:=Form;
- RG.Items:=fPinVariants[PinNumber];
- for I := 0 to RG.Items.Count - 1 do
-  if Pins.StrToPinValue(RG.Items[i])=Pins.fPins[PinNumber] then
+ index:=-1;
+ for I := 0 to fPinVariants[PinNumber].Count - 1 do
+  if Pins.StrToPinValue(fPinVariants[PinNumber].Strings[i])=Pins.fPins[PinNumber] then
    begin
-     RG.ItemIndex:=i;
+     index:=i;
      Break;
    end;
 
 
- if RG.Items.Count>8 then  RG.Columns:=3
-                     else  RG.Columns:=2;
- RG.Width:=RG.Columns*200+20;
- RG.Height:=Ceil(RG.Items.Count/RG.Columns)*50+20;
- Form.Width:=RG.Width;
- Form.Height:=RG.Height+100;
-  RG.Align:=alTop;
+i:=SelectFromVariants(fPinVariants[PinNumber],index,
+                   'Set ' + LowerCase(Pins.PNames[PinNumber]+Pins.PinStrPart));
 
- ButOk:=TButton.Create(Form);
- ButOk.Parent:=Form;
- ButOk.ParentFont:=True;
- ButOk.Height:=30;
- ButOk.Width:=79;
- ButOk.Caption:='Ok';
- ButOk.ModalResult:=mrOk;
- ButOk.Top:=RG.Height+10;
- ButOk.Left:=round((Form.Width-2*ButOk.Width)/3.0);
-
- ButCancel:=TButton.Create(Form);
- ButCancel.Parent:=Form;
- ButCancel.ParentFont:=True;
- ButCancel.Height:=30;
- ButCancel.Width:=79;
- ButCancel.Caption:='Cancel';
- ButCancel.ModalResult:=mrCancel;
- ButCancel.Top:=RG.Height+10;
- ButCancel.Left:=2*ButOk.Left+ButOk.Width;
-
-  if Form.ShowModal=mrOk then
-   begin
-    Pins.SetStrToPinValue(RG.Items[RG.ItemIndex],PinNumber);
+if i>-1 then
+  begin
+    Pins.SetStrToPinValue(fPinVariants[PinNumber].Strings[i],PinNumber);
     NumberPinShow();
-   end;
+  end;
 
- for I := Form.ComponentCount-1 downto 0 do
-     Form.Components[i].Free;
- Form.Hide;
- Form.Release;
+// if (Sender is TPanel) then
+//   PinNumber:=(Sender as TPanel).Tag
+//                       else
+//   PinNumber:=0;
+//
+// Form:=TForm.Create(Application);
+// Form.Position:=poMainFormCenter;
+// Form.AutoScroll:=True;
+// Form.BorderIcons:=[biSystemMenu];
+// Form.ParentFont:=True;
+// Form.Font.Style:=[fsBold];
+// Form.Font.Height:=-16;
+// Form.Caption:='Set ' + LowerCase(Pins.PNames[PinNumber]+Pins.PinStrPart);
+// Form.Color:=clMoneyGreen;
+// RG:=TRadioGroup.Create(Form);
+// RG.Parent:=Form;
+// RG.Items:=fPinVariants[PinNumber];
+// for I := 0 to RG.Items.Count - 1 do
+//  if Pins.StrToPinValue(RG.Items[i])=Pins.fPins[PinNumber] then
+//   begin
+//     RG.ItemIndex:=i;
+//     Break;
+//   end;
+//
+//
+// if RG.Items.Count>8 then  RG.Columns:=3
+//                     else  RG.Columns:=2;
+// RG.Width:=RG.Columns*200+20;
+// RG.Height:=Ceil(RG.Items.Count/RG.Columns)*50+20;
+// Form.Width:=RG.Width;
+// Form.Height:=RG.Height+100;
+//  RG.Align:=alTop;
+//
+// ButOk:=TButton.Create(Form);
+// ButOk.Parent:=Form;
+// ButOk.ParentFont:=True;
+// ButOk.Height:=30;
+// ButOk.Width:=79;
+// ButOk.Caption:='Ok';
+// ButOk.ModalResult:=mrOk;
+// ButOk.Top:=RG.Height+10;
+// ButOk.Left:=round((Form.Width-2*ButOk.Width)/3.0);
+//
+// ButCancel:=TButton.Create(Form);
+// ButCancel.Parent:=Form;
+// ButCancel.ParentFont:=True;
+// ButCancel.Height:=30;
+// ButCancel.Width:=79;
+// ButCancel.Caption:='Cancel';
+// ButCancel.ModalResult:=mrCancel;
+// ButCancel.Top:=RG.Height+10;
+// ButCancel.Left:=2*ButOk.Left+ButOk.Width;
+//
+//  if Form.ShowModal=mrOk then
+//   begin
+//    Pins.SetStrToPinValue(RG.Items[RG.ItemIndex],PinNumber);
+//    NumberPinShow();
+//   end;
+//
+// for I := Form.ComponentCount-1 downto 0 do
+//     Form.Components[i].Free;
+// Form.Hide;
+// Form.Release;
 
 end;
 

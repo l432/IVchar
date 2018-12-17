@@ -4,7 +4,7 @@ interface
 
 uses
   StdCtrls, IniFiles, Windows, ComCtrls, ArduinoDevice, OlegType, Series,
-  Measurement, ExtCtrls, Classes, ArduinoDeviceShow;
+  Measurement, ExtCtrls, Classes, ArduinoDeviceShow, TeCanvas;
 
 const DoubleConstantSection='DoubleConstant';
       NoFile='no file';
@@ -31,7 +31,7 @@ type
     {перетворення str в рядок, де число
     у потрібному форматі,
     можливі помилки не відловлюються, див. ParameterClick}
-    procedure ParameterClick(Sender: TObject);
+    procedure ParameterClick(Sender: TObject);virtual;
    public
     property ColorChangeWithParameter:boolean read FColorChangeWithParameter write FColorChangeWithParameter;
     Constructor Create(STD:TStaticText;
@@ -100,6 +100,33 @@ type
                        InitValue:integer
     );overload;
     property Data:integer read GetData write SetData;
+    procedure ReadFromIniFile(ConfigFile:TIniFile);override;
+    procedure WriteToIniFile(ConfigFile:TIniFile);override;
+  end;  //   TIntegerParameterShow=class (TParameterShow)
+
+
+  TStringParameterShow=class (TParameterShow)
+//    FDefaulValue:integer;
+    fDataVariants:TStringList;
+    function StringToExpectedStringConvertion(str:string):string;override;
+    function GetData:ShortInt;
+    procedure SetData(value:ShortInt);
+//    procedure SetDefaulValue(const Value: integer);
+    procedure ParameterClick(Sender: TObject);override;
+   public
+//    property DefaulValue:integer read FDefaulValue write SetDefaulValue;
+//    Constructor Create(STD:TStaticText;
+//                       STC:TLabel;
+//                       ParametrCaption:string;
+//                       WT:string;
+//                       InitValue:integer
+//    );overload;
+    Constructor Create(STD:TStaticText;
+                       STC:TLabel;
+                       ParametrCaption:string;
+                       DataVariants: TStringList
+    );
+    property Data:ShortInt read GetData write SetData;
     procedure ReadFromIniFile(ConfigFile:TIniFile);override;
     procedure WriteToIniFile(ConfigFile:TIniFile);override;
   end;  //   TIntegerParameterShow=class (TParameterShow)
@@ -200,7 +227,7 @@ Procedure MelodyLong();
 implementation
 
 uses
-  Dialogs, SysUtils, Math, Controls, Graphics;
+  Dialogs, SysUtils, Math, Controls, Graphics, Forms, OlegFunction;
 
 
 function LastFileName(Mask:string):string;
@@ -668,5 +695,125 @@ begin
   fDAC_Show.WriteToIniFile(ConfigFile);
 end;
 
+
+{ TStringParameterShow }
+
+constructor TStringParameterShow.Create(STD: TStaticText;
+                                        STC: TLabel;
+                                        ParametrCaption: string;
+                                        DataVariants: TStringList);
+begin
+  inherited Create(STD,STC,ParametrCaption,'');
+  fDataVariants:=DataVariants;
+  STData.Caption:=fDataVariants.Strings[0];
+end;
+
+function TStringParameterShow.GetData: ShortInt;
+begin
+ Result:=fDataVariants.IndexOf(STData.Caption);
+end;
+
+procedure TStringParameterShow.ParameterClick(Sender: TObject);
+var
+//Form:TForm;
+//    ButOk,ButCancel: TButton;
+//    RG:TRadioGroup;
+    i:ShortInt;
+begin
+
+ i:=SelectFromVariants(fDataVariants,Data,fWindowCaption);
+ if i>-1 then
+   begin
+    STData.Caption:=fDataVariants.Strings[i];
+    if ColorChangeWithParameter then ColorToActive(false);
+   end;
+//
+//
+// Form:=TForm.Create(Application);
+// Form.Position:=poMainFormCenter;
+// Form.AutoScroll:=True;
+// Form.BorderIcons:=[biSystemMenu];
+// Form.ParentFont:=True;
+// Form.Font.Style:=[fsBold];
+// Form.Font.Height:=-16;
+//
+// Form.Caption:=fWindowCaption;
+//
+// Form.Color:=clMoneyGreen;
+// RG:=TRadioGroup.Create(Form);
+// RG.Parent:=Form;
+//
+// RG.Items:=fDataVariants;
+//
+// RG.ItemIndex:=Data;
+//
+//
+// if RG.Items.Count>8 then  RG.Columns:=3
+//                     else  RG.Columns:=2;
+// RG.Width:=RG.Columns*200+20;
+// RG.Height:=Ceil(RG.Items.Count/RG.Columns)*50+20;
+// Form.Width:=RG.Width;
+// Form.Height:=RG.Height+100;
+//  RG.Align:=alTop;
+//
+// ButOk:=TButton.Create(Form);
+// ButOk.Parent:=Form;
+// ButOk.ParentFont:=True;
+// ButOk.Height:=30;
+// ButOk.Width:=79;
+// ButOk.Caption:='Ok';
+// ButOk.ModalResult:=mrOk;
+// ButOk.Top:=RG.Height+10;
+// ButOk.Left:=round((Form.Width-2*ButOk.Width)/3.0);
+//
+// ButCancel:=TButton.Create(Form);
+// ButCancel.Parent:=Form;
+// ButCancel.ParentFont:=True;
+// ButCancel.Height:=30;
+// ButCancel.Width:=79;
+// ButCancel.Caption:='Cancel';
+// ButCancel.ModalResult:=mrCancel;
+// ButCancel.Top:=RG.Height+10;
+// ButCancel.Left:=2*ButOk.Left+ButOk.Width;
+//
+// if Form.ShowModal=mrOk then
+//   begin
+//    STData.Caption:=fDataVariants.Strings[RG.ItemIndex];
+//    if ColorChangeWithParameter then ColorToActive(false);
+//   end;
+//
+// for I := Form.ComponentCount-1 downto 0 do
+//     Form.Components[i].Free;
+// Form.Hide;
+// Form.Release;
+end;
+
+procedure TStringParameterShow.ReadFromIniFile(ConfigFile: TIniFile);
+ var i:ShortInt;
+begin
+ if Name='' then Exit;
+ i:=ConfigFile.ReadInteger(fName,STCaption.Caption,0);
+ if (i<0) or (i>=fDataVariants.Count) then i:=0;
+ STData.Caption:=fDataVariants.Strings[i];
+end;
+
+procedure TStringParameterShow.SetData(value: ShortInt);
+begin
+ if (Value>-1) and (Value<fDataVariants.Count) then
+  STData.Caption:=fDataVariants.Strings[Value];
+end;
+
+function TStringParameterShow.StringToExpectedStringConvertion(
+  str: string): string;
+begin
+ Result:=str;
+end;
+
+procedure TStringParameterShow.WriteToIniFile(ConfigFile: TIniFile);
+begin
+ if Name='' then Exit;
+// showmessage(inttostr(Data));
+ WriteIniDef(ConfigFile, fName, STCaption.Caption, Data, -1);
+end;
 
 end.
