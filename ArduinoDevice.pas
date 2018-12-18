@@ -104,7 +104,7 @@ type
    procedure PinsCreate();virtual;
   public
    Pins:TPins;
-   Constructor Create(CP:TComPort;Nm:string);override;
+   Constructor Create(CP:TComPort;Nm:string);//override;
    procedure Free;
   end;
 
@@ -115,7 +115,7 @@ type
    procedure PinsCreate();override;
   public
    property PinUnderControl:byte read fPinUnderControl write fPinUnderControl;
-   Constructor Create(CP:TComPort;Nm:string);override;
+   Constructor Create(CP:TComPort;Nm:string);//override;
    procedure PinChangeToHigh();
    procedure PinChangeToLow();
   end;
@@ -130,7 +130,7 @@ type
    procedure PinsCreate();virtual;
   public
    Pins:TPins;
-   Constructor Create(CP:TComPort;Nm:string);override;
+   Constructor Create(CP:TComPort;Nm:string);//override;
    Procedure Free;
   end;
 
@@ -147,7 +147,7 @@ type
    procedure PacketCreateToSend(); override;
   public
    Pins:TPins;
-   Constructor Create(CP:TComPort;Nm:string);override;
+   Constructor Create(CP:TComPort;Nm:string);//override;
    Procedure Free;
    procedure PinsToDataArray;virtual;   
   end;

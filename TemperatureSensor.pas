@@ -25,7 +25,7 @@ type
   protected
    procedure PinsCreate();override;
   public
-   Constructor Create(CP:TComPort;Nm:string);override;
+   Constructor Create(CP:TComPort;Nm:string);//override;
    Procedure ConvertToValue();override;
   end;
 
@@ -35,7 +35,7 @@ type
     Function CRCCorrect():boolean;
     Procedure PacketCreateToSend();override;
   public
-   Constructor Create(CP:TComPort;Nm:string);override;
+   Constructor Create(CP:TComPort;Nm:string);//override;
    Procedure ConvertToValue();override;
   end;
 
@@ -44,7 +44,7 @@ type
   protected
    procedure PinsCreate();override;
   public
-   Constructor Create(CP:TComPort;Nm:string);override;
+   Constructor Create(CP:TComPort;Nm:string);//override;
    Procedure ConvertToValue();override;
   end;
 

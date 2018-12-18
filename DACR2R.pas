@@ -61,7 +61,7 @@ protected
  procedure CreateHook;override;
  procedure PinsCreate();override;
 public
- Constructor Create(CP:TComPort;Nm:string);override;
+ Constructor Create(CP:TComPort;Nm:string);//override;
  Procedure Free;
  Procedure CalibrationRead();
  Procedure CalibrationWrite();

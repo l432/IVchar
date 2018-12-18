@@ -532,6 +532,20 @@ type
     B_GDS_SetSet: TButton;
     B_GDS_SetGet: TButton;
     B_GDS_Test: TButton;
+    B_GDS_SetSav: TButton;
+    B_GDS_SetLoad: TButton;
+    B_GDS_SetAuto: TButton;
+    B_GDS_SetDef: TButton;
+    LGDS_RLength: TLabel;
+    STGDS_RLength: TStaticText;
+    LGDS_AveNum: TLabel;
+    STGDS_AveNum: TStaticText;
+    Panel4: TPanel;
+    Panel5: TPanel;
+    Chart1: TChart;
+    PointSeries1: TPointSeries;
+    Label1: TLabel;
+    Label2: TLabel;
 
     procedure FormCreate(Sender: TObject);
     procedure BConnectClick(Sender: TObject);
@@ -2903,8 +2917,11 @@ begin
 
   GDS_806S:=TGDS_806S.Create(ComPortGDS,'GDS-806');
   GDS_806S_Show:=TGDS_806S_Show.Create(GDS_806S,
-                  STGDS_Mode,LGDS_Mode,
-                  B_GDS_SetSet,B_GDS_SetGet,B_GDS_Test);
+                  [STGDS_Mode, STGDS_RLength, STGDS_AveNum],
+                  [LGDS_Mode,  LGDS_RLength, LGDS_AveNum],
+                  [B_GDS_SetSet,B_GDS_SetGet,B_GDS_Test,
+                  B_GDS_SetSav,B_GDS_SetLoad,
+                  B_GDS_SetAuto,B_GDS_SetDef]);
 
   ShowArray.Add([UT70BShow,UT70CShow,GDS_806S_Show]);
   AnyObjectArray.Add([UT70B,UT70C,GDS_806S]);

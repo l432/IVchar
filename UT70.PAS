@@ -131,7 +131,7 @@ type
      Procedure ValueDetermination(Data:array of byte);override;
      Function MeasureModeLabelRead():string;override;
    public
-     Constructor Create(CP:TComPort;Nm:string);override;
+     Constructor Create(CP:TComPort;Nm:string);//override;
      procedure Request();override;
   end;
 
@@ -166,7 +166,7 @@ type
      Procedure ValueDetermination(Data:array of byte);override;
      Function MeasureModeLabelRead():string;override;
    public
-     Constructor Create(CP:TComPort;Nm:string);override;
+     Constructor Create(CP:TComPort;Nm:string);//override;
      procedure Request();override;
      procedure PushPeak;
      procedure PushHold;

@@ -51,6 +51,20 @@ type
                                  ActiveColor:boolean=false);overload;
   end;  //   TParameterShow=class (TNamedInterfacedObject)
 
+  TParameterShowArray=class
+   private
+    fParameterShowArray:array of TParameterShow;
+    function GetCount:integer;
+   public
+    constructor Create(PSA:array of TParameterShow);
+    procedure Free;
+    procedure ReadFromIniFile(ConfigFile:TIniFile);
+    procedure WriteToIniFile(ConfigFile:TIniFile);
+    procedure ColorToActive(Value:boolean);
+    procedure ForUseInShowObject(NamedObject:TNamedInterfacedObject);
+    property Count:integer read GetCount;
+  end;
+
   TDoubleParameterShow=class (TParameterShow)
    private
     FDefaulValue:double;
@@ -814,6 +828,59 @@ begin
  if Name='' then Exit;
 // showmessage(inttostr(Data));
  WriteIniDef(ConfigFile, fName, STCaption.Caption, Data, -1);
+end;
+
+{ TParameterShowArray }
+
+procedure TParameterShowArray.ColorToActive(Value: boolean);
+ var     I:byte;
+begin
+ for I := 0 to High(fParameterShowArray) do
+   fParameterShowArray[i].ColorToActive(Value);
+end;
+
+constructor TParameterShowArray.Create(PSA: array of TParameterShow);
+ var     i:byte;
+begin
+ SetLength(fParameterShowArray,High(PSA)+1);
+ for I := 0 to High(PSA) do
+   fParameterShowArray[i]:=PSA[i];
+end;
+
+
+procedure TParameterShowArray.ForUseInShowObject(
+       NamedObject: TNamedInterfacedObject);
+ var     I:byte;
+begin
+ for I := 0 to High(fParameterShowArray) do
+   fParameterShowArray[i].ForUseInShowObject(NamedObject);
+end;
+
+procedure TParameterShowArray.Free;
+ var     I:byte;
+begin
+ for I := 0 to High(fParameterShowArray) do
+   fParameterShowArray[i].Free;
+ inherited Free;
+end;
+
+function TParameterShowArray.GetCount: integer;
+begin
+ Result:=High(fParameterShowArray)+1;
+end;
+
+procedure TParameterShowArray.ReadFromIniFile(ConfigFile: TIniFile);
+ var     I:byte;
+begin
+ for I := 0 to High(fParameterShowArray) do
+   fParameterShowArray[i].ReadFromIniFile(ConfigFile);
+end;
+
+procedure TParameterShowArray.WriteToIniFile(ConfigFile: TIniFile);
+ var     I:byte;
+begin
+ for I := 0 to High(fParameterShowArray) do
+   fParameterShowArray[i].WriteToIniFile(ConfigFile);
 end;
 
 end.

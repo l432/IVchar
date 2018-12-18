@@ -418,6 +418,8 @@ object IVchar: TIVchar
     object TS_B7_21A: TTabSheet
       Caption = 'B7_21A'
       ImageIndex = 1
+      ExplicitLeft = 6
+      ExplicitTop = 85
       object LV721A: TLabel
         Left = 269
         Top = 19
@@ -2629,7 +2631,6 @@ object IVchar: TIVchar
           ComPort = ComPort1
           ComProperty = cpPort
           AutoApply = True
-          Text = 'COM1'
           Style = csDropDownList
           Font.Charset = RUSSIAN_CHARSET
           Font.Color = clWindowText
@@ -2637,7 +2638,7 @@ object IVchar: TIVchar
           Font.Name = 'Arial'
           Font.Style = [fsBold]
           ItemHeight = 18
-          ItemIndex = 0
+          ItemIndex = -1
           ParentFont = False
           TabOrder = 0
         end
@@ -2649,7 +2650,6 @@ object IVchar: TIVchar
           ComPort = ComPort1
           ComProperty = cpBaudRate
           AutoApply = True
-          Text = '115200'
           Style = csDropDownList
           Font.Charset = RUSSIAN_CHARSET
           Font.Color = clWindowText
@@ -2657,7 +2657,7 @@ object IVchar: TIVchar
           Font.Name = 'Arial'
           Font.Style = [fsBold]
           ItemHeight = 18
-          ItemIndex = 13
+          ItemIndex = -1
           ParentFont = False
           TabOrder = 1
         end
@@ -3593,7 +3593,6 @@ object IVchar: TIVchar
           ComPort = ComPortUT70B
           ComProperty = cpPort
           AutoApply = True
-          Text = 'COM1'
           Style = csDropDownList
           Font.Charset = RUSSIAN_CHARSET
           Font.Color = clWindowText
@@ -3601,7 +3600,7 @@ object IVchar: TIVchar
           Font.Name = 'Arial'
           Font.Style = [fsBold]
           ItemHeight = 18
-          ItemIndex = 0
+          ItemIndex = -1
           ParentFont = False
           TabOrder = 5
         end
@@ -3808,7 +3807,6 @@ object IVchar: TIVchar
           ComPort = ComPortUT70C
           ComProperty = cpPort
           AutoApply = True
-          Text = 'COM1'
           Style = csDropDownList
           Font.Charset = RUSSIAN_CHARSET
           Font.Color = clWindowText
@@ -3816,7 +3814,7 @@ object IVchar: TIVchar
           Font.Name = 'Arial'
           Font.Style = [fsBold]
           ItemHeight = 18
-          ItemIndex = 0
+          ItemIndex = -1
           ParentFont = False
           TabOrder = 5
         end
@@ -6472,6 +6470,38 @@ object IVchar: TIVchar
     object TS_GDS: TTabSheet
       Caption = 'GDS-806S'
       ImageIndex = 13
+      object Label1: TLabel
+        Left = 4
+        Top = 289
+        Width = 286
+        Height = 52
+        AutoSize = False
+        Caption = '  ERROR'
+        Color = clWhite
+        Font.Charset = RUSSIAN_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -41
+        Font.Name = 'Verdana'
+        Font.Style = [fsBold]
+        ParentColor = False
+        ParentFont = False
+      end
+      object Label2: TLabel
+        Left = 292
+        Top = 289
+        Width = 75
+        Height = 52
+        AutoSize = False
+        Caption = 'a'
+        Color = clInfoText
+        Font.Charset = RUSSIAN_CHARSET
+        Font.Color = clWhite
+        Font.Height = -55
+        Font.Name = 'Arial'
+        Font.Style = [fsBold]
+        ParentColor = False
+        ParentFont = False
+      end
       object GB_GDS_Com: TGroupBox
         Left = 537
         Top = 16
@@ -6506,7 +6536,6 @@ object IVchar: TIVchar
           ComPort = ComPortGDS
           ComProperty = cpPort
           AutoApply = True
-          Text = 'COM1'
           Style = csDropDownList
           Font.Charset = RUSSIAN_CHARSET
           Font.Color = clWindowText
@@ -6514,7 +6543,7 @@ object IVchar: TIVchar
           Font.Name = 'Arial'
           Font.Style = [fsBold]
           ItemHeight = 18
-          ItemIndex = 0
+          ItemIndex = -1
           ParentFont = False
           TabOrder = 0
         end
@@ -6526,7 +6555,6 @@ object IVchar: TIVchar
           ComPort = ComPortGDS
           ComProperty = cpBaudRate
           AutoApply = True
-          Text = '9600'
           Style = csDropDownList
           Font.Charset = RUSSIAN_CHARSET
           Font.Color = clWindowText
@@ -6534,7 +6562,7 @@ object IVchar: TIVchar
           Font.Name = 'Arial'
           Font.Style = [fsBold]
           ItemHeight = 18
-          ItemIndex = 7
+          ItemIndex = -1
           ParentFont = False
           TabOrder = 1
         end
@@ -6574,7 +6602,6 @@ object IVchar: TIVchar
           ComPort = ComPortGDS
           ComProperty = cpStopBits
           AutoApply = True
-          Text = '1'
           Style = csDropDownList
           Font.Charset = RUSSIAN_CHARSET
           Font.Color = clWindowText
@@ -6582,7 +6609,7 @@ object IVchar: TIVchar
           Font.Name = 'Arial'
           Font.Style = [fsBold]
           ItemHeight = 18
-          ItemIndex = 0
+          ItemIndex = -1
           ParentFont = False
           TabOrder = 4
         end
@@ -6608,7 +6635,6 @@ object IVchar: TIVchar
           ComPort = ComPortGDS
           ComProperty = cpParity
           AutoApply = True
-          Text = 'None'
           Style = csDropDownList
           Font.Charset = RUSSIAN_CHARSET
           Font.Color = clWindowText
@@ -6616,7 +6642,7 @@ object IVchar: TIVchar
           Font.Name = 'Arial'
           Font.Style = [fsBold]
           ItemHeight = 18
-          ItemIndex = 0
+          ItemIndex = -1
           ParentFont = False
           TabOrder = 6
         end
@@ -6636,8 +6662,8 @@ object IVchar: TIVchar
         end
       end
       object Button2: TButton
-        Left = 320
-        Top = 56
+        Left = 674
+        Top = -3
         Width = 75
         Height = 25
         Caption = 'Button2'
@@ -6645,8 +6671,8 @@ object IVchar: TIVchar
         OnClick = Button2Click
       end
       object GB_GDS_Set: TGroupBox
-        Left = 253
-        Top = 155
+        Left = 562
+        Top = 178
         Width = 216
         Height = 230
         Caption = 'Settings'
@@ -6661,6 +6687,32 @@ object IVchar: TIVchar
         object LGDS_Mode: TLabel
           Left = 10
           Top = 18
+          Width = 46
+          Height = 16
+          Caption = 'Output:'
+          Font.Charset = RUSSIAN_CHARSET
+          Font.Color = clBlack
+          Font.Height = -13
+          Font.Name = 'Arial'
+          Font.Style = [fsBold]
+          ParentFont = False
+        end
+        object LGDS_RLength: TLabel
+          Left = 10
+          Top = 42
+          Width = 46
+          Height = 16
+          Caption = 'Output:'
+          Font.Charset = RUSSIAN_CHARSET
+          Font.Color = clBlack
+          Font.Height = -13
+          Font.Name = 'Arial'
+          Font.Style = [fsBold]
+          ParentFont = False
+        end
+        object LGDS_AveNum: TLabel
+          Left = 10
+          Top = 64
           Width = 46
           Height = 16
           Caption = 'Output:'
@@ -6713,6 +6765,151 @@ object IVchar: TIVchar
           Font.Style = [fsBold]
           ParentFont = False
           TabOrder = 2
+        end
+        object B_GDS_SetSav: TButton
+          Left = 16
+          Top = 167
+          Width = 75
+          Height = 25
+          Caption = 'B_GDS_SetSet'
+          Font.Charset = RUSSIAN_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -15
+          Font.Name = 'Arial'
+          Font.Style = [fsBold]
+          ParentFont = False
+          TabOrder = 3
+        end
+        object B_GDS_SetLoad: TButton
+          Left = 112
+          Top = 167
+          Width = 75
+          Height = 25
+          Caption = 'B_GDS_SetSet'
+          Font.Charset = RUSSIAN_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -15
+          Font.Name = 'Arial'
+          Font.Style = [fsBold]
+          ParentFont = False
+          TabOrder = 4
+        end
+        object B_GDS_SetAuto: TButton
+          Left = 16
+          Top = 198
+          Width = 75
+          Height = 25
+          Caption = 'B_GDS_SetSet'
+          Font.Charset = RUSSIAN_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -15
+          Font.Name = 'Arial'
+          Font.Style = [fsBold]
+          ParentFont = False
+          TabOrder = 5
+        end
+        object B_GDS_SetDef: TButton
+          Left = 112
+          Top = 198
+          Width = 75
+          Height = 25
+          Caption = 'B_GDS_SetSet'
+          Font.Charset = RUSSIAN_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -15
+          Font.Name = 'Arial'
+          Font.Style = [fsBold]
+          ParentFont = False
+          TabOrder = 6
+        end
+        object STGDS_RLength: TStaticText
+          Left = 126
+          Top = 39
+          Width = 78
+          Height = 24
+          Caption = '-0.0008'
+          Font.Charset = RUSSIAN_CHARSET
+          Font.Color = clBlack
+          Font.Height = -17
+          Font.Name = 'Verdana'
+          Font.Style = [fsBold]
+          ParentFont = False
+          ShowAccelChar = False
+          TabOrder = 7
+        end
+        object STGDS_AveNum: TStaticText
+          Left = 126
+          Top = 61
+          Width = 78
+          Height = 24
+          Caption = '-0.0008'
+          Font.Charset = RUSSIAN_CHARSET
+          Font.Color = clBlack
+          Font.Height = -17
+          Font.Name = 'Verdana'
+          Font.Style = [fsBold]
+          ParentFont = False
+          ShowAccelChar = False
+          TabOrder = 8
+        end
+      end
+      object Panel4: TPanel
+        Left = -3
+        Top = 196
+        Width = 516
+        Height = 13
+        Color = clTeal
+        ParentBackground = False
+        TabOrder = 3
+      end
+      object Panel5: TPanel
+        Left = 0
+        Top = 0
+        Width = 513
+        Height = 201
+        Alignment = taLeftJustify
+        TabOrder = 4
+        object Chart1: TChart
+          Left = -4
+          Top = 0
+          Width = 431
+          Height = 201
+          Legend.Alignment = laTop
+          Legend.CheckBoxes = True
+          Legend.FontSeriesColor = True
+          Legend.HorizMargin = 10
+          Legend.LegendStyle = lsSeries
+          Legend.ResizeChart = False
+          Legend.Visible = False
+          MarginBottom = 0
+          MarginLeft = 0
+          MarginRight = 0
+          MarginTop = 0
+          Title.Text.Strings = (
+            'Voltage on time')
+          View3D = False
+          View3DOptions.Orthogonal = False
+          Align = alCustom
+          TabOrder = 0
+          PrintMargins = (
+            15
+            30
+            15
+            30)
+          object PointSeries1: TPointSeries
+            Marks.Callout.Brush.Color = clBlack
+            Marks.Visible = False
+            ClickableLine = False
+            Pointer.HorizSize = 3
+            Pointer.InflateMargins = True
+            Pointer.Style = psRectangle
+            Pointer.VertSize = 3
+            Pointer.Visible = True
+            XValues.Name = 'X'
+            XValues.Order = loAscending
+            YValues.Name = 'Y'
+            YValues.Order = loNone
+          end
         end
       end
     end

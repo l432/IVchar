@@ -21,7 +21,7 @@ type
    procedure FinalPacketCreateToSend();virtual;
  public
    property  ActiveChannel:byte read FActiveChannel write FActiveChannel;
-   constructor Create(CP:TComPort;Nm:string);override;
+   constructor Create(CP:TComPort;Nm:string);//override;
  end;
 
 

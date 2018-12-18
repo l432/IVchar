@@ -40,7 +40,7 @@ TRS232Device=class(TNamedInterfacedObject)
    property Error:boolean read fError;
    Constructor Create();overload;
    Constructor Create(CP:TComPort);overload;
-   Constructor Create(CP:TComPort;Nm:string);overload;virtual;
+   Constructor Create(CP:TComPort;Nm:string);overload;//virtual;
    Procedure Free;
    procedure ComPortUsing();virtual;
    procedure isNeededComPortState();
@@ -138,7 +138,7 @@ TRS232Meter=class(TRS232ConvertData,IMeasurement)
    property DelayTimeMax:integer read  fDelayTimeMax;
    property MeasureModeLabel:string read MeasureModeLabelRead;
    property Diapazon:Shortint read fDiapazon;
-   Constructor Create(CP:TComPort;Nm:string);override;
+   Constructor Create(CP:TComPort;Nm:string);//override;
    Procedure ConvertToValue();virtual;
 //   Function ResultProblem(Rez:double):boolean;virtual;
    Procedure Request();virtual;

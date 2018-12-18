@@ -44,7 +44,7 @@ type
   public
    Procedure ConvertToValue();override;
    Function ResultProblem(Rez:double):boolean;//override;
-   Constructor Create(CP:TComPort;Nm:string);override;
+   Constructor Create(CP:TComPort;Nm:string);//override;
    function GetData():double;override;
    procedure GetDataThread(WPARAM: word;EventEnd:THandle);override;
   end;
@@ -62,7 +62,7 @@ type
    Procedure DiapazonDetermination(Data:array of byte);override;
    Procedure ValueDetermination(Data:array of byte);override;
   public
-   Constructor Create(CP:TComPort;Nm:string);override;
+   Constructor Create(CP:TComPort;Nm:string);//override;
   end;
 
   TV721_Brak=class(TV721)
