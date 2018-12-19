@@ -540,12 +540,30 @@ type
     STGDS_RLength: TStaticText;
     LGDS_AveNum: TLabel;
     STGDS_AveNum: TStaticText;
-    Panel4: TPanel;
-    Panel5: TPanel;
-    Chart1: TChart;
-    PointSeries1: TPointSeries;
     Label1: TLabel;
     Label2: TLabel;
+    Chart1: TChart;
+    PointSeries1: TPointSeries;
+    GB_GDS_Ch1: TGroupBox;
+    LGDS_Ch1Coupl: TLabel;
+    STGDS_Ch1Coupl: TStaticText;
+    Button3: TButton;
+    SpeedButton1: TSpeedButton;
+    StaticText1: TStaticText;
+    CheckBox1: TCheckBox;
+    CheckBox2: TCheckBox;
+    StaticText3: TStaticText;
+    StaticText2: TStaticText;
+    StaticText4: TStaticText;
+    GroupBox1: TGroupBox;
+    RadioGroup1: TRadioGroup;
+    Button4: TButton;
+    SpeedButton2: TSpeedButton;
+    Button5: TButton;
+    Button6: TButton;
+    Button7: TButton;
+    Button8: TButton;
+    StaticText10: TStaticText;
 
     procedure FormCreate(Sender: TObject);
     procedure BConnectClick(Sender: TObject);
@@ -2917,8 +2935,10 @@ begin
 
   GDS_806S:=TGDS_806S.Create(ComPortGDS,'GDS-806');
   GDS_806S_Show:=TGDS_806S_Show.Create(GDS_806S,
-                  [STGDS_Mode, STGDS_RLength, STGDS_AveNum],
-                  [LGDS_Mode,  LGDS_RLength, LGDS_AveNum],
+                  [STGDS_Mode, STGDS_RLength, STGDS_AveNum,
+                  STGDS_Ch1Coupl],
+                  [LGDS_Mode,  LGDS_RLength, LGDS_AveNum,
+                  LGDS_Ch1Coupl],
                   [B_GDS_SetSet,B_GDS_SetGet,B_GDS_Test,
                   B_GDS_SetSav,B_GDS_SetLoad,
                   B_GDS_SetAuto,B_GDS_SetDef]);

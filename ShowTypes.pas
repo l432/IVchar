@@ -23,23 +23,32 @@ type
   див. нащадків}
    private
     STData:TStaticText; //величина параметру
-    STCaption:TLabel; //назва параметру
+    fParametrCaption:string;//назва параметру
+//    STCaption:TLabel; //назва параметру
     fWindowCaption:string; //назва віконця зміни параметра
     fWindowText:string;    //текст у віконці зміни параметру
     FColorChangeWithParameter: boolean;
+    fIniNameSalt:string;//добавка до іменіб з яким зберігаються дані в ini.файлі
     function StringToExpectedStringConvertion(str:string):string;virtual;abstract;
     {перетворення str в рядок, де число
     у потрібному форматі,
     можливі помилки не відловлюються, див. ParameterClick}
     procedure ParameterClick(Sender: TObject);virtual;
+    function ReadStringValueFromIniFile(ConfigFile:TIniFile;NameIni:string):string;virtual;abstract;
+    //повертає символьне представлення значення змінної
+    procedure WriteNumberToIniFile(ConfigFile:TIniFile;NameIni:string);virtual;abstract;
    public
     property ColorChangeWithParameter:boolean read FColorChangeWithParameter write FColorChangeWithParameter;
+    property IniNameSalt:string write fIniNameSalt;
     Constructor Create(STD:TStaticText;
                        STC:TLabel;
                        ParametrCaption:string;
-                       WT:string);
-    procedure ReadFromIniFile(ConfigFile:TIniFile);virtual;abstract;
-    procedure WriteToIniFile(ConfigFile:TIniFile);virtual;abstract;
+                       WT:string);overload;
+    Constructor Create(STD:TStaticText;
+                       ParametrCaption:string;
+                       WT:string);overload;
+    procedure ReadFromIniFile(ConfigFile:TIniFile);
+    procedure WriteToIniFile(ConfigFile:TIniFile);
     procedure Free;
     procedure ColorToActive(Value:boolean);
     procedure SetName(Name:string);
@@ -74,10 +83,19 @@ type
     procedure SetData(value:double);
     procedure SetDefaulValue(const Value: double);
     function ValueToString(Value:double):string;
+    function ReadStringValueFromIniFile(ConfigFile:TIniFile;NameIni:string):string;override;
+    procedure WriteNumberToIniFile(ConfigFile:TIniFile;NameIni:string);override;
+    procedure CreateFooter(DN: Byte; InitValue: Double);
    public
     property DefaulValue:double read FDefaulValue write SetDefaulValue;
     Constructor Create(STD:TStaticText;
                        STC:TLabel;
+                       ParametrCaption:string;
+                       WT:string;
+                       InitValue:double;
+                       DN:byte=3
+    );overload;
+    Constructor Create(STD:TStaticText;
                        ParametrCaption:string;
                        WT:string;
                        InitValue:double;
@@ -89,17 +107,23 @@ type
                        InitValue:double;
                        DN:byte=3
     );overload;
+    Constructor Create(STD:TStaticText;
+                       ParametrCaption:string;
+                       InitValue:double;
+                       DN:byte=3
+    );overload;
     property Data:double read GetData write SetData;
-    procedure ReadFromIniFile(ConfigFile:TIniFile);override;
-    procedure WriteToIniFile(ConfigFile:TIniFile);override;
   end;  //   TDoubleParameterShow=class (TParameterShow)
 
   TIntegerParameterShow=class (TParameterShow)
+   private
     FDefaulValue:integer;
     function StringToExpectedStringConvertion(str:string):string;override;
     function GetData:integer;
     procedure SetData(value:integer);
     procedure SetDefaulValue(const Value: integer);
+    function ReadStringValueFromIniFile(ConfigFile:TIniFile;NameIni:string):string;override;
+    procedure WriteNumberToIniFile(ConfigFile:TIniFile;NameIni:string);override;
    public
     property DefaulValue:integer read FDefaulValue write SetDefaulValue;
     Constructor Create(STD:TStaticText;
@@ -114,36 +138,31 @@ type
                        InitValue:integer
     );overload;
     property Data:integer read GetData write SetData;
-    procedure ReadFromIniFile(ConfigFile:TIniFile);override;
-    procedure WriteToIniFile(ConfigFile:TIniFile);override;
   end;  //   TIntegerParameterShow=class (TParameterShow)
 
 
   TStringParameterShow=class (TParameterShow)
-//    FDefaulValue:integer;
+   private
     fDataVariants:TStringList;
     function StringToExpectedStringConvertion(str:string):string;override;
     function GetData:ShortInt;
     procedure SetData(value:ShortInt);
-//    procedure SetDefaulValue(const Value: integer);
     procedure ParameterClick(Sender: TObject);override;
+    function ReadStringValueFromIniFile(ConfigFile:TIniFile;NameIni:string):string;override;
+    procedure WriteNumberToIniFile(ConfigFile:TIniFile;NameIni:string);override;
+    procedure CreateFooter(DataVariants: TStringList);
    public
-//    property DefaulValue:integer read FDefaulValue write SetDefaulValue;
-//    Constructor Create(STD:TStaticText;
-//                       STC:TLabel;
-//                       ParametrCaption:string;
-//                       WT:string;
-//                       InitValue:integer
-//    );overload;
     Constructor Create(STD:TStaticText;
                        STC:TLabel;
                        ParametrCaption:string;
                        DataVariants: TStringList
-    );
+    );overload;
+    Constructor Create(STD:TStaticText;
+                       ParametrCaption:string;
+                       DataVariants: TStringList
+    );overload;
     property Data:ShortInt read GetData write SetData;
-    procedure ReadFromIniFile(ConfigFile:TIniFile);override;
-    procedure WriteToIniFile(ConfigFile:TIniFile);override;
-  end;  //   TIntegerParameterShow=class (TParameterShow)
+  end;    //TStringParameterShow=class (TParameterShow)
 
 
 TLimitShow=class(TNamedInterfacedObject)
@@ -290,9 +309,10 @@ Constructor TDoubleParameterShow.Create(STD:TStaticText;
                        );
 begin
   inherited Create(STD,STC,ParametrCaption,WT);
-  fDigitNumber:=DN;
-  STData.Caption:=ValueToString(InitValue);
-  DefaulValue:=InitValue;
+  CreateFooter(DN, InitValue);
+//  fDigitNumber:=DN;
+//  STData.Caption:=ValueToString(InitValue);
+//  DefaulValue:=InitValue;
 end;
 
 constructor TDoubleParameterShow.Create(STD: TStaticText;
@@ -302,6 +322,26 @@ constructor TDoubleParameterShow.Create(STD: TStaticText;
                                         DN: byte);
 begin
  Create(STD,STC,ParametrCaption,ParametrCaption+WindowTextFooter,InitValue,DN);
+end;
+
+constructor TDoubleParameterShow.Create(STD: TStaticText;
+  ParametrCaption: string; InitValue: double; DN: byte);
+begin
+ Create(STD,ParametrCaption,ParametrCaption+WindowTextFooter,InitValue,DN);
+end;
+
+procedure TDoubleParameterShow.CreateFooter(DN: Byte; InitValue: Double);
+begin
+  fDigitNumber := DN;
+  STData.Caption := ValueToString(InitValue);
+  DefaulValue := InitValue;
+end;
+
+constructor TDoubleParameterShow.Create(STD: TStaticText; ParametrCaption,
+  WT: string; InitValue: double; DN: byte);
+begin
+  inherited Create(STD,ParametrCaption,WT);
+  CreateFooter(DN, InitValue);
 end;
 
 function TDoubleParameterShow.GetData:double;
@@ -318,14 +358,16 @@ begin
   end;
 end;
 
-procedure TDoubleParameterShow.ReadFromIniFile(ConfigFile:TIniFile);
+function TDoubleParameterShow.ReadStringValueFromIniFile(ConfigFile: TIniFile;
+  NameIni: string): string;
 begin
- STData.Caption:=ValueToString(ConfigFile.ReadFloat(fName,STCaption.Caption,DefaulValue));
+ Result:=ValueToString(ConfigFile.ReadFloat(fName,NameIni,DefaulValue));
 end;
 
-procedure TDoubleParameterShow.WriteToIniFile(ConfigFile:TIniFile);
+procedure TDoubleParameterShow.WriteNumberToIniFile(ConfigFile: TIniFile;
+  NameIni: string);
 begin
- WriteIniDef(ConfigFile, fName, STCaption.Caption, StrToFloat(STData.Caption),DefaulValue)
+ WriteIniDef(ConfigFile, fName, NameIni, StrToFloat(STData.Caption),DefaulValue)
 end;
 
 procedure TDoubleParameterShow.SetDefaulValue(const Value: double);
@@ -508,10 +550,10 @@ begin
   Result:=StrToInt(STData.Caption);
 end;
 
-
-procedure TIntegerParameterShow.ReadFromIniFile(ConfigFile: TIniFile);
+function TIntegerParameterShow.ReadStringValueFromIniFile(ConfigFile: TIniFile;
+  NameIni: string): string;
 begin
- STData.Caption:=IntToStr(ConfigFile.ReadInteger(fName,STCaption.Caption,DefaulValue));
+ Result:=IntToStr(ConfigFile.ReadInteger(fName,NameIni,DefaulValue));
 end;
 
 procedure TIntegerParameterShow.SetData(value: integer);
@@ -533,9 +575,10 @@ begin
  Result:=IntToStr(StrToInt(str));
 end;
 
-procedure TIntegerParameterShow.WriteToIniFile(ConfigFile: TIniFile);
+procedure TIntegerParameterShow.WriteNumberToIniFile(ConfigFile: TIniFile;
+  NameIni: string);
 begin
- WriteIniDef(ConfigFile, fName, STCaption.Caption, StrToInt(STData.Caption),DefaulValue)
+ WriteIniDef(ConfigFile, fName, NameIni, StrToInt(STData.Caption),DefaulValue)
 end;
 
 { TParameterShow }
@@ -545,18 +588,12 @@ constructor TParameterShow.Create(STD:TStaticText;
                        ParametrCaption:string;
                        WT:string);
 begin
-  inherited Create;
-  STData:=STD;
-  STData.OnClick:=ParameterClick;
-  STData.Cursor:=crHandPoint;
-  STCaption:=STC;
-  STCaption.Caption:=ParametrCaption;
-  STCaption.WordWrap:=True;
-  fWindowText:=WT;
-  fWindowCaption:=ParametrCaption+WindowCaptionFooter;
-  fName:=DoubleConstantSection;
-//  HookParameterChange:=TSimpleClass.EmptyProcedure;
-  fColorChangeWithParameter:=False;
+  Create(STD,ParametrCaption,WT);
+  if STC<>nil then
+    begin
+      STC.Caption:=ParametrCaption;
+      STC.WordWrap:=True;
+    end;
 end;
 
 
@@ -567,6 +604,22 @@ begin
  SetName(NamedObject.Name);
  ColorChangeWithParameter:=ColorChanging;
  ColorToActive(ActiveColor);
+end;
+
+constructor TParameterShow.Create(STD: TStaticText; ParametrCaption,
+  WT: string);
+begin
+  inherited Create;
+  STData:=STD;
+  STData.OnClick:=ParameterClick;
+  STData.Cursor:=crHandPoint;
+  fParametrCaption:=ParametrCaption;
+  fWindowText:=WT;
+  fWindowCaption:=ParametrCaption+WindowCaptionFooter;
+  fName:=DoubleConstantSection;
+//  HookParameterChange:=TSimpleClass.EmptyProcedure;
+  fColorChangeWithParameter:=False;
+  fIniNameSalt:='';
 end;
 
 procedure TParameterShow.ForUseInShowObject(NamedObject: TNamedInterfacedObject;
@@ -593,9 +646,23 @@ begin
 end;
 
 
+procedure TParameterShow.ReadFromIniFile(ConfigFile: TIniFile);
+begin
+ if Name='' then Exit;
+// STData.Caption:=ReadStringValueFromIniFile(ConfigFile,STCaption.Caption+fIniNameSalt)
+ STData.Caption:=ReadStringValueFromIniFile(ConfigFile,fParametrCaption+fIniNameSalt)
+end;
+
+
 procedure TParameterShow.SetName(Name: string);
 begin
  fName:=Name;
+end;
+
+procedure TParameterShow.WriteToIniFile(ConfigFile: TIniFile);
+begin
+ if Name='' then Exit;
+ WriteNumberToIniFile(ConfigFile,fParametrCaption+fIniNameSalt);
 end;
 
 procedure TParameterShow.ColorToActive(Value: boolean);
@@ -718,8 +785,20 @@ constructor TStringParameterShow.Create(STD: TStaticText;
                                         DataVariants: TStringList);
 begin
   inherited Create(STD,STC,ParametrCaption,'');
-  fDataVariants:=DataVariants;
-  STData.Caption:=fDataVariants.Strings[0];
+  CreateFooter(DataVariants);
+end;
+
+constructor TStringParameterShow.Create(STD: TStaticText;
+  ParametrCaption: string; DataVariants: TStringList);
+begin
+  inherited Create(STD,ParametrCaption,'');
+  CreateFooter(DataVariants);
+end;
+
+procedure TStringParameterShow.CreateFooter(DataVariants: TStringList);
+begin
+  fDataVariants := DataVariants;
+  STData.Caption := fDataVariants.Strings[0];
 end;
 
 function TStringParameterShow.GetData: ShortInt;
@@ -802,13 +881,13 @@ begin
 // Form.Release;
 end;
 
-procedure TStringParameterShow.ReadFromIniFile(ConfigFile: TIniFile);
+function TStringParameterShow.ReadStringValueFromIniFile(ConfigFile: TIniFile;
+  NameIni: string): string;
  var i:ShortInt;
 begin
- if Name='' then Exit;
- i:=ConfigFile.ReadInteger(fName,STCaption.Caption,0);
+ i:=ConfigFile.ReadInteger(fName,NameIni,0);
  if (i<0) or (i>=fDataVariants.Count) then i:=0;
- STData.Caption:=fDataVariants.Strings[i];
+ Result:=fDataVariants.Strings[i];
 end;
 
 procedure TStringParameterShow.SetData(value: ShortInt);
@@ -823,11 +902,10 @@ begin
  Result:=str;
 end;
 
-procedure TStringParameterShow.WriteToIniFile(ConfigFile: TIniFile);
+procedure TStringParameterShow.WriteNumberToIniFile(ConfigFile: TIniFile;
+  NameIni: string);
 begin
- if Name='' then Exit;
-// showmessage(inttostr(Data));
- WriteIniDef(ConfigFile, fName, STCaption.Caption, Data, -1);
+ WriteIniDef(ConfigFile, fName, NameIni, Data, -1);
 end;
 
 { TParameterShowArray }
@@ -882,5 +960,6 @@ begin
  for I := 0 to High(fParameterShowArray) do
    fParameterShowArray[i].WriteToIniFile(ConfigFile);
 end;
+
 
 end.

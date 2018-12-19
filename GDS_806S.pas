@@ -7,26 +7,37 @@ uses
 
 type
 
- TGDS_Settings=(gds_mode,gds_rl,gds_an);
-// TGDS_Mode=(gds_msam,
-//            gds_mpd,
-//            gds_maver);
+ TGDS_Settings=(gds_mode,gds_rl,gds_an,gds_ch1_coup);
+ TGDS_ModeSym=(gds_msam,
+            gds_mpd,
+            gds_maver);
  TGDS_Mode=0..2;
  TGDS_Channel=1..2;
  TGDS_MemoryAdress=1..15;
-// TGDS_RecordLength=(gds_rl500,
-//                    gds_rl1250,
-//                    gds_rl2500,
-//                    gds_r5000,
-//                    gds_rl12500,
-//                    gds_rl25000,
-//                    gds_rl50000,
-//                    gds_rl125000);
+ TGDS_RecordLengthSym=(gds_rl500,
+                    gds_rl1250,
+                    gds_rl2500,
+                    gds_r5000,
+                    gds_rl12500,
+                    gds_rl25000,
+                    gds_rl50000,
+                    gds_rl125000);
  TGDS_RecordLength=0..7;
  TGDS_AverageNumber=0..8;
-// ArrLabSet=array[TGDS_Settings]of TLabel;
-// ArrSTSet=array[TGDS_Settings]of TStaticText;
-// ArrParShow=array[TGDS_Settings]of TStringParameterShow;
+ TGDS_AverageNumberSym=(gds_an1,
+                    gds_an2,
+                    gds_an4,
+                    gds_an8,
+                    gds_an16,
+                    gds_an32,
+                    gds_an64,
+                    gds_an128,
+                    gds_an256);
+ TGDS_ChanCoupl=0..2;
+ TGDS_ChanCouplSym=(gds_ccAC,
+                    gds_ccDC,
+                    gds_ccGRN);
+
  ArrByteGDS=array[TGDS_Settings]of byte;
 
 const
@@ -35,20 +46,27 @@ const
 
   GDS_806S_Test='GW,GDS-806S,EF211754,V1.10';
 
-  RootNood:array[0..5]of string=
-  ('*idn','*rcl','*rst','*sav',':acq',':aut');
-//   0       1      2      3      4      5
+  RootNood:array[0..6]of string=
+  ('*idn','*rcl','*rst','*sav',':acq',':aut',':chan');
+//   0       1      2      3      4      5       6
 
   FirstNode_4:array[0..3]of string=
   ('aver','leng','mod','mem');
 //   0      1     2      3
 
+  FirstNode_6:array[0..5]of string=
+  ('coup','disp','inv','offs','prob','scal');
+//   0      1     2      3       4      5
+
 
   GDS_ModeLabels:array[TGDS_Mode]of string=
-    ('Sample mode','Peak detection','Average mode');
+    ('Sample','Peak detection','Average');
 
   GDS_RecordLengthData:array[TGDS_RecordLength]of integer=
     (500,1250,2500,5000,12500,25000,50000,125000);
+
+  GDS_ChanCouplLabels:array[TGDS_ChanCoupl]of string=
+   ('AC','DC','GRN');
 
   ButtonNumber = 6;
 
@@ -89,15 +107,24 @@ type
    protected
      Procedure PacketReceiving(Sender: TObject; const Str: string);override;
    public
+    property ActiveChannel:TGDS_Channel read FActiveChannel write FActiveChannel;
     Constructor Create(CP:TComPort;Nm:string);
 //    procedure Free;
     procedure Request();override;
-    procedure SetMode(mode: Byte);
+    procedure SetMode(mode: Byte);overload;
+    procedure SetMode(mode: TGDS_ModeSym);overload;
     function GetMode():boolean;
-    procedure SetRecordLength(RL: Byte);
+    procedure SetRecordLength(RL: Byte);overload;
+    procedure SetRecordLength(RL: TGDS_RecordLengthSym);overload;
     function GetRecordLength():boolean;
-    procedure SetAverageNumber(AV: Byte);
+    procedure SetAverageNumber(AV: Byte);overload;
+    procedure SetAverageNumber(AV: TGDS_AverageNumberSym);overload;
     function GetAverageNumber():boolean;
+    procedure SetCoupling(Chan:TGDS_Channel;Coupl:byte);overload;
+    procedure SetCoupling(Coupl:byte);overload;
+    procedure SetCoupling(Coupl:TGDS_ChanCouplSym);overload;
+    function GetCoupling():boolean;overload;
+    function GetCoupling(Chan:TGDS_Channel):boolean;overload;
     function GetSetting():boolean;
     function Test():boolean;
     procedure LoadSetting(MemoryAdress:TGDS_MemoryAdress);
@@ -162,7 +189,7 @@ var
 implementation
 
 uses
-  Dialogs, Controls, SysUtils;
+  Dialogs, Controls, SysUtils, Graphics;
 
 { TGDS_806S }
 
@@ -242,6 +269,19 @@ begin
     end;
 end;
 
+function TGDS_806S.GetCoupling: boolean;
+begin
+ QuireOperation(6,0,0);
+ Result:=(round(Value)in[0..2]);
+ if Result then  fSettings[gds_ch1_coup]:=(round(Value));
+end;
+
+function TGDS_806S.GetCoupling(Chan: TGDS_Channel): boolean;
+begin
+ fActiveChannel:=Chan;
+ Result:=GetCoupling();
+end;
+
 function TGDS_806S.GetMode:boolean;
 begin
  QuireOperation(4,2,0);
@@ -279,6 +319,7 @@ begin
  if not(GetMode) then Exit;
  if not(GetRecordLength) then Exit;
  if not(GetAverageNumber) then Exit;
+ if not(GetCoupling(1)) then Exit;
  Result:=True;
 end;
 
@@ -296,9 +337,6 @@ begin
   0:if Str=GDS_806S_Test then fValue:=314;
   4:begin
      case fFirstLevelNode of
-//        3:StringToSend:=StringToSend+
-//                        IntToStr(fActiveChannel)+
-//                       ':'+FirstNode_4[fFirstLevelNode];
         0..2:try
             fValue:=StrToInt(Str);
             except
@@ -306,6 +344,15 @@ begin
             end;
      end;
     end; //fRootNode = 4;
+  6:begin
+     case fFirstLevelNode of
+        0:try
+            fValue:=StrToInt(Str);
+            except
+             fValue:=ErResult;
+            end;
+     end;
+    end; //fRootNode = 6;
  end; //case fRootNode of
 
 fIsReceived:=True;
@@ -328,8 +375,15 @@ begin
                        ':'+FirstNode_4[fFirstLevelNode];
         0..2:StringToSend:=StringToSend+
                           ':'+FirstNode_4[fFirstLevelNode];
-     end;  
+     end;
     end; //fRootNode = 4;
+  6:begin
+     StringToSend:=StringToSend+IntToStr(fActiveChannel)+':';
+     case fFirstLevelNode of
+        0:StringToSend:=StringToSend+
+                          FirstNode_6[fFirstLevelNode];
+     end;
+    end; //fRootNode = 6;
  end; //case fRootNode of
  if fIsQuery then StringToSend:=StringToSend+'?'
              else StringToSend:=StringToSend+' '+IntToStr(fLeafNode);
@@ -368,12 +422,38 @@ begin
 end;
 
 procedure TGDS_806S.SetAverageNumber(AV: Byte);
+ var temp:byte;
 begin
  if fSettings[gds_mode]=2 then
   begin
-  SetupOperation(4,0,AV);
-  fSettings[gds_an]:=AV;
+  temp:=AV mod 9;
+  SetupOperation(4,0,temp);
+  fSettings[gds_an]:=temp;
   end;
+end;
+
+procedure TGDS_806S.SetAverageNumber(AV: TGDS_AverageNumberSym);
+begin
+ SetAverageNumber(ord(AV));
+end;
+
+procedure TGDS_806S.SetCoupling(Chan:TGDS_Channel;Coupl:byte);
+begin
+ fActiveChannel:=Chan;
+ SetCoupling(Coupl);
+end;
+
+procedure TGDS_806S.SetCoupling(Coupl: byte);
+ var temp:byte;
+begin
+ temp:=Coupl mod 3;
+ SetupOperation(6,0,temp);
+ fSettings[gds_ch1_coup]:=temp;
+end;
+
+procedure TGDS_806S.SetCoupling(Coupl: TGDS_ChanCouplSym);
+begin
+ SetCoupling(ord(Coupl));
 end;
 
 procedure TGDS_806S.SetFlags(RootNode, FirstLevelNode,
@@ -386,22 +466,30 @@ begin
  fIsQuery:=IsQuery;
 end;
 
-procedure TGDS_806S.SetMode(mode: Byte);
+procedure TGDS_806S.SetMode(mode: TGDS_ModeSym);
 begin
-// SetFlags(4,2,ord(mode));
-// PrepareString();
-// Request();
- SetupOperation(4,2,mode);
- fSettings[gds_mode]:=mode;
+ SetMode(ord(mode));
+end;
+
+procedure TGDS_806S.SetMode(mode: Byte);
+ var temp:byte;
+begin
+ temp:=mode mod 3;
+ SetupOperation(4,2,temp);
+ fSettings[gds_mode]:=temp;
+end;
+
+procedure TGDS_806S.SetRecordLength(RL: TGDS_RecordLengthSym);
+begin
+ SetRecordLength(ord(RL));
 end;
 
 procedure TGDS_806S.SetRecordLength(RL: Byte);
+ var temp:byte;
 begin
-// SetMode(gds_maver);
-// SetupOperation(4,1,ord(RL));
-// fParam.RecordLength:=RL;
- SetupOperation(4,1,RL);
- fSettings[gds_rl]:=RL;
+ temp:=RL mod 8;
+ SetupOperation(4,1,temp);
+ fSettings[gds_rl]:=temp;
 end;
 
 procedure TGDS_806S.SetSettingAbsolut(Data:ArrByteGDS);
@@ -409,8 +497,6 @@ procedure TGDS_806S.SetSettingAbsolut(Data:ArrByteGDS);
 begin
  for I := Low(TGDS_Settings) to High(TGDS_Settings) do
    fSetSettingAction[i](Data[i]);
-// SetMode(mode);
-// SetRecordLength(RL);
 end;
 
 procedure TGDS_806S.SetSettingOnOption(Data:ArrByteGDS);
@@ -419,11 +505,6 @@ begin
  for I := Low(TGDS_Settings) to High(TGDS_Settings) do
    if (Data[i]<>fSettings[i])
      then fSetSettingAction[i](Data[i]);
-
-// if (mode<>fSettings[gds_mode])
-//   then SetMode(mode);
-// if (RL<>fSettings[gds_rl])
-//   then SetRecordLength(RL);
 end;
 
 procedure TGDS_806S.SetupOperation(RootNode, FirstLevelNode, LeafNode: byte);
@@ -589,7 +670,7 @@ procedure TGDS_806S_Show.SettingsShowCreate(STexts:array of TStaticText;
                         Labels: array of TLabel);
   const
       SettingsCaption:array[TGDS_Settings]of string=
-      ('Mode:','Record length:','Average Number');
+      ('Mode:','Record length:','Average Number:','');
  var i:TGDS_Settings;
 begin
  for I := Low(TGDS_Settings) to High(TGDS_Settings) do
@@ -598,6 +679,7 @@ begin
                         Labels[ord(i)], SettingsCaption[i], fSettingsShowSL[i]);
    fSettingsShow[i].ForUseInShowObject(fGDS_806S);
    end;
+  fSettingsShow[gds_ch1_coup].IniNameSalt:='_ch1';
 end;
 
 procedure TGDS_806S_Show.SettingsShowFree;
@@ -686,6 +768,7 @@ procedure TGDS_806S_Show.SettingsShowSLCreate();
     i1:TGDS_Mode;
     i2:TGDS_RecordLength;
     i3:TGDS_AverageNumber;
+    i4:TGDS_ChanCoupl;
 begin
  for I := Low(TGDS_Settings) to High(TGDS_Settings) do
   begin
@@ -698,6 +781,8 @@ begin
     fSettingsShowSL[gds_rl].Add(IntToStr(GDS_RecordLengthData[i2]));
   for I3 := Low(TGDS_AverageNumber) to High(TGDS_AverageNumber) do
     fSettingsShowSL[gds_an].Add(IntToStr($01 shl ord(i3)));
+ for I4 := Low(TGDS_ChanCoupl) to High(TGDS_ChanCoupl) do
+    fSettingsShowSL[gds_ch1_coup].Add(GDS_ChanCouplLabels[i4]);
 end;
 
 procedure TGDS_806S_Show.SettingsShowSLFree;
@@ -709,8 +794,16 @@ end;
 
 procedure TGDS_806S_Show.TestButtonClick(Sender: TObject);
 begin
- if fGDS_806S.Test then  BTest.Caption:='Connection Test - Ok'
-                   else  BTest.Caption:='Connection Test - Failed';
+ if fGDS_806S.Test then
+        begin
+          BTest.Caption:='Connection Test - Ok';
+          BTest.Font.Color:=clBlue;
+        end        else
+        begin
+          BTest.Caption:='Connection Test - Failed';
+          BTest.Font.Color:=clRed;
+        end;
+
 end;
 
 procedure TGDS_806S_Show.WriteToIniFile(ConfigFile: TIniFile);
