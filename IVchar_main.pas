@@ -540,30 +540,44 @@ type
     STGDS_RLength: TStaticText;
     LGDS_AveNum: TLabel;
     STGDS_AveNum: TStaticText;
-    Label1: TLabel;
-    Label2: TLabel;
-    Chart1: TChart;
-    PointSeries1: TPointSeries;
+    LGDS_Ch1: TLabel;
+    LGDSU_Ch1: TLabel;
+    ChGDS: TChart;
     GB_GDS_Ch1: TGroupBox;
-    LGDS_Ch1Coupl: TLabel;
-    STGDS_Ch1Coupl: TStaticText;
-    Button3: TButton;
-    SpeedButton1: TSpeedButton;
-    StaticText1: TStaticText;
-    CheckBox1: TCheckBox;
-    CheckBox2: TCheckBox;
-    StaticText3: TStaticText;
-    StaticText2: TStaticText;
-    StaticText4: TStaticText;
-    GroupBox1: TGroupBox;
-    RadioGroup1: TRadioGroup;
-    Button4: TButton;
-    SpeedButton2: TSpeedButton;
-    Button5: TButton;
-    Button6: TButton;
-    Button7: TButton;
-    Button8: TButton;
-    StaticText10: TStaticText;
+    LGDS_OffsetCh1: TLabel;
+    STGDS_OffsetCh1: TStaticText;
+    B_GDS_MeasCh1: TButton;
+    SB_GDS_AutoCh1: TSpeedButton;
+    STGDS_MeasCh1: TStaticText;
+    CBGDS_DisplayCh1: TCheckBox;
+    CBGDS_InvertCh1: TCheckBox;
+    STGDS_ProbCh1: TStaticText;
+    STGDS_CoupleCh1: TStaticText;
+    STGDS_ScaleCh1: TStaticText;
+    GB_GDS_Show: TGroupBox;
+    PGGDS_Show: TRadioGroup;
+    B_GDS_MeasShow: TButton;
+    SB_GDS_AutoShow: TSpeedButton;
+    B_GDS_Refresh: TButton;
+    B_GDS_Run: TButton;
+    B_GDS_Stop: TButton;
+    B_GDS_Unlock: TButton;
+    STGDS_ScaleGoriz: TStaticText;
+    GB_GDS_Ch2: TGroupBox;
+    LGDS_OffsetCh2: TLabel;
+    LGDS_Ch2: TLabel;
+    LGDSU_Ch2: TLabel;
+    SB_GDS_AutoCh2: TSpeedButton;
+    STGDS_OffsetCh2: TStaticText;
+    B_GDS_MeasCh2: TButton;
+    STGDS_MeasCh2: TStaticText;
+    CBGDS_DisplayCh2: TCheckBox;
+    CBGDS_InvertCh2: TCheckBox;
+    STGDS_ProbCh2: TStaticText;
+    STGDS_CoupleCh2: TStaticText;
+    STGDS_ScaleCh2: TStaticText;
+    Series1: TLineSeries;
+    Series2: TLineSeries;
 
     procedure FormCreate(Sender: TObject);
     procedure BConnectClick(Sender: TObject);
@@ -2936,12 +2950,13 @@ begin
   GDS_806S:=TGDS_806S.Create(ComPortGDS,'GDS-806');
   GDS_806S_Show:=TGDS_806S_Show.Create(GDS_806S,
                   [STGDS_Mode, STGDS_RLength, STGDS_AveNum,
-                  STGDS_Ch1Coupl],
+                  STGDS_OffsetCh1],
                   [LGDS_Mode,  LGDS_RLength, LGDS_AveNum,
-                  LGDS_Ch1Coupl],
+                  LGDS_OffsetCh1],
                   [B_GDS_SetSet,B_GDS_SetGet,B_GDS_Test,
                   B_GDS_SetSav,B_GDS_SetLoad,
-                  B_GDS_SetAuto,B_GDS_SetDef]);
+                  B_GDS_SetAuto,B_GDS_SetDef,B_GDS_Refresh,
+                  B_GDS_Run,B_GDS_Stop,B_GDS_Unlock]);
 
   ShowArray.Add([UT70BShow,UT70CShow,GDS_806S_Show]);
   AnyObjectArray.Add([UT70B,UT70C,GDS_806S]);

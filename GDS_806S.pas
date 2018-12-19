@@ -8,21 +8,18 @@ uses
 type
 
  TGDS_Settings=(gds_mode,gds_rl,gds_an,gds_ch1_coup);
- TGDS_ModeSym=(gds_msam,
-            gds_mpd,
-            gds_maver);
+
+ TGDS_ModeSym=(gds_msam,gds_mpd,gds_maver);
  TGDS_Mode=0..2;
+
  TGDS_Channel=1..2;
  TGDS_MemoryAdress=1..15;
- TGDS_RecordLengthSym=(gds_rl500,
-                    gds_rl1250,
-                    gds_rl2500,
-                    gds_r5000,
-                    gds_rl12500,
-                    gds_rl25000,
-                    gds_rl50000,
-                    gds_rl125000);
+
+ TGDS_RecordLengthSym=(gds_rl500,gds_rl1250,gds_rl2500,
+                    gds_r5000,gds_rl12500,gds_rl25000,
+                    gds_rl50000,gds_rl125000);
  TGDS_RecordLength=0..7;
+
  TGDS_AverageNumber=0..8;
  TGDS_AverageNumberSym=(gds_an1,
                     gds_an2,
@@ -33,10 +30,23 @@ type
                     gds_an64,
                     gds_an128,
                     gds_an256);
+
  TGDS_ChanCoupl=0..2;
- TGDS_ChanCouplSym=(gds_ccAC,
-                    gds_ccDC,
-                    gds_ccGRN);
+ TGDS_ChanCouplSym=(gds_ccAC, gds_ccDC, gds_ccGRN);
+
+ TGDS_TimeScale=(gds_ts1ns,gds_ts2_5ns,gds_ts5ns,gds_ts10ns,gds_ts25ns,
+                 gds_ts50ns,gds_ts100ns,gds_ts250ns,gds_ts500ns,gds_ts1us,
+                 gds_ts2_5us,gds_ts5us,gds_ts10us,gds_ts25us,gds_ts50us,
+                 gds_ts100us,gds_ts250us,gds_ts500us,gds_ts1ms,gds_ts2_5ms,
+                 gds_ts5ms,gds_ts10ms,gds_ts25ms,gds_ts50ms,gds_ts100ms,
+                 gds_ts250ms,gds_ts500ms,gds_ts1s,gds_ts2_5s,gds_ts5s,gds_ts10s);
+
+ TGDS_VoltageScale=(gds_vs2mV,gds_vs5mV,gds_vs10mV,gds_vs20mV,gds_vs50mV,
+                 gds_vs100mV,gds_vs200mV,gds_vs500mV,gds_vs1V,
+                 gds_vs2V,gds_vs5V);
+
+ TGDS_Probe=0..2;
+ TGDS_ProbeSym=(gds_p1X,gds_p10X,gds_p100X);
 
  ArrByteGDS=array[TGDS_Settings]of byte;
 
@@ -46,9 +56,11 @@ const
 
   GDS_806S_Test='GW,GDS-806S,EF211754,V1.10';
 
-  RootNood:array[0..6]of string=
-  ('*idn','*rcl','*rst','*sav',':acq',':aut',':chan');
-//   0       1      2      3      4      5       6
+  RootNood:array[0..12]of string=
+  ('*idn','*rcl','*rst','*sav',':acq',':aut',':chan',':meas',':refr',
+//   0       1      2      3      4      5       6       7      8
+  ':run',':stop','syst:unl',':tim:scal');
+//  9       10     11           12
 
   FirstNode_4:array[0..3]of string=
   ('aver','leng','mod','mem');
@@ -58,6 +70,18 @@ const
   ('coup','disp','inv','offs','prob','scal');
 //   0      1     2      3       4      5
 
+  FirstNode_7:array[0..15]of string=
+  ('fall','freq','nwid','pdut','per','pwid','ris',
+//   0      1     2      3       4      5     6
+   'vamp','vav','vhi','vlo','vmax','vmin','vpp','vrms','sour');
+//   7      8     9     10    11     12     13    14     15
+
+  GDS_MeasureTypeLabels:array[0..14]of string=
+   ('Falling time','Frequency','Negative pulse timing',
+   'Duty ratio','Period','Positive pulse timing','Rising time',
+   'Voltage amplitude','Average voltage','High voltage',
+   'Low voltage','Maximum amplitude','Minimum amplitude',
+   'Peak-to-peak voltage','Root mean square');
 
   GDS_ModeLabels:array[TGDS_Mode]of string=
     ('Sample','Peak detection','Average');
@@ -68,7 +92,30 @@ const
   GDS_ChanCouplLabels:array[TGDS_ChanCoupl]of string=
    ('AC','DC','GRN');
 
-  ButtonNumber = 6;
+  GDS_ProbeLabels:array[TGDS_Probe]of string=
+   ('1X','10X','100X');
+
+  GDS_TimeScaleLabels:array[TGDS_TimeScale]of string=
+   ('1ns','2.5ns','5ns','10ns','25ns','50ns','100ns','250ns',
+   '500ns','1us','2.5us','5us','10us','25us','50us','100us',
+   '250us','500us','1ms','2.5ms','5ms','10ms','25ms','50ms',
+   '100ms','250ms','500ms','1s','2.5s','5s','10s');
+
+  GDS_TimeScaleData:array[TGDS_TimeScale]of string=
+   ('1e-9','2.5e-9','5e-9','10e-9','25e-9','50e-9','100e-9','250e-9',
+   '500e-9','1e-6','2.5e-6','5e-6','10e-6','25e-6','50e-6','100e-6',
+   '250e-6','500e-6','1e-3','2.5e-3','5e-3','10e-3','25e-3','50e-3',
+   '100e-3','250e-3','500e-3','1','2.5','5','10');
+
+ GDS_VoltageScaleLabels:array[TGDS_VoltageScale]of string=
+ ('2mV','5mV','10mV','20mV','50mV','100mV','200mV','500mV',
+  '1V','2V','5V');
+
+ GDS_VoltageScaleData:array[TGDS_VoltageScale]of string=
+ ('0.002','0.005','0.01','0.02','0.05','0.1','0.2','0.5','1','2','5');
+
+
+  ButtonNumber = 10;
 
 type
 //  TGDS_806S_Parameters=class
@@ -131,6 +178,10 @@ type
     procedure SaveSetting(MemoryAdress:TGDS_MemoryAdress);
     procedure DefaultSetting();
     procedure AutoSetting();
+    procedure Refresh();
+    procedure Run();
+    procedure Stop();
+    procedure Unlock();
   end;
 
  TGDS_806S_Show=class
@@ -146,8 +197,6 @@ type
 //    BGetSetting:TButton;
     BTest:TButton;
     fFirstSetting:boolean;
-//    fShows:TParameterShowArray;
-//    fParamVariants:array of TStringList;
     procedure SetSettingButtonClick(Sender:TObject);
     procedure GetSettingButtonClick(Sender:TObject);
     procedure TestButtonClick(Sender:TObject);
@@ -155,10 +204,12 @@ type
     procedure LoadButtonClick(Sender:TObject);
     procedure AutoButtonClick(Sender:TObject);
     procedure DefaultButtonClick(Sender:TObject);
+    procedure RefreshButtonClick(Sender:TObject);
+    procedure RunButtonClick(Sender:TObject);
+    procedure StopButtonClick(Sender:TObject);
+    procedure UnlockButtonClick(Sender:TObject);
     procedure SettingsShowSLCreate();
     procedure SettingsShowSLFree();
-//    procedure SettingsShowCreate(STexts:ArrSTSet;
-//                        Labels: ArrLabSet);
     procedure SettingsShowCreate(STexts:array of TStaticText;
                         Labels: array of TLabel);
     procedure SettingsShowFree();
@@ -365,7 +416,7 @@ end;
 procedure TGDS_806S.PrepareString;
 begin
  StringToSend:=RootNood[fRootNode];
- if fRootNode in [2,5] then Exit;
+ if fRootNode in [2,5,8..11] then Exit;
 
  case fRootNode of
   4:begin
@@ -397,6 +448,11 @@ begin
  GetData;
 end;
 
+procedure TGDS_806S.Refresh;
+begin
+  SetupOperation(8,0,0);
+end;
+
 procedure TGDS_806S.Request;
 begin
 // StringToSend:=':acq:mod 0';
@@ -411,6 +467,11 @@ begin
   end
                       else
    fError:=True;
+end;
+
+procedure TGDS_806S.Run;
+begin
+  SetupOperation(9,0,0);
 end;
 
 procedure TGDS_806S.SaveSetting(MemoryAdress: TGDS_MemoryAdress);
@@ -514,6 +575,11 @@ begin
  Request();
 end;
 
+procedure TGDS_806S.Stop;
+begin
+  SetupOperation(10,0,0);
+end;
+
 function TGDS_806S.Test: boolean;
 begin
  QuireOperation(0,0,0);
@@ -521,6 +587,11 @@ begin
 // SetFlags(0,0,0,true);
 // PrepareString();
 // Result:=(GetData=314);
+end;
+
+procedure TGDS_806S.Unlock;
+begin
+   SetupOperation(11,0,0);
 end;
 
 { TGDS_806S_Show }
@@ -644,7 +715,8 @@ end;
 procedure TGDS_806S_Show.ButtonsTune(Buttons: array of TButton);
 const
   ButtonCaption: array[0..ButtonNumber] of string =
-  ('Set', 'Get', 'Connection Test ?', 'Save', 'Load', 'Auto', 'Default');
+  ('Set', 'Get', 'Connection Test ?', 'Save', 'Load', 'Auto', 'Default',
+  'REFRESH','RUN','STOP','UNLOCK');
 var
   ButtonAction: array[0..ButtonNumber] of TNotifyEvent;
   i: Integer;
@@ -656,6 +728,10 @@ begin
   ButtonAction[4] := LoadButtonClick;
   ButtonAction[5] := AutoButtonClick;
   ButtonAction[6] := DefaultButtonClick;
+  ButtonAction[7] := RefreshButtonClick;
+  ButtonAction[8] := RunButtonClick;
+  ButtonAction[9] := StopButtonClick;
+  ButtonAction[10] := UnlockButtonClick;
   for I := 0 to ButtonNumber do
   begin
     Buttons[i].Caption := ButtonCaption[i];
@@ -713,6 +789,16 @@ begin
 // fRecordLengthShow.ReadFromIniFile(ConfigFile);
 end;
 
+procedure TGDS_806S_Show.RefreshButtonClick(Sender: TObject);
+begin
+  fGDS_806S.Refresh();
+end;
+
+procedure TGDS_806S_Show.RunButtonClick(Sender: TObject);
+begin
+  fGDS_806S.Run();
+end;
+
 procedure TGDS_806S_Show.SaveButtonClick(Sender: TObject);
 begin
  fGDS_806S.SaveSetting(10);
@@ -763,6 +849,11 @@ begin
 // fGDS_806S.fRecordLength:=TGDS_RecordLength(fRecordLengthShow.Data);
 end;
 
+procedure TGDS_806S_Show.StopButtonClick(Sender: TObject);
+begin
+  fGDS_806S.Stop();
+end;
+
 procedure TGDS_806S_Show.SettingsShowSLCreate();
  var i:TGDS_Settings;
     i1:TGDS_Mode;
@@ -804,6 +895,11 @@ begin
           BTest.Font.Color:=clRed;
         end;
 
+end;
+
+procedure TGDS_806S_Show.UnlockButtonClick(Sender: TObject);
+begin
+  fGDS_806S.Unlock();
 end;
 
 procedure TGDS_806S_Show.WriteToIniFile(ConfigFile: TIniFile);
