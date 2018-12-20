@@ -28,7 +28,8 @@ type
     fWindowCaption:string; //назва віконця зміни параметра
     fWindowText:string;    //текст у віконці зміни параметру
     FColorChangeWithParameter: boolean;
-    fIniNameSalt:string;//добавка до іменіб з яким зберігаються дані в ini.файлі
+    fIniNameSalt:string;//добавка до імені, з яким зберігаються дані в ini.файлі
+    fHookParameterClick: TSimpleEvent;
     function StringToExpectedStringConvertion(str:string):string;virtual;abstract;
     {перетворення str в рядок, де число
     у потрібному форматі,
@@ -38,6 +39,7 @@ type
     //повертає символьне представлення значення змінної
     procedure WriteNumberToIniFile(ConfigFile:TIniFile;NameIni:string);virtual;abstract;
    public
+    property HookParameterClick:TSimpleEvent read fHookParameterClick write fHookParameterClick;
     property ColorChangeWithParameter:boolean read FColorChangeWithParameter write FColorChangeWithParameter;
     property IniNameSalt:string write fIniNameSalt;
     Constructor Create(STD:TStaticText;
@@ -620,6 +622,7 @@ begin
 //  HookParameterChange:=TSimpleClass.EmptyProcedure;
   fColorChangeWithParameter:=False;
   fIniNameSalt:='';
+  HookParameterClick:=TSimpleClass.EmptyProcedure;
 end;
 
 procedure TParameterShow.ForUseInShowObject(NamedObject: TNamedInterfacedObject;
@@ -641,6 +644,7 @@ begin
    try
     STData.Caption:=StringToExpectedStringConvertion(InputBox(fWindowCaption,fWindowText,STData.Caption));
     if ColorChangeWithParameter then ColorToActive(false);
+    HookParameterClick;
   finally
   end;
 end;
@@ -667,6 +671,7 @@ end;
 
 procedure TParameterShow.ColorToActive(Value: boolean);
 begin
+ if FColorChangeWithParameter then
   if Value then STData.Font.Color:=clPurple
            else STData.Font.Color:=clBlack;
 end;
@@ -819,6 +824,7 @@ begin
    begin
     STData.Caption:=fDataVariants.Strings[i];
     if ColorChangeWithParameter then ColorToActive(false);
+    HookParameterClick;
    end;
 //
 //

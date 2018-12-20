@@ -2241,7 +2241,8 @@ end;
 
 procedure TIVchar.Button2Click(Sender: TObject);
 begin
- showmessage(inttostr(GDS_806S_Show.Help));
+GDS_806S.SetTimeBase(gds_ts500us);
+// showmessage(inttostr(GDS_806S_Show.Help));
 //  GDS_806S.GetData;
 end;
 
@@ -2950,9 +2951,8 @@ begin
   GDS_806S:=TGDS_806S.Create(ComPortGDS,'GDS-806');
   GDS_806S_Show:=TGDS_806S_Show.Create(GDS_806S,
                   [STGDS_Mode, STGDS_RLength, STGDS_AveNum,
-                  STGDS_OffsetCh1],
-                  [LGDS_Mode,  LGDS_RLength, LGDS_AveNum,
-                  LGDS_OffsetCh1],
+                  STGDS_ScaleGoriz, STGDS_CoupleCh1,STGDS_CoupleCh2],
+                  [LGDS_Mode,  LGDS_RLength, LGDS_AveNum],
                   [B_GDS_SetSet,B_GDS_SetGet,B_GDS_Test,
                   B_GDS_SetSav,B_GDS_SetLoad,
                   B_GDS_SetAuto,B_GDS_SetDef,B_GDS_Refresh,

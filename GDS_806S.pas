@@ -7,7 +7,8 @@ uses
 
 type
 
- TGDS_Settings=(gds_mode,gds_rl,gds_an,gds_ch1_coup);
+ TGDS_Settings=(gds_mode,gds_rl,gds_an,gds_ts,
+                gds_ch1_coup,gds_ch2_coup);
 
  TGDS_ModeSym=(gds_msam,gds_mpd,gds_maver);
  TGDS_Mode=0..2;
@@ -34,14 +35,16 @@ type
  TGDS_ChanCoupl=0..2;
  TGDS_ChanCouplSym=(gds_ccAC, gds_ccDC, gds_ccGRN);
 
- TGDS_TimeScale=(gds_ts1ns,gds_ts2_5ns,gds_ts5ns,gds_ts10ns,gds_ts25ns,
+ TGDS_TimeScale=0..30;
+ TGDS_TimeScaleSym=(gds_ts1ns,gds_ts2_5ns,gds_ts5ns,gds_ts10ns,gds_ts25ns,
                  gds_ts50ns,gds_ts100ns,gds_ts250ns,gds_ts500ns,gds_ts1us,
                  gds_ts2_5us,gds_ts5us,gds_ts10us,gds_ts25us,gds_ts50us,
                  gds_ts100us,gds_ts250us,gds_ts500us,gds_ts1ms,gds_ts2_5ms,
                  gds_ts5ms,gds_ts10ms,gds_ts25ms,gds_ts50ms,gds_ts100ms,
                  gds_ts250ms,gds_ts500ms,gds_ts1s,gds_ts2_5s,gds_ts5s,gds_ts10s);
 
- TGDS_VoltageScale=(gds_vs2mV,gds_vs5mV,gds_vs10mV,gds_vs20mV,gds_vs50mV,
+ TGDS_VoltageScale=0..10;
+ TGDS_VoltageScaleSym=(gds_vs2mV,gds_vs5mV,gds_vs10mV,gds_vs20mV,gds_vs50mV,
                  gds_vs100mV,gds_vs200mV,gds_vs500mV,gds_vs1V,
                  gds_vs2V,gds_vs5V);
 
@@ -76,6 +79,17 @@ const
    'vamp','vav','vhi','vlo','vmax','vmin','vpp','vrms','sour');
 //   7      8     9     10    11     12     13    14     15
 
+  OperationKod:array [TGDS_Settings] of array[0..2] of byte=
+//                  RootNood  FirstNode  VariantsNumber
+{gds_mode}        ((   4,         2,           3),
+{gds_rl}           (   4,         1,           8),
+{gds_an}           (   4,         0,           9),
+{gds_ts}           (   12,        0,           31),
+{gds_ch1_coup}     (   6,         0,           3),
+{gds_ch2_coup}     (   6,         0,           3));
+
+
+
   GDS_MeasureTypeLabels:array[0..14]of string=
    ('Falling time','Frequency','Negative pulse timing',
    'Duty ratio','Period','Positive pulse timing','Rising time',
@@ -96,10 +110,14 @@ const
    ('1X','10X','100X');
 
   GDS_TimeScaleLabels:array[TGDS_TimeScale]of string=
-   ('1ns','2.5ns','5ns','10ns','25ns','50ns','100ns','250ns',
-   '500ns','1us','2.5us','5us','10us','25us','50us','100us',
-   '250us','500us','1ms','2.5ms','5ms','10ms','25ms','50ms',
-   '100ms','250ms','500ms','1s','2.5s','5s','10s');
+   ('1.000ns','2.500ns','5.000ns','10.00ns',
+   '25.00ns','50.00ns','100.0ns','250.0ns',
+   '500.0ns','1.000us','2.500us','5.000us',
+   '10.00us','25.00us','50.00us','100.0us',
+   '250.0us','500.0us','1.000ms','2.500ms',
+   '5.000ms','10.00ms','25.00ms','50.00ms',
+   '100.0ms','250.0ms','500.0ms','1.000s',
+   '2.500s','5.000s','10.00s');
 
   GDS_TimeScaleData:array[TGDS_TimeScale]of string=
    ('1e-9','2.5e-9','5e-9','10e-9','25e-9','50e-9','100e-9','250e-9',
@@ -113,6 +131,7 @@ const
 
  GDS_VoltageScaleData:array[TGDS_VoltageScale]of string=
  ('0.002','0.005','0.01','0.02','0.05','0.1','0.2','0.5','1','2','5');
+
 
 
   ButtonNumber = 10;
@@ -143,35 +162,46 @@ type
      fIsQuery:boolean;
      procedure SetFlags(RootNode,FirstLevelNode,LeafNode:byte;
                   IsQuery:boolean=False);
-     procedure SetupOperation(RootNode,FirstLevelNode,LeafNode:byte);
+     procedure SetupOperation(RootNode,FirstLevelNode,LeafNode:byte);overload;
+     procedure SetupOperation(Value:byte;Param:TGDS_Settings);overload;
      procedure QuireOperation(RootNode,FirstLevelNode,LeafNode:byte);
-     procedure PrepareString;
   //    procedure CombiningCommands;
      procedure DefaultSettings;
     procedure SetSettingActionCreate;
     procedure SetSettingAbsolut(Data:ArrByteGDS);
     procedure SetSettingOnOption(Data:ArrByteGDS);
+    procedure SetCouplingChan1(Coupl:byte);
    protected
+     procedure PrepareString;
      Procedure PacketReceiving(Sender: TObject; const Str: string);override;
    public
     property ActiveChannel:TGDS_Channel read FActiveChannel write FActiveChannel;
     Constructor Create(CP:TComPort;Nm:string);
 //    procedure Free;
     procedure Request();override;
+
     procedure SetMode(mode: Byte);overload;
     procedure SetMode(mode: TGDS_ModeSym);overload;
     function GetMode():boolean;
+
     procedure SetRecordLength(RL: Byte);overload;
     procedure SetRecordLength(RL: TGDS_RecordLengthSym);overload;
     function GetRecordLength():boolean;
+
     procedure SetAverageNumber(AV: Byte);overload;
     procedure SetAverageNumber(AV: TGDS_AverageNumberSym);overload;
     function GetAverageNumber():boolean;
-    procedure SetCoupling(Chan:TGDS_Channel;Coupl:byte);overload;
-    procedure SetCoupling(Coupl:byte);overload;
-    procedure SetCoupling(Coupl:TGDS_ChanCouplSym);overload;
-    function GetCoupling():boolean;overload;
-    function GetCoupling(Chan:TGDS_Channel):boolean;overload;
+
+    procedure SetTimeBase(TimeScale:byte);overload;
+    procedure SetTimeBase(TimeScale:TGDS_TimeScaleSym);overload;
+    function GetTimeBase():boolean;
+
+    procedure SetCoupling(Chan:TGDS_Channel;Coupl:byte);
+    procedure SetActiveChanelCoupling(Coupl:byte);overload;
+    procedure SetActiveChanelCoupling(Coupl:TGDS_ChanCouplSym);overload;
+    function GetActiveChanelCoupling():boolean;
+    function GetCoupling(Chan:TGDS_Channel):boolean;
+
     function GetSetting():boolean;
     function Test():boolean;
     procedure LoadSetting(MemoryAdress:TGDS_MemoryAdress);
@@ -215,6 +245,7 @@ type
     procedure SettingsShowFree();
     procedure ColorToActive(Value:boolean);
     procedure ButtonsTune(Buttons: array of TButton);
+    procedure TimeScaleClick();
    public
     Constructor Create(GDS_806S:TGDS_806S;
                        STexts:array of TStaticText;
@@ -260,6 +291,9 @@ begin
   fSetSettingAction[gds_mode] := SetMode;
   fSetSettingAction[gds_rl] := SetRecordLength;
   fSetSettingAction[gds_an] := SetAverageNumber;
+  fSetSettingAction[gds_ts] := SetTimeBase;
+  fSetSettingAction[gds_ch1_coup] := SetCouplingChan1;
+  fSetSettingAction[gds_ch2_coup] := SetCouplingChan1;  
 end;
 
 constructor TGDS_806S.Create(CP: TComPort; Nm: string);
@@ -320,7 +354,7 @@ begin
     end;
 end;
 
-function TGDS_806S.GetCoupling: boolean;
+function TGDS_806S.GetActiveChanelCoupling: boolean;
 begin
  QuireOperation(6,0,0);
  Result:=(round(Value)in[0..2]);
@@ -330,34 +364,25 @@ end;
 function TGDS_806S.GetCoupling(Chan: TGDS_Channel): boolean;
 begin
  fActiveChannel:=Chan;
- Result:=GetCoupling();
+ Result:=GetActiveChanelCoupling();
 end;
 
 function TGDS_806S.GetMode:boolean;
 begin
  QuireOperation(4,2,0);
  Result:=(round(Value)in[0..2]);
-// if Result then  fParam.Mode:=TGDS_Mode(round(Value));
  if Result then  fSettings[gds_mode]:=(round(Value));
 end;
 
 function TGDS_806S.GetRecordLength: boolean;
  var i:TGDS_RecordLength;
 begin
-// if fMode<>gds_maver then
-//   begin
-//     fRecordLength:=gds_rl500;
-//     Result:=True;
-//     Exit;
-//   end;
-
  QuireOperation(4,1,0);
  Result:=False;
  if Value=ErResult then Exit;
  for i := Low(TGDS_RecordLength) to High(TGDS_RecordLength) do
   if (round(Value)=GDS_RecordLengthData[i]) then
     begin
-//     fParam.RecordLength:=TGDS_RecordLength(i);
      fSettings[gds_rl]:=i;
      Result:=True;
      Break;
@@ -370,8 +395,16 @@ begin
  if not(GetMode) then Exit;
  if not(GetRecordLength) then Exit;
  if not(GetAverageNumber) then Exit;
+ if not(GetTimeBase) then Exit;
  if not(GetCoupling(1)) then Exit;
  Result:=True;
+end;
+
+function TGDS_806S.GetTimeBase: boolean;
+begin
+ QuireOperation(12,0,0);
+ Result:=(round(Value)in[0..30]);
+ if Result then  fSettings[gds_ts]:=(round(Value));
 end;
 
 procedure TGDS_806S.LoadSetting(MemoryAdress: TGDS_MemoryAdress);
@@ -383,6 +416,8 @@ begin
 end;
 
 procedure TGDS_806S.PacketReceiving(Sender: TObject; const Str: string);
+var
+  I: TGDS_TimeScale;
 begin
  case fRootNode of
   0:if Str=GDS_806S_Test then fValue:=314;
@@ -394,7 +429,7 @@ begin
              fValue:=ErResult;
             end;
      end;
-    end; //fRootNode = 4;
+    end; //fRootNode = 4;  acq
   6:begin
      case fFirstLevelNode of
         0:try
@@ -403,7 +438,16 @@ begin
              fValue:=ErResult;
             end;
      end;
-    end; //fRootNode = 6;
+    end; //fRootNode = 6;     chan
+  12:begin
+     fValue:=ErResult;
+     for I := Low(TGDS_TimeScale) to High(TGDS_TimeScale) do
+       if Str=GDS_TimeScaleLabels[i] then
+         begin
+         fValue:=ord(i);
+         Break;
+         end;
+    end; //fRootNode = 12; time scale
  end; //case fRootNode of
 
 fIsReceived:=True;
@@ -427,14 +471,22 @@ begin
         0..2:StringToSend:=StringToSend+
                           ':'+FirstNode_4[fFirstLevelNode];
      end;
-    end; //fRootNode = 4;
+    end; //fRootNode = 4;  acq
   6:begin
      StringToSend:=StringToSend+IntToStr(fActiveChannel)+':';
      case fFirstLevelNode of
         0:StringToSend:=StringToSend+
                           FirstNode_6[fFirstLevelNode];
      end;
-    end; //fRootNode = 6;
+    end; //fRootNode = 6;     chan
+  12:begin
+     if fIsQuery then
+       StringToSend:=StringToSend+'?'
+                 else
+       StringToSend:=StringToSend+' '+
+       GDS_TimeScaleData[TGDS_TimeScale(fSettings[gds_ts])];
+     Exit;
+    end; //fRootNode = 12; time scale
  end; //case fRootNode of
  if fIsQuery then StringToSend:=StringToSend+'?'
              else StringToSend:=StringToSend+' '+IntToStr(fLeafNode);
@@ -483,13 +535,11 @@ begin
 end;
 
 procedure TGDS_806S.SetAverageNumber(AV: Byte);
- var temp:byte;
 begin
  if fSettings[gds_mode]=2 then
   begin
-  temp:=AV mod 9;
-  SetupOperation(4,0,temp);
-  fSettings[gds_an]:=temp;
+  fSettings[gds_an]:=AV mod 9;
+  SetupOperation(4,0,fSettings[gds_an]);
   end;
 end;
 
@@ -501,21 +551,33 @@ end;
 procedure TGDS_806S.SetCoupling(Chan:TGDS_Channel;Coupl:byte);
 begin
  fActiveChannel:=Chan;
- SetCoupling(Coupl);
+ SetActiveChanelCoupling(Coupl);
 end;
 
-procedure TGDS_806S.SetCoupling(Coupl: byte);
- var temp:byte;
+procedure TGDS_806S.SetCouplingChan1(Coupl: byte);
 begin
- temp:=Coupl mod 3;
- SetupOperation(6,0,temp);
- fSettings[gds_ch1_coup]:=temp;
+ SetCoupling(1,Coupl);
 end;
 
-procedure TGDS_806S.SetCoupling(Coupl: TGDS_ChanCouplSym);
+procedure TGDS_806S.SetActiveChanelCoupling(Coupl: byte);
 begin
- SetCoupling(ord(Coupl));
+ case fActiveChannel of
+  1:begin
+     fSettings[gds_ch1_coup]:=Coupl mod 3;
+     SetupOperation(6,0,fSettings[gds_ch1_coup]);
+    end;
+  2:begin
+     fSettings[gds_ch2_coup]:=Coupl mod 3;
+     SetupOperation(6,0,fSettings[gds_ch2_coup]);
+    end;
+ end;
 end;
+
+procedure TGDS_806S.SetActiveChanelCoupling(Coupl: TGDS_ChanCouplSym);
+begin
+ SetActiveChanelCoupling(ord(Coupl));
+end;
+
 
 procedure TGDS_806S.SetFlags(RootNode, FirstLevelNode,
                             LeafNode: byte;
@@ -533,11 +595,11 @@ begin
 end;
 
 procedure TGDS_806S.SetMode(mode: Byte);
- var temp:byte;
 begin
- temp:=mode mod 3;
- SetupOperation(4,2,temp);
- fSettings[gds_mode]:=temp;
+// SetupOperation(mode,gds_mode);
+
+ fSettings[gds_mode]:=mode mod 3;
+ SetupOperation(4,2,fSettings[gds_mode]);
 end;
 
 procedure TGDS_806S.SetRecordLength(RL: TGDS_RecordLengthSym);
@@ -546,11 +608,9 @@ begin
 end;
 
 procedure TGDS_806S.SetRecordLength(RL: Byte);
- var temp:byte;
 begin
- temp:=RL mod 8;
- SetupOperation(4,1,temp);
- fSettings[gds_rl]:=temp;
+ fSettings[gds_rl]:=RL mod 8;
+ SetupOperation(4,1,fSettings[gds_rl]);
 end;
 
 procedure TGDS_806S.SetSettingAbsolut(Data:ArrByteGDS);
@@ -566,6 +626,23 @@ begin
  for I := Low(TGDS_Settings) to High(TGDS_Settings) do
    if (Data[i]<>fSettings[i])
      then fSetSettingAction[i](Data[i]);
+end;
+
+procedure TGDS_806S.SetTimeBase(TimeScale: TGDS_TimeScaleSym);
+begin
+ SetTimeBase(ord(TimeScale));
+end;
+
+procedure TGDS_806S.SetupOperation(Value:byte;Param: TGDS_Settings);
+begin
+ fSettings[Param]:=Value mod OperationKod[Param][2];
+ SetupOperation(OperationKod[Param][0],OperationKod[Param][1],fSettings[gds_mode]);
+end;
+
+procedure TGDS_806S.SetTimeBase(TimeScale: byte);
+begin
+ fSettings[gds_ts]:=TimeScale mod 31;
+ SetupOperation(12,0,fSettings[gds_ts]);
 end;
 
 procedure TGDS_806S.SetupOperation(RootNode, FirstLevelNode, LeafNode: byte);
@@ -619,7 +696,7 @@ constructor TGDS_806S_Show.Create(GDS_806S: TGDS_806S;
                                   );
 begin
   if (High(STexts)<>ord(High(TGDS_Settings)))or
-     (High(Labels)<>ord(High(TGDS_Settings)))or
+     (High(Labels)<>ord(gds_an))or
      (High(Buttons)<>ButtonNumber)
    then
     begin
@@ -705,7 +782,7 @@ end;
 
 function TGDS_806S_Show.Help: shortint;
 begin
- fGDS_806S.QuireOperation(4,0,0);
+// fGDS_806S.QuireOperation(4,0,0);
  Result:=1;
 // fGDS_806S.fMode:=TGDS_Mode(15);
 //fGDS_806S.SetMode(fGDS_806S.fMode);
@@ -746,16 +823,29 @@ procedure TGDS_806S_Show.SettingsShowCreate(STexts:array of TStaticText;
                         Labels: array of TLabel);
   const
       SettingsCaption:array[TGDS_Settings]of string=
-      ('Mode:','Record length:','Average Number:','');
+      ('Mode:','Record length:','Average Number:','TimBase',
+      'CouplCh1','CouplCh2');
  var i:TGDS_Settings;
 begin
- for I := Low(TGDS_Settings) to High(TGDS_Settings) do
+ for I := Low(TGDS_Settings) to gds_an do
    begin
    fSettingsShow[i]:=TStringParameterShow.Create(STexts[ord(i)],
                         Labels[ord(i)], SettingsCaption[i], fSettingsShowSL[i]);
    fSettingsShow[i].ForUseInShowObject(fGDS_806S);
    end;
-  fSettingsShow[gds_ch1_coup].IniNameSalt:='_ch1';
+
+ for I := Succ(gds_an) to High(TGDS_Settings) do
+   begin
+   fSettingsShow[i]:=TStringParameterShow.Create(STexts[ord(i)],
+                        SettingsCaption[i], fSettingsShowSL[i]);
+   fSettingsShow[i].ForUseInShowObject(fGDS_806S,False,False);
+   end;
+  fSettingsShow[gds_ts].HookParameterClick:=TimeScaleClick;
+//  ForUseInShowObject(fGDS_806S);
+//  fSettingsShow[gds_ch1_coup].ForUseInShowObject(fGDS_806S,False,False);
+
+//  fSettingsShow[gds_ch1_coup].IniNameSalt:='_ch1';
+//  fSettingsShow[gds_ch1_coup].ColorChangeWithParameter:=False;
 end;
 
 procedure TGDS_806S_Show.SettingsShowFree;
@@ -776,8 +866,6 @@ procedure TGDS_806S_Show.ObjectToSetting;
 begin
  for I := Low(TGDS_Settings) to High(TGDS_Settings) do
    fSettingsShow[i].Data:=fGDS_806S.fSettings[i];
-// fModeShow.Data:=ord(fGDS_806S.fParam.Mode);
-// fRecordLengthShow.Data:=ord(fGDS_806S.fParam.RecordLength);
 end;
 
 procedure TGDS_806S_Show.ReadFromIniFile(ConfigFile: TIniFile);
@@ -812,17 +900,12 @@ begin
    data[i]:=fSettingsShow[i].Data;
  if fFirstSetting then
    begin
-//     fGDS_806S.SetSettingAbsolut(fModeShow.Data,fRecordLengthShow.Data);
      fGDS_806S.SetSettingAbsolut(data);
      fFirstSetting:=False;
-   end             else
-//     fGDS_806S.SetSettingOnOption(fModeShow.Data,fRecordLengthShow.Data);
+   end
+               else
      fGDS_806S.SetSettingOnOption(data);
 
-// if (fFirstSetting)or(TGDS_Mode(fModeShow.Data)<>fGDS_806S.fMode)
-//   then fGDS_806S.SetMode(TGDS_Mode(fModeShow.Data));
-// if (fFirstSetting)or(TGDS_RecordLength(fRecordLengthShow.Data)<>fGDS_806S.fRecordLength)
-//   then fGDS_806S.SetRecordLength(TGDS_RecordLength(fRecordLengthShow.Data));
 
  ColorToActive(true);
 // fModeShow.ColorToActive(true);
@@ -834,7 +917,7 @@ end;
 procedure TGDS_806S_Show.SettingToObject;
  var i:TGDS_Settings;
 begin
- for I := Low(TGDS_Settings) to High(TGDS_Settings) do
+ for I := Low(TGDS_Settings) to gds_an do
  fGDS_806S.fSettings[i]:=fSettingsShow[i].Data;
 
  if fGDS_806S.fSettings[gds_mode]<>2 then
@@ -842,11 +925,7 @@ begin
    fGDS_806S.fSettings[gds_an]:=0;
    fSettingsShow[gds_an].ColorToActive(false);
   end;
- 
 
-// fGDS_806S.fParam.SetDataShort(fModeShow.Data,fRecordLengthShow.Data);
-// fGDS_806S.fMode:=TGDS_Mode(fModeShow.Data);
-// fGDS_806S.fRecordLength:=TGDS_RecordLength(fRecordLengthShow.Data);
 end;
 
 procedure TGDS_806S_Show.StopButtonClick(Sender: TObject);
@@ -859,9 +938,11 @@ procedure TGDS_806S_Show.SettingsShowSLCreate();
     i1:TGDS_Mode;
     i2:TGDS_RecordLength;
     i3:TGDS_AverageNumber;
+    i5:TGDS_TimeScale;
     i4:TGDS_ChanCoupl;
 begin
- for I := Low(TGDS_Settings) to High(TGDS_Settings) do
+// for I := Low(TGDS_Settings) to High(TGDS_Settings) do
+ for I := Low(TGDS_Settings) to gds_ch1_coup do
   begin
   fSettingsShowSL[i]:=TStringList.Create();
   fSettingsShowSL[i].Clear;
@@ -872,14 +953,19 @@ begin
     fSettingsShowSL[gds_rl].Add(IntToStr(GDS_RecordLengthData[i2]));
   for I3 := Low(TGDS_AverageNumber) to High(TGDS_AverageNumber) do
     fSettingsShowSL[gds_an].Add(IntToStr($01 shl ord(i3)));
+  for I5 := Low(TGDS_TimeScale) to High(TGDS_TimeScale) do
+    fSettingsShowSL[gds_ts].Add(GDS_TimeScaleLabels[i5]);
  for I4 := Low(TGDS_ChanCoupl) to High(TGDS_ChanCoupl) do
     fSettingsShowSL[gds_ch1_coup].Add(GDS_ChanCouplLabels[i4]);
+
+ fSettingsShowSL[gds_ch2_coup]:=fSettingsShowSL[gds_ch1_coup];
 end;
 
 procedure TGDS_806S_Show.SettingsShowSLFree;
  var i:TGDS_Settings;
 begin
- for I := Low(TGDS_Settings) to High(TGDS_Settings) do
+ for I := Low(TGDS_Settings) to gds_ch1_coup do
+// for I := Low(TGDS_Settings) to High(TGDS_Settings) do
   fSettingsShowSL[i].Free;
 end;
 
@@ -897,6 +983,11 @@ begin
 
 end;
 
+procedure TGDS_806S_Show.TimeScaleClick;
+begin
+ fGDS_806S.SetTimeBase(fSettingsShow[gds_ts].Data);
+end;
+
 procedure TGDS_806S_Show.UnlockButtonClick(Sender: TObject);
 begin
   fGDS_806S.Unlock();
@@ -907,8 +998,6 @@ procedure TGDS_806S_Show.WriteToIniFile(ConfigFile: TIniFile);
 begin
  for I := Low(TGDS_Settings) to High(TGDS_Settings) do
   fSettingsShow[i].WriteToIniFile(ConfigFile);
-// fModeShow.WriteToIniFile(ConfigFile);
-// fRecordLengthShow.WriteToIniFile(ConfigFile);
 end;
 
 //{ TGDS_806S_Parameters }
