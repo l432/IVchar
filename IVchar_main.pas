@@ -2950,13 +2950,16 @@ begin
 
   GDS_806S:=TGDS_806S.Create(ComPortGDS,'GDS-806');
   GDS_806S_Show:=TGDS_806S_Show.Create(GDS_806S,
-                  [STGDS_Mode, STGDS_RLength, STGDS_AveNum,
-                  STGDS_ScaleGoriz, STGDS_CoupleCh1,STGDS_CoupleCh2],
+                  [STGDS_Mode, STGDS_RLength, STGDS_AveNum,STGDS_ScaleGoriz,
+                  STGDS_CoupleCh1,STGDS_ProbCh1,STGDS_MeasCh1,STGDS_ScaleCh1,
+                  STGDS_CoupleCh2,STGDS_ProbCh2,STGDS_MeasCh2,STGDS_ScaleCh2],
                   [LGDS_Mode,  LGDS_RLength, LGDS_AveNum],
                   [B_GDS_SetSet,B_GDS_SetGet,B_GDS_Test,
                   B_GDS_SetSav,B_GDS_SetLoad,
                   B_GDS_SetAuto,B_GDS_SetDef,B_GDS_Refresh,
-                  B_GDS_Run,B_GDS_Stop,B_GDS_Unlock]);
+                  B_GDS_Run,B_GDS_Stop,B_GDS_Unlock],
+                  CBGDS_InvertCh1,CBGDS_InvertCh2,
+                  CBGDS_DisplayCh1,CBGDS_DisplayCh2);
 
   ShowArray.Add([UT70BShow,UT70CShow,GDS_806S_Show]);
   AnyObjectArray.Add([UT70B,UT70C,GDS_806S]);
