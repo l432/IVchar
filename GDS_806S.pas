@@ -44,10 +44,11 @@ type
                  gds_ts5ms,gds_ts10ms,gds_ts25ms,gds_ts50ms,gds_ts100ms,
                  gds_ts250ms,gds_ts500ms,gds_ts1s,gds_ts2_5s,gds_ts5s,gds_ts10s);
 
- TGDS_VoltageScale=0..10;
+ TGDS_VoltageScale=0..16;
  TGDS_VoltageScaleSym=(gds_vs2mV,gds_vs5mV,gds_vs10mV,gds_vs20mV,gds_vs50mV,
                  gds_vs100mV,gds_vs200mV,gds_vs500mV,gds_vs1V,
-                 gds_vs2V,gds_vs5V);
+                 gds_vs2V,gds_vs5V,gds_vs10V,gds_vs20V,gds_vs50V,
+                 gds_vs100V,gds_vs200V,gds_vs500V);
 
  TGDS_Probe=0..2;
  TGDS_ProbeSym=(gds_p1X,gds_p10X,gds_p100X);
@@ -61,6 +62,8 @@ type
  ArrByteGDS=array[TGDS_Settings]of byte;
 
 const
+  TestShow=False;
+
   GDS_806S_PacketBeginChar='';
   GDS_806S_PacketEndChar=#10;
 
@@ -93,13 +96,15 @@ const
 {gds_an}           (   4,         0,           9),
 {gds_ts}           (   12,        0,           31),
 {gds_ch1_coup}     (   6,         0,           3),
-{gds_ch2_coup}     (   6,         0,           3),
-{gds_ch1_coup}     (   6,         4,           3),
-{gds_ch2_coup}     (   6,         4,           3),
-{gds_ch1_scale}    (   6,         5,           11),
-{gds_ch2_scale}    (   6,         5,           11),
+{gds_ch1_prob}     (   6,         4,           3),
 {gds_ch1_mtype}    (   7,         0,           15),
-{gds_ch2_mtype}    (   7,         0,           15));
+{gds_ch1_scale}    (   6,         5,           17),
+{gds_ch2_coup}     (   6,         0,           3),
+{gds_ch2_prob}     (   6,         4,           3),
+{gds_ch2_mtype}    (   7,         0,           15),
+{gds_ch2_scale}    (   6,         5,           17));
+
+
 
   GDS_MeasureTypeLabels:array[TGDS_MeasureType]of string=
    ('Falling time','Frequency','Negative pulse timing',
@@ -137,11 +142,13 @@ const
    '100e-3','250e-3','500e-3','1','2.5','5','10');
 
  GDS_VoltageScaleLabels:array[TGDS_VoltageScale]of string=
- ('2mV','5mV','10mV','20mV','50mV','100mV','200mV','500mV',
-  '1V','2V','5V');
+ ('2.00mV','5.00mV','10.0mV','20.0mV','50.0mV','100mV',
+ '200mV','500mV','1.00V','2.00V','5.00V',
+ '10.0V','20.0V','50.0V','100V','200V','500V');
 
  GDS_VoltageScaleData:array[TGDS_VoltageScale]of string=
- ('0.002','0.005','0.01','0.02','0.05','0.1','0.2','0.5','1','2','5');
+ ('0.002','0.005','0.01','0.02','0.05','0.1','0.2',
+ '0.5','1','2','5','10','20','50','100','200','500');
 
 
 
@@ -192,6 +199,7 @@ type
     procedure SetProbChan2(Prob:byte);
     procedure SetScaleChan1(Scale:byte);
     procedure SetScaleChan2(Scale:byte);
+    function IncorrectScale(Chan: TGDS_Channel; Scale: byte):boolean;
     procedure SetMeasTypeChan1(MType:byte);
     procedure SetMeasTypeChan2(MType:byte);
     function GDS_StringToValue(Str:string):double;
@@ -247,6 +255,8 @@ type
     function GetActiveChannelInvert():boolean;
     function GetInvert(Chan:TGDS_Channel):boolean;
 
+    function GetActiveChannelOffset():boolean;
+
     function GetSetting():boolean;
     function Test():boolean;
     procedure LoadSetting(MemoryAdress:TGDS_MemoryAdress);
@@ -265,20 +275,11 @@ type
     fGDS_806S:TGDS_806S;
     fSettingsShow:array[TGDS_Settings]of TStringParameterShow;
     fSettingsShowSL:array[TGDS_Settings]of TStringList;
-//    fModeShow:TStringParameterShow;
-//    fModes:TStringList;
-//    fRecordLengthShow:TStringParameterShow;
-//    fRecordLengths:TStringList;
-//    BSetSetting:TButton;
-//    BGetSetting:TButton;
     BTest:TButton;
 
     fInvertCheckBox:array[TGDS_Channel]of TCheckBox;
     fDisplayCheckBox:array[TGDS_Channel]of TCheckBox;
 
-//    if IVchar.Components[i].Tag in [6,7] then
-//     WriteIniDef(ConfigFile, 'Box', (IVchar.Components[i] as TCheckBox).Name,
-//       (IVchar.Components[i] as TCheckBox).Checked);
 
 //     (IVchar.Components[i] as TCheckBox).Checked:=
 //       ConfigFile.ReadBool('Box', (IVchar.Components[i] as TCheckBox).Name, False);
@@ -294,11 +295,13 @@ type
     procedure RunButtonClick(Sender:TObject);
     procedure StopButtonClick(Sender:TObject);
     procedure UnlockButtonClick(Sender:TObject);
+    procedure DisplayInvertClick(Sender:TObject);
     procedure SettingsShowSLCreate();
     procedure SettingsShowSLFree();
     procedure SettingsShowCreate(STexts:array of TStaticText;
                         Labels: array of TLabel);
     procedure SettingsShowFree();
+    procedure CanalCheckBoxCreate(InvCB,DisCB:array of TCheckBox);
     procedure ColorToActive(Value:boolean);
     procedure ButtonsTune(Buttons: array of TButton);
     procedure TimeScaleOkClick();
@@ -315,8 +318,8 @@ type
                        STexts:array of TStaticText;
                        Labels:array of TLabel;
                        Buttons:Array of TButton;
-                       InvertCBCh1,InvertCBCh2,
-                       DisplayCBCh1,DisplayCBCh2: TCheckBox
+                       InvCB:array of TCheckBox;
+                       DisCB:array of TCheckBox
                        );
     Procedure Free;
     procedure ReadFromIniFile(ConfigFile:TIniFile);
@@ -333,7 +336,7 @@ var
 implementation
 
 uses
-  Dialogs, Controls, SysUtils, Graphics;
+  Dialogs, Controls, SysUtils, Graphics, OlegFunction;
 
 { TGDS_806S }
 
@@ -445,6 +448,11 @@ end;
 function TGDS_806S.GDS_StringToValue(Str: string): double;
 begin
   try
+    if Str='?' then
+      begin
+        Result:=ErResult;
+        Exit;
+      end;
     if AnsiPos('n', Str)>1 then
      begin
      Result:=1e-9*StrToFloat(Copy(Str,1,AnsiPos('n', Str)-1));
@@ -470,7 +478,9 @@ begin
      Result:=1e6*StrToFloat(Copy(Str,1,AnsiPos('M', Str)-1));
      Exit;
      end;
-   Result:=StrToFloat(Copy(Str,1,4));
+//   showmessage(FloatToStr(StrToFloat(Str)));
+   if AnsiPos('V', Str)>1 then  Result:=StrToFloat(Copy(Str,1,3))
+                          else  Result:=StrToFloat(Copy(Str,1,4));
   except
    Result:=ErResult;
   end;
@@ -509,6 +519,13 @@ begin
  QuireOperation(6,2,0);
  Result:=round(Value)in[0..1];
  fInvert[fActiveChannel]:=(round(Value)=1)
+end;
+
+function TGDS_806S.GetActiveChannelOffset: boolean;
+begin
+ QuireOperation(6,3,0);
+ Result:=round(Value)in[0..1];
+// fInvert[fActiveChannel]:=(round(Value)=1)
 end;
 
 function TGDS_806S.GetParam(Param: TGDS_Settings): boolean;
@@ -598,12 +615,13 @@ begin
  fActiveChannel:=2;
  if not(GetParam(gds_ch2_coup)) then Exit;
  if not(GetParam(gds_ch2_prob)) then Exit;
+ if not(GetActiveChannelScale()) then Exit;
  if not(GetActiveChannelDisplay()) then Exit;
  if not(GetActiveChannelInvert()) then Exit;
-// if not(GetCoupling(1)) then Exit;
  fActiveChannel:=1;
  if not(GetParam(gds_ch1_coup)) then Exit;
  if not(GetParam(gds_ch1_prob)) then Exit;
+ if not(GetActiveChannelScale()) then Exit;
  if not(GetActiveChannelDisplay()) then Exit;
  if not(GetActiveChannelInvert()) then Exit;
  Result:=True;
@@ -615,6 +633,16 @@ begin
 // QuireOperation(12,0,0);
 // Result:=(round(Value)in[0..30]);
 // if Result then  fSettings[gds_ts]:=(round(Value));
+end;
+
+function TGDS_806S.IncorrectScale(Chan: TGDS_Channel; Scale: byte): boolean;
+ var temp:byte;
+begin
+if Chan=1 then temp:=fSettings[gds_ch1_prob]
+          else temp:=fSettings[gds_ch2_prob];
+ Result:=((temp=0)and(Scale>10))or
+         ((temp=1)and((Scale>13)or(Scale<3)))or
+         ((temp=2)and((Scale>16)or(Scale<6)));
 end;
 
 procedure TGDS_806S.InvertOff(Chan: TGDS_Channel);
@@ -644,6 +672,7 @@ begin
  case Mtype of
   0,2,4..6:Result:='s';
   1:Result:='Hz';
+  3:Result:='%';
   7..14:Result:='V';
   else Result:='';
  end;
@@ -696,7 +725,7 @@ begin
 
 fIsReceived:=True;
 //fValue:=0;
-//showmessage('recived:  '+STR);
+if TestShow then showmessage('recived:  '+STR);
 
 
 end;
@@ -719,7 +748,7 @@ begin
   6:begin
      StringToSend:=StringToSend+IntToStr(fActiveChannel)+':';
      case fFirstLevelNode of
-        0..2,4:StringToSend:=StringToSend+
+        0..2,3,4:StringToSend:=StringToSend+
                           FirstNode_6[fFirstLevelNode];
         5:begin
            StringToSend:=StringToSend+
@@ -775,7 +804,7 @@ begin
 // StringToSend:=':acq:mod 0';
 // StringToSend:='*idn?';
 // StringToSend:=':meas:vpp?';
-//showmessage('send:  '+StringToSend);
+if TestShow then showmessage('send:  '+StringToSend);
  if fComPort.Connected then
   begin
    fComPort.AbortAllAsync;
@@ -878,6 +907,7 @@ end;
 
 procedure TGDS_806S.SetMeasTypeChan1(MType: byte);
 begin
+// showmessage(inttostr(MType));
  fSettings[gds_ch1_mtype]:=MType mod OperationKod[gds_ch1_mtype,2];
 // SetMeasType(1,MType);
 end;
@@ -897,6 +927,7 @@ procedure TGDS_806S.SetProb(Chan: TGDS_Channel; Prob: byte);
 begin
  fActiveChannel:=Chan;
  SetupOperation(Prob,gds_ch1_prob,gds_ch2_prob);
+ GetActiveChannelScale;
 end;
 
 procedure TGDS_806S.SetProbChan1(Prob: byte);
@@ -930,6 +961,8 @@ end;
 
 procedure TGDS_806S.SetScale(Chan: TGDS_Channel; Scale: byte);
 begin
+ if IncorrectScale(Chan, Scale) then Exit;
+ 
  fActiveChannel:=Chan;
  SetupOperation(Scale,gds_ch1_scale,gds_ch2_scale);
 end;
@@ -1027,6 +1060,20 @@ begin
  fGDS_806S.AutoSetting();
 end;
 
+procedure TGDS_806S_Show.CanalCheckBoxCreate(InvCB, DisCB: array of TCheckBox);
+ var i:TGDS_Channel;
+begin
+ for I := Low(TGDS_Channel) to High(TGDS_Channel) do
+  begin
+   fInvertCheckBox[i]:=InvCB[i-1];
+   fInvertCheckBox[i].Caption:='Invert';
+   fInvertCheckBox[i].OnClick:=DisplayInvertClick;
+   fDisplayCheckBox[i]:=DisCB[i-1];
+   fDisplayCheckBox[i].Caption:='Display';
+   fDisplayCheckBox[i].OnClick:=DisplayInvertClick;
+  end;
+end;
+
 procedure TGDS_806S_Show.ColorToActive(Value: boolean);
  var i:TGDS_Settings;
 begin
@@ -1048,13 +1095,15 @@ constructor TGDS_806S_Show.Create(GDS_806S: TGDS_806S;
                        STexts:array of TStaticText;
                        Labels:array of TLabel;
                        Buttons:Array of TButton;
-                       InvertCBCh1,InvertCBCh2,
-                       DisplayCBCh1,DisplayCBCh2: TCheckBox
+                       InvCB:array of TCheckBox;
+                       DisCB:array of TCheckBox
                                   );
 begin
   if (High(STexts)<>ord(High(TGDS_Settings)))or
      (High(Labels)<>ord(gds_an))or
-     (High(Buttons)<>ButtonNumber)
+     (High(Buttons)<>ButtonNumber)or
+     (High(InvCB)<>1)or
+     (High(DisCB)<>1)
    then
     begin
       showmessage('GDS_806S_Show is not created!');
@@ -1069,6 +1118,8 @@ begin
   SettingsShowCreate(STexts, Labels);
   ButtonsTune(Buttons);
 
+  CanalCheckBoxCreate(InvCB,DisCB);
+
   fFirstSetting:=True;
 
 
@@ -1077,6 +1128,22 @@ end;
 procedure TGDS_806S_Show.DefaultButtonClick(Sender: TObject);
 begin
  fGDS_806S.DefaultSetting();
+end;
+
+procedure TGDS_806S_Show.DisplayInvertClick(Sender: TObject);
+begin
+ if (Sender=fDisplayCheckBox[1]) then
+   if fDisplayCheckBox[1].Checked then fGDS_806S.DisplayOn(1)
+                                  else fGDS_806S.DisplayOff(1);
+ if (Sender=fInvertCheckBox[1]) then
+   if fInvertCheckBox[1].Checked then fGDS_806S.InvertOn(1)
+                                  else fGDS_806S.InvertOff(1);
+ if (Sender=fDisplayCheckBox[2]) then
+   if fDisplayCheckBox[2].Checked then fGDS_806S.DisplayOn(2)
+                                  else fGDS_806S.DisplayOff(2);
+ if (Sender=fInvertCheckBox[2]) then
+   if fInvertCheckBox[2].Checked then fGDS_806S.InvertOn(2)
+                                  else fGDS_806S.InvertOff(2);
 end;
 
 procedure TGDS_806S_Show.Free;
@@ -1105,6 +1172,8 @@ end;
 
 function TGDS_806S_Show.Help: shortint;
 begin
+ StringToSend:=':chan1:math 1';
+ fGDS_806S.Request;
 // fGDS_806S.QuireOperation(4,0,0);
  Result:=1;
 // fGDS_806S.fMode:=TGDS_Mode(15);
@@ -1196,38 +1265,56 @@ end;
 
 procedure TGDS_806S_Show.MeasTypeCh1OkClick;
 begin
-  fGDS_806S.SetMeasTypeChan1(fSettingsShow[gds_ch1_scale].Data);
+  fGDS_806S.SetMeasTypeChan1(fSettingsShow[gds_ch1_mtype].Data);
 end;
 
 procedure TGDS_806S_Show.MeasTypeCh2OkClick;
 begin
-  fGDS_806S.SetMeasTypeChan2(fSettingsShow[gds_ch2_scale].Data);
+  fGDS_806S.SetMeasTypeChan2(fSettingsShow[gds_ch1_mtype].Data);
 end;
 
 procedure TGDS_806S_Show.ObjectToSetting;
  var i:TGDS_Settings;
+     j:TGDS_Channel;
 begin
  for I := Low(TGDS_Settings) to High(TGDS_Settings) do
    fSettingsShow[i].Data:=fGDS_806S.fSettings[i];
+
+ for j := Low(TGDS_Channel) to High(TGDS_Channel) do
+  begin
+    AccurateCheckBoxCheckedChange(fDisplayCheckBox[j],fGDS_806S.fDisplay[j]);
+    AccurateCheckBoxCheckedChange(fInvertCheckBox[j],fGDS_806S.fInvert[j]);
+  end;
 end;
 
 procedure TGDS_806S_Show.ProbeCh1OkClick;
 begin
-  fGDS_806S.SetProbChan1(fSettingsShow[gds_ch1_prob].Data);
+ fGDS_806S.SetProbChan1(fSettingsShow[gds_ch1_prob].Data);
+ fSettingsShow[gds_ch1_scale].Data:=fGDS_806S.fSettings[gds_ch1_scale];
 end;
 
 procedure TGDS_806S_Show.ProbeCh2OkClick;
 begin
   fGDS_806S.SetProbChan2(fSettingsShow[gds_ch2_prob].Data);
+  fSettingsShow[gds_ch2_scale].Data:=fGDS_806S.fSettings[gds_ch2_scale];
 end;
 
 procedure TGDS_806S_Show.ReadFromIniFile(ConfigFile: TIniFile);
  var i:TGDS_Settings;
+     j:TGDS_Channel;
 begin
  for I := Low(TGDS_Settings) to High(TGDS_Settings) do
   fSettingsShow[i].ReadFromIniFile(ConfigFile);
-// fModeShow.ReadFromIniFile(ConfigFile);
-// fRecordLengthShow.ReadFromIniFile(ConfigFile);
+
+
+ for j := Low(TGDS_Channel) to High(TGDS_Channel) do
+  begin
+    AccurateCheckBoxCheckedChange(fDisplayCheckBox[j],
+          ConfigFile.ReadBool(fGDS_806S.Name, 'Display'+IntTostr(j), False));
+    AccurateCheckBoxCheckedChange(fInvertCheckBox[j],
+          ConfigFile.ReadBool(fGDS_806S.Name, 'Invert'+IntTostr(j), False));
+  end;
+
 end;
 
 procedure TGDS_806S_Show.RefreshButtonClick(Sender: TObject);
@@ -1248,16 +1335,19 @@ end;
 procedure TGDS_806S_Show.ScaleCh1OkClick;
 begin
  fGDS_806S.SetScaleChan1(fSettingsShow[gds_ch1_scale].Data);
+ fSettingsShow[gds_ch1_scale].Data:=fGDS_806S.fSettings[gds_ch1_scale];
 end;
 
 procedure TGDS_806S_Show.ScaleCh2OkClick;
 begin
  fGDS_806S.SetScaleChan2(fSettingsShow[gds_ch2_scale].Data);
+ fSettingsShow[gds_ch2_scale].Data:=fGDS_806S.fSettings[gds_ch2_scale];
 end;
 
 procedure TGDS_806S_Show.SetSettingButtonClick(Sender: TObject);
  var data:ArrByteGDS;
      i:TGDS_Settings;
+     j:TGDS_Channel;
 begin
  for I := Low(TGDS_Settings) to High(TGDS_Settings) do
    data[i]:=fSettingsShow[i].Data;
@@ -1265,9 +1355,23 @@ begin
    begin
      fGDS_806S.SetSettingAbsolut(data);
      fFirstSetting:=False;
+     for j := Low(TGDS_Channel) to High(TGDS_Channel) do
+      begin
+       DisplayInvertClick(fDisplayCheckBox[j]);
+       DisplayInvertClick(fInvertCheckBox[j]);
+      end;
    end
                else
+    begin
      fGDS_806S.SetSettingOnOption(data);
+     for j := Low(TGDS_Channel) to High(TGDS_Channel) do
+      begin
+       if fGDS_806S.fDisplay[j]<>fDisplayCheckBox[j].Checked
+           then DisplayInvertClick(fDisplayCheckBox[j]);
+       if fGDS_806S.fInvert[j]<>fInvertCheckBox[j].Checked
+           then DisplayInvertClick(fInvertCheckBox[j]);
+      end;
+    end;
 
 
  ColorToActive(true);
@@ -1279,6 +1383,7 @@ end;
 
 procedure TGDS_806S_Show.SettingToObject;
  var i:TGDS_Settings;
+     j:TGDS_Channel;
 begin
 // for I := Low(TGDS_Settings) to gds_an do
  for I := Low(TGDS_Settings) to  High(TGDS_Settings) do
@@ -1290,6 +1395,11 @@ begin
    fSettingsShow[gds_an].ColorToActive(false);
   end;
 
+ for j := Low(TGDS_Channel) to High(TGDS_Channel) do
+   begin
+    fGDS_806S.fDisplay[j]:=fDisplayCheckBox[j].Checked;
+    fGDS_806S.fInvert[j]:=fInvertCheckBox[j].Checked;
+   end;
 end;
 
 procedure TGDS_806S_Show.StopButtonClick(Sender: TObject);
@@ -1375,9 +1485,19 @@ end;
 
 procedure TGDS_806S_Show.WriteToIniFile(ConfigFile: TIniFile);
  var i:TGDS_Settings;
+     j:TGDS_Channel;
 begin
  for I := Low(TGDS_Settings) to High(TGDS_Settings) do
   fSettingsShow[i].WriteToIniFile(ConfigFile);
+
+ for j := Low(TGDS_Channel) to High(TGDS_Channel) do
+  begin
+     WriteIniDef(ConfigFile, fGDS_806S.Name, 'Invert'+IntTostr(j),
+          fInvertCheckBox[j].Checked);
+     WriteIniDef(ConfigFile, fGDS_806S.Name, 'Display'+IntTostr(j),
+          fDisplayCheckBox[j].Checked);
+  end;
+
 end;
 
 //{ TGDS_806S_Parameters }

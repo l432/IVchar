@@ -2241,7 +2241,9 @@ end;
 
 procedure TIVchar.Button2Click(Sender: TObject);
 begin
-GDS_806S.SetTimeBase(gds_ts500us);
+GDS_806S_Show.Help;
+//GDS_806S.GetMeasuringData(1);
+//GDS_806S.SetTimeBase(gds_ts500us);
 // showmessage(inttostr(GDS_806S_Show.Help));
 //  GDS_806S.GetData;
 end;
@@ -2958,8 +2960,8 @@ begin
                   B_GDS_SetSav,B_GDS_SetLoad,
                   B_GDS_SetAuto,B_GDS_SetDef,B_GDS_Refresh,
                   B_GDS_Run,B_GDS_Stop,B_GDS_Unlock],
-                  CBGDS_InvertCh1,CBGDS_InvertCh2,
-                  CBGDS_DisplayCh1,CBGDS_DisplayCh2);
+                  [CBGDS_InvertCh1,CBGDS_InvertCh2],
+                  [CBGDS_DisplayCh1,CBGDS_DisplayCh2]);
 
   ShowArray.Add([UT70BShow,UT70CShow,GDS_806S_Show]);
   AnyObjectArray.Add([UT70B,UT70C,GDS_806S]);
