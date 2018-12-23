@@ -2954,8 +2954,10 @@ begin
   GDS_806S_Show:=TGDS_806S_Show.Create(GDS_806S,
                   [STGDS_Mode, STGDS_RLength, STGDS_AveNum,STGDS_ScaleGoriz,
                   STGDS_CoupleCh1,STGDS_ProbCh1,STGDS_MeasCh1,STGDS_ScaleCh1,
-                  STGDS_CoupleCh2,STGDS_ProbCh2,STGDS_MeasCh2,STGDS_ScaleCh2],
-                  [LGDS_Mode,  LGDS_RLength, LGDS_AveNum],
+                  STGDS_CoupleCh2,STGDS_ProbCh2,STGDS_MeasCh2,STGDS_ScaleCh2,
+                  STGDS_OffsetCh1,STGDS_OffsetCh2],
+                  [LGDS_Mode,  LGDS_RLength, LGDS_AveNum,
+                  LGDS_OffsetCh1,LGDS_OffsetCh2],
                   [B_GDS_SetSet,B_GDS_SetGet,B_GDS_Test,
                   B_GDS_SetSav,B_GDS_SetLoad,
                   B_GDS_SetAuto,B_GDS_SetDef,B_GDS_Refresh,
@@ -3013,7 +3015,7 @@ begin
    if (ShowArray.ObjectArray[i] is TGDS_806S_Show) then
      begin
       (ShowArray.ObjectArray[i] as TGDS_806S_Show).ReadFromIniFile(ConfigFile);
-      (ShowArray.ObjectArray[i] as TGDS_806S_Show).SettingToObject();
+//      (ShowArray.ObjectArray[i] as TGDS_806S_Show).SettingToObject();
       Continue;
      end;
   end;
