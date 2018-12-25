@@ -104,21 +104,43 @@ public
 end;
 
 
-TMeasurementShow=class
+TMeasurementShowSimple=class
   protected
    fMeter:IMeasurement;
-   MeasureMode,Range:TRadioGroup;
    DataLabel,UnitLabel:TLabel;
    MeasurementButton:TButton;
    Time:TTimer;
    procedure MeasurementButtonClick(Sender: TObject);
    procedure AutoSpeedButtonClick(Sender: TObject);
-   procedure StringArrayToRadioGroup(SA:array of string;
-                                     RG:TRadioGroup);
-   procedure IndexToRadioGroup(Index:ShortInt;RG:TRadioGroup);
    function UnitModeLabel():string;virtual;
   public
    AutoSpeedButton:TSpeedButton;
+   Constructor Create(Meter:IMeasurement;
+                      DL,UL:TLabel;
+                      MB:TButton;
+                      AB:TSpeedButton;
+                      TT:TTimer
+                      );
+   procedure MetterDataShow();virtual;
+end;
+
+TMeasurementShow=class  (TMeasurementShowSimple)
+//TMeasurementShow=class
+  protected
+//   fMeter:IMeasurement;
+   MeasureMode,Range:TRadioGroup;
+//   DataLabel,UnitLabel:TLabel;
+//   MeasurementButton:TButton;
+//   Time:TTimer;
+//   AutoSpeedButton:TSpeedButton;
+//   procedure MeasurementButtonClick(Sender: TObject);
+//   procedure AutoSpeedButtonClick(Sender: TObject);
+   procedure StringArrayToRadioGroup(SA:array of string;
+                                     RG:TRadioGroup);
+   procedure IndexToRadioGroup(Index:ShortInt;RG:TRadioGroup);
+//   function UnitModeLabel():string;virtual;
+  public
+//   AutoSpeedButton:TSpeedButton;
    Constructor Create(Meter:IMeasurement;
                       MM,R:TRadioGroup;
                       DL,UL:TLabel;
@@ -126,7 +148,7 @@ TMeasurementShow=class
                       AB:TSpeedButton;
                       TT:TTimer
                       );
-   procedure MetterDataShow();virtual;
+//   procedure MetterDataShow();virtual;
 end;
 
 
@@ -356,12 +378,12 @@ end;
 
 { TMeasurementShow }
 
-procedure TMeasurementShow.AutoSpeedButtonClick(Sender: TObject);
-begin
- MeasurementButton.Enabled:=not(AutoSpeedButton.Down);
- if AutoSpeedButton.Down then Time.OnTimer:=MeasurementButton.OnClick;
- Time.Enabled:=AutoSpeedButton.Down;
-end;
+//procedure TMeasurementShow.AutoSpeedButtonClick(Sender: TObject);
+//begin
+// MeasurementButton.Enabled:=not(AutoSpeedButton.Down);
+// if AutoSpeedButton.Down then Time.OnTimer:=MeasurementButton.OnClick;
+// Time.Enabled:=AutoSpeedButton.Down;
+//end;
 
 constructor TMeasurementShow.Create(Meter: IMeasurement;
                                     MM, R: TRadioGroup;
@@ -369,20 +391,23 @@ constructor TMeasurementShow.Create(Meter: IMeasurement;
                                     MB: TButton;
                                     AB: TSpeedButton; TT: TTimer);
 begin
-   inherited Create;
-   fMeter:=Meter;
+   inherited Create(Meter, DL, UL, MB, AB, TT);
    MeasureMode:=MM;
    Range:=R;
-   DataLabel:=DL;
-   UnitLabel:=UL;
-   MeasurementButton:=MB;
-   AutoSpeedButton:=AB;
-   Time:=TT;
-//   Time:=TTimer.Create(nil);
-//   Time.Interval:=3000;
-   UnitLabel.Caption := '';
-   MeasurementButton.OnClick:=MeasurementButtonClick;
-   AutoSpeedButton.OnClick:=AutoSpeedButtonClick;
+
+
+//   inherited Create;
+//   fMeter:=Meter;
+//   MeasureMode:=MM;
+//   Range:=R;
+//   DataLabel:=DL;
+//   UnitLabel:=UL;
+//   MeasurementButton:=MB;
+//   AutoSpeedButton:=AB;
+//   Time:=TT;
+//   UnitLabel.Caption := '';
+//   MeasurementButton.OnClick:=MeasurementButtonClick;
+//   AutoSpeedButton.OnClick:=AutoSpeedButtonClick;
 end;
 
 procedure TMeasurementShow.IndexToRadioGroup(Index: ShortInt; RG: TRadioGroup);
@@ -394,15 +419,77 @@ begin
   end;
 end;
 
-procedure TMeasurementShow.MeasurementButtonClick(Sender: TObject);
+//procedure TMeasurementShow.MeasurementButtonClick(Sender: TObject);
+//begin
+// fMeter.GetData();
+// MetterDataShow();
+//end;
+//
+//procedure TMeasurementShow.MetterDataShow;
+//begin
+//
+//  if fMeter.Value<>ErResult then
+//     begin
+//       UnitLabel.Caption:=UnitModeLabel();
+//       DataLabel.Caption:=FloatToStrF(fMeter.Value,ffExponent,4,2)
+//     end
+//                        else
+//     begin
+//       UnitLabel.Caption:='';
+//       DataLabel.Caption:='    ERROR';
+//     end;
+//
+//end;
+
+procedure TMeasurementShow.StringArrayToRadioGroup(SA: array of string;
+                                                   RG: TRadioGroup);
+ var i:byte;
+begin
+    RG.Items.Clear;
+    for I := 0 to High(SA) do RG.Items.Add(SA[i]);
+end;
+
+//function TMeasurementShow.UnitModeLabel: string;
+//begin
+// Result:='';
+//end;
+
+{ TMeasurementShowSimple }
+
+procedure TMeasurementShowSimple.AutoSpeedButtonClick(Sender: TObject);
+begin
+ MeasurementButton.Enabled:=not(AutoSpeedButton.Down);
+ if AutoSpeedButton.Down then Time.OnTimer:=MeasurementButton.OnClick;
+ Time.Enabled:=AutoSpeedButton.Down;
+end;
+
+constructor TMeasurementShowSimple.Create(Meter: IMeasurement;
+                                          DL, UL: TLabel;
+                                          MB: TButton;
+                                          AB: TSpeedButton;
+                                          TT: TTimer
+                                           );
+begin
+   inherited Create;
+   fMeter:=Meter;
+   DataLabel:=DL;
+   UnitLabel:=UL;
+   MeasurementButton:=MB;
+   AutoSpeedButton:=AB;
+   Time:=TT;
+   UnitLabel.Caption := '';
+   MeasurementButton.OnClick:=MeasurementButtonClick;
+   AutoSpeedButton.OnClick:=AutoSpeedButtonClick;
+end;
+
+procedure TMeasurementShowSimple.MeasurementButtonClick(Sender: TObject);
 begin
  fMeter.GetData();
  MetterDataShow();
 end;
 
-procedure TMeasurementShow.MetterDataShow;
+procedure TMeasurementShowSimple.MetterDataShow;
 begin
-
   if fMeter.Value<>ErResult then
      begin
        UnitLabel.Caption:=UnitModeLabel();
@@ -413,20 +500,11 @@ begin
        UnitLabel.Caption:='';
        DataLabel.Caption:='    ERROR';
      end;
-
 end;
 
-procedure TMeasurementShow.StringArrayToRadioGroup(SA: array of string;
-                                                   RG: TRadioGroup);
- var i:byte;
+function TMeasurementShowSimple.UnitModeLabel: string;
 begin
-    RG.Items.Clear;
-    for I := 0 to High(SA) do RG.Items.Add(SA[i]);
-end;
-
-function TMeasurementShow.UnitModeLabel: string;
-begin
- Result:='';
+  Result:='';
 end;
 
 end.

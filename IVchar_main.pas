@@ -576,8 +576,8 @@ type
     STGDS_ProbCh2: TStaticText;
     STGDS_CoupleCh2: TStaticText;
     STGDS_ScaleCh2: TStaticText;
-    Series1: TLineSeries;
-    Series2: TLineSeries;
+    GDS_SeriesCh1: TLineSeries;
+    GDS_SeriesCh2: TLineSeries;
 
     procedure FormCreate(Sender: TObject);
     procedure BConnectClick(Sender: TObject);
@@ -737,6 +737,7 @@ type
     procedure IVMR_Refresh;
     procedure MCP3424Create;
     procedure ADS1115Create;
+    procedure GDS_Create;
   public
     ShowArray:TObjectArray;
     AnyObjectArray:TObjectArray;
@@ -767,6 +768,7 @@ type
     ADS11115_ChannelShows:array [TADS1115_ChanelNumber] of TADS1115_ChannelShow;
 
     GDS_806S:TGDS_806S;
+    GDS_806S_Channel:array[TGDS_Channel]of TGDS_806S_Channel;
     GDS_806S_Show:TGDS_806S_Show;
 
     IscVocPinChanger,LEDOpenPinChanger:TArduinoPinChanger;
@@ -2017,6 +2019,37 @@ begin
   AnyObjectArray.Add([ADS11115module, ADS11115_Channels[0],ADS11115_Channels[1],ADS11115_Channels[2]]);
 end;
 
+procedure TIVchar.GDS_Create;
+ var i:TGDS_Channel;
+begin
+  GDS_806S := TGDS_806S.Create(ComPortGDS, 'GDS-806');
+  for I := Low(TGDS_Channel) to High(TGDS_Channel) do
+      GDS_806S_Channel[i]:=TGDS_806S_Channel.Create(i,GDS_806S);
+
+  GDS_806S_Show := TGDS_806S_Show.Create(GDS_806S,
+                      GDS_806S_Channel,
+                     [STGDS_Mode, STGDS_RLength, STGDS_AveNum, STGDS_ScaleGoriz,
+                     STGDS_CoupleCh1, STGDS_ProbCh1, STGDS_MeasCh1, STGDS_ScaleCh1,
+                     STGDS_CoupleCh2, STGDS_ProbCh2, STGDS_MeasCh2, STGDS_ScaleCh2,
+                     STGDS_OffsetCh1, STGDS_OffsetCh2],
+                     [LGDS_Mode, LGDS_RLength, LGDS_AveNum,
+                     LGDS_OffsetCh1, LGDS_OffsetCh2],
+                     [B_GDS_SetSet, B_GDS_SetGet, B_GDS_Test,
+                     B_GDS_SetSav, B_GDS_SetLoad, B_GDS_SetAuto,
+                     B_GDS_SetDef, B_GDS_Refresh, B_GDS_Run,
+                     B_GDS_Stop, B_GDS_Unlock],
+                     [CBGDS_InvertCh1, CBGDS_InvertCh2],
+                     [CBGDS_DisplayCh1, CBGDS_DisplayCh2],
+                     [LGDS_Ch1,LGDSU_Ch1,LGDS_Ch2,LGDSU_Ch2],
+                     [B_GDS_MeasCh1,B_GDS_MeasCh2,B_GDS_MeasShow],
+                     [SB_GDS_AutoCh1,SB_GDS_AutoCh2,SB_GDS_AutoShow],
+                     [GDS_SeriesCh1,GDS_SeriesCh2],
+                     PGGDS_Show);
+
+  ShowArray.Add([GDS_806S_Show]);
+  AnyObjectArray.Add([GDS_806S,GDS_806S_Channel[1],GDS_806S_Channel[2]]);
+end;
+
 procedure TIVchar.BConnectClick(Sender: TObject);
 begin
  try
@@ -2240,8 +2273,27 @@ begin
 end;
 
 procedure TIVchar.Button2Click(Sender: TObject);
+ var rr:R;
+     c:array[0..3] of byte;
+     a:single absolute c;
 begin
-GDS_806S_Show.Help;
+
+ rr.b[0]:=$6f;
+ rr.b[1]:=$12;
+ rr.b[2]:=$83;
+ rr.b[3]:=$39;
+// rr.t:=2;
+showmessage(floattostr(rr.s));
+
+ c[3]:=$4c;
+ c[2]:=$be;
+ c[1]:=$bc;
+ c[0]:=$20;
+
+
+ showmessage(floattostr(a));
+
+//GDS_806S_Show.Help;
 //GDS_806S.GetMeasuringData(1);
 //GDS_806S.SetTimeBase(gds_ts500us);
 // showmessage(inttostr(GDS_806S_Show.Help));
@@ -2950,23 +3002,11 @@ begin
        BUT70CMeas, SBUT70CAuto, Time,
        LUT70C_Hold,LUT70C_rec,LUT70C_AvTime,LUT70C_AVG);
 
-  GDS_806S:=TGDS_806S.Create(ComPortGDS,'GDS-806');
-  GDS_806S_Show:=TGDS_806S_Show.Create(GDS_806S,
-                  [STGDS_Mode, STGDS_RLength, STGDS_AveNum,STGDS_ScaleGoriz,
-                  STGDS_CoupleCh1,STGDS_ProbCh1,STGDS_MeasCh1,STGDS_ScaleCh1,
-                  STGDS_CoupleCh2,STGDS_ProbCh2,STGDS_MeasCh2,STGDS_ScaleCh2,
-                  STGDS_OffsetCh1,STGDS_OffsetCh2],
-                  [LGDS_Mode,  LGDS_RLength, LGDS_AveNum,
-                  LGDS_OffsetCh1,LGDS_OffsetCh2],
-                  [B_GDS_SetSet,B_GDS_SetGet,B_GDS_Test,
-                  B_GDS_SetSav,B_GDS_SetLoad,
-                  B_GDS_SetAuto,B_GDS_SetDef,B_GDS_Refresh,
-                  B_GDS_Run,B_GDS_Stop,B_GDS_Unlock],
-                  [CBGDS_InvertCh1,CBGDS_InvertCh2],
-                  [CBGDS_DisplayCh1,CBGDS_DisplayCh2]);
+  ShowArray.Add([UT70BShow,UT70CShow]);
+  AnyObjectArray.Add([UT70B,UT70C]);
 
-  ShowArray.Add([UT70BShow,UT70CShow,GDS_806S_Show]);
-  AnyObjectArray.Add([UT70B,UT70C,GDS_806S]);
+  GDS_Create();
+
 end;
 
 procedure TIVchar.ShowObjectsReadFromIniFileAndToForm;
@@ -3015,7 +3055,7 @@ begin
    if (ShowArray.ObjectArray[i] is TGDS_806S_Show) then
      begin
       (ShowArray.ObjectArray[i] as TGDS_806S_Show).ReadFromIniFile(ConfigFile);
-//      (ShowArray.ObjectArray[i] as TGDS_806S_Show).SettingToObject();
+      (ShowArray.ObjectArray[i] as TGDS_806S_Show).SettingToObject();
       Continue;
      end;
   end;
@@ -3214,6 +3254,11 @@ begin
      Continue;
     end;
 
+   if (AnyObjectArray.ObjectArray[i] is TGDS_806S) then
+    begin
+    (AnyObjectArray.ObjectArray[i] as TGDS_806S).Free;
+    Continue;
+    end;
 
    if (AnyObjectArray.ObjectArray[i] is TArduinoMeter) then
     begin
@@ -3243,6 +3288,12 @@ begin
    if (AnyObjectArray.ObjectArray[i] is TADS1115_Channel) then
     begin
      (AnyObjectArray.ObjectArray[i] as TADS1115_Channel).Free;
+     Continue;
+    end;
+
+   if (AnyObjectArray.ObjectArray[i] is TGDS_806S_Channel) then
+    begin
+     (AnyObjectArray.ObjectArray[i] as TGDS_806S_Channel).Free;
      Continue;
     end;
 
@@ -3361,6 +3412,10 @@ begin
   Devices[High(Devices)-2]:=ADS11115_Channels[0];
   Devices[High(Devices)-1]:=ADS11115_Channels[1];
   Devices[High(Devices)]:=ADS11115_Channels[2];
+
+  SetLength(Devices,High(Devices)+3);
+  Devices[High(Devices)-1]:=GDS_806S_Channel[1];
+  Devices[High(Devices)]:=GDS_806S_Channel[2];
 
   Current_MD:=TMeasuringDevice.Create(Devices, CBCMD,'Current', LADCurrentValue, srCurrent);
   VoltageIV_MD:=TMeasuringDevice.Create(Devices, CBVMD,'Voltage', LADVoltageValue, srVoltge);

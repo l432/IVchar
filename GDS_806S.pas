@@ -3,9 +3,17 @@ unit GDS_806S;
 interface
 
 uses
-  RS232device, CPort, ShowTypes, StdCtrls, Classes, IniFiles, OlegType;
+  RS232device, CPort, ShowTypes, StdCtrls, Classes, IniFiles, OlegType, 
+  Measurement, Buttons, ExtCtrls, Series;
 
 type
+
+ R=record
+ case boolean of
+  True:(b:array[0..3] of byte);
+  False:(s:single);
+   
+ end;
 
  TGDS_Settings=(gds_mode,gds_rl,gds_an,gds_ts,
                 gds_ch1_coup,gds_ch1_prob,gds_ch1_mtype,gds_ch1_scale,
@@ -62,7 +70,7 @@ type
 // ArrByteGDS=array[TGDS_Settings]of byte;
 
 const
-  TestShow=False;
+  TestShow=True;
 
   GDS_806S_PacketBeginChar='';
   GDS_806S_PacketEndChar=#10;
@@ -178,6 +186,7 @@ type
      fFirstLevelNode:byte;
      fLeafNode:byte;
      fIsQuery:boolean;
+     fTimeTransfer:integer;
      procedure SetFlags(RootNode,FirstLevelNode,LeafNode:byte;
                   IsQuery:boolean=False);
      procedure SetupOperation(RootNode,FirstLevelNode,LeafNode:byte);overload;
@@ -202,13 +211,18 @@ type
 //    procedure SetMeasTypeChan2(MType:byte);
     function GDS_StringToValue(Str:string):double;
     function MTypeToMeasureModeLabel(MType:byte):string;
+    function CurrentBaudRate():integer;
+    function TimeForDataTransfer():integer;
+    function FourByteToSingle(byte_low,byte_1,byte_2,byte_high:byte):single;
+    function TwoByteToData(byte_High,byte_Low:byte):double;
   protected
      procedure PrepareString;
      Procedure PacketReceiving(Sender: TObject; const Str: string);override;
    public
+    DataVectors:array[TGDS_Channel]of PVector;
     property ActiveChannel:TGDS_Channel read FActiveChannel write FActiveChannel;
     Constructor Create(CP:TComPort;Nm:string);
-//    procedure Free;
+    procedure Free;
     procedure Request();override;
 
     procedure SetMode(mode: Byte);overload;
@@ -268,7 +282,46 @@ type
     procedure Stop();
     procedure Unlock();
     function GetMeasuringData(Chan:TGDS_Channel):double;
+    procedure GetMeasuringDataVectors(Chan:TGDS_Channel);
   end;
+
+TGDS_806S_Channel=class(TNamedInterfacedObject,IMeasurement)
+ private
+  fValue:double;
+  fNewData:boolean;
+  fChanelNumber: TGDS_Channel;
+  fParentModule:TGDS_806S;
+  function GetNewData:boolean;
+  function GetValue:double;
+  procedure SetNewData(Value:boolean);
+  function GetMeasureModeLabel():string;
+ public
+ property NewData:boolean read GetNewData write SetNewData;
+ property Value:double read GetValue;
+ property MeasureModeLabel:string read GetMeasureModeLabel;
+ constructor Create(ChanelNumber:TGDS_Channel;
+                     GDS_806S:TGDS_806S);
+ procedure Free;                    
+ function GetData:double;
+ procedure GetDataThread(WPARAM: word; EventEnd:THandle);
+ procedure SetMeasType(MType:byte);overload;
+ procedure SetMeasType(MType:TGDS_MeasureTypeSym);overload;
+end;
+
+TGDS_Chan_Show=class(TMeasurementShowSimple)
+  private
+   fGDSChan:TGDS_806S_Channel;
+  protected
+   function UnitModeLabel():string;override;
+  public
+   Constructor Create(GDSChan:TGDS_806S_Channel;
+                      DL,UL:TLabel;
+                      MB:TButton;
+                      AB:TSpeedButton;
+                      TT:TTimer
+                      );
+end;
+
 
  TGDS_806S_Show=class
    private
@@ -281,10 +334,14 @@ type
     fDisplayCheckBox:array[TGDS_Channel]of TCheckBox;
     fOffsetShow:array[TGDS_Channel]of TDoubleParameterShow;
 
-
-//     (IVchar.Components[i] as TCheckBox).Checked:=
-//       ConfigFile.ReadBool('Box', (IVchar.Components[i] as TCheckBox).Name, False);
+    TTChan,TTShow:TTimer;
+    fGDS_Chan_Show:array[TGDS_Channel]of TGDS_Chan_Show;
+    fVectors_RG:TRadioGroup;
+    fVectorMeas:TButton;
+    fVectorAuto:TSpeedButton;
+    fGraphs:array[TGDS_Channel]of TCustomSeries;
     fFirstSetting:boolean;
+
     procedure SetSetting();
     procedure SetSettingButtonClick(Sender:TObject);
     procedure GetSettingButtonClick(Sender:TObject);
@@ -298,6 +355,8 @@ type
     procedure StopButtonClick(Sender:TObject);
     procedure UnlockButtonClick(Sender:TObject);
     procedure DisplayInvertClick(Sender:TObject);
+    procedure MeasButtonShowClick(Sender: TObject);
+    procedure AutoSpeedButtonShowClick(Sender: TObject);    
     procedure SettingsShowSLCreate();
     procedure SettingsShowSLFree();
     procedure SettingsShowCreate(STexts:array of TStaticText;
@@ -306,6 +365,11 @@ type
     procedure OffsetShowCreate(STexts:array of TStaticText;
                         Labels: array of TLabel);
     procedure OffsetShowFree();
+    procedure ShowCreate(GDS_806S_Channel:array of TGDS_806S_Channel;
+                        MeasLabels:array of TLabel;
+                       MeasButtons:Array of TButton;
+                       MeasSpeedButtons:array of TSpeedButton);
+    procedure ShowFree();
     procedure CanalCheckBoxCreate(InvCB,DisCB:array of TCheckBox);
     procedure ColorToActive(Value:boolean);
     procedure ButtonsTune(Buttons: array of TButton);
@@ -322,16 +386,22 @@ type
     procedure OffsetCh2Click();
    public
     Constructor Create(GDS_806S:TGDS_806S;
+                       GDS_806S_Channel:array of TGDS_806S_Channel;
                        STexts:array of TStaticText;
                        Labels:array of TLabel;
                        Buttons:Array of TButton;
                        InvCB:array of TCheckBox;
-                       DisCB:array of TCheckBox
+                       DisCB:array of TCheckBox;
+                       MeasLabels:array of TLabel;
+                       MeasButtons:Array of TButton;
+                       MeasSpeedButtons:array of TSpeedButton;
+                       Gr:array of TCustomSeries;
+                       VecRG:TRadioGroup
                        );
     Procedure Free;
     procedure ReadFromIniFile(ConfigFile:TIniFile);
     procedure WriteToIniFile(ConfigFile:TIniFile);
-//    procedure SettingToObject;
+    procedure SettingToObject;
     procedure ObjectToSetting;
     function Help():shortint;
 
@@ -343,7 +413,7 @@ var
 implementation
 
 uses
-  Dialogs, Controls, SysUtils, Graphics, OlegFunction;
+  Dialogs, Controls, SysUtils, Graphics, OlegFunction, OlegGraph, Math;
 
 { TGDS_806S }
 
@@ -382,7 +452,9 @@ begin
  fComPacket.MaxBufferSize:=250052;
  fComPacket.StartString := GDS_806S_PacketBeginChar;
  fComPacket.StopString := GDS_806S_PacketEndChar;
+ fComPort.Buffer.InputSize:=250052;
  DefaultSettings();
+
 // SetSettingActionCreate;
 
 // fMode:=gds_msam;
@@ -390,6 +462,26 @@ begin
 // fRecordLength:=gds_rl500;
 
  SetFlags(0,0,0,true);
+end;
+
+function TGDS_806S.CurrentBaudRate: integer;
+begin
+ case fComPort.BaudRate of
+  br110:Result:=110;
+  br300:Result:=300;
+  br600:Result:=600;
+  br1200:Result:=1200;
+  br2400:Result:=2400;
+  br4800:Result:=4800;
+  br9600:Result:=9600;
+  br14400:Result:=14400;
+  br19200:Result:=19200;
+  br38400:Result:=38400;
+  br56000:Result:=56000;
+  br57600:Result:=57600;
+  br115200:Result:=115200;
+  else Result:=100;
+ end;
 end;
 
 procedure TGDS_806S.DefaultSetting;
@@ -409,6 +501,7 @@ begin
      fInvert[j]:=False;
      fDisplay[j]:=True;
      fOffset[j]:=0;
+     new(DataVectors[j]);
    end;
 end;
 
@@ -424,6 +517,24 @@ begin
  fActiveChannel:=Chan;
  fDisplay[fActiveChannel]:=True;
  SetupOperation(6,1,1);
+end;
+
+function TGDS_806S.FourByteToSingle(byte_low, byte_1, byte_2, byte_high: byte): single;
+ var c:array[0..3] of byte;
+     a:single absolute c;
+begin
+ c[3]:=byte_high;
+ c[2]:=byte_2;
+ c[1]:=byte_1;
+ c[0]:=byte_low;
+ Result:=a;
+end;
+
+procedure TGDS_806S.Free;
+ var j:TGDS_Channel;
+begin
+ for j := Low(TGDS_Channel) to High(TGDS_Channel) do
+     dispose(DataVectors[j]);
 end;
 
 //procedure TGDS_806S.Free;
@@ -568,11 +679,20 @@ end;
 
 function TGDS_806S.GetMeasuringData(Chan:TGDS_Channel): double;
 begin
+ Value:=ErResult;
   case Chan of
   1:QuireOperation(7,fSettings[gds_ch1_mtype],1);
   2:QuireOperation(7,fSettings[gds_ch2_mtype],2);
  end;
  Result:=Value;
+end;
+
+procedure TGDS_806S.GetMeasuringDataVectors(Chan: TGDS_Channel);
+begin
+ fActiveChannel:=Chan;
+ fMinDelayTime:=TimeForDataTransfer();
+ QuireOperation(4,3,0);
+ fMinDelayTime:=0;
 end;
 
 function TGDS_806S.GetMode:boolean;
@@ -702,6 +822,12 @@ end;
 procedure TGDS_806S.PacketReceiving(Sender: TObject; const Str: string);
 var
   I: TGDS_TimeScale;
+  j:TGDS_VoltageScale;
+  DataSize:Integer;
+  DataSizeDigit:byte;
+  DataOffset:integer;
+  SampleRate:single;
+  k:integer;
 begin
  case fRootNode of
   0:if Str=GDS_806S_Test then fValue:=314;
@@ -710,8 +836,30 @@ begin
         0..2:try
             fValue:=StrToInt(Str);
             except
-             fValue:=ErResult;
+//             fValue:=ErResult;
             end;
+        3:if Str[1]='#' then
+          begin
+           try
+           DataSizeDigit:=byte(StrToInt(Str[2]));
+           DataSize:=round((StrToInt(Copy(Str,3,DataSizeDigit))-8)/2);
+           DataOffset:=DataSizeDigit+3;
+           SampleRate:=FourByteToSingle(ord(Str[DataOffset+3]),ord(Str[DataOffset+2]),
+                       ord(Str[DataOffset+1]),ord(Str[DataOffset]));
+           fActiveChannel:=ord(Str[DataOffset+4]);
+           SetLenVector(DataVectors[fActiveChannel],DataSize);
+           DataOffset:=DataOffset+8;
+           for k := 0 to DataSize - 1 do
+             begin
+              DataVectors[fActiveChannel]^.X[k]:=k/SampleRate;
+              DataVectors[fActiveChannel]^.Y[k]:=TwoByteToData(ord(Str[DataOffset+2*k]),
+                                                    ord(Str[DataOffset+2*k+1]));
+             end;
+           fValue:=1;  
+           except
+
+           end;
+          end;
      end;
     end; //fRootNode = 4;  acq
   6:begin
@@ -719,15 +867,15 @@ begin
         0..2,4:try
             fValue:=StrToInt(Str);
             except
-             fValue:=ErResult;
+//             fValue:=ErResult;
             end;
         3:Value:=GDS_StringToValue(Str);
         5:begin
-           fValue:=ErResult;
-           for I := Low(TGDS_VoltageScale) to High(TGDS_VoltageScale) do
-             if Str=GDS_VoltageScaleLabels[i] then
+//           fValue:=ErResult;
+           for j := Low(TGDS_VoltageScale) to High(TGDS_VoltageScale) do
+             if Str=GDS_VoltageScaleLabels[j] then
                begin
-               fValue:=ord(i);
+               fValue:=ord(j);
                Break;
                end;
          end;
@@ -735,7 +883,7 @@ begin
     end; //fRootNode = 6;     chan
    7:Value:=GDS_StringToValue(Str);
   12:begin
-     fValue:=ErResult;
+//     fValue:=ErResult;
      for I := Low(TGDS_TimeScale) to High(TGDS_TimeScale) do
        if Str=GDS_TimeScaleLabels[i] then
          begin
@@ -1105,6 +1253,17 @@ begin
 // Result:=(GetData=314);
 end;
 
+function TGDS_806S.TimeForDataTransfer: integer;
+begin
+ Result:=round(1.1*(GDS_RecordLengthData[fSettings[gds_rl]]*2+14)*8000/CurrentBaudRate());
+ fTimeTransfer:=Result;
+end;
+
+function TGDS_806S.TwoByteToData(byte_High, byte_Low:byte): double;
+begin
+ Result:=(byte_High shl 8) + byte_Low;
+end;
+
 procedure TGDS_806S.Unlock;
 begin
    SetupOperation(11,0,0);
@@ -1151,18 +1310,30 @@ begin
 end;
 
 constructor TGDS_806S_Show.Create(GDS_806S: TGDS_806S;
+                       GDS_806S_Channel:array of TGDS_806S_Channel;
                        STexts:array of TStaticText;
                        Labels:array of TLabel;
                        Buttons:Array of TButton;
                        InvCB:array of TCheckBox;
-                       DisCB:array of TCheckBox
+                       DisCB:array of TCheckBox;
+                       MeasLabels:array of TLabel;
+                       MeasButtons:Array of TButton;
+                       MeasSpeedButtons:array of TSpeedButton;
+                       Gr:array of TCustomSeries;
+                       VecRG:TRadioGroup
                                   );
+  var i:TGDS_Channel;
 begin
   if (High(STexts)<>(ord(High(TGDS_Settings))+2))or
+     (High(GDS_806S_Channel)<>1)or
      (High(Labels)<>(ord(gds_an)+2))or
      (High(Buttons)<>ButtonNumber)or
      (High(InvCB)<>1)or
-     (High(DisCB)<>1)
+     (High(DisCB)<>1)or
+     (High(MeasLabels)<>3)or
+     (High(MeasButtons)<>2)or
+     (High(MeasSpeedButtons)<>2)or
+     (High(Gr)<>1)
    then
     begin
       showmessage('GDS_806S_Show is not created!');
@@ -1179,6 +1350,24 @@ begin
 
   CanalCheckBoxCreate(InvCB,DisCB);
   OffsetShowCreate(STexts, Labels);
+
+  ShowCreate(GDS_806S_Channel,MeasLabels,MeasButtons,MeasSpeedButtons);
+
+  fVectors_RG:=VecRG;
+  fVectors_RG.Items.Clear;
+  fVectors_RG.Items.Add('ch1');
+  fVectors_RG.Items.Add('ch2');
+  fVectors_RG.Items.Add('ch1/2');
+
+ TTShow:=TTimer.Create(nil);
+ TTShow.Enabled:=False;
+ for I := Low(TGDS_Channel) to High(TGDS_Channel) do
+  fGraphs[i]:=Gr[i-1];
+ fVectorMeas:=MeasButtons[High(MeasButtons)];
+ fVectorMeas.OnClick:=MeasButtonShowClick;
+ TTShow.OnTimer:=MeasButtonShowClick;
+ fVectorAuto:=MeasSpeedButtons[High(MeasSpeedButtons)];
+ fVectorAuto.OnClick:=AutoSpeedButtonShowClick;
 
   fFirstSetting:=True;
 
@@ -1209,6 +1398,8 @@ end;
 procedure TGDS_806S_Show.Free;
 // var i:byte;
 begin
+ TTShow.Free;
+ ShowFree;
  SettingsShowFree;
  SettingsShowSLFree;
  OffsetShowFree;
@@ -1240,6 +1431,12 @@ begin
 // fGDS_806S.fMode:=TGDS_Mode(15);
 //fGDS_806S.SetMode(fGDS_806S.fMode);
 // Result:=fModeShow.Data;
+end;
+
+procedure TGDS_806S_Show.AutoSpeedButtonShowClick(Sender: TObject);
+begin
+ fVectorMeas.Enabled:=not(fVectorAuto.Down);
+ TTShow.Enabled:=fVectorAuto.Down;
 end;
 
 procedure TGDS_806S_Show.ButtonsTune(Buttons: array of TButton);
@@ -1322,6 +1519,29 @@ procedure TGDS_806S_Show.LoadButtonClick(Sender: TObject);
 begin
   fGDS_806S.LoadSetting(10);
   GetSettingButtonClick(Sender);
+end;
+
+procedure TGDS_806S_Show.MeasButtonShowClick(Sender: TObject);
+begin
+ case fVectors_RG.ItemIndex of
+  0:begin
+     TTShow.Interval:=max(500,2*fGDS_806S.fTimeTransfer);
+     fGDS_806S.GetMeasuringDataVectors(1);
+     VectorToGraph(fGDS_806S.DataVectors[1],fGraphs[1]);
+    end;
+  1:begin
+     TTShow.Interval:=max(500,2*fGDS_806S.fTimeTransfer);
+     fGDS_806S.GetMeasuringDataVectors(2);
+     VectorToGraph(fGDS_806S.DataVectors[2],fGraphs[2]);
+    end;
+  2:begin
+     TTShow.Interval:=max(500,4*fGDS_806S.fTimeTransfer);
+     fGDS_806S.GetMeasuringDataVectors(1);
+     VectorToGraph(fGDS_806S.DataVectors[1],fGraphs[1]);
+     fGDS_806S.GetMeasuringDataVectors(2);
+     VectorToGraph(fGDS_806S.DataVectors[2],fGraphs[2]);
+    end;
+ end;
 end;
 
 procedure TGDS_806S_Show.MeasTypeCh1OkClick;
@@ -1412,6 +1632,8 @@ begin
           ConfigFile.ReadBool(fGDS_806S.Name, 'Invert'+IntTostr(j), False));
     fOffsetShow[j].ReadFromIniFile(ConfigFile);
   end;
+
+  fVectors_RG.ItemIndex:= ConfigFile.ReadInteger(fGDS_806S.Name, 'ChanShow',0);
 
 end;
 
@@ -1561,26 +1783,27 @@ begin
 
 end;
 
-//procedure TGDS_806S_Show.SettingToObject;
-// var i:TGDS_Settings;
-//     j:TGDS_Channel;
-//begin
-//// for I := Low(TGDS_Settings) to gds_an do
-// for I := Low(TGDS_Settings) to  High(TGDS_Settings) do
-// fGDS_806S.fSettings[i]:=fSettingsShow[i].Data;
-//
-// if fGDS_806S.fSettings[gds_mode]<>2 then
-//  begin
-//   fGDS_806S.fSettings[gds_an]:=0;
-//   fSettingsShow[gds_an].ColorToActive(false);
-//  end;
-//
-// for j := Low(TGDS_Channel) to High(TGDS_Channel) do
-//   begin
-//    fGDS_806S.fDisplay[j]:=fDisplayCheckBox[j].Checked;
-//    fGDS_806S.fInvert[j]:=fInvertCheckBox[j].Checked;
-//   end;
-//end;
+procedure TGDS_806S_Show.SettingToObject;
+ var i:TGDS_Settings;
+     j:TGDS_Channel;
+begin
+// for I := Low(TGDS_Settings) to gds_an do
+ for I := Low(TGDS_Settings) to  High(TGDS_Settings) do
+ fGDS_806S.fSettings[i]:=fSettingsShow[i].Data;
+
+ if fGDS_806S.fSettings[gds_mode]<>2 then
+  begin
+   fGDS_806S.fSettings[gds_an]:=0;
+   fSettingsShow[gds_an].ColorToActive(false);
+  end;
+
+ for j := Low(TGDS_Channel) to High(TGDS_Channel) do
+   begin
+    fGDS_806S.fDisplay[j]:=fDisplayCheckBox[j].Checked;
+    fGDS_806S.fInvert[j]:=fInvertCheckBox[j].Checked;
+    fGDS_806S.fOffset[j]:=fOffsetShow[j].Data;
+   end;
+end;
 
 procedure TGDS_806S_Show.StopButtonClick(Sender: TObject);
 begin
@@ -1638,6 +1861,32 @@ begin
   fSettingsShowSL[i].Free;
 end;
 
+procedure TGDS_806S_Show.ShowCreate(GDS_806S_Channel:array of TGDS_806S_Channel;
+                         MeasLabels: array of TLabel;
+                         MeasButtons: array of TButton;
+                         MeasSpeedButtons: array of TSpeedButton);
+ var i:TGDS_Channel;
+begin
+ TTChan:=TTimer.Create(nil);
+ TTChan.Enabled:=False;
+ TTChan.Interval:=2000;
+ for I := Low(TGDS_Channel) to High(TGDS_Channel) do
+    fGDS_Chan_Show[i]:=TGDS_Chan_Show.Create(GDS_806S_Channel[i-1],
+                                 MeasLabels[2*i-2],
+                                 MeasLabels[2*i-1],
+                                 MeasButtons[i-1],
+                                 MeasSpeedButtons[i-1],
+                                 TTChan);
+end;
+
+procedure TGDS_806S_Show.ShowFree;
+ var i:TGDS_Channel;
+begin
+ for I := Low(TGDS_Channel) to High(TGDS_Channel) do
+    fGDS_Chan_Show[i].Free;
+ TTChan.Free;
+end;
+
 procedure TGDS_806S_Show.TestButtonClick(Sender: TObject);
 begin
  if fGDS_806S.Test then
@@ -1680,6 +1929,8 @@ begin
      fOffsetShow[j].WriteToIniFile(ConfigFile);
   end;
 
+ WriteIniDef(ConfigFile, fGDS_806S.Name, 'ChanShow', fVectors_RG.ItemIndex);
+
 end;
 
 //{ TGDS_806S_Parameters }
@@ -1695,5 +1946,83 @@ end;
 // Self.Mode:=TGDS_Mode(Mode);
 // Self.RecordLength:=TGDS_RecordLength(RecordLength);
 //end;
+
+{ TDGS_806S_Channel }
+
+constructor TGDS_806S_Channel.Create(ChanelNumber: TGDS_Channel;
+                        GDS_806S: TGDS_806S);
+begin
+ inherited Create;
+ fChanelNumber:=ChanelNumber;
+ fName:='Ch'+inttostr(ChanelNumber)+'_GDS';
+ fParentModule:=GDS_806S;
+end;
+
+procedure TGDS_806S_Channel.Free;
+begin
+
+end;
+
+function TGDS_806S_Channel.GetData: double;
+begin
+ fValue:=fParentModule.GetMeasuringData(fChanelNumber);
+ Result:=fValue;
+ fNewData:=True;
+end;
+
+procedure TGDS_806S_Channel.GetDataThread(WPARAM: word; EventEnd: THandle);
+begin
+// не зробив
+end;
+
+function TGDS_806S_Channel.GetMeasureModeLabel: string;
+begin
+ if fChanelNumber=1 then
+    Result:=fParentModule.MTypeToMeasureModeLabel(fParentModule.fSettings[gds_ch1_mtype])
+                    else
+    Result:=fParentModule.MTypeToMeasureModeLabel(fParentModule.fSettings[gds_ch2_mtype])
+end;
+
+function TGDS_806S_Channel.GetNewData: boolean;
+begin
+  Result:=fNewData;
+end;
+
+function TGDS_806S_Channel.GetValue: double;
+begin
+  Result:=fValue;
+end;
+
+procedure TGDS_806S_Channel.SetMeasType(MType: byte);
+begin
+ fParentModule.SetMeasType(fChanelNumber,MType);
+end;
+
+procedure TGDS_806S_Channel.SetMeasType(MType: TGDS_MeasureTypeSym);
+begin
+ fParentModule.SetMeasType(fChanelNumber,MType);
+end;
+
+procedure TGDS_806S_Channel.SetNewData(Value: boolean);
+begin
+  fNewData:=Value;
+end;
+
+{ TGDS_Chan_Show }
+
+constructor TGDS_Chan_Show.Create(GDSChan: TGDS_806S_Channel;
+                                  DL, UL: TLabel;
+                                  MB: TButton;
+                                  AB: TSpeedButton;
+                                  TT: TTimer);
+begin
+ inherited Create(GDSChan,DL,UL,MB,AB,TT);
+ fGDSChan:=GDSChan;
+end;
+
+function TGDS_Chan_Show.UnitModeLabel: string;
+begin
+ Result:=fGDSChan.MeasureModeLabel;
+end;
 
 end.

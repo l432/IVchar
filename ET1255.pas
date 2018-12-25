@@ -576,10 +576,10 @@ begin
      for I := 0 to High(DataVector^.X) do
       begin
        DataVector^.X[i]:=i;
-       DataVector^.Y[i]:=fParentModule.ReadMem;
+       DataVector^.Y[i]:=fParentModule.ReadMem/fParentModule.Gain;
       end;
      fValue:=ImpulseNoiseSmoothingByNpoint(DataVector);
-     fValue:=fValue/fParentModule.Gain;
+//     fValue:=fValue/fParentModule.Gain;
    end
   else
    begin
