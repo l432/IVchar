@@ -525,7 +525,6 @@ type
     ST_GDS_Parity: TStaticText;
     ComCBGDS_Parity: TComComboBox;
     LGDSPort: TLabel;
-    Button2: TButton;
     GB_GDS_Set: TGroupBox;
     LGDS_Mode: TLabel;
     STGDS_Mode: TStaticText;

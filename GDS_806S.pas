@@ -4,7 +4,7 @@ interface
 
 uses
   RS232device, CPort, ShowTypes, StdCtrls, Classes, IniFiles, OlegType, 
-  Measurement, Buttons, ExtCtrls, Series;
+  Measurement, Buttons, ExtCtrls, Series, PacketParameters;
 
 type
 
@@ -67,10 +67,9 @@ type
               gds_m_lv,gds_m_maxamp,gds_m_minamp,gds_m_vpp,gds_m_rms);
 
 
-// ArrByteGDS=array[TGDS_Settings]of byte;
 
 const
-  TestShow=True;
+  TestShow=False;
 
   GDS_806S_PacketBeginChar='';
   GDS_806S_PacketEndChar=#10;
@@ -78,7 +77,7 @@ const
   GDS_806S_Test='GW,GDS-806S,EF211754,V1.10';
 
   RootNood:array[0..12]of string=
-  ('*idn','*rcl','*rst','*sav',':acq',':aut',':chan',':meas',':refr',
+  ('*idn?','*rcl','*rst','*sav',':acq',':aut',':chan',':meas',':refr',
 //   0       1      2      3      4      5       6       7      8
   ':run',':stop','syst:unl',':tim:scal');
 //  9       10     11           12
@@ -163,20 +162,10 @@ const
   ButtonNumber = 10;
 
 type
-//  TGDS_806S_Parameters=class
-//  private
-//  public
-//   Mode:TGDS_Mode;
-//   ActiveChannel:TGDS_Channel;
-//   RecordLength:TGDS_RecordLength;
-//   procedure SetDataShort(Mode,RecordLength:byte);
-//   procedure SetData(Mode,Channel,RecordLength:byte);
-//  end;
 
   TGDS_806S=class(TRS232Meter)
    private
      fSettings:array[TGDS_Settings]of byte;
-//     fSetSettingAction:array[TGDS_Settings]of TByteEvent;
      fActiveChannel:TGDS_Channel;
 
      fInvert:array[TGDS_Channel]of Boolean;
@@ -187,6 +176,7 @@ type
      fLeafNode:byte;
      fIsQuery:boolean;
      fTimeTransfer:integer;
+     fLSB:double;
      procedure SetFlags(RootNode,FirstLevelNode,LeafNode:byte;
                   IsQuery:boolean=False);
      procedure SetupOperation(RootNode,FirstLevelNode,LeafNode:byte);overload;
@@ -195,20 +185,8 @@ type
      procedure QuireOperation(RootNode,FirstLevelNode,LeafNode:byte);
      function GetParam(Param:TGDS_Settings):boolean;overload;
      function GetParam(ParamCh1,ParamCh2:TGDS_Settings):boolean;overload;
-  //    procedure CombiningCommands;
      procedure DefaultSettings;
-//    procedure SetSettingActionCreate;
-//    procedure SetSettingAbsolut(Data:ArrByteGDS);
-//    procedure SetSettingOnOption(Data:ArrByteGDS);
-//    procedure SetCouplingChan1(Coupl:byte);
-//    procedure SetCouplingChan2(Coupl:byte);
-//    procedure SetProbChan1(Prob:byte);
-//    procedure SetProbChan2(Prob:byte);
-//    procedure SetScaleChan1(Scale:byte);
-//    procedure SetScaleChan2(Scale:byte);
     function IncorrectScale(Chan: TGDS_Channel; Scale: byte):boolean;
-//    procedure SetMeasTypeChan1(MType:byte);
-//    procedure SetMeasTypeChan2(MType:byte);
     function GDS_StringToValue(Str:string):double;
     function MTypeToMeasureModeLabel(MType:byte):string;
     function CurrentBaudRate():integer;
@@ -301,7 +279,7 @@ TGDS_806S_Channel=class(TNamedInterfacedObject,IMeasurement)
  property MeasureModeLabel:string read GetMeasureModeLabel;
  constructor Create(ChanelNumber:TGDS_Channel;
                      GDS_806S:TGDS_806S);
- procedure Free;                    
+ procedure Free;
  function GetData:double;
  procedure GetDataThread(WPARAM: word; EventEnd:THandle);
  procedure SetMeasType(MType:byte);overload;
@@ -356,7 +334,7 @@ end;
     procedure UnlockButtonClick(Sender:TObject);
     procedure DisplayInvertClick(Sender:TObject);
     procedure MeasButtonShowClick(Sender: TObject);
-    procedure AutoSpeedButtonShowClick(Sender: TObject);    
+    procedure AutoSpeedButtonShowClick(Sender: TObject);
     procedure SettingsShowSLCreate();
     procedure SettingsShowSLFree();
     procedure SettingsShowCreate(STexts:array of TStaticText;
@@ -403,8 +381,6 @@ end;
     procedure WriteToIniFile(ConfigFile:TIniFile);
     procedure SettingToObject;
     procedure ObjectToSetting;
-    function Help():shortint;
-
  end;
 
 var
@@ -417,50 +393,20 @@ uses
 
 { TGDS_806S }
 
-//procedure TGDS_806S.CombiningCommands;
-//begin
-// if StringToSend<>'' then
-//  StringToSend:=StringToSend+';';
-//end;
-
 procedure TGDS_806S.AutoSetting;
 begin
  SetupOperation(5,0,0);
 end;
 
-//procedure TGDS_806S.SetSettingActionCreate;
-//begin
-//  fSetSettingAction[gds_mode] := SetMode;
-//  fSetSettingAction[gds_rl] := SetRecordLength;
-//  fSetSettingAction[gds_an] := SetAverageNumber;
-//  fSetSettingAction[gds_ts] := SetTimeBase;
-//  fSetSettingAction[gds_ch1_coup] := SetCouplingChan1;
-//  fSetSettingAction[gds_ch2_coup] := SetCouplingChan2;
-//  fSetSettingAction[gds_ch1_prob] := SetProbChan1;
-//  fSetSettingAction[gds_ch2_prob] := SetProbChan2;
-//  fSetSettingAction[gds_ch1_scale] := SetScaleChan1;
-//  fSetSettingAction[gds_ch2_scale] := SetScaleChan2;
-//  fSetSettingAction[gds_ch1_mtype] := SetMeasTypeChan1;
-//  fSetSettingAction[gds_ch2_mtype] := SetMeasTypeChan2;
-//end;
-
 constructor TGDS_806S.Create(CP: TComPort; Nm: string);
 begin
  inherited Create(CP,Nm);
-// fParam:=TGDS_806S_Parameters.Create;
  RepeatInErrorCase:=True;
  fComPacket.MaxBufferSize:=250052;
  fComPacket.StartString := GDS_806S_PacketBeginChar;
  fComPacket.StopString := GDS_806S_PacketEndChar;
  fComPort.Buffer.InputSize:=250052;
  DefaultSettings();
-
-// SetSettingActionCreate;
-
-// fMode:=gds_msam;
-// fActiveChannel:=1;
-// fRecordLength:=gds_rl500;
-
  SetFlags(0,0,0,true);
 end;
 
@@ -537,11 +483,6 @@ begin
      dispose(DataVectors[j]);
 end;
 
-//procedure TGDS_806S.Free;
-//begin
-// fParam.Free;
-//end;
-
 function TGDS_806S.GetAverageNumber: boolean;
  var i:TGDS_AverageNumber;
 begin
@@ -567,7 +508,7 @@ end;
 function TGDS_806S.GDS_StringToValue(Str: string): double;
 begin
   try
-    if Str='?' then
+    if (Str='?') or (Str='chan off!') then
       begin
         Result:=ErResult;
         Exit;
@@ -602,7 +543,6 @@ begin
      Result:=StrToFloat(Copy(Str,1,AnsiPos('V', Str)-1));
      Exit;
      end;
-//   showmessage(FloatToStr(StrToFloat(Str)));
    if AnsiPos('.', Str)>1 then  Result:=StrToFloat(Copy(Str,1,5))
                           else  Result:=StrToFloat(Copy(Str,1,4));
   except
@@ -613,17 +553,11 @@ end;
 function TGDS_806S.GetActiveChanelCoupling: boolean;
 begin
  Result:=GetParam(gds_ch1_coup,gds_ch2_coup);
-// QuireOperation(6,0,0);
-// Result:=(round(Value)in[0..2]);
-// if Result then  fSettings[gds_ch1_coup]:=(round(Value));
 end;
 
 function TGDS_806S.GetActiveChannelProb: boolean;
 begin
  Result:=GetParam(gds_ch1_prob,gds_ch2_prob);
-// QuireOperation(6,4,0);
-// Result:=(round(Value)in[0..2]);
-// if Result then  fSettings[gds_ch1_coup]:=(round(Value));
 end;
 
 function TGDS_806S.GetActiveChannelScale: boolean;
@@ -691,16 +625,20 @@ procedure TGDS_806S.GetMeasuringDataVectors(Chan: TGDS_Channel);
 begin
  fActiveChannel:=Chan;
  fMinDelayTime:=TimeForDataTransfer();
+ GetActiveChannelScale();
+ fComPacket.StopString :='';
+ if fActiveChannel=1 then
+   fLSB:=StrtoFloat(GDS_VoltageScaleData[fSettings[gds_ch1_scale]])/25
+                      else
+   fLSB:=StrtoFloat(GDS_VoltageScaleData[fSettings[gds_ch2_scale]])/25;
  QuireOperation(4,3,0);
  fMinDelayTime:=0;
+ fComPacket.StopString := GDS_806S_PacketEndChar;
 end;
 
 function TGDS_806S.GetMode:boolean;
 begin
  Result:=GetParam(gds_mode);
-// QuireOperation(4,2,0);
-// Result:=(round(Value)in[0..2]);
-// if Result then  fSettings[gds_mode]:=(round(Value));
 end;
 
 function TGDS_806S.GetOffset(Chan: TGDS_Channel): boolean;
@@ -771,9 +709,6 @@ end;
 function TGDS_806S.GetTimeBase: boolean;
 begin
  Result:=GetParam(gds_ts);
-// QuireOperation(12,0,0);
-// Result:=(round(Value)in[0..30]);
-// if Result then  fSettings[gds_ts]:=(round(Value));
 end;
 
 function TGDS_806S.IncorrectScale(Chan: TGDS_Channel; Scale: byte): boolean;
@@ -803,9 +738,6 @@ end;
 procedure TGDS_806S.LoadSetting(MemoryAdress: TGDS_MemoryAdress);
 begin
  SetupOperation(1,0,MemoryAdress);
-// SetFlags(1,0,MemoryAdress);
-// PrepareString();
-// Request();
 end;
 
 function TGDS_806S.MTypeToMeasureModeLabel(MType: byte): string;
@@ -836,7 +768,6 @@ begin
         0..2:try
             fValue:=StrToInt(Str);
             except
-//             fValue:=ErResult;
             end;
         3:if Str[1]='#' then
           begin
@@ -855,7 +786,7 @@ begin
               DataVectors[fActiveChannel]^.Y[k]:=TwoByteToData(ord(Str[DataOffset+2*k]),
                                                     ord(Str[DataOffset+2*k+1]));
              end;
-           fValue:=1;  
+           fValue:=1;
            except
 
            end;
@@ -867,11 +798,9 @@ begin
         0..2,4:try
             fValue:=StrToInt(Str);
             except
-//             fValue:=ErResult;
             end;
         3:Value:=GDS_StringToValue(Str);
         5:begin
-//           fValue:=ErResult;
            for j := Low(TGDS_VoltageScale) to High(TGDS_VoltageScale) do
              if Str=GDS_VoltageScaleLabels[j] then
                begin
@@ -883,7 +812,6 @@ begin
     end; //fRootNode = 6;     chan
    7:Value:=GDS_StringToValue(Str);
   12:begin
-//     fValue:=ErResult;
      for I := Low(TGDS_TimeScale) to High(TGDS_TimeScale) do
        if Str=GDS_TimeScaleLabels[i] then
          begin
@@ -894,7 +822,6 @@ begin
  end; //case fRootNode of
 
 fIsReceived:=True;
-//fValue:=0;
 if TestShow then showmessage('recived:  '+STR);
 
 
@@ -935,41 +862,9 @@ begin
         end;
 //     Exit;
     end; //fRootNode = 6;     chan
-//  6:begin
-//     StringToSend:=StringToSend+IntToStr(fActiveChannel)+':'+
-//                          FirstNode_6[fFirstLevelNode];
-//     case fFirstLevelNode of
-////        0..2,3,4:StringToSend:=StringToSend+
-////                          FirstNode_6[fFirstLevelNode];
-//        5:begin
-//           if fIsQuery then
-//             StringToSend:=StringToSend+'?'
-//                       else
-//               begin
-//                   if fActiveChannel=1 then
-//                      StringToSend:=StringToSend+' '+
-//                         GDS_VoltageScaleData[TGDS_VoltageScale(fSettings[gds_ch1_scale])]
-//                                       else
-//                      StringToSend:=StringToSend+' '+
-//                         GDS_VoltageScaleData[TGDS_VoltageScale(fSettings[gds_ch2_scale])];
-//               end;
-//          end;
-//        3:begin
-////           StringToSend:=StringToSend+
-////                          FirstNode_6[fFirstLevelNode];
-//           if fIsQuery then
-//             StringToSend:=StringToSend+'?'
-//                       else
-//             StringToSend:=StringToSend+' '+
-//                         FloatToStrF(fOffset[fActiveChannel],ffGeneral,3,2);
-//           Exit;
-//          end;
-//     end;
-//    end; //fRootNode = 6;     chan
    7:begin
       StringToSend:=StringToSend+':'+FirstNode_7[15]+' '+Inttostr(fLeafNode)+
       ';'+RootNood[fRootNode]+':'+FirstNode_7[fFirstLevelNode]+'?';
-//      Exit;
      end;
   12:begin
      if fIsQuery then
@@ -977,12 +872,8 @@ begin
                  else
        StringToSend:=StringToSend+' '+
         GDS_TimeScaleData[TGDS_TimeScale(fSettings[gds_ts])];
-//     Exit;
     end; //fRootNode = 12; time scale
  end; //case fRootNode of
-// if fIsQuery then StringToSend:=StringToSend+'?'
-//             else StringToSend:=StringToSend+' '+IntToStr(fLeafNode);
-
 end;
 
 procedure TGDS_806S.QuireOperation(RootNode, FirstLevelNode, LeafNode: byte);
@@ -999,9 +890,6 @@ end;
 
 procedure TGDS_806S.Request;
 begin
-// StringToSend:=':acq:mod 0';
-// StringToSend:='*idn?';
-// StringToSend:=':meas:vpp?';
 if TestShow then showmessage('send:  '+StringToSend);
  if fComPort.Connected then
   begin
@@ -1021,19 +909,12 @@ end;
 procedure TGDS_806S.SaveSetting(MemoryAdress: TGDS_MemoryAdress);
 begin
  SetupOperation(3,0,MemoryAdress);
-// SetFlags(3,0,MemoryAdress);
-// PrepareString();
-// Request();
 end;
 
 procedure TGDS_806S.SetAverageNumber(AV: Byte);
 begin
  if fSettings[gds_mode]=2 then
   SetupOperation(AV,gds_an);
-//  begin
-//  fSettings[gds_an]:=AV mod 9;
-//  SetupOperation(4,0,fSettings[gds_an]);
-//  end;
 end;
 
 procedure TGDS_806S.SetAverageNumber(AV: TGDS_AverageNumberSym);
@@ -1045,32 +926,11 @@ procedure TGDS_806S.SetCoupling(Chan:TGDS_Channel;Coupl:byte);
 begin
  fActiveChannel:=Chan;
  SetupOperation(Coupl,gds_ch1_coup,gds_ch2_coup)
-// SetActiveChanelCoupling(Coupl);
 end;
-
-//procedure TGDS_806S.SetCouplingChan1(Coupl: byte);
-//begin
-// SetCoupling(1,Coupl);
-//end;
-//
-//procedure TGDS_806S.SetCouplingChan2(Coupl: byte);
-//begin
-// SetCoupling(2,Coupl);
-//end;
 
 procedure TGDS_806S.SetActiveChannelCoupling(Coupl: byte);
 begin
  SetupOperation(Coupl,gds_ch1_coup,gds_ch2_coup);
-// case fActiveChannel of
-//  1:begin
-//     fSettings[gds_ch1_coup]:=Coupl mod 3;
-//     SetupOperation(6,0,fSettings[gds_ch1_coup]);
-//    end;
-//  2:begin
-//     fSettings[gds_ch2_coup]:=Coupl mod 3;
-//     SetupOperation(6,0,fSettings[gds_ch2_coup]);
-//    end;
-// end;
 end;
 
 procedure TGDS_806S.SetActiveChannelCoupling(Coupl: TGDS_ChanCouplSym);
@@ -1103,19 +963,6 @@ begin
  SetMeasType(Chan,ord(MType));
 end;
 
-//procedure TGDS_806S.SetMeasTypeChan1(MType: byte);
-//begin
-//// showmessage(inttostr(MType));
-// fSettings[gds_ch1_mtype]:=MType mod OperationKod[gds_ch1_mtype,2];
-//// SetMeasType(1,MType);
-//end;
-//
-//procedure TGDS_806S.SetMeasTypeChan2(MType: byte);
-//begin
-// fSettings[gds_ch2_mtype]:=MType mod OperationKod[gds_ch2_mtype,2];
-////  SetMeasType(2,MType);
-//end;
-
 procedure TGDS_806S.SetMode(mode: TGDS_ModeSym);
 begin
  SetMode(ord(mode));
@@ -1135,21 +982,9 @@ begin
  GetActiveChannelScale;
 end;
 
-//procedure TGDS_806S.SetProbChan1(Prob: byte);
-//begin
-//  SetProb(1,Prob);
-//end;
-//
-//procedure TGDS_806S.SetProbChan2(Prob: byte);
-//begin
-//  SetProb(2,Prob);
-//end;
-
 procedure TGDS_806S.SetMode(mode: Byte);
 begin
  SetupOperation(mode,gds_mode);
-// fSettings[gds_mode]:=mode mod 3;
-// SetupOperation(4,2,fSettings[gds_mode]);
 end;
 
 procedure TGDS_806S.SetRecordLength(RL: TGDS_RecordLengthSym);
@@ -1160,50 +995,15 @@ end;
 procedure TGDS_806S.SetRecordLength(RL: Byte);
 begin
  SetupOperation(RL,gds_rl);
-// fSettings[gds_rl]:=RL mod 8;
-// SetupOperation(4,1,fSettings[gds_rl]);
 end;
 
 procedure TGDS_806S.SetScale(Chan: TGDS_Channel; Scale: byte);
 begin
  if IncorrectScale(Chan, Scale) then Exit;
- 
+
  fActiveChannel:=Chan;
  SetupOperation(Scale,gds_ch1_scale,gds_ch2_scale);
 end;
-
-//procedure TGDS_806S.SetScaleChan1(Scale: byte);
-//begin
-// SetScale(1,Scale);
-//end;
-//
-//procedure TGDS_806S.SetScaleChan2(Scale: byte);
-//begin
-// SetScale(2,Scale);
-//end;
-
-//procedure TGDS_806S.SetSettingAbsolut(Data:ArrByteGDS);
-// var i:TGDS_Settings;
-////     j:TGDS_Channel;
-//begin
-// for I := Low(TGDS_Settings) to High(TGDS_Settings) do
-//   fSetSettingAction[i](Data[i]);
-//// for j := Low(TGDS_Channel) to High(TGDS_Channel) do
-////  begin
-////    if fDisplay[j] then DisplayOn(j)
-////                   else DisplayOff(j);
-////    if fInvert[j] then InvertOn(j)
-////                  else InvertOff(j);
-////  end;
-//end;
-
-//procedure TGDS_806S.SetSettingOnOption(Data:ArrByteGDS);
-// var i:TGDS_Settings;
-//begin
-// for I := Low(TGDS_Settings) to High(TGDS_Settings) do
-//   if (Data[i]<>fSettings[i])
-//     then fSetSettingAction[i](Data[i]);
-//end;
 
 procedure TGDS_806S.SetTimeBase(TimeScale: TGDS_TimeScaleSym);
 begin
@@ -1228,8 +1028,6 @@ end;
 procedure TGDS_806S.SetTimeBase(TimeScale: byte);
 begin
  SetupOperation(TimeScale,gds_ts);
-// fSettings[gds_ts]:=TimeScale mod 31;
-// SetupOperation(12,0,fSettings[gds_ts]);
 end;
 
 procedure TGDS_806S.SetupOperation(RootNode, FirstLevelNode, LeafNode: byte);
@@ -1248,20 +1046,27 @@ function TGDS_806S.Test: boolean;
 begin
  QuireOperation(0,0,0);
  Result:=(Value=314);
-// SetFlags(0,0,0,true);
-// PrepareString();
-// Result:=(GetData=314);
 end;
 
 function TGDS_806S.TimeForDataTransfer: integer;
 begin
- Result:=round(1.1*(GDS_RecordLengthData[fSettings[gds_rl]]*2+14)*8000/CurrentBaudRate());
+ fComPacket.Size:=GDS_RecordLengthData[fSettings[gds_rl]]*2;
+ case fSettings[gds_rl] of
+  0..2:fComPacket.Size:=fComPacket.Size+14;
+  3..5:fComPacket.Size:=fComPacket.Size+15;
+  6..7:fComPacket.Size:=fComPacket.Size+16;
+ end;
+ Result:=round(1.1*fComPacket.Size*8000/CurrentBaudRate());
  fTimeTransfer:=Result;
 end;
 
 function TGDS_806S.TwoByteToData(byte_High, byte_Low:byte): double;
+ var c:array[0..1] of byte;
+     a:smallint absolute c;
 begin
- Result:=(byte_High shl 8) + byte_Low;
+ c[1]:=byte_high;
+ c[0]:=byte_low;
+ Result:=a*fLSB;
 end;
 
 procedure TGDS_806S.Unlock;
@@ -1300,13 +1105,11 @@ end;
 procedure TGDS_806S_Show.CoupleCh1OkClick;
 begin
  fGDS_806S.SetCoupling(1,fSettingsShow[gds_ch1_coup].Data);
-// fGDS_806S.SetCouplingChan1(fSettingsShow[gds_ch1_coup].Data);
 end;
 
 procedure TGDS_806S_Show.CoupleCh2OkClick;
 begin
  fGDS_806S.SetCoupling(2,fSettingsShow[gds_ch2_coup].Data);
-// fGDS_806S.SetCouplingChan2(fSettingsShow[gds_ch2_coup].Data);
 end;
 
 constructor TGDS_806S_Show.Create(GDS_806S: TGDS_806S;
@@ -1339,7 +1142,7 @@ begin
       showmessage('GDS_806S_Show is not created!');
       Exit;
     end;
-  
+
 
   fGDS_806S:=GDS_806S;
 
@@ -1366,6 +1169,7 @@ begin
  fVectorMeas:=MeasButtons[High(MeasButtons)];
  fVectorMeas.OnClick:=MeasButtonShowClick;
  TTShow.OnTimer:=MeasButtonShowClick;
+
  fVectorAuto:=MeasSpeedButtons[High(MeasSpeedButtons)];
  fVectorAuto.OnClick:=AutoSpeedButtonShowClick;
 
@@ -1396,19 +1200,12 @@ begin
 end;
 
 procedure TGDS_806S_Show.Free;
-// var i:byte;
 begin
  TTShow.Free;
  ShowFree;
  SettingsShowFree;
  SettingsShowSLFree;
  OffsetShowFree;
-// for I := 0 to High(fParamVariants) do
-//   fParamVariants[i].Free;
-// fRecordLengthShow.Free;
-// fRecordLengths.Free;
-// fModeShow.Free;
-// fModes.Free;
 end;
 
 procedure TGDS_806S_Show.GetSettingButtonClick(Sender: TObject);
@@ -1416,26 +1213,14 @@ begin
  if not(fGDS_806S.GetSetting) then Exit;
 
  ColorToActive(true);
-// fModeShow.ColorToActive(true);
-// fRecordLengthShow.ColorToActive(true);
  ObjectToSetting();
  fFirstSetting:=False;
-end;
-
-function TGDS_806S_Show.Help: shortint;
-begin
- StringToSend:=':chan1:math 1';
- fGDS_806S.Request;
-// fGDS_806S.QuireOperation(4,0,0);
- Result:=1;
-// fGDS_806S.fMode:=TGDS_Mode(15);
-//fGDS_806S.SetMode(fGDS_806S.fMode);
-// Result:=fModeShow.Data;
 end;
 
 procedure TGDS_806S_Show.AutoSpeedButtonShowClick(Sender: TObject);
 begin
  fVectorMeas.Enabled:=not(fVectorAuto.Down);
+ if fVectorAuto.Down then TTShow.OnTimer:=fVectorMeas.OnClick;
  TTShow.Enabled:=fVectorAuto.Down;
 end;
 
@@ -1467,8 +1252,6 @@ begin
   BTest := Buttons[2];
 end;
 
-//procedure TGDS_806S_Show.SettingsShowCreate(STexts:ArrSTSet;
-//                       Labels: ArrLabSet);
 procedure TGDS_806S_Show.SettingsShowCreate(STexts:array of TStaticText;
                         Labels: array of TLabel);
   const
@@ -1501,11 +1284,6 @@ begin
   fSettingsShow[gds_ch1_mtype].HookParameterClick:=MeasTypeCh1OkClick;
   fSettingsShow[gds_ch2_mtype].HookParameterClick:=MeasTypeCh2OkClick;
 
-//  ForUseInShowObject(fGDS_806S);
-//  fSettingsShow[gds_ch1_coup].ForUseInShowObject(fGDS_806S,False,False);
-
-//  fSettingsShow[gds_ch1_coup].IniNameSalt:='_ch1';
-//  fSettingsShow[gds_ch1_coup].ColorChangeWithParameter:=False;
 end;
 
 procedure TGDS_806S_Show.SettingsShowFree;
@@ -1525,17 +1303,19 @@ procedure TGDS_806S_Show.MeasButtonShowClick(Sender: TObject);
 begin
  case fVectors_RG.ItemIndex of
   0:begin
-     TTShow.Interval:=max(500,2*fGDS_806S.fTimeTransfer);
+     TTShow.Interval:=max(2000,2*fGDS_806S.fTimeTransfer);
      fGDS_806S.GetMeasuringDataVectors(1);
+     fGraphs[2].Clear;
      VectorToGraph(fGDS_806S.DataVectors[1],fGraphs[1]);
     end;
   1:begin
-     TTShow.Interval:=max(500,2*fGDS_806S.fTimeTransfer);
+     TTShow.Interval:=max(2000,2*fGDS_806S.fTimeTransfer);
      fGDS_806S.GetMeasuringDataVectors(2);
+     fGraphs[1].Clear;
      VectorToGraph(fGDS_806S.DataVectors[2],fGraphs[2]);
     end;
   2:begin
-     TTShow.Interval:=max(500,4*fGDS_806S.fTimeTransfer);
+     TTShow.Interval:=max(2000,4*fGDS_806S.fTimeTransfer);
      fGDS_806S.GetMeasuringDataVectors(1);
      VectorToGraph(fGDS_806S.DataVectors[1],fGraphs[1]);
      fGDS_806S.GetMeasuringDataVectors(2);
@@ -1547,13 +1327,11 @@ end;
 procedure TGDS_806S_Show.MeasTypeCh1OkClick;
 begin
  fGDS_806S.fSettings[gds_ch1_mtype]:=fSettingsShow[gds_ch1_mtype].Data;
-//  fGDS_806S.SetMeasTypeChan1(fSettingsShow[gds_ch1_mtype].Data);
 end;
 
 procedure TGDS_806S_Show.MeasTypeCh2OkClick;
 begin
  fGDS_806S.fSettings[gds_ch2_mtype]:=fSettingsShow[gds_ch2_mtype].Data;
-//  fGDS_806S.SetMeasTypeChan2(fSettingsShow[gds_ch1_mtype].Data);
 end;
 
 procedure TGDS_806S_Show.ObjectToSetting;
@@ -1567,6 +1345,7 @@ begin
   begin
     AccurateCheckBoxCheckedChange(fDisplayCheckBox[j],fGDS_806S.fDisplay[j]);
     AccurateCheckBoxCheckedChange(fInvertCheckBox[j],fGDS_806S.fInvert[j]);
+    fOffsetShow[j].Data:=fGDS_806S.fOffset[j];
   end;
 end;
 
@@ -1584,10 +1363,10 @@ procedure TGDS_806S_Show.OffsetShowCreate(STexts: array of TStaticText;
                     Labels: array of TLabel);
  var i:TGDS_Channel;
 begin
- for I := High(TGDS_Channel) downto Low(TGDS_Channel) do
+ for I := Low(TGDS_Channel) to High(TGDS_Channel) do
   begin
-    fOffsetShow[i]:=TDoubleParameterShow.Create(STexts[High(STexts)-i+1],
-                                Labels[High(Labels)-i+1],'Offset,V:',0);
+    fOffsetShow[i]:=TDoubleParameterShow.Create(STexts[High(STexts)-2+i],
+                                Labels[High(Labels)-2+i],'Offset,V:',0);
     fOffsetShow[i].IniNameSalt:='Ch'+IntToStr(i);
     fOffsetShow[i].ForUseInShowObject(fGDS_806S);
   end;
@@ -1605,14 +1384,12 @@ end;
 procedure TGDS_806S_Show.ProbeCh1OkClick;
 begin
  fGDS_806S.SetProb(1,fSettingsShow[gds_ch1_prob].Data);
-// fGDS_806S.SetProbChan1(fSettingsShow[gds_ch1_prob].Data);
  fSettingsShow[gds_ch1_scale].Data:=fGDS_806S.fSettings[gds_ch1_scale];
 end;
 
 procedure TGDS_806S_Show.ProbeCh2OkClick;
 begin
   fGDS_806S.SetProb(2,fSettingsShow[gds_ch2_prob].Data);
-//  fGDS_806S.SetProbChan2(fSettingsShow[gds_ch2_prob].Data);
   fSettingsShow[gds_ch2_scale].Data:=fGDS_806S.fSettings[gds_ch2_scale];
 end;
 
@@ -1655,14 +1432,12 @@ end;
 procedure TGDS_806S_Show.ScaleCh1OkClick;
 begin
  fGDS_806S.SetScale(1,fSettingsShow[gds_ch1_scale].Data);
-// fGDS_806S.SetScaleChan1(fSettingsShow[gds_ch1_scale].Data);
  fSettingsShow[gds_ch1_scale].Data:=fGDS_806S.fSettings[gds_ch1_scale];
 end;
 
 procedure TGDS_806S_Show.ScaleCh2OkClick;
 begin
  fGDS_806S.SetScale(2,fSettingsShow[gds_ch2_scale].Data);
-// fGDS_806S.SetScaleChan2(fSettingsShow[gds_ch2_scale].Data);
  fSettingsShow[gds_ch2_scale].Data:=fGDS_806S.fSettings[gds_ch2_scale];
 end;
 
@@ -1671,10 +1446,6 @@ procedure TGDS_806S_Show.SetSetting;
   begin
     Result:=(fFirstSetting)or(b1<>b2);
   end;
-// function NewValue(b1,b2:boolean):boolean;overload;
-//  begin
-//    Result:=(fFirstSetting)or(b1<>b2);
-//  end;
  var j:TGDS_Channel;
 begin
  if NewValue(fGDS_806S.fSettings[gds_mode],
@@ -1685,42 +1456,6 @@ begin
               fSettingsShow[gds_an].Data) then fGDS_806S.SetAverageNumber(fSettingsShow[gds_an].Data);
  if NewValue(fGDS_806S.fSettings[gds_ts],
               fSettingsShow[gds_ts].Data) then fGDS_806S.SetTimeBase(fSettingsShow[gds_ts].Data);
-// if NewValue(fGDS_806S.fSettings[gds_ch1_coup],
-//              fSettingsShow[gds_ch1_coup].Data) then CoupleCh1OkClick;
-////              fGDS_806S.SetCoupling(1,fSettingsShow[gds_ch1_coup].Data);
-// if NewValue(fGDS_806S.fSettings[gds_ch2_coup],
-//              fSettingsShow[gds_ch2_coup].Data) then CoupleCh2OkClick;
-////              fGDS_806S.SetCoupling(2,fSettingsShow[gds_ch2_coup].Data);
-// if NewValue(fGDS_806S.fSettings[gds_ch1_prob],
-//              fSettingsShow[gds_ch1_prob].Data) then ProbeCh1OkClick;
-////              fGDS_806S.SetProb(1,fSettingsShow[gds_ch1_prob].Data);
-// if NewValue(fGDS_806S.fSettings[gds_ch2_prob],
-//              fSettingsShow[gds_ch2_prob].Data) then ProbeCh2OkClick;
-////              fGDS_806S.SetProb(2,fSettingsShow[gds_ch2_prob].Data);
-// if NewValue(fGDS_806S.fSettings[gds_ch1_scale],
-//              fSettingsShow[gds_ch1_scale].Data) then ScaleCh1OkClick;
-////              fGDS_806S.SetScale(1,fSettingsShow[gds_ch1_scale].Data);
-// if NewValue(fGDS_806S.fSettings[gds_ch2_scale],
-//              fSettingsShow[gds_ch2_scale].Data) then ScaleCh2OkClick;
-////              fGDS_806S.SetScale(2,fSettingsShow[gds_ch2_scale].Data);
-//// if NewValue(fGDS_806S.fSettings[gds_ch1_mtype],
-////              fSettingsShow[gds_ch1_mtype].Data) then
-//// fGDS_806S.fSettings[gds_ch1_mtype]:=fSettingsShow[gds_ch1_mtype].Data;
-//// fGDS_806S.fSettings[gds_ch2_mtype]:=fSettingsShow[gds_ch2_mtype].Data;
-// MeasTypeCh1OkClick();
-// MeasTypeCh2OkClick();
-
-// if NewValue(fGDS_806S.fSettings[gds_ch2_mtype],
-//              fSettingsShow[gds_ch2_mtype].Data) then fGDS_806S.SetScale(2,fSettingsShow[gds_ch2_mtype].Data);
-
-//  for j := Low(TGDS_Channel) to High(TGDS_Channel) do
-//  begin
-//   if NewValue(fGDS_806S.fDisplay[j],fDisplayCheckBox[j].Checked)
-//       then DisplayInvertClick(fDisplayCheckBox[j]);
-//   if NewValue(fGDS_806S.fInvert[j],fInvertCheckBox[j].Checked)
-//       then DisplayInvertClick(fInvertCheckBox[j]);
-//  end;
-
   if fFirstSetting then
    begin
     CoupleCh1OkClick;
@@ -1740,54 +1475,22 @@ begin
     OffsetCh2Click;
     fFirstSetting:=False;
    end;
-// if fFirstSetting then fFirstSetting:=False;
 end;
 
 procedure TGDS_806S_Show.SetSettingButtonClick(Sender: TObject);
-// var data:ArrByteGDS;
-//     i:TGDS_Settings;
-//     j:TGDS_Channel;
 begin
-// for I := Low(TGDS_Settings) to High(TGDS_Settings) do
-//   data[i]:=fSettingsShow[i].Data;
-// if fFirstSetting then
-//   begin
-//     fGDS_806S.SetSettingAbsolut(data);
-//     fFirstSetting:=False;
-//     for j := Low(TGDS_Channel) to High(TGDS_Channel) do
-//      begin
-//       DisplayInvertClick(fDisplayCheckBox[j]);
-//       DisplayInvertClick(fInvertCheckBox[j]);
-//      end;
-//   end
-//               else
-//    begin
-//     fGDS_806S.SetSettingOnOption(data);
-//     for j := Low(TGDS_Channel) to High(TGDS_Channel) do
-//      begin
-//       if fGDS_806S.fDisplay[j]<>fDisplayCheckBox[j].Checked
-//           then DisplayInvertClick(fDisplayCheckBox[j]);
-//       if fGDS_806S.fInvert[j]<>fInvertCheckBox[j].Checked
-//           then DisplayInvertClick(fInvertCheckBox[j]);
-//      end;
-//    end;
 
  SetSetting();
 
  ColorToActive(true);
  if fGDS_806S.fSettings[gds_mode]<>2 then
    fSettingsShow[gds_an].ColorToActive(false);
-// fModeShow.ColorToActive(true);
-// fRecordLengthShow.ColorToActive(true);
-// SettingToObject();
-
 end;
 
 procedure TGDS_806S_Show.SettingToObject;
  var i:TGDS_Settings;
      j:TGDS_Channel;
 begin
-// for I := Low(TGDS_Settings) to gds_an do
  for I := Low(TGDS_Settings) to  High(TGDS_Settings) do
  fGDS_806S.fSettings[i]:=fSettingsShow[i].Data;
 
@@ -1821,7 +1524,6 @@ procedure TGDS_806S_Show.SettingsShowSLCreate();
     i7:TGDS_VoltageScale;
     i8:TGDS_MeasureType;
 begin
-// for I := Low(TGDS_Settings) to High(TGDS_Settings) do
  for I := Low(TGDS_Settings) to gds_ch1_scale do
   begin
   fSettingsShowSL[i]:=TStringList.Create();
@@ -1857,7 +1559,6 @@ procedure TGDS_806S_Show.SettingsShowSLFree;
  var i:TGDS_Settings;
 begin
  for I := Low(TGDS_Settings) to gds_ch1_scale do
-// for I := Low(TGDS_Settings) to High(TGDS_Settings) do
   fSettingsShowSL[i].Free;
 end;
 
@@ -1904,7 +1605,6 @@ end;
 procedure TGDS_806S_Show.TimeScaleOkClick;
 begin
  fGDS_806S.SetTimeBase(fSettingsShow[gds_ts].Data);
-// fGDS_806S.SetupOperation(fSettingsShow[gds_ts].Data,gds_ts)
 end;
 
 procedure TGDS_806S_Show.UnlockButtonClick(Sender: TObject);
@@ -1932,20 +1632,6 @@ begin
  WriteIniDef(ConfigFile, fGDS_806S.Name, 'ChanShow', fVectors_RG.ItemIndex);
 
 end;
-
-//{ TGDS_806S_Parameters }
-//
-//procedure TGDS_806S_Parameters.SetData(Mode, Channel, RecordLength: byte);
-//begin
-//  SetDataShort(Mode, RecordLength);
-//  Self.ActiveChannel:=TGDS_Channel(Channel);
-//end;
-//
-//procedure TGDS_806S_Parameters.SetDataShort(Mode, RecordLength: byte);
-//begin
-// Self.Mode:=TGDS_Mode(Mode);
-// Self.RecordLength:=TGDS_RecordLength(RecordLength);
-//end;
 
 { TDGS_806S_Channel }
 
