@@ -53,6 +53,10 @@ Function FCSCalculate(Data:array of byte):byte;
 Procedure ShowData(Data:array of byte);
 {виводиться віконечко з числами, які містить Data}
 
+Function CRC8(Data:array of byte;poly:byte=$07):byte;
+{розрахунок CRC8, породжуючий поліном poly наводимо
+без найстаршого (9-го) біта, там завжди має бути 1}
+
 implementation
 
 Procedure PacketCreate(const Args: array of byte);
@@ -130,5 +134,24 @@ begin
  for I := 0 to High(Data) do temp:=temp+'$'+inttohex(Data[i],2)+' ';
  MessageDlg(temp,mtInformation,[mbOK], 0);
 end;
+
+
+Function CRC8(Data:array of byte;poly:byte=$07):byte;
+{розрахунок CRC8, породжуючий поліном poly наводимо
+без найстаршого (9-го) біта, там завжди має бути 1}
+var  crc : byte;
+    i,bit : integer;
+begin
+ crc:=$00;
+ for i := Low(data) to High(data) do
+   begin
+     crc := crc xor data[i];
+     for bit := 0 to 7 do
+         if (crc and $80)>0  then crc:=(byte(crc shl 1)) xor poly
+                             else crc:=byte(crc shl 1);
+   end;
+ Result:=crc;
+end;
+
 
 end.

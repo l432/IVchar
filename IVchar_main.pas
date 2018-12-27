@@ -613,7 +613,6 @@ type
     procedure BET1255_show_saveClick(Sender: TObject);
     procedure SBGeneratorClick(Sender: TObject);
     procedure Button1Click(Sender: TObject);
-    procedure Button2Click(Sender: TObject);
   private
     procedure ComponentView;
     {початкове налаштування різних компонентів}
@@ -2268,36 +2267,9 @@ end;
 procedure TIVchar.Button1Click(Sender: TObject);
 
 begin
- showmessage(inttostr(round(min(400,AD9833_MaxFreq)*$10000000/25e6)and $0FFFFFFF));
+ showmessage(inttostr(CRC8([$b6,$c6])));
 end;
 
-procedure TIVchar.Button2Click(Sender: TObject);
- var rr:R;
-     c:array[0..3] of byte;
-     a:single absolute c;
-begin
-
- rr.b[0]:=$6f;
- rr.b[1]:=$12;
- rr.b[2]:=$83;
- rr.b[3]:=$39;
-// rr.t:=2;
-showmessage(floattostr(rr.s));
-
- c[3]:=$4c;
- c[2]:=$be;
- c[1]:=$bc;
- c[0]:=$20;
-
-
- showmessage(floattostr(a));
-
-//GDS_806S_Show.Help;
-//GDS_806S.GetMeasuringData(1);
-//GDS_806S.SetTimeBase(gds_ts500us);
-// showmessage(inttostr(GDS_806S_Show.Help));
-//  GDS_806S.GetData;
-end;
 
 procedure TIVchar.BControlResetClick(Sender: TObject);
 begin
