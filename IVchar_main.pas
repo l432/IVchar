@@ -2265,9 +2265,33 @@ end;
 
 
 procedure TIVchar.Button1Click(Sender: TObject);
+// var
+//     fData:array of byte;
+//     tempLongword,DivSor:Longword;
+//     i:byte;
+//begin
+// DivSor:=$988000;
+// SetLength(fData,3);
+// fData[0]:=$7c;
+// fData[1]:=$82;
+// fData[2]:=$97;
+//
+// tempLongWord:= ((((fData[0] shl 8) or  fData[1]) shl 8)or fData[2]);
+//
+// for I := 0 to 15 do
+//   begin
+//    if (tempLongWord and (1 shl (23-i)))<>0 then
+//      tempLongWord:=(tempLongWord xor DivSor);
+//    DivSor:=(DivSor shr 1);
+//   end;
+// showmessage(booltostr(false));
+// showmessage(booltostr(tempLongWord=0));
 
 begin
- showmessage(inttostr(CRC8([$b6,$c6])));
+// showmessage(inttostr(CRC8([$7c,$82],$31)));
+// showmessage(inttostr(CRC8([$7c,$82,$97],$31)));
+ showmessage(inttostr(CRC8([$b6,$27,$b7,$5B,$3C])));
+// showmessage(inttostr(CRC8([$b6,$c6])));
 end;
 
 

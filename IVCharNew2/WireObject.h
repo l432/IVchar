@@ -48,14 +48,24 @@ class WireObject {
       Wire.write(Data2);
       Wire.write(Data3);
       Wire.endTransmission();
-//      delayMicroseconds(25);
+      //      delayMicroseconds(25);
+    }
+
+    void  ArrayByteTransfer (byte Data[], int n)
+    {
+      Wire.beginTransmission(_address);
+      for (byte i = 0; i < n; i++)
+      {
+        Wire.write(Data[i]);
+      }
+      Wire.endTransmission();
     }
 
     void SetAdress(byte address)
     {
       _address = address;
     }
-    
+
     void SetDataReceivedNumber(byte DataReceivedNumber) {
       _dataReceivedNumber = DataReceivedNumber;
     }

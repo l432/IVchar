@@ -8,12 +8,12 @@ uses
 
 type
 
- R=record
- case boolean of
-  True:(b:array[0..3] of byte);
-  False:(s:single);
+// R=record
+// case boolean of
+//  True:(b:array[0..3] of byte);
+//  False:(s:single);
    
- end;
+// end;
 
  TGDS_Settings=(gds_mode,gds_rl,gds_an,gds_ts,
                 gds_ch1_coup,gds_ch1_prob,gds_ch1_mtype,gds_ch1_scale,

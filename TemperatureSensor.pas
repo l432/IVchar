@@ -15,7 +15,7 @@ type
   {базовий клас для датчиків температури}
   protected
   public
-   function GetTemperature():double;
+   function GetTemperature():double;virtual;
    procedure GetTemperatureThread(EventEnd:THandle);
   end;
 
@@ -35,6 +35,7 @@ type
     Function CRCCorrect():boolean;
     Procedure PacketCreateToSend();override;
   public
+//    Function CRCCorrect():boolean;
    Constructor Create(CP:TComPort;Nm:string);//override;
    Procedure ConvertToValue();override;
   end;
@@ -197,27 +198,27 @@ begin
  fValue:=-46.85+temp*(175.72/65536.0);
 
  if (fValue<-40)or(fValue>125) then fValue:=ErResult
-                                else fValue:=fValue+273.16;
+                               else fValue:=fValue+273.16;
 // fIsReady:=True;
 end;
 
 function THTU21D.CRCCorrect: boolean;
- var
-     tempLongword,DivSor:Longword;
-     i:byte;
+// var
+//     tempLongword,DivSor:Longword;
+//     i:byte;
 begin
-// showmessage('hi');
- DivSor:=$988000;
- tempLongWord:= ((((fData[0] shl 8) or  fData[1]) shl 8)or fData[2]);
-
- for I := 0 to 15 do
-   begin
-    if (tempLongWord and (1 shl (23-i)))<>0 then
-      tempLongWord:=(tempLongWord xor DivSor);
-    DivSor:=(DivSor shr 1);
-   end;
- if tempLongWord=0 then Result:=True
-                   else Result:=False;
+// DivSor:=$988000;
+// tempLongWord:= ((((fData[0] shl 8) or  fData[1]) shl 8)or fData[2]);
+//
+// for I := 0 to 15 do
+//   begin
+//    if (tempLongWord and (1 shl (23-i)))<>0 then
+//      tempLongWord:=(tempLongWord xor DivSor);
+//    DivSor:=(DivSor shr 1);
+//   end;
+// if tempLongWord=0 then Result:=True
+//                   else Result:=False;
+ Result:= (CRC8(fData,$31)=0);
 end;
 
 constructor THTU21D.Create(CP: TComPort; Nm: string);
