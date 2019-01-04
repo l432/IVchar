@@ -30,16 +30,18 @@ void MLX90615o::Process() {
 
   if (_DataToSend[0] == MLX_Write_Emissivity)
   {
-
-  } else
-  {
-   ByteTransfer(_DataToSend[0]);
-  }
-
+    byte tempData[4] = {0xB6, 0x13, 0x00, 0x00};
+    ArrayByteTransfer(tempData, 4);
+    delayMicroseconds(5500);
+    _DataToSend[0] = 0x13;
+    ArrayByteTransfer(_DataToSend, 4);
+    delayMicroseconds(5500);
+  };
+  ByteTransfer(_DataToSend[0]);
   DataReceive();
   DeviceId = MLX90615Command;
   ActionId = _address;
   CreateAndSendPacket(_DataReceived, GetDataReceivedNumber());
   Stop();
-  TwoByteTransfer(0xC6,0x6D);//Enter to Sleep Mode 
+  TwoByteTransfer(0xC6, 0x6D); //Enter to Sleep Mode
 }

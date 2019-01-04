@@ -10,7 +10,7 @@ uses
   CPortCtl, Grids, Chart, TeeProcs, Series, TeEngine, ExtCtrls, Buttons,
   ComCtrls, CPort, StdCtrls, Dialogs, Controls, Classes, D30_06,Math, PID, 
   MDevice, Spin,HighResolutionTimer, MCP3424, ADS1115, ArduinoDeviceShow, 
-  AD9833, GDS_806S;
+  AD9833, GDS_806S, MLX90615;
 
 const
   MeasIV='IV characteristic';
@@ -577,6 +577,13 @@ type
     STGDS_ScaleCh2: TStaticText;
     GDS_SeriesCh1: TLineSeries;
     GDS_SeriesCh2: TLineSeries;
+    GBMLX615: TGroupBox;
+    PMLX615: TPanel;
+    GBMLX615_GC: TGroupBox;
+    STMLX615_GC: TStaticText;
+    BMLX615_GCread: TButton;
+    BMLX615_GCwrite: TButton;
+    BMLX615_Calib: TButton;
 
     procedure FormCreate(Sender: TObject);
     procedure BConnectClick(Sender: TObject);
@@ -751,6 +758,9 @@ type
     TMP102:TTMP102;
     TMP102show:TI2C_PinsShow;
     HTU21D:THTU21D;
+    MLX90615:TMLX90615;
+    MLX90615Show:TMLX90615Show;
+
     ThermoCuple:TThermoCuple;
     MCP3424:TMCP3424_Module;
     MCP3424show:TI2C_PinsShow;
@@ -2290,7 +2300,7 @@ procedure TIVchar.Button1Click(Sender: TObject);
 begin
 // showmessage(inttostr(CRC8([$7c,$82],$31)));
 // showmessage(inttostr(CRC8([$7c,$82,$97],$31)));
- showmessage(inttostr(CRC8([$b6,$27,$b7,$5B,$3C])));
+ showmessage(inttostr(CRC8([$b6,$13,$00,$00])));
 // showmessage(inttostr(CRC8([$b6,$c6])));
 end;
 
@@ -2409,6 +2419,7 @@ begin
                  [DACR2R,V721A,V721_I,V721_II,DS18B20,
                  TMP102,
                  HTU21D,
+                 MLX90615,
                  D30_06,IscVocPinChanger,LEDOpenPinChanger,
                  MCP3424,ADS11115module,AD9833]);
 
@@ -2969,6 +2980,8 @@ begin
   TMP102:=TTMP102.Create(ComPort1, 'TMP102');
   TMP102show:=TI2C_PinsShow.Create(TMP102.Pins,PTMP102Pin, TMP102_StartAdress,TMP102_LastAdress);
 
+  MLX90615:=TMLX90615.Create(ComPort1, 'MLX90615');
+
 
   HTU21D:=THTU21D.Create(ComPort1, 'HTU21D');
 
@@ -2983,7 +2996,7 @@ begin
   ShowArray.Add([DS18B20show,TMP102show,
                 IscVocPinChangerShow,LEDOpenPinChangerShow]);
   AnyObjectArray.Add([V721A,V721_I,V721_II]);
-  AnyObjectArray.Add([DS18B20,TMP102,HTU21D,
+  AnyObjectArray.Add([DS18B20,TMP102,HTU21D,MLX90615,
                       IscVocPinChanger,LEDOpenPinChanger]);
 
   MCP3424Create();
@@ -3051,6 +3064,11 @@ begin
      begin
       (ShowArray.ObjectArray[i] as TGDS_806S_Show).ReadFromIniFile(ConfigFile);
       (ShowArray.ObjectArray[i] as TGDS_806S_Show).SettingToObject();
+      Continue;
+     end;
+   if (ShowArray.ObjectArray[i] is TMLX90615Show) then
+     begin
+      (ShowArray.ObjectArray[i] as TMLX90615Show).ReadFromIniFile(ConfigFile);
       Continue;
      end;
   end;
@@ -3148,6 +3166,14 @@ begin
       (ShowArray.ObjectArray[i] as TET1255_ADCShow).Free;
       Continue;
      end;
+
+   if (ShowArray.ObjectArray[i] is TMLX90615Show) then
+    begin
+    (ShowArray.ObjectArray[i] as TMLX90615Show).WriteToIniFile(ConfigFile);
+    (ShowArray.ObjectArray[i] as TMLX90615Show).Free;
+    Continue;
+    end;
+
 
    ShowArray.ObjectArray[i].Free;
   end;
@@ -3382,8 +3408,11 @@ begin
   Devices[3]:=V721_II;
 
   TermoCouple_MD:=TMeasuringDevice.Create(Devices, CBTcVMD, 'Thermocouple', LTRValue, srVoltge);
-  Temperature_MD:=TTemperature_MD.Create([Simulator,ThermoCuple,DS18B20,HTU21D,TMP102],CBTD,'Temperature',LTRValue);
-  ShowArray.Add([TermoCouple_MD,Temperature_MD]);
+  Temperature_MD:=TTemperature_MD.Create([Simulator,ThermoCuple,DS18B20,HTU21D,TMP102,MLX90615],CBTD,'Temperature',LTRValue);
+
+  MLX90615Show:=TMLX90615Show.Create(MLX90615,STMLX615_GC, BMLX615_GCread,
+                          BMLX615_GCwrite,BMLX615_Calib,Temperature_MD);
+  ShowArray.Add([TermoCouple_MD,Temperature_MD,MLX90615Show]);
 
   SetLength(Devices,High(Devices)+3);
   Devices[High(Devices)-1]:=UT70B;
@@ -3427,11 +3456,12 @@ begin
 
   ShowArray.Add([Current_MD,VoltageIV_MD,DACR2R_MD,D30_MD,Isc_MD,Voc_MD]);
 
-  SetLength(Devices,High(Devices)+5);
-  Devices[High(Devices)-3]:=ThermoCuple;
-  Devices[High(Devices)-2]:=DS18B20;
-  Devices[High(Devices)-1]:=HTU21D;
-  Devices[High(Devices)]:=TMP102;
+  SetLength(Devices,High(Devices)+6);
+  Devices[High(Devices)-4]:=ThermoCuple;
+  Devices[High(Devices)-3]:=DS18B20;
+  Devices[High(Devices)-2]:=HTU21D;
+  Devices[High(Devices)-1]:=TMP102;
+  Devices[High(Devices)]:=MLX90615;
 
   TimeD_MD:=
     TMeasuringDevice.Create(Devices, CBTimeMD,'Time Dependence', LADCurrentValue, srVoltge);

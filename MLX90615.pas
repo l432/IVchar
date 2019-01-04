@@ -3,7 +3,8 @@ unit MLX90615;
 interface
 
 uses
-  TemperatureSensor, CPort;
+  TemperatureSensor, CPort, IniFiles, StdCtrls, ShowTypes, MDevice, 
+  Measurement;
 
 type
 
@@ -23,6 +24,7 @@ type
   private
    fstate:TMLX_States;
    fGrayCoefficient:Word;
+   fNewGrCoef:Word;
   protected
    Function CRCCorrect():boolean;
    Procedure PacketCreateToSend();override;
@@ -30,19 +32,91 @@ type
    function GetTemperature():double;override;
    Constructor Create(CP:TComPort;Nm:string);
    Procedure ConvertToValue();override;
+   function GetTemperatureAmbient():double;
+   function ReadGrayCoefficient():double;
+   function WriteGrayCoefficient(NewCoef:double):boolean;overload;
+   function WriteGrayCoefficient(NewCoef:word):boolean;overload;
+   function GrayCoefToWord(const NewCoef:double):word;
+   function GrayCoefToDouble(const NewCoef:word):double;
+   function GetGrayCoefficient():double;
+   procedure Calibration(TempSensor:ITemperatureMeasurement);
   end;
+
+ TMLX90615Show=class
+  private
+   fMLX90615:TMLX90615;
+   fGrayScaleShow:TDoubleParameterShow;
+   fTemperature_MD:TTemperature_MD;
+   procedure RefreshData;
+   procedure ReadButtonClick(Sender:TObject);
+   procedure WriteButtonClick(Sender:TObject);
+   procedure CalibrateButtonClick(Sender:TObject);
+  public
+   Constructor Create(MLX:TMLX90615;
+                      STGrayC:TStaticText;
+                      BRead,BWrite,Bcalibr:TButton;
+                      TTemp_MD:TTemperature_MD);
+   procedure Free;
+   procedure ReadFromIniFile(ConfigFile:TIniFile);
+   procedure WriteToIniFile(ConfigFile:TIniFile);
+ end;
 
 implementation
 
 uses
-  PacketParameters;
+  PacketParameters, OlegType, Math;
 
 { TMLX90615 }
 
-procedure TMLX90615.ConvertToValue;
+procedure TMLX90615.Calibration(TempSensor: ITemperatureMeasurement);
+ var SensorTemp,SelfTemp:double;
+     limitA,limitB,NewGrayCoef:word;
 begin
-  inherited;
+ SensorTemp:=TempSensor.GetTemperature;
+ if SensorTemp=ErResult then Exit;
 
+ SelfTemp:=Self.GetTemperature;
+ limitA:=0;
+ limitB:=MLX90615_GrayCoefficientMax;
+ while (SelfTemp<>ErResult)and(abs(SensorTemp-SelfTemp)>0.03) do
+  begin
+    if SensorTemp>SelfTemp then
+       begin
+         if fGrayCoefficient=MLX90615_GrayCoefficientMax then Exit;
+         NewGrayCoef:=min(word((limitB+fGrayCoefficient) shr 2),MLX90615_GrayCoefficientMax);
+         limitA:=fGrayCoefficient;
+       end                 else
+//    if SensorTemp<SelfTemp then
+       begin
+         if fGrayCoefficient=0 then Exit;
+         NewGrayCoef:=word((limitA+fGrayCoefficient) shr 2);
+         limitB:=fGrayCoefficient;
+       end;
+    if abs(NewGrayCoef-fGrayCoefficient)<2 then Exit;
+    if not(WriteGrayCoefficient(NewGrayCoef)) then Exit;
+    SelfTemp:=Self.GetTemperature;
+  end;
+end;
+
+procedure TMLX90615.ConvertToValue;
+ var temp:word;
+begin
+ fValue:=ErResult;
+ if High(fData)<>2 then Exit;
+ if not(CRCCorrect()) then Exit;
+
+ temp:=((fData[1] shl 8) or  fData[0]) and $7FFF;
+ if (fstate in [mlx_tObject,mlx_tAmbient])and
+     InRange(temp,$2D8A,$4BD0)
+//     (temp>=$2D8A)and(temp<=$4BD0)
+       then fValue:=temp*0.02;
+
+ if (fstate in [mlx_gcRead,mlx_gcWrite])and(temp<=MLX90615_GrayCoefficientMax)
+   then
+    begin
+      fValue:=GrayCoefToDouble(temp);
+      fGrayCoefficient:=temp;
+    end;
 end;
 
 function TMLX90615.CRCCorrect: boolean;
@@ -65,22 +139,115 @@ begin
   fGrayCoefficient:=MLX90615_GrayCoefficientMax;
 end;
 
+function TMLX90615.GetGrayCoefficient: double;
+begin
+ Result:=GrayCoefToDouble(fGrayCoefficient);
+end;
+
 function TMLX90615.GetTemperature: double;
 begin
  fstate:=mlx_tObject;
-// fMinDelayTime:=350;
  Result:=Measurement();
+end;
+
+function TMLX90615.GetTemperatureAmbient: double;
+begin
+ fstate:=mlx_tAmbient;
+ Result:=Measurement();
+end;
+
+function TMLX90615.GrayCoefToDouble(const NewCoef: word): double;
+begin
+ Result:=min(NewCoef,MLX90615_GrayCoefficientMax)/MLX90615_GrayCoefficientMax;
+end;
+
+function TMLX90615.GrayCoefToWord(const NewCoef: double): word;
+begin
+  if Frac(NewCoef)=0 then Result:=MLX90615_GrayCoefficientMax
+                     else Result:=round(abs(Frac(NewCoef))*MLX90615_GrayCoefficientMax);
 end;
 
 procedure TMLX90615.PacketCreateToSend;
 begin
- case fstate of
-   mlx_tObject:  PacketCreate([fMetterKod,Pins.PinControl,MLX90615_OperationCod[fstate]]);
-   mlx_tAmbient: ;
-   mlx_gcRead: ;
-   mlx_gcWrite: ;
- end;
+ if fstate in [mlx_tObject,mlx_tAmbient,mlx_gcRead]
+  then  PacketCreate([fMetterKod,Pins.PinControl,MLX90615_OperationCod[fstate]])
+  else  PacketCreate([fMetterKod,Pins.PinControl,MLX90615_OperationCod[fstate],
+              Lo(fNewGrCoef),Hi(fNewGrCoef),
+              CRC8([$b6,$13,Lo(fNewGrCoef),Hi(fNewGrCoef)])]);
+end;
 
+function TMLX90615.ReadGrayCoefficient: double;
+begin
+ fstate:=mlx_gcRead;
+ Result:=Measurement();
+end;
+
+function TMLX90615.WriteGrayCoefficient(NewCoef: word): boolean;
+begin
+  fNewGrCoef:=min(NewCoef,MLX90615_GrayCoefficientMax);
+  fstate:=mlx_gcWrite;
+  Measurement();
+  Result:=(fGrayCoefficient=fNewGrCoef);
+end;
+
+function TMLX90615.WriteGrayCoefficient(NewCoef: double): boolean;
+begin
+  Result:=WriteGrayCoefficient(GrayCoefToWord(NewCoef));
+end;
+
+{ TMLX90615Show }
+
+procedure TMLX90615Show.CalibrateButtonClick(Sender: TObject);
+begin
+ fMLX90615.Calibration(fTemperature_MD.ActiveInterface);
+ RefreshData();
+end;
+
+constructor TMLX90615Show.Create(MLX: TMLX90615;
+                                STGrayC: TStaticText;
+                                BRead, BWrite, Bcalibr: TButton;
+                                TTemp_MD:TTemperature_MD);
+begin
+ fMLX90615:=MLX;
+ fGrayScaleShow:=TDoubleParameterShow.Create(STGrayC,'GrayCoef',1,5);
+ fGrayScaleShow.ForUseInShowObject(fMLX90615);
+ BRead.OnClick:=ReadButtonClick;
+ BWrite.OnClick:=WriteButtonClick;
+ Bcalibr.OnClick:=CalibrateButtonClick;
+ fTemperature_MD:=TTemp_MD;
+end;
+
+procedure TMLX90615Show.Free;
+begin
+ fGrayScaleShow.Free;
+end;
+
+procedure TMLX90615Show.ReadButtonClick(Sender: TObject);
+begin
+ fMLX90615.ReadGrayCoefficient();
+ RefreshData();
+end;
+
+procedure TMLX90615Show.ReadFromIniFile(ConfigFile: TIniFile);
+begin
+ fGrayScaleShow.ReadFromIniFile(ConfigFile);
+end;
+
+procedure TMLX90615Show.RefreshData;
+begin
+ fGrayScaleShow.Data:=fMLX90615.GetGrayCoefficient();
+ fGrayScaleShow.ColorToActive(true);
+end;
+
+procedure TMLX90615Show.WriteButtonClick(Sender: TObject);
+begin
+ fMLX90615.WriteGrayCoefficient(fGrayScaleShow.Data);
+ RefreshData();
+end;
+
+procedure TMLX90615Show.WriteToIniFile(ConfigFile: TIniFile);
+begin
+ fGrayScaleShow.WriteToIniFile(ConfigFile);
 end;
 
 end.

@@ -35,7 +35,7 @@ object IVchar: TIVchar
     Top = 0
     Width = 1032
     Height = 649
-    ActivePage = TS_ADC
+    ActivePage = TS_Temper
     Align = alTop
     Font.Charset = RUSSIAN_CHARSET
     Font.Color = clWindowText
@@ -2980,7 +2980,7 @@ object IVchar: TIVchar
         Top = 145
         Width = 242
         Height = 76
-        Caption = 'DS18B20'
+        Caption = 'DS18B20,  OneWire'
         Font.Charset = RUSSIAN_CHARSET
         Font.Color = clOlive
         Font.Height = -28
@@ -3379,7 +3379,7 @@ object IVchar: TIVchar
         Top = 7
         Width = 220
         Height = 75
-        Caption = 'TMP102'
+        Caption = 'TMP102  I2C, 3.3V'
         Font.Charset = RUSSIAN_CHARSET
         Font.Color = clOlive
         Font.Height = -28
@@ -3410,8 +3410,8 @@ object IVchar: TIVchar
         Left = 510
         Top = 90
         Width = 220
-        Height = 76
-        Caption = 'HTU21D'
+        Height = 75
+        Caption = 'HTU21D,  I2C, 3.3V'
         Font.Charset = RUSSIAN_CHARSET
         Font.Color = clOlive
         Font.Height = -28
@@ -3435,6 +3435,108 @@ object IVchar: TIVchar
           ParentBackground = False
           ParentFont = False
           TabOrder = 0
+        end
+      end
+      object GBMLX615: TGroupBox
+        Left = 782
+        Top = 7
+        Width = 220
+        Height = 173
+        Caption = 'MLX90615,  I2C, 3.3V'
+        Font.Charset = RUSSIAN_CHARSET
+        Font.Color = clOlive
+        Font.Height = -28
+        Font.Name = 'Courier'
+        Font.Style = [fsBold]
+        ParentFont = False
+        TabOrder = 8
+        object PMLX615: TPanel
+          Left = 7
+          Top = 25
+          Width = 206
+          Height = 42
+          BevelOuter = bvLowered
+          Caption = 'Adress is $5B'
+          Color = clSilver
+          Font.Charset = DEFAULT_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -22
+          Font.Name = 'Tahoma'
+          Font.Style = [fsBold]
+          ParentBackground = False
+          ParentFont = False
+          TabOrder = 0
+        end
+        object GBMLX615_GC: TGroupBox
+          Left = 3
+          Top = 73
+          Width = 214
+          Height = 64
+          Caption = 'Gray Coefficient'
+          Font.Charset = RUSSIAN_CHARSET
+          Font.Color = clBackground
+          Font.Height = -28
+          Font.Name = 'Tahoma'
+          Font.Style = [fsBold]
+          ParentFont = False
+          TabOrder = 1
+          object STMLX615_GC: TStaticText
+            Left = 59
+            Top = 11
+            Width = 108
+            Height = 30
+            Caption = '1.00000'
+            Font.Charset = RUSSIAN_CHARSET
+            Font.Color = clMaroon
+            Font.Height = -22
+            Font.Name = 'Verdana'
+            Font.Style = [fsBold]
+            ParentFont = False
+            ShowAccelChar = False
+            TabOrder = 0
+          end
+          object BMLX615_GCread: TButton
+            Left = 11
+            Top = 37
+            Width = 75
+            Height = 24
+            Caption = 'Read'
+            Font.Charset = RUSSIAN_CHARSET
+            Font.Color = clWindowText
+            Font.Height = -17
+            Font.Name = 'Arial'
+            Font.Style = [fsBold]
+            ParentFont = False
+            TabOrder = 1
+          end
+          object BMLX615_GCwrite: TButton
+            Left = 128
+            Top = 37
+            Width = 75
+            Height = 24
+            Caption = 'Write'
+            Font.Charset = RUSSIAN_CHARSET
+            Font.Color = clWindowText
+            Font.Height = -17
+            Font.Name = 'Arial'
+            Font.Style = [fsBold]
+            ParentFont = False
+            TabOrder = 2
+          end
+        end
+        object BMLX615_Calib: TButton
+          Left = 16
+          Top = 143
+          Width = 185
+          Height = 24
+          Caption = 'Calibrate'
+          Font.Charset = RUSSIAN_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -17
+          Font.Name = 'Arial'
+          Font.Style = [fsBold]
+          ParentFont = False
+          TabOrder = 2
         end
       end
     end
