@@ -10,7 +10,7 @@ uses
   CPortCtl, Grids, Chart, TeeProcs, Series, TeEngine, ExtCtrls, Buttons,
   ComCtrls, CPort, StdCtrls, Dialogs, Controls, Classes, D30_06,Math, PID, 
   MDevice, Spin,HighResolutionTimer, MCP3424, ADS1115, ArduinoDeviceShow, 
-  AD9833, GDS_806S, MLX90615;
+  AD9833, GDS_806S, MLX90615, OlegShowTypes;
 
 const
   MeasIV='IV characteristic';

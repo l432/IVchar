@@ -3,7 +3,7 @@ unit PID;
 interface
 
 uses
-  ShowTypes, Windows, StdCtrls, IniFiles;
+  ShowTypes, Windows, StdCtrls, IniFiles, OlegShowTypes;
 
 const
       PID_Param='PID_Parameters';

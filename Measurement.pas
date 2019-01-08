@@ -3,7 +3,7 @@ unit Measurement;
 interface
 
 uses
-  StdCtrls, IniFiles, Messages, Classes, ExtCtrls, Buttons;
+  StdCtrls, IniFiles, Messages, Classes, ExtCtrls, Buttons, OlegTypePart2;
 
 Const
    WM_MyMeasure=WM_USER+1;
@@ -21,19 +21,19 @@ Const
 
 type
 
-IName = interface
-  ['{5B51E68D-11D9-4410-8396-05DB50F07F35}']
-  function GetName:string;
-  property Name:string read GetName;
-end;
+//IName = interface
+//  ['{5B51E68D-11D9-4410-8396-05DB50F07F35}']
+//  function GetName:string;
+//  property Name:string read GetName;
+//end;
 
-TNamedInterfacedObject=class(TInterfacedObject)
-  protected
-   fName:string;
-   function GetName:string;
-  public
-   property Name:string read GetName;
-  end;
+//TNamedInterfacedObject=class(TInterfacedObject)
+//  protected
+//   fName:string;
+//   function GetName:string;
+//  public
+//   property Name:string read GetName;
+//  end;
 
 IMeasurement = interface (IName)
   ['{7A6DCE4C-9A04-444A-B7FD-39B800BDE6A7}']
@@ -286,12 +286,12 @@ begin
 end;
 
 
-{ TNamedDevice }
-
-function TNamedInterfacedObject.GetName: string;
-begin
-   Result:=fName;
-end;
+//{ TNamedDevice }
+//
+//function TNamedInterfacedObject.GetName: string;
+//begin
+//   Result:=fName;
+//end;
 
 
 { TTheadPeriodic }

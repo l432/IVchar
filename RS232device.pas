@@ -4,7 +4,7 @@ interface
 
 uses
   Measurement, CPort, PacketParameters, ExtCtrls, StdCtrls, Buttons, Windows,
-  Classes;
+  Classes,OlegTypePart2;
 
 
 const

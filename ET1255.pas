@@ -4,7 +4,7 @@ interface
 
 uses
   RS232device, Measurement, OlegType, Classes, OlegFunction, Spin, StdCtrls, 
-  ExtCtrls, Buttons, Series, IniFiles;
+  ExtCtrls, Buttons, Series, IniFiles, OlegTypePart2;
 
 const
  ET1255_DAC_MAX=2.5;

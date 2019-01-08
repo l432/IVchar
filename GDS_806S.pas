@@ -4,7 +4,8 @@ interface
 
 uses
   RS232device, CPort, ShowTypes, StdCtrls, Classes, IniFiles, OlegType, 
-  Measurement, Buttons, ExtCtrls, Series, PacketParameters;
+  Measurement, Buttons, ExtCtrls, Series, PacketParameters, OlegTypePart2, 
+  OlegShowTypes;
 
 type
 

@@ -4,7 +4,7 @@ interface
 
 uses
   TemperatureSensor, CPort, IniFiles, StdCtrls, ShowTypes, MDevice, 
-  Measurement;
+  Measurement, OlegShowTypes;
 
 type
 

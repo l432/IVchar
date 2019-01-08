@@ -3,7 +3,8 @@ unit ArduinoADC;
 interface
 
 uses
-  ArduinoDevice, CPort, Measurement, StdCtrls, MDevice, ExtCtrls;
+  ArduinoDevice, CPort, Measurement, StdCtrls, MDevice, ExtCtrls, 
+  OlegTypePart2;
 
 
 type

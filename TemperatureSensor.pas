@@ -3,7 +3,7 @@ unit TemperatureSensor;
 interface
 
 uses
-  ArduinoDevice, CPort, Measurement, RS232device;
+  ArduinoDevice, CPort, Measurement, RS232device, OlegTypePart2;
 
 const
  TMP102_StartAdress=$48;

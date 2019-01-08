@@ -4,7 +4,7 @@ interface
 
 uses
   ArduinoDevice, ArduinoDeviceShow, Buttons, ShowTypes, Classes, ExtCtrls, 
-  StdCtrls, IniFiles;
+  StdCtrls, IniFiles, OlegShowTypes;
 
 const
      AD9833_MaxFreq=12.5e6;
