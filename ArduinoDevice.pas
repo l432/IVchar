@@ -224,10 +224,14 @@ begin
 // ShowData(fData);
  if not(PacketIsReceived(Str,fData,fMetterKod)) then Exit;
  if fData[2]<>Pins.PinControl then Exit;
+//   ?
+ fComPort.ClearBuffer(True, False);
+//------------------------------
  for I := 0 to High(fData)-4 do
    fData[i]:=fData[i+3];
  SetLength(fData,High(fData)-3);
  fIsReceived:=True;
+//  ShowData(fData);
 end;
 
 { TPins }

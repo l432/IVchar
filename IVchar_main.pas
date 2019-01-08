@@ -2298,9 +2298,12 @@ procedure TIVchar.Button1Click(Sender: TObject);
 // showmessage(booltostr(tempLongWord=0));
 
 begin
+showmessage(floattostr(Temperature_MD.ActiveInterface.GetTemperature));
+//showmessage(floattostr(MLX90615.GetTemperature));
 // showmessage(inttostr(CRC8([$7c,$82],$31)));
 // showmessage(inttostr(CRC8([$7c,$82,$97],$31)));
- showmessage(inttostr(CRC8([$b6,$13,$00,$00])));
+// showmessage(inttostr(CRC8([$b6,$13,$00,$00])));
+// showmessage(inttostr(CRC8([$b6,$13,$00,$20])));
 // showmessage(inttostr(CRC8([$b6,$c6])));
 end;
 

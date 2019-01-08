@@ -25,6 +25,7 @@ const byte DrivePins[] = {25, 26, 27, 28, 29, 30, 31, 32, 34, 35, 41, 42, 43};
 const byte SignPins[] = {33, 40};
 const byte OneWarePins[] = {36, 37};
 const byte InputPins[] = {47, 48, 49};
+const byte SCL_Pin=21;
 
 // byte DS18B20Pin = 36;
 const byte LEDPin=12;

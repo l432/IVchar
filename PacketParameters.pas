@@ -73,6 +73,7 @@ begin
   aPacket[High(aPacket)-1]:=FCSCalculate(aPacket);
   aPacket[0]:=PacketBegin;
   aPacket[High(aPacket)]:=PacketEnd;
+//  ShowData(aPacket);
 end;
 
 Function PacketIsSend(ComPort:TComPort; report:string):boolean;
@@ -95,9 +96,10 @@ begin
  Result:=True;
 
  SetLength(pData,Length(Str));
+//   showmessage('<<'+str+'>>');
  for I := 0 to High(pData) do
    pData[i]:=ord(str[i+1]);
-
+//  ShowData(pData);
  if pData[0]<>Length(Str) then Result:=False;
  if FCSCalculate(pData)<>0 then Result:=False;
 end;

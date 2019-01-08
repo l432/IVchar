@@ -26,11 +26,16 @@ class WireObject {
       ByteTransfer(_address, Data);
     }
 
-    void ByteTransfer(byte Address, byte Data)
+    void ByteTransferStopFalse(byte Data)
+    {
+      ByteTransfer(_address, Data, false);
+    }    
+
+    void ByteTransfer(byte Address, byte Data, bool Stop=true)
     {
       Wire.beginTransmission(Address);
       Wire.write(Data);
-      Wire.endTransmission();
+      Wire.endTransmission(Stop);
     }
 
     void TwoByteTransfer(byte Data1, byte Data2)
@@ -51,14 +56,14 @@ class WireObject {
       //      delayMicroseconds(25);
     }
 
-    void  ArrayByteTransfer (byte Data[], int n)
+    void  ArrayByteTransfer (byte Data[], int n, bool Stop=true)
     {
       Wire.beginTransmission(_address);
       for (byte i = 0; i < n; i++)
       {
         Wire.write(Data[i]);
       }
-      Wire.endTransmission();
+      Wire.endTransmission(Stop);
     }
 
     void SetAdress(byte address)

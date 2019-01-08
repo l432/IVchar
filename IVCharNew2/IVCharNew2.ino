@@ -79,7 +79,7 @@ start:
   tmp102.End();
   mcp3424.End();
   ads1115.End();
-  mlx90615.End();  
+//  mlx90615.End();  
   wdt_reset();
 }
 

@@ -101,7 +101,8 @@ end;
 procedure TMLX90615.ConvertToValue;
  var temp:word;
 begin
- fValue:=ErResult;
+// ShowData(fData);
+// fValue:=ErResult;
  if High(fData)<>2 then Exit;
  if not(CRCCorrect()) then Exit;
 
@@ -117,6 +118,7 @@ begin
       fValue:=GrayCoefToDouble(temp);
       fGrayCoefficient:=temp;
     end;
+ fstate:=mlx_tObject;
 end;
 
 function TMLX90615.CRCCorrect: boolean;
@@ -134,9 +136,10 @@ begin
   fMetterKod:=MLX90615Command;
   SetLength(Pins.fPins,1);
   Pins.PinControl:=MLX90615_Adress;
-  fMinDelayTime:=350;
+//  fMinDelayTime:=350;
   fstate:=mlx_tObject;
   fGrayCoefficient:=MLX90615_GrayCoefficientMax;
+
 end;
 
 function TMLX90615.GetGrayCoefficient: double;
