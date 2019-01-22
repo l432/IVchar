@@ -69,6 +69,13 @@ type
    Constructor Create(Nm:string);
   end;
 
+  TPinsForCustomValues=class(TPins)
+   protected
+    Function GetPinStr(Index:integer):string;override;
+   public
+    Constructor Create(Nm:string;PNm:array of string);
+  end;
+
 
   TPinsShowUniversal=class
   protected
@@ -813,5 +820,21 @@ if i>-1 then
 end;
 
 
+
+{ TPinsForCustomValues }
+
+constructor TPinsForCustomValues.Create(Nm: string; PNm: array of string);
+begin
+ inherited Create(Nm, PNm);
+ PinStrPart := '';
+end;
+
+function TPinsForCustomValues.GetPinStr(Index: integer): string;
+begin
+ if fPins[Index]=UndefinedPin then
+   Result:=PNames[Index] +' is undefined'
+                              else
+   Result:=PinValueToStr(Index);
+end;
 
 end.

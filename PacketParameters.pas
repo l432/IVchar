@@ -25,6 +25,7 @@ const
   ADS1115Command=$B;
   AD9833Command=$C;
   MLX90615Command=$D;
+  INA226Command=$E;
 
 var
   aPacket:array of byte;

@@ -20,10 +20,17 @@ type
    procedure Configuration();virtual;
    procedure Intitiation();virtual;
    procedure FinalPacketCreateToSend();virtual;
+   procedure PinsCreate();override;
  public
    property  ActiveChannel:byte read FActiveChannel write FActiveChannel;
    constructor Create(CP:TComPort;Nm:string);//override;
  end;
+
+  TArdADC_Mod_2ConfigByte=class(TArduinoADC_Module)
+   protected
+    fConfigByteTwo:byte;
+    procedure FinalPacketCreateToSend();override;
+  end;
 
 
   TArduinoADC_Channel=class(TNamedInterfacedObject,IMeasurement)
@@ -45,7 +52,10 @@ type
   procedure GetDataThread(WPARAM: word; EventEnd:THandle);
  end;
 
-
+Function TwosComplementToDouble(HiByte,LowByte:byte;LSB:double):double;
+{перетворення 16-бітного цілого, записаного
+в комплементарному форматі в дійсне;
+LSB - ціна найменшого розряду}
 
 implementation
 
@@ -74,7 +84,7 @@ end;
 
 procedure TArduinoADC_Module.Intitiation;
 begin
-   fDelayTimeMax:=20;
+  fDelayTimeMax:=20;
 end;
 
 procedure TArduinoADC_Module.PacketCreateToSend;
@@ -83,6 +93,11 @@ begin
   FinalPacketCreateToSend();
 end;
 
+
+procedure TArduinoADC_Module.PinsCreate;
+begin
+  Pins := TPins_I2C.Create(Name);
+end;
 
 { TArduinoADC_Channel }
 
@@ -103,7 +118,7 @@ end;
 
 function TArduinoADC_Channel.GetData: double;
 begin
- fParentModule.ActiveChannel := fChanelNumber;
+// fParentModule.ActiveChannel := fChanelNumber;
  SetModuleParameters();
  Result:=fParentModule.GetData;
 end;
@@ -135,5 +150,24 @@ begin
  fParentModule.NewData:=Value;
 end;
 
+
+{ TArdADC_Mod_2ConfigByte }
+
+procedure TArdADC_Mod_2ConfigByte.FinalPacketCreateToSend;
+begin
+  PacketCreate([fMetterKod, Pins.PinControl, fConfigByte, fConfigByteTwo]);
+end;
+
+Function TwosComplementToDouble(HiByte,LowByte:byte;LSB:double):double;
+{перетворення 16-бітного цілого, записаного
+в комплементарному форматі в дійсне;
+LSB - ціна найменшого розряду}
+ var temp:Int64;
+begin
+ temp:=LowByte+((HiByte and $7F) shl 8);
+ if (HiByte and $80)>0 then
+    temp:=-((not(temp)+$1)and $7fff);
+ Result:=temp*LSB;
+end;
 
 end.

@@ -61,16 +61,17 @@ const
 type
 
 
-  TADS1115_Module=class(TArduinoADC_Module)
+//  TADS1115_Module=class(TArduinoADC_Module)
+  TADS1115_Module=class(TArdADC_Mod_2ConfigByte)
   private
-    fConfigByteTwo:byte;
+//    fConfigByteTwo:byte;
     FGain: TADS1115_Gain;
     FDataRate: TADS1115_DataRate;
   protected
    procedure Configuration();override;
    procedure Intitiation(); override;
-   procedure PinsCreate();override;
-   procedure FinalPacketCreateToSend();override;
+//   procedure PinsCreate();override;
+//   procedure FinalPacketCreateToSend();override;
   public
    property Gain: TADS1115_Gain read FGain write FGain;
    property DataRate: TADS1115_DataRate read FDataRate write FDataRate;
@@ -105,9 +106,10 @@ type
  end;
 }
 
-TPins_ADS1115_Chanel=class(TPins)
+//TPins_ADS1115_Chanel=class(TPins)
+TPins_ADS1115_Chanel=class(TPinsForCustomValues)
   protected
-   Function GetPinStr(Index:integer):string;override;
+//   Function GetPinStr(Index:integer):string;override;
    Function StrToPinValue(Str: string):integer;override;
    Function PinValueToStr(Index:integer):string;override;
   public
@@ -160,7 +162,7 @@ begin
 end;
 
 procedure TADS1115_Module.ConvertToValue;
- var temp:Int64;
+// var temp:Int64;
 begin
  fValue:=ErResult;
 //  ShowData(fData);
@@ -173,35 +175,36 @@ begin
    $08:FGain:=ads_g8;
    $0A:FGain:=ads_g16;
  end;
- temp:=fData[1]+((fData[0] and $7F) shl 8);
- if (fData[0] and $80)>0 then
-    temp:=-((not(temp)+$1)and $7fff);
-
-  fValue:=temp*ADS1115_LSB*ADS1115_Gain_Data[FGain];
-//  fIsReady:=True;
+// temp:=fData[1]+((fData[0] and $7F) shl 8);
+// if (fData[0] and $80)>0 then
+//    temp:=-((not(temp)+$1)and $7fff);
+//
+//  fValue:=temp*ADS1115_LSB*ADS1115_Gain_Data[FGain];
+  fValue:=TwosComplementToDouble(fData[0],fData[1],ADS1115_LSB)*ADS1115_Gain_Data[FGain];
 end;
 
-procedure TADS1115_Module.FinalPacketCreateToSend;
-begin
-  PacketCreate([fMetterKod, Pins.PinControl, fConfigByte, fConfigByteTwo]);
-//  PacketCreate([fMetterKod, Pins.PinControl, Pins.PinGate, fConfigByte, fConfigByteTwo]);
-end;
+//procedure TADS1115_Module.FinalPacketCreateToSend;
+//begin
+//  PacketCreate([fMetterKod, Pins.PinControl, fConfigByte, fConfigByteTwo]);
+////  PacketCreate([fMetterKod, Pins.PinControl, Pins.PinGate, fConfigByte, fConfigByteTwo]);
+//end;
 
 procedure TADS1115_Module.Intitiation;
 begin
+  inherited Intitiation;
   FGain := ads_g1;
   FDataRate:=ads_dr128;
   fMetterKod := ADS1115Command;
-  fDelayTimeMax:=20;
+//  fDelayTimeMax:=20;
 end;
 
 
 
-procedure TADS1115_Module.PinsCreate;
-begin
-  Pins := TPins_I2C.Create(Name);
-//  Pins :=TPins_ADS1115_Module.Create(Name);
-end;
+//procedure TADS1115_Module.PinsCreate;
+//begin
+//  Pins := TPins_I2C.Create(Name);
+////  Pins :=TPins_ADS1115_Module.Create(Name);
+//end;
 
 { ADS1115_Channel }
 
@@ -238,20 +241,20 @@ end;
 constructor TPins_ADS1115_Chanel.Create(Nm: string);
 begin
   inherited Create(Nm, ['Data rate', 'Diapazon']);
-  PinStrPart := '';
+//  PinStrPart := '';
   PinControl := $00;
   // зберігатиметься Data rate
   PinGate := $02;
   // зберігатиметься Gain
 end;
 
-function TPins_ADS1115_Chanel.GetPinStr(Index: integer): string;
-begin
- if fPins[Index]=UndefinedPin then
-   Result:=PNames[Index] +' is undefined'
-                              else
-   Result:=PinValueToStr(Index);
-end;
+//function TPins_ADS1115_Chanel.GetPinStr(Index: integer): string;
+//begin
+// if fPins[Index]=UndefinedPin then
+//   Result:=PNames[Index] +' is undefined'
+//                              else
+//   Result:=PinValueToStr(Index);
+//end;
 
 function TPins_ADS1115_Chanel.PinValueToStr(Index: integer): string;
  var i:TADS1115_Gain;

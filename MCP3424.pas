@@ -48,16 +48,17 @@ type
   protected
    procedure Configuration();override;
    procedure Intitiation; override;
-   procedure PinsCreate();override;
+//   procedure PinsCreate();override;
   public
    property Gain: TMCP3424_Gain read FGain write FGain;
    property Resolution: TMCP3424_Resolution read FResolution write FResolution;
    procedure ConvertToValue();override;
  end;
 
-TPins_MCP3424=class(TPins)
+//TPins_MCP3424=class(TPins)
+TPins_MCP3424=class(TPinsForCustomValues)
   protected
-   Function GetPinStr(Index:integer):string;override;
+//   Function GetPinStr(Index:integer):string;override;
    Function StrToPinValue(Str: string):integer;override;
    Function PinValueToStr(Index:integer):string;override;
   public
@@ -155,10 +156,10 @@ begin
 end;
 
 
-procedure TMCP3424_Module.PinsCreate;
-begin
-  Pins := TPins_I2C.Create(Name);
-end;
+//procedure TMCP3424_Module.PinsCreate;
+//begin
+//  Pins := TPins_I2C.Create(Name);
+//end;
 
 
 { MCP3424_Channel }
@@ -226,20 +227,20 @@ end;
 constructor TPins_MCP3424.Create(Nm: string);
 begin
   inherited Create(Nm, ['Bits mode', 'Diapazon']);
-  PinStrPart := '';
+//  PinStrPart := '';
   PinControl := 12;
   // зберігатиметься Resolution
   PinGate := 1;
   // зберігатиметься Gain
 end;
 
-function TPins_MCP3424.GetPinStr(Index: integer): string;
-begin
- if fPins[Index]=UndefinedPin then
-   Result:=PNames[Index] +' is undefined'
-                              else
-   Result:=PinValueToStr(Index);
-end;
+//function TPins_MCP3424.GetPinStr(Index: integer): string;
+//begin
+// if fPins[Index]=UndefinedPin then
+//   Result:=PNames[Index] +' is undefined'
+//                              else
+//   Result:=PinValueToStr(Index);
+//end;
 
 function TPins_MCP3424.PinValueToStr(Index: integer): string;
  var i:TMCP3424_Gain;

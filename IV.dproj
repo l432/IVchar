@@ -44,6 +44,7 @@
     <DCCReference Include="ET1255.pas" />
     <DCCReference Include="GDS_806S.pas" />
     <DCCReference Include="HighResolutionTimer.pas" />
+    <DCCReference Include="INA226.pas" />
     <DCCReference Include="IVchar_main.pas">
       <Form>IVchar</Form>
     </DCCReference>

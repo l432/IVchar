@@ -1,4 +1,4 @@
-unit IVchar_main;
+п»їunit IVchar_main;
 
 interface
 
@@ -10,7 +10,7 @@ uses
   CPortCtl, Grids, Chart, TeeProcs, Series, TeEngine, ExtCtrls, Buttons,
   ComCtrls, CPort, StdCtrls, Dialogs, Controls, Classes, D30_06,Math, PID, 
   MDevice, Spin,HighResolutionTimer, MCP3424, ADS1115, ArduinoDeviceShow, 
-  AD9833, GDS_806S, MLX90615, OlegShowTypes;
+  AD9833, GDS_806S, MLX90615, OlegShowTypes, INA226;
 
 const
   MeasIV='IV characteristic';
@@ -584,6 +584,19 @@ type
     BMLX615_GCread: TButton;
     BMLX615_GCwrite: TButton;
     BMLX615_Calib: TButton;
+    GBina226: TGroupBox;
+    GBina226_shunt: TGroupBox;
+    Lina226_shuntmeas: TLabel;
+    Bina226_shuntmeas: TButton;
+    Pina226_shunttime: TPanel;
+    Pina226_adr: TPanel;
+    Pina226_aver: TPanel;
+    Lina226_Rsh: TLabel;
+    STina226_Rsh: TStaticText;
+    GBina226_Bus: TGroupBox;
+    Lina226_busmeas: TLabel;
+    Bina226_busmeas: TButton;
+    Pina226_bustime: TPanel;
 
     procedure FormCreate(Sender: TObject);
     procedure BConnectClick(Sender: TObject);
@@ -622,13 +635,13 @@ type
     procedure Button1Click(Sender: TObject);
   private
     procedure ComponentView;
-    {початкове налаштування різних компонентів}
+    {РїРѕС‡Р°С‚РєРѕРІРµ РЅР°Р»Р°С€С‚СѓРІР°РЅРЅСЏ СЂС–Р·РЅРёС… РєРѕРјРїРѕРЅРµРЅС‚С–РІ}
     procedure PinsFromIniFile;
-    {зчитування номерів пінів, які використовуються загалом}
+    {Р·С‡РёС‚СѓРІР°РЅРЅСЏ РЅРѕРјРµСЂС–РІ РїС–РЅС–РІ, СЏРєС– РІРёРєРѕСЂРёСЃС‚РѕРІСѓСЋС‚СЊСЃСЏ Р·Р°РіР°Р»РѕРј}
     procedure PinsWriteToIniFile;
 //    Procedure NumberPinsShow();
-    {відображується вміст NumberPins в усі
-    ComboBox з Tag=1}
+    {РІС–РґРѕР±СЂР°Р¶СѓС”С‚СЊСЃСЏ РІРјС–СЃС‚ NumberPins РІ СѓСЃС–
+    ComboBox Р· Tag=1}
     procedure RangeShow(Sender: TObject);
     procedure LimitsToLabel(LimitShow,LimitShowRev:TLimitShow);
     procedure RangeShowLimit();
@@ -742,6 +755,7 @@ type
     procedure IVMR_Refresh;
     procedure MCP3424Create;
     procedure ADS1115Create;
+    procedure INA226Create;
     procedure GDS_Create;
   public
     ShowArray:TObjectArray;
@@ -775,6 +789,9 @@ type
     ADS11115_Channels:array [TADS1115_ChanelNumber] of TADS1115_Channel;
     ADS11115_ChannelShows:array [TADS1115_ChanelNumber] of TADS1115_ChannelShow;
 
+    INA226_Module:TINA226_Module;
+    INA226_ModuleShow:TINA226_ModuleShow;
+
     GDS_806S:TGDS_806S;
     GDS_806S_Channel:array[TGDS_Channel]of TGDS_806S_Channel;
     GDS_806S_Show:TGDS_806S_Show;
@@ -782,9 +799,9 @@ type
     IscVocPinChanger,LEDOpenPinChanger:TArduinoPinChanger;
     IscVocPinChangerShow,LEDOpenPinChangerShow:TArduinoPinChangerShow;
     ConfigFile:TIniFile;
-    NumberPins:TStringList; // номери пінів, які використовуються як керуючі для SPI
-    NumberPinsOneWire:TStringList; // номери пінів, які використовуються для OneWire
-    NumberPinsInput:TStringList; // номери пінів, які можуть бути викристані для переривань
+    NumberPins:TStringList; // РЅРѕРјРµСЂРё РїС–РЅС–РІ, СЏРєС– РІРёРєРѕСЂРёСЃС‚РѕРІСѓСЋС‚СЊСЃСЏ СЏРє РєРµСЂСѓСЋС‡С– РґР»СЏ SPI
+    NumberPinsOneWire:TStringList; // РЅРѕРјРµСЂРё РїС–РЅС–РІ, СЏРєС– РІРёРєРѕСЂРёСЃС‚РѕРІСѓСЋС‚СЊСЃСЏ РґР»СЏ OneWire
+    NumberPinsInput:TStringList; // РЅРѕРјРµСЂРё РїС–РЅС–РІ, СЏРєС– РјРѕР¶СѓС‚СЊ Р±СѓС‚Рё РІРёРєСЂРёСЃС‚Р°РЅС– РґР»СЏ РїРµСЂРµСЂРёРІР°РЅСЊ
     ForwSteps,RevSteps,IVResult,VolCorrection,
     VolCorrectionNew,TemperData:PVector;
 
@@ -857,6 +874,9 @@ var
   IVchar: TIVchar;
 
 implementation
+
+uses
+  ArduinoADC;
 
 {$R *.dfm}
 
@@ -1233,6 +1253,31 @@ begin
  if RGDO.ItemIndex=1 then SettingDevice.SetValue(-TIVDependence.VoltageInputReal)
                      else SettingDevice.SetValue(TIVDependence.VoltageInputReal);
 
+end;
+
+procedure TIVchar.INA226Create;
+begin
+//  ADS11115module := TADS1115_Module.Create(ComPort1, 'ADS1115');
+//  ADS11115show := TI2C_PinsShow.Create(ADS11115module.Pins, Pads1115_adr, ADS1115_StartAdress,ADS1115_LastAdress);
+  INA226_Module:=TINA226_Module.Create(ComPort1, 'INA226');
+  INA226_ModuleShow:=TINA226_ModuleShow.Create(INA226_Module,Pina226_adr,Pina226_aver,Lina226_Rsh,STina226_Rsh);
+
+
+//  for I := Low(TADS1115_ChanelNumber) to High(TADS1115_ChanelNumber) do
+//    ADS11115_Channels[i] := TADS1115_Channel.Create(i, ADS11115module);
+//
+//  ADS11115_ChannelShows[0]:=
+//     TADS1115_ChannelShow.Create(ADS11115_Channels[0], Pads1115_Ch1dr, Pads1115_Ch1gain, Lads1115_Ch1meas, Bads1115_Ch1meas);
+//  ADS11115_ChannelShows[1]:=
+//     TADS1115_ChannelShow.Create(ADS11115_Channels[1], Pads1115_Ch2dr, Pads1115_Ch2gain, Lads1115_Ch2meas, Bads1115_Ch2meas);
+//  ADS11115_ChannelShows[2]:=
+//     TADS1115_ChannelShow.Create(ADS11115_Channels[2], Pads1115_Ch3dr, Pads1115_Ch3gain, Lads1115_Ch3meas,  Bads1115_Ch3meas);
+
+  ShowArray.Add([INA226_ModuleShow]);
+  AnyObjectArray.Add([INA226_Module]);
+
+//  ShowArray.Add([ADS11115show,ADS11115_ChannelShows[0],ADS11115_ChannelShows[1],ADS11115_ChannelShows[2]]);
+//  AnyObjectArray.Add([ADS11115module, ADS11115_Channels[0],ADS11115_Channels[1],ADS11115_Channels[2]]);
 end;
 
 procedure TIVchar.IscVocOnTimeHookFirstMeas;
@@ -2297,8 +2342,11 @@ procedure TIVchar.Button1Click(Sender: TObject);
 // showmessage(booltostr(false));
 // showmessage(booltostr(tempLongWord=0));
 
+
 begin
-showmessage(floattostr(Temperature_MD.ActiveInterface.GetTemperature));
+showmessage(inttostr(round(Log2(1024))));
+
+//showmessage(floattostr(Temperature_MD.ActiveInterface.GetTemperature));
 //showmessage(floattostr(MLX90615.GetTemperature));
 // showmessage(inttostr(CRC8([$7c,$82],$31)));
 // showmessage(inttostr(CRC8([$7c,$82,$97],$31)));
@@ -2424,7 +2472,7 @@ begin
                  HTU21D,
                  MLX90615,
                  D30_06,IscVocPinChanger,LEDOpenPinChanger,
-                 MCP3424,ADS11115module,AD9833]);
+                 MCP3424,ADS11115module,AD9833,INA226_Module]);
 
  if (ComPort1.Connected)and(SettingDevice.ActiveInterface.Name=DACR2R.Name) then SettingDevice.Reset();
  if (ComPort1.Connected) then D30_06.Reset;
@@ -3004,6 +3052,7 @@ begin
 
   MCP3424Create();
   ADS1115Create();
+  INA226Create();
 
   UT70B:=TUT70B.Create(ComPortUT70B, 'UT70B');
   UT70BShow:= TUT70BShow.Create(UT70B, RGUT70B_MM, RGUT70B_Range, RGUT70B_RangeM, LUT70B, LUT70BU, BUT70BMeas, SBUT70BAuto, Time);
@@ -3031,6 +3080,12 @@ begin
       Continue;
      end;
 
+   if (ShowArray.ObjectArray[i] is TINA226_ModuleShow) then
+     begin
+      (ShowArray.ObjectArray[i] as TINA226_ModuleShow).PinsReadFromIniFile(ConfigFile);
+      (ShowArray.ObjectArray[i] as TINA226_ModuleShow).NumberPinShow;
+      Continue;
+     end;
 
    if (ShowArray.ObjectArray[i] is TPinsShowUniversal) then
      begin
@@ -3133,6 +3188,13 @@ begin
     begin
     (ShowArray.ObjectArray[i] as TADS1115_ChannelShow).PinsWriteToIniFile(ConfigFile);
     (ShowArray.ObjectArray[i] as TADS1115_ChannelShow).Free;
+    Continue;
+    end;
+
+   if (ShowArray.ObjectArray[i] is TINA226_ModuleShow) then
+    begin
+    (ShowArray.ObjectArray[i] as TINA226_ModuleShow).PinsWriteToIniFile(ConfigFile);
+    (ShowArray.ObjectArray[i] as TINA226_ModuleShow).Free;
     Continue;
     end;
 
@@ -3266,8 +3328,8 @@ procedure TIVchar.ObjectsFree;
  var i:integer;
 begin
 
-//вносимо типи, для яких процедура Free переозначена
-//якщо переозначена у нащадка, то він має в цьому циклі зустрітися раніше предка
+//РІРЅРѕСЃРёРјРѕ С‚РёРїРё, РґР»СЏ СЏРєРёС… РїСЂРѕС†РµРґСѓСЂР° Free РїРµСЂРµРѕР·РЅР°С‡РµРЅР°
+//СЏРєС‰Рѕ РїРµСЂРµРѕР·РЅР°С‡РµРЅР° Сѓ РЅР°С‰Р°РґРєР°, С‚Рѕ РІС–РЅ РјР°С” РІ С†СЊРѕРјСѓ С†РёРєР»С– Р·СѓСЃС‚СЂС–С‚РёСЃСЏ СЂР°РЅС–С€Рµ РїСЂРµРґРєР°
   for i:=0 to High(AnyObjectArray.ObjectArray) do
   begin
 
@@ -3303,15 +3365,21 @@ begin
     end;
 
 
-   if (AnyObjectArray.ObjectArray[i] is TMCP3424_Channel) then
-    begin
-     (AnyObjectArray.ObjectArray[i] as TMCP3424_Channel).Free;
-     Continue;
-    end;
+//   if (AnyObjectArray.ObjectArray[i] is TMCP3424_Channel) then
+//    begin
+//     (AnyObjectArray.ObjectArray[i] as TMCP3424_Channel).Free;
+//     Continue;
+//    end;
 
-   if (AnyObjectArray.ObjectArray[i] is TADS1115_Channel) then
+//   if (AnyObjectArray.ObjectArray[i] is TADS1115_Channel) then
+//    begin
+//     (AnyObjectArray.ObjectArray[i] as TADS1115_Channel).Free;
+//     Continue;
+//    end;
+
+   if (AnyObjectArray.ObjectArray[i] is TArduinoADC_Channel) then
     begin
-     (AnyObjectArray.ObjectArray[i] as TADS1115_Channel).Free;
+     (AnyObjectArray.ObjectArray[i] as TArduinoADC_Channel).Free;
      Continue;
     end;
 
