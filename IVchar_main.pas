@@ -10,7 +10,7 @@ uses
   CPortCtl, Grids, Chart, TeeProcs, Series, TeEngine, ExtCtrls, Buttons,
   ComCtrls, CPort, StdCtrls, Dialogs, Controls, Classes, D30_06,Math, PID, 
   MDevice, Spin,HighResolutionTimer, MCP3424, ADS1115, ArduinoDeviceShow, 
-  AD9833, GDS_806S, MLX90615, OlegShowTypes, INA226;
+  AD9833, GDS_806S, MLX90615, OlegShowTypes, INA226, OlegTypePart2;
 
 const
   MeasIV='IV characteristic';
@@ -876,7 +876,7 @@ var
 implementation
 
 uses
-  ArduinoADC, OlegTypePart2;
+  ArduinoADC;
 
 {$R *.dfm}
 
@@ -3097,14 +3097,14 @@ begin
    if (ShowArray.ObjectArray[i] is TPinsShowUniversal) then
      begin
       (ShowArray.ObjectArray[i] as TPinsShowUniversal).ReadFromIniFile(ConfigFile);
-      (ShowArray.ObjectArray[i] as TPinsShowUniversal).NumberPinShow;
+//      (ShowArray.ObjectArray[i] as TPinsShowUniversal).NumberPinShow;
       Continue;
      end;
 
    if (ShowArray.ObjectArray[i] is TVoltmetrShow) then
      begin
-      (ShowArray.ObjectArray[i] as TVoltmetrShow).PinShow.ReadFromIniFile(ConfigFile);
-      (ShowArray.ObjectArray[i] as TVoltmetrShow).PinShow.NumberPinShow;
+      (ShowArray.ObjectArray[i] as TVoltmetrShow).ReadFromIniFile(ConfigFile);
+//      (ShowArray.ObjectArray[i] as TVoltmetrShow).PinShow.NumberPinShow;
       Continue;
      end;
    if (ShowArray.ObjectArray[i] is TPID_ParametersShow) then
@@ -3143,7 +3143,7 @@ end;
 procedure TIVchar.ShowObjectsWriteToIniFileAndFree;
   var i:integer;
 begin
-  ConfigFile.EraseSection(PID_Param);
+//  ConfigFile.EraseSection(PID_Param);
   ConfigFile.EraseSection(MD_IniSection);
   ConfigFile.EraseSection(RangeSection);
 
@@ -3177,12 +3177,12 @@ begin
 //    Continue;
 //    end;
 
-   if (ShowArray.ObjectArray[i] is TPID_ParametersShow) then
-    begin
-    (ShowArray.ObjectArray[i] as TPID_ParametersShow).WriteToIniFile(ConfigFile);
-    (ShowArray.ObjectArray[i] as TPID_ParametersShow).Free;
-    Continue;
-    end;
+//   if (ShowArray.ObjectArray[i] is TPID_ParametersShow) then
+//    begin
+//    (ShowArray.ObjectArray[i] as TPID_ParametersShow).WriteToIniFile(ConfigFile);
+//    (ShowArray.ObjectArray[i] as TPID_ParametersShow).Free;
+//    Continue;
+//    end;
 
 //   if (ShowArray.ObjectArray[i] is TMCP3424_ChannelShow) then
 //    begin
@@ -3205,46 +3205,46 @@ begin
 //    Continue;
 //    end;
 
-   if (ShowArray.ObjectArray[i] is TPinsShowUniversal) then
-    begin
-    (ShowArray.ObjectArray[i] as TPinsShowUniversal).WriteToIniFile(ConfigFile);
-    (ShowArray.ObjectArray[i] as TPinsShowUniversal).Free;
-    Continue;
-    end;
+//   if (ShowArray.ObjectArray[i] is TPinsShowUniversal) then
+//    begin
+//    (ShowArray.ObjectArray[i] as TPinsShowUniversal).WriteToIniFile(ConfigFile);
+//    (ShowArray.ObjectArray[i] as TPinsShowUniversal).Free;
+//    Continue;
+//    end;
 
-   if (ShowArray.ObjectArray[i] is TVoltmetrShow) then
-     begin
-      (ShowArray.ObjectArray[i] as TVoltmetrShow).PinShow.WriteToIniFile(ConfigFile);
-      (ShowArray.ObjectArray[i] as TVoltmetrShow).Free;
-      Continue;
-     end;
+//   if (ShowArray.ObjectArray[i] is TVoltmetrShow) then
+//     begin
+//      (ShowArray.ObjectArray[i] as TVoltmetrShow).WriteToIniFile(ConfigFile);
+//      (ShowArray.ObjectArray[i] as TVoltmetrShow).Free;
+//      Continue;
+//     end;
 
-   if (ShowArray.ObjectArray[i] is TUT70BShow) then
-    begin
-     (ShowArray.ObjectArray[i] as TUT70BShow).Free;
-     Continue;
-    end;
+//   if (ShowArray.ObjectArray[i] is TUT70BShow) then
+//    begin
+//     (ShowArray.ObjectArray[i] as TUT70BShow).Free;
+//     Continue;
+//    end;
 
 
-   if (ShowArray.ObjectArray[i] is TET1255_ModuleAndChan) then
-    begin
-    (ShowArray.ObjectArray[i] as TET1255_ModuleAndChan).WriteToIniFile(ConfigFile);
-    (ShowArray.ObjectArray[i] as TET1255_ModuleAndChan).Free;
-    Continue;
-    end;
+//   if (ShowArray.ObjectArray[i] is TET1255_ModuleAndChan) then
+//    begin
+//    (ShowArray.ObjectArray[i] as TET1255_ModuleAndChan).WriteToIniFile(ConfigFile);
+//    (ShowArray.ObjectArray[i] as TET1255_ModuleAndChan).Free;
+//    Continue;
+//    end;
 
-   if (ShowArray.ObjectArray[i] is TET1255_ADCShow) then
-     begin
-      (ShowArray.ObjectArray[i] as TET1255_ADCShow).Free;
-      Continue;
-     end;
+//   if (ShowArray.ObjectArray[i] is TET1255_ADCShow) then
+//     begin
+//      (ShowArray.ObjectArray[i] as TET1255_ADCShow).Free;
+//      Continue;
+//     end;
 
-   if (ShowArray.ObjectArray[i] is TMLX90615Show) then
-    begin
-    (ShowArray.ObjectArray[i] as TMLX90615Show).WriteToIniFile(ConfigFile);
-    (ShowArray.ObjectArray[i] as TMLX90615Show).Free;
-    Continue;
-    end;
+//   if (ShowArray.ObjectArray[i] is TMLX90615Show) then
+//    begin
+//    (ShowArray.ObjectArray[i] as TMLX90615Show).WriteToIniFile(ConfigFile);
+//    (ShowArray.ObjectArray[i] as TMLX90615Show).Free;
+//    Continue;
+//    end;
 
    if (ShowArray.ObjectArray[i] is TSimpleFreeAndAiniObject) then
     begin

@@ -109,7 +109,7 @@ type
     procedure Execute; override;
   end;
 
- TET1255_Module=class(TInterfacedObject)
+ TET1255_Module=class(TSimpleFreeAndAiniObject)
   private
     FStartByProgr: boolean;
     FActiveChannel: TET1255_ADC_ChanelNumber;
@@ -205,9 +205,9 @@ end;
    constructor Create();
    function GetData:double;
    procedure GetDataThread(WPARAM: word; EventEnd:THandle);
-   procedure Free;
-   procedure WriteToIniFile(ConfigFile: TIniFile);
-   procedure ReadFromIniFile(ConfigFile:TIniFile);
+   procedure Free;override;
+   procedure WriteToIniFile(ConfigFile: TIniFile);override;
+   procedure ReadFromIniFile(ConfigFile:TIniFile);override;
  end;
 
  TET1255_ADCShow=class(TMeasurementShow)
@@ -238,7 +238,7 @@ end;
                       CBSer:TCheckBox;
                       Gr: TCustomSeries
                       );
-    procedure Free;
+//    procedure Free;
     procedure MetterDataShow();override;
  end;
 
@@ -822,10 +822,10 @@ begin
   SEMeasurementNumber.Value:=SEGain.MinValue;
 end;
 
-procedure TET1255_ADCShow.Free;
-begin
-
-end;
+//procedure TET1255_ADCShow.Free;
+//begin
+//
+//end;
 
 procedure TET1255_ADCShow.FromActiveChannelToVisualElement;
 begin

@@ -209,7 +209,7 @@ TRS232MetterShow=class(TMeasurementShow)
                       AB:TSpeedButton;
                       TT:TTimer
                       );
-   Procedure Free; virtual;
+   Procedure Free; override;
    procedure MetterDataShow();override;
 end;
 

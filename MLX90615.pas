@@ -4,7 +4,7 @@ interface
 
 uses
   TemperatureSensor, CPort, IniFiles, StdCtrls, ShowTypes, MDevice, 
-  Measurement, OlegShowTypes;
+  Measurement, OlegShowTypes, OlegTypePart2;
 
 type
 
@@ -42,7 +42,7 @@ type
    procedure Calibration(TempSensor:ITemperatureMeasurement);
   end;
 
- TMLX90615Show=class
+ TMLX90615Show=class(TSimpleFreeAndAiniObject)
   private
    fMLX90615:TMLX90615;
    fGrayScaleShow:TDoubleParameterShow;
@@ -56,9 +56,9 @@ type
                       STGrayC:TStaticText;
                       BRead,BWrite,Bcalibr:TButton;
                       TTemp_MD:TTemperature_MD);
-   procedure Free;
-   procedure ReadFromIniFile(ConfigFile:TIniFile);
-   procedure WriteToIniFile(ConfigFile:TIniFile);
+   procedure Free;override;
+   procedure ReadFromIniFile(ConfigFile:TIniFile);override;
+   procedure WriteToIniFile(ConfigFile:TIniFile);override;
  end;
 
 implementation

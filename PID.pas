@@ -3,23 +3,23 @@ unit PID;
 interface
 
 uses
-  ShowTypes, Windows, StdCtrls, IniFiles, OlegShowTypes;
+  ShowTypes, Windows, StdCtrls, IniFiles, OlegShowTypes, OlegTypePart2;
 
-const
-      PID_Param='PID_Parameters';
+//const
+//      PID_Param='PID_Parameters';
 
 type
 
 TPID_Parameters=(ppKp,ppKi,ppKd,ppNV,ppTol);
 
-TPID_ParametersShow=class
+TPID_ParametersShow=class(TNamedInterfacedObject)
   private
-    FName: string;
+//    FName: string;
     fParameterShow:array[TPID_Parameters]of TDoubleParameterShow;
-    procedure SetName(const Value: string);
+//    procedure SetName(const Value: string);
     function GetParameter(Index:TPID_Parameters):double;
  public
-  property Name:string read FName write SetName;
+//  property Name:string read FName{ write SetName};
   property Kp:double Index ppKp read GetParameter;
   property Ki:double Index ppKi read GetParameter;
   property Kd:double Index ppKd read GetParameter;
@@ -28,9 +28,9 @@ TPID_ParametersShow=class
   Constructor Create(Name:string;
                      STKp,STKi,STKd,STNV,STTol:TStaticText;
                      LKp,LKi,LKd,LNV,LTol:TLabel);
-  procedure WriteToIniFile(ConfigFile:TIniFile);
-  procedure ReadFromIniFile(ConfigFile:TIniFile);
-  procedure Free;
+  procedure WriteToIniFile(ConfigFile:TIniFile);override;
+  procedure ReadFromIniFile(ConfigFile:TIniFile);override;
+//  procedure Free;override;
 end;
 
 TPID=class
@@ -180,10 +180,11 @@ begin
    fParameterShow[i].SetName(FName);
 end;
 
-procedure TPID_ParametersShow.Free;
-begin
-// inherited;
-end;
+//procedure TPID_ParametersShow.Free;
+//begin
+// HelpForMe(Name);
+//// inherited;
+//end;
 
 function TPID_ParametersShow.GetParameter(Index: TPID_Parameters): double;
 begin
@@ -201,10 +202,10 @@ begin
 
 end;
 
-procedure TPID_ParametersShow.SetName(const Value: string);
-begin
-  FName := Value;
-end;
+//procedure TPID_ParametersShow.SetName(const Value: string);
+//begin
+//  FName := Value;
+//end;
 
 procedure TPID_ParametersShow.WriteToIniFile(ConfigFile: TIniFile);
  var i:TPID_Parameters;

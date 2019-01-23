@@ -104,7 +104,7 @@ public
 end;
 
 
-TMeasurementShowSimple=class
+TMeasurementShowSimple=class(TSimpleFreeAndAiniObject)
   protected
    fMeter:IMeasurement;
    DataLabel,UnitLabel:TLabel;

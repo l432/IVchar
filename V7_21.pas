@@ -4,7 +4,7 @@ interface
 
 uses
   ArduinoDevice, ExtCtrls, StdCtrls, Buttons, RS232device, CPort, Classes, 
-  ArduinoDeviceShow;
+  ArduinoDeviceShow, IniFiles;
 
 
 
@@ -74,8 +74,8 @@ type
 
   TVoltmetrShow=class(TRS232MetterShow)
   protected
-  public
    PinShow:TPinsShow;
+  public
    Constructor Create(V:TVoltmetr;
                       MM,R:TRadioGroup;
                       DL,UL: TLabel;
@@ -87,6 +87,8 @@ type
    Procedure Free; override;
    procedure NumberPinShow();
    procedure ButtonEnabled();
+   procedure ReadFromIniFile(ConfigFile: TIniFile);override;//virtual;
+   procedure WriteToIniFile(ConfigFile: TIniFile);override;//virtual;
   end;
 
 implementation
@@ -407,6 +409,16 @@ procedure TVoltmetrShow.NumberPinShow();
 begin
  PinShow.NumberPinShow();
  ButtonEnabled();
+end;
+
+procedure TVoltmetrShow.ReadFromIniFile(ConfigFile: TIniFile);
+begin
+ PinShow.ReadFromIniFile(ConfigFile);
+end;
+
+procedure TVoltmetrShow.WriteToIniFile(ConfigFile: TIniFile);
+begin
+ PinShow.WriteToIniFile(ConfigFile);
 end;
 
 procedure TVoltmetrShow.ButtonEnabled();

@@ -691,7 +691,6 @@ end;
 procedure TPinsShowUniversal.Free;
  var i:byte;
 begin
-//  HelpForMe(Pins.Name);
  for I := 0 to High(fPinVariants) do
    begin
    fPinVariants[i]:=nil;
@@ -712,12 +711,11 @@ procedure TPinsShowUniversal.ReadFromIniFile(ConfigFile: TIniFile);
 begin
 //  showmessage(Pins.fName);
   Pins.ReadFromIniFile(ConfigFile,fPinVariants);
+  NumberPinShow();
 end;
 
 procedure TPinsShowUniversal.WriteToIniFile(ConfigFile: TIniFile);
 begin
-
-// showmessage(Pins.fName);
  Pins.WriteToIniFile(ConfigFile,fPinVariants);
 end;
 
