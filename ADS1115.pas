@@ -137,7 +137,7 @@ TPins_ADS1115_Chanel=class(TPinsForCustomValues)
                        LabelBit,LabelGain:TPanel;
                        LabelMeas:TLabel;
                        ButMeas:TButton);
-   Procedure Free;
+   Procedure Free;override;
  end;
 
 
@@ -354,6 +354,7 @@ end;
 
 procedure TADS1115_ChannelShow.Free;
 begin
+//  HelpForMe(Pins.Name+Pins.Name+Pins.Name);
   MeasuringDeviceSimple.Free;
   inherited Free;
 end;

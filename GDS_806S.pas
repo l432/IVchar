@@ -201,7 +201,7 @@ type
     DataVectors:array[TGDS_Channel]of PVector;
     property ActiveChannel:TGDS_Channel read FActiveChannel write FActiveChannel;
     Constructor Create(CP:TComPort;Nm:string);
-    procedure Free;
+    procedure Free;override;
     procedure Request();override;
 
     procedure SetMode(mode: Byte);overload;
@@ -280,7 +280,7 @@ TGDS_806S_Channel=class(TNamedInterfacedObject,IMeasurement)
  property MeasureModeLabel:string read GetMeasureModeLabel;
  constructor Create(ChanelNumber:TGDS_Channel;
                      GDS_806S:TGDS_806S);
- procedure Free;
+// procedure Free;
  function GetData:double;
  procedure GetDataThread(WPARAM: word; EventEnd:THandle);
  procedure SetMeasType(MType:byte);overload;
@@ -302,7 +302,7 @@ TGDS_Chan_Show=class(TMeasurementShowSimple)
 end;
 
 
- TGDS_806S_Show=class
+ TGDS_806S_Show=class(TSimpleFreeAndAiniObject)
    private
     fGDS_806S:TGDS_806S;
     fSettingsShow:array[TGDS_Settings]of TStringParameterShow;
@@ -377,9 +377,9 @@ end;
                        Gr:array of TCustomSeries;
                        VecRG:TRadioGroup
                        );
-    Procedure Free;
-    procedure ReadFromIniFile(ConfigFile:TIniFile);
-    procedure WriteToIniFile(ConfigFile:TIniFile);
+    Procedure Free;override;
+    procedure ReadFromIniFile(ConfigFile:TIniFile);override;
+    procedure WriteToIniFile(ConfigFile:TIniFile);override;
     procedure SettingToObject;
     procedure ObjectToSetting;
  end;
@@ -480,8 +480,10 @@ end;
 procedure TGDS_806S.Free;
  var j:TGDS_Channel;
 begin
+// HelpForMe(Name+Name);
  for j := Low(TGDS_Channel) to High(TGDS_Channel) do
      dispose(DataVectors[j]);
+ inherited Free;    
 end;
 
 function TGDS_806S.GetAverageNumber: boolean;
@@ -1645,10 +1647,10 @@ begin
  fParentModule:=GDS_806S;
 end;
 
-procedure TGDS_806S_Channel.Free;
-begin
-
-end;
+//procedure TGDS_806S_Channel.Free;
+//begin
+//
+//end;
 
 function TGDS_806S_Channel.GetData: double;
 begin

@@ -41,7 +41,7 @@ TRS232Device=class(TNamedInterfacedObject)
    Constructor Create();overload;
    Constructor Create(CP:TComPort);overload;
    Constructor Create(CP:TComPort;Nm:string);overload;//virtual;
-   Procedure Free;
+   Procedure Free;override;//virtual;
    procedure ComPortUsing();virtual;
    procedure isNeededComPortState();
   end;
@@ -226,6 +226,8 @@ Procedure PortBeginAction(Port:TComPort;Lab:TLabel;Button: TButton);
 Procedure PortEndAction(Port:TComPort);
 
 
+
+
 implementation
 
 uses
@@ -268,6 +270,7 @@ end;
 
 procedure TRS232Device.Free;
 begin
+// HelpForMe(Name);
  fComPacket.Free;
 end;
 
@@ -721,6 +724,7 @@ function TRS232ConvertData.GetValue: double;
 begin
  Result:=fValue;
 end;
+
 
 initialization
   EventComPortFree := CreateEvent(nil,

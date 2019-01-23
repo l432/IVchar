@@ -167,7 +167,7 @@ TET1255_ADCChannel=class(TNamedInterfacedObject,IMeasurement)
   function GetData:double;
   constructor Create(ChanelNumber:TET1255_ADC_ChanelNumber;
                      ET1255_Module:TET1255_Module);
-  procedure Free;
+  procedure Free;override;
   function SetGain(Value: TET1255_ADC_Gain):boolean;
   function SetFrequency_Takt(const Value: TET1255_Frequency_Tackt):boolean;
   function MeasuringStart():boolean;
@@ -176,8 +176,8 @@ TET1255_ADCChannel=class(TNamedInterfacedObject,IMeasurement)
   procedure PrepareToMeasurement;
   procedure ResultRead();
   procedure GetDataThread(WPARAM: word;EventEnd:THandle);
-  procedure WriteToIniFile(ConfigFile: TIniFile);
-  procedure ReadFromIniFile(ConfigFile:TIniFile);
+  procedure WriteToIniFile(ConfigFile: TIniFile);override;
+  procedure ReadFromIniFile(ConfigFile:TIniFile);override;
 end;
 
   TET1255_Chanel_MeasuringTread = class(TMeasuringTread)
@@ -250,11 +250,11 @@ end;
   function GetOutputValue:double;
  public
    property OutputValue:double read GetOutputValue;
-   procedure Output(Value:double);virtual;
-   procedure OutputInt(Kod:integer); virtual;
-   Procedure Reset();     virtual;
+   procedure Output(Value:double);//virtual;
+   procedure OutputInt(Kod:integer); //virtual;
+   Procedure Reset();    // virtual;
    Constructor Create(ChanelNumber:TET1255_DAC_ChanelNumber);
-   procedure Free;
+//   procedure Free;override;
  end;
 
 implementation
@@ -277,10 +277,10 @@ begin
  end;
 end;
 
-procedure TET1255_DAC.Free;
-begin
-
-end;
+//procedure TET1255_DAC.Free;
+//begin
+//  HelpForMe(Name);
+//end;
 
 function TET1255_DAC.GetOutputValue: double;
 begin

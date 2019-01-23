@@ -203,7 +203,7 @@ end;
 
 procedure TArduinoSetterShow.ReadFromIniFile(ConfigFile: TIniFile);
 begin
- PinShow.PinsReadFromIniFile(ConfigFile);
+ PinShow.ReadFromIniFile(ConfigFile);
 end;
 
 procedure TArduinoSetterShow.ReadFromIniFileAndToForm(ConfigFile: TIniFile);
@@ -214,7 +214,7 @@ end;
 
 procedure TArduinoSetterShow.WriteToIniFile(ConfigFile: TIniFile);
 begin
-  PinShow.PinsWriteToIniFile(ConfigFile);
+  PinShow.WriteToIniFile(ConfigFile);
 end;
 
 end.

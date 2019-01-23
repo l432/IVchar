@@ -2,7 +2,7 @@ unit ArduinoDevice;
 
 interface
  uses OlegType,CPort,SysUtils,Classes,PacketParameters,
-      StdCtrls, IniFiles, RS232device, ExtCtrls, Measurement;
+      StdCtrls, IniFiles, RS232device, ExtCtrls, Measurement, OlegTypePart2;
 
 const
   UndefinedPin=255;
@@ -77,15 +77,14 @@ type
   end;
 
 
-  TPinsShowUniversal=class
+  TPinsShowUniversal=class(TSimpleFreeAndAiniObject)
   protected
    fHookNumberPinShow: TSimpleEvent;
    PinLabels:array of TPanel;
    fPinVariants:array of TStringList;
    procedure CreateFooter;virtual;
-    procedure SetVariants(Index: byte; const S: TStringList);
+   procedure SetVariants(Index: byte; const S: TStringList);
   public
-//   fPinVariants:array of TStringList;
    Pins:TPins;
    property HookNumberPinShow:TSimpleEvent read fHookNumberPinShow write fHookNumberPinShow;
    property PinVariants[Index: byte]: TStringList write SetVariants;
@@ -97,10 +96,10 @@ type
    Constructor Create(Ps:TPins;
                       PinLs:array of TPanel;
                       PinVarSingle: TStringList);overload;
-   procedure PinsReadFromIniFile(ConfigFile:TIniFile);virtual;
-   procedure PinsWriteToIniFile(ConfigFile:TIniFile);virtual;
+   procedure ReadFromIniFile(ConfigFile:TIniFile);override;//virtual;
+   procedure WriteToIniFile(ConfigFile:TIniFile);override;//virtual;
    procedure NumberPinShow();virtual;
-   procedure Free();
+   procedure Free();override;//virtual;
    procedure VariantsShowAndSelect(Sender: TObject);
   end;
 
@@ -112,7 +111,7 @@ type
   public
    Pins:TPins;
    Constructor Create(CP:TComPort;Nm:string);//override;
-   procedure Free;
+   procedure Free;override;
   end;
 
  TArduinoPinChanger=class(TArduinoRS232Device)
@@ -138,7 +137,7 @@ type
   public
    Pins:TPins;
    Constructor Create(CP:TComPort;Nm:string);//override;
-   Procedure Free;
+   Procedure Free;override;
   end;
 
 
@@ -155,7 +154,7 @@ type
   public
    Pins:TPins;
    Constructor Create(CP:TComPort;Nm:string);//override;
-   Procedure Free;
+   Procedure Free;override;
    procedure PinsToDataArray;virtual;   
   end;
 
@@ -194,7 +193,7 @@ type
 implementation
 
 uses
-  Math, Forms, Graphics, Controls, OlegFunction;
+  Math, Forms, Graphics, Controls, OlegFunction, Dialogs;
 
 
 { TArduinoMeter }
@@ -211,6 +210,7 @@ end;
 
 procedure TArduinoMeter.Free;
 begin
+//   HelpForMe(Name+Name);
  Pins.Free;
  inherited Free;
 end;
@@ -509,6 +509,7 @@ end;
 
 procedure TArduinoRS232Device.Free;
 begin
+//  HelpForMe(Name+Name);
  Pins.Free;
  inherited Free;
 end;
@@ -690,6 +691,7 @@ end;
 procedure TPinsShowUniversal.Free;
  var i:byte;
 begin
+//  HelpForMe(Pins.Name);
  for I := 0 to High(fPinVariants) do
    begin
    fPinVariants[i]:=nil;
@@ -706,13 +708,16 @@ begin
    HookNumberPinShow;
 end;
 
-procedure TPinsShowUniversal.PinsReadFromIniFile(ConfigFile: TIniFile);
+procedure TPinsShowUniversal.ReadFromIniFile(ConfigFile: TIniFile);
 begin
+//  showmessage(Pins.fName);
   Pins.ReadFromIniFile(ConfigFile,fPinVariants);
 end;
 
-procedure TPinsShowUniversal.PinsWriteToIniFile(ConfigFile: TIniFile);
+procedure TPinsShowUniversal.WriteToIniFile(ConfigFile: TIniFile);
 begin
+
+// showmessage(Pins.fName);
  Pins.WriteToIniFile(ConfigFile,fPinVariants);
 end;
 
@@ -836,5 +841,8 @@ begin
                               else
    Result:=PinValueToStr(Index);
 end;
+
+
+
 
 end.

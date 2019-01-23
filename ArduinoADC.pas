@@ -47,7 +47,7 @@ type
   Pins:TPins;
   property Value:double read GetValue;
   Constructor Create(ChanelNumber: byte; Module: TArduinoADC_Module);//override;
-  Procedure Free;
+  Procedure Free;override;
   function GetData:double;
   procedure GetDataThread(WPARAM: word; EventEnd:THandle);
  end;

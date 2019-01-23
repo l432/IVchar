@@ -126,9 +126,9 @@ type
                        PanelAdress,PanelAverages:TPanel;
                        LabelRsh:TLabel;
                        STRsh:TStaticText);
-    procedure PinsReadFromIniFile(ConfigFile:TIniFile);override;
-    procedure PinsWriteToIniFile(ConfigFile:TIniFile);override;
-    Procedure Free;
+    procedure ReadFromIniFile(ConfigFile:TIniFile);override;
+    procedure WriteToIniFile(ConfigFile:TIniFile);override;
+    Procedure Free;override;
  end;
 
 //
@@ -169,7 +169,7 @@ type
 implementation
 
 uses
-  Math, OlegType, PacketParameters, SysUtils;
+  Math, OlegType, PacketParameters, SysUtils, Dialogs;
 
 //{ TPins_ADS1115_Chanel }
 //
@@ -467,6 +467,7 @@ end;
 
 procedure TINA226_ModuleShow.Free;
 begin
+//  HelpForMe(Pins.Name+Pins.Name+Pins.Name);
   fRshShow.Free;
   inherited Free;
 end;
@@ -485,16 +486,18 @@ begin
 
 end;
 
-procedure TINA226_ModuleShow.PinsReadFromIniFile(ConfigFile: TIniFile);
+procedure TINA226_ModuleShow.ReadFromIniFile(ConfigFile: TIniFile);
 begin
-  inherited PinsReadFromIniFile(ConfigFile);
+  inherited ReadFromIniFile(ConfigFile);
   fRshShow.ReadFromIniFile(ConfigFile);
+//  showmessage(Pins.Name+Pins.Name);
 end;
 
-procedure TINA226_ModuleShow.PinsWriteToIniFile(ConfigFile: TIniFile);
+procedure TINA226_ModuleShow.WriteToIniFile(ConfigFile: TIniFile);
 begin
-  inherited PinsWriteToIniFile(ConfigFile);
+  inherited WriteToIniFile(ConfigFile);
   fRshShow.WriteToIniFile(ConfigFile);
+//  HelpForMe(Pins.Name+Pins.Name);
 end;
 
 end.

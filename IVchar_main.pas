@@ -21,7 +21,7 @@ const
   MeasTempOnTime='Temperature on time';
   MeasIscAndVocOnTime='Voc and Isc on time';
 
-  MD_IniSection='Sources';
+//  MD_IniSection='Sources';
 
   IscVocTimeToWait=1000;
 
@@ -876,7 +876,7 @@ var
 implementation
 
 uses
-  ArduinoADC;
+  ArduinoADC, OlegTypePart2;
 
 {$R *.dfm}
 
@@ -3074,29 +3074,36 @@ procedure TIVchar.ShowObjectsReadFromIniFileAndToForm;
 begin
  for i:=0 to High(ShowArray.ObjectArray) do
   begin
-   if (ShowArray.ObjectArray[i] is TLimitShow) then
+//   if (ShowArray.ObjectArray[i] is TLimitShow) then
+//     begin
+//      (ShowArray.ObjectArray[i] as TLimitShow).ReadFromIniFile(ConfigFile);
+//      Continue;
+//     end;
+
+   if (ShowArray.ObjectArray[i] is TSimpleFreeAndAiniObject) then
      begin
-      (ShowArray.ObjectArray[i] as TLimitShow).ReadFromIniFile(ConfigFile);
+      (ShowArray.ObjectArray[i] as TSimpleFreeAndAiniObject).ReadFromIniFile(ConfigFile);
       Continue;
      end;
 
-   if (ShowArray.ObjectArray[i] is TINA226_ModuleShow) then
-     begin
-      (ShowArray.ObjectArray[i] as TINA226_ModuleShow).PinsReadFromIniFile(ConfigFile);
-      (ShowArray.ObjectArray[i] as TINA226_ModuleShow).NumberPinShow;
-      Continue;
-     end;
+
+//   if (ShowArray.ObjectArray[i] is TINA226_ModuleShow) then
+//     begin
+//      (ShowArray.ObjectArray[i] as TINA226_ModuleShow).PinsReadFromIniFile(ConfigFile);
+//      (ShowArray.ObjectArray[i] as TINA226_ModuleShow).NumberPinShow;
+//      Continue;
+//     end;
 
    if (ShowArray.ObjectArray[i] is TPinsShowUniversal) then
      begin
-      (ShowArray.ObjectArray[i] as TPinsShowUniversal).PinsReadFromIniFile(ConfigFile);
+      (ShowArray.ObjectArray[i] as TPinsShowUniversal).ReadFromIniFile(ConfigFile);
       (ShowArray.ObjectArray[i] as TPinsShowUniversal).NumberPinShow;
       Continue;
      end;
 
    if (ShowArray.ObjectArray[i] is TVoltmetrShow) then
      begin
-      (ShowArray.ObjectArray[i] as TVoltmetrShow).PinShow.PinsReadFromIniFile(ConfigFile);
+      (ShowArray.ObjectArray[i] as TVoltmetrShow).PinShow.ReadFromIniFile(ConfigFile);
       (ShowArray.ObjectArray[i] as TVoltmetrShow).PinShow.NumberPinShow;
       Continue;
      end;
@@ -3108,7 +3115,7 @@ begin
 
    if (ShowArray.ObjectArray[i] is TDevice) then
      begin
-      (ShowArray.ObjectArray[i] as TDevice).ReadFromIniFile(ConfigFile,MD_IniSection);
+      (ShowArray.ObjectArray[i] as TDevice).ReadFromIniFile(ConfigFile);
       Continue;
      end;
 
@@ -3142,33 +3149,33 @@ begin
 
  for i:=0 to High(ShowArray.ObjectArray) do
   begin
-   if (ShowArray.ObjectArray[i] is TLimitShow) then
-    begin
-    (ShowArray.ObjectArray[i] as TLimitShow).WriteToIniFile(ConfigFile);
-    (ShowArray.ObjectArray[i] as TLimitShow).Free;
-    Continue;
-    end;
+//   if (ShowArray.ObjectArray[i] is TLimitShow) then
+//    begin
+//    (ShowArray.ObjectArray[i] as TLimitShow).WriteToIniFile(ConfigFile);
+//    (ShowArray.ObjectArray[i] as TLimitShow).Free;
+//    Continue;
+//    end;
 
-   if (ShowArray.ObjectArray[i] is TDAC_Show) then
-    begin
-    (ShowArray.ObjectArray[i] as TDAC_Show).WriteToIniFile(ConfigFile);
-    (ShowArray.ObjectArray[i] as TDAC_Show).Free;
-    Continue;
-    end;
+//   if (ShowArray.ObjectArray[i] is TDAC_Show) then
+//    begin
+//    (ShowArray.ObjectArray[i] as TDAC_Show).WriteToIniFile(ConfigFile);
+//    (ShowArray.ObjectArray[i] as TDAC_Show).Free;
+//    Continue;
+//    end;
 
-   if (ShowArray.ObjectArray[i] is TGDS_806S_Show) then
-    begin
-    (ShowArray.ObjectArray[i] as TGDS_806S_Show).WriteToIniFile(ConfigFile);
-    (ShowArray.ObjectArray[i] as TGDS_806S_Show).Free;
-    Continue;
-    end;
+//   if (ShowArray.ObjectArray[i] is TGDS_806S_Show) then
+//    begin
+//    (ShowArray.ObjectArray[i] as TGDS_806S_Show).WriteToIniFile(ConfigFile);
+//    (ShowArray.ObjectArray[i] as TGDS_806S_Show).Free;
+//    Continue;
+//    end;
 
-   if (ShowArray.ObjectArray[i] is TDevice) then
-    begin
-    (ShowArray.ObjectArray[i] as TDevice).WriteToIniFile(ConfigFile,MD_IniSection);
-    (ShowArray.ObjectArray[i] as TDevice).Free;
-    Continue;
-    end;
+//   if (ShowArray.ObjectArray[i] is TDevice) then
+//    begin
+//    (ShowArray.ObjectArray[i] as TDevice).WriteToIniFile(ConfigFile);
+//    (ShowArray.ObjectArray[i] as TDevice).Free;
+//    Continue;
+//    end;
 
    if (ShowArray.ObjectArray[i] is TPID_ParametersShow) then
     begin
@@ -3177,37 +3184,37 @@ begin
     Continue;
     end;
 
-   if (ShowArray.ObjectArray[i] is TMCP3424_ChannelShow) then
-    begin
-    (ShowArray.ObjectArray[i] as TMCP3424_ChannelShow).PinsWriteToIniFile(ConfigFile);
-    (ShowArray.ObjectArray[i] as TMCP3424_ChannelShow).Free;
-    Continue;
-    end;
+//   if (ShowArray.ObjectArray[i] is TMCP3424_ChannelShow) then
+//    begin
+//    (ShowArray.ObjectArray[i] as TMCP3424_ChannelShow).PinsWriteToIniFile(ConfigFile);
+//    (ShowArray.ObjectArray[i] as TMCP3424_ChannelShow).Free;
+//    Continue;
+//    end;
+//
+//   if (ShowArray.ObjectArray[i] is TADS1115_ChannelShow) then
+//    begin
+//    (ShowArray.ObjectArray[i] as TADS1115_ChannelShow).PinsWriteToIniFile(ConfigFile);
+//    (ShowArray.ObjectArray[i] as TADS1115_ChannelShow).Free;
+//    Continue;
+//    end;
 
-   if (ShowArray.ObjectArray[i] is TADS1115_ChannelShow) then
-    begin
-    (ShowArray.ObjectArray[i] as TADS1115_ChannelShow).PinsWriteToIniFile(ConfigFile);
-    (ShowArray.ObjectArray[i] as TADS1115_ChannelShow).Free;
-    Continue;
-    end;
-
-   if (ShowArray.ObjectArray[i] is TINA226_ModuleShow) then
-    begin
-    (ShowArray.ObjectArray[i] as TINA226_ModuleShow).PinsWriteToIniFile(ConfigFile);
-    (ShowArray.ObjectArray[i] as TINA226_ModuleShow).Free;
-    Continue;
-    end;
+//   if (ShowArray.ObjectArray[i] is TINA226_ModuleShow) then
+//    begin
+//    (ShowArray.ObjectArray[i] as TINA226_ModuleShow).PinsWriteToIniFile(ConfigFile);
+//    (ShowArray.ObjectArray[i] as TINA226_ModuleShow).Free;
+//    Continue;
+//    end;
 
    if (ShowArray.ObjectArray[i] is TPinsShowUniversal) then
     begin
-    (ShowArray.ObjectArray[i] as TPinsShowUniversal).PinsWriteToIniFile(ConfigFile);
+    (ShowArray.ObjectArray[i] as TPinsShowUniversal).WriteToIniFile(ConfigFile);
     (ShowArray.ObjectArray[i] as TPinsShowUniversal).Free;
     Continue;
     end;
 
    if (ShowArray.ObjectArray[i] is TVoltmetrShow) then
      begin
-      (ShowArray.ObjectArray[i] as TVoltmetrShow).PinShow.PinsWriteToIniFile(ConfigFile);
+      (ShowArray.ObjectArray[i] as TVoltmetrShow).PinShow.WriteToIniFile(ConfigFile);
       (ShowArray.ObjectArray[i] as TVoltmetrShow).Free;
       Continue;
      end;
@@ -3239,6 +3246,12 @@ begin
     Continue;
     end;
 
+   if (ShowArray.ObjectArray[i] is TSimpleFreeAndAiniObject) then
+    begin
+    (ShowArray.ObjectArray[i] as TSimpleFreeAndAiniObject).WriteToIniFile(ConfigFile);
+    (ShowArray.ObjectArray[i] as TSimpleFreeAndAiniObject).Free;
+    Continue;
+    end;
 
    ShowArray.ObjectArray[i].Free;
   end;
@@ -3330,64 +3343,72 @@ begin
 
 //вносимо типи, для яких процедура Free переозначена
 //якщо переозначена у нащадка, то він має в цьому циклі зустрітися раніше предка
+//насправді треба у нащадка позначити override
   for i:=0 to High(AnyObjectArray.ObjectArray) do
   begin
 
    if (AnyObjectArray.ObjectArray[i] is TET1255_DAC) then
-    begin
+//    begin
     (AnyObjectArray.ObjectArray[i] as TET1255_DAC).Reset();
-    (AnyObjectArray.ObjectArray[i] as TET1255_DAC).Free();
-     Continue;
-    end;
-
-   if (AnyObjectArray.ObjectArray[i] is TGDS_806S) then
-    begin
-    (AnyObjectArray.ObjectArray[i] as TGDS_806S).Free;
-    Continue;
-    end;
-
-   if (AnyObjectArray.ObjectArray[i] is TArduinoMeter) then
-    begin
-    (AnyObjectArray.ObjectArray[i] as TArduinoMeter).Free;
-    Continue;
-    end;
-
-   if (AnyObjectArray.ObjectArray[i] is TArduinoRS232Device) then
-    begin
-    (AnyObjectArray.ObjectArray[i] as TArduinoRS232Device).Free;
-    Continue;
-    end;
-
-   if (AnyObjectArray.ObjectArray[i] is TRS232Device) then
-    begin
-     (AnyObjectArray.ObjectArray[i] as TRS232Device).Free;
-     Continue;
-    end;
-
-
-//   if (AnyObjectArray.ObjectArray[i] is TMCP3424_Channel) then
-//    begin
-//     (AnyObjectArray.ObjectArray[i] as TMCP3424_Channel).Free;
+//    (AnyObjectArray.ObjectArray[i] as TET1255_DAC).Free();
 //     Continue;
 //    end;
 
-//   if (AnyObjectArray.ObjectArray[i] is TADS1115_Channel) then
+////   if (AnyObjectArray.ObjectArray[i] is TGDS_806S) then
+////    begin
+////    (AnyObjectArray.ObjectArray[i] as TGDS_806S).Free;
+////    Continue;
+////    end;
+//
+////   if (AnyObjectArray.ObjectArray[i] is TArduinoMeter) then
+////    begin
+////    (AnyObjectArray.ObjectArray[i] as TArduinoMeter).Free;
+////    Continue;
+////    end;
+//
+////   if (AnyObjectArray.ObjectArray[i] is TArduinoRS232Device) then
+////    begin
+////    (AnyObjectArray.ObjectArray[i] as TArduinoRS232Device).Free;
+////    Continue;
+////    end;
+//
+//   if (AnyObjectArray.ObjectArray[i] is TRS232Device) then
 //    begin
-//     (AnyObjectArray.ObjectArray[i] as TADS1115_Channel).Free;
+//     (AnyObjectArray.ObjectArray[i] as TRS232Device).Free;
+//     Continue;
+//    end;
+//
+//
+////   if (AnyObjectArray.ObjectArray[i] is TMCP3424_Channel) then
+////    begin
+////     (AnyObjectArray.ObjectArray[i] as TMCP3424_Channel).Free;
+////     Continue;
+////    end;
+//
+////   if (AnyObjectArray.ObjectArray[i] is TADS1115_Channel) then
+////    begin
+////     (AnyObjectArray.ObjectArray[i] as TADS1115_Channel).Free;
+////     Continue;
+////    end;
+//
+//   if (AnyObjectArray.ObjectArray[i] is TArduinoADC_Channel) then
+//    begin
+//     (AnyObjectArray.ObjectArray[i] as TArduinoADC_Channel).Free;
+//     Continue;
+//    end;
+//
+//   if (AnyObjectArray.ObjectArray[i] is TGDS_806S_Channel) then
+//    begin
+//     (AnyObjectArray.ObjectArray[i] as TGDS_806S_Channel).Free;
 //     Continue;
 //    end;
 
-   if (AnyObjectArray.ObjectArray[i] is TArduinoADC_Channel) then
-    begin
-     (AnyObjectArray.ObjectArray[i] as TArduinoADC_Channel).Free;
-     Continue;
-    end;
+    if (AnyObjectArray.ObjectArray[i] is TNamedInterfacedObject) then
+        begin
+         (AnyObjectArray.ObjectArray[i] as TNamedInterfacedObject).Free;
+         Continue;
+        end;
 
-   if (AnyObjectArray.ObjectArray[i] is TGDS_806S_Channel) then
-    begin
-     (AnyObjectArray.ObjectArray[i] as TGDS_806S_Channel).Free;
-     Continue;
-    end;
 
     AnyObjectArray.ObjectArray[i].Free;
   end;

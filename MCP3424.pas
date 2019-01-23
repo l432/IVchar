@@ -87,7 +87,7 @@ TPins_MCP3424=class(TPinsForCustomValues)
                        LabelBit,LabelGain:TPanel;
                        LabelMeas:TLabel;
                        ButMeas:TButton);
-   Procedure Free;
+   Procedure Free;override;
  end;
 
 

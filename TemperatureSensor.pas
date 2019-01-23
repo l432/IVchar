@@ -64,7 +64,7 @@ type
      согласно градуировке термопары медь-константан}
      function GetTemperature():double;
      Constructor Create();
-     Procedure Free;
+//     Procedure Free;
      function GetData:double;
      procedure GetDataThread(WPARAM: word;EventEnd:THandle);
      procedure GetTemperatureThread(EventEnd:THandle);
@@ -123,10 +123,10 @@ begin
  fName:='ThermoCouple';
 end;
 
-procedure TThermoCuple.Free;
-begin
-
-end;
+//procedure TThermoCuple.Free;
+//begin
+//
+//end;
 
 function TThermoCuple.GetData: double;
 begin

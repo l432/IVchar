@@ -62,7 +62,7 @@ protected
  procedure PinsCreate();override;
 public
  Constructor Create(CP:TComPort;Nm:string);//override;
- Procedure Free;
+ Procedure Free;override;
  Procedure CalibrationRead();
  Procedure CalibrationWrite();
  procedure CalibrationFileProcessing(filename:string);

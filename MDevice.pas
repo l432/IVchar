@@ -3,17 +3,20 @@ unit MDevice;
 interface
 
 uses
-  StdCtrls, IniFiles, Measurement;
+  StdCtrls, IniFiles, Measurement, OlegTypePart2;
+
+const
+   MD_IniSection='Sources';
 
 type
-TDevice=class
+TDevice=class(TNamedInterfacedObject)
 private
  DevicesComboBox:TComboBox;
- fIdentName:string;
+// fIdentName:string;
 public
  Constructor Create(DevCB: TComboBox; IdentName: string);
- procedure ReadFromIniFile(ConfigFile:TIniFile;const Section: string);
- procedure WriteToIniFile(ConfigFile:TIniFile;const Section: string);
+ procedure ReadFromIniFile(ConfigFile: TIniFile);override;
+ procedure WriteToIniFile(ConfigFile: TIniFile);override;
 end;
 
 TMeasuringStringResult=(srCurrent,srVoltge,srPreciseVoltage);
@@ -87,22 +90,22 @@ begin
  inherited Create;
  DevicesComboBox:=DevCB;
  DevicesComboBox.Clear;
- fIdentName:=IdentName;
+ fName:=IdentName;
 end;
 
-procedure TDevice.ReadFromIniFile(ConfigFile: TIniFile; const Section: string);
+procedure TDevice.ReadFromIniFile(ConfigFile: TIniFile);
   var index:integer;
 begin
-  index:=ConfigFile.ReadInteger(Section, fIdentName, 0);
+  index:=ConfigFile.ReadInteger(MD_IniSection, fName, 0);
   if index>=DevicesComboBox.Items.Count
      then DevicesComboBox.ItemIndex:=0
      else DevicesComboBox.ItemIndex:=index;
 end;
 
 
-procedure TDevice.WriteToIniFile(ConfigFile: TIniFile; const Section: string);
+procedure TDevice.WriteToIniFile(ConfigFile: TIniFile);
 begin
-  WriteIniDef(ConfigFile,Section, fIdentName,DevicesComboBox.ItemIndex,0);
+  WriteIniDef(ConfigFile,MD_IniSection, fName,DevicesComboBox.ItemIndex,0);
 end;
 
 { TSettingDevice }
