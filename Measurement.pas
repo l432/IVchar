@@ -75,24 +75,25 @@ end;
 
 
 
-TSimulator = class (TInterfacedObject,IMeasurement,IDAC,ITemperatureMeasurement)
+//TSimulator = class (TInterfacedObject,IMeasurement,IDAC,ITemperatureMeasurement)
+TSimulator = class (TNamedInterfacedObject,IMeasurement,IDAC,ITemperatureMeasurement)
 private
- FName: string;
+// Name: string;
  fValue:double;
  fNewData:boolean;
  fOutputValue:double;
- function GetName:string;
+// function GetName:string;
  function GetNewData:boolean;
  function GetValue:double;
  function GetOutputValue:double;
  procedure SetNewData(Value:boolean);
 public
- property Name:string read GetName;
+// property Name:string read GetName;
  property Value:double read GetValue;
  property NewData:boolean read GetNewData write SetNewData;
  property OutputValue:double read GetOutputValue;
- Constructor Create();overload;
  Constructor Create(name:string);overload;
+ Constructor Create();overload;
  function GetTemperature:double;
  function GetData:double;
  procedure Output(Value:double);
@@ -100,7 +101,7 @@ public
  procedure OutputInt(Kod:integer);
  procedure GetDataThread(WPARAM: word;EventEnd:THandle);
  procedure GetTemperatureThread(EventEnd:THandle);
- procedure Free;
+// procedure Free;override;
 end;
 
 
@@ -199,8 +200,9 @@ uses
 
 constructor TSimulator.Create;
 begin
-  inherited Create;
-  fName:='Simulation';
+  Create('Simulation');
+//  inherited Create;
+//  fName:='Simulation';
 end;
 
 
@@ -210,15 +212,15 @@ begin
  fName:=name;
 end;
 
-procedure TSimulator.Free;
-begin
+//procedure TSimulator.Free;
+//begin
+// HelpForMe(Name);
+//end;
 
-end;
-
-function TSimulator.GetName: string;
-begin
-  Result:=fName;
-end;
+//function TSimulator.GetName: string;
+//begin
+//  Result:=fName;
+//end;
 
 function TSimulator.GetNewData: boolean;
 begin

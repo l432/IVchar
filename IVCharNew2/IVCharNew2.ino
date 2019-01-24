@@ -16,6 +16,7 @@
 #include "OlegADS1115.h"
 #include "OlegAD9833.h"
 #include "OlegMLX90615.h"
+#include "OlegINA226.h"
 
 DS18B20o ds18b20;
 CustomDevice cd;
@@ -27,6 +28,7 @@ MCP3424o mcp3424;
 ADS1115o ads1115;
 AD9833o ad9833;
 MLX90615o mlx90615;
+INA226o ina226;
 
 
 void setup() {
@@ -69,7 +71,8 @@ void loop() {
       if (mcp3424.Begin()) goto start;
       if (ads1115.Begin()) goto start; 
       if (ad9833.Action()) goto start;     
-      if (mlx90615.Begin()) goto start;     
+      if (mlx90615.Begin()) goto start;  
+      if (ina226.Begin()) goto start;
     }
   }
 start:
@@ -79,7 +82,8 @@ start:
   tmp102.End();
   mcp3424.End();
   ads1115.End();
-//  mlx90615.End();  
+//  mlx90615.End(); 
+  ina226.End(); 
   wdt_reset();
 }
 

@@ -196,6 +196,7 @@ procedure TPID_ParametersShow.ReadFromIniFile(ConfigFile: TIniFile);
 begin
  for I := Low(TPID_Parameters) to High(TPID_Parameters) do
   fParameterShow[i].ReadFromIniFile(ConfigFile);
+// HelpForMe(Name);
 //  fParameterShow[i].Data:=ConfigFile.ReadFloat(PID_Param,
 //                         fName+fParameterShow[i].STCaption.Caption,
 //                         fParameterShow[i].DefaulValue);

@@ -131,7 +131,8 @@ TPins_ADS1115_Chanel=class(TPinsForCustomValues)
     fChan:TADS1115_Channel;
     MeasuringDeviceSimple:TMeasuringDeviceSimple;
    protected
-    procedure LabelsFilling;
+//    procedure LabelsFilling;
+    procedure CreateFooter;override;
    public
     Constructor Create(Chan:TADS1115_Channel;
                        LabelBit,LabelGain:TPanel;
@@ -346,10 +347,27 @@ constructor TADS1115_ChannelShow.Create(Chan: TADS1115_Channel;
 begin
   fChan:=Chan;
   inherited Create(fChan.Pins,[LabelBit,LabelGain]);
-  LabelsFilling;
+//  LabelsFilling;
 
   MeasuringDeviceSimple:=
      TMeasuringDeviceSimple.Create(fChan,LabelMeas,srPreciseVoltage,ButMeas);
+end;
+
+procedure TADS1115_ChannelShow.CreateFooter;
+ var
+  i: TADS1115_DataRate;
+  j: TADS1115_Gain;
+begin
+  inherited CreateFooter;
+//  fPinVariants[0].Clear;
+//  fPinVariants[1].Clear;
+
+  for i := Low(TADS1115_DataRate) to High(TADS1115_DataRate) do
+    fPinVariants[0].Add(ADS1115_DataRate_Label[i]);
+
+  for j := Low(TADS1115_Gain) to High(TADS1115_Gain) do
+    fPinVariants[1].Add('+/-'+ADS1115_Diapazons[j]+' V, '+
+    ADS1115_LSB_labels[j]+' uV');
 end;
 
 procedure TADS1115_ChannelShow.Free;
@@ -359,23 +377,23 @@ begin
   inherited Free;
 end;
 
-procedure TADS1115_ChannelShow.LabelsFilling;
- var
-  i: TADS1115_DataRate;
-  j: TADS1115_Gain;
-begin
-
-  fPinVariants[0].Clear;
-  fPinVariants[1].Clear;
-
-  for i := Low(TADS1115_DataRate) to High(TADS1115_DataRate) do
-    fPinVariants[0].Add(ADS1115_DataRate_Label[i]);
-
-  for j := Low(TADS1115_Gain) to High(TADS1115_Gain) do
-    fPinVariants[1].Add('+/-'+ADS1115_Diapazons[j]+' V, '+
-    ADS1115_LSB_labels[j]+' mkV');
-
-
-end;
+//procedure TADS1115_ChannelShow.LabelsFilling;
+// var
+//  i: TADS1115_DataRate;
+//  j: TADS1115_Gain;
+//begin
+//
+//  fPinVariants[0].Clear;
+//  fPinVariants[1].Clear;
+//
+//  for i := Low(TADS1115_DataRate) to High(TADS1115_DataRate) do
+//    fPinVariants[0].Add(ADS1115_DataRate_Label[i]);
+//
+//  for j := Low(TADS1115_Gain) to High(TADS1115_Gain) do
+//    fPinVariants[1].Add('+/-'+ADS1115_Diapazons[j]+' V, '+
+//    ADS1115_LSB_labels[j]+' mkV');
+//
+//
+//end;
 
 end.

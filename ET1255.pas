@@ -254,7 +254,7 @@ end;
    procedure OutputInt(Kod:integer); //virtual;
    Procedure Reset();    // virtual;
    Constructor Create(ChanelNumber:TET1255_DAC_ChanelNumber);
-//   procedure Free;override;
+   procedure Free;override;
  end;
 
 implementation
@@ -277,10 +277,11 @@ begin
  end;
 end;
 
-//procedure TET1255_DAC.Free;
-//begin
-//  HelpForMe(Name);
-//end;
+
+procedure TET1255_DAC.Free;
+begin
+  Reset();
+end;
 
 function TET1255_DAC.GetOutputValue: double;
 begin

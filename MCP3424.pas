@@ -81,7 +81,8 @@ TPins_MCP3424=class(TPinsForCustomValues)
     fChan:TMCP3424_Channel;
     MeasuringDeviceSimple:TMeasuringDeviceSimple;
    protected
-    procedure LabelsFilling;
+    procedure CreateFooter;override;
+//    procedure LabelsFilling;
    public
     Constructor Create(Chan:TMCP3424_Channel;
                        LabelBit,LabelGain:TPanel;
@@ -196,10 +197,24 @@ constructor TMCP3424_ChannelShow.Create(Chan: TMCP3424_Channel;
 begin
   fChan:=Chan;
   inherited Create(fChan.Pins,[LabelBit,LabelGain]);
-  LabelsFilling;
+//  LabelsFilling;
 
   MeasuringDeviceSimple:=
      TMeasuringDeviceSimple.Create(fChan,LabelMeas,srPreciseVoltage,ButMeas);
+end;
+
+procedure TMCP3424_ChannelShow.CreateFooter;
+var
+  i: TMCP3424_Resolution;
+  j: TMCP3424_Gain;
+begin
+  inherited CreateFooter;
+//  fPinVariants[0].Clear;
+//  fPinVariants[1].Clear;
+  for i := Low(TMCP3424_Resolution) to High(TMCP3424_Resolution) do
+    fPinVariants[0].Add(MCP3424_Resolution_Label[i]);
+  for j := Low(TMCP3424_Gain) to High(TMCP3424_Gain) do
+    fPinVariants[1].Add('+/-'+MCP3424_Diapazons[j]+' V');
 end;
 
 procedure TMCP3424_ChannelShow.Free;
@@ -208,19 +223,19 @@ begin
   inherited Free;
 end;
 
-procedure TMCP3424_ChannelShow.LabelsFilling;
-var
-  i: TMCP3424_Resolution;
-  j: TMCP3424_Gain;
-begin
-
-  fPinVariants[0].Clear;
-  fPinVariants[1].Clear;
-  for i := Low(TMCP3424_Resolution) to High(TMCP3424_Resolution) do
-    fPinVariants[0].Add(MCP3424_Resolution_Label[i]);
-  for j := Low(TMCP3424_Gain) to High(TMCP3424_Gain) do
-    fPinVariants[1].Add('+/-'+MCP3424_Diapazons[j]+' V');
-end;
+//procedure TMCP3424_ChannelShow.LabelsFilling;
+//var
+//  i: TMCP3424_Resolution;
+//  j: TMCP3424_Gain;
+//begin
+//
+//  fPinVariants[0].Clear;
+//  fPinVariants[1].Clear;
+//  for i := Low(TMCP3424_Resolution) to High(TMCP3424_Resolution) do
+//    fPinVariants[0].Add(MCP3424_Resolution_Label[i]);
+//  for j := Low(TMCP3424_Gain) to High(TMCP3424_Gain) do
+//    fPinVariants[1].Add('+/-'+MCP3424_Diapazons[j]+' V');
+//end;
 
 { TPins_MCP3424 }
 

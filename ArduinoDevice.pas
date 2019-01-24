@@ -712,6 +712,7 @@ begin
 //  showmessage(Pins.fName);
   Pins.ReadFromIniFile(ConfigFile,fPinVariants);
   NumberPinShow();
+//  HelpForMe(Pins.fName);
 end;
 
 procedure TPinsShowUniversal.WriteToIniFile(ConfigFile: TIniFile);

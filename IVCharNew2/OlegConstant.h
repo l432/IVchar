@@ -18,6 +18,7 @@ const byte MCP3424Command=0x0A;
 const byte ADS1115Command=0x0B;
 const byte AD9833Command=0x0C;
 const byte MLX90615Command=0x0D;
+const byte INA226Command=0x0E;
 
 
 //For MEGA

@@ -1414,7 +1414,7 @@ begin
   end;
 
   fVectors_RG.ItemIndex:= ConfigFile.ReadInteger(fGDS_806S.Name, 'ChanShow',0);
-
+  SettingToObject();
 end;
 
 procedure TGDS_806S_Show.RefreshButtonClick(Sender: TObject);

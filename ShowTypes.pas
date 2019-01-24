@@ -209,11 +209,13 @@ procedure TLimitShow.ReadFromIniFile(ConfigFile: TIniFile);
   var temp:Smallint;
 begin
 //  showmessage(Name);
-  temp:=ConfigFile.ReadInteger(RangeSection,fName+'Max',UpDownHigh.Max);
+//  temp:=ConfigFile.ReadInteger(RangeSection,fName+'Max',UpDownHigh.Max);
+  temp:=ConfigFile.ReadInteger(fName,fName+'Max',UpDownHigh.Max);
   if (temp>UpDownHigh.Max)or(temp<0) then  temp:=UpDownHigh.Max;
   UpDownHigh.Position:=temp;
 
-  temp:=ConfigFile.ReadInteger(RangeSection,fName+'Min',0);
+//  temp:=ConfigFile.ReadInteger(RangeSection,fName+'Min',0);
+  temp:=ConfigFile.ReadInteger(fName,fName+'Min',0);
   if (temp>UpDownHigh.Max)or(temp<0) then  temp:=0;
   UpDownLow.Position:=temp;
 
@@ -258,8 +260,10 @@ end;
 
 procedure TLimitShow.WriteToIniFile(ConfigFile: TIniFile);
 begin
-    WriteIniDef(ConfigFile,RangeSection,fName+'Max',UpDownHigh.Position,UpDownHigh.Max);
-    WriteIniDef(ConfigFile,RangeSection,fName+'Min',UpDownLow.Position,0);
+    WriteIniDef(ConfigFile,fName,fName+'Max',UpDownHigh.Position,UpDownHigh.Max);
+    WriteIniDef(ConfigFile,fName,fName+'Min',UpDownLow.Position,0);
+//    WriteIniDef(ConfigFile,RangeSection,fName+'Max',UpDownHigh.Position,UpDownHigh.Max);
+//    WriteIniDef(ConfigFile,RangeSection,fName+'Min',UpDownLow.Position,0);
 end;
 
 { LimitShowRev }
@@ -328,6 +332,7 @@ end;
 
 procedure TDAC_Show.ReadFromIniFile(ConfigFile: TIniFile);
 begin
+//   HelpForMe(fOutputInterface.Name);
    fValueShow.ReadFromIniFile(ConfigFile);
    fKodShow.ReadFromIniFile(ConfigFile);
 end;

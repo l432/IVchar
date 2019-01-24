@@ -4,11 +4,12 @@
 interface
 
 uses
-  ArduinoADC, ArduinoDevice, OlegShowTypes, ExtCtrls, StdCtrls, IniFiles;
+  ArduinoADC, ArduinoDevice, OlegShowTypes, ExtCtrls, StdCtrls, IniFiles, 
+  ArduinoDeviceShow, MDevice;
 
 type
 
- TΙΝΑ226_Mode=(ina_mShunt,
+ TINA226_Mode=(ina_mShunt,
                ina_mBus,
                ina_mShuntAndBus);
 
@@ -32,11 +33,14 @@ type
 
 
 const
- ΙΝΑ226_Mode:array[TΙΝΑ226_Mode] of byte=
+ ΙΝΑ226_Mode:array[TINA226_Mode] of byte=
      (1,2,3);
 
  INA226_ConversionTime:array[TINA226_ConversionTime]of double=
     (0.14,0.204,0.332,0.588,1.1,2.116,4.156,8.244);
+ INA226_ConversionTimeLabels:array[TINA226_ConversionTime]of string=
+    ('140 us','204 us','332 us','588 us','1.1 ms','2.116 ms',
+     '4.156 ms','8.244 ms');
  INA226_Averages:array[TINA226_Averages] of word=
     (1,4,16,64,128,256,512,1024);
 
@@ -91,10 +95,10 @@ type
    fShuntVoltage:double;
    fBusVoltage:double;
    fRsh:double;
-   procedure SetMode(const Value: TΙΝΑ226_Mode);
+   procedure SetMode(const Value: TINA226_Mode);
    procedure SetRsh(const Value: double);
    procedure SetAverages(const Value:TINA226_Averages);
-   function GetMode:TΙΝΑ226_Mode;
+   function GetMode:TINA226_Mode;
    function GetAverages:TINA226_Averages;
    function MinDelayTimeDetermination:integer;
    function IncorrectData:boolean;
@@ -106,7 +110,7 @@ type
    property Averages:TINA226_Averages read GetAverages write SetAverages;
    property ShuntConversionTime:TINA226_ConversionTime read fShuntVoltageCT write fShuntVoltageCT;
    property BusConversionTime:TINA226_ConversionTime read fBusVoltageCT write fBusVoltageCT;
-   property Mode:TΙΝΑ226_Mode read GetMode write SetMode;
+   property Mode:TINA226_Mode read GetMode write SetMode;
    property ShuntVoltage:double read fShuntVoltage;
    property BusVoltage:double read fBusVoltage;
    property Rsh:double read fRsh write SetRsh;
@@ -131,186 +135,46 @@ type
     Procedure Free;override;
  end;
 
-//
-//TPins_ADS1115_Chanel=class(TPins)
-//  protected
-//   Function GetPinStr(Index:integer):string;override;
-//   Function StrToPinValue(Str: string):integer;override;
-//   Function PinValueToStr(Index:integer):string;override;
-//  public
-//   Constructor Create(Nm:string);
-//  end;
-//
-// TADS1115_Channel=class(TArduinoADC_Channel)
-// private
-// protected
-//  procedure SetModuleParameters;override;
-//  procedure PinsCreate;override;
-// public
-//  Constructor Create(ChanelNumber: TADS1115_ChanelNumber;
-//                      ADS1115_Module: TADS1115_Module);//override;
-// end;
-//
-// TADS1115_ChannelShow=class(TPinsShowUniversal)
-//   private
-//    fChan:TADS1115_Channel;
-//    MeasuringDeviceSimple:TMeasuringDeviceSimple;
-//   protected
-//    procedure LabelsFilling;
-//   public
-//    Constructor Create(Chan:TADS1115_Channel;
-//                       LabelBit,LabelGain:TPanel;
-//                       LabelMeas:TLabel;
-//                       ButMeas:TButton);
-//   Procedure Free;
-// end;
-//
+  TPins_INA226_Chanel=class(TPins)
+  protected
+   Function StrToPinValue(Str: string):integer;override;
+   Function PinValueToStr(Index:integer):string;override;
+   public
+   Constructor Create(Nm:string);
+  end;
+
+
+
+ TINA226_Channel=class(TArduinoADC_Channel)
+ private
+  fMode: TINA226_Mode;
+ protected
+  procedure SetModuleParameters;override;
+  procedure PinsCreate;override;
+ public
+  Constructor Create(Mode:TINA226_Mode;
+                      INA: TINA226_Module);
+ end;
+
+ TINA226_ChannelShow=class(TOnePinsShow)
+   private
+    fChan:TINA226_Channel;
+    MeasuringDeviceSimple:TMeasuringDeviceSimple;
+   protected
+    procedure CreateFooter;override;   
+   public
+    Constructor Create(Chan:TINA226_Channel;
+                       PanelConvTime:TPanel;
+                       LabelMeas:TLabel;
+                       ButMeas:TButton);
+   Procedure Free;override;
+ end;
+
 
 implementation
 
 uses
   Math, OlegType, PacketParameters, SysUtils, Dialogs;
-
-//{ TPins_ADS1115_Chanel }
-//
-//constructor TPins_ADS1115_Chanel.Create(Nm: string);
-//begin
-//  inherited Create(Nm, ['Data rate', 'Diapazon']);
-//  PinStrPart := '';
-//  PinControl := $00;
-//  // зберігатиметься Data rate
-//  PinGate := $02;
-//  // зберігатиметься Gain
-//end;
-//
-//function TPins_ADS1115_Chanel.GetPinStr(Index: integer): string;
-//begin
-// if fPins[Index]=UndefinedPin then
-//   Result:=PNames[Index] +' is undefined'
-//                              else
-//   Result:=PinValueToStr(Index);
-//end;
-//
-//function TPins_ADS1115_Chanel.PinValueToStr(Index: integer): string;
-// var i:TADS1115_Gain;
-//     j:TADS1115_DataRate;
-//begin
-// if index=0 then
-//  begin
-//  for J := Low(TADS1115_DataRate) to High(TADS1115_DataRate) do
-//    if fPins[Index]=ADS1115_DataRate_Kod[j] then
-//     begin
-//     Result:=ADS1115_DataRate_Label[j];
-//     Exit;
-//     end;
-//  end      else
-//  begin
-//  for i := Low(TADS1115_Gain) to High(TADS1115_Gain) do
-//    if fPins[Index]=ADS1115_Gain_Kod[i] then
-//     begin
-//     Result:='+/-'+ADS1115_Diapazons[i]+' V';
-//     Exit;
-//     end;
-//  end;
-//  Result:='u-u-ups';
-//
-//end;
-//
-//function TPins_ADS1115_Chanel.StrToPinValue(Str: string): integer;
-// var i:TADS1115_Gain;
-//     j:TADS1115_DataRate;
-//begin
-// for I := Low(TADS1115_Gain) to High(TADS1115_Gain) do
-//  if AnsiPos( ADS1115_Diapazons[i],Str)>0 then
-//   begin
-//     Result:=ADS1115_Gain_Kod[i];
-//     Exit;
-//   end;
-//
-// for J := Low(TADS1115_DataRate) to High(TADS1115_DataRate) do
-//  if AnsiPos( ADS1115_DataRate_Label[j],Str)>0 then
-//   begin
-//     Result:=ADS1115_DataRate_Kod[j];
-//     Exit;
-//   end;
-//
-// Result:=UndefinedPin;
-//
-//end;
-//
-//{ TADS1115_Channel }
-//
-//constructor TADS1115_Channel.Create(ChanelNumber: TADS1115_ChanelNumber;
-//  ADS1115_Module: TADS1115_Module);
-//begin
-//  inherited Create(ChanelNumber,ADS1115_Module);
-//end;
-//
-//procedure TADS1115_Channel.PinsCreate;
-//begin
-// Pins:=TPins_ADS1115_Chanel.Create(fName);
-//end;
-//
-//procedure TADS1115_Channel.SetModuleParameters;
-// var i:TADS1115_Gain;
-//     j:TADS1115_DataRate;
-//begin
-//  inherited SetModuleParameters();
-//  for J := Low(TADS1115_DataRate) to High(TADS1115_DataRate) do
-//   if Pins.PinControl=ADS1115_DataRate_Kod[j] then
-//     begin
-//       (fParentModule as TADS1115_Module).DataRate :=
-//          TADS1115_DataRate(j);
-//       Break;
-//     end;
-// for I := Low(TADS1115_Gain) to High(TADS1115_Gain) do
-//  if Pins.PinGate=ADS1115_Gain_Kod[i] then
-//   begin
-//     (fParentModule as TADS1115_Module).Gain :=
-//        TADS1115_Gain(i);
-//      Break;
-//   end;
-//end;
-//
-//{ TMCP3424_ChannelShow }
-//
-//constructor TADS1115_ChannelShow.Create(Chan: TADS1115_Channel;
-//                   LabelBit, LabelGain: TPanel;
-//                   LabelMeas: TLabel;
-//                   ButMeas: TButton);
-//begin
-//  fChan:=Chan;
-//  inherited Create(fChan.Pins,[LabelBit,LabelGain]);
-//  LabelsFilling;
-//
-//  MeasuringDeviceSimple:=
-//     TMeasuringDeviceSimple.Create(fChan,LabelMeas,srPreciseVoltage,ButMeas);
-//end;
-//
-//procedure TADS1115_ChannelShow.Free;
-//begin
-//  MeasuringDeviceSimple.Free;
-//  inherited Free;
-//end;
-//
-//procedure TADS1115_ChannelShow.LabelsFilling;
-// var
-//  i: TADS1115_DataRate;
-//  j: TADS1115_Gain;
-//begin
-//
-//  fPinVariants[0].Clear;
-//  fPinVariants[1].Clear;
-//
-//  for i := Low(TADS1115_DataRate) to High(TADS1115_DataRate) do
-//    fPinVariants[0].Add(ADS1115_DataRate_Label[i]);
-//
-//  for j := Low(TADS1115_Gain) to High(TADS1115_Gain) do
-//    fPinVariants[1].Add('+/-'+ADS1115_Diapazons[j]+' V, '+
-//    ADS1115_LSB_labels[j]+' mkV');
-//
-//
-//end;
 
 
 { TINA226_Module }
@@ -357,9 +221,9 @@ begin
  Result:=TINA226_Averages(Pins.PinGate)
 end;
 
-function TINA226_Module.GetMode: TΙΝΑ226_Mode;
+function TINA226_Module.GetMode: TINA226_Mode;
 begin
- Result:=TΙΝΑ226_Mode(FActiveChannel-1)
+ Result:=TINA226_Mode(FActiveChannel)
 end;
 
 function TINA226_Module.IncorrectData: boolean;
@@ -403,7 +267,7 @@ begin
  Pins.PinGate:=ord(Value);
 end;
 
-procedure TINA226_Module.SetMode(const Value: TΙΝΑ226_Mode);
+procedure TINA226_Module.SetMode(const Value: TINA226_Mode);
 begin
   FActiveChannel:=ΙΝΑ226_Mode[Value];
 end;
@@ -498,6 +362,90 @@ begin
   inherited WriteToIniFile(ConfigFile);
   fRshShow.WriteToIniFile(ConfigFile);
 //  HelpForMe(Pins.Name+Pins.Name);
+end;
+
+{ TINA226_ADS1115_Chanel }
+
+constructor TPins_INA226_Chanel.Create(Nm: string);
+begin
+  inherited Create(Nm,['Conv. time'],1);
+  PinStrPart:=''
+end;
+
+function TPins_INA226_Chanel.PinValueToStr(Index: integer): string;
+begin
+ Result:=INA226_ConversionTimeLabels[TINA226_ConversionTime(fPins[Index])];
+end;
+
+function TPins_INA226_Chanel.StrToPinValue(Str: string): integer;
+ var i:TINA226_ConversionTime;
+begin
+ for I := Low(TINA226_ConversionTime) to High(TINA226_ConversionTime) do
+  if Str=INA226_ConversionTimeLabels[I] then
+   begin
+    Result:=ord(i);
+    Exit;
+   end;
+
+  Result:=UndefinedPin;
+end;
+
+{ TINA226_Channel }
+
+constructor TINA226_Channel.Create(Mode: TINA226_Mode;
+                                  INA: TINA226_Module);
+begin
+ fMode:=Mode;
+ inherited Create(ord(Mode),INA);
+ case fMode of
+   ina_mShunt: fName:='Shunt_'+INA.Name;
+   ina_mBus: fName:='Bus_'+INA.Name;
+ end;
+end;
+
+procedure TINA226_Channel.PinsCreate;
+begin
+ Pins:=TPins_INA226_Chanel.Create(fName);
+end;
+
+procedure TINA226_Channel.SetModuleParameters;
+begin
+  inherited SetModuleParameters();
+  (fParentModule as TINA226_Module).fShuntVoltageCT:=
+             TINA226_ConversionTime(Pins.PinControl);
+ case fMode of
+   ina_mShunt: (fParentModule as TINA226_Module).fShuntVoltageCT:=
+             TINA226_ConversionTime(Pins.PinControl);
+   ina_mBus: (fParentModule as TINA226_Module).fBusVoltageCT:=
+             TINA226_ConversionTime(Pins.PinControl);
+ end;
+end;
+
+{ TINA226_ChannelShow }
+
+constructor TINA226_ChannelShow.Create(Chan: TINA226_Channel;
+                                       PanelConvTime: TPanel;
+                                       LabelMeas: TLabel;
+                                       ButMeas: TButton);
+begin
+  fChan:=Chan;
+  inherited Create(fChan.Pins,PanelConvTime);
+  MeasuringDeviceSimple:=
+     TMeasuringDeviceSimple.Create(fChan,LabelMeas,srPreciseVoltage,ButMeas);
+end;
+
+procedure TINA226_ChannelShow.CreateFooter;
+ var i:TINA226_ConversionTime;
+begin
+  inherited CreateFooter;
+ for I := Low(TINA226_ConversionTime) to High(TINA226_ConversionTime) do
+    fPinVariants[0].Add(INA226_ConversionTimeLabels[i]);
+end;
+
+procedure TINA226_ChannelShow.Free;
+begin
+  MeasuringDeviceSimple.Free;
+  inherited Free;
 end;
 
 end.

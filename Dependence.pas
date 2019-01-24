@@ -4,7 +4,7 @@ interface
 
 uses
   ArduinoDevice, StdCtrls, ComCtrls, OlegType, Series, ShowTypes,
-  ExtCtrls, Classes;
+  ExtCtrls, Classes, OlegTypePart2;
 
 var EventToStopDependence:THandle;
 
@@ -248,7 +248,7 @@ TFastIVDependenceStop = class(TThread)
 
 
 
-TIVMeasurementResult=class
+TIVMeasurementResult=class(TSimpleFreeAndAiniObject)
   private
     FDeltaToApplied: double;
     FCurrentMeasured: double;
