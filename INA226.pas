@@ -95,8 +95,13 @@ type
    fShuntVoltage:double;
    fBusVoltage:double;
    fRsh:double;
+   fTimeFactor:byte;
+   {при великих кількостях усереднень платі потрібно більше
+   часу, ніж описано в datasheet; ця змінна - множник часу
+   очікування результату Arduino-ю}
    procedure SetMode(const Value: TINA226_Mode);
    procedure SetRsh(const Value: double);
+   procedure SetTimeF(const Value: byte);
    procedure SetAverages(const Value:TINA226_Averages);
    function GetMode:TINA226_Mode;
    function GetAverages:TINA226_Averages;
@@ -106,6 +111,7 @@ type
    procedure Configuration();override;
    procedure Intitiation(); override;
    procedure PinsCreate();override;
+   procedure FinalPacketCreateToSend();override;
   public
    property Averages:TINA226_Averages read GetAverages write SetAverages;
    property ShuntConversionTime:TINA226_ConversionTime read fShuntVoltageCT write fShuntVoltageCT;
@@ -114,7 +120,7 @@ type
    property ShuntVoltage:double read fShuntVoltage;
    property BusVoltage:double read fBusVoltage;
    property Rsh:double read fRsh write SetRsh;
-
+   property TimeFactor:byte read fTimeFactor write SetTimeF;
    procedure ConvertToValue();override;
  end;
 
@@ -123,13 +129,15 @@ type
    private
     fModule:TINA226_Module;
     fRshShow: TDoubleParameterShow;
+    fTimeFactorShow: TIntegerParameterShow;
    protected
     procedure LabelsFilling;
+    procedure ModuleUpDate();
    public
     Constructor Create(Module:TINA226_Module;
                        PanelAdress,PanelAverages:TPanel;
-                       LabelRsh:TLabel;
-                       STRsh:TStaticText);
+                       LabelRsh,LabelTimeF:TLabel;
+                       STRsh,STTimeF:TStaticText);
     procedure ReadFromIniFile(ConfigFile:TIniFile);override;
     procedure WriteToIniFile(ConfigFile:TIniFile);override;
     Procedure Free;override;
@@ -182,7 +190,7 @@ uses
 procedure TINA226_Module.Configuration;
 begin
   fMinDelayTime:=MinDelayTimeDetermination();
-
+//fMinDelayTime:=1;
   fConfigByte:=$40;
   fConfigByte:=fConfigByte or byte(byte(ord(Averages)) shl 1);
   fConfigByte:=fConfigByte or (byte(ord(fBusVoltageCT)) shr 2);
@@ -195,6 +203,7 @@ end;
 
 procedure TINA226_Module.ConvertToValue;
 begin
+//   ShowData(fData);
  fValue:=ErResult;
  if IncorrectData() then Exit;
  case Mode of
@@ -214,6 +223,12 @@ begin
                 fBusVoltage:=TwosComplementToDouble(fData[2],fData[3],INA226_BusLSB);
                end;
  end;
+end;
+
+procedure TINA226_Module.FinalPacketCreateToSend;
+begin
+ PacketCreate([fMetterKod, Pins.PinControl,
+      fConfigByte, fConfigByteTwo, fTimeFactor]);
 end;
 
 function TINA226_Module.GetAverages: TINA226_Averages;
@@ -236,7 +251,8 @@ end;
 
 procedure TINA226_Module.Intitiation;
 begin
-  inherited Intitiation;
+  fDelayTimeMax:=150;
+//  inherited Intitiation;
 //  fAverages:=ina_a1;
   fShuntVoltageCT:=ina_ct1100us;
   fBusVoltageCT:=ina_ct1100us;
@@ -244,6 +260,7 @@ begin
   fBusVoltage:=ErResult;
   fMetterKod := INA226Command;
   fRsh:=1;
+  fTimeFactor:=1;
 end;
 
 function TINA226_Module.MinDelayTimeDetermination: integer;
@@ -275,6 +292,11 @@ end;
 procedure TINA226_Module.SetRsh(const Value: double);
 begin
  if Value<>0 then fRsh:=abs(Value);
+end;
+
+procedure TINA226_Module.SetTimeF(const Value: byte);
+begin
+ if Value>0 then fTimeFactor:=Value;
 end;
 
 { TPins_INA226_Module }
@@ -317,8 +339,8 @@ end;
 
 constructor TINA226_ModuleShow.Create(Module: TINA226_Module;
                           PanelAdress,PanelAverages: TPanel;
-                          LabelRsh: TLabel;
-                          STRsh: TStaticText);
+                          LabelRsh,LabelTimeF:TLabel;
+                          STRsh,STTimeF:TStaticText);
 begin
   fModule:=Module;
   inherited Create(fModule.Pins,[PanelAdress,PanelAverages]);
@@ -327,11 +349,17 @@ begin
   fRshShow:=
      TDoubleParameterShow.Create(STRsh,LabelRsh,'Rsh:',3.3,4);
   fRshShow.SetName(fModule.Name);
+  fRshShow.HookParameterClick:=ModuleUpDate;
+  fTimeFactorShow:=
+     TIntegerParameterShow.Create(STTimeF,LabelTimeF,'Time factor:',1);
+  fTimeFactorShow.SetName(fModule.Name);
+  fTimeFactorShow.HookParameterClick:=ModuleUpDate;
 end;
 
 procedure TINA226_ModuleShow.Free;
 begin
 //  HelpForMe(Pins.Name+Pins.Name+Pins.Name);
+  fTimeFactorShow.Free;
   fRshShow.Free;
   inherited Free;
 end;
@@ -350,10 +378,20 @@ begin
 
 end;
 
+procedure TINA226_ModuleShow.ModuleUpDate;
+begin
+  fModule.Rsh:=fRshShow.Data;
+  fModule.TimeFactor:=byte(fTimeFactorShow.Data);
+  fRshShow.Data:=fModule.Rsh;
+  fTimeFactorShow.Data:= fModule.TimeFactor;
+end;
+
 procedure TINA226_ModuleShow.ReadFromIniFile(ConfigFile: TIniFile);
 begin
   inherited ReadFromIniFile(ConfigFile);
   fRshShow.ReadFromIniFile(ConfigFile);
+  fTimeFactorShow.ReadFromIniFile(ConfigFile);
+  ModuleUpDate;
 //  showmessage(Pins.Name+Pins.Name);
 end;
 
@@ -361,6 +399,7 @@ procedure TINA226_ModuleShow.WriteToIniFile(ConfigFile: TIniFile);
 begin
   inherited WriteToIniFile(ConfigFile);
   fRshShow.WriteToIniFile(ConfigFile);
+  fTimeFactorShow.WriteToIniFile(ConfigFile);
 //  HelpForMe(Pins.Name+Pins.Name);
 end;
 

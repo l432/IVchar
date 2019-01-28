@@ -53,7 +53,7 @@ void setup() {
   d3006.Setup();
   mcp3424.Setup();
 
-  wdt_enable(WDTO_500MS);
+  wdt_enable(WDTO_4S);
 }
 
 void loop() {

@@ -155,6 +155,7 @@ end;
 
 procedure TArdADC_Mod_2ConfigByte.FinalPacketCreateToSend;
 begin
+//    ShowData([fMetterKod, Pins.PinControl, fConfigByte, fConfigByteTwo]);
   PacketCreate([fMetterKod, Pins.PinControl, fConfigByte, fConfigByteTwo]);
 end;
 

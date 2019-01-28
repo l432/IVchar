@@ -383,12 +383,21 @@ start:
 
  sleep(fMinDelayTime);
  i:=0;
- repeat
+while  not(((i>fDelayTimeMax)or(fIsReceived)or(fError))) do
+begin
    sleep(fDelayTimeStep);
    inc(i);
  Application.ProcessMessages;
- until ((i>fDelayTimeMax)or(fIsReceived)or(fError));
+end;
+// repeat
+//   sleep(fDelayTimeStep);
+//   inc(i);
+// Application.ProcessMessages;
+// until ((i>fDelayTimeMax)or(fIsReceived)or(fError));
+
 // showmessage(inttostr((GetTickCount-i0)));
+
+//ShowData(fData);
  if fIsReceived then ConvertToValue();
 // if fIsReady then
  Result:=fValue;

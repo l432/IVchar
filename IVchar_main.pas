@@ -599,6 +599,8 @@ type
     Pina226_bustime: TPanel;
     STina226_1: TStaticText;
     STina226_2: TStaticText;
+    Lina226_TF: TLabel;
+    STina226_TF: TStaticText;
 
     procedure FormCreate(Sender: TObject);
     procedure BConnectClick(Sender: TObject);
@@ -696,6 +698,7 @@ type
 //    procedure IVcharHookEnd;
 //    procedure CalibrHookEnd;
     procedure HookBegin;
+    procedure FastIVHookBegin;
 //    procedure TimeDHookBegin;
 //    procedure TimeTwoDHookBegin;
 //    procedure ControlTimeHookBegin;
@@ -859,6 +862,7 @@ type
     Imax,Imin,R_VtoI,Shift_VtoI:double;
 
     IVMeasuring,CalibrMeasuring:TIVDependence;
+    FastIVMeasuring:TFastIVDependenceNew;
     TimeDependence:TTimeDependenceTimer;
     ControlParameterTime,TemperatureOnTime:TTimeDependence;
     TimeTwoDependenceTimer,IscVocOnTime:TTimeTwoDependenceTimer;
@@ -1061,6 +1065,9 @@ procedure TIVchar.DependenceMeasuringCreate;
 begin
   IVMeasuring := TIVDependence.Create(CBForw,CBRev,PBIV,BIVStop,
                          IVResult,ForwLine,RevLine,ForwLg,RevLg);
+  FastIVMeasuring:=TFastIVDependenceNew.Create(BIVStop,IVResult,
+                                  ForwLine,RevLine,ForwLg,RevLg);
+
   CalibrMeasuring:= TIVDependence.Create(CBForw,CBRev,PBIV,BIVStop,
                          IVResult,ForwLine,RevLine,ForwLg,RevLg);
 
@@ -1077,6 +1084,9 @@ begin
                                        ForwLine,ForwLg);
   TemperatureOnTime:=TTimeDependence.Create(PBIV,BIVStop,IVResult,
                                        ForwLine,ForwLg);
+
+  FastIVMeasuring.HookBeginMeasuring:=FastIVHookBegin;
+
 
   SetLength(Dependencies,7);
   Dependencies[0]:=IVMeasuring;
@@ -1223,7 +1233,7 @@ end;
 
 procedure TIVchar.HookBegin;
 begin
-  DecimalSeparator:='.';
+//  DecimalSeparator:='.';
   CBMeasurements.Enabled:=False;
   BIVStart.Enabled := False;
   BConnect.Enabled := False;
@@ -1263,7 +1273,8 @@ end;
 procedure TIVchar.INA226Create;
 begin
   INA226_Module:=TINA226_Module.Create(ComPort1, 'INA226');
-  INA226_ModuleShow:=TINA226_ModuleShow.Create(INA226_Module,Pina226_adr,Pina226_aver,Lina226_Rsh,STina226_Rsh);
+  INA226_ModuleShow:=TINA226_ModuleShow.Create(INA226_Module,Pina226_adr,Pina226_aver,
+                        Lina226_Rsh,Lina226_TF,STina226_Rsh,STina226_TF);
 
   INA226_Shunt:=TINA226_Channel.Create(ina_mShunt,INA226_Module);
   INA226_Bus:=TINA226_Channel.Create(ina_mBus,INA226_Module);
@@ -2315,39 +2326,11 @@ end;
 
 
 procedure TIVchar.Button1Click(Sender: TObject);
-// var
-//     fData:array of byte;
-//     tempLongword,DivSor:Longword;
-//     i:byte;
-//begin
-// DivSor:=$988000;
-// SetLength(fData,3);
-// fData[0]:=$7c;
-// fData[1]:=$82;
-// fData[2]:=$97;
-//
-// tempLongWord:= ((((fData[0] shl 8) or  fData[1]) shl 8)or fData[2]);
-//
-// for I := 0 to 15 do
-//   begin
-//    if (tempLongWord and (1 shl (23-i)))<>0 then
-//      tempLongWord:=(tempLongWord xor DivSor);
-//    DivSor:=(DivSor shr 1);
-//   end;
-// showmessage(booltostr(false));
-// showmessage(booltostr(tempLongWord=0));
-
 
 begin
-showmessage(inttostr(round(Log2(1024))));
-
-//showmessage(floattostr(Temperature_MD.ActiveInterface.GetTemperature));
-//showmessage(floattostr(MLX90615.GetTemperature));
-// showmessage(inttostr(CRC8([$7c,$82],$31)));
-// showmessage(inttostr(CRC8([$7c,$82,$97],$31)));
-// showmessage(inttostr(CRC8([$b6,$13,$00,$00])));
-// showmessage(inttostr(CRC8([$b6,$13,$00,$20])));
-// showmessage(inttostr(CRC8([$b6,$c6])));
+ FastIVMeasuring.Measuring;
+// FastIVMeasuring.HookBeginMeasuring;
+// showmessage(floattostr(FastIVMeasuring.Imin));
 end;
 
 
@@ -2418,6 +2401,16 @@ begin
            NumberPinsInput.Add(IntToStr(Data[i]));
     end;
   end;
+end;
+
+procedure TIVchar.FastIVHookBegin;
+begin
+ ThermoCuple.Measurement:=TermoCouple_MD.ActiveInterface;
+ FastIVMeasuring.Imax := DoubleConstantShows[1].Data;
+ FastIVMeasuring.Imin := DoubleConstantShows[2].Data;
+ FastIVMeasuring.CurrentValueLimitEnable:=CBCurrentValue.Checked;
+ FastIVMeasuring.ForwardBranchIsMeasured:=CBForw.Checked;
+ FastIVMeasuring.ReverseBranchIsMeasured:=CBRev.Checked;
 end;
 
 procedure TIVchar.FormCreate(Sender: TObject);
@@ -2688,7 +2681,8 @@ begin
   VolCorrection^.Sorting;
 end;
 
-function TIVchar.StepDetermine(Voltage: Double; ItForward: Boolean): double;
+function TIVchar.StepDetermine(Voltage: Double;
+                              ItForward: Boolean): double;
 var
   Steps: PVector;
   I: Integer;
@@ -3416,6 +3410,7 @@ begin
 
   for I := 0 to High(Dependencies) do
     Dependencies[i].Free;
+ FastIVMeasuring.Free;
 
 //  ThermoCuple.Free;
 //  Simulator.Free;

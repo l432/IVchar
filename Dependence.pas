@@ -221,6 +221,39 @@ public
   procedure SetVoltage();
   procedure BeginMeasuring();override;
   procedure Cycle(ItIsForwardInput: Boolean);
+  procedure Measuring();
+end;
+
+TFastIVDependenceNew=class (TFastDependence)
+  private
+    FImax: double;
+    FForwardBranchIsMeasured: boolean;
+    FImin: double;
+    FCurrentValueLimitEnable: boolean;
+    FReverseBranchIsMeasured: boolean;
+    RevLine: TPointSeries;
+    RevLg: TPointSeries;
+
+    fTreadToStop:TThread;
+    fTreadToMeasuring:TThread;
+
+    procedure SetImax(const Value: double);
+    procedure SetImin(const Value: double);
+
+   procedure SeriesClear();override;
+ public
+  property Imax:double read FImax write SetImax;
+  property Imin:double read FImin write SetImin;
+  property CurrentValueLimitEnable:boolean read FCurrentValueLimitEnable write FCurrentValueLimitEnable;
+  property ForwardBranchIsMeasured:boolean read FForwardBranchIsMeasured write FForwardBranchIsMeasured;
+  property ReverseBranchIsMeasured:boolean read FReverseBranchIsMeasured write FForwardBranchIsMeasured;
+  Constructor Create(
+                     BS: TButton;
+                     Res:PVector;
+                     FLn,RLn,FLg,RLg:TPointSeries);
+  procedure BeginMeasuring();override;
+  procedure Cycle(ItIsForwardInput: Boolean);
+  procedure Measuring();
 end;
 
 
@@ -247,6 +280,27 @@ TFastIVDependenceStop = class(TThread)
   end;
 
 
+TFastIVDependenceActionNew = class(TThread)
+  private
+    { Private declarations }
+   fFastIV:TFastIVDependenceNew;
+  protected
+    procedure Execute; override;
+  public
+   constructor Create(FastIV:TFastIVDependenceNew);
+  end;
+
+TFastIVDependenceStopNew = class(TThread)
+  private
+    { Private declarations }
+   fThreadIVAction:TThread;
+   fFastIV:TFastIVDependenceNew;
+  protected
+    procedure Execute; override;
+  public
+   constructor Create(FastIV:TFastIVDependenceNew;
+                      ThreadIVAction:TThread);
+  end;
 
 TIVMeasurementResult=class(TSimpleFreeAndAiniObject)
   private
@@ -291,7 +345,7 @@ end;
 implementation
 
 uses
-  SysUtils, Forms, Windows, Math, DateUtils, Dialogs, OlegGraph;
+  SysUtils, Forms, Windows, Math, DateUtils, Dialogs, OlegGraph, OlegFunction;
 
 var
   fItIsForward:boolean;
@@ -1111,6 +1165,13 @@ begin
  inherited EndMeasuring;
 end;
 
+procedure TFastIVDependence.Measuring;
+begin
+   BeginMeasuring();
+//  FullCycle(ActionMeasurement);
+//  EndMeasuring();
+end;
+
 procedure TFastIVDependence.SeriesClear;
 begin
   inherited SeriesClear();
@@ -1191,6 +1252,115 @@ begin
   fThreadIVAction.Terminate;
   fThreadIVAction.WaitFor;  //????
   fThreadIVAction.Free;
+
+  fFastIV.EndMeasuring;
+end;
+
+{ TFastIVDependenceNew }
+
+procedure TFastIVDependenceNew.BeginMeasuring;
+begin
+  inherited  BeginMeasuring;
+  ResetEvent(EventToStopDependence);
+
+
+  fTreadToMeasuring:=TFastIVDependenceActionNew.Create(self);
+  fTreadToStop:=TFastIVDependenceStopNew.Create(self,fTreadToMeasuring);
+  fTreadToMeasuring.Resume;
+end;
+
+constructor TFastIVDependenceNew.Create(BS: TButton;
+                                        Res: PVector;
+                                        FLn, RLn, FLg, RLg: TPointSeries);
+begin
+ inherited Create(BS,Res,FLn, FLg);
+ RevLine:=RLn;
+ RevLg:=RLg;
+
+// HookCycle:=TSimpleClass.EmptyProcedure;
+// HookStep:=TSimpleClass.EmptyProcedure;
+// HookSetVoltage:=TSimpleClass.EmptyProcedure;
+//
+// fR_VtoI:=1;
+// FR_VtoI_Used:=True;
+end;
+
+procedure TFastIVDependenceNew.Cycle(ItIsForwardInput: Boolean);
+begin
+ sleep(5000);
+ HelpForMe(floattostr(Imin)+booltostr(ItIsForwardInput));
+
+end;
+
+procedure TFastIVDependenceNew.Measuring;
+begin
+   BeginMeasuring();
+//  FullCycle(ActionMeasurement);
+//  EndMeasuring();
+end;
+
+procedure TFastIVDependenceNew.SeriesClear;
+begin
+  inherited SeriesClear();
+  RevLine.Clear;
+  RevLg.Clear;
+  RevLg.ParentChart.Axes.Left.Logarithmic:=True;
+  RevLg.ParentChart.Axes.Left.LogarithmicBase:=10;
+end;
+
+procedure TFastIVDependenceNew.SetImax(const Value: double);
+begin
+  FImax := abs(Value);
+end;
+
+procedure TFastIVDependenceNew.SetImin(const Value: double);
+begin
+  FImin := abs(Value);
+end;
+
+
+{ TFastIVDependenceActionNew }
+
+constructor TFastIVDependenceActionNew.Create(FastIV: TFastIVDependenceNew);
+begin
+ inherited Create(True);    // Поток создаем в состоянии «Приостановлен»
+//  FreeOnTerminate := True;  // Поток освободит ресурсы при окончании работы
+   FreeOnTerminate := False;
+  fFastIV := FastIV;
+  Priority := tpNormal;
+//  Resume;
+end;
+
+procedure TFastIVDependenceActionNew.Execute;
+begin
+  fFastIV.Cycle(True);
+  fFastIV.Cycle(False);
+  SetEvent(EventToStopDependence);
+end;
+
+{ TFastIVDependenceStopNew }
+
+constructor TFastIVDependenceStopNew.Create(FastIV: TFastIVDependenceNew;
+  ThreadIVAction: TThread);
+begin
+  inherited Create(True);    // Поток создаем в состоянии «Приостановлен»
+  FreeOnTerminate := True;  // Поток освободит ресурсы при окончании работы
+  fFastIV := FastIV;
+  fThreadIVAction:=ThreadIVAction;
+  Priority := tpNormal;
+  Resume;
+end;
+
+procedure TFastIVDependenceStopNew.Execute;
+begin
+  WaitForSingleObject(EventToStopDependence, INFINITE);
+
+  HelpForMe('StopNew');
+
+  fThreadIVAction.Terminate;
+  fThreadIVAction.WaitFor;  //????
+  fThreadIVAction.Free;
+  HelpForMe('StopNewGGGGG');
 
   fFastIV.EndMeasuring;
 end;

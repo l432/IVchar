@@ -86,18 +86,42 @@ byte PinAndID::ActionId = 0;
 //byte PinAndID::Data4 = 0;
 //byte PinAndID::Data5 = 0;
 //byte PinAndID::Data6 = 0;
-byte PinAndID::DataFromPC[PacketMaxLength]={0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+byte PinAndID::DataFromPC[PacketMaxLength] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
 
 void PinAndID::CreateAndSendPacket(byte DDATA[], int n) {
-  byte data[n + 4];
-  data[0] = sizeof(data);
-  data[1] = DeviceId;
-  data[2] = ActionId;
+  byte ProblemByteNumber = 0;
   for (byte i = 0; i < n; i++)
   {
-    data[i + 3] = DDATA[i];
+    if (DDATA[i] == PacketEnd) ProblemByteNumber++;
   }
+
+  byte data[n + 4 + ProblemByteNumber + 1];
+  data[0] = sizeof(data);
+  data[1] = ProblemByteNumber;
+  byte counter=2;
+  for (byte i = 0; i < n; i++)
+  {
+    if (DDATA[i] == PacketEnd) {
+    DDATA[i]--;
+    data[counter++]=i+4+ProblemByteNumber;
+    }
+  }  
+  data[counter++] = DeviceId;
+  data[counter++] = ActionId;
+  for (byte i = 0; i < n; i++)
+  {
+    data[counter++] = DDATA[i];
+  }
+
+  //  byte data[n + 4];
+  //  data[0] = sizeof(data);
+  //  data[1] = DeviceId;
+  //  data[2] = ActionId;
+  //  for (byte i = 0; i < n; i++)
+  //  {
+  //    data[i + 3] = DDATA[i];
+  //  }
   data[sizeof(data) - 1] = 0;
   data[sizeof(data) - 1] = FCS(data, data[0]);
   SendPacket(data, sizeof(data));

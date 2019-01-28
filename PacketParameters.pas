@@ -93,6 +93,7 @@ end;
 
 Function PacketIsReceived(const Str: string; var pData:TArrByte):boolean;
  var i:integer;
+     WrongByteNumber:byte;
 begin
  Result:=True;
 
@@ -103,11 +104,21 @@ begin
 //  ShowData(pData);
  if pData[0]<>Length(Str) then Result:=False;
  if FCSCalculate(pData)<>0 then Result:=False;
+
+     WrongByteNumber:=pData[1];
+     for I := 1 to WrongByteNumber do
+        pData[pData[i+1]]:=pData[pData[i+1]]+1;
+     for i := 1 to High(pData)-(WrongByteNumber+1) do
+         begin
+         pData[i]:=pData[i+1+WrongByteNumber];
+         end;
+     SetLength(pData,High(pData)-WrongByteNumber);
 end;
 
 Function PacketIsReceived(const Str: string; var pData:TArrByte; Command:byte):boolean;overload;
 begin
  Result:=False;
+// showmessage(str);
  if not(PacketIsReceived(Str,pData)) then Exit;
  if pData[1]=Command then Result:=True;
 end;
