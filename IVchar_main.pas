@@ -885,7 +885,7 @@ var
 implementation
 
 uses
-  ArduinoADC;
+  ArduinoADC, OlegFunction;
 
 {$R *.dfm}
 
@@ -1101,6 +1101,18 @@ begin
   IVMeasuring.RangeRev:=IVCharRangeRev;
   CalibrMeasuring.RangeFor:=CalibrRangeFor;
   CalibrMeasuring.RangeRev:=CalibrRangeRev;
+  FastIVMeasuring.RangeFor:=IVCharRangeFor;
+  FastIVMeasuring.RangeRev:=IVCharRangeRev;
+  FastIVMeasuring.ForwardDelV:=ForwSteps;
+  FastIVMeasuring.ReverseDelV:=RevSteps;
+  FastIVMeasuring.CBForw:=CBForw;
+  FastIVMeasuring.CBRev:=CBRev;
+  FastIVMeasuring.SettingDevice:=SettingDevice;
+  FastIVMeasuring.RGDiodOrientation:=RGDO;
+  FastIVMeasuring.Voltage_MD:=VoltageIV_MD;
+  FastIVMeasuring.Current_MD:=Current_MD;
+
+
 
   IVMeasuring.HookCycle:=IVCharHookCycle;
   CalibrMeasuring.HookCycle:=CalibrHookCycle;
@@ -1188,24 +1200,24 @@ procedure TIVchar.IVCharHookCycle;
 begin
   ItIsBegining:=True;
   try
-  if TIVDependence.ItIsForward then
-    TIVDependence.DelayTimeChange(StrToInt(LFBDelayValue.Caption))
+  if TIVParameters.ItIsForward then
+    TIVParameters.DelayTimeChange(StrToInt(LFBDelayValue.Caption))
   else
-    TIVDependence.DelayTimeChange(StrToInt(LRBDelayValue.Caption));
+    TIVParameters.DelayTimeChange(StrToInt(LRBDelayValue.Caption));
   except
-    TIVDependence.DelayTimeChange(0)
+    TIVParameters.DelayTimeChange(0)
   end;
 end;
 
 procedure TIVchar.IVCharHookStep();
 begin
-  TIVDependence.VoltageStepChange(StepDetermine(TIVDependence.VoltageInput,TIVDependence.ItIsForward));
+  TIVParameters.VoltageStepChange(StepDetermine(TIVParameters.VoltageInput,TIVParameters.ItIsForward));
 end;
 
 
 procedure TIVchar.CalibrationHookStep;
 begin
-  TIVDependence.VoltageStepChange(DACR2R.CalibrationStep(TIVDependence.VoltageInput));
+  TIVParameters.VoltageStepChange(DACR2R.CalibrationStep(TIVParameters.VoltageInput));
 end;
 
 procedure TIVchar.IVcharHookBegin;
@@ -1258,15 +1270,15 @@ end;
 procedure TIVchar.IVCharHookSetVoltage;
 begin
 
-  LADInputVoltageValue.Caption:=FloatToStrF(TIVDependence.VoltageInput,ffFixed, 4, 3);
-  if not(TIVDependence.ItIsForward) then
+  LADInputVoltageValue.Caption:=FloatToStrF(TIVParameters.VoltageInput,ffFixed, 4, 3);
+  if not(TIVParameters.ItIsForward) then
     LADInputVoltageValue.Caption:='-'+LADInputVoltageValue.Caption;
   LADInputVoltageValue.Caption:=LADInputVoltageValue.Caption+
-                        ' '+FloatToStrF(TIVDependence.VoltageInputReal,ffFixed, 4, 3);
+                        ' '+FloatToStrF(TIVParameters.VoltageInputReal,ffFixed, 4, 3);
 
 
- if RGDO.ItemIndex=1 then SettingDevice.SetValue(-TIVDependence.VoltageInputReal)
-                     else SettingDevice.SetValue(TIVDependence.VoltageInputReal);
+ if RGDO.ItemIndex=1 then SettingDevice.SetValue(-TIVParameters.VoltageInputReal)
+                     else SettingDevice.SetValue(TIVParameters.VoltageInputReal);
 
 end;
 
@@ -1371,7 +1383,7 @@ begin
   until (AtempNumber>AtempNumbermax);
 
   if (CBCurrentValue.Checked and (abs(IVMeasResult.CurrentMeasured)>=Imax)) then
-   TIVDependence.VoltageInputChange(Vmax);
+   TIVParameters.VoltageInputChange(Vmax);
 end;
 
 function TIVchar.IVCharCurrentMeasuring(): boolean;
@@ -1379,7 +1391,7 @@ function TIVchar.IVCharCurrentMeasuring(): boolean;
 begin
  Result:=False;
  Application.ProcessMessages;
- if TIVDependence.IVMeasuringToStop then Exit;
+ if TIVParameters.IVMeasuringToStop then Exit;
 
  Current := Current_MD.GetMeasurementResult();
 
@@ -1437,7 +1449,7 @@ begin
  if (newCorrection=ErResult)
    then newCorrection:=IVForeseeCorrection;
 
- TIVDependence.VoltageCorrectionChange(newCorrection);
+ TIVParameters.VoltageCorrectionChange(newCorrection);
 //   if ItIsDarkIV then
 //      begin
 //        Iprognoz:=IVprognozI();
@@ -1463,16 +1475,16 @@ end;
 procedure TIVchar.CalibrHookSecondMeas();
 begin
   Application.ProcessMessages;
-  if TIVDependence.IVMeasuringToStop then Exit;
+  if TIVParameters.IVMeasuringToStop then Exit;
   TDependence.tempIChange(DACR2R_MD.GetMeasurementResult());
   LADCurrentValue.Caption:=FloatToStrF(TDependence.tempI,ffFixed, 6, 4);
 end;
 
 procedure TIVchar.CalibrHookSetVoltage;
 begin
- LADInputVoltageValue.Caption:=FloatToStrF(TIVDependence.VoltageInputReal,ffFixed, 6, 4);
+ LADInputVoltageValue.Caption:=FloatToStrF(TIVParameters.VoltageInputReal,ffFixed, 6, 4);
 // SettingDevice.SetValueCalibr(TIVDependence.VoltageInputReal);
- DACR2R.OutputCalibr(TIVDependence.VoltageInputReal);
+ DACR2R.OutputCalibr(TIVParameters.VoltageInputReal);
 end;
 
 procedure TIVchar.CalibrSaveClick(Sender: TObject);
@@ -1600,14 +1612,14 @@ end;
 
 function TIVchar.IVCharVoltageMaxDif: double;
 begin
-  if TIVDependence.ItIsForward then
+  if TIVParameters.ItIsForward then
     begin
-      if TIVDependence.VoltageInput>1
+      if TIVParameters.VoltageInput>1
         then Result:=10*DoubleConstantShows[3].Data
         else Result:=DoubleConstantShows[3].Data;
     end                               else
     begin
-      if TIVDependence.VoltageInput>1
+      if TIVParameters.VoltageInput>1
         then Result:=10*DoubleConstantShows[4].Data
         else Result:=DoubleConstantShows[4].Data;
     end;
@@ -1621,14 +1633,14 @@ procedure TIVchar.IVCharVoltageMeasHook;
 begin
 
   Application.ProcessMessages;
-  if TIVDependence.IVMeasuringToStop then Exit;
+  if TIVParameters.IVMeasuringToStop then Exit;
 
   if not(IVCharVoltageMeasuring()) then Exit;
 
 
   if IVCorrecrionNeeded() then
    begin
-    TIVDependence.SecondMeasIsDoneChange(False);
+    TIVParameters.SecondMeasIsDoneChange(False);
 
 
     if VoltageLimit then
@@ -1644,7 +1656,7 @@ begin
       begin
        if abs(IVMeasResult.DeltaToExpected)>0.02 then
         begin
-         TIVDependence.VoltageCorrectionChange(TIVDependence.VoltageCorrection+0.2);
+         TIVParameters.VoltageCorrectionChange(TIVParameters.VoltageCorrection+0.2);
          VoltageLimit:=True;
         end;
        Exit;
@@ -1663,7 +1675,7 @@ begin
     MaxDifCoeficient:=MaxDifCoeficient*1.2;
    end;
 
-    NewCorrection:=TIVDependence.VoltageCorrection-
+    NewCorrection:=TIVParameters.VoltageCorrection-
                      Factor*IVMeasResult.DeltaToExpected;
 
 //++++++++++++++++++++++++++++++++++++++++++
@@ -1703,13 +1715,13 @@ begin
    if (NewCorrection=ErResult)
       or(abs(NewCorrection-IVMeasResult.Correction)<1e-4)
       or(abs(NewCorrection)>3)
-    then NewCorrection:=TIVDependence.VoltageCorrection-
+    then NewCorrection:=TIVParameters.VoltageCorrection-
                      Factor*IVMeasResult.DeltaToExpected;
 
 
     CorrectionLimit(NewCorrection);
 
-    TIVDependence.VoltageCorrectionChange(NewCorrection);
+    TIVParameters.VoltageCorrectionChange(NewCorrection);
    end;
 
 end;
@@ -1744,7 +1756,7 @@ end;
 
 function TIVchar.IVCurrentGrowth: boolean;
 begin
-   if TIVDependence.ItIsForward then
+   if TIVParameters.ItIsForward then
        Result:=IVMeasResult.CurrentMeasured>IVResult^.Y[High(IVResult^.Y)]
                                 else
        Result:=IVMeasResult.CurrentMeasured<IVResult^.Y[High(IVResult^.Y)]
@@ -1904,7 +1916,7 @@ end;
 
 procedure TIVchar.IVSavedCorrectionSet;
 begin
- TIVDependence.VoltageCorrectionChange(VolCorrection.Yvalue(VoltageInputSign))
+ TIVParameters.VoltageCorrectionChange(VolCorrection.Yvalue(VoltageInputSign))
 end;
 
 
@@ -1926,7 +1938,7 @@ end;
 
 procedure TIVchar.CalibrHookCycle;
 begin
-  TIVDependence.DelayTimeChange(800);
+  TIVParameters.DelayTimeChange(800);
 end;
 
 procedure TIVchar.CalibrHookDataSave;
@@ -1948,9 +1960,9 @@ end;
 procedure TIVchar.CalibrHookFirstMeas;
 begin
   Application.ProcessMessages;;
-  if TIVDependence.IVMeasuringToStop then Exit;
+  if TIVParameters.IVMeasuringToStop then Exit;
 
-  TDependence.tempVChange(TIVDependence.VoltageInputReal);
+  TDependence.tempVChange(TIVParameters.VoltageInputReal);
   LADVoltageValue.Caption:=FloatToStrF(TDependence.tempV,ffFixed, 6, 4);
 end;
 
@@ -1976,7 +1988,7 @@ begin
        Temperature_MD.ActiveInterface.NewData:=False;
       end;
 
-  if (TIVDependence.VoltageInput=0)
+  if (TIVParameters.VoltageInput=0)
    then  ItIsDarkIV:=(TDependence.tempI>-1e-5)
   else
    if TDependence.tempI>0 then  ItIsDarkIV:=True;
@@ -1984,7 +1996,7 @@ begin
 
 
   if ItIsBegining then ItIsBegining:=not(ItIsBegining);
-  VolCorrectionNew.Add(VoltageInputSign,TIVDependence.VoltageCorrection);
+  VolCorrectionNew.Add(VoltageInputSign,TIVParameters.VoltageCorrection);
 
 end;
 
@@ -2409,8 +2421,17 @@ begin
  FastIVMeasuring.Imax := DoubleConstantShows[1].Data;
  FastIVMeasuring.Imin := DoubleConstantShows[2].Data;
  FastIVMeasuring.CurrentValueLimitEnable:=CBCurrentValue.Checked;
- FastIVMeasuring.ForwardBranchIsMeasured:=CBForw.Checked;
- FastIVMeasuring.ReverseBranchIsMeasured:=CBRev.Checked;
+ FastIVMeasuring.DragonBackTime:=DoubleConstantShows[11].Data;
+
+// FastIVMeasuring.ForwardBranchIsMeasured:=CBForw.Checked;
+// FastIVMeasuring.SetForwardBranchIsMeasured(CBForw.Checked);
+// FastIVMeasuring.ReverseBranchIsMeasured:=CBRev.Checked;
+
+// HelpForMe(BoolToStr(CBForw.Checked)+'ffff');
+//HelpForMe(BoolToStr(CBRev.Checked)+'rrrr');
+
+// HelpForMe(BoolToStr(FastIVMeasuring.ForwardBranchIsMeasured)+'fff');
+//HelpForMe(BoolToStr(FastIVMeasuring.ReverseBranchIsMeasured)+'rrr');
 end;
 
 procedure TIVchar.FormCreate(Sender: TObject);
@@ -3610,7 +3631,7 @@ end;
 
 procedure TIVchar.CorrectionLimit(var NewCorrection: Double);
 begin
-  if (abs(NewCorrection) > 0.3) and (TIVDependence.VoltageInput < 0.3) then
+  if (abs(NewCorrection) > 0.3) and (TIVParameters.VoltageInput < 0.3) then
     NewCorrection := 0.1 * NewCorrection / NewCorrection;
   if (abs(NewCorrection) > 3)
     then NewCorrection := 0.1 * NewCorrection / NewCorrection;
@@ -3632,10 +3653,10 @@ end;
 
 procedure TIVchar.IVVoltageInputSignDetermine;
 begin
-  if TIVDependence.ItIsForward then
-    VoltageInputSign := TIVDependence.VoltageInput
+  if TIVParameters.ItIsForward then
+    VoltageInputSign := TIVParameters.VoltageInput
   else
-    VoltageInputSign := -TIVDependence.VoltageInput;
+    VoltageInputSign := -TIVParameters.VoltageInput;
 end;
 
 procedure TIVchar.IVMR_Refresh;

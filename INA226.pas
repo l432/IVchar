@@ -470,7 +470,7 @@ begin
   fChan:=Chan;
   inherited Create(fChan.Pins,PanelConvTime);
   MeasuringDeviceSimple:=
-     TMeasuringDeviceSimple.Create(fChan,LabelMeas,srPreciseVoltage,ButMeas);
+     TMeasuringDeviceSimple.Create(fChan,LabelMeas,srCurrent,ButMeas);
 end;
 
 procedure TINA226_ChannelShow.CreateFooter;
