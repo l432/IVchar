@@ -14,12 +14,14 @@ uses
 
 const
   MeasIV='IV characteristic';
+  MeasFastIV='Fast IV characteristic';
   MeasR2RCalib='R2R-DAC Calibration';
   MeasTimeD='Time dependence';
   MeasTwoTimeD='Time two dependence';
   MeasControlParametr='Controller on time';
   MeasTempOnTime='Temperature on time';
   MeasIscAndVocOnTime='Voc and Isc on time';
+
 
 //  MD_IniSection='Sources';
 
@@ -699,6 +701,7 @@ type
 //    procedure CalibrHookEnd;
     procedure HookBegin;
     procedure FastIVHookBegin;
+    procedure FastIVHookEnd;
 //    procedure TimeDHookBegin;
 //    procedure TimeTwoDHookBegin;
 //    procedure ControlTimeHookBegin;
@@ -752,6 +755,7 @@ type
     procedure ComPortsLoadSettings(ComPorts:array of TComPort);
     procedure ComPortsWriteSettings(ComPorts:array of TComPort);
     procedure ActionInSaveButton(Sender: TObject);
+    procedure ActionInSaveButtonFastIV(Sender: TObject);
     function DiapazonIMeasurement(Measurement:IMeasurement):ShortInt;
     procedure CorrectionLimit(var NewCorrection: Double);
     procedure IVOldFactorDetermination(var Factor: Double);
@@ -762,6 +766,7 @@ type
     procedure ADS1115Create;
     procedure INA226Create;
     procedure GDS_Create;
+    procedure SaveIVMeasurementResults(FileName: string);
   public
     ShowArray:TObjectArray;
     AnyObjectArray:TObjectArray;
@@ -862,7 +867,7 @@ type
     Imax,Imin,R_VtoI,Shift_VtoI:double;
 
     IVMeasuring,CalibrMeasuring:TIVDependence;
-    FastIVMeasuring:TFastIVDependenceNew;
+    FastIVMeasuring:TFastIVDependence;
     TimeDependence:TTimeDependenceTimer;
     ControlParameterTime,TemperatureOnTime:TTimeDependence;
     TimeTwoDependenceTimer,IscVocOnTime:TTimeTwoDependenceTimer;
@@ -1052,10 +1057,16 @@ begin
     TemperData.DeleteErResult;
     if TemperData.n>0 then
        Temperature:=TemperData.SumY/TemperData.n;
-//    IVMeasResult.Free;
-//    IVMRFirst.Free;
-//    IVMRSecond.Free;
   end;
+
+// if (Key=MeasFastIV) then
+//  if (SBTAuto.Down)and
+//     (Temperature_MD.ActiveInterface.NewData) then
+//      begin
+//       Temperature:=Temperature_MD.ActiveInterface.Value;
+//       Temperature_MD.ActiveInterface.NewData:=False;
+//      end                                     else
+//       Temperature:=Temperature_MD.GetMeasurementResult();
 
  BIVSave.OnClick:=ActionInSaveButton;
 end;
@@ -1065,7 +1076,7 @@ procedure TIVchar.DependenceMeasuringCreate;
 begin
   IVMeasuring := TIVDependence.Create(CBForw,CBRev,PBIV,BIVStop,
                          IVResult,ForwLine,RevLine,ForwLg,RevLg);
-  FastIVMeasuring:=TFastIVDependenceNew.Create(BIVStop,IVResult,
+  FastIVMeasuring:=TFastIVDependence.Create(BIVStop,IVResult,
                                   ForwLine,RevLine,ForwLg,RevLg);
 
   CalibrMeasuring:= TIVDependence.Create(CBForw,CBRev,PBIV,BIVStop,
@@ -1086,7 +1097,7 @@ begin
                                        ForwLine,ForwLg);
 
   FastIVMeasuring.HookBeginMeasuring:=FastIVHookBegin;
-
+  FastIVMeasuring.HookEndMeasuring:=FastIVHookEnd;
 
   SetLength(Dependencies,7);
   Dependencies[0]:=IVMeasuring;
@@ -1096,11 +1107,13 @@ begin
   Dependencies[4]:=IscVocOnTime;
   Dependencies[5]:=ControlParameterTime;
   Dependencies[6]:=TemperatureOnTime;
+//  Dependencies[7]:=FastIVMeasuring;
 
   IVMeasuring.RangeFor:=IVCharRangeFor;
   IVMeasuring.RangeRev:=IVCharRangeRev;
   CalibrMeasuring.RangeFor:=CalibrRangeFor;
   CalibrMeasuring.RangeRev:=CalibrRangeRev;
+
   FastIVMeasuring.RangeFor:=IVCharRangeFor;
   FastIVMeasuring.RangeRev:=IVCharRangeRev;
   FastIVMeasuring.ForwardDelV:=ForwSteps;
@@ -1111,8 +1124,6 @@ begin
   FastIVMeasuring.RGDiodOrientation:=RGDO;
   FastIVMeasuring.Voltage_MD:=VoltageIV_MD;
   FastIVMeasuring.Current_MD:=Current_MD;
-
-
 
   IVMeasuring.HookCycle:=IVCharHookCycle;
   CalibrMeasuring.HookCycle:=CalibrHookCycle;
@@ -1244,8 +1255,10 @@ ItIsDarkIV:=False;
 end;
 
 procedure TIVchar.HookBegin;
-begin
-//  DecimalSeparator:='.';
+ var Key:string;
+ begin
+ Key:=CBMeasurements.Items[CBMeasurements.ItemIndex];
+ //  DecimalSeparator:='.';
   CBMeasurements.Enabled:=False;
   BIVStart.Enabled := False;
   BConnect.Enabled := False;
@@ -1253,14 +1266,11 @@ begin
   BParamReceive.Enabled := False;
 //  SBTAuto.Enabled := False;
 
-  if CBMeasurements.Items[CBMeasurements.ItemIndex]=MeasIV
-   then  IVcharHookBegin;
-  if CBMeasurements.Items[CBMeasurements.ItemIndex]=MeasTimeD
-   then  MeasurementTimeParameterDetermination(TimeDependence);
-  if CBMeasurements.Items[CBMeasurements.ItemIndex]=MeasTwoTimeD
-   then  MeasurementTimeParameterDetermination(TimeTwoDependenceTimer);
-  if CBMeasurements.Items[CBMeasurements.ItemIndex]=MeasIscAndVocOnTime
-   then
+  if Key=MeasIV then  IVcharHookBegin;
+  if Key=MeasFastIV then FastIVHookBegin;
+  if Key=MeasTimeD then MeasurementTimeParameterDetermination(TimeDependence);
+  if Key=MeasTwoTimeD then  MeasurementTimeParameterDetermination(TimeTwoDependenceTimer);
+  if Key=MeasIscAndVocOnTime then
    begin
    MeasurementTimeParameterDetermination(IscVocOnTime);
    VolCorrectionNew.Clear;
@@ -1504,46 +1514,43 @@ begin
 end;
 
 procedure TIVchar.CBMeasurementsChange(Sender: TObject);
+ var Key:string;
 begin
+ Key:=CBMeasurements.Items[CBMeasurements.ItemIndex];
  RevLine.Clear;
  RevLg.Clear;
 
- if (CBMeasurements.Items[CBMeasurements.ItemIndex]=MeasR2RCalib)
-     or(CBMeasurements.Items[CBMeasurements.ItemIndex]=MeasIV)
+ if (Key=MeasR2RCalib)
+     or(Key=MeasIV)
+     or(Key=MeasFastIV)
      then
       begin
        LADRange.Visible:=True;
        RangeShow(Sender);
-       MeasurementsLabelCaptionDefault;
+       if Key=MeasFastIV then
+          MeasurementsLabelCaption(['Voltage', 'Current', ''])
+                         else
+          MeasurementsLabelCaptionDefault;
       end
      else LADRange.Visible:=False;
 
- if (CBMeasurements.Items[CBMeasurements.ItemIndex]=MeasTimeD)
-    or(CBMeasurements.Items[CBMeasurements.ItemIndex]=MeasControlParametr)
+
+ if (Key=MeasTimeD)
+    or(Key=MeasControlParametr)
      then MeasurementsLabelCaption(['Value', 'Time', '']);
 
- if CBMeasurements.Items[CBMeasurements.ItemIndex]=MeasTwoTimeD
+ if Key=MeasTwoTimeD
      then
       if TimeTwoDependenceTimer.isTwoValueOnTime
         then MeasurementsLabelCaption(['1-st value', 'Time', '2-nd value'])
         else MeasurementsLabelCaption(['1-st value', '2-nd value', '']);
 
- if CBMeasurements.Items[CBMeasurements.ItemIndex]=MeasIscAndVocOnTime
+ if Key=MeasIscAndVocOnTime
      then MeasurementsLabelCaption(['Voc', 'Time', 'Isc']);
 
- if CBMeasurements.Items[CBMeasurements.ItemIndex]=MeasTempOnTime
+ if Key=MeasTempOnTime
      then MeasurementsLabelCaption(['Temp-ture', 'Time', '']);
 
-//     ControlParameterTime.BeginMeasuring;
-//     TimeTwoDependenceTimer.BeginMeasuring;
-//     TimeDependence.BeginMeasuring;
-//
-// if (CBMeasurements.Items[CBMeasurements.ItemIndex]=MeasControlParametr)
-//    and (SBControlBegin.Down)
-//     then  ControlParameterTime.BeginMeasuring;
-// if (CBMeasurements.Items[CBMeasurements.ItemIndex]=MeasTempOnTime)
-//    and (SBTAuto.Down)
-//     then  TemperatureOnTime.BeginMeasuring;
 
 
 end;
@@ -2008,7 +2015,7 @@ begin
   BIVStart.Enabled := True;
   BConnect.Enabled := True;
   BParamReceive.Enabled := True;
-  SBTAuto.Enabled := True;
+//  SBTAuto.Enabled := True;
   if High(IVResult^.X) > 0 then
   begin
     BIVSave.Enabled := True;
@@ -2039,15 +2046,8 @@ begin
   if SaveDialog.Execute then
    begin
 
-    if Key=MeasIV then
-      begin
-       IVResult.Sorting;
-       IVResult.DeleteDuplicate;
-       Write_File(SaveDialog.FileName,IVResult);
-//       ToFileFromTwoVector(SaveDialog.FileName,IVResult,VolCorrectionNew);
-       LTLastValue.Caption:=FloatToStrF(Temperature,ffFixed, 5, 2);
-       SaveCommentsFile(SaveDialog.FileName);
-      end;
+    if (Key=MeasIV)or(Key=MeasFastIV)
+                 then SaveIVMeasurementResults(SaveDialog.FileName);
 
     if (Key=MeasTimeD)or(Key=MeasControlParametr)or(Key=MeasTempOnTime)
       then Write_File(SaveDialog.FileName,IVResult,6);
@@ -2065,6 +2065,20 @@ begin
       ToFileFromTwoVector(copy(SaveDialog.FileName,1,Length(SaveDialog.FileName)-4)+'a.dat',
          IVResult,VolCorrectionNew,6);
       end;
+     BIVSave.Font.Style:=BIVSave.Font.Style+[fsStrikeOut];
+   end;
+end;
+
+procedure TIVchar.ActionInSaveButtonFastIV(Sender: TObject);
+begin
+  SaveDialog.FileName:=FastIVMeasuring.DatFileNameToSave;
+  SaveDialog.Title := 'Last file - ' +
+      LastDATFileName(FastIVMeasuring.PrefixToFileName) + '.dat';
+  SaveDialog.InitialDir := GetCurrentDir;
+
+  if SaveDialog.Execute then
+   begin
+     SaveIVMeasurementResults(SaveDialog.FileName);
      BIVSave.Font.Style:=BIVSave.Font.Style+[fsStrikeOut];
    end;
 end;
@@ -2119,6 +2133,16 @@ begin
 
   ShowArray.Add([GDS_806S_Show]);
   AnyObjectArray.Add([GDS_806S,GDS_806S_Channel[1],GDS_806S_Channel[2]]);
+end;
+
+procedure TIVchar.SaveIVMeasurementResults(FileName: string);
+begin
+  IVResult.Sorting;
+  IVResult.DeleteDuplicate;
+  Write_File(FileName, IVResult);
+  //       ToFileFromTwoVector(SaveDialog.FileName,IVResult,VolCorrectionNew);
+  LTLastValue.Caption := FloatToStrF(Temperature, ffFixed, 5, 2);
+  SaveCommentsFile(FileName);
 end;
 
 procedure TIVchar.BConnectClick(Sender: TObject);
@@ -2244,6 +2268,8 @@ begin
      then CalibrMeasuring.Measuring;
  if CBMeasurements.Items[CBMeasurements.ItemIndex]=MeasIV
      then IVMeasuring.Measuring;
+  if CBMeasurements.Items[CBMeasurements.ItemIndex]=MeasFastIV
+     then FastIVMeasuring.Measuring;
  if CBMeasurements.Items[CBMeasurements.ItemIndex]=MeasTimeD
      then TimeDependence.BeginMeasuring;
   if CBMeasurements.Items[CBMeasurements.ItemIndex]=MeasTwoTimeD
@@ -2340,9 +2366,8 @@ end;
 procedure TIVchar.Button1Click(Sender: TObject);
 
 begin
- FastIVMeasuring.Measuring;
-// FastIVMeasuring.HookBeginMeasuring;
-// showmessage(floattostr(FastIVMeasuring.Imin));
+//showmessage(NextDATFileName(NoFile));
+ FastIVMeasuring.Measuring(false,'l');
 end;
 
 
@@ -2417,21 +2442,52 @@ end;
 
 procedure TIVchar.FastIVHookBegin;
 begin
+  if FastIVMeasuring.SingleMeasurement then
+    begin
+      CBMeasurements.Enabled:=False;
+      BIVStart.Enabled := False;
+      BConnect.Enabled := False;
+      BIVSave.Enabled:=False;
+      BParamReceive.Enabled := False;
+    end;
+
  ThermoCuple.Measurement:=TermoCouple_MD.ActiveInterface;
  FastIVMeasuring.Imax := DoubleConstantShows[1].Data;
  FastIVMeasuring.Imin := DoubleConstantShows[2].Data;
  FastIVMeasuring.CurrentValueLimitEnable:=CBCurrentValue.Checked;
  FastIVMeasuring.DragonBackTime:=DoubleConstantShows[11].Data;
-
 // FastIVMeasuring.ForwardBranchIsMeasured:=CBForw.Checked;
-// FastIVMeasuring.SetForwardBranchIsMeasured(CBForw.Checked);
 // FastIVMeasuring.ReverseBranchIsMeasured:=CBRev.Checked;
+end;
 
-// HelpForMe(BoolToStr(CBForw.Checked)+'ffff');
-//HelpForMe(BoolToStr(CBRev.Checked)+'rrrr');
+procedure TIVchar.FastIVHookEnd;
+begin
+  DecimalSeparator:='.';
+ if FastIVMeasuring.SingleMeasurement then
+    begin
+      CBMeasurements.Enabled:=True;
+      BIVStart.Enabled := True;
+      BConnect.Enabled := True;
+      BParamReceive.Enabled := True;
+      if High(IVResult^.X) > 0 then
+      begin
+        BIVSave.Enabled := True;
+        BIVSave.Font.Style := BIVSave.Font.Style - [fsStrikeOut];
+      end;
+    end;
 
-// HelpForMe(BoolToStr(FastIVMeasuring.ForwardBranchIsMeasured)+'fff');
-//HelpForMe(BoolToStr(FastIVMeasuring.ReverseBranchIsMeasured)+'rrr');
+  if (SBTAuto.Down)and
+     (Temperature_MD.ActiveInterface.NewData) then
+      begin
+       Temperature:=Temperature_MD.ActiveInterface.Value;
+       Temperature_MD.ActiveInterface.NewData:=False;
+      end                                     else
+       Temperature:=Temperature_MD.GetMeasurementResult();
+
+ if FastIVMeasuring.SingleMeasurement
+    then BIVSave.OnClick:=ActionInSaveButtonFastIV
+    else SaveIVMeasurementResults(FastIVMeasuring.DatFileNameToSave)
+
 end;
 
 procedure TIVchar.FormCreate(Sender: TObject);
@@ -3328,16 +3384,18 @@ var
   last: string;
 begin
   last := LastDATFileName;
-  if last <> NoFile then
-  begin
-    try
-      SaveDialog.FileName := IntToStr(StrToInt(last) + 1) + '.dat';
-    except
-      SaveDialog.FileName := last + '1.dat';
-    end;
-  end
-                     else
-  SaveDialog.FileName := '1.dat';
+
+//  if last <> NoFile then
+//  begin
+//    try
+//      SaveDialog.FileName := IntToStr(StrToInt(last) + 1) + '.dat';
+//    except
+//      SaveDialog.FileName := last + '1.dat';
+//    end;
+//  end
+//                     else
+//  SaveDialog.FileName := '1.dat';
+  SaveDialog.FileName:=NextDATFileName(last);
 
   SaveDialog.Title := 'Last file - ' + last + '.dat';
   SaveDialog.InitialDir := GetCurrentDir;
@@ -3778,6 +3836,7 @@ begin
 
   CBMeasurements.Items.Clear;
   CBMeasurements.Items.Add(MeasIV);
+  CBMeasurements.Items.Add(MeasFastIV);
   CBMeasurements.Items.Add(MeasR2RCalib);
   CBMeasurements.Items.Add(MeasTimeD);
   CBMeasurements.Items.Add(MeasControlParametr);

@@ -93,9 +93,14 @@ function LastFileName(Mask:string):string;
 {повертає назву (повну, з розширенням) останього файлу в
 поточному каталозі, чия назва задовольняє маску Mask}
 
-function LastDATFileName():string;
-{повертає назву (коротку) останього .dat файлу в
+function LastDATFileName(prefix:string=''):string;
+{повертає назву (коротку) останього 'prefix*.dat' файлу в
 поточному каталозі}
+
+function NextDATFileName(LastDatFileName:string):string;
+{повертає повну назву (з .dat) файлу, який має бути
+наступтим після  LastDatFileName}
+
 
 Procedure MelodyShot();
 
@@ -126,11 +131,33 @@ begin
  FindClose(SR);
 end;
 
-function LastDATFileName():string;
+function LastDATFileName(prefix:string=''):string;
 begin
-  Result:=LastFileName('*.dat');
+  Result:=LastFileName(prefix+'*.dat');
   if Result<>NoFile then
    Result:=Copy(Result,1,Length(Result)-4);
+end;
+
+function NextDATFileName(LastDatFileName:string):string;
+ var prefix:string;
+begin
+  prefix:='';
+  Result:='';
+  if LastDatFileName <> NoFile then
+   begin
+    while (length(LastDatFileName)>0) do
+     begin
+       try
+       Result:=IntToStr(StrToInt(LastDatFileName) + 1);
+       Delete(LastDatFileName,1,length(LastDatFileName));
+       except
+        prefix:=prefix+Copy(LastDatFileName,1,1);
+        Delete(LastDatFileName,1,1);
+       end;
+     end;
+   end;
+  if Result='' then Result:='1';
+  Result:=prefix+Result+'.dat';
 end;
 
 Procedure MelodyShot();

@@ -27,15 +27,18 @@ private
  fSetOfInterface:array of IMeasurement;
  fStringResult:TMeasuringStringResult;
  ResultIndicator:TLabel;
+ fShowResult:boolean;
  ActionButton:TButton;
  procedure ActionButtonOnClick(Sender: TObject);
- function GetResult():double;virtual;
+// function GetResult():double;virtual;
  function GetActiveInterface():IMeasurement;virtual;
 public
  property ActiveInterface:IMeasurement read GetActiveInterface;
+ property ShowResult:boolean  read fShowResult write fShowResult;
  Constructor Create(const SOI: array of IMeasurement;
                   DevCB: TComboBox; IdentName: string;
                   RI: TLabel; SR: TMeasuringStringResult);
+ function GetResult():double;virtual;
  function GetMeasurementResult():double;
  procedure AddActionButton(AB:TButton);
  procedure Add(IO:IMeasurement);
@@ -185,6 +188,7 @@ begin
   if DevicesComboBox.Items.Count>0 then DevicesComboBox.ItemIndex:=0;
 
  ResultIndicator:=RI;
+ fShowResult:=True;
  fStringResult:=SR;
 end;
 

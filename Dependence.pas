@@ -46,7 +46,7 @@ private
                      Res:PVector;
                      FLn,FLg:TPointSeries);
   class function PointNumber:word;
-  class procedure PointNumberChange(Value: word);
+//  class procedure PointNumberChange(Value: word);
   class function tempV:double;
   class procedure tempVChange(Value: double);
   class function tempI:double;
@@ -187,65 +187,7 @@ public
                      FLn,RLn,FLg,RLg:TPointSeries);
   procedure Measuring();
   procedure SetVoltage();
-//  class function ItIsForward:boolean;
-//  class procedure ItIsForwardChange(Value: boolean);
-//  class function IVMeasuringToStop:boolean;
-//  class procedure IVMeasuringToStopChange(Value: boolean);
-//  class procedure SecondMeasIsDoneChange(Value: boolean);
-//  class function VoltageInput:double;
-//  class procedure VoltageInputChange(Value: double);
-//  class function VoltageInputReal:double;
-//  class function VoltageStep:double;
-//  class procedure VoltageStepChange(Value: double);
-//  class function VoltageCorrection:double;
-//  class procedure VoltageCorrectionChange(Value: double);
-//  class function DelayTime:integer;
-//  class procedure DelayTimeChange(Value: integer);
 end;
-
-
-
-TFastIVDependence=class (TFastDependence)
-private
-  fHookCycle:TSimpleEvent;
-  fHookStep:TSimpleEvent;
-  fHookSetVoltage:TSimpleEvent;
-  FR_VtoI_Used: boolean;
-  fR_VtoI:double;
-
-  fTreadToStop:TThread;
-  fTreadToMeasuring:TThread;
-
-  fBeginBranchNumber:word;
-
-  CBForw,CBRev: TCheckBox;
-  RevLine: TPointSeries;
-  RevLg: TPointSeries;
-
-  procedure SeriesClear();override;
-  procedure EndMeasuring();override;
-  procedure ActionMeasurement();override;
-  procedure SetR_VtoI(const Value: double);
-  procedure SetR_VtoI_Used(const Value: boolean);
-public
-  RangeFor:TLimitShow;
-  RangeRev:TLimitShowRev;
-  property HookCycle:TSimpleEvent read fHookCycle write fHookCycle;
-  property HookStep:TSimpleEvent read fHookStep write fHookStep;
-  property HookSetVoltage:TSimpleEvent read fHookSetVoltage write fHookSetVoltage;
-  property R_VtoI:double read FR_VtoI write SetR_VtoI;
-  property R_VtoI_Used:boolean read FR_VtoI_Used write SetR_VtoI_Used;
-  Constructor Create(
-                     CBF,CBR: TCheckBox;
-                     BS: TButton;
-                     Res:PVector;
-                     FLn,RLn,FLg,RLg:TPointSeries);
-  procedure SetVoltage();
-  procedure BeginMeasuring();override;
-  procedure Cycle(ItIsForwardInput: Boolean);
-  procedure Measuring();
-end;
-
 
 TThreadTermin= class(TThread)
  private
@@ -254,13 +196,11 @@ TThreadTermin= class(TThread)
   property IsTerminated:boolean read getIsTerminated;
 end;
 
-TFastIVDependenceNew=class (TFastDependence)
+TFastIVDependence=class (TFastDependence)
   private
     FImax: double;
-//    FForwardBranchIsMeasured: boolean;
     FImin: double;
     FCurrentValueLimitEnable: boolean;
-//    FReverseBranchIsMeasured: boolean;
     fForwardBranch:boolean;
     fAbsVoltageValue:double;
     fVoltageFactor:double;
@@ -268,6 +208,10 @@ TFastIVDependenceNew=class (TFastDependence)
     fVoltageMeasured,fCurrentMeasured:double;
     fDragonBackTime:double;
     fItIsBranchBegining:boolean;
+    fItIsLightIV:boolean;
+    fSingleMeasurement:boolean;
+    fVoc:double;
+    fIsc:double;
 
     RevLine: TPointSeries;
     RevLg: TPointSeries;
@@ -275,13 +219,12 @@ TFastIVDependenceNew=class (TFastDependence)
     fTreadToStop:TThread;
     fTreadToMeasuring:TThreadTermin;
 
+
     procedure SetImax(const Value: double);
     procedure SetImin(const Value: double);
     procedure SetDragonBackTime(const Value: double);
 
    procedure SeriesClear();override;
-//   procedure FullCycle(Action: TSimpleEvent);
-//   procedure ButtonStopClick(Sender: TObject);override;
    procedure BeginMeasuring();override;
    function StepFromVector(Vector:Pvector):double;
    function VoltageStep:double;
@@ -289,13 +232,14 @@ TFastIVDependenceNew=class (TFastDependence)
    procedure ActionMeasurement();override;
    procedure VoltageFactorDetermination;
    procedure DiodOrientationVoltageFactorDetermination;
-//    procedure SetDragonBackVoltage(VoltageKoef: Double);
-//   procedure SetForwardBranchIsMeasured(const Value:boolean);
    procedure VoltageMeasuring();
    procedure CurrentMeasuring();
    function ValueMeasuring(MD:TMeasuringDevice):double;
    function CurrentGrowth():boolean;
    procedure DataSave();override;
+   procedure EndMeasuring();override;
+   procedure VocIscDetermine;
+    procedure PointSeriesFilling;
  public
   RangeFor:TLimitShow;
   RangeRev:TLimitShowRev;
@@ -305,27 +249,30 @@ TFastIVDependenceNew=class (TFastDependence)
   SettingDevice:TSettingDevice;
   RGDiodOrientation: TRadioGroup;
   Voltage_MD,Current_MD:TMeasuringDevice;
+  PrefixToFileName:string;
 
   property Imax:double read FImax write SetImax;
   property Imin:double read FImin write SetImin;
   property CurrentValueLimitEnable:boolean read FCurrentValueLimitEnable write FCurrentValueLimitEnable;
-//  property ForwardBranchIsMeasured:boolean read FForwardBranchIsMeasured write SetForwardBranchIsMeasured;
-//  property ReverseBranchIsMeasured:boolean read FReverseBranchIsMeasured write FForwardBranchIsMeasured;
   property ForwardBranch:boolean read fForwardBranch;
   property DragonBackTime:double read fDragonBackTime write SetDragonBackTime;
+  property SingleMeasurement:boolean read fSingleMeasurement write fSingleMeasurement;
+  property Voc:double read FVoc;
+  property Isc:double read FIsc;
 
   Constructor Create(
                      BS: TButton;
                      Res:PVector;
                      FLn,RLn,FLg,RLg:TPointSeries);
   procedure Cycle(ItIsForwardInput: Boolean);
-  procedure Measuring();
+  procedure Measuring(SingleMeasurement:boolean=true;FilePrefix:string='');
   procedure SetVoltage();
-//  procedure SetForwardBranchIsMeasured(const Value:boolean);
+  function DatFileNameToSave:string;
 end;
 
 
-TFastIVDependenceAction = class(TThread)
+
+TFastIVDependenceAction = class(TThreadTermin)
   private
     { Private declarations }
    fFastIV:TFastIVDependence;
@@ -344,30 +291,6 @@ TFastIVDependenceStop = class(TThread)
     procedure Execute; override;
   public
    constructor Create(FastIV:TFastIVDependence;
-                      ThreadIVAction:TThread);
-  end;
-
-
-
-TFastIVDependenceActionNew = class(TThreadTermin)
-  private
-    { Private declarations }
-   fFastIV:TFastIVDependenceNew;
-  protected
-    procedure Execute; override;
-  public
-   constructor Create(FastIV:TFastIVDependenceNew);
-  end;
-
-TFastIVDependenceStopNew = class(TThread)
-  private
-    { Private declarations }
-   fThreadIVAction:TThread;
-   fFastIV:TFastIVDependenceNew;
-  protected
-    procedure Execute; override;
-  public
-   constructor Create(FastIV:TFastIVDependenceNew;
                       ThreadIVAction:TThread);
   end;
 
@@ -837,10 +760,10 @@ begin
    Result:=fPointNumber;
 end;
 
-class procedure TFastDependence.PointNumberChange(Value: word);
-begin
- fPointNumber:=Value;
-end;
+//class procedure TFastDependence.PointNumberChange(Value: word);
+//begin
+// fPointNumber:=Value;
+//end;
 
 class function TFastDependence.tempI: double;
 begin
@@ -1112,184 +1035,311 @@ begin
   ForwLg.ParentChart.Axes.Left.LogarithmicBase:=10;
 end;
 
-{ TFastIVDependence }
+{ TFastIVDependenceNew }
 
 procedure TFastIVDependence.ActionMeasurement;
 begin
     SetVoltage();
-    HookFirstMeas();
-    if ftempV=ErResult then
-      begin
-       SetEvent(EventToStopDependence);
-       sleep(0);
-       Exit;
-      end;
-    HookSecondMeas();
-    if ftempI=ErResult then
-      begin
-       SetEvent(EventToStopDependence);
-       sleep(0);
-      end;
+    VoltageMeasuring();
+    CurrentMeasuring();
+    DataSave();
 
-
-    if FR_VtoI_Used then
-      ftempI:=ftempI/fR_VtoI;
-
-  inherited ActionMeasurement()
-
+    if fTreadToMeasuring.IsTerminated then Exit;
 end;
-
 
 procedure TFastIVDependence.BeginMeasuring;
 begin
   inherited  BeginMeasuring;
   ResetEvent(EventToStopDependence);
-
+  DiodOrientationVoltageFactorDetermination();
+  fItIsLightIV:=False;
 
   fTreadToMeasuring:=TFastIVDependenceAction.Create(self);
   fTreadToStop:=TFastIVDependenceStop.Create(self,fTreadToMeasuring);
   fTreadToMeasuring.Resume;
+end;
+
+
+constructor TFastIVDependence.Create(BS: TButton;
+                                        Res: PVector;
+                                        FLn, RLn, FLg, RLg: TPointSeries);
+begin
+ inherited Create(BS,Res,FLn, FLg);
+ RevLine:=RLn;
+ RevLg:=RLg;
+ PrefixToFileName:='';
+ fVoc:=0;
+ fIsc:=0;
 
 end;
 
-constructor TFastIVDependence.Create(CBF, CBR: TCheckBox; BS: TButton;Res: PVector; FLn,
-  RLn, FLg, RLg: TPointSeries);
+function TFastIVDependence.CurrentGrowth: boolean;
 begin
-  inherited Create(BS,Res,FLn, FLg);
- CBForw:=CBF;
- CBRev:=CBR;
- RevLine:=RLn;
- RevLg:=RLg;
+ if fForwardBranch then
+     Result:=fCurrentMeasured>Results^.Y[High(Results^.Y)]
+                               else
+     Result:=fCurrentMeasured<Results^.Y[High(Results^.Y)]
+end;
 
- HookCycle:=TSimpleClass.EmptyProcedure;
- HookStep:=TSimpleClass.EmptyProcedure;
- HookSetVoltage:=TSimpleClass.EmptyProcedure;
+procedure TFastIVDependence.CurrentMeasuring;
+ var
+  AtempNumber:byte;
+begin
+  AtempNumber := 0;
+  repeat
+   fCurrentMeasured:= ValueMeasuring(Current_MD);
+   if fCurrentMeasured=ErResult then Exit;
+   if (High(Results^.Y)<0) then Break;
+   if fItIsBranchBegining then Break;
+   if CurrentGrowth() then Break;
+   inc(AtempNumber);
+  until (AtempNumber>MaxCurrentMeasuringAttemp);
 
- fR_VtoI:=1;
- FR_VtoI_Used:=True;
-
+  if (FCurrentValueLimitEnable and (abs(fCurrentMeasured)>=Imax)) then
+    fAbsVoltageValue:=50;
 end;
 
 procedure TFastIVDependence.Cycle(ItIsForwardInput: Boolean);
-  var Start,Finish:double;
+  var Finish:double;
      Condition:boolean;
 begin
- fItIsForward:=ItIsForwardInput;
- fBeginBranchNumber:=fPointNumber;
+ fForwardBranch:=ItIsForwardInput;
 
- if fItIsForward then
+ if fForwardBranch then
    begin
-     Start:=RangeFor.LowValue;
+     fAbsVoltageValue:=RangeFor.LowValue;
      Finish:=RangeFor.HighValue;
      Condition:=CBForw.Checked;
+//     Condition:=FForwardBranchIsMeasured;
    end          else
    begin
-     Start:=RangeRev.LowValue;;
+     fAbsVoltageValue:=RangeRev.LowValue;;
      Finish:=RangeRev.HighValue;;
      Condition:=CBRev.Checked;
+//     Condition:=FReverseBranchIsMeasured;
   end;
 
-  HookCycle();
+ fItIsBranchBegining:=true;
 
  if Condition then
   begin
-   fVoltageInput:=Start;
-
-
-   repeat
-     if not(fItIsForward)
-      and(fVoltageInput=0)
+   if (not(fForwardBranch))
+      and(fAbsVoltageValue=0)
       and(RangeFor.LowValue=0)
-      and(CBForw.Checked)
-        then
-        else  DuringMeasuring(ActionMeasurement);
-     HookStep();
-     fVoltageInput:=fVoltageInput+fVoltageStep;
-   until fVoltageInput>Finish;
+      and(CBForw.Checked) then VoltageChange();
+//      and(FForwardBranchIsMeasured) then VoltageChange();
+   VoltageFactorDetermination();
+
+   while (fAbsVoltageValue<=Finish) do
+     begin
+      DuringMeasuring(ActionMeasurement);
+      if fTreadToMeasuring.IsTerminated then Exit;
+      VoltageChange();
+     end;
   end;
 
 end;
 
-procedure TFastIVDependence.EndMeasuring;
- var i:integer;
+procedure TFastIVDependence.DataSave;
 begin
-  if CBRev.Checked then
-    for i:=0 to High(Results^.X) do
-      begin
-       if Results^.X[i]<0 then
-            begin
-            RevLine.AddXY(-Results^.X[i], -Results^.Y[i]);
-            if abs(Results^.Y[i]) > 1E-11 then
-             RevLg.AddXY(-Results^.X[i], abs(Results^.Y[i]));
-            end
-                          else
-            begin
-             ForwLine.AddXY(Results^.X[i], Results^.Y[i]);
-             if abs(Results^.Y[i]) > 1E-11 then
-               ForwLg.AddXY(Results^.X[i], abs(Results^.Y[i]));
-            end;
+ if fTreadToMeasuring.IsTerminated then Exit;
+ if FCurrentValueLimitEnable and (abs(fCurrentMeasured)<Imin)
+//      then  fCurrentMeasured:=ErResult;
+      then  Exit;
 
-      end
-                   else
-    for i:=0 to High(Results^.X) do
-      begin
-       ForwLine.AddXY(Results^.X[i], Results^.Y[i]);
-       if abs(Results^.Y[i]) > 1E-11 then
-         ForwLg.AddXY(Results^.X[i], abs(Results^.Y[i]));
-      end;
+ if (fItIsBranchBegining) and (fForwardBranch) then
+      fItIsLightIV:=(fCurrentMeasured<-1e-5);
 
- inherited EndMeasuring;
+  if fItIsBranchBegining then fItIsBranchBegining:=False;
+
+  Results.Add(fVoltageMeasured, fCurrentMeasured);
+
 end;
 
-procedure TFastIVDependence.Measuring;
+function TFastIVDependence.DatFileNameToSave: string;
 begin
-   BeginMeasuring();
-//  FullCycle(ActionMeasurement);
-//  EndMeasuring();
+  Result:=NextDATFileName(LastDATFileName(PrefixToFileName));
+  if Result='1.dat' then Result:=PrefixToFileName+Result;
+end;
+
+procedure TFastIVDependence.PointSeriesFilling;
+var
+  i: Integer;
+begin
+  if fSingleMeasurement then
+  begin
+    if CBRev.Checked then
+      for i := 0 to High(Results^.X) do
+      begin
+        if Results^.X[i] < 0 then
+        begin
+          RevLine.AddXY(-Results^.X[i], -Results^.Y[i]);
+          if abs(Results^.Y[i]) > 1E-11 then
+            RevLg.AddXY(-Results^.X[i], abs(Results^.Y[i]));
+        end
+        else
+        begin
+          ForwLine.AddXY(Results^.X[i], Results^.Y[i]);
+          if abs(Results^.Y[i]) > 1E-11 then
+            ForwLg.AddXY(Results^.X[i], abs(Results^.Y[i]));
+        end;
+      end
+    else
+      for i := 0 to High(Results^.X) do
+      begin
+        ForwLine.AddXY(Results^.X[i], Results^.Y[i]);
+        if abs(Results^.Y[i]) > 1E-11 then
+          ForwLg.AddXY(Results^.X[i], abs(Results^.Y[i]));
+      end;
+  end;
+end;
+
+procedure TFastIVDependence.DiodOrientationVoltageFactorDetermination;
+begin
+  if RGDiodOrientation.ItemIndex = 1 then
+        fDiodOrientationVoltageFactor := -1
+                                     else
+        fDiodOrientationVoltageFactor := 1;
+end;
+
+procedure TFastIVDependence.EndMeasuring;
+begin
+  PointSeriesFilling;
+  ButtonStop.Enabled := False;
+  SettingDevice.ActiveInterface.Reset();
+//  sleep(1000);
+  VocIscDetermine();
+  HookEndMeasuring();
+end;
+
+procedure TFastIVDependence.Measuring(SingleMeasurement:boolean=true;
+                           FilePrefix:string='');
+begin
+  fSingleMeasurement:=SingleMeasurement;
+  PrefixToFileName:=FilePrefix;
+  BeginMeasuring();
 end;
 
 procedure TFastIVDependence.SeriesClear;
 begin
-  inherited SeriesClear();
-  RevLine.Clear;
-  RevLg.Clear;
+  if fSingleMeasurement then
+   begin
+    inherited SeriesClear();
+    RevLine.Clear;
+    RevLg.Clear;
+    RevLg.ParentChart.Axes.Left.Logarithmic:=True;
+    RevLg.ParentChart.Axes.Left.LogarithmicBase:=10;
+   end;
 end;
 
-procedure TFastIVDependence.SetR_VtoI(const Value: double);
+procedure TFastIVDependence.SetDragonBackTime(const Value: double);
 begin
-  if Value>0 then FR_VtoI := Value
-             else FR_VtoI := 1;
+  fDragonBackTime := abs(Value);
 end;
 
-procedure TFastIVDependence.SetR_VtoI_Used(const Value: boolean);
+procedure TFastIVDependence.SetImax(const Value: double);
 begin
-  FR_VtoI_Used := Value;
+  FImax := abs(Value);
 end;
+
+procedure TFastIVDependence.SetImin(const Value: double);
+begin
+  FImin := abs(Value);
+end;
+
 
 procedure TFastIVDependence.SetVoltage;
-
 begin
- if fItIsForward then fVoltageInputReal := fVoltageInput
-                 else fVoltageInputReal := -fVoltageInput;
+  SettingDevice.SetValue(DragonBackOvershootHeight*fVoltageFactor * fAbsVoltageValue);
+  HRDelay(fDragonBackTime);
+  SettingDevice.SetValue(fVoltageFactor * fAbsVoltageValue);
+  HRDelay(fDragonBackTime);
+end;
 
-
- if (FR_VtoI_Used) and((fPointNumber-fBeginBranchNumber)>2)
-  then
-   begin
-   fVoltageCorrection:=abs(X_Y0(Results^.X[fPointNumber-3],
-                            Results^.Y[fPointNumber-3],
-                            Results^.X[fPointNumber-2],
-                            Results^.Y[fPointNumber-2],
-                            fVoltageInputReal))*fR_VtoI;
-   if fItIsForward then fVoltageInputReal := (fVoltageInput+fVoltageCorrection)
-                   else fVoltageInputReal := -(fVoltageInput+fVoltageCorrection);
-   end;
-
- HookSetVoltage();
+procedure TFastIVDependence.VoltageFactorDetermination;
+begin
+  if fForwardBranch then fVoltageFactor := 1
+                    else fVoltageFactor := -1;
+  fVoltageFactor:=fVoltageFactor*fDiodOrientationVoltageFactor;
 end;
 
 
-{ TFastIVDependenceAction }
+procedure TFastIVDependence.VoltageMeasuring;
+begin
+  fVoltageMeasured :=ValueMeasuring(Voltage_MD);
+end;
+
+function TFastIVDependence.StepFromVector(Vector: Pvector): double;
+ var i:integer;
+begin
+  Result := VoltageStepDefault;
+  for I := 0 to High(Vector^.X) do
+    if abs(fAbsVoltageValue) < Vector^.X[i] then
+    begin
+      Result := Vector^.Y[i];
+      Break;
+    end;
+end;
+
+function TFastIVDependence.ValueMeasuring(MD: TMeasuringDevice): double;
+begin
+  if fTreadToMeasuring.IsTerminated then
+   begin
+    Result:=ErResult;
+    Exit;
+   end;
+  try
+//  Result := MD.GetMeasurementResult();
+  Result := MD.GetResult();
+  except
+   Result:=ErResult;
+  end;
+  if Result=ErResult then
+      begin
+       SetEvent(EventToStopDependence);
+       sleep(0);
+       Exit;
+      end;
+  Result :=Result * fDiodOrientationVoltageFactor;
+end;
+
+procedure TFastIVDependence.VocIscDetermine;
+begin
+  Results.Sorting;
+  Results.DeleteDuplicate;
+
+ if fItIsLightIV and CBForw.Checked then
+   begin
+     if Results^.MaxY>0 then fVoc:=Results^.Xvalue(0)
+                        else FVoc:=0;
+     if Results^.MinX<=0 then fIsc:=Results^.Yvalue(0)
+                         else fIsc:=Y_X0(Results^.X[0],
+                                         Results^.Y[0],
+                                         Results^.X[1],
+                                         Results^.Y[1],
+                                         0);
+    if fVoc=ErResult then fVoc:=0;
+    if fIsc=ErResult then fIsc:=0;
+   end                              else
+   begin
+     fVoc:=0;
+     fIsc:=0;
+   end;
+ 
+end;
+
+procedure TFastIVDependence.VoltageChange;
+begin
+ fAbsVoltageValue:=fAbsVoltageValue+VoltageStep;
+end;
+
+function TFastIVDependence.VoltageStep: double;
+begin
+  if fForwardBranch then Result:=StepFromVector(ForwardDelV)
+                    else Result:=StepFromVector(ReverseDelV)
+end;
+
+{ TFastIVDependenceActionNew }
 
 constructor TFastIVDependenceAction.Create(FastIV: TFastIVDependence);
 begin
@@ -1304,11 +1354,12 @@ end;
 procedure TFastIVDependenceAction.Execute;
 begin
   fFastIV.Cycle(True);
+  if Terminated then Exit;
   fFastIV.Cycle(False);
   SetEvent(EventToStopDependence);
 end;
-
-{ TFastIVDependenceStop }
+//
+{ TFastIVDependenceStopNew }
 
 constructor TFastIVDependenceStop.Create(FastIV: TFastIVDependence;
   ThreadIVAction: TThread);
@@ -1324,324 +1375,9 @@ end;
 procedure TFastIVDependenceStop.Execute;
 begin
   WaitForSingleObject(EventToStopDependence, INFINITE);
-
   fThreadIVAction.Terminate;
   fThreadIVAction.WaitFor;  //????
   fThreadIVAction.Free;
-
-  fFastIV.EndMeasuring;
-end;
-
-{ TFastIVDependenceNew }
-
-procedure TFastIVDependenceNew.ActionMeasurement;
-begin
-// HelpForMe(floattostr(fAbsVoltageValue)+booltostr(fForwardBranch));
-
-    SetVoltage();
-//    if fTreadToMeasuring.IsTerminated then Exit;
-    VoltageMeasuring();
-    CurrentMeasuring();
-//    HelpForMe(floattostr(fCurrentMeasured));
-
-
-    if fTreadToMeasuring.IsTerminated then Exit;
-    DataSave();
-
-    if fTreadToMeasuring.IsTerminated then Exit;
-end;
-
-procedure TFastIVDependenceNew.BeginMeasuring;
-begin
-  inherited  BeginMeasuring;
-//  fIVMeasuringToStop:=False;
-//HelpForMe(BoolToStr(FForwardBranchIsMeasured)+'ff');
-//HelpForMe(BoolToStr(FReverseBranchIsMeasured)+'rr');
-
-  ResetEvent(EventToStopDependence);
-  DiodOrientationVoltageFactorDetermination();
-
-  fTreadToMeasuring:=TFastIVDependenceActionNew.Create(self);
-  fTreadToStop:=TFastIVDependenceStopNew.Create(self,fTreadToMeasuring);
-  fTreadToMeasuring.Resume;
-end;
-
-//procedure TFastIVDependenceNew.ButtonStopClick(Sender: TObject);
-//begin
-// fIVMeasuringToStop:=True;
-//end;
-
-constructor TFastIVDependenceNew.Create(BS: TButton;
-                                        Res: PVector;
-                                        FLn, RLn, FLg, RLg: TPointSeries);
-begin
- inherited Create(BS,Res,FLn, FLg);
- RevLine:=RLn;
- RevLg:=RLg;
-
-// HookCycle:=TSimpleClass.EmptyProcedure;
-// HookStep:=TSimpleClass.EmptyProcedure;
-// HookSetVoltage:=TSimpleClass.EmptyProcedure;
-//
-// fR_VtoI:=1;
-// FR_VtoI_Used:=True;
-end;
-
-function TFastIVDependenceNew.CurrentGrowth: boolean;
-begin
- if fForwardBranch then
-     Result:=fCurrentMeasured>Results^.Y[High(Results^.Y)]
-                               else
-     Result:=fCurrentMeasured<Results^.Y[High(Results^.Y)]
-end;
-
-procedure TFastIVDependenceNew.CurrentMeasuring;
- var
-  AtempNumber:byte;
-begin
-  AtempNumber := 0;
-  repeat
-   fCurrentMeasured:= ValueMeasuring(Current_MD);
-   if fCurrentMeasured=ErResult then Exit;
-   if (High(Results^.Y)<0) then Break;
-   if fItIsBranchBegining then Break;
-   if CurrentGrowth() then Break;
-   inc(AtempNumber);
-  until (AtempNumber>MaxCurrentMeasuringAttemp);
-//  HelpForMe(booltostr(FCurrentValueLimitEnable));
-
-  if (FCurrentValueLimitEnable and (abs(fCurrentMeasured)>=Imax)) then
-    fAbsVoltageValue:=50;
-end;
-
-procedure TFastIVDependenceNew.Cycle(ItIsForwardInput: Boolean);
-//begin
-// sleep(5000);
-// HelpForMe(floattostr(Imin)+booltostr(ItIsForwardInput));
-// if fTreadToMeasuring.IsTerminated then Exit;
-// sleep(3000);
-// HelpForMe(floattostr(Imax)+booltostr(ItIsForwardInput));
-
-  var {Start,}Finish:double;
-     Condition:boolean;
-begin
-// fItIsForward:=ItIsForwardInput;  //???
- fForwardBranch:=ItIsForwardInput;
-
- if fForwardBranch then
-   begin
-     fAbsVoltageValue:=RangeFor.LowValue;
-     Finish:=RangeFor.HighValue;
-     Condition:=CBForw.Checked;
-//     Condition:=FForwardBranchIsMeasured;
-//     HelpForMe(booltostr(FForwardBranchIsMeasured)+'f');
-//     HelpForMe(floattostr(Imin)+'f');
-   end          else
-   begin
-     fAbsVoltageValue:=RangeRev.LowValue;;
-     Finish:=RangeRev.HighValue;;
-     Condition:=CBRev.Checked;
-//     Condition:=FReverseBranchIsMeasured;
-//     HelpForMe(booltostr(Condition)+'r');
-  end;
-
-// HelpForMe(floattostr(Finish));
-//   HelpForMe(booltostr(Condition));
- fItIsBranchBegining:=true;
-
- if Condition then
-  begin
-//  HelpForMe(floattostr(Finish));
-   if (not(fForwardBranch))
-      and(fAbsVoltageValue=0)
-      and(RangeFor.LowValue=0)
-      and(CBForw.Checked) then VoltageChange();
-//      and(FForwardBranchIsMeasured) then VoltageChange();
-   VoltageFactorDetermination();
-
-   while (fAbsVoltageValue<=Finish) do
-     begin
-//      HelpForMe(floattostr(fAbsVoltageValue));
-      DuringMeasuring(ActionMeasurement);
-      if fTreadToMeasuring.IsTerminated then Exit;
-      VoltageChange();
-     end;
-  end;
-
-end;
-
-procedure TFastIVDependenceNew.DataSave;
-begin
-
-end;
-
-procedure TFastIVDependenceNew.DiodOrientationVoltageFactorDetermination;
-begin
-  if RGDiodOrientation.ItemIndex = 1 then
-        fDiodOrientationVoltageFactor := -1
-                                     else
-        fDiodOrientationVoltageFactor := 1;
-end;
-
-//procedure TFastIVDependenceNew.FullCycle(Action: TSimpleEvent);
-//begin
-//  Application.ProcessMessages;
-//  Cycle(True,Action);
-//  if fIVMeasuringToStop then Exit;
-//  Cycle(False,Action);
-//end;
-
-procedure TFastIVDependenceNew.Measuring;
-begin
-  BeginMeasuring();
-//  FullCycle(ActionMeasurement);
-//  EndMeasuring();
-end;
-
-procedure TFastIVDependenceNew.SeriesClear;
-begin
-  inherited SeriesClear();
-  RevLine.Clear;
-  RevLg.Clear;
-  RevLg.ParentChart.Axes.Left.Logarithmic:=True;
-  RevLg.ParentChart.Axes.Left.LogarithmicBase:=10;
-end;
-
-//procedure TFastIVDependenceNew.SetForwardBranchIsMeasured(const Value: boolean);
-//begin
-//// HelpForMe('gg'+booltostr(Value));
-// fForwardBranchIsMeasured:=Value;
-// HelpForMe('ddd'+booltostr(fForwardBranchIsMeasured));
-//
-//end;
-
-procedure TFastIVDependenceNew.SetDragonBackTime(const Value: double);
-begin
-  fDragonBackTime := abs(Value);
-end;
-
-procedure TFastIVDependenceNew.SetImax(const Value: double);
-begin
-  FImax := abs(Value);
-end;
-
-procedure TFastIVDependenceNew.SetImin(const Value: double);
-begin
-  FImin := abs(Value);
-end;
-
-
-procedure TFastIVDependenceNew.SetVoltage;
-// var RealVoltage:double;
-begin
-//  RealVoltage:=fVoltageFactor * fAbsVoltageValue;
-//  HelpForMe('db'+floattostr(fDragonBackTime));
-  SettingDevice.SetValue(DragonBackOvershootHeight*fVoltageFactor * fAbsVoltageValue);
-  HRDelay(fDragonBackTime);
-  SettingDevice.SetValue(fVoltageFactor * fAbsVoltageValue);
-  HRDelay(fDragonBackTime);
-end;
-
-procedure TFastIVDependenceNew.VoltageFactorDetermination;
-begin
-  if fForwardBranch then fVoltageFactor := 1
-                    else fVoltageFactor := -1;
-  fVoltageFactor:=fVoltageFactor*fDiodOrientationVoltageFactor;
-end;
-
-
-procedure TFastIVDependenceNew.VoltageMeasuring;
-begin
-  fVoltageMeasured :=ValueMeasuring(Voltage_MD);
-end;
-
-function TFastIVDependenceNew.StepFromVector(Vector: Pvector): double;
- var i:integer;
-begin
-  Result := VoltageStepDefault;
-  for I := 0 to High(Vector^.X) do
-    if abs(fAbsVoltageValue) < Vector^.X[i] then
-    begin
-      Result := Vector^.Y[i];
-      Break;
-    end;
-end;
-
-function TFastIVDependenceNew.ValueMeasuring(MD: TMeasuringDevice): double;
-begin
-  if fTreadToMeasuring.IsTerminated then
-   begin
-    Result:=ErResult;
-    Exit;
-   end;
-  try
-  Result := MD.GetMeasurementResult();
-  except
-   Result:=ErResult;
-  end;
-  if Result=ErResult then
-      begin
-       SetEvent(EventToStopDependence);
-       sleep(0);
-       Exit;
-      end;
-  Result :=Result * fDiodOrientationVoltageFactor;
-end;
-
-procedure TFastIVDependenceNew.VoltageChange;
-begin
- fAbsVoltageValue:=fAbsVoltageValue+VoltageStep;
-end;
-
-function TFastIVDependenceNew.VoltageStep: double;
-begin
-  if fForwardBranch then Result:=StepFromVector(ForwardDelV)
-                    else Result:=StepFromVector(ReverseDelV)
-end;
-
-{ TFastIVDependenceActionNew }
-
-constructor TFastIVDependenceActionNew.Create(FastIV: TFastIVDependenceNew);
-begin
- inherited Create(True);    // Поток создаем в состоянии «Приостановлен»
-//  FreeOnTerminate := True;  // Поток освободит ресурсы при окончании работы
-   FreeOnTerminate := False;
-  fFastIV := FastIV;
-  Priority := tpNormal;
-//  Resume;
-end;
-
-procedure TFastIVDependenceActionNew.Execute;
-begin
-  fFastIV.Cycle(True);
-  if Terminated then Exit;
-  fFastIV.Cycle(False);
-  SetEvent(EventToStopDependence);
-end;
-//
-{ TFastIVDependenceStopNew }
-
-constructor TFastIVDependenceStopNew.Create(FastIV: TFastIVDependenceNew;
-  ThreadIVAction: TThread);
-begin
-  inherited Create(True);    // Поток создаем в состоянии «Приостановлен»
-  FreeOnTerminate := True;  // Поток освободит ресурсы при окончании работы
-  fFastIV := FastIV;
-  fThreadIVAction:=ThreadIVAction;
-  Priority := tpNormal;
-  Resume;
-end;
-
-procedure TFastIVDependenceStopNew.Execute;
-begin
-  WaitForSingleObject(EventToStopDependence, INFINITE);
-
-//  HelpForMe('StopNew');
-
-  fThreadIVAction.Terminate;
-  fThreadIVAction.WaitFor;  //????
-  fThreadIVAction.Free;
-//  HelpForMe('StopNewGGGGG');
 
   fFastIV.EndMeasuring;
 end;
