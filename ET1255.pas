@@ -121,20 +121,21 @@ type
     fMeasThead:TET1255_Measuring_Thead;
     function NoError():boolean;
   public
-  function SetGain(const Value: TET1255_ADC_Gain):boolean;
-  function Gain:TET1255_ADC_Gain;
-  function SetActiveChannel(const Value: TET1255_ADC_ChanelNumber):boolean;
-  function ActiveChannel:TET1255_ADC_ChanelNumber;
-  function SetFrequency_Tackt(const Value: TET1255_Frequency_Tackt):boolean;
-  function Frequency_Tackt:TET1255_Frequency_Tackt;
-  function SetMemEnable(const Value: boolean):boolean;
-  function MemEnable:boolean;
-  function SetStartByProgr(const Value: boolean):boolean;
-  function StartByProgr:boolean;
-  function SetInternalTacktMode(const Value: boolean):boolean;
-  function InternalTacktMode:boolean;
   property ErrorOperation:boolean read FNoErrorOperation;
-  function SetADCMode(FrT: TET1255_Frequency_Tackt;StBPr, IntTMd, MemE: boolean): boolean;
+  function SetGain(const Value: TET1255_ADC_Gain;const ToCheck:boolean=True):boolean;
+  function Gain:TET1255_ADC_Gain;
+  function SetActiveChannel(const Value: TET1255_ADC_ChanelNumber;const ToCheck:boolean=True):boolean;
+  function ActiveChannel:TET1255_ADC_ChanelNumber;
+  function SetFrequency_Tackt(const Value: TET1255_Frequency_Tackt;const ToCheck:boolean=True):boolean;
+  function Frequency_Tackt:TET1255_Frequency_Tackt;
+  function SetMemEnable(const Value: boolean;const ToCheck:boolean=True):boolean;
+  function MemEnable:boolean;
+  function SetStartByProgr(const Value: boolean;const ToCheck:boolean=True):boolean;
+  function StartByProgr:boolean;
+  function SetInternalTacktMode(const Value: boolean;const ToCheck:boolean=True):boolean;
+  function InternalTacktMode:boolean;
+  function SetADCMode(FrT: TET1255_Frequency_Tackt;StBPr, IntTMd, MemE: boolean;
+                               const ToCheck:boolean=True): boolean;
   constructor Create();
   function MeasuringStart():boolean;
   procedure MeasuringStop();
@@ -345,9 +346,10 @@ begin
  inherited Create;
  FNoErrorOperation:=False;
 // ++++++++++++++++++++++++++
-  SetActiveChannel(0);
- SetGain(1);
- SetADCMode(mhz104,True,True,False);
+ if (not(SetActiveChannel(0,False)))
+    or (not(SetGain(1,False)))
+    or (not(SetADCMode(mhz104,True,True,False,False)))
+     then showmessage('ET1255 initial parameters are NOT setted');
 
 //++++++++++++++++++++++++++++
 end;
@@ -413,24 +415,36 @@ begin
 end;
 
 function TET1255_Module.SetActiveChannel(
-   const Value: TET1255_ADC_ChanelNumber):boolean;
+             const Value: TET1255_ADC_ChanelNumber;
+             const ToCheck:boolean=True):boolean;
 begin
-  ET_SetADCChnl(Value);
-  if NoError() then FActiveChannel := Value;
-  Result:=FNoErrorOperation;
+  if ToCheck and (Value=FActiveChannel) then  Result:=True
+                                        else
+    begin
+      ET_SetADCChnl(Value);
+      if NoError() then FActiveChannel := Value;
+      Result:=FNoErrorOperation;
+    end;
 end;
 
-function TET1255_Module.SetADCMode(FrT: TET1255_Frequency_Tackt;StBPr, IntTMd, MemE: boolean): boolean;
+function TET1255_Module.SetADCMode(FrT: TET1255_Frequency_Tackt;StBPr, IntTMd, MemE: boolean;
+                 const ToCheck:boolean=True): boolean;
 begin
-  ET_SetADCMode(ord(FrT), StBPr, IntTMd, MemE);
-  if NoError() then
-    begin
-     FFrequency_Tackt := FrT;
-     FStartByProgr:=StBPr;
-     FInternalTacktMode:=IntTMd;
-     FMemEnable:=MemE;
-    end;
-  Result:=FNoErrorOperation;
+  if ToCheck and (FFrequency_Tackt=FrT)
+     and (FStartByProgr=StBPr) and (FInternalTacktMode=IntTMd)
+     and(FMemEnable=MemE) then Result:=True
+                          else
+   begin
+      ET_SetADCMode(ord(FrT), StBPr, IntTMd, MemE);
+      if NoError() then
+        begin
+         FFrequency_Tackt := FrT;
+         FStartByProgr:=StBPr;
+         FInternalTacktMode:=IntTMd;
+         FMemEnable:=MemE;
+        end;
+      Result:=FNoErrorOperation;
+   end;
 end;
 
 function TET1255_Module.SetAddr(Addr: word): boolean;
@@ -439,32 +453,51 @@ begin
  Result:=NoError();
 end;
 
-function TET1255_Module.SetFrequency_Tackt(const Value: TET1255_Frequency_Tackt):boolean;
+function TET1255_Module.SetFrequency_Tackt(const Value: TET1255_Frequency_Tackt;
+                                           const ToCheck:boolean=True):boolean;
 begin
-  ET_SetADCMode(ord(Value), FStartByProgr, FInternalTacktMode, FMemEnable);
-  if NoError() then FFrequency_Tackt := Value;
-  Result:=FNoErrorOperation;
+  if ToCheck and (Value=FFrequency_Tackt) then Result:=True
+                                          else
+    begin
+      ET_SetADCMode(ord(Value), FStartByProgr, FInternalTacktMode, FMemEnable);
+      if NoError() then FFrequency_Tackt := Value;
+      Result:=FNoErrorOperation;
+    end;
 end;
 
-function TET1255_Module.SetGain(const Value: TET1255_ADC_Gain):boolean;
+function TET1255_Module.SetGain(const Value: TET1255_ADC_Gain;const ToCheck:boolean=True):boolean;
 begin
-  ET_SetAmplif(Value);
-  if NoError() then FGain := Value;
-  Result:=FNoErrorOperation;
+  if ToCheck and (Value=FGain) then Result:=True
+                               else
+    begin
+      ET_SetAmplif(Value);
+      if NoError() then FGain := Value;
+      Result:=FNoErrorOperation;
+    end;
 end;
 
-function TET1255_Module.SetMemEnable(const Value: boolean):boolean;
+function TET1255_Module.SetMemEnable(const Value: boolean;
+                                     const ToCheck:boolean=True):boolean;
 begin
-  ET_SetADCMode(ord(FFrequency_Tackt), FStartByProgr, FInternalTacktMode, Value);
-  if NoError() then FMemEnable := Value;
-  Result:=FNoErrorOperation;
+  if ToCheck and (Value=FMemEnable) then Result:=True
+                                    else
+    begin
+      ET_SetADCMode(ord(FFrequency_Tackt), FStartByProgr, FInternalTacktMode, Value);
+      if NoError() then FMemEnable := Value;
+      Result:=FNoErrorOperation;
+    end;
 end;
 
-function TET1255_Module.SetStartByProgr(const Value: boolean): boolean;
+function TET1255_Module.SetStartByProgr(const Value: boolean;
+                                        const ToCheck:boolean=True): boolean;
 begin
-  ET_SetADCMode(ord(FFrequency_Tackt), Value, FInternalTacktMode, FMemEnable);
-  if NoError() then FStartByProgr := Value;
-  Result:=FNoErrorOperation;
+  if ToCheck and (Value=FStartByProgr) then Result:=True
+                                    else
+    begin
+      ET_SetADCMode(ord(FFrequency_Tackt), Value, FInternalTacktMode, FMemEnable);
+      if NoError() then FStartByProgr := Value;
+      Result:=FNoErrorOperation;
+    end;
 end;
 
 function TET1255_Module.StartByProgr: boolean;
@@ -472,11 +505,16 @@ begin
  Result:=FStartByProgr;
 end;
 
-function TET1255_Module.SetInternalTacktMode(const Value: boolean): boolean;
+function TET1255_Module.SetInternalTacktMode(const Value: boolean;
+                                             const ToCheck:boolean=True): boolean;
 begin
-  ET_SetADCMode(ord(FFrequency_Tackt), FStartByProgr, Value, FMemEnable);
-  if NoError() then FInternalTacktMode := Value;
-  Result:=FNoErrorOperation;
+  if ToCheck and (Value=FInternalTacktMode) then Result:=True
+                                            else
+    begin
+      ET_SetADCMode(ord(FFrequency_Tackt), FStartByProgr, Value, FMemEnable);
+      if NoError() then FInternalTacktMode := Value;
+      Result:=FNoErrorOperation;
+    end;
 end;
 
 
