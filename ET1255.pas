@@ -536,7 +536,7 @@ end;
 procedure TET1255_ADCChannel.Free;
 begin
  dispose(DataVector);
-// inherited Free;
+ inherited Free;
 end;
 
 function TET1255_ADCChannel.GetData: double;

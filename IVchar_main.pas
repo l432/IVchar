@@ -1610,7 +1610,7 @@ begin
                     else
    begin
    PC.Pages[8].TabVisible:=False;
-   PC.Pages[9].TabVisible:=False;
+//   PC.Pages[9].TabVisible:=False;
    end;
 
 
@@ -2940,24 +2940,63 @@ begin
 end;
 
 procedure TIVchar.SBGeneratorClick(Sender: TObject);
- var i:byte;
+// var i:byte;
+//begin
+// if SBGenerator.Down then
+//  begin
+//    repeat
+//     for I := 0 to 20 do
+//       begin
+//         ET1255_DACs[0].Output(i*0.1+0.01*i);
+//         HRDelay(1);
+//         ET1255_DACs[0].Output(i*0.1);
+//         HRDelay(5);
+//       end;
+//      Application.ProcessMessages;
+//    until not(SBGenerator.Down);
+//  end
+//                     else
+//   ET1255_DACs[0].Reset();
+ var
+    Vec:PVector;
+    i,Np:word;
 begin
- if SBGenerator.Down then
-  begin
-    repeat
-     for I := 0 to 20 do
-       begin
-         ET1255_DACs[0].Output(i*0.1+0.01*i);
-         HRDelay(1);
-         ET1255_DACs[0].Output(i*0.1);
-         HRDelay(5);
-       end;
-      Application.ProcessMessages;
-    until not(SBGenerator.Down);
-  end
-                     else
-   ET1255_DACs[0].Reset();
+//Np:=30;
+//i:=11;
+//showmessage(floattostr(sin(Pi*(i-(Np-1)/2.0)/2.0)/(Pi*(i-(Np-1)/2.0))));
+//  showmessage(floattostr(Log10((Power(10,0.1*Hz)-1)/(Power(10,0.1*Hc)-1))/2.0/Log10(wz/wc)));
+  new(Vec);
+    SetLenVector(Vec,1000);
+    for I := 0 to Vec^.n - 1 do
+      begin
+      Vec^.X[i]:=i;
+      Vec^.Y[i]:=1;
+      end;
+   VectorToGraph(Vec,PointET1255);
+   showmessage('Ok to Continue');
+   Vec.LowPassFIRfiltr(10,0.3);
+//   Vec.Chebyshev;
+   VectorToGraph(Vec,PointET1255);
 
+//   showmessage('Ok to Continue');
+//     Vec.Load_File('10.dat');
+//   VectorToGraph(Vec,PointET1255);
+//
+////   showmessage('Ok to Continue');
+////   Vec.Decimation(100);
+////   VectorToGraph(Vec,PointET1255);
+//
+//   showmessage('Ok to Continue');
+//   Vec.Chebyshev;
+//   VectorToGraph(Vec,PointET1255);
+
+
+
+   Vec.Write_File('olegHHH.dat',8);
+
+
+
+  dispose(Vec);
 end;
 
 procedure TIVchar.SBTAutoClick(Sender: TObject);

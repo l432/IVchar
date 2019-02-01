@@ -35,7 +35,7 @@ object IVchar: TIVchar
     Top = 0
     Width = 789
     Height = 496
-    ActivePage = TS_Setting
+    ActivePage = TS_ET1255ADC
     Align = alTop
     Font.Charset = RUSSIAN_CHARSET
     Font.Color = clWindowText
@@ -110,7 +110,7 @@ object IVchar: TIVchar
       end
       object ChLg: TChart
         Left = 0
-        Top = 209
+        Top = 234
         Width = 551
         Height = 205
         Legend.Visible = False
@@ -695,7 +695,7 @@ object IVchar: TIVchar
       end
       object PanelV721_II: TPanel
         Left = 0
-        Top = 210
+        Top = 235
         Width = 781
         Height = 201
         Align = alBottom
@@ -3999,16 +3999,6 @@ object IVchar: TIVchar
           Font.Style = [fsBold]
           ParentFont = False
         end
-        object SBGenerator: TSpeedButton
-          Left = 572
-          Top = 275
-          Width = 111
-          Height = 33
-          AllowAllUp = True
-          GroupIndex = 2
-          Caption = 'AUTO'
-          OnClick = SBGeneratorClick
-        end
         object STDAC: TStaticText
           Left = 32
           Top = 0
@@ -4671,7 +4661,7 @@ object IVchar: TIVchar
       end
     end
     object TS_ET1255ADC: TTabSheet
-      Caption = 'TS_ET1255_ADC'
+      Caption = 'ET1255_ADC'
       ImageIndex = 11
       ExplicitLeft = 0
       ExplicitTop = 0
@@ -4717,6 +4707,16 @@ object IVchar: TIVchar
         AllowAllUp = True
         GroupIndex = 2
         Caption = 'AUTO'
+      end
+      object SBGenerator: TSpeedButton
+        Left = 634
+        Top = 379
+        Width = 111
+        Height = 33
+        AllowAllUp = True
+        GroupIndex = 2
+        Caption = 'ggg'
+        OnClick = SBGeneratorClick
       end
       object ChET1255: TChart
         Left = 0
