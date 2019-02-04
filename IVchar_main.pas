@@ -2960,6 +2960,7 @@ procedure TIVchar.SBGeneratorClick(Sender: TObject);
  var
     Vec:PVector;
     i,Np:word;
+    Filtr:TDigitalManipulation;
 begin
 //Np:=30;
 //i:=11;
@@ -2967,16 +2968,20 @@ begin
 //  showmessage(floattostr(Log10((Power(10,0.1*Hz)-1)/(Power(10,0.1*Hc)-1))/2.0/Log10(wz/wc)));
   new(Vec);
     SetLenVector(Vec,1000);
-    for I := 0 to Vec^.n - 1 do
-      begin
-      Vec^.X[i]:=i;
-      Vec^.Y[i]:=1;
-      end;
+
+    for I := 0 to Vec^.n - 1 do Vec^.X[i]:=i;
+     Vec^.Y[0]:=1;
+    for I := 1 to 500 do Vec^.Y[i]:=0;
+    for I := 501 to Vec^.n - 1 do Vec^.Y[i]:=1;
+
    VectorToGraph(Vec,PointET1255);
    showmessage('Ok to Continue');
-   Vec.LowPassFIRfiltr(10,0.3);
-//   Vec.Chebyshev;
-   VectorToGraph(Vec,PointET1255);
+
+   Filtr:=TDigitalManipulation.Create(Vec);
+
+   Filtr.LP_FIR_Chebyshev(10,0.1,false,60);
+
+   VectorToGraph(Filtr.DataVector,PointET1255);
 
 //   showmessage('Ok to Continue');
 //     Vec.Load_File('10.dat');
@@ -2992,10 +2997,10 @@ begin
 
 
 
-   Vec.Write_File('olegHHH.dat',8);
+   Filtr.DataVector.Write_File('olegHHH.dat',10);
 
 
-
+  Filtr.Free;
   dispose(Vec);
 end;
 
