@@ -2979,7 +2979,8 @@ begin
 
    Filtr:=TDigitalManipulation.Create(Vec);
 
-   Filtr.LP_FIR_Chebyshev(10,0.1,false,60);
+   Filtr.LP_FIR_Chebyshev(50,0.4,false,20);
+
 
    VectorToGraph(Filtr.DataVector,PointET1255);
 
