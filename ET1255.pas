@@ -119,6 +119,8 @@ type
     FInternalTacktMode: boolean;
     FNoErrorOperation: boolean;
     fMeasThead:TET1255_Measuring_Thead;
+    fToAverageSerialResults:boolean;
+    fAutoGain:boolean;
     function NoError():boolean;
   public
   property ErrorOperation:boolean read FNoErrorOperation;
@@ -153,12 +155,19 @@ TET1255_ADCChannel=class(TNamedInterfacedObject,IMeasurement)
   fParentModule:TET1255_Module;
   FSerialMeasurements: boolean;
   FSerialMeasurementNumber: byte;
+  fToAverageSerialResults:boolean;
+  fAutoGain:boolean;
+  fMeasuringIsDone:boolean;
+  fAveraveNumber:byte;
+  fHelpDataVector:PVector;
+  fReadyToMeasurement:boolean;
   function GetNewData:boolean;
   function GetValue:double;
   procedure SetNewData(Value:boolean);
   function Measurement():double;
   procedure SetSerialMeasurements(const Value: boolean);
   procedure SetSerialMeasurementNumber(const Value: byte);
+    procedure AverageValueCalculation;
  public
   DataVector:PVector;
   property NewData:boolean read GetNewData write SetNewData;
@@ -174,7 +183,8 @@ TET1255_ADCChannel=class(TNamedInterfacedObject,IMeasurement)
   function MeasuringStart():boolean;
   procedure MeasuringStop;
   procedure ValueInitialization;
-  procedure PrepareToMeasurement;
+  procedure PrepareToMeasurementPart1;
+  procedure PrepareToMeasurementPart2;
   procedure ResultRead();
   procedure GetDataThread(WPARAM: word;EventEnd:THandle);
   procedure WriteToIniFile(ConfigFile: TIniFile);override;
@@ -217,11 +227,15 @@ end;
    SEGain:TSpinEdit;
    SEMeasurementNumber:TSpinEdit;
    CBSerial:TCheckBox;
+   CBAverageSerial:TCheckBox;
+   CBAutoGain:TCheckBox;
    Graph: TCustomSeries;
    procedure ElementFill();
    procedure GroupChannelsClick(Sender: TObject);
    procedure GroupFrequencyClick(Sender: TObject);
    procedure CBSerialClick(Sender: TObject);
+   procedure CBAverageSerialClick(Sender: TObject);
+   procedure CBAutoGainClick(Sender: TObject);
    procedure SEMNChange(Sender: TObject);
    procedure SEGainChange(Sender: TObject);
    procedure FromActiveChannelToVisualElement;
@@ -236,7 +250,7 @@ end;
                       AB:TSpeedButton;
                       TT:TTimer;
                       SEG,SEMN:TSpinEdit;
-                      CBSer:TCheckBox;
+                      CBSer,CBToAv,CBAuG:TCheckBox;
                       Gr: TCustomSeries
                       );
 //    procedure Free;
@@ -352,6 +366,8 @@ begin
      then showmessage('ET1255 initial parameters are NOT setted');
 
 //++++++++++++++++++++++++++++
+ fToAverageSerialResults:=False;
+ fAutoGain:=False;
 end;
 
 function TET1255_Module.Frequency_Tackt: TET1255_Frequency_Tackt;
@@ -563,16 +579,27 @@ end;
 
 function TET1255_ADCChannel.Measurement: double;
 begin
- PrepareToMeasurement();
- ValueInitialization();
- if MeasuringStart() then
-  if WaitForSingleObject(EventET1255Measurement_Done,1500)=WAIT_OBJECT_0
-   then
-   begin
-   ResultRead()
-   end
-   else  MeasuringStop;
 
+ PrepareToMeasurementPart1();
+ ValueInitialization();
+ Result:=fValue;
+
+ fMeasuringIsDone:=False;
+ fAveraveNumber:=0;
+ if not(fReadyToMeasurement) then Exit;
+ 
+ repeat
+//  helpforme('fAN'+inttostr(fAveraveNumber));
+   PrepareToMeasurementPart2();
+   if not(fReadyToMeasurement) then Exit;
+   if MeasuringStart() then
+    if WaitForSingleObject(EventET1255Measurement_Done,1500)=WAIT_OBJECT_0
+     then
+     begin
+     ResultRead()
+     end
+     else  MeasuringStop;
+  until fMeasuringIsDone;
  Result:=fValue;
 end;
 
@@ -584,24 +611,91 @@ end;
 procedure TET1255_ADCChannel.MeasuringStop;
 begin
   fParentModule.MeasuringStop;
+  fMeasuringIsDone:=True;
+  if fAveraveNumber>0 then dispose(fHelpDataVector);
 end;
 
-procedure TET1255_ADCChannel.PrepareToMeasurement;
+procedure TET1255_ADCChannel.PrepareToMeasurementPart1;
 begin
+  fReadyToMeasurement:=false;
   if not(fParentModule.SetActiveChannel(fChanelNumber))
    then Exit;
   if not(fParentModule.SetMemEnable(FSerialMeasurements))
    then Exit;
 
+  fParentModule.fAutoGain:=fAutoGain;
+  fReadyToMeasurement:=true;
+//  if FSerialMeasurements then
+//   begin
+//    if not(fParentModule.SetAddr($FF-FSerialMeasurementNumber))
+//     then Exit;
+//    fParentModule.fToAverageSerialResults:=fToAverageSerialResults;
+//   end;
+end;
+
+procedure TET1255_ADCChannel.PrepareToMeasurementPart2;
+begin
+  fReadyToMeasurement:=false;
   if FSerialMeasurements then
+   begin
     if not(fParentModule.SetAddr($FF-FSerialMeasurementNumber))
      then Exit;
+    fParentModule.fToAverageSerialResults:=fToAverageSerialResults;
+   end;
+  fReadyToMeasurement:=true;
 end;
 
 procedure TET1255_ADCChannel.ReadFromIniFile(ConfigFile: TIniFile);
 begin
   SerialMeasurements:=ConfigFile.ReadBool(Name, 'SerialMeasurements', False);
   SerialMeasurementNumber:=ConfigFile.ReadInteger(Name, 'SerialMeasurementsNum', 1);
+  fToAverageSerialResults:=ConfigFile.ReadBool(Name, 'ToAverageSerialResults', False);
+  fAutoGain:=ConfigFile.ReadBool(Name, 'AutoGain', False);
+end;
+
+procedure TET1255_ADCChannel.AverageValueCalculation;
+ var Filtr:TDigitalManipulation;
+begin
+  if (abs(DataVector^.MeanY-DataVector^.MaxY)>=0.004)or
+     (abs(DataVector^.MeanY-DataVector^.MinY)>=0.004)
+         then
+       begin
+         inc(fAveraveNumber);
+//          DataVector.Write_File('fAN'+inttostr(fAveraveNumber)+'.dat');
+         if fAveraveNumber=1 then
+           begin
+             new(fHelpDataVector);
+             DataVector^.Copy(fHelpDataVector^);
+             Exit;
+           end;
+         if (fAveraveNumber>1)and(fAveraveNumber<10)  then
+           begin
+             DataVector^.MultiplyY(-1);
+             fHelpDataVector.DeltaY(DataVector^);
+             Exit;
+           end;
+          DataVector^.MultiplyY(-1);
+          fHelpDataVector.DeltaY(DataVector^);
+          fHelpDataVector.MultiplyY(1/fAveraveNumber);
+          Filtr:=TDigitalManipulation.Create(fHelpDataVector);
+
+       end
+         else Filtr:=TDigitalManipulation.Create(DataVector);
+
+  Filtr.Decimation(50);
+  Filtr.MovingAverageFilter(50,true);
+//  _____________________
+//  Filtr.Decimation(20);
+//  Filtr.LP_UniformIIRfilter4k(0.025,true);
+//  Filtr.LP_IIR_Chebyshev0025p2(true);
+//_________________________
+
+  fValue := ImpulseNoiseSmoothing(Filtr.DataVector);
+  fMeasuringIsDone:=true;
+//  fValue := ImpulseNoiseSmoothingByNpoint(DataVector);
+  Filtr.Free;
+  if fAveraveNumber>0 then dispose(fHelpDataVector);
+//  helpforme('fAN'+inttostr(fAveraveNumber));
 end;
 
 procedure TET1255_ADCChannel.ResultRead;
@@ -617,8 +711,13 @@ begin
        DataVector^.X[i]:=i;
        DataVector^.Y[i]:=fParentModule.ReadMem/fParentModule.Gain;
       end;
-     fValue:=ImpulseNoiseSmoothingByNpoint(DataVector);
-//     fValue:=fValue/fParentModule.Gain;
+    if fToAverageSerialResults then AverageValueCalculation
+                               else
+         begin
+           fValue:=DataVector^.Y[0];
+           fMeasuringIsDone:=True;
+         end;
+
    end
   else
    begin
@@ -626,6 +725,7 @@ begin
     fValue:=fValue/fParentModule.Gain;
     DataVector^.X[0]:=0;
     DataVector^.Y[0]:=fValue;
+    fMeasuringIsDone:=True;
    end;
 end;
 
@@ -669,6 +769,8 @@ begin
   ConfigFile.EraseSection(Name);
   WriteIniDef(ConfigFile,Name,'SerialMeasurements', SerialMeasurements);
   WriteIniDef(ConfigFile,Name,'SerialMeasurementsNum',  SerialMeasurementNumber);
+  WriteIniDef(ConfigFile,Name,'ToAverageSerialResults', fToAverageSerialResults);
+  WriteIniDef(ConfigFile,Name,'AutoGain',  fAutoGain);
 end;
 
 { TET1255_Measuring_Thead }
@@ -704,7 +806,7 @@ end;
 
 procedure TET1255_Chanel_MeasuringTread.ExuteBegin;
 begin
- fET1255_Chan.PrepareToMeasurement();
+ fET1255_Chan.PrepareToMeasurementPart1();
  Synchronize(ValueInitialization);
  if fET1255_Chan.MeasuringStart() then
   if WaitForSingleObject(EventComPortFree,1500)=WAIT_OBJECT_0
@@ -781,6 +883,8 @@ begin
               ConfigFile.ReadBool(ET1255IniSectionName, 'StartByProgr', True),
               ConfigFile.ReadBool(ET1255IniSectionName, 'InternalTacktMode', True),
               MemEnable);
+  fToAverageSerialResults:=ConfigFile.ReadBool(Name, 'ToAverageSerialResults', False);
+  fAutoGain:=ConfigFile.ReadBool(Name, 'AutoGain', False);
 end;
 
 procedure TET1255_ModuleAndChan.SetNewData(Value: boolean);
@@ -800,9 +904,21 @@ begin
   WriteIniDef(ConfigFile,ET1255IniSectionName,'Frequency_Tackt', ord(Frequency_Tackt));
   WriteIniDef(ConfigFile,ET1255IniSectionName,'StartByProgr', StartByProgr);
   WriteIniDef(ConfigFile,ET1255IniSectionName,'InternalTacktMode', InternalTacktMode);
+  WriteIniDef(ConfigFile,Name,'ToAverageSerialResults', fToAverageSerialResults);
+  WriteIniDef(ConfigFile,Name,'AutoGain',  fAutoGain);
 end;
 
 { TET1255_ADCShow }
+
+procedure TET1255_ADCShow.CBAutoGainClick(Sender: TObject);
+begin
+ ET1255_ModuleAndChan.Channels[ET1255_ModuleAndChan.ActiveChannel].fAutoGain:=CBAutoGain.Checked;
+end;
+
+procedure TET1255_ADCShow.CBAverageSerialClick(Sender: TObject);
+begin
+ ET1255_ModuleAndChan.Channels[ET1255_ModuleAndChan.ActiveChannel].fToAverageSerialResults:=CBAverageSerial.Checked;
+end;
 
 procedure TET1255_ADCShow.CBSerialClick(Sender: TObject);
 begin
@@ -817,7 +933,7 @@ constructor TET1255_ADCShow.Create(ET1255: TET1255_ModuleAndChan;
                                    AB: TSpeedButton;
                                    TT: TTimer;
                                    SEG, SEMN: TSpinEdit;
-                                   CBSer: TCheckBox;
+                                   CBSer,CBToAv,CBAuG:TCheckBox;
                                    Gr: TCustomSeries);
 begin
  inherited Create(ET1255, MM, R, DL, UL, MB, AB, TT);
@@ -825,6 +941,8 @@ begin
  SEGain:=SEG;
  SEMeasurementNumber:=SEMN;
  CBSerial:=CBSer;
+ CBAverageSerial:=CBToAv;
+ CBAutoGain:=CBAuG;
  Graph:=Gr;
 
  ElementFill();
@@ -870,13 +988,19 @@ procedure TET1255_ADCShow.FromActiveChannelToVisualElement;
 begin
   CBSerial.OnClick:=nil;
   SEMeasurementNumber.OnChange:=nil;
+  CBAverageSerial.OnClick:=nil;
+  CBAutoGain.OnClick:=nil;
 
   CBSerial.Checked:=ET1255_ModuleAndChan.Channels[ET1255_ModuleAndChan.ActiveChannel].SerialMeasurements;
   SEMeasurementNumber.Enabled:=CBSerial.Checked;
   SEMeasurementNumber.Value:= ET1255_ModuleAndChan.Channels[ET1255_ModuleAndChan.ActiveChannel].SerialMeasurementNumber;
+  CBAverageSerial.Checked:=ET1255_ModuleAndChan.Channels[ET1255_ModuleAndChan.ActiveChannel].fToAverageSerialResults;
+  CBAutoGain.Checked:=ET1255_ModuleAndChan.Channels[ET1255_ModuleAndChan.ActiveChannel].fAutoGain;
 
   CBSerial.OnClick:=CBSerialClick;
   SEMeasurementNumber.OnChange:=SEMNChange;
+  CBAverageSerial.OnClick:=CBAverageSerialClick;
+  CBAutoGain.OnClick:=CBAutoGainClick;
 end;
 
 procedure TET1255_ADCShow.FromET1255ToVisualElement;

@@ -603,6 +603,8 @@ type
     STina226_2: TStaticText;
     Lina226_TF: TLabel;
     STina226_TF: TStaticText;
+    CBET1255_ASer: TCheckBox;
+    CBET1255_AG: TCheckBox;
 
     procedure FormCreate(Sender: TObject);
     procedure BConnectClick(Sender: TObject);
@@ -1602,7 +1604,8 @@ begin
       ET1255_ADCModule.ReadFromIniFile(ConfigFile);
       ET1255_ADCShow:=TET1255_ADCShow.Create(ET1255_ADCModule,
          RGET1255_MM, RGET1255Range, LET1255I, LET1255U, BET1255Meas,
-         SBET1255Auto, Time, SEET1255_Gain, SEET1255_MN,CBET1255_SM, PointET1255);
+         SBET1255Auto, Time, SEET1255_Gain, SEET1255_MN,
+         CBET1255_SM, CBET1255_ASer,CBET1255_AG, PointET1255);
 
       ShowArray.Add([ET1255_ADCModule,ET1255_ADCShow]);
 
@@ -1610,7 +1613,7 @@ begin
                     else
    begin
    PC.Pages[8].TabVisible:=False;
-//   PC.Pages[9].TabVisible:=False;
+   PC.Pages[9].TabVisible:=False;
    end;
 
 
@@ -1810,7 +1813,7 @@ begin
  IVMRFirst.VoltageMeasured:=IVResult^.X[IVResult^.n-2];
  IVMRFirst.CurrentMeasured:=IVResult^.Y[IVResult^.n-2];
  IVMRFirst.DeltaToExpected:=ErResult;
- IVMRFirst.Correction:=VolCorrectionNew^.Y[VolCorrectionNew^.n-2];
+// IVMRFirst.Correction:=VolCorrectionNew^.Y[VolCorrectionNew^.n-2];
  IVMRFirst.CurrentDiapazon:= IVMeasResult.CurrentDiapazon;
  IVMRFirst.isEmpty:=False;
 
@@ -2695,8 +2698,8 @@ begin
 
 //to comment on some PC
 
-//  PortBeginAction(ComPortUT70B, LUT70BPort, nil);
-//  PortBeginAction(ComPortUT70C, LUT70CPort, nil);
+  PortBeginAction(ComPortUT70B, LUT70BPort, nil);
+  PortBeginAction(ComPortUT70C, LUT70CPort, nil);
 
   PortBeginAction(ComPortGDS, LGDSPort, nil);
 
@@ -2959,7 +2962,7 @@ procedure TIVchar.SBGeneratorClick(Sender: TObject);
 //   ET1255_DACs[0].Reset();
  var
     Vec:PVector;
-    i,Np:word;
+//    i,Np:word;
     Filtr:TDigitalManipulation;
 begin
 //Np:=30;
@@ -2967,30 +2970,41 @@ begin
 //showmessage(floattostr(sin(Pi*(i-(Np-1)/2.0)/2.0)/(Pi*(i-(Np-1)/2.0))));
 //  showmessage(floattostr(Log10((Power(10,0.1*Hz)-1)/(Power(10,0.1*Hc)-1))/2.0/Log10(wz/wc)));
   new(Vec);
-    SetLenVector(Vec,1000);
 
-    for I := 0 to Vec^.n - 1 do Vec^.X[i]:=i;
-     Vec^.Y[0]:=1;
-    for I := 1 to 500 do Vec^.Y[i]:=0;
-    for I := 501 to Vec^.n - 1 do Vec^.Y[i]:=1;
-
-   VectorToGraph(Vec,PointET1255);
-   showmessage('Ok to Continue');
-
-   Filtr:=TDigitalManipulation.Create(Vec);
-
-   Filtr.LP_FIR_Chebyshev(50,0.4,false,20);
+//    SetLenVector(Vec,1000);
+//    for I := 0 to Vec^.n - 1 do Vec^.X[i]:=i;
+//     Vec^.Y[0]:=1;
+//    for I := 1 to 500 do Vec^.Y[i]:=0;
+//    for I := 501 to Vec^.n - 1 do Vec^.Y[i]:=1;
+//   VectorToGraph(Vec,PointET1255);
+//   showmessage('Ok to Continue');
 
 
-   VectorToGraph(Filtr.DataVector,PointET1255);
+//   Filtr.LP_FIR_Chebyshev(20,0.4,false,20);
+//   VectorToGraph(Filtr.DataVector,PointET1255);
 
 //   showmessage('Ok to Continue');
-//     Vec.Load_File('10.dat');
-//   VectorToGraph(Vec,PointET1255);
-//
-////   showmessage('Ok to Continue');
-////   Vec.Decimation(100);
-////   VectorToGraph(Vec,PointET1255);
+   Vec.Load_File('f8v03shot.dat');
+   Filtr:=TDigitalManipulation.Create(Vec);
+
+   VectorToGraph(Vec,PointET1255);
+   Vec.Write_File('o1.dat',10);
+
+   showmessage('Ok to Continue');
+   Filtr.LP_UniformIIRfilter4k(0.025,true);
+   Filtr.DataVector.Write_File('b1.dat',10);
+   VectorToGraph(Filtr.DataVector,PointET1255);
+   showmessage('Ok to Continue');
+
+   Vec.Decimation(20);
+   VectorToGraph(Vec,PointET1255);
+   Vec.Write_File('o2.dat',10);
+
+   showmessage('Ok to Continue');
+   Filtr.CopyData(Vec);
+   Filtr.LP_UniformIIRfilter4k(0.025,true);
+   VectorToGraph(Filtr.DataVector,PointET1255);
+   Filtr.DataVector.Write_File('b2.dat',10);
 //
 //   showmessage('Ok to Continue');
 //   Vec.Chebyshev;
@@ -2998,7 +3012,7 @@ begin
 
 
 
-   Filtr.DataVector.Write_File('olegHHH.dat',10);
+//   Filtr.DataVector.Write_File('olegHHH.dat',10);
 
 
   Filtr.Free;
