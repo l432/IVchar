@@ -8,8 +8,8 @@
 #endif
 
 const byte PacketStart = 10;
-const byte PacketEnd = 255;
-const byte PacketMaxLength = 15;
+const byte PacketEnd = 15;
+const byte PacketMaxLength = 20;
 
 byte FCS (byte Data[], int n);
 bool SendParameters();

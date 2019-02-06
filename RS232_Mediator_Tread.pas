@@ -3,10 +3,10 @@ unit RS232_Mediator_Tread;
 interface
 
 uses
-  RS232device,  Measurement;
+  RS232device,  Measurement, HighResolutionTimer;
 
 Const
-  ScanningPeriodShot=20;
+  ScanningPeriodShot=1;
 
 type
   TRS232_MediatorTread = class(TTheadSleep)
@@ -66,8 +66,9 @@ begin
    if i=1 then
      begin
        SetEvent(EventComPortFree);
-       sleep(ScanningPeriodShot);
-//       _Sleep(ScanningPeriodShot);
+//       sleep(ScanningPeriodShot);
+       _Sleep(ScanningPeriodShot);
+//       HRDelay(ScanningPeriodShot);
      end;
    i:=1-i;
   end;

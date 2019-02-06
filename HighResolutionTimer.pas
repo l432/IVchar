@@ -17,10 +17,23 @@ type
   public
     Exists: Boolean;    // Флаг успешного создания таймера
   end;
+
+  TSecondMeter= class
+    private
+     fInterval:double;
+     fStartValue,fEndValue,fFreq:Int64;
+     constructor Create;
+    public
+     property Interval:double read fInterval;
+     procedure Start();
+     function Finish:double;
+  end;
  
 var
   Timer: THRTimer; // Глобальая переменная. Создаётся при запуске программы
- 
+  SecondMeter:TSecondMeter;
+
+
 { Фукнция высокоточной задержки.
  Delphi:
    Синтаксис: function HRDelay(const Milliseconds: Double): Double;
@@ -67,10 +80,32 @@ begin
   Result := 1000.0 * (ET.QuadPart - StartTime) / ClockRate;
 end;
  
+{ TSecondMeter }
+
+constructor TSecondMeter.Create;
+begin
+ inherited Create;
+ QueryPerformanceFrequency(fFreq);
+ fInterval:=0;
+end;
+
+function TSecondMeter.Finish: double;
+begin
+ QueryPerformanceCounter(fEndValue);
+ fInterval:=(fEndValue-fStartValue)/fFreq;
+ Result:=fInterval;
+end;
+
+procedure TSecondMeter.Start;
+begin
+ QueryPerformanceCounter(fStartValue);
+end;
+
 initialization
   Timer:= THRTimer.Create();
+  SecondMeter:=TSecondMeter.Create();
  
 finalization
   Timer.Free();
- 
+  SecondMeter.Free;
 end.

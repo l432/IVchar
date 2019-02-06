@@ -1813,7 +1813,11 @@ begin
  IVMRFirst.VoltageMeasured:=IVResult^.X[IVResult^.n-2];
  IVMRFirst.CurrentMeasured:=IVResult^.Y[IVResult^.n-2];
  IVMRFirst.DeltaToExpected:=ErResult;
-// IVMRFirst.Correction:=VolCorrectionNew^.Y[VolCorrectionNew^.n-2];
+ try
+ IVMRFirst.Correction:=VolCorrectionNew^.Y[VolCorrectionNew^.n-2];
+ finally
+
+ end;
  IVMRFirst.CurrentDiapazon:= IVMeasResult.CurrentDiapazon;
  IVMRFirst.isEmpty:=False;
 
@@ -2271,8 +2275,15 @@ begin
      then CalibrMeasuring.Measuring;
  if CBMeasurements.Items[CBMeasurements.ItemIndex]=MeasIV
      then IVMeasuring.Measuring;
+
+
+
+
   if CBMeasurements.Items[CBMeasurements.ItemIndex]=MeasFastIV
      then FastIVMeasuring.Measuring;
+
+
+
  if CBMeasurements.Items[CBMeasurements.ItemIndex]=MeasTimeD
      then TimeDependence.BeginMeasuring;
   if CBMeasurements.Items[CBMeasurements.ItemIndex]=MeasTwoTimeD
@@ -2536,12 +2547,12 @@ begin
 
 
  RS232_MediatorTread:=TRS232_MediatorTread.Create(
-                 [DACR2R,V721A,V721_I,V721_II,DS18B20,
-                 TMP102,
-                 HTU21D,
+                 [INA226_Module,HTU21D,
+                 DACR2R,V721A,V721_I,V721_II,DS18B20,
+                 TMP102,                
                  MLX90615,
                  D30_06,IscVocPinChanger,LEDOpenPinChanger,
-                 MCP3424,ADS11115module,AD9833,INA226_Module]);
+                 MCP3424,ADS11115module,AD9833]);
 
  if (ComPort1.Connected)and(SettingDevice.ActiveInterface.Name=DACR2R.Name) then SettingDevice.Reset();
  if (ComPort1.Connected) then D30_06.Reset;
@@ -3142,6 +3153,8 @@ end;
 
 procedure TIVchar.VoltmetrsCreate;
 begin
+  INA226Create();
+
   V721A := TV721A.Create(ComPort1, 'B7-21A');
   V721_I := TV721.Create(ComPort1, 'B7-21 (1)');
   V721_II := TV721.Create(ComPort1, 'B7-21 (2)');
@@ -3181,7 +3194,7 @@ begin
 
   MCP3424Create();
   ADS1115Create();
-  INA226Create();
+
 
   UT70B:=TUT70B.Create(ComPortUT70B, 'UT70B');
   UT70BShow:= TUT70BShow.Create(UT70B, RGUT70B_MM, RGUT70B_Range, RGUT70B_RangeM, LUT70B, LUT70BU, BUT70BMeas, SBUT70BAuto, Time);
@@ -3894,7 +3907,6 @@ begin
   end;
 
   CBMeasurements.Items.Clear;
-  CBMeasurements.Items.Add(MeasIV);
   CBMeasurements.Items.Add(MeasFastIV);
   CBMeasurements.Items.Add(MeasR2RCalib);
   CBMeasurements.Items.Add(MeasTimeD);
@@ -3902,6 +3914,7 @@ begin
   CBMeasurements.Items.Add(MeasTempOnTime);
   CBMeasurements.Items.Add(MeasTwoTimeD);
   CBMeasurements.Items.Add(MeasIscAndVocOnTime);
+  CBMeasurements.Items.Add(MeasIV);
   CBMeasurements.ItemIndex:=0;
 
   IsWorkingTermostat:=False;

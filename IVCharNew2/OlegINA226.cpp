@@ -14,6 +14,11 @@ INA226o::INA226o()
 bool INA226o::Begin() {
 
   if (DeviceId != INA226Command) return false;
+
+//ActionId = _address;
+//    CreateAndSendPacket(_DataReceived, GetDataReceivedNumber());
+//    return true;
+  
   if ((NumberByte < 7) || (!isReady()))   return true;
   SetAdress(PinControl);
   _timeFactor=DataFromPC[5];
@@ -85,16 +90,7 @@ unsigned long  INA226o::DelayTime() {
       break;
     case  INA_MODE_TRIGGERED_BUS:     
       busCT = (uint8_t)((_config & INA_CONFIG_BUS_TIME_MASK) >> 6);
-    
-//    DeviceId = INA226Command;
-//    ActionId = _address;   
-//    _DataReceived[0]=(uint8_t)(INA226_averages[averages]>>8);
-//    _DataReceived[1]=(uint8_t)(INA226_averages[averages]);
-//    _DataReceived[2]=(uint8_t)(INA226_ConvTime[busCT]>>8);
-//    _DataReceived[3]=(uint8_t)(INA226_ConvTime[busCT]);
-//    
-//    CreateAndSendPacket(_DataReceived, 4);
-//    
+      
       return (unsigned long)_timeFactor*(INA226_averages[averages] * INA226_ConvTime[busCT]);
       break;
     default: 

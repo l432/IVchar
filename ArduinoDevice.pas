@@ -7,7 +7,7 @@ interface
 const
   UndefinedPin=255;
   PacketBeginChar=#10;
-  PacketEndChar=#255;
+  PacketEndChar=#15;
 
 
   PinNames:array[0..3]of string=
@@ -193,7 +193,7 @@ type
 implementation
 
 uses
-  Math, Forms, Graphics, Controls, OlegFunction, Dialogs;
+  Math, Forms, Graphics, Controls, OlegFunction, Dialogs, HighResolutionTimer;
 
 
 { TArduinoMeter }
@@ -229,11 +229,13 @@ procedure TArduinoMeter.PacketReceiving(Sender: TObject; const Str: string);
   var i:integer;
 begin
 // ShowData(fData);
+
  if not(PacketIsReceived(Str,fData,fMetterKod)) then Exit;
  if fData[2]<>Pins.PinControl then Exit;
 //   ?
  fComPort.ClearBuffer(True, False);
 //------------------------------
+
  for I := 0 to High(fData)-4 do
    fData[i]:=fData[i+3];
  SetLength(fData,High(fData)-3);

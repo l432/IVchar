@@ -235,8 +235,8 @@ end;
 
 function TSimulator.GetData: double;
 begin
- Result:=GetTickCount/1e7;
-// Result:=fOutputValue;
+// Result:=GetTickCount/1e7;
+ Result:=fOutputValue;
 // if (round(Result*10)=-(22)) then Result:=ErResult;
 
 end;

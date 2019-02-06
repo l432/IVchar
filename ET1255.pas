@@ -167,7 +167,7 @@ TET1255_ADCChannel=class(TNamedInterfacedObject,IMeasurement)
   function Measurement():double;
   procedure SetSerialMeasurements(const Value: boolean);
   procedure SetSerialMeasurementNumber(const Value: byte);
-    procedure AverageValueCalculation;
+  procedure AverageValueCalculation;
  public
   DataVector:PVector;
   property NewData:boolean read GetNewData write SetNewData;
@@ -275,7 +275,7 @@ end;
 implementation
 
 uses
-  Dialogs, SysUtils, Windows, Forms, OlegGraph;
+  Dialogs, SysUtils, Windows, Forms, OlegGraph, OlegMath, HighResolutionTimer;
 
 { TET1255_DAC }
 
@@ -580,6 +580,7 @@ end;
 function TET1255_ADCChannel.Measurement: double;
 begin
 
+
  PrepareToMeasurementPart1();
  ValueInitialization();
  Result:=fValue;
@@ -587,16 +588,17 @@ begin
  fMeasuringIsDone:=False;
  fAveraveNumber:=0;
  if not(fReadyToMeasurement) then Exit;
- 
+
+
  repeat
-//  helpforme('fAN'+inttostr(fAveraveNumber));
    PrepareToMeasurementPart2();
    if not(fReadyToMeasurement) then Exit;
+
    if MeasuringStart() then
     if WaitForSingleObject(EventET1255Measurement_Done,1500)=WAIT_OBJECT_0
      then
      begin
-     ResultRead()
+           ResultRead();
      end
      else  MeasuringStop;
   until fMeasuringIsDone;
@@ -682,12 +684,16 @@ begin
        end
          else Filtr:=TDigitalManipulation.Create(DataVector);
 
-  Filtr.Decimation(50);
-  Filtr.MovingAverageFilter(50,true);
+
+//   Filtr.DataVector.Write_File(inttostr(Millisecond)+'.dat');
+
+
+//  Filtr.Decimation(50);
+//  Filtr.MovingAverageFilter(50,true);
 //  _____________________
-//  Filtr.Decimation(20);
+  Filtr.Decimation(20);
 //  Filtr.LP_UniformIIRfilter4k(0.025,true);
-//  Filtr.LP_IIR_Chebyshev0025p2(true);
+  Filtr.LP_IIR_Chebyshev0025p2(true);
 //_________________________
 
   fValue := ImpulseNoiseSmoothing(Filtr.DataVector);

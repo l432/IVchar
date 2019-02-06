@@ -337,7 +337,8 @@ end;
 implementation
 
 uses
-  SysUtils, Forms, Windows, Math, DateUtils, Dialogs, OlegGraph, OlegFunction;
+  SysUtils, Forms, Windows, Math, DateUtils, Dialogs, OlegGraph, OlegFunction, 
+  OlegMath;
 
 var
   fItIsForward:boolean;
@@ -402,6 +403,7 @@ constructor TIVDependence.Create(
                      );
 begin
   inherited Create(PB,BS,Res,FLn, FLg);
+
  CBForw:=CBF;
  CBRev:=CBR;
  RevLine:=RLn;
@@ -980,7 +982,7 @@ end;
 procedure TFastDependence.ButtonStopClick(Sender: TObject);
 begin
   SetEvent(EventToStopDependence);
-//  fIVMeasuringToStop:=True;
+   fIVMeasuringToStop:=True;
 end;
 
 constructor TFastDependence.Create(BS: TButton;
@@ -1039,12 +1041,25 @@ end;
 
 procedure TFastIVDependence.ActionMeasurement;
 begin
+//    secondmeter.Start();
+
     SetVoltage();
+
     VoltageMeasuring();
+
     CurrentMeasuring();
+
+
     DataSave();
 
+
+
     if fTreadToMeasuring.IsTerminated then Exit;
+
+
+//    secondmeter.Finish();
+//    helpforme('b'+floattostr(fAbsVoltageValue)+
+//     '_'+floattostr(SecondMeter.Interval));
 end;
 
 procedure TFastIVDependence.BeginMeasuring;
@@ -1210,13 +1225,23 @@ begin
 //  sleep(1000);
   VocIscDetermine();
   HookEndMeasuring();
+
+ secondmeter.Finish();
+    helpforme('IVtime_'+floattostr(SecondMeter.Interval));
+
 end;
 
 procedure TFastIVDependence.Measuring(SingleMeasurement:boolean=true;
                            FilePrefix:string='');
 begin
+
+   secondmeter.Start();
+
   fSingleMeasurement:=SingleMeasurement;
   PrefixToFileName:=FilePrefix;
+//  helpforme('1b'+inttostr(millisecond));
+//  helpforme('2b'+inttostr(millisecond));
+
   BeginMeasuring();
 end;
 
@@ -1291,6 +1316,7 @@ begin
   try
 //  Result := MD.GetMeasurementResult();
   Result := MD.GetResult();
+//  Result:=fAbsVoltageValue;
   except
    Result:=ErResult;
   end;

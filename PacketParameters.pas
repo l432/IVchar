@@ -8,7 +8,7 @@ type
 
 const
   PacketBegin=10;
-  PacketEnd=255;
+  PacketEnd=15;
 //  PacketBeginChar=#10;
 //  PacketEndChar=#255;
 
@@ -30,7 +30,7 @@ const
 var
   aPacket:array of byte;
 
-Procedure PacketCreate(const Args: array of byte);
+Procedure PacketCreate(Args: array of byte);
 {створюється пакет (заповнюється масив aPacket), який окрім Args містить
 PacketBegin - 0-й байт
 Довжину пакету (PacketBegin та PacketEnd не враховуються) - 1-й байт
@@ -61,20 +61,49 @@ Function CRC8(Data:array of byte;poly:byte=$07):byte;
 
 implementation
 
-Procedure PacketCreate(const Args: array of byte);
-var i:byte;
+uses
+  HighResolutionTimer;
+
+Procedure PacketCreate( Args: array of byte);
+var i,ProblemByteNumber,counter:byte;
 begin
-  SetLength(aPacket,Length(Args)+4);
+  ProblemByteNumber:= 0;
+  for I := 0 to High(Args) do
+   if Args[i]=PacketEnd then Inc(ProblemByteNumber);
+
+   SetLength(aPacket,Length(Args)+5+ProblemByteNumber);
   aPacket[0]:=0;
-  aPacket[1]:=Length(Args)+2;
+  aPacket[1]:=Length(Args)+3+ProblemByteNumber;
+  aPacket[2]:=ProblemByteNumber;
+  counter:=3;
+  for I := 0 to High(Args) do
+   begin
+    if Args[i]=PacketEnd then
+      begin
+       Args[i]:=Args[i]-1;
+       aPacket[counter]:=i+2+ProblemByteNumber;
+       inc(counter);
+      end;
+   end;
   aPacket[High(aPacket)]:=0;
   aPacket[High(aPacket)-1]:=0;
   for I :=Low(Args) to High(Args) do
-        aPacket[i+2]:=Args[i];
+        aPacket[i+counter]:=Args[i];
   aPacket[High(aPacket)-1]:=FCSCalculate(aPacket);
   aPacket[0]:=PacketBegin;
   aPacket[High(aPacket)]:=PacketEnd;
-//  ShowData(aPacket);
+
+//  SetLength(aPacket,Length(Args)+4);
+//  aPacket[0]:=0;
+//  aPacket[1]:=Length(Args)+2;
+//  aPacket[High(aPacket)]:=0;
+//  aPacket[High(aPacket)-1]:=0;
+//  for I :=Low(Args) to High(Args) do
+//        aPacket[i+2]:=Args[i];
+//  aPacket[High(aPacket)-1]:=FCSCalculate(aPacket);
+//  aPacket[0]:=PacketBegin;
+//  aPacket[High(aPacket)]:=PacketEnd;
+
 end;
 
 Function PacketIsSend(ComPort:TComPort; report:string):boolean;
@@ -82,7 +111,8 @@ begin
 //  ShowData(aPacket);
   if ComPort.Connected then
    begin
-    ComPort.ClearBuffer(True, True);
+
+    ComPort.ClearBuffer(false, True);
     Result:=(ComPort.Write(aPacket[0], High(aPacket)+1)=
                                (High(aPacket)+1));
    end

@@ -252,6 +252,7 @@ end;
 procedure TINA226_Module.Intitiation;
 begin
   fDelayTimeMax:=150;
+  fDelayTimeStep:=1;
 //  inherited Intitiation;
 //  fAverages:=ina_a1;
   fShuntVoltageCT:=ina_ct1100us;
@@ -272,6 +273,7 @@ begin
     Result:=max(2,Ceil(INA226_Averages[Averages]*
                           (INA226_ConversionTime[fShuntVoltageCT]+INA226_ConversionTime[fBusVoltageCT])));
  end;
+// result:=0;
 end;
 
 procedure TINA226_Module.PinsCreate;

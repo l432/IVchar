@@ -231,7 +231,8 @@ Procedure PortEndAction(Port:TComPort);
 implementation
 
 uses
-  OlegType, Dialogs, SysUtils, Forms, Graphics, RS232_Meas_Tread;
+  OlegType, Dialogs, SysUtils, Forms, Graphics, RS232_Meas_Tread, 
+  HighResolutionTimer;
 
 { TRS232Device }
 

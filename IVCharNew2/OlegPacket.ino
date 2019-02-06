@@ -38,8 +38,6 @@ bool SendParameters() {
   return true;
 }
 
-//      if (PinAndID::DeviceId == ParameterReceiveCommand) SendParameters();
-
 
 void SendPacket(byte Data[], int n) {
   Serial.write(PacketStart);
@@ -47,19 +45,6 @@ void SendPacket(byte Data[], int n) {
   Serial.write(PacketEnd);
 }
 
-//void GateOpen() {
-//  digitalWrite(PinAndID::Data3, LOW);
-//  ShortDelay();
-//}
-//
-//void GateClose() {
-//  digitalWrite(PinAndID::Data3, HIGH);
-//  ShortDelay();
-//}
-//
-//void ShortDelay() {
-//  delayMicroseconds(50);
-//}
 
 void ControlBlink() {
   digitalWrite(LEDPin, HIGH);
@@ -79,14 +64,9 @@ byte PinToInterruptNumber(byte PinNumber) {
 
 byte PinAndID::NumberByte = 0;
 byte PinAndID::PinControl = 0;
-//byte PinAndID::PinGate = 0;
-//byte PinAndID::Data3 = 0;
 byte PinAndID::DeviceId = 0;
 byte PinAndID::ActionId = 0;
-//byte PinAndID::Data4 = 0;
-//byte PinAndID::Data5 = 0;
-//byte PinAndID::Data6 = 0;
-byte PinAndID::DataFromPC[PacketMaxLength] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+byte PinAndID::DataFromPC[PacketMaxLength] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ,0,0};
 
 
 void PinAndID::CreateAndSendPacket(byte DDATA[], int n) {
@@ -114,14 +94,6 @@ void PinAndID::CreateAndSendPacket(byte DDATA[], int n) {
     data[counter++] = DDATA[i];
   }
 
-  //  byte data[n + 4];
-  //  data[0] = sizeof(data);
-  //  data[1] = DeviceId;
-  //  data[2] = ActionId;
-  //  for (byte i = 0; i < n; i++)
-  //  {
-  //    data[i + 3] = DDATA[i];
-  //  }
   data[sizeof(data) - 1] = 0;
   data[sizeof(data) - 1] = FCS(data, data[0]);
   SendPacket(data, sizeof(data));

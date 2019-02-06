@@ -5,7 +5,7 @@
 #include <OneWire.h>
 
 #include "OlegConstant.h"
-//#include "OlegPacket.h"
+#include "OlegPacket.h"
 #include "OlegTMP102.h"
 #include "OlegHTU21.h"
 #include "D30_06.h"
@@ -33,7 +33,7 @@ INA226o ina226;
 
 void setup() {
   Serial.begin(115200);
-  //  Serial.begin(9600);
+//    Serial.begin(9600);
   Serial.setTimeout(50);
   SPI.begin();
   Wire.begin();
@@ -60,6 +60,9 @@ void loop() {
 
   if (Serial.available() > 0) {
     if (ParameterReceive()) {
+//          byte hhhh[2] = {140, 204};
+//    PinAndID::CreateAndSendPacket( hhhh, 2);
+              
       if (cd.V721()) goto start;
       if (SendParameters()) goto start;
       if (dacR2R.Action()) goto start;
@@ -71,7 +74,7 @@ void loop() {
       if (mcp3424.Begin()) goto start;
       if (ads1115.Begin()) goto start; 
       if (ad9833.Action()) goto start;     
-      if (mlx90615.Begin()) goto start;  
+      if (mlx90615.Begin()) goto start;        
       if (ina226.Begin()) goto start;
     }
   }
@@ -82,7 +85,6 @@ start:
   tmp102.End();
   mcp3424.End();
   ads1115.End();
-//  mlx90615.End(); 
   ina226.End(); 
   wdt_reset();
 }
