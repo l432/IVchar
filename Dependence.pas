@@ -7,11 +7,18 @@ uses
   ExtCtrls, Classes, OlegTypePart2, MDevice, HighResolutionTimer;
 
 var EventToStopDependence:THandle;
+//    EventFastIVCurrentMeas: THandle;
+//    EventFastIVCurrentMeasDone: THandle;
 
 const
    VoltageStepDefault=0.01;
    DragonBackOvershootHeight=1.05;
    MaxCurrentMeasuringAttemp=3;
+
+   IVtiming=true;
+
+
+
 type
 
 TFastDependence=class
@@ -338,7 +345,7 @@ implementation
 
 uses
   SysUtils, Forms, Windows, Math, DateUtils, Dialogs, OlegGraph, OlegFunction, 
-  OlegMath;
+  OlegMath, Measurement;
 
 var
   fItIsForward:boolean;
@@ -1041,13 +1048,40 @@ end;
 
 procedure TFastIVDependence.ActionMeasurement;
 begin
-//    secondmeter.Start();
 
     SetVoltage();
 
+//    ResetEvent(EventFastIVCurrentMeasDone);
+//    Current_MD.ActiveInterface.NewData:=False;
+//    Current_MD.ActiveInterface.GetDataThread(FastIVCurrentMeas,EventFastIVCurrentMeas);
+
+//      secondmeter.Start();
+
     VoltageMeasuring();
 
+//        secondmeter.Finish();
+//    helpforme('b'+floattostr(fAbsVoltageValue)+
+//     '_'+floattostr(SecondMeter.Interval));
+
+
+//    if (WaitForSingleObject(EventFastIVCurrentMeasDone,200)=WAIT_OBJECT_0)
+//       then
+//        begin
+//           helpforme('b'+floattostr(fAbsVoltageValue));
+//           CurrentMeasuring();
+//        end
+//       else
+//        begin
+//         SetEvent(EventToStopDependence);
+//         sleep(0);
+//         Exit;
+//        end;
+
+
+
+//
     CurrentMeasuring();
+//
 
 
     DataSave();
@@ -1057,9 +1091,6 @@ begin
     if fTreadToMeasuring.IsTerminated then Exit;
 
 
-//    secondmeter.Finish();
-//    helpforme('b'+floattostr(fAbsVoltageValue)+
-//     '_'+floattostr(SecondMeter.Interval));
 end;
 
 procedure TFastIVDependence.BeginMeasuring;
@@ -1109,6 +1140,24 @@ begin
    if CurrentGrowth() then Break;
    inc(AtempNumber);
   until (AtempNumber>MaxCurrentMeasuringAttemp);
+
+//begin
+//  if fTreadToMeasuring.IsTerminated then
+//   begin
+//    fCurrentMeasured:=ErResult;
+//    Exit;
+//   end;
+//
+//  fCurrentMeasured:=Current_MD.ActiveInterface.Value;
+//
+//  if fCurrentMeasured=ErResult then
+//      begin
+//       SetEvent(EventToStopDependence);
+//       sleep(0);
+//       Exit;
+//      end;
+//  fCurrentMeasured :=fCurrentMeasured * fDiodOrientationVoltageFactor;
+
 
   if (FCurrentValueLimitEnable and (abs(fCurrentMeasured)>=Imax)) then
     fAbsVoltageValue:=50;
@@ -1222,12 +1271,14 @@ begin
   PointSeriesFilling;
   ButtonStop.Enabled := False;
   SettingDevice.ActiveInterface.Reset();
-//  sleep(1000);
   VocIscDetermine();
   HookEndMeasuring();
 
- secondmeter.Finish();
+ if IVtiming then
+  begin
+   secondmeter.Finish();
     helpforme('IVtime_'+floattostr(SecondMeter.Interval));
+  end;
 
 end;
 
@@ -1235,13 +1286,13 @@ procedure TFastIVDependence.Measuring(SingleMeasurement:boolean=true;
                            FilePrefix:string='');
 begin
 
+ if IVtiming then
+  begin
    secondmeter.Start();
+  end;
 
   fSingleMeasurement:=SingleMeasurement;
   PrefixToFileName:=FilePrefix;
-//  helpforme('1b'+inttostr(millisecond));
-//  helpforme('2b'+inttostr(millisecond));
-
   BeginMeasuring();
 end;
 
@@ -1316,7 +1367,6 @@ begin
   try
 //  Result := MD.GetMeasurementResult();
   Result := MD.GetResult();
-//  Result:=fAbsVoltageValue;
   except
    Result:=ErResult;
   end;
@@ -1494,8 +1544,25 @@ initialization
                                  True, // начальное состояние TRUE - сигнальное
                                  nil);
 
+//  EventFastIVCurrentMeas := CreateEvent(nil,
+//                                 True, // тип сброса TRUE - ручной
+//                                 True, // начальное состояние TRUE - сигнальное
+//                                 nil);
+//
+//  EventFastIVCurrentMeasDone := CreateEvent(nil,
+//                                 True, // тип сброса TRUE - ручной
+//                                 True, // начальное состояние TRUE - сигнальное
+//                                 nil);
+
 finalization
 
-  SetEvent(EventToStopDependence);
-  CloseHandle(EventToStopDependence);
+//  SetEvent(EventToStopDependence);
+//  CloseHandle(EventToStopDependence);
+//
+//  SetEvent(EventFastIVCurrentMeas);
+//  CloseHandle(EventFastIVCurrentMeas);
+//
+//  SetEvent(EventFastIVCurrentMeasDone);
+//  CloseHandle(EventFastIVCurrentMeasDone);
+
 end.

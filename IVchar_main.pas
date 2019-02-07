@@ -219,7 +219,6 @@ type
     CBPC: TCheckBox;
     GBDS18B: TGroupBox;
     TS_Temper: TTabSheet;
-    CBVtoI: TCheckBox;
     TS_UT70: TTabSheet;
     PanelUT70B: TPanel;
     LUT70B: TLabel;
@@ -243,10 +242,6 @@ type
     LFVP: TLabel;
     STRVP: TStaticText;
     LRVP: TLabel;
-    STRVtoI: TStaticText;
-    LRVtoI: TLabel;
-    LVVtoI: TLabel;
-    STVVtoI: TStaticText;
     LTMI: TLabel;
     STTMI: TStaticText;
     GBThermocouple: TGroupBox;
@@ -686,8 +681,8 @@ type
 //    procedure RangeWriteToIniFile;
     procedure ConstantShowCreate;
     procedure PIDShowCreateAndFromIniFile;
-    procedure ConstantShowFromIniFile;
-    procedure ConstantShowToIniFileAndFree;
+//    procedure ConstantShowFromIniFile;
+//    procedure ConstantShowToIniFileAndFree;
 //    procedure PIDShowToIniFileAndFree;
     procedure SaveCommentsFile(FileName: string);
     procedure DependenceMeasuringCreate;
@@ -865,8 +860,13 @@ type
     ,MaxDifCoeficient
        :double;
     VoltageLimit:boolean;
-    DoubleConstantShows:array of TDoubleParameterShow;
-    Imax,Imin,R_VtoI,Shift_VtoI:double;
+//    DoubleConstantShows:array of TDoubleParameterShow;
+    LEDVoltageCS,Dragon_backTimeCS,
+    RevVoltagePrecisionCS,ForVoltagePrecisionCS,
+    MinCurrentCS,MaxCurrentCS,ParasiticResistanceCS:TDoubleParameterShow;
+    ControlIntervalCS,MeasurementDurationCS,
+    MeasurementIntervalCS, TemperatureMeasIntervalCS:TIntegerParameterShow;
+    Imax,Imin{,R_VtoI,Shift_VtoI}:double;
 
     IVMeasuring,CalibrMeasuring:TIVDependence;
     FastIVMeasuring:TFastIVDependence;
@@ -910,79 +910,113 @@ uses
 procedure TIVchar.ConstantShowCreate;
 begin
 
-  SetLength(DoubleConstantShows, 13);
-//  DoubleConstantShows[0]:=TDoubleParameterShow.Create(STPR,LPR,
-//        'Parasitic resistance',
-//        'Parasitic resistance value is expected',0,3);
-  DoubleConstantShows[0]:=TDoubleParameterShow.Create(STPR,LPR,
-        'Parasitic resistance',0,3);
-  DoubleConstantShows[1]:=TDoubleParameterShow.Create(STMC,LMC,
-        'Maximum current',
-        'Maximum current for I-V characteristic measurement is expected',2e-2,2);
-  DoubleConstantShows[2]:=TDoubleParameterShow.Create(STMinC,LMinC,
-        'Minimum current',
-        'Minimum current for I-V characteristic measurement is expected',5e-11,2);
-  DoubleConstantShows[3]:=TDoubleParameterShow.Create(STFVP,LFVP,
-        'Forward voltage precision',
-        'Voltage precision for forward I-V characteristic is expected',0.001,4);
-  DoubleConstantShows[4]:=TDoubleParameterShow.Create(STRVP,LRVP,
-        'Reverse voltage precision',
-        'Voltage precision for reverse I-V characteristic is expected',0.005,4);
-//  DoubleConstantShows[5]:=TDoubleParameterShow.Create(STRVtoI,LRVtoI,
-//        'V -> I Resistance',
-//        'Resistance for V to I transformation is expected',10,4);
-//  DoubleConstantShows[6]:=TDoubleParameterShow.Create(STVVtoI,LVVtoI,
-//        'V -> I Shift Voltage',
-//        'Shift Voltage for V to I transformation is expected',-0.503,4);
-//  DoubleConstantShows[7]:=TDoubleParameterShow.Create(STTMI,LTMI,
-//        'Temperature measurement interval (s)',
-//        'Temperature measurement interval',5,2);
-  DoubleConstantShows[5]:=TDoubleParameterShow.Create(STRVtoI,LRVtoI,
-        'V -> I Resistance',10,4);
-  DoubleConstantShows[6]:=TDoubleParameterShow.Create(STVVtoI,LVVtoI,
-        'V -> I Shift Voltage',-0.503,4);
-  DoubleConstantShows[7]:=TDoubleParameterShow.Create(STTMI,LTMI,
-        'Temperature measurement interval (s)',5,2);
-  DoubleConstantShows[8]:=TDoubleParameterShow.Create(STTimeInterval,LTimeInterval,
-        'Measurement interval, (s)',
-        'Time dependence measurement interval',15,2);
-  DoubleConstantShows[9]:=TDoubleParameterShow.Create(STTimeDuration,LTimeDuration,
-        'Measurement duration (s), 0 - infinite',
-        'Full measurement duration',0,2);
+//  SetLength(DoubleConstantShows, 13);
 
-  DoubleConstantShows[10]:=TDoubleParameterShow.Create(STControlInterval,LControlInterval,
-        'Controling interval (s)',
-        'Controling measurement interval',15,2);
+//  DoubleConstantShows[0]:=TDoubleParameterShow.Create(STPR,LPR,
+//        'Parasitic resistance',0,3);
+//  DoubleConstantShows[1]:=TDoubleParameterShow.Create(STMC,LMC,
+//        'Maximum current',
+//        'Maximum current for I-V characteristic measurement is expected',2e-2,2);
+//  DoubleConstantShows[2]:=TDoubleParameterShow.Create(STMinC,LMinC,
+//        'Minimum current',
+//        'Minimum current for I-V characteristic measurement is expected',5e-11,2);
+//  DoubleConstantShows[3]:=TDoubleParameterShow.Create(STFVP,LFVP,
+//        'Forward voltage precision',
+//        'Voltage precision for forward I-V characteristic is expected',0.001,4);
+//  DoubleConstantShows[4]:=TDoubleParameterShow.Create(STRVP,LRVP,
+//        'Reverse voltage precision',
+//        'Voltage precision for reverse I-V characteristic is expected',0.005,4);
+
+//  DoubleConstantShows[5]:=TDoubleParameterShow.Create(STRVtoI,LRVtoI,
+//        'V -> I Resistance',10,4);
+//  DoubleConstantShows[6]:=TDoubleParameterShow.Create(STVVtoI,LVVtoI,
+//        'V -> I Shift Voltage',-0.503,4);
+//  DoubleConstantShows[7]:=TDoubleParameterShow.Create(STTMI,LTMI,
+//        'Temperature measurement interval (s)',5,2);
+
+//  DoubleConstantShows[8]:=TDoubleParameterShow.Create(STTimeInterval,LTimeInterval,
+//        'Measurement interval, (s)',
+//        'Time dependence measurement interval',15,2);
+//  DoubleConstantShows[9]:=TDoubleParameterShow.Create(STTimeDuration,LTimeDuration,
+//        'Measurement duration (s), 0 - infinite',
+//        'Full measurement duration',0,2);
+
+//  DoubleConstantShows[10]:=TDoubleParameterShow.Create(STControlInterval,LControlInterval,
+//        'Controling interval (s)',
+//        'Controling measurement interval',15,2);
+
+
 //  DoubleConstantShows[11]:=TDoubleParameterShow.Create(STDBtime,LDBtime,
-//        'Dragon-back time (ms)',
 //        'Dragon-back time (ms)',1,3);
 //  DoubleConstantShows[12]:=TDoubleParameterShow.Create(STLED_onValue,LLED_onValue,
-//        'LED voltage (V)',
 //        'LED voltage (V)',0.79,5);
-  DoubleConstantShows[11]:=TDoubleParameterShow.Create(STDBtime,LDBtime,
+
+  ParasiticResistanceCS:=TDoubleParameterShow.Create(STPR,LPR,
+        'Parasitic resistance',0,3);
+
+  MaxCurrentCS:=TDoubleParameterShow.Create(STMC,LMC,
+        'Maximum current',
+        'Maximum current for I-V characteristic measurement is expected',2e-2,2);
+
+  MinCurrentCS:=TDoubleParameterShow.Create(STMinC,LMinC,
+        'Minimum current',
+        'Minimum current for I-V characteristic measurement is expected',5e-11,2);
+
+  ForVoltagePrecisionCS:=TDoubleParameterShow.Create(STFVP,LFVP,
+        'Forward voltage precision',
+        'Voltage precision for forward I-V characteristic is expected',0.001,4);
+
+  RevVoltagePrecisionCS:=TDoubleParameterShow.Create(STRVP,LRVP,
+        'Reverse voltage precision',
+        'Voltage precision for reverse I-V characteristic is expected',0.005,4);
+
+  TemperatureMeasIntervalCS:=TIntegerParameterShow.Create(STTMI,LTMI,
+        'Temperature measurement interval (s)',5);
+  TemperatureMeasIntervalCS.IsPositive:=True;
+
+  MeasurementIntervalCS:=TIntegerParameterShow.Create(STTimeInterval,LTimeInterval,
+        'Measurement interval, (s)',
+        'Time dependence measurement interval',15);
+  MeasurementIntervalCS.IsPositive:=True;
+
+  MeasurementDurationCS:=TIntegerParameterShow.Create(STTimeDuration,LTimeDuration,
+        'Measurement duration (s), 0 - infinite',
+        'Full measurement duration',0);
+  MeasurementDurationCS.IsPositive:=True;
+
+  ControlIntervalCS:=TIntegerParameterShow.Create(STControlInterval,LControlInterval,
+        'Controling interval (s)',
+        'Controling measurement interval',15);
+  ControlIntervalCS.IsPositive:=True;
+
+  Dragon_backTimeCS:=TDoubleParameterShow.Create(STDBtime,LDBtime,
         'Dragon-back time (ms)',1,3);
-  DoubleConstantShows[12]:=TDoubleParameterShow.Create(STLED_onValue,LLED_onValue,
+  LEDVoltageCS:=TDoubleParameterShow.Create(STLED_onValue,LLED_onValue,
         'LED voltage (V)',0.79,5);
 
+  ShowArray.Add([LEDVoltageCS,Dragon_backTimeCS,ControlIntervalCS,
+                MeasurementDurationCS,MeasurementIntervalCS,TemperatureMeasIntervalCS,
+                RevVoltagePrecisionCS,ForVoltagePrecisionCS,MinCurrentCS,
+                MaxCurrentCS,ParasiticResistanceCS]);
 end;
 
-procedure TIVchar.ConstantShowFromIniFile;
- var i:integer;
-begin
-  for I := Low(DoubleConstantShows) to High(DoubleConstantShows) do
-   DoubleConstantShows[i].ReadFromIniFile(ConfigFile);
-end;
+//procedure TIVchar.ConstantShowFromIniFile;
+// var i:integer;
+//begin
+//  for I := Low(DoubleConstantShows) to High(DoubleConstantShows) do
+//   DoubleConstantShows[i].ReadFromIniFile(ConfigFile);
+//end;
 
-procedure TIVchar.ConstantShowToIniFileAndFree;
- var i:integer;
-begin
-  ConfigFile.EraseSection(DoubleConstantSection);
-  for I := Low(DoubleConstantShows) to High(DoubleConstantShows) do
-   begin
-   DoubleConstantShows[i].WriteToIniFile(ConfigFile);
-   DoubleConstantShows[i].Free;
-   end;
-end;
+//procedure TIVchar.ConstantShowToIniFileAndFree;
+// var i:integer;
+//begin
+//  ConfigFile.EraseSection(DoubleConstantSection);
+//  for I := Low(DoubleConstantShows) to High(DoubleConstantShows) do
+//   begin
+//   DoubleConstantShows[i].WriteToIniFile(ConfigFile);
+//   DoubleConstantShows[i].Free;
+//   end;
+//end;
 
 procedure TIVchar.ControllerThreadCreate;
 begin
@@ -991,7 +1025,7 @@ begin
   ControllerThread:=
     TControllerThread.Create(Control_MD.ActiveInterface,
                              SettingDeviceControl.ActiveInterface,
-                             DoubleConstantShows[10].Data,
+                             ControlIntervalCS.Data,
                              PID_Control);
 
 end;
@@ -1016,7 +1050,8 @@ begin
     LControlWatchDog.Visible:=False;
     BControlResetClick(Sender);
     end;
-  ControlWatchDog.Interval:=round(StrToFloat(STControlInterval.Caption))*2000;
+//  ControlWatchDog.Interval:=round(StrToFloat(STControlInterval.Caption))*2000;
+  ControlWatchDog.Interval:=ControlIntervalCS.Data*2000;
   Control_MD.ActiveInterface.NewData:=False;
 end;
 
@@ -1238,10 +1273,10 @@ begin
   SBTAuto.Enabled := False;
   NumberOfTemperatureMeasuring := round(PBIV.Max / 2);
   Temperature := ErResult;
-  Imax := DoubleConstantShows[1].Data;
-  Imin := DoubleConstantShows[2].Data;
-  R_VtoI:=DoubleConstantShows[5].Data;
-  Shift_VtoI:= DoubleConstantShows[6].Data;
+  Imax := MaxCurrentCS.Data;
+  Imin := MinCurrentCS.Data;
+//  R_VtoI:=DoubleConstantShows[5].Data;
+//  Shift_VtoI:= DoubleConstantShows[6].Data;
   SetLenVector(VolCorrectionNew,0);
   ThermoCuple.Measurement:=TermoCouple_MD.ActiveInterface;
   TemperData.Clear;
@@ -1320,7 +1355,7 @@ begin
  if CBLEDAuto.Checked then
   begin
 //    BOVset1255Ch2.OnClick(nil);
-  SettingDeviceLED.ActiveInterface.Output(DoubleConstantShows[12].Data);
+  SettingDeviceLED.ActiveInterface.Output(LEDVoltageCS.Data);
 //  sleep(2000);
   end;
 
@@ -1351,12 +1386,8 @@ begin
     if abs(TTimeTwoDependenceTimer.SecondValue - ForwLg.YValue[ForwLg.Count-1])>abs(0.1*ForwLg.YValue[ForwLg.Count-1])
    then  TTimeTwoDependenceTimer.SecondValueChange(abs(Isc_MD.ActiveInterface.GetData));
 
-// if TTimeTwoDependenceTimer.SecondValue<1e-7
-//   then  TTimeTwoDependenceTimer.SecondValueChange(abs(Isc_MD.ActiveInterface.GetData));
 
  LADInputVoltageValue.Caption:=FloatToStrF(TTimeTwoDependenceTimer.SecondValue,ffExponent, 4, 3);
-// VolCorrectionNew^.Add(TTimeTwoDependenceTimer.tempV,
-//                       Voc_MD.ActiveInterface.GetData);
  VolCorrectionNew^.Add(Temperature_MD.ActiveInterface.Value,
                        Voc_MD.ActiveInterface.GetData);
 
@@ -1414,11 +1445,11 @@ begin
   end;
 
  // ****************************
- if CBVtoI.Checked then
-  begin
-   Current:=(Current-Shift_VtoI)/R_VtoI;
-   LADCurrentValue.Caption:=FloatToStrF(Current,ffExponent, 4, 2);
-  end;
+// if CBVtoI.Checked then
+//  begin
+//   Current:=(Current-Shift_VtoI)/R_VtoI;
+//   LADCurrentValue.Caption:=FloatToStrF(Current,ffExponent, 4, 2);
+//  end;
 
 //*********************************
 
@@ -1625,13 +1656,13 @@ begin
   if TIVParameters.ItIsForward then
     begin
       if TIVParameters.VoltageInput>1
-        then Result:=10*DoubleConstantShows[3].Data
-        else Result:=DoubleConstantShows[3].Data;
+        then Result:=10*ForVoltagePrecisionCS.Data
+        else Result:=ForVoltagePrecisionCS.Data;
     end                               else
     begin
       if TIVParameters.VoltageInput>1
-        then Result:=10*DoubleConstantShows[4].Data
-        else Result:=DoubleConstantShows[4].Data;
+        then Result:=10*RevVoltagePrecisionCS.Data
+        else Result:=RevVoltagePrecisionCS.Data;
     end;
   Result:=Result*MaxDifCoeficient;
 end;
@@ -1923,9 +1954,10 @@ begin
 
 function TIVchar.IVRpribor(): double;
 begin
-  if CBVtoI.Checked
-     then Result:=R_VtoI
-     else Result:=IVMeasResult.Rpribor;
+//  if CBVtoI.Checked
+//     then Result:=R_VtoI
+//     else
+ Result:=IVMeasResult.Rpribor;
 end;
 
 procedure TIVchar.IVSavedCorrectionSet;
@@ -2057,20 +2089,20 @@ begin
                  then SaveIVMeasurementResults(SaveDialog.FileName);
 
     if (Key=MeasTimeD)or(Key=MeasControlParametr)or(Key=MeasTempOnTime)
-      then Write_File(SaveDialog.FileName,IVResult,6);
+      then Write_File(SaveDialog.FileName,IVResult,9);
 
     if Key=MeasTwoTimeD then
      begin
        if TimeTwoDependenceTimer.isTwoValueOnTime
           then ToFileFromTwoSeries(SaveDialog.FileName,ForwLine,ForwLg,6)
-          else Write_File(SaveDialog.FileName,IVResult,6);
+          else Write_File(SaveDialog.FileName,IVResult,9);
      end;
 
     if (Key=MeasIscAndVocOnTime) then
       begin
       ToFileFromTwoSeries(SaveDialog.FileName,ForwLine,ForwLg,6);
       ToFileFromTwoVector(copy(SaveDialog.FileName,1,Length(SaveDialog.FileName)-4)+'a.dat',
-         IVResult,VolCorrectionNew,6);
+         IVResult,VolCorrectionNew,9);
       end;
      BIVSave.Font.Style:=BIVSave.Font.Style+[fsStrikeOut];
    end;
@@ -2362,7 +2394,7 @@ begin
     begin
      if assigned(PID_Termostat)
        then PID_Termostat.SetParametr(PID_Termostat_ParametersShow,
-                                      DoubleConstantShows[7].Data);
+                                      TemperatureMeasIntervalCS.Data);
      if  SBTAuto.Down then
       begin
        TemperatureMeasuringThread.Terminate;
@@ -2380,8 +2412,9 @@ end;
 procedure TIVchar.Button1Click(Sender: TObject);
 
 begin
-//showmessage(NextDATFileName(NoFile));
- FastIVMeasuring.Measuring(false,'l');
+// Current_MD.ActiveInterface.NewData:=False;
+// Current_MD.ActiveInterface.GetDataThread(FastIVCurrentMeas,EventFastIVCurrentMeas);
+
 end;
 
 
@@ -2390,10 +2423,11 @@ begin
  if SBControlBegin.Down then
     begin
     PID_Control.SetParametr(PID_Control_ParametersShow,
-                            DoubleConstantShows[10].Data);
+                            ControlIntervalCS.Data);
     ControlWatchDog.Enabled:=False;
     LControlWatchDog.Visible:=False;
-    ControlWatchDog.Interval:=round(StrToFloat(STControlInterval.Caption))*2000;
+//    ControlWatchDog.Interval:=round(StrToFloat(STControlInterval.Caption))*2000;
+    ControlWatchDog.Interval:=ControlIntervalCS.Data*2000;
     ControlWatchDog.Enabled:=True;
     ControllerThread.Terminate;
     ControllerThreadCreate()
@@ -2466,10 +2500,10 @@ begin
     end;
 
  ThermoCuple.Measurement:=TermoCouple_MD.ActiveInterface;
- FastIVMeasuring.Imax := DoubleConstantShows[1].Data;
- FastIVMeasuring.Imin := DoubleConstantShows[2].Data;
+ FastIVMeasuring.Imax := MaxCurrentCS.Data;
+ FastIVMeasuring.Imin := MinCurrentCS.Data;
  FastIVMeasuring.CurrentValueLimitEnable:=CBCurrentValue.Checked;
- FastIVMeasuring.DragonBackTime:=DoubleConstantShows[11].Data;
+ FastIVMeasuring.DragonBackTime:=Dragon_backTimeCS.Data;
 // FastIVMeasuring.ForwardBranchIsMeasured:=CBForw.Checked;
 // FastIVMeasuring.ReverseBranchIsMeasured:=CBRev.Checked;
 end;
@@ -2522,7 +2556,7 @@ begin
  VectorsCreate();
 
  ConstantShowCreate();
- ConstantShowFromIniFile();
+// ConstantShowFromIniFile();
 
  PIDShowCreateAndFromIniFile();
  BoxFromIniFile();
@@ -2547,12 +2581,12 @@ begin
 
 
  RS232_MediatorTread:=TRS232_MediatorTread.Create(
-                 [INA226_Module,HTU21D,
+                 [INA226_Module,ADS11115module,HTU21D,
                  DACR2R,V721A,V721_I,V721_II,DS18B20,
-                 TMP102,                
+                 TMP102,
                  MLX90615,
                  D30_06,IscVocPinChanger,LEDOpenPinChanger,
-                 MCP3424,ADS11115module,AD9833]);
+                 MCP3424,AD9833]);
 
  if (ComPort1.Connected)and(SettingDevice.ActiveInterface.Name=DACR2R.Name) then SettingDevice.Reset();
  if (ComPort1.Connected) then D30_06.Reset;
@@ -2569,6 +2603,8 @@ begin
 
  DACWriteToIniFile();
 // ShowObjectsWriteToIniFileAndFree();
+ ConfigFile.EraseSection(DoubleConstantSection);
+
  ShowArray.WriteToIniFileAndFree(ConfigFile);
  PinsWriteToIniFile;
  SettingWriteToIniFile();
@@ -2687,8 +2723,10 @@ end;
 
 procedure TIVchar.MeasurementTimeParameterDetermination(Dependence:TTimeDependenceTimer);
 begin
-  Dependence.Interval := round(StrToFloat(STTimeInterval.Caption));
-  Dependence.Duration := round(StrToFloat(STTimeDuration.Caption));
+//  Dependence.Interval := round(StrToFloat(STTimeInterval.Caption));
+//  Dependence.Duration := round(StrToFloat(STTimeDuration.Caption));
+  Dependence.Duration := MeasurementDurationCS.Data;
+  Dependence.Interval := MeasurementIntervalCS.Data;
 end;
 
 procedure TIVchar.ComPortsBegining;
@@ -2709,8 +2747,9 @@ begin
 
 //to comment on some PC
 
-  PortBeginAction(ComPortUT70B, LUT70BPort, nil);
-  PortBeginAction(ComPortUT70C, LUT70CPort, nil);
+//  PortBeginAction(ComPortUT70B, LUT70BPort, nil);
+//  PortBeginAction(ComPortUT70C, LUT70CPort, nil);
+//---------------
 
   PortBeginAction(ComPortGDS, LGDSPort, nil);
 
@@ -2937,9 +2976,10 @@ begin
  if SBControlBegin.Down then
     begin
     PID_Control:=TPID.Create(PID_Control_ParametersShow,
-                             DoubleConstantShows[10].Data);
+                             ControlIntervalCS.Data);
     ControllerThreadCreate();
-    ControlWatchDog.Interval:=round(StrToFloat(STControlInterval.Caption))*2000;
+//    ControlWatchDog.Interval:=round(StrToFloat(STControlInterval.Caption))*2000;
+    ControlWatchDog.Interval:=ControlIntervalCS.Data*2000;
     ControlWatchDog.Enabled:=True;
     SBControlBegin.Caption:='Stop Controling';
     end
@@ -3070,7 +3110,7 @@ begin
   StepsWriteToIniFile;
   DelayTimeWriteToIniFile;
   BoxToIniFile;
-  ConstantShowToIniFileAndFree();
+//  ConstantShowToIniFileAndFree();
   ComPortsWriteSettings([ComPortUT70C,ComPortUT70B,ComPort1,ComPortGDS]);
 end;
 
@@ -3147,13 +3187,16 @@ begin
     BTermostatResetClick(Sender);
     end;
 
-  TermostatWatchDog.Interval:=round(StrToFloat(STTMI.Caption))*2000;
+//  TermostatWatchDog.Interval:=round(StrToFloat(STTMI.Caption))*2000;
+  TermostatWatchDog.Interval:=TemperatureMeasIntervalCS.Data*2000;
+
   Temperature_MD.ActiveInterface.NewData:=False;
 end;
 
 procedure TIVchar.VoltmetrsCreate;
 begin
   INA226Create();
+  ADS1115Create();
 
   V721A := TV721A.Create(ComPort1, 'B7-21A');
   V721_I := TV721.Create(ComPort1, 'B7-21 (1)');
@@ -3193,7 +3236,7 @@ begin
                       IscVocPinChanger,LEDOpenPinChanger]);
 
   MCP3424Create();
-  ADS1115Create();
+
 
 
   UT70B:=TUT70B.Create(ComPortUT70B, 'UT70B');
@@ -3417,10 +3460,11 @@ begin
                                      else
             begin
               PID_Termostat:=TPID.Create(PID_Termostat_ParametersShow,
-                                         DoubleConstantShows[7].Data
+                                         TemperatureMeasIntervalCS.Data
                                          );
               IsPID_Termostat_Created:=True;
-              TermostatWatchDog.Interval:=round(StrToFloat(STTMI.Caption))*2000;
+//              TermostatWatchDog.Interval:=round(StrToFloat(STTMI.Caption))*2000;
+              TermostatWatchDog.Interval:=TemperatureMeasIntervalCS.Data*2000;
               TermostatWatchDog.Enabled:=True;
             end;
           SettingTermostat.ActiveInterface.Output(PID_Termostat.OutputValue);
@@ -3443,6 +3487,12 @@ begin
     begin
       LControlCCValue.Caption:=FloatToStrF(SettingDeviceControl.ActiveInterface.OutputValue,ffExponent,5,1);
     end;
+
+//  if Mes.WParam=FastIVCurrentMeas then
+//    begin
+//     if (Current_MD.ActiveInterface.NewData)then
+//       SetEvent(EventFastIVCurrentMeasDone);
+//    end;
 end;
 
 procedure TIVchar.HookEndReset;

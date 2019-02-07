@@ -28,7 +28,7 @@ type
 const
 
  ADS1115_ConversionTime:array[TADS1115_DataRate]of integer=
-    (120,58,28,14,7,4,2,2);
+    (120,58,28,14,7,4,2,1);
 // ADS1115_DelayTimeStep:array[TADS1115_DataRate]of integer=
 //    (5,5,5,5,5,5,5,5);
 // ADS1115_DelayTimeMax:array[TADS1115_DataRate]of integer=
@@ -196,7 +196,8 @@ begin
   FGain := ads_g1;
   FDataRate:=ads_dr128;
   fMetterKod := ADS1115Command;
-//  fDelayTimeMax:=20;
+  fDelayTimeMax:=30;
+  fDelayTimeStep:=1;
 end;
 
 

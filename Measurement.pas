@@ -18,6 +18,7 @@ Const
    ControlOutputMessage=3;
    {WPARAM параметер, який надсилається при встановленні
    керуючого параметра в контроллері процесу}
+   FastIVCurrentMeas=4;
 
 type
 

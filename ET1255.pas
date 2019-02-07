@@ -663,7 +663,6 @@ begin
          then
        begin
          inc(fAveraveNumber);
-//          DataVector.Write_File('fAN'+inttostr(fAveraveNumber)+'.dat');
          if fAveraveNumber=1 then
            begin
              new(fHelpDataVector);
@@ -691,10 +690,15 @@ begin
 //  Filtr.Decimation(50);
 //  Filtr.MovingAverageFilter(50,true);
 //  _____________________
-  Filtr.Decimation(20);
-//  Filtr.LP_UniformIIRfilter4k(0.025,true);
+//  Filtr.Decimation(20);
+////  Filtr.LP_UniformIIRfilter4k(0.025,true);
+//  Filtr.LP_IIR_Chebyshev0025p2(true);
+  Filtr.Decimation(10);
   Filtr.LP_IIR_Chebyshev0025p2(true);
+
+
 //_________________________
+
 
   fValue := ImpulseNoiseSmoothing(Filtr.DataVector);
   fMeasuringIsDone:=true;
@@ -766,7 +770,8 @@ procedure TET1255_ADCChannel.ValueInitialization;
 begin
   fValue:=ErResult;
   if FSerialMeasurements
-   then  SetLenVector(DataVector,(FSerialMeasurementNumber shl 12))
+//   then  SetLenVector(DataVector,(FSerialMeasurementNumber shl 12))
+   then  SetLenVector(DataVector,(FSerialMeasurementNumber shl 11))
    else SetLenVector(DataVector,1);
 end;
 
