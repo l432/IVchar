@@ -1643,7 +1643,7 @@ constructor TGDS_806S_Channel.Create(ChanelNumber: TGDS_Channel;
 begin
  inherited Create;
  fChanelNumber:=ChanelNumber;
- fName:='Ch'+inttostr(ChanelNumber)+'_GDS';
+ fName:='GDS806_Ch'+inttostr(ChanelNumber);
  fParentModule:=GDS_806S;
 end;
 

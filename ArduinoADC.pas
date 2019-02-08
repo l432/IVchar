@@ -107,7 +107,7 @@ begin
   inherited Create();
   fChanelNumber:=ChanelNumber;
   fParentModule:=Module;
-  fName:='Ch'+inttostr(ChanelNumber+1)+'_'+Module.Name;
+  fName:=Module.Name+'_Ch'+inttostr(ChanelNumber+1);
   PinsCreate();
 end;
 

@@ -393,7 +393,6 @@ type
     LDBtime: TLabel;
     STDBtime: TStaticText;
     GBLEDCon: TGroupBox;
-    GBLEDOpen: TGroupBox;
     BLEDOpenPinChange: TButton;
     CBLEDOpenAuto: TCheckBox;
     STLED_on_CD: TStaticText;
@@ -600,6 +599,7 @@ type
     STina226_TF: TStaticText;
     CBET1255_ASer: TCheckBox;
     CBET1255_AG: TCheckBox;
+    RGIscVocMode: TRadioGroup;
 
     procedure FormCreate(Sender: TObject);
     procedure BConnectClick(Sender: TObject);
@@ -636,6 +636,7 @@ type
     procedure BET1255_show_saveClick(Sender: TObject);
     procedure SBGeneratorClick(Sender: TObject);
     procedure Button1Click(Sender: TObject);
+    procedure RGIscVocModeClick(Sender: TObject);
   private
     procedure ComponentView;
     {початкове налаштування різних компонентів}
@@ -876,7 +877,7 @@ type
     Dependencies:Array of TFastDependence;
     PID_Termostat,PID_Control:TPID;
     PID_Termostat_ParametersShow,PID_Control_ParametersShow:TPID_ParametersShow;
-    IsPID_Termostat_Created:boolean;
+    IsPID_Termostat_Created,IscVocOnTimeModeIsFastIV:boolean;
     IVMeasResult,IVMRFirst,IVMRSecond:TIVMeasurementResult;
   end;
 
@@ -2887,6 +2888,30 @@ begin
 end;
 
 
+procedure TIVchar.RGIscVocModeClick(Sender: TObject);
+begin
+  if Pos('IV', RGIscVocMode.Items[RGIscVocMode.ItemIndex])>0 then
+   begin
+     CBIscMD.Enabled:=False;
+     CBVocMD.Enabled:=False;
+     BIscMeasure.Enabled:=False;
+     BVocMeasure.Enabled:=False;
+     BIscVocPinChange.Enabled:=False;
+     STControlIsc.Enabled:=False;
+     IscVocOnTimeModeIsFastIV:=True;
+   end                   else
+   begin
+     CBIscMD.Enabled:=True;
+     CBVocMD.Enabled:=True;
+     BIscMeasure.Enabled:=True;
+     BVocMeasure.Enabled:=True;
+     BIscVocPinChange.Enabled:=True;
+     STControlIsc.Enabled:=True;
+     IscVocOnTimeModeIsFastIV:=False;
+   end;
+
+end;
+
 procedure TIVchar.DelayTimeReadFromIniFile;
  var temp:integer;
 begin
@@ -2921,6 +2946,9 @@ begin
  end;
 
   RGDO.ItemIndex:= ConfigFile.ReadInteger('Box', RGDO.Name,0);
+  RGIscVocMode.ItemIndex:= ConfigFile.ReadInteger('Box', RGIscVocMode.Name,0);
+//  HelpForMe(booltostr(IscVocOnTimeModeIsFastIV));
+
   try
    ChDir(ConfigFile.ReadString('Box', 'Directory',ExtractFilePath(Application.ExeName)));
   except
@@ -2946,7 +2974,7 @@ begin
   WriteIniDef(ConfigFile, 'Box', RGDO.Name, RGDO.ItemIndex);
   WriteIniDef(ConfigFile, 'Box','Directory',GetCurrentDir,ExtractFilePath(Application.ExeName));
   WriteIniDef(ConfigFile, 'Box', CBFvsS.Name, CBFvsS.Checked);
-
+  WriteIniDef(ConfigFile, 'Box', RGIscVocMode.Name, RGIscVocMode.ItemIndex);
 end;
 
 
@@ -3224,9 +3252,9 @@ begin
 
 
   IscVocPinChanger:=TArduinoPinChanger.Create(ComPort1,'IscVocPin');
-  IscVocPinChangerShow:=TArduinoPinChangerShow.Create(IscVocPinChanger,PIscVocPin,{BIscVocPin,}BIscVocPinChange,{CBIscVocPin}NumberPins);
+  IscVocPinChangerShow:=TArduinoPinChangerShow.Create(IscVocPinChanger,PIscVocPin,BIscVocPinChange,NumberPins,'change to short current','change to open circuit');
   LEDOpenPinChanger:=TArduinoPinChanger.Create(ComPort1,'LEDOpenPin');
-  LEDOpenPinChangerShow:=TArduinoPinChangerShow.Create(LEDOpenPinChanger,PLEDOpenPin,{BLEDOpenPin,}BLEDOpenPinChange,{CBLEDOpenPin}NumberPins);
+  LEDOpenPinChangerShow:=TArduinoPinChangerShow.Create(LEDOpenPinChanger,PLEDOpenPin,BLEDOpenPinChange,NumberPins,'to close','to open');
 
   ShowArray.Add([VoltmetrShows[0],VoltmetrShows[1],VoltmetrShows[2]]);
   ShowArray.Add([DS18B20show,TMP102show,

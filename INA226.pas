@@ -439,8 +439,8 @@ begin
  fMode:=Mode;
  inherited Create(ord(Mode),INA);
  case fMode of
-   ina_mShunt: fName:='Shunt_'+INA.Name;
-   ina_mBus: fName:='Bus_'+INA.Name;
+   ina_mShunt: fName:=INA.Name+'_Shunt';
+   ina_mBus: fName:=INA.Name+'_Bus';
  end;
 end;
 

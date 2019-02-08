@@ -53,13 +53,17 @@ type
   protected
    ArduinoPinChanger:TArduinoPinChanger;
    ToChangeButton:TButton;
+   fLowStateButtonCaption:string;
+   fHighStateButtonCaption:string;
    procedure CaptionButtonSynhronize();
    procedure ToChangeButtonClick(Sender: TObject);
   public
    Constructor Create(APC:TArduinoPinChanger;
                       ControlPinLabel:TPanel;
                       TCBut:TButton;
-                      PinVariant:TStringList
+                      PinVariant:TStringList;
+                      LowStateCaption:string='To HIGH';
+                      HighStateCaption:string='To LOW'
                       );
 
   end;
@@ -120,20 +124,25 @@ end;
 procedure TArduinoPinChangerShow.CaptionButtonSynhronize;
 begin
  if ArduinoPinChanger.PinUnderControl=PinToHigh
-   then ToChangeButton.Caption:='To LOW'
+   then ToChangeButton.Caption:=fHighStateButtonCaption
    else if ArduinoPinChanger.PinUnderControl=PinToLow
-          then  ToChangeButton.Caption:='To HIGH'
+          then  ToChangeButton.Caption:=fLowStateButtonCaption
           else  ToChangeButton.Caption:='U-u-ps';
 end;
 
 constructor TArduinoPinChangerShow.Create(APC: TArduinoPinChanger;
                                           ControlPinLabel: TPanel;
                                           TCBut: TButton;
-                                          PinVariant:TStringList);
+                                          PinVariant:TStringList;
+                                          LowStateCaption:string='To HIGH';
+                                          HighStateCaption:string='To LOW'
+                                          );
 begin
   inherited Create(APC.Pins,ControlPinLabel,PinVariant);
   ArduinoPinChanger:=APC;
   ToChangeButton:=TCBut;
+  fLowStateButtonCaption:=LowStateCaption;
+  fHighStateButtonCaption:=HighStateCaption;
   CaptionButtonSynhronize;
   ToChangeButton.OnClick:=ToChangeButtonClick;
 end;

@@ -284,12 +284,13 @@ constructor TET1255_DAC.Create(ChanelNumber: TET1255_DAC_ChanelNumber);
 begin
  inherited Create;
  fChanelNumber:=ChanelNumber;
- case ChanelNumber of
-  0:fName:='Ch0_ET1255';
-  1:fName:='Ch1_ET1255';
-  2:fName:='Ch2_ET1255';
-  3:fName:='Ch3_ET1255';
- end;
+ fName:='ET1255_Ch'+inttostr(ord(ChanelNumber))+'DAC';
+// case ChanelNumber of
+//  0:fName:='Ch0_ET1255';
+//  1:fName:='Ch1_ET1255';
+//  2:fName:='Ch2_ET1255';
+//  3:fName:='Ch3_ET1255';
+// end;
 end;
 
 
@@ -542,7 +543,7 @@ constructor TET1255_ADCChannel.Create(ChanelNumber: TET1255_ADC_ChanelNumber;
 begin
  inherited Create;
  fChanelNumber:=ChanelNumber;
- fName:='ADC'+inttostr(ord(ChanelNumber))+'_ET1255';
+ fName:='ET1255_Ch'+inttostr(ord(ChanelNumber))+'ADC';
  fParentModule:=ET1255_Module;
  new(DataVector);
  FSerialMeasurements:=False;
