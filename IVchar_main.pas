@@ -764,7 +764,7 @@ type
     procedure ADS1115Create;
     procedure INA226Create;
     procedure GDS_Create;
-    procedure SaveIVMeasurementResults(FileName: string);
+    procedure SaveIVMeasurementResults(FileName: string; DataVector:PVector);
   public
     ShowArray:TObjectArray;
     AnyObjectArray:TObjectArray;
@@ -1114,8 +1114,8 @@ procedure TIVchar.DependenceMeasuringCreate;
 begin
   IVMeasuring := TIVDependence.Create(CBForw,CBRev,PBIV,BIVStop,
                          IVResult,ForwLine,RevLine,ForwLg,RevLg);
-  FastIVMeasuring:=TFastIVDependence.Create(BIVStop,IVResult,
-                                  ForwLine,RevLine,ForwLg,RevLg);
+//  FastIVMeasuring:=TFastIVDependence.Create(BIVStop,IVResult,
+  FastIVMeasuring:=TFastIVDependence.Create(BIVStop,ForwLine,RevLine,ForwLg,RevLg);
 
   CalibrMeasuring:= TIVDependence.Create(CBForw,CBRev,PBIV,BIVStop,
                          IVResult,ForwLine,RevLine,ForwLg,RevLg);
@@ -1136,6 +1136,16 @@ begin
 
   FastIVMeasuring.HookBeginMeasuring:=FastIVHookBegin;
   FastIVMeasuring.HookEndMeasuring:=FastIVHookEnd;
+  FastIVMeasuring.RangeFor:=IVCharRangeFor;
+  FastIVMeasuring.RangeRev:=IVCharRangeRev;
+  FastIVMeasuring.ForwardDelV:=ForwSteps;
+  FastIVMeasuring.ReverseDelV:=RevSteps;
+  FastIVMeasuring.CBForw:=CBForw;
+  FastIVMeasuring.CBRev:=CBRev;
+  FastIVMeasuring.SettingDevice:=SettingDevice;
+  FastIVMeasuring.RGDiodOrientation:=RGDO;
+  FastIVMeasuring.Voltage_MD:=VoltageIV_MD;
+  FastIVMeasuring.Current_MD:=Current_MD;
 
   SetLength(Dependencies,7);
   Dependencies[0]:=IVMeasuring;
@@ -1152,16 +1162,7 @@ begin
   CalibrMeasuring.RangeFor:=CalibrRangeFor;
   CalibrMeasuring.RangeRev:=CalibrRangeRev;
 
-  FastIVMeasuring.RangeFor:=IVCharRangeFor;
-  FastIVMeasuring.RangeRev:=IVCharRangeRev;
-  FastIVMeasuring.ForwardDelV:=ForwSteps;
-  FastIVMeasuring.ReverseDelV:=RevSteps;
-  FastIVMeasuring.CBForw:=CBForw;
-  FastIVMeasuring.CBRev:=CBRev;
-  FastIVMeasuring.SettingDevice:=SettingDevice;
-  FastIVMeasuring.RGDiodOrientation:=RGDO;
-  FastIVMeasuring.Voltage_MD:=VoltageIV_MD;
-  FastIVMeasuring.Current_MD:=Current_MD;
+
 
   IVMeasuring.HookCycle:=IVCharHookCycle;
   CalibrMeasuring.HookCycle:=CalibrHookCycle;
@@ -1392,13 +1393,8 @@ begin
  VolCorrectionNew^.Add(Temperature_MD.ActiveInterface.Value,
                        Voc_MD.ActiveInterface.GetData);
 
- if CBLEDOpenAuto.Checked then
-       LEDOpenPinChanger.PinChangeToHigh;
- if CBLEDAuto.Checked then
-  begin
-//    BReset1255Ch2.OnClick(nil);
-   SettingDeviceLED.ActiveInterface.Reset;
-  end;
+ if CBLEDOpenAuto.Checked then LEDOpenPinChanger.PinChangeToHigh;
+ if CBLEDAuto.Checked then  SettingDeviceLED.ActiveInterface.Reset;
 
  TimeDHookSecondMeas;
  MeasurementTimeParameterDetermination(IscVocOnTime);
@@ -2086,8 +2082,8 @@ begin
   if SaveDialog.Execute then
    begin
 
-    if (Key=MeasIV)or(Key=MeasFastIV)
-                 then SaveIVMeasurementResults(SaveDialog.FileName);
+    if (Key=MeasIV)
+                 then SaveIVMeasurementResults(SaveDialog.FileName,IVResult);
 
     if (Key=MeasTimeD)or(Key=MeasControlParametr)or(Key=MeasTempOnTime)
       then Write_File(SaveDialog.FileName,IVResult,9);
@@ -2118,7 +2114,7 @@ begin
 
   if SaveDialog.Execute then
    begin
-     SaveIVMeasurementResults(SaveDialog.FileName);
+     SaveIVMeasurementResults(SaveDialog.FileName,FastIVMeasuring.Results);
      BIVSave.Font.Style:=BIVSave.Font.Style+[fsStrikeOut];
    end;
 end;
@@ -2175,11 +2171,11 @@ begin
   AnyObjectArray.Add([GDS_806S,GDS_806S_Channel[1],GDS_806S_Channel[2]]);
 end;
 
-procedure TIVchar.SaveIVMeasurementResults(FileName: string);
+procedure TIVchar.SaveIVMeasurementResults(FileName: string; DataVector:PVector);
 begin
-  IVResult.Sorting;
-  IVResult.DeleteDuplicate;
-  Write_File(FileName, IVResult);
+  DataVector.Sorting;
+  DataVector.DeleteDuplicate;
+  Write_File(FileName, DataVector);
   //       ToFileFromTwoVector(SaveDialog.FileName,IVResult,VolCorrectionNew);
   LTLastValue.Caption := FloatToStrF(Temperature, ffFixed, 5, 2);
   SaveCommentsFile(FileName);
@@ -2518,7 +2514,7 @@ begin
       BIVStart.Enabled := True;
       BConnect.Enabled := True;
       BParamReceive.Enabled := True;
-      if High(IVResult^.X) > 0 then
+      if High(FastIVMeasuring.Results^.X) > 0 then
       begin
         BIVSave.Enabled := True;
         BIVSave.Font.Style := BIVSave.Font.Style - [fsStrikeOut];
@@ -2535,7 +2531,7 @@ begin
 
  if FastIVMeasuring.SingleMeasurement
     then BIVSave.OnClick:=ActionInSaveButtonFastIV
-    else SaveIVMeasurementResults(FastIVMeasuring.DatFileNameToSave)
+    else SaveIVMeasurementResults(FastIVMeasuring.DatFileNameToSave,FastIVMeasuring.Results)
 
 end;
 

@@ -15,7 +15,7 @@ const
    DragonBackOvershootHeight=1.05;
    MaxCurrentMeasuringAttemp=3;
 
-   IVtiming=true;
+   IVtiming=false;
 
 
 
@@ -29,8 +29,9 @@ private
   fHookFirstMeas:TSimpleEvent;
   fHookDataSave:TSimpleEvent;
   fHookAction:TSimpleEvent;
+  fOwnResultsVectorIsUsed:boolean;
   ButtonStop: TButton;
-  Results:PVector;
+//  Results:PVector;
   ForwLine: TPointSeries;
   ForwLg: TPointSeries;
   procedure ButtonStopClick(Sender: TObject);virtual;
@@ -40,9 +41,11 @@ private
   procedure DuringMeasuring(Action: TSimpleEvent);
   procedure ActionMeasurement();virtual;
   procedure DataSave();virtual;
+  procedure CreateFooter(BS: TButton; FLn, FLg: TPointSeries);
 
  public
 //  property isActive:boolean read FisActive;
+  Results:PVector;
   property HookBeginMeasuring:TSimpleEvent read FHookBeginMeasuring write FHookBeginMeasuring;
   property HookEndMeasuring:TSimpleEvent read fHookEndMeasuring write fHookEndMeasuring;
   property HookAction:TSimpleEvent read fHookAction write fHookAction;
@@ -51,13 +54,16 @@ private
   property HookFirstMeas:TSimpleEvent read fHookFirstMeas write fHookFirstMeas;
   Constructor Create(BS: TButton;
                      Res:PVector;
-                     FLn,FLg:TPointSeries);
+                     FLn,FLg:TPointSeries);overload;
+  Constructor Create(BS: TButton;
+                     FLn,FLg:TPointSeries);overload;
   class function PointNumber:word;
 //  class procedure PointNumberChange(Value: word);
   class function tempV:double;
   class procedure tempVChange(Value: double);
   class function tempI:double;
   class procedure tempIChange(Value: double);
+  procedure Free;
 //  procedure PeriodicMeasuring();virtual;
 end;
 
@@ -269,7 +275,7 @@ TFastIVDependence=class (TFastDependence)
 
   Constructor Create(
                      BS: TButton;
-                     Res:PVector;
+//                     Res:PVector;
                      FLn,RLn,FLg,RLg:TPointSeries);
   procedure Cycle(ItIsForwardInput: Boolean);
   procedure Measuring(SingleMeasurement:boolean=true;FilePrefix:string='');
@@ -992,25 +998,22 @@ begin
    fIVMeasuringToStop:=True;
 end;
 
+constructor TFastDependence.Create(BS: TButton; FLn, FLg: TPointSeries);
+begin
+ inherited Create;
+ new(Results);
+ fOwnResultsVectorIsUsed:=True;
+ CreateFooter(BS, FLn, FLg);
+end;
+
 constructor TFastDependence.Create(BS: TButton;
                                    Res: PVector;
                                    FLn, FLg: TPointSeries);
 begin
-  inherited Create;
- ButtonStop:=BS;
- ButtonStop.OnClick:=ButtonStopClick;
+ inherited Create;
  Results:=Res;
- ForwLine:=FLn;
- ForwLg:=FLg;
-
-// FisActive:=False;
-//
- HookBeginMeasuring:=TSimpleClass.EmptyProcedure;
- HookEndMeasuring:=TSimpleClass.EmptyProcedure;
- HookSecondMeas:=TSimpleClass.EmptyProcedure;
- HookFirstMeas:=TSimpleClass.EmptyProcedure;
- HookDataSave:=TSimpleClass.EmptyProcedure;
- HookAction:=TSimpleClass.EmptyProcedure;
+ fOwnResultsVectorIsUsed:=False;
+ CreateFooter(BS, FLn, FLg);
 end;
 
 procedure TFastDependence.DataSave;
@@ -1034,6 +1037,26 @@ begin
   HookEndMeasuring();
 //  FisActive:=False;
   MelodyShot();
+end;
+
+procedure TFastDependence.Free;
+begin
+ if fOwnResultsVectorIsUsed then  Dispose(Results);
+ inherited Free;
+end;
+
+procedure TFastDependence.CreateFooter(BS: TButton; FLn, FLg: TPointSeries);
+begin
+  ButtonStop := BS;
+  ButtonStop.OnClick := ButtonStopClick;
+  ForwLine := FLn;
+  ForwLg := FLg;
+  HookBeginMeasuring := TSimpleClass.EmptyProcedure;
+  HookEndMeasuring := TSimpleClass.EmptyProcedure;
+  HookSecondMeas := TSimpleClass.EmptyProcedure;
+  HookFirstMeas := TSimpleClass.EmptyProcedure;
+  HookDataSave := TSimpleClass.EmptyProcedure;
+  HookAction := TSimpleClass.EmptyProcedure;
 end;
 
 procedure TFastDependence.SeriesClear;
@@ -1107,10 +1130,11 @@ end;
 
 
 constructor TFastIVDependence.Create(BS: TButton;
-                                        Res: PVector;
+//                                        Res: PVector;
                                         FLn, RLn, FLg, RLg: TPointSeries);
 begin
- inherited Create(BS,Res,FLn, FLg);
+// inherited Create(BS,Res,FLn, FLg);
+ inherited Create(BS,FLn, FLg);
  RevLine:=RLn;
  RevLg:=RLg;
  PrefixToFileName:='';
@@ -1230,8 +1254,6 @@ procedure TFastIVDependence.PointSeriesFilling;
 var
   i: Integer;
 begin
-  if fSingleMeasurement then
-  begin
     if CBRev.Checked then
       for i := 0 to High(Results^.X) do
       begin
@@ -1255,7 +1277,6 @@ begin
         if abs(Results^.Y[i]) > 1E-11 then
           ForwLg.AddXY(Results^.X[i], abs(Results^.Y[i]));
       end;
-  end;
 end;
 
 procedure TFastIVDependence.DiodOrientationVoltageFactorDetermination;
@@ -1268,8 +1289,11 @@ end;
 
 procedure TFastIVDependence.EndMeasuring;
 begin
-  PointSeriesFilling;
-  ButtonStop.Enabled := False;
+  if fSingleMeasurement then
+   begin
+    PointSeriesFilling;
+    ButtonStop.Enabled := False;
+   end;
   SettingDevice.ActiveInterface.Reset();
   VocIscDetermine();
   HookEndMeasuring();
