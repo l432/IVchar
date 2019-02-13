@@ -95,7 +95,7 @@ TPins_MCP3424=class(TPinsForCustomValues)
 implementation
 
 uses
-  PacketParameters, SysUtils, OlegType, Math, Dialogs{, Dialogs};
+  PacketParameters, SysUtils, OlegType, Math, Dialogs, OlegFunction{, Dialogs};
 
 { MCP3424_Module }
 
@@ -123,7 +123,8 @@ begin
    mcp_r16b: if High(fData)<>2 then Exit;
  end;
 
-   FGain:=TMCP3424_Gain(High(fData)and $3);
+   FGain:=TMCP3424_Gain(fData[High(fData)]and $03);
+//   HelpForMe('g='+inttostr(fData[High(fData)]and $03));
 
    temp:=0;
    temp:=temp+fData[High(fData)-1];
@@ -145,6 +146,8 @@ begin
      mcp_r18b: temp:=-((not(temp)+$1)and $1ffff);
     end;
 
+//  HelpForMe('res='+inttostr(MCP3424_Resolution_Data[FResolution])+
+//  'gain='+inttostr(MCP3424_Gain_Data[FGain]));
   fValue:=temp*MCP3424_LSB[FResolution]/MCP3424_Gain_Data[FGain];
 //  fIsReady:=True;
 end;

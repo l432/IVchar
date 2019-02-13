@@ -229,6 +229,8 @@ begin
   SetLength(Pins.fPins,1);
   Pins.PinControl:=HTU21DCommand;
   fMinDelayTime:=55;
+  RepeatInErrorCase:=True;
+  fDelayTimeStep:=2;
 end;
 
 procedure THTU21D.PacketCreateToSend;
@@ -259,6 +261,8 @@ begin
   fMetterKod:=TMP102Command;
   SetLength(Pins.fPins,1);
   fMinDelayTime:=30;
+  RepeatInErrorCase:=True;
+  fDelayTimeStep:=2;
 end;
 
 

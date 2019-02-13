@@ -1097,6 +1097,8 @@ begin
        Temperature:=TemperData.SumY/TemperData.n;
   end;
 
+  if Key=MeasIscAndVocOnTime then RGIscVocMode.Enabled:=True;
+
 // if (Key=MeasFastIV) then
 //  if (SBTAuto.Down)and
 //     (Temperature_MD.ActiveInterface.NewData) then
@@ -1313,6 +1315,11 @@ procedure TIVchar.HookBegin;
    begin
    MeasurementTimeParameterDetermination(IscVocOnTime);
    VolCorrectionNew.Clear;
+   RGIscVocMode.Enabled:=False;
+   IscVocOnTime.FastIVisUsed:=IscVocOnTimeModeIsFastIV;
+//   HelpForMe('dur='+inttostr(IscVocOnTime.Duration)+
+//             'int='+inttostr(IscVocOnTime.Interval)+
+//              'IscVoc'+booltostr(IscVocOnTimeModeIsFastIV));
    end;
 end;
 
@@ -1348,63 +1355,115 @@ begin
 end;
 
 procedure TIVchar.IscVocOnTimeHookFirstMeas;
+ var LEDWasOpened:bool;
 begin
- if CBLEDOpenAuto.Checked then
-   begin
-//       showmessage('kk');
-       LEDOpenPinChanger.PinChangeToLow;
-   end;
- if CBLEDAuto.Checked then
+ LEDWasOpened:=false;
+if IscVocOnTimeModeIsFastIV then
   begin
-//    BOVset1255Ch2.OnClick(nil);
-  SettingDeviceLED.ActiveInterface.Output(LEDVoltageCS.Data);
-//  sleep(2000);
+   if (CBLEDOpenAuto.Checked)
+     then
+     begin
+     FastIVMeasuring.Measuring(False,'dark');
+//     HRDelay(100);
+     end;
+
+   if (CBLEDOpenAuto.Checked)or(TFastDependence.PointNumber=1)
+     then
+      begin
+      LEDOpenPinChanger.PinChangeToLow;
+      LEDWasOpened:=true;
+      end;
+
+   if CBLEDAuto.Checked
+     then   SettingDeviceLED.ActiveInterface.Output(LEDVoltageCS.Data);
+
+   if (CBLEDOpenAuto.Checked)or(CBLEDAuto.Checked)or(TFastDependence.PointNumber=1)
+//     then    HRDelay(500);
+     then    sleep(500);
+
+   FastIVMeasuring.Measuring(False,'l');
+   TDependence.tempIChange(FastIVMeasuring.Voc);
+
+   IscVocOnTime.SecondMeasurementTime:=TFastDependence.tempV+1e-6;
+
+
+   TTimeTwoDependenceTimer.SecondValueChange(FastIVMeasuring.Isc);
+
+
+   VolCorrectionNew^.Add(Temperature_MD.ActiveInterface.Value,
+                         FastIVMeasuring.Voc);
+
+   MeasurementTimeParameterDetermination(IscVocOnTime);
+
+   if (CBLEDAuto.Checked)
+      then  SettingDeviceLED.ActiveInterface.Reset;
+
+   LADInputVoltageValue.Caption:=FloatToStrF(TTimeTwoDependenceTimer.SecondValue,ffExponent, 4, 3);
+   LADVoltageValue.Caption:=FloatToStrF(TDependence.tempI,ffExponent, 4, 3);
+   LADCurrentValue.Caption:=FloatToStrF(TDependence.tempV,ffExponent, 4, 3);
+
+
+//   if (CBLEDOpenAuto.Checked)or(TFastDependence.PointNumber=1) then
+   if LEDWasOpened then
+      begin
+      LEDOpenPinChanger.PinChangeToHigh;
+//      HRDelay(500);
+      sleep(500);
+      LEDOpenPinChanger.PinChangeToHigh;
+      end;
+
+  end                        else
+  begin
+   if CBLEDOpenAuto.Checked then  LEDOpenPinChanger.PinChangeToLow;
+
+   if CBLEDAuto.Checked then
+    SettingDeviceLED.ActiveInterface.Output(LEDVoltageCS.Data);
+
+   if (CBLEDOpenAuto.Checked)or(CBLEDAuto.Checked)
+    then    sleep(2000);
+
+   IscVocPinChanger.PinChangeToLow;
+   sleep(IscVocTimeToWait);
+   TDependence.tempIChange(Voc_MD.ActiveInterface.GetData);
+    if ForwLine.Count>0 then
+      if abs(TDependence.tempI- ForwLine.YValue[ForwLine.Count-1])>abs(0.1*ForwLine.YValue[ForwLine.Count-1])
+     then  TDependence.tempIChange(Voc_MD.ActiveInterface.GetData);
+
+   LADVoltageValue.Caption:=FloatToStrF(TDependence.tempI,ffExponent, 4, 3);
   end;
 
-  if (CBLEDOpenAuto.Checked)or(CBLEDAuto.Checked)
-  then    sleep(2000);
-  
 
-
- IscVocPinChanger.PinChangeToLow;
- sleep(IscVocTimeToWait);
- TDependence.tempIChange(Voc_MD.ActiveInterface.GetData);
-  if ForwLine.Count>0 then
-    if abs(TDependence.tempI- ForwLine.YValue[ForwLine.Count-1])>abs(0.1*ForwLine.YValue[ForwLine.Count-1])
-   then  TDependence.tempIChange(Voc_MD.ActiveInterface.GetData);
-// if TDependence.tempI<1e-5
-//   then  TDependence.tempIChange(Voc_MD.ActiveInterface.GetData);
-
- LADVoltageValue.Caption:=FloatToStrF(TDependence.tempI,ffExponent, 4, 3);
 end;
 
 procedure TIVchar.IscVocOnTimeHookSecondMeas;
 begin
- sleep(IscVocTimeToWait);
- IscVocPinChanger.PinChangeToHigh;
- sleep(IscVocTimeToWait);
- TTimeTwoDependenceTimer.SecondValueChange(abs(Isc_MD.ActiveInterface.GetData));
-  if ForwLg.Count>0 then
-    if abs(TTimeTwoDependenceTimer.SecondValue - ForwLg.YValue[ForwLg.Count-1])>abs(0.1*ForwLg.YValue[ForwLg.Count-1])
-   then  TTimeTwoDependenceTimer.SecondValueChange(abs(Isc_MD.ActiveInterface.GetData));
+  if IscVocOnTimeModeIsFastIV then Exit;
+
+   sleep(IscVocTimeToWait);
+   IscVocPinChanger.PinChangeToHigh;
+   sleep(IscVocTimeToWait);
+   TTimeTwoDependenceTimer.SecondValueChange(abs(Isc_MD.ActiveInterface.GetData));
+    if ForwLg.Count>0 then
+      if abs(TTimeTwoDependenceTimer.SecondValue - ForwLg.YValue[ForwLg.Count-1])>abs(0.1*ForwLg.YValue[ForwLg.Count-1])
+     then  TTimeTwoDependenceTimer.SecondValueChange(abs(Isc_MD.ActiveInterface.GetData));
 
 
- LADInputVoltageValue.Caption:=FloatToStrF(TTimeTwoDependenceTimer.SecondValue,ffExponent, 4, 3);
- VolCorrectionNew^.Add(Temperature_MD.ActiveInterface.Value,
-                       Voc_MD.ActiveInterface.GetData);
+   LADInputVoltageValue.Caption:=FloatToStrF(TTimeTwoDependenceTimer.SecondValue,ffExponent, 4, 3);
+   VolCorrectionNew^.Add(Temperature_MD.ActiveInterface.Value,
+                         Voc_MD.ActiveInterface.GetData);
 
- if CBLEDOpenAuto.Checked then LEDOpenPinChanger.PinChangeToHigh;
- if CBLEDAuto.Checked then  SettingDeviceLED.ActiveInterface.Reset;
+   if CBLEDOpenAuto.Checked then LEDOpenPinChanger.PinChangeToHigh;
+   if CBLEDAuto.Checked then  SettingDeviceLED.ActiveInterface.Reset;
 
- TimeDHookSecondMeas;
- MeasurementTimeParameterDetermination(IscVocOnTime);
+   TimeDHookSecondMeas;
+   MeasurementTimeParameterDetermination(IscVocOnTime);
 
-  if CBLEDOpenAuto.Checked then
-     begin
-       sleep(500);
-       LEDOpenPinChanger.PinChangeToHigh;
+    if CBLEDOpenAuto.Checked then
+       begin
+         sleep(500);
+         LEDOpenPinChanger.PinChangeToHigh;
 
-     end;
+       end;
 end;
 
 procedure TIVchar.IVCharCurrentMeasHook;
@@ -2528,6 +2587,9 @@ begin
        Temperature_MD.ActiveInterface.NewData:=False;
       end                                     else
        Temperature:=Temperature_MD.GetMeasurementResult();
+  if Temperature=ErResult
+    then  Temperature:=Temperature_MD.GetMeasurementResult();
+      
 
  if FastIVMeasuring.SingleMeasurement
     then BIVSave.OnClick:=ActionInSaveButtonFastIV

@@ -17,7 +17,7 @@ const
   DAC_Neg=$FF; //від'ємна напруга
 
   PinChangeCommand=$7;
-  PinToHigh=$FF;
+  PinToHigh=$F0;
   PinToLow=$0F;
 
 

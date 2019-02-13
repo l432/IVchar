@@ -7,7 +7,7 @@ uses
   ExtCtrls, Classes, OlegTypePart2, MDevice, HighResolutionTimer;
 
 var EventToStopDependence:THandle;
-//    EventFastIVCurrentMeas: THandle;
+//    EventFastIVDone: THandle;
 //    EventFastIVCurrentMeasDone: THandle;
 
 const
@@ -15,6 +15,7 @@ const
    DragonBackOvershootHeight=1.05;
    MaxCurrentMeasuringAttemp=3;
 
+//   IVtiming=true;
    IVtiming=false;
 
 
@@ -98,6 +99,7 @@ private
   procedure ActionMeasurement();override;
   function BadResult:boolean;virtual;
   public
+  property SecondMeasurementTime:single read fSecondMeasurementTime write fSecondMeasurementTime;
   procedure BeginMeasuring();override;
   function TimeFromBegin:single;
 end;
@@ -141,6 +143,7 @@ TTimeTwoDependenceTimer=class(TTimeDependenceTimer)
   procedure DataSave();override;
  public
   isTwoValueOnTime:boolean;
+  FastIVisUsed:boolean;
   Constructor Create(PB:TProgressBar;
                      BS: TButton;
                      Res:PVector;
@@ -229,8 +232,8 @@ TFastIVDependence=class (TFastDependence)
     RevLine: TPointSeries;
     RevLg: TPointSeries;
 
-    fTreadToStop:TThread;
-    fTreadToMeasuring:TThreadTermin;
+//    fTreadToStop:TThread;
+//    fTreadToMeasuring:TThreadTermin;
 
 
     procedure SetImax(const Value: double);
@@ -668,10 +671,14 @@ end;
 
 procedure TTimeDependence.ActionMeasurement;
 begin
-  HookFirstMeas();
   ftempV:=TimeFromBegin();
+  HookFirstMeas();
+
+  if fSecondMeasurementTime<ftempV then
+        fSecondMeasurementTime:=TimeFromBegin();
+
   HookSecondMeas();
-  fSecondMeasurementTime:=TimeFromBegin();
+
 
   if BadResult() then
     begin
@@ -692,13 +699,14 @@ end;
 procedure TTimeDependence.BeginMeasuring;
 begin
   inherited BeginMeasuring;
-  ProgressBar.Max := MeasurementNumberDetermine();
+//  ProgressBar.Max := MeasurementNumberDetermine();
 
   ResetEvent(EventToStopDependence);
 
   fTreadToStop:=TTimeDependenceTread.Create(self);
 
   fBeginTime:=Now();
+  fSecondMeasurementTime:=0;
   PeriodicMeasuring;
 end;
 
@@ -837,6 +845,7 @@ constructor TTimeTwoDependenceTimer.Create(PB: TProgressBar; BS: TButton;
 begin
   inherited Create(PB,BS,Res,FLn, FLg, Tim);
   isTwoValueOnTime:=True;
+  FastIVisUsed:=False;
 end;
 
 procedure TTimeTwoDependenceTimer.DataSave;
@@ -846,9 +855,21 @@ begin
 
   if isTwoValueOnTime then
    begin
-    Results.Add(ftempV, ftempI);
-    ForwLine.AddXY(ftempV, ftempI);
-    ForwLg.AddXY(fSecondMeasurementTime, fSecondValue);
+    if FastIVisUsed then
+      begin
+        if ftempI>0 then
+           begin
+            Results.Add(ftempV, ftempI);
+            ForwLine.AddXY(ftempV, ftempI);
+           end;
+        if fSecondValue>0 then
+           ForwLg.AddXY(fSecondMeasurementTime, fSecondValue);
+      end           else
+     begin
+      Results.Add(ftempV, ftempI);
+      ForwLine.AddXY(ftempV, ftempI);
+      ForwLg.AddXY(fSecondMeasurementTime, fSecondValue);
+     end;
    end
                       else
    begin
@@ -1074,10 +1095,6 @@ begin
 
     SetVoltage();
 
-//    ResetEvent(EventFastIVCurrentMeasDone);
-//    Current_MD.ActiveInterface.NewData:=False;
-//    Current_MD.ActiveInterface.GetDataThread(FastIVCurrentMeas,EventFastIVCurrentMeas);
-
 //      secondmeter.Start();
 
     VoltageMeasuring();
@@ -1087,31 +1104,11 @@ begin
 //     '_'+floattostr(SecondMeter.Interval));
 
 
-//    if (WaitForSingleObject(EventFastIVCurrentMeasDone,200)=WAIT_OBJECT_0)
-//       then
-//        begin
-//           helpforme('b'+floattostr(fAbsVoltageValue));
-//           CurrentMeasuring();
-//        end
-//       else
-//        begin
-//         SetEvent(EventToStopDependence);
-//         sleep(0);
-//         Exit;
-//        end;
-
-
-
-//
     CurrentMeasuring();
-//
-
-
     DataSave();
 
 
-
-    if fTreadToMeasuring.IsTerminated then Exit;
+//    if fTreadToMeasuring.IsTerminated then Exit;
 
 
 end;
@@ -1119,13 +1116,16 @@ end;
 procedure TFastIVDependence.BeginMeasuring;
 begin
   inherited  BeginMeasuring;
-  ResetEvent(EventToStopDependence);
+//  ResetEvent(EventToStopDependence);
+  fIVMeasuringToStop:=false;
+
   DiodOrientationVoltageFactorDetermination();
   fItIsLightIV:=False;
 
-  fTreadToMeasuring:=TFastIVDependenceAction.Create(self);
-  fTreadToStop:=TFastIVDependenceStop.Create(self,fTreadToMeasuring);
-  fTreadToMeasuring.Resume;
+//  fTreadToMeasuring:=TFastIVDependenceAction.Create(self);
+//  fTreadToStop:=TFastIVDependenceStop.Create(self,fTreadToMeasuring);
+//  fTreadToMeasuring.Resume;
+
 end;
 
 
@@ -1165,24 +1165,6 @@ begin
    inc(AtempNumber);
   until (AtempNumber>MaxCurrentMeasuringAttemp);
 
-//begin
-//  if fTreadToMeasuring.IsTerminated then
-//   begin
-//    fCurrentMeasured:=ErResult;
-//    Exit;
-//   end;
-//
-//  fCurrentMeasured:=Current_MD.ActiveInterface.Value;
-//
-//  if fCurrentMeasured=ErResult then
-//      begin
-//       SetEvent(EventToStopDependence);
-//       sleep(0);
-//       Exit;
-//      end;
-//  fCurrentMeasured :=fCurrentMeasured * fDiodOrientationVoltageFactor;
-
-
   if (FCurrentValueLimitEnable and (abs(fCurrentMeasured)>=Imax)) then
     fAbsVoltageValue:=50;
 end;
@@ -1191,6 +1173,8 @@ procedure TFastIVDependence.Cycle(ItIsForwardInput: Boolean);
   var Finish:double;
      Condition:boolean;
 begin
+
+
  fForwardBranch:=ItIsForwardInput;
 
  if fForwardBranch then
@@ -1198,13 +1182,11 @@ begin
      fAbsVoltageValue:=RangeFor.LowValue;
      Finish:=RangeFor.HighValue;
      Condition:=CBForw.Checked;
-//     Condition:=FForwardBranchIsMeasured;
    end          else
    begin
      fAbsVoltageValue:=RangeRev.LowValue;;
      Finish:=RangeRev.HighValue;;
      Condition:=CBRev.Checked;
-//     Condition:=FReverseBranchIsMeasured;
   end;
 
  fItIsBranchBegining:=true;
@@ -1215,13 +1197,15 @@ begin
       and(fAbsVoltageValue=0)
       and(RangeFor.LowValue=0)
       and(CBForw.Checked) then VoltageChange();
-//      and(FForwardBranchIsMeasured) then VoltageChange();
+
    VoltageFactorDetermination();
+
 
    while (fAbsVoltageValue<=Finish) do
      begin
       DuringMeasuring(ActionMeasurement);
-      if fTreadToMeasuring.IsTerminated then Exit;
+      if fIVMeasuringToStop then Exit;
+//      if fTreadToMeasuring.IsTerminated then Exit;
       VoltageChange();
      end;
   end;
@@ -1230,9 +1214,10 @@ end;
 
 procedure TFastIVDependence.DataSave;
 begin
- if fTreadToMeasuring.IsTerminated then Exit;
+ if fIVMeasuringToStop then Exit;
+// if fTreadToMeasuring.IsTerminated then Exit;
+
  if FCurrentValueLimitEnable and (abs(fCurrentMeasured)<Imin)
-//      then  fCurrentMeasured:=ErResult;
       then  Exit;
 
  if (fItIsBranchBegining) and (fForwardBranch) then
@@ -1246,6 +1231,7 @@ end;
 
 function TFastIVDependence.DatFileNameToSave: string;
 begin
+//  helpforme(PrefixToFileName);
   Result:=NextDATFileName(LastDATFileName(PrefixToFileName));
   if Result='1.dat' then Result:=PrefixToFileName+Result;
 end;
@@ -1296,7 +1282,14 @@ begin
    end;
   SettingDevice.ActiveInterface.Reset();
   VocIscDetermine();
-  HookEndMeasuring();
+
+
+ HookEndMeasuring();
+
+// SetEvent(EventFastIVDone);
+
+//  helpforme('end0'+PrefixToFileName+inttostr(MilliSecond));
+
 
  if IVtiming then
   begin
@@ -1309,6 +1302,9 @@ end;
 procedure TFastIVDependence.Measuring(SingleMeasurement:boolean=true;
                            FilePrefix:string='');
 begin
+// ResetEvent(EventFastIVDone);
+//  helpforme('meas_'+FilePrefix+inttostr(MilliSecond));
+
 
  if IVtiming then
   begin
@@ -1317,7 +1313,16 @@ begin
 
   fSingleMeasurement:=SingleMeasurement;
   PrefixToFileName:=FilePrefix;
+  fVoc:=0;
+  fIsc:=0;
+
   BeginMeasuring();
+
+  Cycle(True);
+  if fIVMeasuringToStop then Exit;
+  Cycle(False);
+  EndMeasuring();
+//  WaitForSingleObject(EventFastIVDone,10000);
 end;
 
 procedure TFastIVDependence.SeriesClear;
@@ -1352,8 +1357,10 @@ procedure TFastIVDependence.SetVoltage;
 begin
   SettingDevice.SetValue(DragonBackOvershootHeight*fVoltageFactor * fAbsVoltageValue);
   HRDelay(fDragonBackTime);
+//  sleep(fDragonBackTime);
   SettingDevice.SetValue(fVoltageFactor * fAbsVoltageValue);
   HRDelay(fDragonBackTime);
+//  sleep(fDragonBackTime);
 end;
 
 procedure TFastIVDependence.VoltageFactorDetermination;
@@ -1383,7 +1390,8 @@ end;
 
 function TFastIVDependence.ValueMeasuring(MD: TMeasuringDevice): double;
 begin
-  if fTreadToMeasuring.IsTerminated then
+  if fIVMeasuringToStop then
+//  if fTreadToMeasuring.IsTerminated then
    begin
     Result:=ErResult;
     Exit;
@@ -1396,8 +1404,9 @@ begin
   end;
   if Result=ErResult then
       begin
-       SetEvent(EventToStopDependence);
-       sleep(0);
+       fIVMeasuringToStop:=true;
+//       SetEvent(EventToStopDependence);
+//       sleep(0);
        Exit;
       end;
   Result :=Result * fDiodOrientationVoltageFactor;
@@ -1412,8 +1421,8 @@ begin
    begin
      if Results^.MaxY>0 then fVoc:=Results^.Xvalue(0)
                         else FVoc:=0;
-     if Results^.MinX<=0 then fIsc:=Results^.Yvalue(0)
-                         else fIsc:=Y_X0(Results^.X[0],
+     if Results^.MinX<=0 then fIsc:=-Results^.Yvalue(0)
+                         else fIsc:=-Y_X0(Results^.X[0],
                                          Results^.Y[0],
                                          Results^.X[1],
                                          Results^.Y[1],
@@ -1425,7 +1434,7 @@ begin
      fVoc:=0;
      fIsc:=0;
    end;
- 
+
 end;
 
 procedure TFastIVDependence.VoltageChange;
@@ -1453,9 +1462,14 @@ end;
 
 procedure TFastIVDependenceAction.Execute;
 begin
+//  helpforme('cycle0_'+fFastIV.PrefixToFileName+inttostr(MilliSecond));
+
   fFastIV.Cycle(True);
+//   helpforme('cycle1_'+fFastIV.PrefixToFileName+inttostr(MilliSecond));
+
   if Terminated then Exit;
   fFastIV.Cycle(False);
+
   SetEvent(EventToStopDependence);
 end;
 //
@@ -1568,11 +1582,11 @@ initialization
                                  True, // начальное состояние TRUE - сигнальное
                                  nil);
 
-//  EventFastIVCurrentMeas := CreateEvent(nil,
+//  EventFastIVDone := CreateEvent(nil,
 //                                 True, // тип сброса TRUE - ручной
 //                                 True, // начальное состояние TRUE - сигнальное
 //                                 nil);
-//
+
 //  EventFastIVCurrentMeasDone := CreateEvent(nil,
 //                                 True, // тип сброса TRUE - ручной
 //                                 True, // начальное состояние TRUE - сигнальное
@@ -1580,11 +1594,11 @@ initialization
 
 finalization
 
-//  SetEvent(EventToStopDependence);
-//  CloseHandle(EventToStopDependence);
-//
-//  SetEvent(EventFastIVCurrentMeas);
-//  CloseHandle(EventFastIVCurrentMeas);
+  SetEvent(EventToStopDependence);
+  CloseHandle(EventToStopDependence);
+
+//  SetEvent(EventFastIVDone);
+//  CloseHandle(EventFastIVDone);
 //
 //  SetEvent(EventFastIVCurrentMeasDone);
 //  CloseHandle(EventFastIVCurrentMeasDone);

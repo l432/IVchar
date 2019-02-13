@@ -112,7 +112,7 @@ begin
   if ComPort.Connected then
    begin
 
-    ComPort.ClearBuffer(false, True);
+    ComPort.ClearBuffer(True, True);
     Result:=(ComPort.Write(aPacket[0], High(aPacket)+1)=
                                (High(aPacket)+1));
    end

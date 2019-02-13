@@ -1,5 +1,5 @@
 #include <SPI.h>
-#include <avr/wdt.h>
+//#include <avr/wdt.h>
 #include <Wire.h>
 
 #include <OneWire.h>
@@ -32,8 +32,8 @@ INA226o ina226;
 
 
 void setup() {
-  Serial.begin(115200);
-//    Serial.begin(9600);
+//  Serial.begin(115200);
+    Serial.begin(256000);
   Serial.setTimeout(50);
   SPI.begin();
   Wire.begin();
@@ -53,7 +53,7 @@ void setup() {
   d3006.Setup();
   mcp3424.Setup();
 
-  wdt_enable(WDTO_4S);
+//  wdt_enable(WDTO_4S);
 }
 
 void loop() {
@@ -86,7 +86,7 @@ start:
   mcp3424.End();
   ads1115.End();
   ina226.End(); 
-  wdt_reset();
+//  wdt_reset();
 }
 
 

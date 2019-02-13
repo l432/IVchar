@@ -262,6 +262,7 @@ begin
   fMetterKod := INA226Command;
   fRsh:=1;
   fTimeFactor:=1;
+  RepeatInErrorCase:=True;
 end;
 
 function TINA226_Module.MinDelayTimeDetermination: integer;

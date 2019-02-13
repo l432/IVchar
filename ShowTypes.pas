@@ -287,6 +287,7 @@ end;
 
 procedure TLimitShow.WriteToIniFile(ConfigFile: TIniFile);
 begin
+    ConfigFile.EraseSection(fName);
     WriteIniDef(ConfigFile,fName,fName+'Max',UpDownHigh.Position,UpDownHigh.Max);
     WriteIniDef(ConfigFile,fName,fName+'Min',UpDownLow.Position,0);
 //    WriteIniDef(ConfigFile,RangeSection,fName+'Max',UpDownHigh.Position,UpDownHigh.Max);
