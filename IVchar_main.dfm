@@ -35,7 +35,7 @@ object IVchar: TIVchar
     Top = 0
     Width = 786
     Height = 496
-    ActivePage = TS_Main
+    ActivePage = TS_Temper
     Align = alTop
     Font.Charset = RUSSIAN_CHARSET
     Font.Color = clWindowText
@@ -49,10 +49,6 @@ object IVchar: TIVchar
     OnChanging = PCChanging
     object TS_Main: TTabSheet
       Caption = 'Main'
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object ChLine: TChart
         Left = 0
         Top = 0
@@ -256,7 +252,7 @@ object IVchar: TIVchar
           Top = 18
           Width = 194
           Height = 24
-          ItemHeight = 0
+          ItemHeight = 16
           TabOrder = 7
           OnChange = CBMeasurementsChange
         end
@@ -422,10 +418,6 @@ object IVchar: TIVchar
     object TS_B7_21A: TTabSheet
       Caption = 'B7_21A'
       ImageIndex = 1
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object LV721A: TLabel
         Left = 269
         Top = 19
@@ -555,10 +547,6 @@ object IVchar: TIVchar
     object TS_B7_21: TTabSheet
       Caption = 'B7_21'
       ImageIndex = 2
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object PanelV721_I: TPanel
         Left = 0
         Top = 0
@@ -840,10 +828,6 @@ object IVchar: TIVchar
       Caption = 'DAC'
       ImageIndex = 3
       TabVisible = False
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object LDACPinC: TLabel
         Left = 544
         Top = 44
@@ -996,7 +980,7 @@ object IVchar: TIVchar
           Font.Height = -15
           Font.Name = 'Verdana'
           Font.Style = [fsBold]
-          ItemHeight = 0
+          ItemHeight = 18
           ParentFont = False
           TabOrder = 2
         end
@@ -1122,7 +1106,7 @@ object IVchar: TIVchar
             Width = 111
             Height = 24
             Style = csDropDownList
-            ItemHeight = 0
+            ItemHeight = 16
             TabOrder = 2
           end
           object BMeasChA: TButton
@@ -1153,7 +1137,7 @@ object IVchar: TIVchar
         Font.Height = -21
         Font.Name = 'Arial'
         Font.Style = [fsBold]
-        ItemHeight = 0
+        ItemHeight = 24
         ParentFont = False
         TabOrder = 1
       end
@@ -1333,7 +1317,7 @@ object IVchar: TIVchar
           Font.Height = -15
           Font.Name = 'Verdana'
           Font.Style = [fsBold]
-          ItemHeight = 0
+          ItemHeight = 18
           ParentFont = False
           TabOrder = 2
         end
@@ -1459,7 +1443,7 @@ object IVchar: TIVchar
             Width = 111
             Height = 24
             Style = csDropDownList
-            ItemHeight = 0
+            ItemHeight = 16
             TabOrder = 2
           end
           object BMeasChB: TButton
@@ -1482,10 +1466,6 @@ object IVchar: TIVchar
     object TS_DACR2R: TTabSheet
       Caption = 'DACR-2R/D30_06'
       ImageIndex = 5
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object GBCalibrR2R: TGroupBox
         Left = 229
         Top = 55
@@ -1893,7 +1873,7 @@ object IVchar: TIVchar
             Font.Height = -13
             Font.Name = 'Arial'
             Font.Style = [fsBold]
-            ItemHeight = 0
+            ItemHeight = 16
             ParentFont = False
             TabOrder = 2
           end
@@ -2025,7 +2005,7 @@ object IVchar: TIVchar
             Font.Height = -13
             Font.Name = 'Arial'
             Font.Style = [fsBold]
-            ItemHeight = 0
+            ItemHeight = 16
             ParentFont = False
             TabOrder = 2
           end
@@ -2159,10 +2139,6 @@ object IVchar: TIVchar
     object TS_Setting: TTabSheet
       Caption = 'Setting'
       ImageIndex = 4
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object LPR: TLabel
         Left = 17
         Top = 340
@@ -2653,7 +2629,7 @@ object IVchar: TIVchar
           ComPort = ComPort1
           ComProperty = cpPort
           AutoApply = True
-          Text = 'COM1'
+          Text = 'COM3'
           Style = csDropDownList
           Font.Charset = RUSSIAN_CHARSET
           Font.Color = clWindowText
@@ -2661,7 +2637,7 @@ object IVchar: TIVchar
           Font.Name = 'Arial'
           Font.Style = [fsBold]
           ItemHeight = 18
-          ItemIndex = 0
+          ItemIndex = 1
           ParentFont = False
           TabOrder = 0
         end
@@ -2752,7 +2728,7 @@ object IVchar: TIVchar
           Font.Height = -13
           Font.Name = 'Arial'
           Font.Style = [fsBold]
-          ItemHeight = 0
+          ItemHeight = 16
           ParentFont = False
           TabOrder = 0
         end
@@ -2792,7 +2768,7 @@ object IVchar: TIVchar
           Font.Height = -13
           Font.Name = 'Arial'
           Font.Style = [fsBold]
-          ItemHeight = 0
+          ItemHeight = 16
           ParentFont = False
           TabOrder = 4
         end
@@ -2808,7 +2784,7 @@ object IVchar: TIVchar
           Font.Height = -13
           Font.Name = 'Arial'
           Font.Style = [fsBold]
-          ItemHeight = 0
+          ItemHeight = 16
           ParentFont = False
           TabOrder = 5
         end
@@ -2917,10 +2893,6 @@ object IVchar: TIVchar
     object TS_Temper: TTabSheet
       Caption = 'Temperature'
       ImageIndex = 6
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object LTMI: TLabel
         Left = 14
         Top = 119
@@ -2979,7 +2951,7 @@ object IVchar: TIVchar
         Font.Height = -13
         Font.Name = 'Arial'
         Font.Style = [fsBold]
-        ItemHeight = 0
+        ItemHeight = 16
         ParentFont = False
         TabOrder = 1
       end
@@ -3050,7 +3022,7 @@ object IVchar: TIVchar
           Font.Height = -13
           Font.Name = 'Arial'
           Font.Style = [fsBold]
-          ItemHeight = 0
+          ItemHeight = 16
           ParentFont = False
           TabOrder = 1
         end
@@ -3070,10 +3042,10 @@ object IVchar: TIVchar
         end
       end
       object GBTermostat: TGroupBox
-        Left = 20
+        Left = 3
         Top = 210
-        Width = 450
-        Height = 167
+        Width = 294
+        Height = 223
         Caption = 'Thermostat Setup'
         Font.Charset = RUSSIAN_CHARSET
         Font.Color = clWindowText
@@ -3083,11 +3055,11 @@ object IVchar: TIVchar
         ParentFont = False
         TabOrder = 5
         object LTermostatNT: TLabel
-          Left = 145
-          Top = 32
-          Width = 49
-          Height = 13
-          Caption = 'Needed'
+          Left = 183
+          Top = 16
+          Width = 85
+          Height = 26
+          Caption = 'Expected Temperature'
           Font.Charset = RUSSIAN_CHARSET
           Font.Color = clMaroon
           Font.Height = -11
@@ -3101,7 +3073,7 @@ object IVchar: TIVchar
           Top = 16
           Width = 85
           Height = 26
-          Caption = 'Current Temperature'
+          Caption = 'Actual Temperature'
           Font.Charset = RUSSIAN_CHARSET
           Font.Color = clMaroon
           Font.Height = -11
@@ -3111,8 +3083,8 @@ object IVchar: TIVchar
           WordWrap = True
         end
         object SBTermostat: TSpeedButton
-          Left = 148
-          Top = 89
+          Left = 13
+          Top = 159
           Width = 131
           Height = 26
           AllowAllUp = True
@@ -3128,7 +3100,7 @@ object IVchar: TIVchar
         end
         object LTermostatCTValue: TLabel
           Left = 11
-          Top = 52
+          Top = 48
           Width = 93
           Height = 20
           Caption = '1.34E+01'
@@ -3140,8 +3112,8 @@ object IVchar: TIVchar
           ParentFont = False
         end
         object LTermostatTolerance: TLabel
-          Left = 253
-          Top = 35
+          Left = 177
+          Top = 83
           Width = 65
           Height = 13
           Caption = 'Tolerance'
@@ -3154,7 +3126,7 @@ object IVchar: TIVchar
         end
         object LTermostatKp: TLabel
           Left = 11
-          Top = 88
+          Top = 80
           Width = 22
           Height = 18
           Caption = 'Kp'
@@ -3167,7 +3139,7 @@ object IVchar: TIVchar
         end
         object LTermostatKi: TLabel
           Left = 11
-          Top = 115
+          Top = 105
           Width = 16
           Height = 18
           Caption = 'Ki'
@@ -3180,7 +3152,7 @@ object IVchar: TIVchar
         end
         object LTermostatKd: TLabel
           Left = 11
-          Top = 143
+          Top = 131
           Width = 22
           Height = 18
           Caption = 'Kd'
@@ -3192,8 +3164,8 @@ object IVchar: TIVchar
           ParentFont = False
         end
         object LTermostatOutputValue: TLabel
-          Left = 311
-          Top = 132
+          Left = 164
+          Top = 196
           Width = 93
           Height = 20
           Caption = '1.34E+01'
@@ -3220,8 +3192,8 @@ object IVchar: TIVchar
         end
         object CBTermostatCD: TComboBox
           Tag = 5
-          Left = 297
-          Top = 95
+          Left = 150
+          Top = 159
           Width = 133
           Height = 24
           Style = csDropDownList
@@ -3230,13 +3202,13 @@ object IVchar: TIVchar
           Font.Height = -13
           Font.Name = 'Arial'
           Font.Style = [fsBold]
-          ItemHeight = 0
+          ItemHeight = 16
           ParentFont = False
           TabOrder = 0
         end
         object STTermostatCD: TStaticText
-          Left = 315
-          Top = 75
+          Left = 168
+          Top = 139
           Width = 96
           Height = 20
           Caption = 'Driving Device'
@@ -3249,8 +3221,8 @@ object IVchar: TIVchar
           TabOrder = 1
         end
         object STTermostatNT: TStaticText
-          Left = 145
-          Top = 52
+          Left = 183
+          Top = 48
           Width = 97
           Height = 24
           Caption = '1.34E+01'
@@ -3264,7 +3236,7 @@ object IVchar: TIVchar
         end
         object STTermostatKi: TStaticText
           Left = 47
-          Top = 113
+          Top = 103
           Width = 97
           Height = 24
           Caption = '1.34E+01'
@@ -3278,7 +3250,7 @@ object IVchar: TIVchar
         end
         object STTermostatKp: TStaticText
           Left = 47
-          Top = 86
+          Top = 78
           Width = 97
           Height = 24
           Caption = '1.34E+01'
@@ -3292,7 +3264,7 @@ object IVchar: TIVchar
         end
         object STTermostatKd: TStaticText
           Left = 47
-          Top = 141
+          Top = 129
           Width = 97
           Height = 24
           Caption = '1.34E+01'
@@ -3305,8 +3277,8 @@ object IVchar: TIVchar
           TabOrder = 5
         end
         object BTermostatReset: TButton
-          Left = 166
-          Top = 132
+          Left = 33
+          Top = 191
           Width = 75
           Height = 25
           Caption = 'Reset'
@@ -3320,8 +3292,8 @@ object IVchar: TIVchar
           OnClick = BTermostatResetClick
         end
         object STTermostatTolerance: TStaticText
-          Left = 253
-          Top = 54
+          Left = 177
+          Top = 102
           Width = 87
           Height = 22
           Caption = '1.34E+01'
@@ -3499,14 +3471,164 @@ object IVchar: TIVchar
           TabOrder = 2
         end
       end
+      object GBTempDepend: TGroupBox
+        Left = 329
+        Top = 210
+        Width = 248
+        Height = 149
+        Caption = 'Temperature dependence'
+        Font.Charset = RUSSIAN_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -13
+        Font.Name = 'Courier'
+        Font.Style = [fsBold]
+        ParentFont = False
+        TabOrder = 9
+        object LTemDepStart: TLabel
+          Left = 16
+          Top = 24
+          Width = 57
+          Height = 26
+          Caption = 'Start (K)'
+          Font.Charset = RUSSIAN_CHARSET
+          Font.Color = clMaroon
+          Font.Height = -11
+          Font.Name = 'Verdana'
+          Font.Style = [fsBold]
+          ParentFont = False
+          WordWrap = True
+        end
+        object LTemDepFinish: TLabel
+          Left = 94
+          Top = 24
+          Width = 72
+          Height = 26
+          Caption = 'Finish (K)'
+          Font.Charset = RUSSIAN_CHARSET
+          Font.Color = clMaroon
+          Font.Height = -11
+          Font.Name = 'Verdana'
+          Font.Style = [fsBold]
+          ParentFont = False
+          WordWrap = True
+        end
+        object LTemDepStep: TLabel
+          Left = 172
+          Top = 24
+          Width = 53
+          Height = 26
+          Caption = 'Step (K)'
+          Font.Charset = RUSSIAN_CHARSET
+          Font.Color = clMaroon
+          Font.Height = -11
+          Font.Name = 'Verdana'
+          Font.Style = [fsBold]
+          ParentFont = False
+          WordWrap = True
+        end
+        object LTemDepIsoInterval: TLabel
+          Left = 13
+          Top = 73
+          Width = 79
+          Height = 39
+          Caption = 'Isotermal interval (s)'
+          Font.Charset = RUSSIAN_CHARSET
+          Font.Color = clMaroon
+          Font.Height = -11
+          Font.Name = 'Verdana'
+          Font.Style = [fsBold]
+          ParentFont = False
+          WordWrap = True
+        end
+        object LTemDepContInterval: TLabel
+          Left = 125
+          Top = 73
+          Width = 74
+          Height = 26
+          Caption = 'Control interval (s)'
+          Font.Charset = RUSSIAN_CHARSET
+          Font.Color = clMaroon
+          Font.Height = -11
+          Font.Name = 'Verdana'
+          Font.Style = [fsBold]
+          ParentFont = False
+          WordWrap = True
+        end
+        object STTemDepStart: TStaticText
+          Left = 24
+          Top = 43
+          Width = 40
+          Height = 24
+          Caption = '300'
+          Font.Charset = RUSSIAN_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -17
+          Font.Name = 'Verdana'
+          Font.Style = [fsBold]
+          ParentFont = False
+          TabOrder = 0
+        end
+        object STTemDepFinish: TStaticText
+          Left = 98
+          Top = 43
+          Width = 40
+          Height = 24
+          Caption = '340'
+          Font.Charset = RUSSIAN_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -17
+          Font.Name = 'Verdana'
+          Font.Style = [fsBold]
+          ParentFont = False
+          TabOrder = 1
+        end
+        object STTemDepStep: TStaticText
+          Left = 185
+          Top = 43
+          Width = 16
+          Height = 24
+          Caption = '3'
+          Font.Charset = RUSSIAN_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -17
+          Font.Name = 'Verdana'
+          Font.Style = [fsBold]
+          ParentFont = False
+          TabOrder = 2
+        end
+        object STTemDepIsoInterval: TStaticText
+          Left = 20
+          Top = 100
+          Width = 40
+          Height = 24
+          Caption = '300'
+          Font.Charset = RUSSIAN_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -17
+          Font.Name = 'Verdana'
+          Font.Style = [fsBold]
+          ParentFont = False
+          TabOrder = 3
+        end
+        object STTemDepContInterval: TStaticText
+          Left = 140
+          Top = 100
+          Width = 28
+          Height = 24
+          Caption = '30'
+          Font.Charset = RUSSIAN_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -17
+          Font.Name = 'Verdana'
+          Font.Style = [fsBold]
+          ParentFont = False
+          TabOrder = 4
+        end
+      end
     end
     object TS_UT70: TTabSheet
       Caption = 'UT70'
       ImageIndex = 7
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object PanelUT70B: TPanel
         Left = 0
         Top = 0
@@ -3889,10 +4011,6 @@ object IVchar: TIVchar
     object TS_ET1255: TTabSheet
       Caption = 'ET1255_DAC'
       ImageIndex = 8
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object PET1255DAC: TPanel
         Left = 3
         Top = 3
@@ -4090,7 +4208,7 @@ object IVchar: TIVchar
               Font.Height = -13
               Font.Name = 'Arial'
               Font.Style = [fsBold]
-              ItemHeight = 0
+              ItemHeight = 16
               ParentFont = False
               TabOrder = 2
             end
@@ -4270,7 +4388,7 @@ object IVchar: TIVchar
               Font.Height = -13
               Font.Name = 'Arial'
               Font.Style = [fsBold]
-              ItemHeight = 0
+              ItemHeight = 16
               ParentFont = False
               TabOrder = 2
             end
@@ -4447,7 +4565,7 @@ object IVchar: TIVchar
               Font.Height = -13
               Font.Name = 'Arial'
               Font.Style = [fsBold]
-              ItemHeight = 0
+              ItemHeight = 16
               ParentFont = False
               TabOrder = 2
             end
@@ -4597,10 +4715,6 @@ object IVchar: TIVchar
     object TS_ET1255ADC: TTabSheet
       Caption = 'ET1255_ADC'
       ImageIndex = 11
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object LET1255I: TLabel
         Left = 4
         Top = 289
@@ -4860,10 +4974,6 @@ object IVchar: TIVchar
     object TS_Time_Dependence: TTabSheet
       Caption = 'Time'
       ImageIndex = 9
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object LTimeInterval: TLabel
         Left = 10
         Top = 65
@@ -4916,7 +5026,7 @@ object IVchar: TIVchar
         Font.Height = -13
         Font.Name = 'Arial'
         Font.Style = [fsBold]
-        ItemHeight = 0
+        ItemHeight = 16
         ParentFont = False
         TabOrder = 1
       end
@@ -4964,9 +5074,9 @@ object IVchar: TIVchar
         object LControlNV: TLabel
           Left = 164
           Top = 62
-          Width = 89
+          Width = 100
           Height = 13
-          Caption = 'Needed Value'
+          Caption = 'Expected Value'
           Font.Charset = RUSSIAN_CHARSET
           Font.Color = clMaroon
           Font.Height = -11
@@ -4977,9 +5087,9 @@ object IVchar: TIVchar
         object LControlCV: TLabel
           Left = 166
           Top = 18
-          Width = 89
+          Width = 81
           Height = 13
-          Caption = 'Current Value'
+          Caption = 'Actual Value'
           Font.Charset = RUSSIAN_CHARSET
           Font.Color = clMaroon
           Font.Height = -11
@@ -5134,7 +5244,7 @@ object IVchar: TIVchar
           Font.Height = -13
           Font.Name = 'Arial'
           Font.Style = [fsBold]
-          ItemHeight = 0
+          ItemHeight = 16
           ParentFont = False
           TabOrder = 0
         end
@@ -5164,7 +5274,7 @@ object IVchar: TIVchar
           Font.Height = -13
           Font.Name = 'Arial'
           Font.Style = [fsBold]
-          ItemHeight = 0
+          ItemHeight = 16
           ParentFont = False
           TabOrder = 2
         end
@@ -5308,7 +5418,7 @@ object IVchar: TIVchar
         Font.Height = -13
         Font.Name = 'Arial'
         Font.Style = [fsBold]
-        ItemHeight = 0
+        ItemHeight = 16
         ParentFont = False
         TabOrder = 6
       end
@@ -5379,7 +5489,7 @@ object IVchar: TIVchar
           Font.Height = -13
           Font.Name = 'Arial'
           Font.Style = [fsBold]
-          ItemHeight = 0
+          ItemHeight = 16
           ParentFont = False
           TabOrder = 0
         end
@@ -5395,7 +5505,7 @@ object IVchar: TIVchar
           Font.Height = -13
           Font.Name = 'Arial'
           Font.Style = [fsBold]
-          ItemHeight = 0
+          ItemHeight = 16
           ParentFont = False
           TabOrder = 1
         end
@@ -5531,7 +5641,7 @@ object IVchar: TIVchar
             Font.Height = -13
             Font.Name = 'Arial'
             Font.Style = [fsBold]
-            ItemHeight = 0
+            ItemHeight = 16
             ParentFont = False
             TabOrder = 2
           end
@@ -5649,10 +5759,6 @@ object IVchar: TIVchar
     object TS_D30_06: TTabSheet
       Caption = 'AD9833'
       ImageIndex = 10
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object LFreqRangeAD9866: TLabel
         Left = 3
         Top = 50
@@ -5891,10 +5997,6 @@ object IVchar: TIVchar
     object TS_ADC: TTabSheet
       Caption = 'ADC'
       ImageIndex = 12
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object Button1: TButton
         Left = 525
         Top = 190
@@ -6842,10 +6944,6 @@ object IVchar: TIVchar
     object TS_GDS: TTabSheet
       Caption = 'GDS-806S'
       ImageIndex = 13
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object GB_GDS_Com: TGroupBox
         Left = 575
         Top = 0

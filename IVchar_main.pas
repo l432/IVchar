@@ -600,6 +600,17 @@ type
     CBET1255_ASer: TCheckBox;
     CBET1255_AG: TCheckBox;
     RGIscVocMode: TRadioGroup;
+    GBTempDepend: TGroupBox;
+    STTemDepStart: TStaticText;
+    LTemDepStart: TLabel;
+    LTemDepFinish: TLabel;
+    STTemDepFinish: TStaticText;
+    LTemDepStep: TLabel;
+    STTemDepStep: TStaticText;
+    LTemDepIsoInterval: TLabel;
+    STTemDepIsoInterval: TStaticText;
+    LTemDepContInterval: TLabel;
+    STTemDepContInterval: TStaticText;
 
     procedure FormCreate(Sender: TObject);
     procedure BConnectClick(Sender: TObject);
@@ -1375,7 +1386,7 @@ if IscVocOnTimeModeIsFastIV then
            TemperatureMeasuringThread.Terminate;
 //--------------------------
 
-   if (CBLEDOpenAuto.Checked)
+   if (CBLEDOpenAuto.Checked)or(CBLEDAuto.Checked)
      then
      begin
      FastIVMeasuring.Measuring(False,'dark');
@@ -1386,13 +1397,14 @@ if IscVocOnTimeModeIsFastIV then
       begin
       LEDOpenPinChanger.PinChangeToLow;
       LEDWasOpened:=true;
+      sleep(500);
       end;
 
-   if CBLEDAuto.Checked
-     then   SettingDeviceLED.ActiveInterface.Output(LEDVoltageCS.Data);
-
-   if (CBLEDOpenAuto.Checked)or(CBLEDAuto.Checked)or(TFastDependence.PointNumber=1)
-     then    sleep(500);
+   if (CBLEDAuto.Checked)or(TFastDependence.PointNumber=1) then
+    begin
+    SettingDeviceLED.ActiveInterface.Output(LEDVoltageCS.Data);
+    sleep(50)
+    end;
 
    FastIVMeasuring.Measuring(False,'l');
    TDependence.tempIChange(FastIVMeasuring.Voc);

@@ -154,6 +154,26 @@ TTimeTwoDependenceTimer=class(TTimeDependenceTimer)
   class procedure SecondValueChange(Value: double);
 end;
 
+TTemperatureDependence=class(TTimeTwoDependenceTimer)
+ private
+  fStartTemperature:word;
+  fFinishTemperature:word;
+  fStep:integer;
+  fIsotermalInterval:word;
+  procedure SetStartTemperature(const Value: word);
+  procedure SetFinishTemperature(const Value: word);
+  procedure SetStep(const Value: integer);
+    procedure SetIsotermalInterval(const Value: word);
+ public
+  property StartTemperature:word read FStartTemperature write SetStartTemperature;
+  property FinishTemperature:word read FFinishTemperature write SetFinishTemperature;
+  property Step:integer read FStep write SetStep;
+  property IsotermalInterval:word read FIsotermalInterval write SetIsotermalInterval;
+end;
+
+
+
+
 TIVParameters=class
  public
   class function ItIsForward:boolean;
@@ -1574,6 +1594,29 @@ end;
 function TThreadTermin.getIsTerminated: boolean;
 begin
  Result:=Terminated;
+end;
+
+{ TTemperatureDependence }
+
+procedure TTemperatureDependence.SetFinishTemperature(const Value: word);
+begin
+  FFinishTemperature := Value;
+end;
+
+procedure TTemperatureDependence.SetIsotermalInterval(const Value: word);
+begin
+  FIsotermalInterval := Value;
+end;
+
+procedure TTemperatureDependence.SetStartTemperature(const Value: word);
+begin
+  FStartTemperature := Value;
+end;
+
+procedure TTemperatureDependence.SetStep(const Value: integer);
+begin
+ if Value=0 then FStep := 1
+            else FStep := Value;
 end;
 
 initialization
