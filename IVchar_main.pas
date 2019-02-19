@@ -877,7 +877,8 @@ type
     Dependencies:Array of TFastDependence;
     PID_Termostat,PID_Control:TPID;
     PID_Termostat_ParametersShow,PID_Control_ParametersShow:TPID_ParametersShow;
-    IsPID_Termostat_Created,IscVocOnTimeModeIsFastIV:boolean;
+    IsPID_Termostat_Created,IscVocOnTimeModeIsFastIV,
+    IscVocOnTimeIsRun:boolean;
     IVMeasResult,IVMRFirst,IVMRSecond:TIVMeasurementResult;
   end;
 
@@ -1058,17 +1059,20 @@ end;
 
 procedure TIVchar.SaveCommentsFile(FileName: string);
  var SR : TSearchRec;
-     DT:integer;
+//     DT:integer;
      FF:TextFile;
-     name:string;
+     name, temp:string;
 begin
     if FindFirst(FileName,faAnyFile,SR)<>0 then Exit;
-    DT:=SR.Time;
+//    DT:=SR.Time;
     name:=SR.Name;
     AssignFile(FF,'comments');
     if FindFirst('comments',faAnyFile,SR)=0 then Append(FF) else ReWrite(FF);
     FindClose(SR);
-    writeln(FF,Name,' - ',DateTimeToStr(FileDateToDateTime(DT)));
+    DateTimeToString(temp, 'd.m.yyyy', FileDateToDateTime(SR.Time));
+    writeln(FF,Name,' - ',temp,'  :'+inttostr(SecondFromDayBegining(FileDateToDateTime(SR.Time))));
+
+    //    writeln(FF,Name,' - ',DateTimeToStr(FileDateToDateTime(DT)));
     write(FF,'T=',LTLastValue.Caption);
     writeln(FF);
     writeln(FF);
@@ -1097,7 +1101,11 @@ begin
        Temperature:=TemperData.SumY/TemperData.n;
   end;
 
-  if Key=MeasIscAndVocOnTime then RGIscVocMode.Enabled:=True;
+  if Key=MeasIscAndVocOnTime then
+   begin
+    RGIscVocMode.Enabled:=True;
+    IscVocOnTimeIsRun:=False;
+   end;
 
 // if (Key=MeasFastIV) then
 //  if (SBTAuto.Down)and
@@ -1317,6 +1325,7 @@ procedure TIVchar.HookBegin;
    VolCorrectionNew.Clear;
    RGIscVocMode.Enabled:=False;
    IscVocOnTime.FastIVisUsed:=IscVocOnTimeModeIsFastIV;
+   IscVocOnTimeIsRun:=True;
 //   HelpForMe('dur='+inttostr(IscVocOnTime.Duration)+
 //             'int='+inttostr(IscVocOnTime.Interval)+
 //              'IscVoc'+booltostr(IscVocOnTimeModeIsFastIV));
@@ -1360,11 +1369,16 @@ begin
  LEDWasOpened:=false;
 if IscVocOnTimeModeIsFastIV then
   begin
+
+//_________________________
+   if assigned(TemperatureMeasuringThread) then
+           TemperatureMeasuringThread.Terminate;
+//--------------------------
+
    if (CBLEDOpenAuto.Checked)
      then
      begin
      FastIVMeasuring.Measuring(False,'dark');
-//     HRDelay(100);
      end;
 
    if (CBLEDOpenAuto.Checked)or(TFastDependence.PointNumber=1)
@@ -1378,7 +1392,6 @@ if IscVocOnTimeModeIsFastIV then
      then   SettingDeviceLED.ActiveInterface.Output(LEDVoltageCS.Data);
 
    if (CBLEDOpenAuto.Checked)or(CBLEDAuto.Checked)or(TFastDependence.PointNumber=1)
-//     then    HRDelay(500);
      then    sleep(500);
 
    FastIVMeasuring.Measuring(False,'l');
@@ -1411,6 +1424,11 @@ if IscVocOnTimeModeIsFastIV then
       sleep(500);
       LEDOpenPinChanger.PinChangeToHigh;
       end;
+//______________________________________
+   if not(assigned(TemperatureMeasuringThread)) then
+         TemperatureThreadCreate();
+//----------------------------------------
+
 
   end                        else
   begin
@@ -2453,8 +2471,11 @@ begin
                                       TemperatureMeasIntervalCS.Data);
      if  SBTAuto.Down then
       begin
-       TemperatureMeasuringThread.Terminate;
-       sleep(500);
+       if assigned(TemperatureMeasuringThread) then
+           begin
+            TemperatureMeasuringThread.Terminate;
+            sleep(500);
+           end;
        TemperatureThreadCreate();
       end             else
       begin
@@ -2584,7 +2605,7 @@ begin
      (Temperature_MD.ActiveInterface.NewData) then
       begin
        Temperature:=Temperature_MD.ActiveInterface.Value;
-       Temperature_MD.ActiveInterface.NewData:=False;
+//       Temperature_MD.ActiveInterface.NewData:=False;
       end                                     else
        Temperature:=Temperature_MD.GetMeasurementResult();
   if Temperature=ErResult
@@ -3212,7 +3233,8 @@ begin
   ThermoCuple.Measurement:=TermoCouple_MD.ActiveInterface;
   TemperatureMeasuringThread:=
     TTemperatureMeasuringThread.Create(Temperature_MD.ActiveInterface,
-                                       round(StrToFloat(STTMI.Caption)),
+                                       TemperatureMeasIntervalCS.Data,
+//                                       round(StrToFloat(STTMI.Caption)),
                                        EventMeasuringEnd);
 end;
 
@@ -3255,17 +3277,24 @@ begin
   then
     begin
     LTermostatWatchDog.Visible:=True;
-    if ((TDependence.PointNumber mod 10)=0)or
-       ((TDependence.PointNumber mod 10)=1)
-     then
-       begin
-       if assigned(TemperatureMeasuringThread) then
-        begin
-         TemperatureMeasuringThread.Terminate;
-         sleep(1000);
-        end;
-       TemperatureThreadCreate();
-       end;
+
+    if IscVocOnTimeIsRun and IscVocOnTimeModeIsFastIV
+    then
+    else
+     begin
+      if ((TDependence.PointNumber mod 10)=0)or
+         ((TDependence.PointNumber mod 10)=1)
+       then
+         begin
+         if assigned(TemperatureMeasuringThread) then
+          begin
+           TemperatureMeasuringThread.Terminate;
+           sleep(1000);
+          end;
+         TemperatureThreadCreate();
+         end;
+     end;
+
     end
   else
     begin
@@ -4055,6 +4084,7 @@ begin
 
   IsWorkingTermostat:=False;
   IsPID_Termostat_Created:=False;
+  IscVocOnTimeIsRun:=False;
 
 end;
 
