@@ -122,15 +122,25 @@ TTemperatureDependence=class(TTimeDependence)
   fFinishTemperature:word;
   fStep:integer;
   fIsotermalInterval:word;
+  fExpectedTemperature:word;
   procedure SetStartTemperature(const Value: word);
   procedure SetFinishTemperature(const Value: word);
   procedure SetStep(const Value: integer);
   procedure SetIsotermalInterval(const Value: word);
+  function MeasurementNumberDetermine(): integer;override;
+  procedure SeriesClear();override;
+  procedure SetCurrentTemperature(const Value: word);
+  procedure StepDetermination;
+  procedure EndMeasuring();override;  
  public
   property StartTemperature:word read FStartTemperature write SetStartTemperature;
   property FinishTemperature:word read FFinishTemperature write SetFinishTemperature;
   property Step:integer read FStep write SetStep;
   property IsotermalInterval:word read FIsotermalInterval write SetIsotermalInterval;
+  property ExpectedTemperature:word read fExpectedTemperature write SetCurrentTemperature;
+  procedure BeginMeasuring();override;
+  procedure PeriodicMeasuring();override;
+  procedure ActionMeasurement();override;
 end;
 
 TShowTemperatureDependence=class(TNamedInterfacedObject)
@@ -773,15 +783,11 @@ end;
 
 procedure TDependence.BeginMeasuring;
 begin
-
-
-
 //  fIVMeasuringToStop:=False;
   ProgressBar.Max := MeasurementNumberDetermine();
   ProgressBar.Position := 0;
   FisActive:=True;
   inherited  BeginMeasuring();
-
 end;
 
 constructor TDependence.Create(PB: TProgressBar;
@@ -1622,6 +1628,75 @@ begin
 end;
 
 { TTemperatureDependence }
+
+procedure TTemperatureDependence.ActionMeasurement;
+begin
+  Application.ProcessMessages;
+
+  ftempV:=TimeFromBegin();
+  HookFirstMeas();
+  { TDependence.tempIChange(Temperature_MD.ActiveInterface.Value);}
+
+//  if fSecondMeasurementTime<ftempV then
+//        fSecondMeasurementTime:=TimeFromBegin();
+//
+//  HookSecondMeas();
+//
+//
+//  if BadResult() then
+//    begin
+//      SetEvent(EventToStopDependence);
+//      Exit;
+//    end;
+//  if fPointNumber>=ProgressBar.Max-1
+//    then ProgressBar.Max :=2*ProgressBar.Max;
+
+
+  inherited   ActionMeasurement;
+
+end;
+
+procedure TTemperatureDependence.BeginMeasuring;
+begin
+  StepDetermination;
+ fExpectedTemperature:=fStartTemperature;
+ inherited BeginMeasuring;
+end;
+
+procedure TTemperatureDependence.EndMeasuring;
+begin
+
+  inherited EndMeasuring;
+end;
+
+function TTemperatureDependence.MeasurementNumberDetermine: integer;
+begin
+  Result:=Ceil(abs((fFinishTemperature-fStartTemperature)/fStep))+1
+end;
+
+procedure TTemperatureDependence.PeriodicMeasuring;
+begin
+
+end;
+
+procedure TTemperatureDependence.StepDetermination;
+begin
+  if fStartTemperature > fFinishTemperature then
+    fStep := -abs(fStep)
+  else
+    fStep := abs(fStep);
+end;
+
+procedure TTemperatureDependence.SeriesClear;
+begin
+  inherited SeriesClear;
+  ForwLg.ParentChart.Axes.Left.Logarithmic:=False;
+end;
+
+procedure TTemperatureDependence.SetCurrentTemperature(const Value: word);
+begin
+  fExpectedTemperature := Value;
+end;
 
 procedure TTemperatureDependence.SetFinishTemperature(const Value: word);
 begin

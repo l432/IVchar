@@ -704,6 +704,9 @@ type
     procedure IVCharHookStep();
     procedure CalibrationHookStep;
     procedure IVcharHookBegin;
+    procedure IVcharOnTempHookBegin;
+    procedure IVcharOnTempHookEnd;
+    procedure IVcharOnTempHookFirstMeas;    
     procedure DependenceHookEnd;
 //    procedure IVcharHookEnd;
 //    procedure CalibrHookEnd;
@@ -883,7 +886,7 @@ type
     FastIVMeasuring:TFastIVDependence;
     TimeDependence:TTimeDependenceTimer;
     ControlParameterTime,TemperatureOnTime:TTimeDependence;
-    IVonTemperature:TTemperatureDependence;
+    IVcharOnTemperature:TTemperatureDependence;
     ShowTempDep:TShowTemperatureDependence;
     TimeTwoDependenceTimer,IscVocOnTime:TTimeTwoDependenceTimer;
     Dependencies:Array of TFastDependence;
@@ -1114,6 +1117,9 @@ begin
        Temperature:=TemperData.SumY/TemperData.n;
   end;
 
+  if Key=MeasIVonTemper then  IVcharOnTempHookEnd;
+
+
   if Key=MeasIscAndVocOnTime then
    begin
     RGIscVocMode.Enabled:=True;
@@ -1156,9 +1162,9 @@ begin
                                        ForwLine,ForwLg);
   TemperatureOnTime:=TTimeDependence.Create(PBIV,BIVStop,IVResult,
                                        ForwLine,ForwLg);
-  IVonTemperature:=TTemperatureDependence.Create(PBIV,BIVStop,IVResult,
+  IVcharOnTemperature:=TTemperatureDependence.Create(PBIV,BIVStop,IVResult,
                                        ForwLine,ForwLg);
-  ShowTempDep:=TShowTemperatureDependence.Create(IVonTemperature,'IVonTemp',
+  ShowTempDep:=TShowTemperatureDependence.Create(IVcharOnTemperature,'IVonTemp',
                                                  STTemDepStart,STTemDepFinish,STTemDepStep,STTemDepIsoInterval,
                                                  LTemDepStart,LTemDepFinish,LTemDepStep,LTemDepIsoInterval);
   ShowArray.Add(ShowTempDep);
@@ -1184,7 +1190,7 @@ begin
   Dependencies[4]:=IscVocOnTime;
   Dependencies[5]:=ControlParameterTime;
   Dependencies[6]:=TemperatureOnTime;
-  Dependencies[7]:=IVonTemperature;
+  Dependencies[7]:=IVcharOnTemperature;
 
 
   IVMeasuring.RangeFor:=IVCharRangeFor;
@@ -1228,6 +1234,7 @@ begin
   TemperatureOnTime.HookSecondMeas:=TimeDHookSecondMeas;
 
 
+  IVcharOnTemperature.HookFirstMeas:=IVcharOnTempHookFirstMeas;
   IVMeasuring.HookFirstMeas:=IVCharVoltageMeasHook;
   CalibrMeasuring.HookFirstMeas:=CalibrHookFirstMeas;
   TimeDependence.HookFirstMeas:=TimeDHookFirstMeas;
@@ -1235,6 +1242,7 @@ begin
   IscVocOnTime.HookFirstMeas:=IscVocOnTimeHookFirstMeas;
   ControlParameterTime.HookFirstMeas:=ControlTimeFirstMeas;
   TemperatureOnTime.HookFirstMeas:=TemperatureOnTimeFirstMeas;
+
 
   IVMeasuring.HookDataSave:=IVCharHookDataSave;
   CalibrMeasuring.HookDataSave:=CalibrHookDataSave;
@@ -1295,6 +1303,23 @@ begin
 end;
 
 
+procedure TIVchar.IVcharOnTempHookBegin;
+begin
+ PID_Termostat_ParametersShow.NeededValue:=IVcharOnTemperature.ExpectedTemperature;
+ if SBTermostat.Down then BTermostatResetClick(nil)
+                     else SBTermostatClick(nil);
+end;
+
+procedure TIVchar.IVcharOnTempHookEnd;
+begin
+ if SBTermostat.Down then SBTermostatClick(nil);
+end;
+
+procedure TIVchar.IVcharOnTempHookFirstMeas;
+begin
+  TDependence.tempIChange(Temperature_MD.ActiveInterface.Value);
+end;
+
 procedure TIVchar.CalibrationHookStep;
 begin
   TIVParameters.VoltageStepChange(DACR2R.CalibrationStep(TIVParameters.VoltageInput));
@@ -1346,10 +1371,9 @@ procedure TIVchar.HookBegin;
    RGIscVocMode.Enabled:=False;
    IscVocOnTime.FastIVisUsed:=IscVocOnTimeModeIsFastIV;
    IscVocOnTimeIsRun:=True;
-//   HelpForMe('dur='+inttostr(IscVocOnTime.Duration)+
-//             'int='+inttostr(IscVocOnTime.Interval)+
-//              'IscVoc'+booltostr(IscVocOnTimeModeIsFastIV));
    end;
+  if Key=MeasIVonTemper then IVcharOnTempHookBegin;
+
 end;
 
 procedure TIVchar.IVCharHookSetVoltage;
@@ -2410,7 +2434,7 @@ begin
      then  ControlParameterTime.BeginMeasuring;
  if (Key=MeasTempOnTime)and (SBTAuto.Down)
      then  TemperatureOnTime.BeginMeasuring;
- if Key=MeasIVonTemper then IVonTemperature.BeginMeasuring;
+ if Key=MeasIVonTemper then IVcharOnTemperature.BeginMeasuring;
 
 end;
 
@@ -2498,7 +2522,7 @@ end;
 procedure TIVchar.Button1Click(Sender: TObject);
 
 begin
-showmessage(inttostr(IVonTemperature.StartTemperature));
+showmessage(inttostr(IVcharOnTemperature.StartTemperature));
 // Current_MD.ActiveInterface.NewData:=False;
 // Current_MD.ActiveInterface.GetDataThread(FastIVCurrentMeas,EventFastIVCurrentMeas);
 
@@ -2836,12 +2860,10 @@ begin
   ComDPacket.ComPort := ComPort1;
 
 //to comment on some PC
-
  if GetHDDSerialNumber=1576840464 then
   begin
   PortBeginAction(ComPortUT70B, LUT70BPort, nil);
   PortBeginAction(ComPortUT70C, LUT70CPort, nil);
-//  helpforme('jj');
   end;
 //---------------
 
@@ -3602,8 +3624,8 @@ begin
         end;
       if TemperatureOnTime.isActive then
         TemperatureOnTime.PeriodicMeasuring;
-      if IVonTemperature.isActive then
-        IVonTemperature.PeriodicMeasuring;
+      if IVcharOnTemperature.isActive then
+        IVcharOnTemperature.ActionMeasurement;
     end;
 
 

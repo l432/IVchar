@@ -18,12 +18,13 @@ TPID_ParametersShow=class(TNamedInterfacedObject)
     fParameterShow:array[TPID_Parameters]of TDoubleParameterShow;
 //    procedure SetName(const Value: string);
     function GetParameter(Index:TPID_Parameters):double;
+    procedure SetNeededValue(Index:TPID_Parameters;const Value: double);
  public
 //  property Name:string read FName{ write SetName};
   property Kp:double Index ppKp read GetParameter;
   property Ki:double Index ppKi read GetParameter;
   property Kd:double Index ppKd read GetParameter;
-  property NeededValue:double Index ppNV read GetParameter;
+  property NeededValue:double Index ppNV read GetParameter write SetNeededValue;
   property Tolerance:double Index ppTol read GetParameter;
   Constructor Create(Name:string;
                      STKp,STKi,STKd,STNV,STTol:TStaticText;
@@ -201,6 +202,12 @@ begin
 //                         fName+fParameterShow[i].STCaption.Caption,
 //                         fParameterShow[i].DefaulValue);
 
+end;
+
+procedure TPID_ParametersShow.SetNeededValue(Index: TPID_Parameters;
+  const Value: double);
+begin
+   fParameterShow[Index].Data:=Value;
 end;
 
 //procedure TPID_ParametersShow.SetName(const Value: string);
