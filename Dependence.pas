@@ -4,7 +4,8 @@ interface
 
 uses
   ArduinoDevice, StdCtrls, ComCtrls, OlegType, Series, ShowTypes,
-  ExtCtrls, Classes, OlegTypePart2, MDevice, HighResolutionTimer;
+  ExtCtrls, Classes, OlegTypePart2, MDevice, HighResolutionTimer, 
+  OlegShowTypes, IniFiles;
 
 var EventToStopDependence:THandle;
 //    EventFastIVDone: THandle;
@@ -114,6 +115,45 @@ TTimeDependenceTread = class(TThread)
     constructor Create(TimeDep:TTimeDependence);
   end;
 
+
+TTemperatureDependence=class(TTimeDependence)
+ private
+  fStartTemperature:word;
+  fFinishTemperature:word;
+  fStep:integer;
+  fIsotermalInterval:word;
+  procedure SetStartTemperature(const Value: word);
+  procedure SetFinishTemperature(const Value: word);
+  procedure SetStep(const Value: integer);
+  procedure SetIsotermalInterval(const Value: word);
+ public
+  property StartTemperature:word read FStartTemperature write SetStartTemperature;
+  property FinishTemperature:word read FFinishTemperature write SetFinishTemperature;
+  property Step:integer read FStep write SetStep;
+  property IsotermalInterval:word read FIsotermalInterval write SetIsotermalInterval;
+end;
+
+TShowTemperatureDependence=class(TNamedInterfacedObject)
+ private
+   fStartTemp: TIntegerParameterShow;
+   fFinishTemp: TIntegerParameterShow;
+   fStepTemp: TIntegerParameterShow;
+   fIsoInterval: TIntegerParameterShow;
+   fTempDepend:TTemperatureDependence;
+   procedure UpDate();
+ public
+   Constructor Create(TemperatureDependence:TTemperatureDependence;
+                      Name:string;
+                      STStartTemp,STFinishTemp,
+                      STStepTemp,STIsoInterval:TStaticText;
+                      LStartTemp,LFinishTemp,
+                      LStepTemp,LIsoInterval:TLabel);
+   procedure ReadFromIniFile(ConfigFile: TIniFile);override;
+   procedure WriteToIniFile(ConfigFile: TIniFile);override;
+
+end;
+
+
 TTimeDependenceTimer=class(TTimeDependence)
 private
   Timer:TTimer;
@@ -154,22 +194,7 @@ TTimeTwoDependenceTimer=class(TTimeDependenceTimer)
   class procedure SecondValueChange(Value: double);
 end;
 
-TTemperatureDependence=class(TTimeTwoDependenceTimer)
- private
-  fStartTemperature:word;
-  fFinishTemperature:word;
-  fStep:integer;
-  fIsotermalInterval:word;
-  procedure SetStartTemperature(const Value: word);
-  procedure SetFinishTemperature(const Value: word);
-  procedure SetStep(const Value: integer);
-    procedure SetIsotermalInterval(const Value: word);
- public
-  property StartTemperature:word read FStartTemperature write SetStartTemperature;
-  property FinishTemperature:word read FFinishTemperature write SetFinishTemperature;
-  property Step:integer read FStep write SetStep;
-  property IsotermalInterval:word read FIsotermalInterval write SetIsotermalInterval;
-end;
+
 
 
 
@@ -1617,6 +1642,55 @@ procedure TTemperatureDependence.SetStep(const Value: integer);
 begin
  if Value=0 then FStep := 1
             else FStep := Value;
+end;
+
+{ TShowTemperatureDependence }
+
+constructor TShowTemperatureDependence.Create(TemperatureDependence: TTemperatureDependence;
+                       Name: string;
+                       STStartTemp,STFinishTemp,
+                       STStepTemp, STIsoInterval: TStaticText;
+                       LStartTemp, LFinishTemp,
+                       LStepTemp, LIsoInterval: TLabel);
+begin
+ fTempDepend:=TemperatureDependence;
+ fName:=Name;
+ fStartTemp:=TIntegerParameterShow. Create(STStartTemp,LStartTemp,'Start (K)',300);
+ fStartTemp.IsPositive:=True;
+ fStartTemp.HookParameterClick:=UpDate;
+ fFinishTemp:=TIntegerParameterShow. Create(STFinishTemp,LFinishTemp,'Finish (K)',350);
+ fFinishTemp.IsPositive:=True;
+ fFinishTemp.HookParameterClick:=UpDate;
+ fStepTemp:=TIntegerParameterShow. Create(STStepTemp,LStepTemp,'Step (K)',5);
+ fStepTemp.HookParameterClick:=UpDate;
+ fIsoInterval:=TIntegerParameterShow. Create(STIsoInterval,LIsoInterval,'Isotermal interval (s)',300);
+ fIsoInterval.IsPositive:=True;
+ fIsoInterval.HookParameterClick:=UpDate;
+end;
+
+procedure TShowTemperatureDependence.ReadFromIniFile(ConfigFile: TIniFile);
+begin
+ fStartTemp.ReadFromIniFile(ConfigFile);
+ fFinishTemp.ReadFromIniFile(ConfigFile);
+ fStepTemp.ReadFromIniFile(ConfigFile);
+ fIsoInterval.ReadFromIniFile(ConfigFile);
+ UpDate();
+end;
+
+procedure TShowTemperatureDependence.UpDate;
+begin
+ fTempDepend.StartTemperature:=fStartTemp.Data;
+ fTempDepend.FinishTemperature:=fFinishTemp.Data;
+ fTempDepend.Step:=fStepTemp.Data;
+ fTempDepend.IsotermalInterval:=fIsoInterval.Data;
+end;
+
+procedure TShowTemperatureDependence.WriteToIniFile(ConfigFile: TIniFile);
+begin
+ fStartTemp.WriteToIniFile(ConfigFile);
+ fFinishTemp.WriteToIniFile(ConfigFile);
+ fStepTemp.WriteToIniFile(ConfigFile);
+ fIsoInterval.WriteToIniFile(ConfigFile);
 end;
 
 initialization

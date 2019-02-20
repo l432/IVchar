@@ -21,6 +21,7 @@ const
   MeasControlParametr='Controller on time';
   MeasTempOnTime='Temperature on time';
   MeasIscAndVocOnTime='Voc and Isc on time';
+  MeasIVonTemper='IV char on temperature';
 
 
 //  MD_IniSection='Sources';
@@ -609,8 +610,6 @@ type
     STTemDepStep: TStaticText;
     LTemDepIsoInterval: TLabel;
     STTemDepIsoInterval: TStaticText;
-    LTemDepContInterval: TLabel;
-    STTemDepContInterval: TStaticText;
 
     procedure FormCreate(Sender: TObject);
     procedure BConnectClick(Sender: TObject);
@@ -884,6 +883,8 @@ type
     FastIVMeasuring:TFastIVDependence;
     TimeDependence:TTimeDependenceTimer;
     ControlParameterTime,TemperatureOnTime:TTimeDependence;
+    IVonTemperature:TTemperatureDependence;
+    ShowTempDep:TShowTemperatureDependence;
     TimeTwoDependenceTimer,IscVocOnTime:TTimeTwoDependenceTimer;
     Dependencies:Array of TFastDependence;
     PID_Termostat,PID_Control:TPID;
@@ -891,6 +892,7 @@ type
     IsPID_Termostat_Created,IscVocOnTimeModeIsFastIV,
     IscVocOnTimeIsRun:boolean;
     IVMeasResult,IVMRFirst,IVMRSecond:TIVMeasurementResult;
+    Key:string;
   end;
 
 const
@@ -1091,9 +1093,9 @@ begin
 end;
 
 procedure TIVchar.DependenceHookEnd;
- var Key:string;
+// var Key:string;
 begin
- Key:=CBMeasurements.Items[CBMeasurements.ItemIndex];
+// Key:=CBMeasurements.Items[CBMeasurements.ItemIndex];
 
  if (Key=MeasIV)or(Key=MeasR2RCalib) then HookEndReset;
 
@@ -1154,6 +1156,12 @@ begin
                                        ForwLine,ForwLg);
   TemperatureOnTime:=TTimeDependence.Create(PBIV,BIVStop,IVResult,
                                        ForwLine,ForwLg);
+  IVonTemperature:=TTemperatureDependence.Create(PBIV,BIVStop,IVResult,
+                                       ForwLine,ForwLg);
+  ShowTempDep:=TShowTemperatureDependence.Create(IVonTemperature,'IVonTemp',
+                                                 STTemDepStart,STTemDepFinish,STTemDepStep,STTemDepIsoInterval,
+                                                 LTemDepStart,LTemDepFinish,LTemDepStep,LTemDepIsoInterval);
+  ShowArray.Add(ShowTempDep);
 
   FastIVMeasuring.HookBeginMeasuring:=FastIVHookBegin;
   FastIVMeasuring.HookEndMeasuring:=FastIVHookEnd;
@@ -1168,7 +1176,7 @@ begin
   FastIVMeasuring.Voltage_MD:=VoltageIV_MD;
   FastIVMeasuring.Current_MD:=Current_MD;
 
-  SetLength(Dependencies,7);
+  SetLength(Dependencies,8);
   Dependencies[0]:=IVMeasuring;
   Dependencies[1]:=CalibrMeasuring;
   Dependencies[2]:=TimeDependence;
@@ -1176,7 +1184,8 @@ begin
   Dependencies[4]:=IscVocOnTime;
   Dependencies[5]:=ControlParameterTime;
   Dependencies[6]:=TemperatureOnTime;
-//  Dependencies[7]:=FastIVMeasuring;
+  Dependencies[7]:=IVonTemperature;
+
 
   IVMeasuring.RangeFor:=IVCharRangeFor;
   IVMeasuring.RangeRev:=IVCharRangeRev;
@@ -1315,9 +1324,9 @@ ItIsDarkIV:=False;
 end;
 
 procedure TIVchar.HookBegin;
- var Key:string;
+// var Key:string;
  begin
- Key:=CBMeasurements.Items[CBMeasurements.ItemIndex];
+// Key:=CBMeasurements.Items[CBMeasurements.ItemIndex];
  //  DecimalSeparator:='.';
   CBMeasurements.Enabled:=False;
   BIVStart.Enabled := False;
@@ -1633,7 +1642,7 @@ begin
 end;
 
 procedure TIVchar.CBMeasurementsChange(Sender: TObject);
- var Key:string;
+// var Key:string;
 begin
  Key:=CBMeasurements.Items[CBMeasurements.ItemIndex];
  RevLine.Clear;
@@ -1668,9 +1677,10 @@ begin
      then MeasurementsLabelCaption(['Voc', 'Time', 'Isc']);
 
  if Key=MeasTempOnTime
-     then MeasurementsLabelCaption(['Temp-ture', 'Time', '']);
+     then MeasurementsLabelCaption(['T (K)', 'Time', '']);
 
-
+ if Key=MeasIVonTemper
+     then MeasurementsLabelCaption(['Voc', 'T (K)', '']);
 
 end;
 
@@ -2150,9 +2160,9 @@ begin
 end;
 
 procedure TIVchar.ActionInSaveButton(Sender: TObject);
- var Key:string;
+// var Key:string;
 begin
- Key:=CBMeasurements.Items[CBMeasurements.ItemIndex];
+// Key:=CBMeasurements.Items[CBMeasurements.ItemIndex];
 
   if Key=MeasR2RCalib then
   begin
@@ -2389,32 +2399,19 @@ begin
 
 procedure TIVchar.BIVStartClick(Sender: TObject);
 begin
- if CBMeasurements.Items[CBMeasurements.ItemIndex]=MeasR2RCalib
-     then CalibrMeasuring.Measuring;
- if CBMeasurements.Items[CBMeasurements.ItemIndex]=MeasIV
-     then IVMeasuring.Measuring;
+ if Key=MeasR2RCalib then CalibrMeasuring.Measuring;
+ if Key=MeasIV then IVMeasuring.Measuring;
+ if Key=MeasFastIV then FastIVMeasuring.Measuring;
+ if Key=MeasTimeD then TimeDependence.BeginMeasuring;
+ if Key=MeasTwoTimeD then TimeTwoDependenceTimer.BeginMeasuring;
+ if Key=MeasIscAndVocOnTime then IscVocOnTime.BeginMeasuring;
 
-
-
-
-  if CBMeasurements.Items[CBMeasurements.ItemIndex]=MeasFastIV
-     then FastIVMeasuring.Measuring;
-
-
-
- if CBMeasurements.Items[CBMeasurements.ItemIndex]=MeasTimeD
-     then TimeDependence.BeginMeasuring;
-  if CBMeasurements.Items[CBMeasurements.ItemIndex]=MeasTwoTimeD
-     then TimeTwoDependenceTimer.BeginMeasuring;
-  if CBMeasurements.Items[CBMeasurements.ItemIndex]=MeasIscAndVocOnTime
-     then IscVocOnTime.BeginMeasuring;
-
- if (CBMeasurements.Items[CBMeasurements.ItemIndex]=MeasControlParametr)
-    and (SBControlBegin.Down)
+ if (Key=MeasControlParametr)and (SBControlBegin.Down)
      then  ControlParameterTime.BeginMeasuring;
- if (CBMeasurements.Items[CBMeasurements.ItemIndex]=MeasTempOnTime)
-    and (SBTAuto.Down)
+ if (Key=MeasTempOnTime)and (SBTAuto.Down)
      then  TemperatureOnTime.BeginMeasuring;
+ if Key=MeasIVonTemper then IVonTemperature.BeginMeasuring;
+
 end;
 
 procedure TIVchar.BParamReceiveClick(Sender: TObject);
@@ -2501,6 +2498,7 @@ end;
 procedure TIVchar.Button1Click(Sender: TObject);
 
 begin
+showmessage(inttostr(IVonTemperature.StartTemperature));
 // Current_MD.ActiveInterface.NewData:=False;
 // Current_MD.ActiveInterface.GetDataThread(FastIVCurrentMeas,EventFastIVCurrentMeas);
 
@@ -2839,8 +2837,12 @@ begin
 
 //to comment on some PC
 
-//  PortBeginAction(ComPortUT70B, LUT70BPort, nil);
-//  PortBeginAction(ComPortUT70C, LUT70CPort, nil);
+ if GetHDDSerialNumber=1576840464 then
+  begin
+  PortBeginAction(ComPortUT70B, LUT70BPort, nil);
+  PortBeginAction(ComPortUT70C, LUT70CPort, nil);
+//  helpforme('jj');
+  end;
 //---------------
 
   PortBeginAction(ComPortGDS, LGDSPort, nil);
@@ -3600,6 +3602,8 @@ begin
         end;
       if TemperatureOnTime.isActive then
         TemperatureOnTime.PeriodicMeasuring;
+      if IVonTemperature.isActive then
+        IVonTemperature.PeriodicMeasuring;
     end;
 
 
@@ -4091,8 +4095,11 @@ begin
   CBMeasurements.Items.Add(MeasTempOnTime);
   CBMeasurements.Items.Add(MeasTwoTimeD);
   CBMeasurements.Items.Add(MeasIscAndVocOnTime);
+  CBMeasurements.Items.Add(MeasIVonTemper);
   CBMeasurements.Items.Add(MeasIV);
   CBMeasurements.ItemIndex:=0;
+  Key:=CBMeasurements.Items[CBMeasurements.ItemIndex];
+
 
   IsWorkingTermostat:=False;
   IsPID_Termostat_Created:=False;

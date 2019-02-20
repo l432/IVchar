@@ -35,7 +35,7 @@ object IVchar: TIVchar
     Top = 0
     Width = 786
     Height = 496
-    ActivePage = TS_Temper
+    ActivePage = TS_Main
     Align = alTop
     Font.Charset = RUSSIAN_CHARSET
     Font.Color = clWindowText
@@ -2629,7 +2629,7 @@ object IVchar: TIVchar
           ComPort = ComPort1
           ComProperty = cpPort
           AutoApply = True
-          Text = 'COM3'
+          Text = 'COM1'
           Style = csDropDownList
           Font.Charset = RUSSIAN_CHARSET
           Font.Color = clWindowText
@@ -2637,7 +2637,7 @@ object IVchar: TIVchar
           Font.Name = 'Arial'
           Font.Style = [fsBold]
           ItemHeight = 18
-          ItemIndex = 1
+          ItemIndex = 0
           ParentFont = False
           TabOrder = 0
         end
@@ -3487,8 +3487,8 @@ object IVchar: TIVchar
         object LTemDepStart: TLabel
           Left = 16
           Top = 24
-          Width = 57
-          Height = 26
+          Width = 56
+          Height = 13
           Caption = 'Start (K)'
           Font.Charset = RUSSIAN_CHARSET
           Font.Color = clMaroon
@@ -3501,8 +3501,8 @@ object IVchar: TIVchar
         object LTemDepFinish: TLabel
           Left = 94
           Top = 24
-          Width = 72
-          Height = 26
+          Width = 63
+          Height = 13
           Caption = 'Finish (K)'
           Font.Charset = RUSSIAN_CHARSET
           Font.Color = clMaroon
@@ -3516,7 +3516,7 @@ object IVchar: TIVchar
           Left = 172
           Top = 24
           Width = 53
-          Height = 26
+          Height = 13
           Caption = 'Step (K)'
           Font.Charset = RUSSIAN_CHARSET
           Font.Color = clMaroon
@@ -3529,23 +3529,9 @@ object IVchar: TIVchar
         object LTemDepIsoInterval: TLabel
           Left = 13
           Top = 73
-          Width = 79
-          Height = 39
-          Caption = 'Isotermal interval (s)'
-          Font.Charset = RUSSIAN_CHARSET
-          Font.Color = clMaroon
-          Font.Height = -11
-          Font.Name = 'Verdana'
-          Font.Style = [fsBold]
-          ParentFont = False
-          WordWrap = True
-        end
-        object LTemDepContInterval: TLabel
-          Left = 125
-          Top = 73
           Width = 74
           Height = 26
-          Caption = 'Control interval (s)'
+          Caption = 'Isotermal interval (s)'
           Font.Charset = RUSSIAN_CHARSET
           Font.Color = clMaroon
           Font.Height = -11
@@ -3609,20 +3595,6 @@ object IVchar: TIVchar
           Font.Style = [fsBold]
           ParentFont = False
           TabOrder = 3
-        end
-        object STTemDepContInterval: TStaticText
-          Left = 140
-          Top = 100
-          Width = 28
-          Height = 24
-          Caption = '30'
-          Font.Charset = RUSSIAN_CHARSET
-          Font.Color = clWindowText
-          Font.Height = -17
-          Font.Name = 'Verdana'
-          Font.Style = [fsBold]
-          ParentFont = False
-          TabOrder = 4
         end
       end
     end
