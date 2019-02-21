@@ -3494,7 +3494,6 @@ object IVchar: TIVchar
           Font.Name = 'Verdana'
           Font.Style = [fsBold]
           ParentFont = False
-          WordWrap = True
         end
         object LTemDepFinish: TLabel
           Left = 94
@@ -3508,7 +3507,6 @@ object IVchar: TIVchar
           Font.Name = 'Verdana'
           Font.Style = [fsBold]
           ParentFont = False
-          WordWrap = True
         end
         object LTemDepStep: TLabel
           Left = 172
@@ -3522,13 +3520,12 @@ object IVchar: TIVchar
           Font.Name = 'Verdana'
           Font.Style = [fsBold]
           ParentFont = False
-          WordWrap = True
         end
         object LTemDepIsoInterval: TLabel
           Left = 13
           Top = 73
-          Width = 74
-          Height = 26
+          Width = 79
+          Height = 39
           Caption = 'Isotermal interval (s)'
           Font.Charset = RUSSIAN_CHARSET
           Font.Color = clMaroon

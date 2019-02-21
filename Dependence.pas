@@ -103,6 +103,7 @@ private
   property SecondMeasurementTime:single read fSecondMeasurementTime write fSecondMeasurementTime;
   procedure BeginMeasuring();override;
   function TimeFromBegin:single;
+  function TimeFrom(BeginTime:TDateTime):single;
 end;
 
 TTimeDependenceTread = class(TThread)
@@ -123,6 +124,9 @@ TTemperatureDependence=class(TTimeDependence)
   fStep:integer;
   fIsotermalInterval:word;
   fExpectedTemperature:word;
+  fTolerance:double;
+  fIsotermalBegan:boolean;
+  fIsotermalBeginTime:TDateTime;
   procedure SetStartTemperature(const Value: word);
   procedure SetFinishTemperature(const Value: word);
   procedure SetStep(const Value: integer);
@@ -131,13 +135,16 @@ TTemperatureDependence=class(TTimeDependence)
   procedure SeriesClear();override;
   procedure SetCurrentTemperature(const Value: word);
   procedure StepDetermination;
-  procedure EndMeasuring();override;  
+  procedure EndMeasuring();override;
+  procedure SetTolerance(const Value: double);
+  function TimeFromIsotermalBegin:single;
  public
   property StartTemperature:word read FStartTemperature write SetStartTemperature;
   property FinishTemperature:word read FFinishTemperature write SetFinishTemperature;
   property Step:integer read FStep write SetStep;
   property IsotermalInterval:word read FIsotermalInterval write SetIsotermalInterval;
   property ExpectedTemperature:word read fExpectedTemperature write SetCurrentTemperature;
+  property Tolerance:double read FTolerance write SetTolerance;
   procedure BeginMeasuring();override;
   procedure PeriodicMeasuring();override;
   procedure ActionMeasurement();override;
@@ -765,9 +772,15 @@ begin
   PeriodicMeasuring;
 end;
 
+function TTimeDependence.TimeFrom(BeginTime: TDateTime): single;
+begin
+  Result:=round(SecondSpan(Now(),BeginTime)*10)/10;
+end;
+
 function TTimeDependence.TimeFromBegin: single;
 begin
- Result:=round(SecondSpan(Now(),fBeginTime)*10)/10;
+ Result:=TimeFrom(fBeginTime);
+// Result:=round(SecondSpan(Now(),fBeginTime)*10)/10;
 end;
 
 { TDependence }
@@ -1637,17 +1650,39 @@ begin
   HookFirstMeas();
   { TDependence.tempIChange(Temperature_MD.ActiveInterface.Value);}
 
+  if BadResult() then
+    begin
+      SetEvent(EventToStopDependence);
+      Exit;
+    end;
+
+  if abs(tempI-fExpectedTemperature)<fTolerance then
+   begin
+     if fIsotermalBegan then
+       begin
+         if TimeFromIsotermalBegin>fIsotermalInterval then
+          begin
+            HookSecondMeas();
+          end;
+
+       end              else
+       begin
+         fIsotermalBegan:=true;
+         fIsotermalBeginTime:=Now();
+       end;
+   end                                           else
+   begin
+     fIsotermalBegan:=false;
+   end;
+
+
 //  if fSecondMeasurementTime<ftempV then
 //        fSecondMeasurementTime:=TimeFromBegin();
 //
 //  HookSecondMeas();
 //
 //
-//  if BadResult() then
-//    begin
-//      SetEvent(EventToStopDependence);
-//      Exit;
-//    end;
+
 //  if fPointNumber>=ProgressBar.Max-1
 //    then ProgressBar.Max :=2*ProgressBar.Max;
 
@@ -1658,7 +1693,8 @@ end;
 
 procedure TTemperatureDependence.BeginMeasuring;
 begin
-  StepDetermination;
+ StepDetermination;
+ fIsotermalBegan:=false;
  fExpectedTemperature:=fStartTemperature;
  inherited BeginMeasuring;
 end;
@@ -1685,6 +1721,11 @@ begin
     fStep := -abs(fStep)
   else
     fStep := abs(fStep);
+end;
+
+function TTemperatureDependence.TimeFromIsotermalBegin: single;
+begin
+ Result:=TimeFrom(fIsotermalBeginTime);
 end;
 
 procedure TTemperatureDependence.SeriesClear;
@@ -1717,6 +1758,11 @@ procedure TTemperatureDependence.SetStep(const Value: integer);
 begin
  if Value=0 then FStep := 1
             else FStep := Value;
+end;
+
+procedure TTemperatureDependence.SetTolerance(const Value: double);
+begin
+  FTolerance := abs(Value);
 end;
 
 { TShowTemperatureDependence }

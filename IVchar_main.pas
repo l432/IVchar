@@ -1306,8 +1306,10 @@ end;
 procedure TIVchar.IVcharOnTempHookBegin;
 begin
  PID_Termostat_ParametersShow.NeededValue:=IVcharOnTemperature.ExpectedTemperature;
+ IVcharOnTemperature.Tolerance:=2*PID_Termostat_ParametersShow.Tolerance;
  if SBTermostat.Down then BTermostatResetClick(nil)
                      else SBTermostatClick(nil);
+
 end;
 
 procedure TIVchar.IVcharOnTempHookEnd;
