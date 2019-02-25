@@ -5,22 +5,16 @@ interface
 uses
   ShowTypes, Windows, StdCtrls, IniFiles, OlegShowTypes, OlegTypePart2;
 
-//const
-//      PID_Param='PID_Parameters';
-
 type
 
 TPID_Parameters=(ppKp,ppKi,ppKd,ppNV,ppTol);
 
 TPID_ParametersShow=class(TNamedInterfacedObject)
   private
-//    FName: string;
     fParameterShow:array[TPID_Parameters]of TDoubleParameterShow;
-//    procedure SetName(const Value: string);
     function GetParameter(Index:TPID_Parameters):double;
     procedure SetNeededValue(Index:TPID_Parameters;const Value: double);
  public
-//  property Name:string read FName{ write SetName};
   property Kp:double Index ppKp read GetParameter;
   property Ki:double Index ppKi read GetParameter;
   property Kd:double Index ppKd read GetParameter;
@@ -31,7 +25,6 @@ TPID_ParametersShow=class(TNamedInterfacedObject)
                      LKp,LKi,LKd,LNV,LTol:TLabel);
   procedure WriteToIniFile(ConfigFile:TIniFile);override;
   procedure ReadFromIniFile(ConfigFile:TIniFile);override;
-//  procedure Free;override;
 end;
 
 TPID=class
@@ -74,7 +67,7 @@ end;
 implementation
 
 uses
-  OlegType, Dialogs, SysUtils;
+  OlegType, SysUtils;
 
 { TPID }
 
@@ -89,7 +82,6 @@ begin
      fOutputValue:=Kp*(Epsi[1]+Ki*Period*EpsSum+Kd/Period*(Epsi[1]-Epsi[0]));
     end;
  Result:=fOutputValue;
-// showmessage(floattostr(Result));
 end;
 
 constructor TPID.Create(Kpp,Kii,Kdd,NeededValue,Tol,Interval:double);
@@ -181,12 +173,6 @@ begin
    fParameterShow[i].SetName(FName);
 end;
 
-//procedure TPID_ParametersShow.Free;
-//begin
-// HelpForMe(Name);
-//// inherited;
-//end;
-
 function TPID_ParametersShow.GetParameter(Index: TPID_Parameters): double;
 begin
  Result:=fParameterShow[Index].Data;
@@ -197,11 +183,6 @@ procedure TPID_ParametersShow.ReadFromIniFile(ConfigFile: TIniFile);
 begin
  for I := Low(TPID_Parameters) to High(TPID_Parameters) do
   fParameterShow[i].ReadFromIniFile(ConfigFile);
-// HelpForMe(Name);
-//  fParameterShow[i].Data:=ConfigFile.ReadFloat(PID_Param,
-//                         fName+fParameterShow[i].STCaption.Caption,
-//                         fParameterShow[i].DefaulValue);
-
 end;
 
 procedure TPID_ParametersShow.SetNeededValue(Index: TPID_Parameters;
@@ -210,18 +191,12 @@ begin
    fParameterShow[Index].Data:=Value;
 end;
 
-//procedure TPID_ParametersShow.SetName(const Value: string);
-//begin
-//  FName := Value;
-//end;
 
 procedure TPID_ParametersShow.WriteToIniFile(ConfigFile: TIniFile);
  var i:TPID_Parameters;
 begin
  for I := Low(TPID_Parameters) to High(TPID_Parameters) do
   fParameterShow[i].WriteToIniFile(ConfigFile);
-//  WriteIniDef(ConfigFile, PID_Param, fName+fParameterShow[i].STCaption.Caption,
-//              fParameterShow[i].Data,fParameterShow[i].DefaulValue);
 end;
 
 end.

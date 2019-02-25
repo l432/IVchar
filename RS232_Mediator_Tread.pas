@@ -12,7 +12,6 @@ type
   TRS232_MediatorTread = class(TTheadSleep)
   private
    fArrayDevice:array of TRS232Device;
-//   fNeededComPort:array of boolean;
    fDeviceNumber:byte;
    procedure DoSomething;
   protected
@@ -36,7 +35,6 @@ begin
   SetLength(fArrayDevice,High(ArrayDevice)+1);
   for I := 0 to High(ArrayDevice) do
    fArrayDevice[i]:=ArrayDevice[i];
-//  SetLength(fNeededComPort,High(ArrayDevice)+1);
    fDeviceNumber:=Low(ArrayDevice);
   Resume;
 end;

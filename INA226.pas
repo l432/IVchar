@@ -51,34 +51,8 @@ const
  INA226_LastAdress=$4F;
 
 
-//
-// ADS1115_Gain_Data:array[TADS1115_Gain]of double=
-//    (1.5,1,0.5,0.25,0.125,0.0625);
-// ADS1115_Gain_Kod:array[TADS1115_Gain]of byte=
-//    ($00,$02,$04,$06,$08,$0A);
-// ADS1115_Diapazons:array[TADS1115_Gain]of string=
-//    ('6.144','4.096','2.048','1.024','0.512','0.256');
-// ADS1115_LSB_labels:array[TADS1115_Gain]of string=
-//    ('200','125','63','32','16','8');
-//
-//
-// ADS1115_DataRate_Kod:array[TADS1115_DataRate]of byte=
-//    ($00,$20,$40,$60,$80,$A0,$C0,$E0);
-// ADS1115_DataRate_Label:array[TADS1115_DataRate]of string=
-//   (' 8 SPS','16 SPS','32 SPS','64 SPS',
-//   '128 SPS','250 SPS','475 SPS','860 SPS');
-//
-// ADS1115_Chanel_Kod:array[TADS1115_ChanelNumber]of byte=
-//    ($40,$50,$30);
-//
-// ADS1115_LSB=125e-6;
-// ADS1115_StartAdress=$48;
-// ADS1115_LastAdress=$4B;
-//
-//
 type
 
-//  TPins_INA226_Module=class(TPinsForCustomValues)
   TPins_INA226_Module=class(TPins)
     protected
      Function StrToPinValue(Str: string):integer;override;
@@ -89,7 +63,6 @@ type
 
   TINA226_Module=class(TArdADC_Mod_2ConfigByte)
   private
-//   fAverages:TINA226_Averages;
    fShuntVoltageCT:TINA226_ConversionTime;
    fBusVoltageCT:TINA226_ConversionTime;
    fShuntVoltage:double;
@@ -190,7 +163,6 @@ uses
 procedure TINA226_Module.Configuration;
 begin
   fMinDelayTime:=MinDelayTimeDetermination();
-//fMinDelayTime:=1;
   fConfigByte:=$40;
   fConfigByte:=fConfigByte or byte(byte(ord(Averages)) shl 1);
   fConfigByte:=fConfigByte or (byte(ord(fBusVoltageCT)) shr 2);
@@ -203,7 +175,6 @@ end;
 
 procedure TINA226_Module.ConvertToValue;
 begin
-//   ShowData(fData);
  fValue:=ErResult;
  if IncorrectData() then Exit;
  case Mode of
@@ -253,8 +224,6 @@ procedure TINA226_Module.Intitiation;
 begin
   fDelayTimeMax:=150;
   fDelayTimeStep:=1;
-//  inherited Intitiation;
-//  fAverages:=ina_a1;
   fShuntVoltageCT:=ina_ct1100us;
   fBusVoltageCT:=ina_ct1100us;
   fShuntVoltage:=ErResult;
@@ -274,7 +243,6 @@ begin
     Result:=max(2,Ceil(INA226_Averages[Averages]*
                           (INA226_ConversionTime[fShuntVoltageCT]+INA226_ConversionTime[fBusVoltageCT])));
  end;
-// result:=0;
 end;
 
 procedure TINA226_Module.PinsCreate;
@@ -361,7 +329,6 @@ end;
 
 procedure TINA226_ModuleShow.Free;
 begin
-//  HelpForMe(Pins.Name+Pins.Name+Pins.Name);
   fTimeFactorShow.Free;
   fRshShow.Free;
   inherited Free;
@@ -395,7 +362,6 @@ begin
   fRshShow.ReadFromIniFile(ConfigFile);
   fTimeFactorShow.ReadFromIniFile(ConfigFile);
   ModuleUpDate;
-//  showmessage(Pins.Name+Pins.Name);
 end;
 
 procedure TINA226_ModuleShow.WriteToIniFile(ConfigFile: TIniFile);

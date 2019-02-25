@@ -147,15 +147,13 @@ type
   protected
    fSetterKod:byte;
    procedure PinsCreate();virtual;
-//   procedure PacketCreateAndSend();
-
    procedure CreateHook;virtual;
    procedure PacketCreateToSend(); override;
   public
    Pins:TPins;
    Constructor Create(CP:TComPort;Nm:string);//override;
    Procedure Free;override;
-   procedure PinsToDataArray;virtual;   
+   procedure PinsToDataArray;virtual;
   end;
 
 
@@ -164,24 +162,16 @@ type
     за допомогою Arduino    }
   protected
    fOutputValue:double;
-//   Pins:TPins;
    fVoltageMaxValue:double;
    fKodMaxValue:integer;
-//   fSetterKod:byte;
-//   procedure PinsCreate();virtual;
-//   procedure PacketCreateAndSend();
    function  VoltageToKod(Voltage:double):integer;virtual;
    procedure DataByteToSendFromInteger(IntData: Integer);virtual;
-//   procedure PinsToDataArray;virtual;
    procedure OutputDataSignDetermination(OutputData: Double);
    procedure CreateHook;override;
    function NormedKod(Kod: Integer):integer;
-//   procedure   PacketCreateToSend(); override;
    function GetOutputValue:double;
   public
    property OutputValue:double read GetOutputValue;
-//   Constructor Create(CP:TComPort;Nm:string);override;
-//   Procedure Free;
    Procedure Output(Voltage:double);virtual;
    Procedure Reset();virtual;
    Procedure OutputInt(Kod:integer);virtual;
@@ -193,7 +183,7 @@ type
 implementation
 
 uses
-  Math, Forms, Graphics, Controls, OlegFunction, Dialogs, HighResolutionTimer;
+  Math, Forms, Graphics, Controls, OlegFunction, HighResolutionTimer;
 
 
 { TArduinoMeter }
@@ -210,7 +200,6 @@ end;
 
 procedure TArduinoMeter.Free;
 begin
-//   HelpForMe(Name+Name);
  Pins.Free;
  inherited Free;
 end;
@@ -240,7 +229,6 @@ begin
    fData[i]:=fData[i+3];
  SetLength(fData,High(fData)-3);
  fIsReceived:=True;
-//  ShowData(fData);
 end;
 
 { TPins }
@@ -409,25 +397,6 @@ begin
                     else  fData[5] := DAC_Pos;
 end;
 
-//procedure TArduinoDAC.PinsToDataArray;
-//begin
-//  fData[1] := Pins.PinControl;
-//  fData[2] := Pins.PinGate;
-//end;
-
-//constructor TArduinoDAC.Create(CP: TComPort; Nm: string);
-//begin
-//  inherited Create(CP,Nm);
-//  PinsCreate();
-//  fComPacket.StartString:=PacketBeginChar;
-//  fComPacket.StopString:=PacketEndChar;
-//
-//  CreateHook;
-//  SetLength(fData,6);
-//  fData[0] := fSetterKod;
-//  PinsToDataArray();
-//end;
-
 procedure TArduinoDAC.DataByteToSendFromInteger(IntData: Integer);
  var NormedIntData:integer;
 begin
@@ -435,12 +404,6 @@ begin
   fData[3] := ((NormedIntData shr 8) and $FF);
   fData[4] := (NormedIntData and $FF);
 end;
-
-//procedure TArduinoDAC.Free;
-//begin
-// Pins.Free;
-// inherited Free;
-//end;
 
 function TArduinoDAC.GetOutputValue: double;
 begin
@@ -453,40 +416,22 @@ begin
  OutputDataSignDetermination(Voltage);
  DataByteToSendFromInteger(VoltageToKod(Voltage));
  isNeededComPortState();
-// PacketCreateAndSend();
 end;
 
 procedure TArduinoDAC.OutputInt(Kod: integer);
 begin
-// inherited OutputInt(Kod);
  fOutputValue:=Kod;
  OutputDataSignDetermination(Kod);
  DataByteToSendFromInteger(abs(Kod));
-// PacketCreateAndSend();
  isNeededComPortState();
 end;
 
-//procedure TArduinoDAC.PinsCreate();
-//begin
-//  Pins := TPins.Create(Name);
-//end;
-
-//procedure TArduinoDAC.PacketCreateAndSend;
-//begin
-//  isNeededComPortState();
-//end;
-
-//procedure TArduinoDAC.PacketCreateToSend;
-//begin
-// PacketCreate(fData);
-//end;
 
 procedure TArduinoDAC.Reset;
 begin
  fData[5]:=DAC_Pos;
  fData[3] := $00;
  fData[4] := $00;
-// PacketCreateAndSend();
  isNeededComPortState();
 end;
 
@@ -511,7 +456,6 @@ end;
 
 procedure TArduinoRS232Device.Free;
 begin
-//  HelpForMe(Name+Name);
  Pins.Free;
  inherited Free;
 end;
@@ -594,11 +538,6 @@ begin
  Pins.Free;
  inherited Free;
 end;
-
-//procedure TArduinoSetter.PacketCreateAndSend;
-//begin
-//  isNeededComPortState();
-//end;
 
 procedure TArduinoSetter.PacketCreateToSend;
 begin
@@ -711,10 +650,8 @@ end;
 
 procedure TPinsShowUniversal.ReadFromIniFile(ConfigFile: TIniFile);
 begin
-//  showmessage(Pins.fName);
   Pins.ReadFromIniFile(ConfigFile,fPinVariants);
   NumberPinShow();
-//  HelpForMe(Pins.fName);
 end;
 
 procedure TPinsShowUniversal.WriteToIniFile(ConfigFile: TIniFile);
@@ -729,9 +666,7 @@ begin
 end;
 
 procedure TPinsShowUniversal.VariantsShowAndSelect(Sender: TObject);
-var //Form:TForm;
-//    ButOk,ButCancel: TButton;
-//    RG:TRadioGroup;
+var
     PinNumber:byte;
     index:shortint;
     i:integer;
@@ -759,70 +694,6 @@ if i>-1 then
     NumberPinShow();
   end;
 
-// if (Sender is TPanel) then
-//   PinNumber:=(Sender as TPanel).Tag
-//                       else
-//   PinNumber:=0;
-//
-// Form:=TForm.Create(Application);
-// Form.Position:=poMainFormCenter;
-// Form.AutoScroll:=True;
-// Form.BorderIcons:=[biSystemMenu];
-// Form.ParentFont:=True;
-// Form.Font.Style:=[fsBold];
-// Form.Font.Height:=-16;
-// Form.Caption:='Set ' + LowerCase(Pins.PNames[PinNumber]+Pins.PinStrPart);
-// Form.Color:=clMoneyGreen;
-// RG:=TRadioGroup.Create(Form);
-// RG.Parent:=Form;
-// RG.Items:=fPinVariants[PinNumber];
-// for I := 0 to RG.Items.Count - 1 do
-//  if Pins.StrToPinValue(RG.Items[i])=Pins.fPins[PinNumber] then
-//   begin
-//     RG.ItemIndex:=i;
-//     Break;
-//   end;
-//
-//
-// if RG.Items.Count>8 then  RG.Columns:=3
-//                     else  RG.Columns:=2;
-// RG.Width:=RG.Columns*200+20;
-// RG.Height:=Ceil(RG.Items.Count/RG.Columns)*50+20;
-// Form.Width:=RG.Width;
-// Form.Height:=RG.Height+100;
-//  RG.Align:=alTop;
-//
-// ButOk:=TButton.Create(Form);
-// ButOk.Parent:=Form;
-// ButOk.ParentFont:=True;
-// ButOk.Height:=30;
-// ButOk.Width:=79;
-// ButOk.Caption:='Ok';
-// ButOk.ModalResult:=mrOk;
-// ButOk.Top:=RG.Height+10;
-// ButOk.Left:=round((Form.Width-2*ButOk.Width)/3.0);
-//
-// ButCancel:=TButton.Create(Form);
-// ButCancel.Parent:=Form;
-// ButCancel.ParentFont:=True;
-// ButCancel.Height:=30;
-// ButCancel.Width:=79;
-// ButCancel.Caption:='Cancel';
-// ButCancel.ModalResult:=mrCancel;
-// ButCancel.Top:=RG.Height+10;
-// ButCancel.Left:=2*ButOk.Left+ButOk.Width;
-//
-//  if Form.ShowModal=mrOk then
-//   begin
-//    Pins.SetStrToPinValue(RG.Items[RG.ItemIndex],PinNumber);
-//    NumberPinShow();
-//   end;
-//
-// for I := Form.ComponentCount-1 downto 0 do
-//     Form.Components[i].Free;
-// Form.Hide;
-// Form.Release;
-
 end;
 
 
@@ -842,8 +713,6 @@ begin
                               else
    Result:=PinValueToStr(Index);
 end;
-
-
 
 
 end.

@@ -108,7 +108,6 @@ end;
 
 Function PacketIsSend(ComPort:TComPort; report:string):boolean;
 begin
-//  ShowData(aPacket);
   if ComPort.Connected then
    begin
 
@@ -128,7 +127,6 @@ begin
  Result:=True;
 
  SetLength(pData,Length(Str));
-//   showmessage('<<'+str+'>>');
  for I := 0 to High(pData) do
    pData[i]:=ord(str[i+1]);
 //  ShowData(pData);
@@ -148,7 +146,6 @@ end;
 Function PacketIsReceived(const Str: string; var pData:TArrByte; Command:byte):boolean;overload;
 begin
  Result:=False;
-// showmessage(str);
  if not(PacketIsReceived(Str,pData)) then Exit;
  if pData[1]=Command then Result:=True;
 end;

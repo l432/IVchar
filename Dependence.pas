@@ -125,8 +125,10 @@ TTemperatureDependence=class(TTimeDependence)
   fIsotermalInterval:word;
   fExpectedTemperature:word;
   fTolerance:double;
+  fToleranceCoficient:word;
   fIsotermalBegan:boolean;
   fIsotermalBeginTime:TDateTime;
+  fIsMeasured:boolean;
   procedure SetStartTemperature(const Value: word);
   procedure SetFinishTemperature(const Value: word);
   procedure SetStep(const Value: integer);
@@ -135,9 +137,11 @@ TTemperatureDependence=class(TTimeDependence)
   procedure SeriesClear();override;
   procedure SetCurrentTemperature(const Value: word);
   procedure StepDetermination;
-  procedure EndMeasuring();override;
+  function ItIsFinal:boolean;
   procedure SetTolerance(const Value: double);
-  function TimeFromIsotermalBegin:single;
+//  function TimeFromIsotermalBegin:single;
+  procedure DataSave();override;
+  procedure SetToleranceCoficient(const Value: word);
  public
   property StartTemperature:word read FStartTemperature write SetStartTemperature;
   property FinishTemperature:word read FFinishTemperature write SetFinishTemperature;
@@ -145,9 +149,13 @@ TTemperatureDependence=class(TTimeDependence)
   property IsotermalInterval:word read FIsotermalInterval write SetIsotermalInterval;
   property ExpectedTemperature:word read fExpectedTemperature write SetCurrentTemperature;
   property Tolerance:double read FTolerance write SetTolerance;
+  property ToleranceCoficient:word read FToleranceCoficient write SetToleranceCoficient;
+  property IsotermalBegan:boolean read fIsotermalBegan write fIsotermalBegan;
   procedure BeginMeasuring();override;
   procedure PeriodicMeasuring();override;
   procedure ActionMeasurement();override;
+  function TimeFromIsotermalBegin:single;
+
 end;
 
 TShowTemperatureDependence=class(TNamedInterfacedObject)
@@ -155,16 +163,19 @@ TShowTemperatureDependence=class(TNamedInterfacedObject)
    fStartTemp: TIntegerParameterShow;
    fFinishTemp: TIntegerParameterShow;
    fStepTemp: TIntegerParameterShow;
+//   fToleranceCoef: TIntegerParameterShow;
    fIsoInterval: TIntegerParameterShow;
    fTempDepend:TTemperatureDependence;
    procedure UpDate();
  public
+   fToleranceCoef: TIntegerParameterShow;
+
    Constructor Create(TemperatureDependence:TTemperatureDependence;
                       Name:string;
                       STStartTemp,STFinishTemp,
-                      STStepTemp,STIsoInterval:TStaticText;
+                      STStepTemp,STIsoInterval,STTolCoef:TStaticText;
                       LStartTemp,LFinishTemp,
-                      LStepTemp,LIsoInterval:TLabel);
+                      LStepTemp,LIsoInterval,LTolCoef:TLabel);
    procedure ReadFromIniFile(ConfigFile: TIniFile);override;
    procedure WriteToIniFile(ConfigFile: TIniFile);override;
 
@@ -1645,6 +1656,7 @@ end;
 procedure TTemperatureDependence.ActionMeasurement;
 begin
   Application.ProcessMessages;
+  inc(fPointNumber);
 
   ftempV:=TimeFromBegin();
   HookFirstMeas();
@@ -1652,7 +1664,7 @@ begin
 
   if BadResult() then
     begin
-      SetEvent(EventToStopDependence);
+//      SetEvent(EventToStopDependence);
       Exit;
     end;
 
@@ -1662,7 +1674,16 @@ begin
        begin
          if TimeFromIsotermalBegin>fIsotermalInterval then
           begin
+            fIsotermalBegan:=false;
             HookSecondMeas();
+            if (SecondMeasurementTime=ErResult) then
+              begin
+                SetEvent(EventToStopDependence);
+                Exit;
+              end;
+            fIsMeasured:=True;
+            ProgressBar.Position:=ProgressBar.Position+1;
+            MelodyShot();
           end;
 
        end              else
@@ -1674,35 +1695,50 @@ begin
    begin
      fIsotermalBegan:=false;
    end;
-
-
-//  if fSecondMeasurementTime<ftempV then
-//        fSecondMeasurementTime:=TimeFromBegin();
-//
-//  HookSecondMeas();
-//
-//
-
-//  if fPointNumber>=ProgressBar.Max-1
-//    then ProgressBar.Max :=2*ProgressBar.Max;
-
-
-  inherited   ActionMeasurement;
-
+  DataSave();
 end;
 
 procedure TTemperatureDependence.BeginMeasuring;
 begin
  StepDetermination;
  fIsotermalBegan:=false;
+ fIsMeasured:=false;
  fExpectedTemperature:=fStartTemperature;
+ fIsotermalBeginTime:=Now(); 
  inherited BeginMeasuring;
 end;
 
-procedure TTemperatureDependence.EndMeasuring;
+procedure TTemperatureDependence.DataSave;
 begin
+  Application.ProcessMessages;
 
-  inherited EndMeasuring;
+  ForwLg.AddXY(ftempV, ftempI);
+  if fIsMeasured then
+   begin
+    ForwLine.AddXY(ftempI,SecondMeasurementTime);
+    Results.Add(ftempI,SecondMeasurementTime);
+    if ItIsFinal then
+      begin
+       SetEvent(EventToStopDependence);
+       Exit;
+      end;
+    StepDetermination;
+    fIsotermalBegan:=false;
+    fIsMeasured:=false;
+    fExpectedTemperature:=fExpectedTemperature+fStep;
+    ProgressBar.Max:=ProgressBar.Position+
+       Ceil(abs((fFinishTemperature-fExpectedTemperature)/fStep))+1;
+    HookDataSave();
+   end;
+end;
+
+
+function TTemperatureDependence.ItIsFinal: boolean;
+begin
+  if fStartTemperature > fFinishTemperature then
+    Result := (fExpectedTemperature<=fFinishTemperature)
+  else
+    Result := (fExpectedTemperature>=fFinishTemperature);
 end;
 
 function TTemperatureDependence.MeasurementNumberDetermine: integer;
@@ -1765,14 +1801,20 @@ begin
   FTolerance := abs(Value);
 end;
 
+procedure TTemperatureDependence.SetToleranceCoficient(const Value: word);
+begin
+ if Value=0 then fToleranceCoficient := 1
+            else fToleranceCoficient := Value;
+end;
+
 { TShowTemperatureDependence }
 
 constructor TShowTemperatureDependence.Create(TemperatureDependence: TTemperatureDependence;
                        Name: string;
                        STStartTemp,STFinishTemp,
-                       STStepTemp, STIsoInterval: TStaticText;
-                       LStartTemp, LFinishTemp,
-                       LStepTemp, LIsoInterval: TLabel);
+                      STStepTemp,STIsoInterval,STTolCoef:TStaticText;
+                      LStartTemp,LFinishTemp,
+                      LStepTemp,LIsoInterval,LTolCoef:TLabel);
 begin
  fTempDepend:=TemperatureDependence;
  fName:=Name;
@@ -1784,6 +1826,9 @@ begin
  fFinishTemp.HookParameterClick:=UpDate;
  fStepTemp:=TIntegerParameterShow. Create(STStepTemp,LStepTemp,'Step (K)',5);
  fStepTemp.HookParameterClick:=UpDate;
+ fToleranceCoef:=TIntegerParameterShow. Create(STTolCoef,LTolCoef,'Tolerance coefficient',2);
+ fToleranceCoef.IsPositive:=True;
+ fToleranceCoef.HookParameterClick:=UpDate;
  fIsoInterval:=TIntegerParameterShow. Create(STIsoInterval,LIsoInterval,'Isotermal interval (s)',300);
  fIsoInterval.IsPositive:=True;
  fIsoInterval.HookParameterClick:=UpDate;
@@ -1795,6 +1840,7 @@ begin
  fFinishTemp.ReadFromIniFile(ConfigFile);
  fStepTemp.ReadFromIniFile(ConfigFile);
  fIsoInterval.ReadFromIniFile(ConfigFile);
+ fToleranceCoef.ReadFromIniFile(ConfigFile);
  UpDate();
 end;
 
@@ -1804,6 +1850,7 @@ begin
  fTempDepend.FinishTemperature:=fFinishTemp.Data;
  fTempDepend.Step:=fStepTemp.Data;
  fTempDepend.IsotermalInterval:=fIsoInterval.Data;
+ fTempDepend.ToleranceCoficient:=fToleranceCoef.Data;
 end;
 
 procedure TShowTemperatureDependence.WriteToIniFile(ConfigFile: TIniFile);
@@ -1812,6 +1859,7 @@ begin
  fFinishTemp.WriteToIniFile(ConfigFile);
  fStepTemp.WriteToIniFile(ConfigFile);
  fIsoInterval.WriteToIniFile(ConfigFile);
+ fToleranceCoef.WriteToIniFile(ConfigFile);
 end;
 
 initialization

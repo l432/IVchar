@@ -70,11 +70,6 @@ start:
     inc(i);
  end;
 
-//  repeat
-////    sleep(fRS232Meter.DelayTimeStep);
-//    _Sleep(fRS232Meter.DelayTimeStep);
-//    inc(i);
-//  until ((i > fRS232Meter.DelayTimeMax) or (fRS232Meter.IsReceived) or (fRS232Meter.Error));
   if fRS232Meter.IsReceived then
     Synchronize(ConvertToValue);
   if (fRS232Meter.RepeatInErrorCase) and (fRS232Meter.Value = ErResult) and (isFirst) then

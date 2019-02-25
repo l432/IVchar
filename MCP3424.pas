@@ -20,11 +20,6 @@ const
 
  MCP3424_ConversionTime:array[TMCP3424_Resolution]of integer=
     (5,17,67,270);
-//    (10,35,140,550);
-// MCP3424_DelayTimeStep:array[TMCP3424_Resolution]of integer=
-//    (1,1,2,5);
-// MCP3424_DelayTimeMax:array[TMCP3424_Resolution]of integer=
-//    (20,20,20,25);
 
  MCP3424_Gain_Data:array[TMCP3424_Gain]of byte=
     (1,2,4,8);
@@ -48,17 +43,14 @@ type
   protected
    procedure Configuration();override;
    procedure Intitiation; override;
-//   procedure PinsCreate();override;
   public
    property Gain: TMCP3424_Gain read FGain write FGain;
    property Resolution: TMCP3424_Resolution read FResolution write FResolution;
    procedure ConvertToValue();override;
  end;
 
-//TPins_MCP3424=class(TPins)
 TPins_MCP3424=class(TPinsForCustomValues)
   protected
-//   Function GetPinStr(Index:integer):string;override;
    Function StrToPinValue(Str: string):integer;override;
    Function PinValueToStr(Index:integer):string;override;
   public
@@ -82,7 +74,6 @@ TPins_MCP3424=class(TPinsForCustomValues)
     MeasuringDeviceSimple:TMeasuringDeviceSimple;
    protected
     procedure CreateFooter;override;
-//    procedure LabelsFilling;
    public
     Constructor Create(Chan:TMCP3424_Channel;
                        LabelBit,LabelGain:TPanel;
@@ -113,7 +104,6 @@ end;
 procedure TMCP3424_Module.ConvertToValue;
  var temp:Int64;
 begin
-// ShowData(fData);
  fValue:=ErResult;
 
  case FResolution of
@@ -124,7 +114,6 @@ begin
  end;
 
    FGain:=TMCP3424_Gain(fData[High(fData)]and $03);
-//   HelpForMe('g='+inttostr(fData[High(fData)]and $03));
 
    temp:=0;
    temp:=temp+fData[High(fData)-1];
@@ -146,10 +135,7 @@ begin
      mcp_r18b: temp:=-((not(temp)+$1)and $1ffff);
     end;
 
-//  HelpForMe('res='+inttostr(MCP3424_Resolution_Data[FResolution])+
-//  'gain='+inttostr(MCP3424_Gain_Data[FGain]));
   fValue:=temp*MCP3424_LSB[FResolution]/MCP3424_Gain_Data[FGain];
-//  fIsReady:=True;
 end;
 
 procedure TMCP3424_Module.Intitiation;
@@ -158,12 +144,6 @@ begin
   FResolution := mcp_r12b;
   fMetterKod := MCP3424Command;
 end;
-
-
-//procedure TMCP3424_Module.PinsCreate;
-//begin
-//  Pins := TPins_I2C.Create(Name);
-//end;
 
 
 { MCP3424_Channel }
@@ -200,8 +180,6 @@ constructor TMCP3424_ChannelShow.Create(Chan: TMCP3424_Channel;
 begin
   fChan:=Chan;
   inherited Create(fChan.Pins,[LabelBit,LabelGain]);
-//  LabelsFilling;
-
   MeasuringDeviceSimple:=
      TMeasuringDeviceSimple.Create(fChan,LabelMeas,srPreciseVoltage,ButMeas);
 end;
@@ -212,8 +190,6 @@ var
   j: TMCP3424_Gain;
 begin
   inherited CreateFooter;
-//  fPinVariants[0].Clear;
-//  fPinVariants[1].Clear;
   for i := Low(TMCP3424_Resolution) to High(TMCP3424_Resolution) do
     fPinVariants[0].Add(MCP3424_Resolution_Label[i]);
   for j := Low(TMCP3424_Gain) to High(TMCP3424_Gain) do
@@ -226,39 +202,17 @@ begin
   inherited Free;
 end;
 
-//procedure TMCP3424_ChannelShow.LabelsFilling;
-//var
-//  i: TMCP3424_Resolution;
-//  j: TMCP3424_Gain;
-//begin
-//
-//  fPinVariants[0].Clear;
-//  fPinVariants[1].Clear;
-//  for i := Low(TMCP3424_Resolution) to High(TMCP3424_Resolution) do
-//    fPinVariants[0].Add(MCP3424_Resolution_Label[i]);
-//  for j := Low(TMCP3424_Gain) to High(TMCP3424_Gain) do
-//    fPinVariants[1].Add('+/-'+MCP3424_Diapazons[j]+' V');
-//end;
-
 { TPins_MCP3424 }
 
 constructor TPins_MCP3424.Create(Nm: string);
 begin
   inherited Create(Nm, ['Bits mode', 'Diapazon']);
-//  PinStrPart := '';
   PinControl := 12;
   // зберігатиметься Resolution
   PinGate := 1;
   // зберігатиметься Gain
 end;
 
-//function TPins_MCP3424.GetPinStr(Index: integer): string;
-//begin
-// if fPins[Index]=UndefinedPin then
-//   Result:=PNames[Index] +' is undefined'
-//                              else
-//   Result:=PinValueToStr(Index);
-//end;
 
 function TPins_MCP3424.PinValueToStr(Index: integer): string;
  var i:TMCP3424_Gain;

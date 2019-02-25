@@ -35,7 +35,6 @@ type
     Function CRCCorrect():boolean;
     Procedure PacketCreateToSend();override;
   public
-//    Function CRCCorrect():boolean;
    Constructor Create(CP:TComPort;Nm:string);//override;
    Procedure ConvertToValue();override;
   end;
@@ -64,7 +63,6 @@ type
      согласно градуировке термопары медь-константан}
      function GetTemperature():double;
      Constructor Create();
-//     Procedure Free;override;
      function GetData:double;
      procedure GetDataThread(WPARAM: word;EventEnd:THandle);
      procedure GetTemperatureThread(EventEnd:THandle);
@@ -73,7 +71,7 @@ type
 implementation
 
 uses
-  PacketParameters, OlegType, Dialogs;
+  PacketParameters, OlegType;
 
 { TDS18B20 }
 
@@ -113,7 +111,6 @@ begin
          fValue:=ErResult;
   if (fValue<-55)or(fValue>125) then fValue:=ErResult
                                 else fValue:=fValue+273.16;
-// fIsReady:=True;
 end;
 
 { TThermoCuple }
@@ -122,11 +119,6 @@ constructor TThermoCuple.Create;
 begin
  fName:='ThermoCouple';
 end;
-
-//procedure TThermoCuple.Free;
-//begin
-// HelpForMe(Name);
-//end;
 
 function TThermoCuple.GetData: double;
 begin
@@ -203,21 +195,7 @@ begin
 end;
 
 function THTU21D.CRCCorrect: boolean;
-// var
-//     tempLongword,DivSor:Longword;
-//     i:byte;
 begin
-// DivSor:=$988000;
-// tempLongWord:= ((((fData[0] shl 8) or  fData[1]) shl 8)or fData[2]);
-//
-// for I := 0 to 15 do
-//   begin
-//    if (tempLongWord and (1 shl (23-i)))<>0 then
-//      tempLongWord:=(tempLongWord xor DivSor);
-//    DivSor:=(DivSor shr 1);
-//   end;
-// if tempLongWord=0 then Result:=True
-//                   else Result:=False;
  Result:= (CRC8(fData,$31)=0);
 end;
 
@@ -252,7 +230,6 @@ begin
   fValue:=temp*0.0625;
  if (fValue<-55)or(fValue>128) then fValue:=ErResult
                                 else fValue:=fValue+273.16;
-// fIsReady:=True;
 end;
 
 constructor TTMP102.Create(CP: TComPort; Nm: string);

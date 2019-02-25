@@ -145,7 +145,6 @@ begin
    PrepareToFreqChange();
   end;
  PrepareToModeChange();
-// ShowData(fData);
  isNeededComPortState();
 end;
 

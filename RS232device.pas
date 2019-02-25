@@ -80,7 +80,6 @@ end;
 TComplexDeviceConvertData=class(TRS232MeterConvertData)
   protected
    fMeasureMode:Shortint;
-//   fDiapazon:Shortint;
    fMeasureModeAll:array of string;
    fDiapazonAll:array of array of string;
    fRS232MeterConvertData:TRS232MeterConvertData;

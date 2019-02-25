@@ -22,20 +22,6 @@ Const
 
 type
 
-//IName = interface
-//  ['{5B51E68D-11D9-4410-8396-05DB50F07F35}']
-//  function GetName:string;
-//  property Name:string read GetName;
-//end;
-
-//TNamedInterfacedObject=class(TInterfacedObject)
-//  protected
-//   fName:string;
-//   function GetName:string;
-//  public
-//   property Name:string read GetName;
-//  end;
-
 IMeasurement = interface (IName)
   ['{7A6DCE4C-9A04-444A-B7FD-39B800BDE6A7}']
  function GetNewData:boolean;
@@ -76,20 +62,16 @@ end;
 
 
 
-//TSimulator = class (TInterfacedObject,IMeasurement,IDAC,ITemperatureMeasurement)
 TSimulator = class (TNamedInterfacedObject,IMeasurement,IDAC,ITemperatureMeasurement)
 private
-// Name: string;
  fValue:double;
  fNewData:boolean;
  fOutputValue:double;
-// function GetName:string;
  function GetNewData:boolean;
  function GetValue:double;
  function GetOutputValue:double;
  procedure SetNewData(Value:boolean);
 public
-// property Name:string read GetName;
  property Value:double read GetValue;
  property NewData:boolean read GetNewData write SetNewData;
  property OutputValue:double read GetOutputValue;
@@ -102,7 +84,6 @@ public
  procedure OutputInt(Kod:integer);
  procedure GetDataThread(WPARAM: word;EventEnd:THandle);
  procedure GetTemperatureThread(EventEnd:THandle);
-// procedure Free;override;
 end;
 
 
@@ -127,22 +108,12 @@ TMeasurementShowSimple=class(TSimpleFreeAndAiniObject)
 end;
 
 TMeasurementShow=class  (TMeasurementShowSimple)
-//TMeasurementShow=class
   protected
-//   fMeter:IMeasurement;
    MeasureMode,Range:TRadioGroup;
-//   DataLabel,UnitLabel:TLabel;
-//   MeasurementButton:TButton;
-//   Time:TTimer;
-//   AutoSpeedButton:TSpeedButton;
-//   procedure MeasurementButtonClick(Sender: TObject);
-//   procedure AutoSpeedButtonClick(Sender: TObject);
    procedure StringArrayToRadioGroup(SA:array of string;
                                      RG:TRadioGroup);
    procedure IndexToRadioGroup(Index:ShortInt;RG:TRadioGroup);
-//   function UnitModeLabel():string;virtual;
   public
-//   AutoSpeedButton:TSpeedButton;
    Constructor Create(Meter:IMeasurement;
                       MM,R:TRadioGroup;
                       DL,UL:TLabel;
@@ -150,7 +121,6 @@ TMeasurementShow=class  (TMeasurementShowSimple)
                       AB:TSpeedButton;
                       TT:TTimer
                       );
-//   procedure MetterDataShow();virtual;
 end;
 
 
@@ -203,8 +173,6 @@ uses
 constructor TSimulator.Create;
 begin
   Create('Simulation');
-//  inherited Create;
-//  fName:='Simulation';
 end;
 
 
@@ -213,16 +181,6 @@ begin
  inherited Create();
  fName:=name;
 end;
-
-//procedure TSimulator.Free;
-//begin
-// HelpForMe(Name);
-//end;
-
-//function TSimulator.GetName: string;
-//begin
-//  Result:=fName;
-//end;
 
 function TSimulator.GetNewData: boolean;
 begin
@@ -271,7 +229,6 @@ end;
 procedure TSimulator.Output(Value: double);
 begin
  fOutputValue:=Value;
-// HelpForMe(floattostr(Value));
 end;
 
 
@@ -292,14 +249,6 @@ procedure TSimulator.SetNewData(Value: boolean);
 begin
  fNewData:=Value;
 end;
-
-
-//{ TNamedDevice }
-//
-//function TNamedInterfacedObject.GetName: string;
-//begin
-//   Result:=fName;
-//end;
 
 
 { TTheadPeriodic }
@@ -386,13 +335,6 @@ end;
 
 { TMeasurementShow }
 
-//procedure TMeasurementShow.AutoSpeedButtonClick(Sender: TObject);
-//begin
-// MeasurementButton.Enabled:=not(AutoSpeedButton.Down);
-// if AutoSpeedButton.Down then Time.OnTimer:=MeasurementButton.OnClick;
-// Time.Enabled:=AutoSpeedButton.Down;
-//end;
-
 constructor TMeasurementShow.Create(Meter: IMeasurement;
                                     MM, R: TRadioGroup;
                                     DL, UL: TLabel;
@@ -402,20 +344,6 @@ begin
    inherited Create(Meter, DL, UL, MB, AB, TT);
    MeasureMode:=MM;
    Range:=R;
-
-
-//   inherited Create;
-//   fMeter:=Meter;
-//   MeasureMode:=MM;
-//   Range:=R;
-//   DataLabel:=DL;
-//   UnitLabel:=UL;
-//   MeasurementButton:=MB;
-//   AutoSpeedButton:=AB;
-//   Time:=TT;
-//   UnitLabel.Caption := '';
-//   MeasurementButton.OnClick:=MeasurementButtonClick;
-//   AutoSpeedButton.OnClick:=AutoSpeedButtonClick;
 end;
 
 procedure TMeasurementShow.IndexToRadioGroup(Index: ShortInt; RG: TRadioGroup);
@@ -427,28 +355,6 @@ begin
   end;
 end;
 
-//procedure TMeasurementShow.MeasurementButtonClick(Sender: TObject);
-//begin
-// fMeter.GetData();
-// MetterDataShow();
-//end;
-//
-//procedure TMeasurementShow.MetterDataShow;
-//begin
-//
-//  if fMeter.Value<>ErResult then
-//     begin
-//       UnitLabel.Caption:=UnitModeLabel();
-//       DataLabel.Caption:=FloatToStrF(fMeter.Value,ffExponent,4,2)
-//     end
-//                        else
-//     begin
-//       UnitLabel.Caption:='';
-//       DataLabel.Caption:='    ERROR';
-//     end;
-//
-//end;
-
 procedure TMeasurementShow.StringArrayToRadioGroup(SA: array of string;
                                                    RG: TRadioGroup);
  var i:byte;
@@ -456,11 +362,6 @@ begin
     RG.Items.Clear;
     for I := 0 to High(SA) do RG.Items.Add(SA[i]);
 end;
-
-//function TMeasurementShow.UnitModeLabel: string;
-//begin
-// Result:='';
-//end;
 
 { TMeasurementShowSimple }
 

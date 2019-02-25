@@ -3,7 +3,7 @@ unit ArduinoADC;
 interface
 
 uses
-  ArduinoDevice, CPort, Measurement, StdCtrls, MDevice, ExtCtrls, 
+  ArduinoDevice, CPort, Measurement, StdCtrls, MDevice, ExtCtrls,
   OlegTypePart2;
 
 
@@ -118,7 +118,6 @@ end;
 
 function TArduinoADC_Channel.GetData: double;
 begin
-// fParentModule.ActiveChannel := fChanelNumber;
  SetModuleParameters();
  Result:=fParentModule.GetData;
 end;
@@ -155,7 +154,6 @@ end;
 
 procedure TArdADC_Mod_2ConfigByte.FinalPacketCreateToSend;
 begin
-//    ShowData([fMetterKod, Pins.PinControl, fConfigByte, fConfigByteTwo]);
   PacketCreate([fMetterKod, Pins.PinControl, fConfigByte, fConfigByteTwo]);
 end;
 

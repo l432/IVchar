@@ -11,7 +11,6 @@ type
 
 
 TLimitShow=class(TNamedInterfacedObject)
-//TLimitShow=class
 private
   UpDownHigh,UpDownLow:TUpDown;
   fDivisor:byte;
@@ -111,7 +110,7 @@ Procedure MelodyLong();
 implementation
 
 uses
-  {Dialogs,} SysUtils, Math, Dialogs, OlegFunction{, Controls, Graphics, Forms, OlegFunction};
+  SysUtils, Math;
 
 
 function LastFileName(Mask:string):string;
@@ -235,13 +234,10 @@ end;
 procedure TLimitShow.ReadFromIniFile(ConfigFile: TIniFile);
   var temp:Smallint;
 begin
-//  showmessage(Name);
-//  temp:=ConfigFile.ReadInteger(RangeSection,fName+'Max',UpDownHigh.Max);
   temp:=ConfigFile.ReadInteger(fName,fName+'Max',UpDownHigh.Max);
   if (temp>UpDownHigh.Max)or(temp<0) then  temp:=UpDownHigh.Max;
   UpDownHigh.Position:=temp;
 
-//  temp:=ConfigFile.ReadInteger(RangeSection,fName+'Min',0);
   temp:=ConfigFile.ReadInteger(fName,fName+'Min',0);
   if (temp>UpDownHigh.Max)or(temp<0) then  temp:=0;
   UpDownLow.Position:=temp;
@@ -290,8 +286,6 @@ begin
     ConfigFile.EraseSection(fName);
     WriteIniDef(ConfigFile,fName,fName+'Max',UpDownHigh.Position,UpDownHigh.Max);
     WriteIniDef(ConfigFile,fName,fName+'Min',UpDownLow.Position,0);
-//    WriteIniDef(ConfigFile,RangeSection,fName+'Max',UpDownHigh.Position,UpDownHigh.Max);
-//    WriteIniDef(ConfigFile,RangeSection,fName+'Min',UpDownLow.Position,0);
 end;
 
 { LimitShowRev }
@@ -417,131 +411,6 @@ begin
   inherited WriteToIniFile(ConfigFile);
   fDAC_Show.WriteToIniFile(ConfigFile);
 end;
-
-
-//{ TStringParameterShow }
-//
-//constructor TStringParameterShow.Create(STD: TStaticText;
-//                                        STC: TLabel;
-//                                        ParametrCaption: string;
-//                                        DataVariants: TStringList);
-//begin
-//  inherited Create(STD,STC,ParametrCaption,'');
-//  CreateFooter(DataVariants);
-//end;
-//
-//constructor TStringParameterShow.Create(STD: TStaticText;
-//  ParametrCaption: string; DataVariants: TStringList);
-//begin
-//  inherited Create(STD,ParametrCaption,'');
-//  CreateFooter(DataVariants);
-//end;
-//
-//procedure TStringParameterShow.CreateFooter(DataVariants: TStringList);
-//begin
-//  fDataVariants := DataVariants;
-//  STData.Caption := fDataVariants.Strings[0];
-//end;
-//
-//function TStringParameterShow.GetData: ShortInt;
-//begin
-// Result:=fDataVariants.IndexOf(STData.Caption);
-//end;
-//
-//procedure TStringParameterShow.ParameterClick(Sender: TObject);
-//var
-//    i:ShortInt;
-//begin
-//
-// i:=SelectFromVariants(fDataVariants,Data,fWindowCaption);
-// if i>-1 then
-//   begin
-//    STData.Caption:=fDataVariants.Strings[i];
-//    if ColorChangeWithParameter then ColorToActive(false);
-//    HookParameterClick;
-//   end;
-//
-//end;
-//
-//function TStringParameterShow.ReadStringValueFromIniFile(ConfigFile: TIniFile;
-//  NameIni: string): string;
-// var i:ShortInt;
-//begin
-// i:=ConfigFile.ReadInteger(fName,NameIni,0);
-// if (i<0) or (i>=fDataVariants.Count) then i:=0;
-// Result:=fDataVariants.Strings[i];
-//end;
-//
-//procedure TStringParameterShow.SetData(value: ShortInt);
-//begin
-// if (Value>-1) and (Value<fDataVariants.Count) then
-//  STData.Caption:=fDataVariants.Strings[Value];
-//end;
-//
-//function TStringParameterShow.StringToExpectedStringConvertion(
-//  str: string): string;
-//begin
-// Result:=str;
-//end;
-//
-//procedure TStringParameterShow.WriteNumberToIniFile(ConfigFile: TIniFile;
-//  NameIni: string);
-//begin
-// WriteIniDef(ConfigFile, fName, NameIni, Data, -1);
-//end;
-//
-//{ TParameterShowArray }
-//
-//procedure TParameterShowArray.ColorToActive(Value: boolean);
-// var     I:byte;
-//begin
-// for I := 0 to High(fParameterShowArray) do
-//   fParameterShowArray[i].ColorToActive(Value);
-//end;
-//
-//constructor TParameterShowArray.Create(PSA: array of TParameterShowNew);
-// var     i:byte;
-//begin
-// SetLength(fParameterShowArray,High(PSA)+1);
-// for I := 0 to High(PSA) do
-//   fParameterShowArray[i]:=PSA[i];
-//end;
-//
-//
-//procedure TParameterShowArray.ForUseInShowObject(
-//       NamedObject: TNamedInterfacedObject);
-// var     I:byte;
-//begin
-// for I := 0 to High(fParameterShowArray) do
-//   fParameterShowArray[i].ForUseInShowObject(NamedObject);
-//end;
-//
-//procedure TParameterShowArray.Free;
-// var     I:byte;
-//begin
-// for I := 0 to High(fParameterShowArray) do
-//   fParameterShowArray[i].Free;
-// inherited Free;
-//end;
-//
-//function TParameterShowArray.GetCount: integer;
-//begin
-// Result:=High(fParameterShowArray)+1;
-//end;
-//
-//procedure TParameterShowArray.ReadFromIniFile(ConfigFile: TIniFile);
-// var     I:byte;
-//begin
-// for I := 0 to High(fParameterShowArray) do
-//   fParameterShowArray[i].ReadFromIniFile(ConfigFile);
-//end;
-//
-//procedure TParameterShowArray.WriteToIniFile(ConfigFile: TIniFile);
-// var     I:byte;
-//begin
-// for I := 0 to High(fParameterShowArray) do
-//   fParameterShowArray[i].WriteToIniFile(ConfigFile);
-//end;
 
 
 end.

@@ -5,14 +5,11 @@ interface
 uses
   StdCtrls, IniFiles, Measurement, OlegTypePart2;
 
-//const
-//   MD_IniSection='Sources';
 
 type
 TDevice=class(TNamedInterfacedObject)
 private
  DevicesComboBox:TComboBox;
-// fIdentName:string;
 public
  Constructor Create(DevCB: TComboBox; IdentName: string);
  procedure ReadFromIniFile(ConfigFile: TIniFile);override;
@@ -100,7 +97,6 @@ procedure TDevice.ReadFromIniFile(ConfigFile: TIniFile);
   var index:integer;
 begin
   index:=ConfigFile.ReadInteger('Dev'+fName, fName, 0);
-//  index:=ConfigFile.ReadInteger(MD_IniSection, fName, 0);
   if index>=DevicesComboBox.Items.Count
      then DevicesComboBox.ItemIndex:=0
      else DevicesComboBox.ItemIndex:=index;
@@ -111,7 +107,6 @@ procedure TDevice.WriteToIniFile(ConfigFile: TIniFile);
 begin
   ConfigFile.EraseSection('Dev'+fName);
   WriteIniDef(ConfigFile,'Dev'+fName, fName,DevicesComboBox.ItemIndex,0);
-//  WriteIniDef(ConfigFile,MD_IniSection, fName,DevicesComboBox.ItemIndex,0);
 end;
 
 { TSettingDevice }

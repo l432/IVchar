@@ -9,13 +9,6 @@ uses
 
 type
 
-// R=record
-// case boolean of
-//  True:(b:array[0..3] of byte);
-//  False:(s:single);
-   
-// end;
-
  TGDS_Settings=(gds_mode,gds_rl,gds_an,gds_ts,
                 gds_ch1_coup,gds_ch1_prob,gds_ch1_mtype,gds_ch1_scale,
                 gds_ch2_coup,gds_ch2_prob,gds_ch2_mtype,gds_ch2_scale);
@@ -280,7 +273,6 @@ TGDS_806S_Channel=class(TNamedInterfacedObject,IMeasurement)
  property MeasureModeLabel:string read GetMeasureModeLabel;
  constructor Create(ChanelNumber:TGDS_Channel;
                      GDS_806S:TGDS_806S);
-// procedure Free;
  function GetData:double;
  procedure GetDataThread(WPARAM: word; EventEnd:THandle);
  procedure SetMeasType(MType:byte);overload;

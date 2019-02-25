@@ -285,12 +285,6 @@ begin
  inherited Create;
  fChanelNumber:=ChanelNumber;
  fName:='ET1255_Ch'+inttostr(ord(ChanelNumber))+'DAC';
-// case ChanelNumber of
-//  0:fName:='Ch0_ET1255';
-//  1:fName:='Ch1_ET1255';
-//  2:fName:='Ch2_ET1255';
-//  3:fName:='Ch3_ET1255';
-// end;
 end;
 
 
@@ -628,12 +622,6 @@ begin
 
   fParentModule.fAutoGain:=fAutoGain;
   fReadyToMeasurement:=true;
-//  if FSerialMeasurements then
-//   begin
-//    if not(fParentModule.SetAddr($FF-FSerialMeasurementNumber))
-//     then Exit;
-//    fParentModule.fToAverageSerialResults:=fToAverageSerialResults;
-//   end;
 end;
 
 procedure TET1255_ADCChannel.PrepareToMeasurementPart2;
@@ -703,10 +691,8 @@ begin
 
   fValue := ImpulseNoiseSmoothing(Filtr.DataVector);
   fMeasuringIsDone:=true;
-//  fValue := ImpulseNoiseSmoothingByNpoint(DataVector);
   Filtr.Free;
   if fAveraveNumber>0 then dispose(fHelpDataVector);
-//  helpforme('fAN'+inttostr(fAveraveNumber));
 end;
 
 procedure TET1255_ADCChannel.ResultRead;
@@ -851,7 +837,6 @@ procedure TET1255_ModuleAndChan.Free;
 begin
   for I := Low(TET1255_ADC_ChanelNumber) to High(TET1255_ADC_ChanelNumber)
      do Channels[i].Free;
-//  inherited Free;
 end;
 
 function TET1255_ModuleAndChan.GetData: double;
@@ -990,11 +975,6 @@ begin
   SEMeasurementNumber.MaxValue:=High(byte);
   SEMeasurementNumber.Value:=SEGain.MinValue;
 end;
-
-//procedure TET1255_ADCShow.Free;
-//begin
-//
-//end;
 
 procedure TET1255_ADCShow.FromActiveChannelToVisualElement;
 begin

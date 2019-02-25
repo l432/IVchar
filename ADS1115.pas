@@ -29,10 +29,6 @@ const
 
  ADS1115_ConversionTime:array[TADS1115_DataRate]of integer=
     (120,58,28,14,7,4,2,1);
-// ADS1115_DelayTimeStep:array[TADS1115_DataRate]of integer=
-//    (5,5,5,5,5,5,5,5);
-// ADS1115_DelayTimeMax:array[TADS1115_DataRate]of integer=
-//    (5,5,10,10,20,20,20,20);
 
  ADS1115_Gain_Data:array[TADS1115_Gain]of double=
     (1.5,1,0.5,0.25,0.125,0.0625);
@@ -61,17 +57,13 @@ const
 type
 
 
-//  TADS1115_Module=class(TArduinoADC_Module)
   TADS1115_Module=class(TArdADC_Mod_2ConfigByte)
   private
-//    fConfigByteTwo:byte;
     FGain: TADS1115_Gain;
     FDataRate: TADS1115_DataRate;
   protected
    procedure Configuration();override;
    procedure Intitiation(); override;
-//   procedure PinsCreate();override;
-//   procedure FinalPacketCreateToSend();override;
   public
    property Gain: TADS1115_Gain read FGain write FGain;
    property DataRate: TADS1115_DataRate read FDataRate write FDataRate;
@@ -106,10 +98,8 @@ type
  end;
 }
 
-//TPins_ADS1115_Chanel=class(TPins)
 TPins_ADS1115_Chanel=class(TPinsForCustomValues)
   protected
-//   Function GetPinStr(Index:integer):string;override;
    Function StrToPinValue(Str: string):integer;override;
    Function PinValueToStr(Index:integer):string;override;
   public
@@ -131,7 +121,6 @@ TPins_ADS1115_Chanel=class(TPinsForCustomValues)
     fChan:TADS1115_Channel;
     MeasuringDeviceSimple:TMeasuringDeviceSimple;
    protected
-//    procedure LabelsFilling;
     procedure CreateFooter;override;
    public
     Constructor Create(Chan:TADS1115_Channel;
@@ -145,7 +134,7 @@ TPins_ADS1115_Chanel=class(TPinsForCustomValues)
 implementation
 
 uses
-  PacketParameters, SysUtils, OlegType, Math, Dialogs;
+  PacketParameters, SysUtils, OlegType, Math;
 
 { ADS1115_Module }
 
@@ -157,16 +146,13 @@ begin
   fConfigByte:=fConfigByte or ADS1115_Gain_Kod[FGain];
   fConfigByte:=fConfigByte or ADS1115_Chanel_Kod[FActiveChannel];
 
-//  fConfigByteTwo:=$08;
   fConfigByteTwo:=$03;
   fConfigByteTwo:=fConfigByteTwo or ADS1115_DataRate_Kod[FDataRate];
 end;
 
 procedure TADS1115_Module.ConvertToValue;
-// var temp:Int64;
 begin
  fValue:=ErResult;
-//  ShowData(fData);
  if High(fData)<>2 then Exit;
  case (fData[High(fData)]and $0E) of
    $00:FGain:=ads_g2_3;
@@ -176,19 +162,8 @@ begin
    $08:FGain:=ads_g8;
    $0A:FGain:=ads_g16;
  end;
-// temp:=fData[1]+((fData[0] and $7F) shl 8);
-// if (fData[0] and $80)>0 then
-//    temp:=-((not(temp)+$1)and $7fff);
-//
-//  fValue:=temp*ADS1115_LSB*ADS1115_Gain_Data[FGain];
   fValue:=TwosComplementToDouble(fData[0],fData[1],ADS1115_LSB)*ADS1115_Gain_Data[FGain];
 end;
-
-//procedure TADS1115_Module.FinalPacketCreateToSend;
-//begin
-//  PacketCreate([fMetterKod, Pins.PinControl, fConfigByte, fConfigByteTwo]);
-////  PacketCreate([fMetterKod, Pins.PinControl, Pins.PinGate, fConfigByte, fConfigByteTwo]);
-//end;
 
 procedure TADS1115_Module.Intitiation;
 begin
@@ -243,20 +218,12 @@ end;
 constructor TPins_ADS1115_Chanel.Create(Nm: string);
 begin
   inherited Create(Nm, ['Data rate', 'Diapazon']);
-//  PinStrPart := '';
   PinControl := $00;
   // зберігатиметься Data rate
   PinGate := $02;
   // зберігатиметься Gain
 end;
 
-//function TPins_ADS1115_Chanel.GetPinStr(Index: integer): string;
-//begin
-// if fPins[Index]=UndefinedPin then
-//   Result:=PNames[Index] +' is undefined'
-//                              else
-//   Result:=PinValueToStr(Index);
-//end;
 
 function TPins_ADS1115_Chanel.PinValueToStr(Index: integer): string;
  var i:TADS1115_Gain;
@@ -348,7 +315,6 @@ constructor TADS1115_ChannelShow.Create(Chan: TADS1115_Channel;
 begin
   fChan:=Chan;
   inherited Create(fChan.Pins,[LabelBit,LabelGain]);
-//  LabelsFilling;
 
   MeasuringDeviceSimple:=
      TMeasuringDeviceSimple.Create(fChan,LabelMeas,srPreciseVoltage,ButMeas);
@@ -360,8 +326,6 @@ procedure TADS1115_ChannelShow.CreateFooter;
   j: TADS1115_Gain;
 begin
   inherited CreateFooter;
-//  fPinVariants[0].Clear;
-//  fPinVariants[1].Clear;
 
   for i := Low(TADS1115_DataRate) to High(TADS1115_DataRate) do
     fPinVariants[0].Add(ADS1115_DataRate_Label[i]);
@@ -373,28 +337,8 @@ end;
 
 procedure TADS1115_ChannelShow.Free;
 begin
-//  HelpForMe(Pins.Name+Pins.Name+Pins.Name);
   MeasuringDeviceSimple.Free;
   inherited Free;
 end;
-
-//procedure TADS1115_ChannelShow.LabelsFilling;
-// var
-//  i: TADS1115_DataRate;
-//  j: TADS1115_Gain;
-//begin
-//
-//  fPinVariants[0].Clear;
-//  fPinVariants[1].Clear;
-//
-//  for i := Low(TADS1115_DataRate) to High(TADS1115_DataRate) do
-//    fPinVariants[0].Add(ADS1115_DataRate_Label[i]);
-//
-//  for j := Low(TADS1115_Gain) to High(TADS1115_Gain) do
-//    fPinVariants[1].Add('+/-'+ADS1115_Diapazons[j]+' V, '+
-//    ADS1115_LSB_labels[j]+' mkV');
-//
-//
-//end;
 
 end.
