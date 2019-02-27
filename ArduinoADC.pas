@@ -52,10 +52,14 @@ type
   procedure GetDataThread(WPARAM: word; EventEnd:THandle);
  end;
 
-Function TwosComplementToDouble(HiByte,LowByte:byte;LSB:double):double;
+Function TwosComplementToDouble(HiByte,LowByte:byte;LSB:double;
+                                A:double=0;B:double=1):double;
 {перетворення 16-бітного цілого, записаного
 в комплементарному форматі в дійсне;
-LSB - ціна найменшого розряду}
+LSB - ціна найменшого розряду;
+можливе врахування калібровки
+Ureal = A + B * Umeasured;
+A та В в одиницях LSB}
 
 implementation
 
@@ -157,16 +161,20 @@ begin
   PacketCreate([fMetterKod, Pins.PinControl, fConfigByte, fConfigByteTwo]);
 end;
 
-Function TwosComplementToDouble(HiByte,LowByte:byte;LSB:double):double;
+Function TwosComplementToDouble(HiByte,LowByte:byte;LSB:double;
+                                A:double=0;B:double=1):double;
 {перетворення 16-бітного цілого, записаного
 в комплементарному форматі в дійсне;
-LSB - ціна найменшого розряду}
+LSB - ціна найменшого розряду;
+можливе врахування калібровки
+Ureal = A + B * Umeasured;
+A та В в одиницях LSB}
  var temp:Int64;
 begin
  temp:=LowByte+((HiByte and $7F) shl 8);
  if (HiByte and $80)>0 then
     temp:=-((not(temp)+$1)and $7fff);
- Result:=temp*LSB;
+ Result:=(A+B*temp)*LSB;
 end;
 
 end.

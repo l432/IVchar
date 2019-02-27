@@ -44,6 +44,12 @@ const
  INA226_Averages:array[TINA226_Averages] of word=
     (1,4,16,64,128,256,512,1024);
 
+ INA226_CalibrA:array[TINA226_ConversionTime]of double=
+    (-0.864,0,0,0,0,0,0,0);
+ INA226_CalibrB:array[TINA226_ConversionTime]of double=
+    (1.00058,1.00152,1.00187,1.0024,1.00272,1.00272,1.00272,1.00257);
+
+
  INA226_ShuntLSB=2.5e-6;
  INA226_BusLSB=1.25e-3;
 
@@ -179,19 +185,36 @@ begin
  if IncorrectData() then Exit;
  case Mode of
    ina_mShunt: begin
-                fValue:=TwosComplementToDouble(fData[0],fData[1],INA226_ShuntLSB)/fRsh;
+//                fValue:=TwosComplementToDouble(fData[0],fData[1],
+//                          INA226_ShuntLSB)/fRsh;
+                fValue:=TwosComplementToDouble(fData[0],fData[1],
+                          INA226_ShuntLSB,
+                          INA226_CalibrA[fShuntVoltageCT],
+                          INA226_CalibrB[fShuntVoltageCT])/fRsh;
                 fShuntVoltage:=fValue;
                 fBusVoltage:=ErResult;
                end;
    ina_mBus: begin
-                fValue:=TwosComplementToDouble(fData[0],fData[1],INA226_BusLSB);
+//                fValue:=TwosComplementToDouble(fData[0],fData[1],INA226_BusLSB);
+                fValue:=TwosComplementToDouble(fData[0],fData[1],
+                          INA226_BusLSB,
+                          INA226_CalibrA[fBusVoltageCT],
+                          INA226_CalibrB[fBusVoltageCT]);
                 fShuntVoltage:=ErResult;
                 fBusVoltage:=fValue;
                end;
    else      begin
-                fValue:=TwosComplementToDouble(fData[0],fData[1],INA226_BusLSB)/fRsh;
+//                fValue:=TwosComplementToDouble(fData[0],fData[1],INA226_BusLSB)/fRsh;
+                fValue:=TwosComplementToDouble(fData[0],fData[1],
+                          INA226_ShuntLSB,
+                          INA226_CalibrA[fShuntVoltageCT],
+                          INA226_CalibrB[fShuntVoltageCT])/fRsh;
                 fShuntVoltage:=fValue;
-                fBusVoltage:=TwosComplementToDouble(fData[2],fData[3],INA226_BusLSB);
+//                fBusVoltage:=TwosComplementToDouble(fData[2],fData[3],INA226_BusLSB);
+                fBusVoltage:=TwosComplementToDouble(fData[2],fData[3],
+                          INA226_BusLSB,
+                          INA226_CalibrA[fBusVoltageCT],
+                          INA226_CalibrB[fBusVoltageCT]);
                end;
  end;
 end;
