@@ -168,6 +168,7 @@ TET1255_ADCChannel=class(TNamedInterfacedObject,IMeasurement)
   procedure SetSerialMeasurements(const Value: boolean);
   procedure SetSerialMeasurementNumber(const Value: byte);
   procedure AverageValueCalculation;
+  function DataCalibration(DataMeasured:double):double;
  public
   DataVector:PVector;
   property NewData:boolean read GetNewData write SetNewData;
@@ -544,6 +545,54 @@ begin
  FSerialMeasurementNumber:=0;
 end;
 
+function TET1255_ADCChannel.DataCalibration(DataMeasured: double): double;
+ const
+  Single_CalibrA:array[TET1255_ADC_Gain]of double=
+    (0,-9.1E-4,-0.001308,-0.00163,
+    -0.00163,-0.00163,-0.00163,-0.00163,
+    -0.00163,-0.00163,-0.00163,-0.00163,
+    -0.00163,-0.00163,-0.00163);
+  Single_CalibrB:array[TET1255_ADC_Gain]of double=
+    (1.00761,1.0128,1.01225,1.012654,
+    1.012654,1.012654,1.012654,1.012654,
+    1.012654,1.012654,1.012654,1.012654,
+    1.012654,1.012654,1.012654);
+  Serial_CalibrA:array[TET1255_ADC_Gain]of double=
+    (0,0,-2.44E-4,-4.778E-4,
+    -4.778E-4,-4.778E-4,-4.778E-4,-4.778E-4,
+    -4.778E-4,-4.778E-4,-4.778E-4,-4.778E-4,
+    -4.778E-4,-4.778E-4,-4.778E-4);
+  Serial_CalibrB:array[TET1255_ADC_Gain]of double=
+    (1.010206,1.01409,1.01234,1.01256,
+    1.01256,1.01256,1.01256,1.01256,
+    1.01256,1.01256,1.01256,1.01256,
+    1.01256,1.01256,1.01256);
+  SerialLong_CalibrA:array[TET1255_ADC_Gain]of double=
+    (0,0,-5.66E-4,-7.95E-4,
+    -7.95E-4,-7.95E-4,-7.95E-4,-7.95E-4,
+    -7.95E-4,-7.95E-4,-7.95E-4,-7.95E-4,
+    -7.95E-4,-7.95E-4,-7.95E-4);
+  SerialLong_CalibrB:array[TET1255_ADC_Gain]of double=
+    (1.0096,1.01359,1.01225,1.01253,
+    1.01253,1.01253,1.01253,1.01253,
+    1.01253,1.01253,1.01253,1.01253,
+    1.01253,1.01253,1.01253);
+begin
+ if FSerialMeasurements then
+   begin
+    if FSerialMeasurementNumber>1
+      then Result:=Linear(SerialLong_CalibrA[fParentModule.Gain],
+                          SerialLong_CalibrB[fParentModule.Gain],
+                          DataMeasured)
+      else Result:=Linear(Serial_CalibrA[fParentModule.Gain],
+                          Serial_CalibrB[fParentModule.Gain],
+                          DataMeasured)
+   end                  else
+   Result:=Linear(Single_CalibrA[fParentModule.Gain],
+                  Single_CalibrB[fParentModule.Gain],
+                  DataMeasured);
+end;
+
 procedure TET1255_ADCChannel.Free;
 begin
  dispose(DataVector);
@@ -706,7 +755,8 @@ begin
      for I := 0 to High(DataVector^.X) do
       begin
        DataVector^.X[i]:=i;
-       DataVector^.Y[i]:=fParentModule.ReadMem/fParentModule.Gain;
+//       DataVector^.Y[i]:=fParentModule.ReadMem/fParentModule.Gain;
+       DataVector^.Y[i]:=DataCalibration(fParentModule.ReadMem/fParentModule.Gain);
       end;
     if fToAverageSerialResults then AverageValueCalculation
                                else
@@ -718,8 +768,9 @@ begin
    end
   else
    begin
-    fValue:=fParentModule.ReadADC;
-    fValue:=fValue/fParentModule.Gain;
+//    fValue:=fParentModule.ReadADC;
+//    fValue:=fValue/fParentModule.Gain;
+    fValue:=DataCalibration(fParentModule.ReadADC/fParentModule.Gain);
     DataVector^.X[0]:=0;
     DataVector^.Y[0]:=fValue;
     fMeasuringIsDone:=True;

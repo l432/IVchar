@@ -64,7 +64,7 @@ A та В в одиницях LSB}
 implementation
 
 uses
-  PacketParameters, SysUtils;
+  PacketParameters, SysUtils, OlegMath;
 
 
 { TArduinoADC_Module }
@@ -174,7 +174,7 @@ begin
  temp:=LowByte+((HiByte and $7F) shl 8);
  if (HiByte and $80)>0 then
     temp:=-((not(temp)+$1)and $7fff);
- Result:=(A+B*temp)*LSB;
+ Result:=Linear(A,B,temp)*LSB;
 end;
 
 end.
