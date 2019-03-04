@@ -32,6 +32,56 @@ const
  MCP3424_StartAdress=$68;
  MCP3424_LastAdress=$6F;
 
+ CalibrateA:array[TMCP3424_ChanelNumber]
+            of array[TMCP3424_Resolution]
+            of array[TMCP3424_Gain] of double=
+            (
+     {Chanel 0}
+             ({mcp_r12b} (0,0,0,0),
+              {mcp_r14b} (0,0,0,0),
+              {mcp_r16b} (0,0,0,-0.753),
+              {mcp_r18b} (0.989,0,-1.06,-2.95)),
+     {Chanel 1}
+             ({mcp_r12b} (0,0,0,0),
+              {mcp_r14b} (0,0,0,0),
+              {mcp_r16b} (0,0,0,-0.753),
+              {mcp_r18b} (0.989,0,-1.06,-2.95)),
+     {Chanel 2}
+             ({mcp_r12b} (0,0,0,0),
+              {mcp_r14b} (0,0,0.373,0.482),
+              {mcp_r16b} (0,0.443,0.481,0.705),
+              {mcp_r18b} (1.54,0.175,2.23,3.11)),
+     {Chanel 3}
+             ({mcp_r12b} (0,0,0,0),
+              {mcp_r14b} (0,0,0.373,0.482),
+              {mcp_r16b} (0,0.443,0.481,0.705),
+              {mcp_r18b} (1.54,0.175,2.23,3.11))
+            );
+ CalibrateB:array[TMCP3424_ChanelNumber]
+            of array[TMCP3424_Resolution]
+            of double=
+            (
+     {Chanel 0}
+             ({mcp_r12b} 1.0026,
+              {mcp_r14b} 1.0025,
+              {mcp_r16b} 1.0025,
+              {mcp_r18b} 1.0025),
+     {Chanel 1}
+             ({mcp_r12b} 1.0026,
+              {mcp_r14b} 1.0025,
+              {mcp_r16b} 1.0025,
+              {mcp_r18b} 1.0025),
+     {Chanel 2}
+             ({mcp_r12b} 1.0021,
+              {mcp_r14b} 1.0020,
+              {mcp_r16b} 1.0020,
+              {mcp_r18b} 1.00195),
+     {Chanel 3}
+             ({mcp_r12b} 1.0021,
+              {mcp_r14b} 1.0020,
+              {mcp_r16b} 1.0020,
+              {mcp_r18b} 1.00195)
+            );
 
 type
 
@@ -86,7 +136,7 @@ TPins_MCP3424=class(TPinsForCustomValues)
 implementation
 
 uses
-  PacketParameters, SysUtils, OlegType, Math, Dialogs, OlegFunction{, Dialogs};
+  PacketParameters, SysUtils, OlegType, Math, Dialogs, OlegFunction, OlegMath{, Dialogs};
 
 { MCP3424_Module }
 
@@ -135,7 +185,12 @@ begin
      mcp_r18b: temp:=-((not(temp)+$1)and $1ffff);
     end;
 
-  fValue:=temp*MCP3424_LSB[FResolution]/MCP3424_Gain_Data[FGain];
+//  fValue:=temp*MCP3424_LSB[FResolution]/MCP3424_Gain_Data[FGain];
+
+  fValue:=Linear(CalibrateA[FActiveChannel,FResolution,FGain],
+                 CalibrateB[FActiveChannel,FResolution],
+                 temp)
+    *MCP3424_LSB[FResolution]/MCP3424_Gain_Data[FGain];
 end;
 
 procedure TMCP3424_Module.Intitiation;

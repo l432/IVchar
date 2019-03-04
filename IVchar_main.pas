@@ -2399,8 +2399,9 @@ begin
 //showmessage(inttostr(ShowTempDep.fToleranceCoef.Data));
 //showmessage(inttostr(IVcharOnTemperature.StartTemperature));
 
-showmessage(inttostr(IVcharOnTemperature.ToleranceCoficient));
+//showmessage(inttostr(IVcharOnTemperature.ToleranceCoficient));
 
+//showmessage(inttostr(CalibrateA[2,2,2]));
 end;
 
 

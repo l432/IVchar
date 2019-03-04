@@ -306,7 +306,7 @@ begin
    end;
 end;
 
-{ TMCP3424_ChannelShow }
+{ TADS1115_ChannelShow }
 
 constructor TADS1115_ChannelShow.Create(Chan: TADS1115_Channel;
                    LabelBit, LabelGain: TPanel;
