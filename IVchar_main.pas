@@ -981,10 +981,13 @@ procedure TIVchar.SaveCommentsFile(FileName: string);
      FF:TextFile;
      name, temp:string;
 begin
-    if FindFirst(FileName,faAnyFile,SR)<>0 then Exit;
-    name:=SR.Name;
     AssignFile(FF,'comments');
     if FindFirst('comments',faAnyFile,SR)=0 then Append(FF) else ReWrite(FF);
+
+    if FindFirst(FileName,faAnyFile,SR)<>0 then Exit;
+    name:=SR.Name;
+//    AssignFile(FF,'comments');
+//    if FindFirst('comments',faAnyFile,SR)=0 then Append(FF) else ReWrite(FF);
     FindClose(SR);
     DateTimeToString(temp, 'd.m.yyyy', FileDateToDateTime(SR.Time));
     writeln(FF,Name,' - ',temp,'  :'+inttostr(SecondFromDayBegining(FileDateToDateTime(SR.Time))));
