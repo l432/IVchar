@@ -981,8 +981,8 @@ procedure TIVchar.SaveCommentsFile(FileName: string);
      FF:TextFile;
      name, temp:string;
 begin
-    AssignFile(FF,'comments');
-    if FindFirst('comments',faAnyFile,SR)=0 then Append(FF) else ReWrite(FF);
+    AssignFile(FF,'comments.dat');
+    if FindFirst('comments.dat',faAnyFile,SR)=0 then Append(FF) else ReWrite(FF);
 
     if FindFirst(FileName,faAnyFile,SR)<>0 then Exit;
     name:=SR.Name;
