@@ -119,14 +119,21 @@ function LastFileName(Mask:string):string;
 begin
  Result:=NoFile;
  if FindFirst(Mask, faAnyFile, SR) <> 0 then Exit;
+ if AnsiPos('comments',SR.name)<>0 then
+    if FindNext(SR) <> 0 then Exit;
+
+
  Result:=SR.name;
  tm:=SR.time;
  while FindNext(SR) = 0 do
+   begin
+   if AnsiPos('comments',SR.name)<>0 then Continue;
    if tm<SR.time then
      begin
      Result:=SR.name;
      tm:=SR.time;
      end;
+   end;
  FindClose(SR);
 end;
 
