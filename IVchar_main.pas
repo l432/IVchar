@@ -1210,8 +1210,8 @@ begin
      then
      begin
      FastIVMeasuring.Measuring(False,'dark');
-     sleep(300);
-     FastIVMeasuring.Measuring(False,'dark');
+//     sleep(300);
+//     FastIVMeasuring.Measuring(False,'dark');
      end;
 
  if (CBLEDOpenAuto.Checked) then
