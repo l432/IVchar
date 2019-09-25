@@ -4,7 +4,7 @@ interface
 
 uses
   ArduinoDevice, Measurement, OlegType, StdCtrls, RS232device, CPort, Classes, 
-  ExtCtrls, ShowTypes, IniFiles;
+  ExtCtrls, ShowTypes, IniFiles, OlegVector;
 
 const DACR2R_MaxValue=65535;
       DACR2R_Factor=10000;
@@ -45,7 +45,7 @@ class function VoltToKod(Volt:double):word;
  function VoltToArray(Volt:double):TStringList;
  procedure Add(RequiredVoltage,RealVoltage:double);
 // procedure AddWord(Index,Kod:word;Arr:TArrWord);
- procedure VectorToCalibr(Vec:PVector);
+ procedure VectorToCalibr(Vec:TVector);
  procedure WriteToFileData();
  procedure ReadFromFileData();
  Procedure Free;
@@ -68,7 +68,7 @@ public
  procedure CalibrationFileProcessing(filename:string);
  function CalibrationStep(Voltage:double):double;
  procedure OutputCalibr(Voltage:double);
- procedure SaveFileWithCalibrData(DataVec:PVector);
+ procedure SaveFileWithCalibrData(DataVec:TVector);
  procedure PinsToDataArray;override;
 end;
 
@@ -168,23 +168,24 @@ begin
   fData[2] := Pins.PinControl;
 end;
 
-procedure TDACR2R.SaveFileWithCalibrData(DataVec: PVector);
+procedure TDACR2R.SaveFileWithCalibrData(DataVec: TVector);
  var FileName:string;
 begin
   DataVec.Sorting;
   DataVec.DeleteDuplicate;
-  FileName:='cal'+IntToStr(trunc(DataVec^.X[0]*100))+
-            '_'+IntToStr(trunc(DataVec^.X[High(DataVec^.X)]*100))+
+  FileName:='cal'+IntToStr(trunc(DataVec.X[0]*100))+
+            '_'+IntToStr(trunc(DataVec.X[DataVec.HighNumber]*100))+
             '.dat';
-  DataVec.Write_File(FileName,5);
+  DataVec.WriteToFile(FileName,5);
 end;
 
 procedure TDACR2R.CalibrationFileProcessing(filename: string);
- var vec:PVector;
+ var vec:TVector;
 begin
- new(vec);
- Read_File (filename, vec);
+ vec:=TVector.Create;
+ vec.ReadFromFile(filename);
  fCalibration.VectorToCalibr(vec);
+ Vec.Free;
 end;
 
 procedure TDACR2R.CalibrationRead;
@@ -381,38 +382,37 @@ begin
 
 end;
 
-procedure TDACR2R_Calibr.VectorToCalibr(Vec: PVector);
+procedure TDACR2R_Calibr.VectorToCalibr(Vec: TVector);
  var i:integer;
-     tempVec:PVector;
+     tempVec:TVector;
 begin
-  for I := 0 to High(Vec^.X) do
-   Vec^.Y[i]:=round(Vec^.Y[i]*10000)/10000;
- for I := 0 to High(Vec^.X)-2 do
-   if (abs(Vec^.Y[i+1])<0.05*abs(Vec^.Y[i]))and
-      (abs(Vec^.Y[i+1])<0.05*abs(Vec^.Y[i+2]))
-               then Vec^.Delete(i+1);
- new(tempVec);
- SetLenVector(tempVec,0);
- for I := 0 to High(Vec^.X) do
-   if Vec^.Y[i]>0 then tempVec^.Add(Vec^.X[i],Vec^.Y[i]);
+  for I := 0 to Vec.HighNumber do
+   Vec.Y[i]:=round(Vec.Y[i]*10000)/10000;
+ for I := 0 to Vec.HighNumber-2 do
+   if (abs(Vec.Y[i+1])<0.05*abs(Vec.Y[i]))and
+      (abs(Vec.Y[i+1])<0.05*abs(Vec.Y[i+2]))
+               then Vec.DeletePoint(i+1);
+ tempVec:=TVector.Create;
+ for I := 0 to Vec.HighNumber do
+   if Vec.Y[i]>0 then tempVec.Add(Vec[i]);
 
- tempVec^.Sorting();
- tempVec^.SwapXY();
- tempVec^.DeleteDuplicate();
- for I := 0 to High(tempVec^.X) do
-   Add(tempVec^.Y[i],tempVec^.X[i]);
- dispose(tempVec);
-
- new(tempVec);
- SetLenVector(tempVec,0);
- for I := 0 to High(Vec^.X) do
-   if Vec^.Y[i]<0 then tempVec^.Add(Vec^.X[i],Vec^.Y[i]);
- tempVec^.Sorting(False);
- tempVec^.SwapXY();
- tempVec^.DeleteDuplicate();
- for I := 0 to High(tempVec^.X) do
-   Add(tempVec^.Y[i],tempVec^.X[i]);
- dispose(tempVec);
+ tempVec.Sorting();
+ tempVec.SwapXY();
+ tempVec.DeleteDuplicate();
+ for I := 0 to tempVec.HighNumber do
+   Add(tempVec.Y[i],tempVec.X[i]);
+// dispose(tempVec);
+//
+// new(tempVec);
+ tempVec.Clear;
+ for I := 0 to Vec.HighNumber do
+   if Vec.Y[i]<0 then tempVec.Add(Vec[i]);
+ tempVec.Sorting(False);
+ tempVec.SwapXY();
+ tempVec.DeleteDuplicate();
+ for I := 0 to tempVec.HighNumber do
+   Add(tempVec.Y[i],tempVec.X[i]);
+ tempVec.Free;
 
 end;
 

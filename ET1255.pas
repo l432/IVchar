@@ -4,7 +4,7 @@ interface
 
 uses
   RS232device, Measurement, OlegType, Classes, OlegFunction, Spin, StdCtrls, 
-  ExtCtrls, Buttons, Series, IniFiles, OlegTypePart2;
+  ExtCtrls, Buttons, Series, IniFiles, OlegTypePart2, OlegVector,OlegDigitalManipulation;
 
 const
  ET1255_DAC_MAX=2.5;
@@ -159,7 +159,7 @@ TET1255_ADCChannel=class(TNamedInterfacedObject,IMeasurement)
   fAutoGain:boolean;
   fMeasuringIsDone:boolean;
   fAveraveNumber:byte;
-  fHelpDataVector:PVector;
+  fHelpDataVector:TVector;
   fReadyToMeasurement:boolean;
   function GetNewData:boolean;
   function GetValue:double;
@@ -170,7 +170,7 @@ TET1255_ADCChannel=class(TNamedInterfacedObject,IMeasurement)
   procedure AverageValueCalculation;
   function DataCalibration(DataMeasured:double):double;
  public
-  DataVector:PVector;
+  DataVector:TVector;
   property NewData:boolean read GetNewData write SetNewData;
   property Value:double read GetValue;
   property SerialMeasurements:boolean read FSerialMeasurements write SetSerialMeasurements;
@@ -540,7 +540,7 @@ begin
  fChanelNumber:=ChanelNumber;
  fName:='ET1255_Ch'+inttostr(ord(ChanelNumber))+'ADC';
  fParentModule:=ET1255_Module;
- new(DataVector);
+ DataVector:=TVector.Create;
  FSerialMeasurements:=False;
  FSerialMeasurementNumber:=0;
 end;
@@ -595,7 +595,7 @@ end;
 
 procedure TET1255_ADCChannel.Free;
 begin
- dispose(DataVector);
+ DataVector.Free;
  inherited Free;
 end;
 
@@ -658,7 +658,7 @@ procedure TET1255_ADCChannel.MeasuringStop;
 begin
   fParentModule.MeasuringStop;
   fMeasuringIsDone:=True;
-  if fAveraveNumber>0 then dispose(fHelpDataVector);
+  if fAveraveNumber>0 then fHelpDataVector.Free;
 end;
 
 procedure TET1255_ADCChannel.PrepareToMeasurementPart1;
@@ -694,32 +694,32 @@ begin
 end;
 
 procedure TET1255_ADCChannel.AverageValueCalculation;
- var Filtr:TDigitalManipulation;
+ var Filtr:TVDigitalManipulation;
 begin
-  if (abs(DataVector^.MeanY-DataVector^.MaxY)>=0.004)or
-     (abs(DataVector^.MeanY-DataVector^.MinY)>=0.004)
+  if (abs(DataVector.MeanY-DataVector.MaxY)>=0.004)or
+     (abs(DataVector.MeanY-DataVector.MinY)>=0.004)
          then
        begin
          inc(fAveraveNumber);
          if fAveraveNumber=1 then
            begin
-             new(fHelpDataVector);
-             DataVector^.Copy(fHelpDataVector^);
+             fHelpDataVector:=TVector.Create;
+             DataVector.CopyTo(fHelpDataVector);
              Exit;
            end;
          if (fAveraveNumber>1)and(fAveraveNumber<10)  then
            begin
-             DataVector^.MultiplyY(-1);
-             fHelpDataVector.DeltaY(DataVector^);
+             DataVector.MultiplyY(-1);
+             fHelpDataVector.DeltaY(DataVector);
              Exit;
            end;
-          DataVector^.MultiplyY(-1);
-          fHelpDataVector.DeltaY(DataVector^);
+          DataVector.MultiplyY(-1);
+          fHelpDataVector.DeltaY(DataVector);
           fHelpDataVector.MultiplyY(1/fAveraveNumber);
-          Filtr:=TDigitalManipulation.Create(fHelpDataVector);
+          Filtr:=TVDigitalManipulation.Create(fHelpDataVector);
 
        end
-         else Filtr:=TDigitalManipulation.Create(DataVector);
+         else Filtr:=TVDigitalManipulation.Create(DataVector);
 
 
 //   Filtr.DataVector.Write_File(inttostr(Millisecond)+'.dat');
@@ -738,10 +738,10 @@ begin
 //_________________________
 
 
-  fValue := ImpulseNoiseSmoothing(Filtr.DataVector);
+  fValue := ImpulseNoiseSmoothing(Filtr);
   fMeasuringIsDone:=true;
   Filtr.Free;
-  if fAveraveNumber>0 then dispose(fHelpDataVector);
+  if fAveraveNumber>0 then fHelpDataVector.Free;
 end;
 
 procedure TET1255_ADCChannel.ResultRead;
@@ -752,16 +752,16 @@ begin
    begin
     if not(fParentModule.SetAddr($FF-FSerialMeasurementNumber))
       then Exit;
-     for I := 0 to High(DataVector^.X) do
+     for I := 0 to DataVector.HighNumber do
       begin
-       DataVector^.X[i]:=i;
+       DataVector.X[i]:=i;
 //       DataVector^.Y[i]:=fParentModule.ReadMem/fParentModule.Gain;
-       DataVector^.Y[i]:=DataCalibration(fParentModule.ReadMem/fParentModule.Gain);
+       DataVector.Y[i]:=DataCalibration(fParentModule.ReadMem/fParentModule.Gain);
       end;
     if fToAverageSerialResults then AverageValueCalculation
                                else
          begin
-           fValue:=DataVector^.Y[0];
+           fValue:=DataVector.Y[0];
            fMeasuringIsDone:=True;
          end;
 
@@ -771,8 +771,8 @@ begin
 //    fValue:=fParentModule.ReadADC;
 //    fValue:=fValue/fParentModule.Gain;
     fValue:=DataCalibration(fParentModule.ReadADC/fParentModule.Gain);
-    DataVector^.X[0]:=0;
-    DataVector^.Y[0]:=fValue;
+    DataVector.X[0]:=0;
+    DataVector.Y[0]:=fValue;
     fMeasuringIsDone:=True;
    end;
 end;
@@ -809,8 +809,8 @@ begin
   fValue:=ErResult;
   if FSerialMeasurements
 //   then  SetLenVector(DataVector,(FSerialMeasurementNumber shl 12))
-   then  SetLenVector(DataVector,(FSerialMeasurementNumber shl 11))
-   else SetLenVector(DataVector,1);
+   then  DataVector.SetLenVector((FSerialMeasurementNumber shl 11))
+   else DataVector.SetLenVector(1);
 end;
 
 procedure TET1255_ADCChannel.WriteToIniFile(ConfigFile: TIniFile);
@@ -1095,9 +1095,10 @@ begin
   inherited MetterDataShow;
   Graph.Clear;
     if fMeter.Value<>ErResult then
-     begin
-      VectorToGraph(ET1255_ModuleAndChan.Channels[ET1255_ModuleAndChan.ActiveChannel].DataVector,Graph);
-     end;
+//     begin
+      ET1255_ModuleAndChan.Channels[ET1255_ModuleAndChan.ActiveChannel].DataVector.WriteToGraph(Graph);
+//      VectorToGraph(ET1255_ModuleAndChan.Channels[ET1255_ModuleAndChan.ActiveChannel].DataVector,Graph);
+//     end;
 end;
 
 procedure TET1255_ADCShow.SEGainChange(Sender: TObject);

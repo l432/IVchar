@@ -10,7 +10,8 @@ uses
   CPortCtl, Grids, Chart, TeeProcs, Series, TeEngine, ExtCtrls, Buttons,
   ComCtrls, CPort, StdCtrls, Dialogs, Controls, Classes, D30_06,Math, PID, 
   MDevice, Spin,HighResolutionTimer, MCP3424, ADS1115, ArduinoDeviceShow, 
-  AD9833, GDS_806S, MLX90615, OlegShowTypes, INA226, OlegTypePart2;
+  AD9833, GDS_806S, MLX90615, OlegShowTypes, INA226, OlegTypePart2, OlegVector, 
+  OlegDigitalManipulation;
 
 const
   MeasIV='IV characteristic';
@@ -660,7 +661,7 @@ type
     procedure LimitsToLabel(LimitShow,LimitShowRev:TLimitShow);
     procedure RangeShowLimit();
     procedure RangesCreate;
-    procedure StepReadFromIniFile (A:PVector; Ident:string);
+    procedure StepReadFromIniFile (A:TVector; Ident:string);
     procedure StepsReadFromIniFile;
     procedure StepsWriteToIniFile;
     procedure ForwStepShow;
@@ -755,7 +756,7 @@ type
     procedure ADS1115Create;
     procedure INA226Create;
     procedure GDS_Create;
-    procedure SaveIVMeasurementResults(FileName: string; DataVector:PVector);
+    procedure SaveIVMeasurementResults(FileName: string; DataVector:TVector);
   public
     ShowArray:TObjectArray;
     AnyObjectArray:TObjectArray;
@@ -803,7 +804,7 @@ type
     NumberPinsOneWire:TStringList; // номери пінів, які використовуються для OneWire
     NumberPinsInput:TStringList; // номери пінів, які можуть бути викристані для переривань
     ForwSteps,RevSteps,IVResult,VolCorrection,
-    VolCorrectionNew,TemperData:PVector;
+    VolCorrectionNew,TemperData:TVector;
 
     DACR2R:TDACR2R;
     DACR2RShow:TDACR2RShow;
@@ -1015,8 +1016,8 @@ begin
       end;
 
     TemperData.DeleteErResult;
-    if TemperData.n>0 then
-       Temperature:=TemperData.SumY/TemperData.n;
+    if TemperData.Count>0 then
+       Temperature:=TemperData.SumY/TemperData.Count;
   end;
 
   if Key=MeasIVonTemper then  IVcharOnTempHookEnd;
@@ -1263,7 +1264,7 @@ begin
   Temperature := ErResult;
   Imax := MaxCurrentCS.Data;
   Imin := MinCurrentCS.Data;
-  SetLenVector(VolCorrectionNew,0);
+  VolCorrectionNew.SetLenVector(0);
   ThermoCuple.Measurement:=TermoCouple_MD.ActiveInterface;
   TemperData.Clear;
   if not(SBTAuto.Down) then
@@ -1370,7 +1371,7 @@ if IscVocOnTimeModeIsFastIV then
    TTimeTwoDependenceTimer.SecondValueChange(FastIVMeasuring.Isc);
 
 
-   VolCorrectionNew^.Add(Temperature_MD.ActiveInterface.Value,
+   VolCorrectionNew.Add(Temperature_MD.ActiveInterface.Value,
                          FastIVMeasuring.Voc);
 
    MeasurementTimeParameterDetermination(IscVocOnTime);
@@ -1432,7 +1433,7 @@ begin
 
 
    LADInputVoltageValue.Caption:=FloatToStrF(TTimeTwoDependenceTimer.SecondValue,ffExponent, 4, 3);
-   VolCorrectionNew^.Add(Temperature_MD.ActiveInterface.Value,
+   VolCorrectionNew.Add(Temperature_MD.ActiveInterface.Value,
                          Voc_MD.ActiveInterface.GetData);
 
    if CBLEDOpenAuto.Checked then LEDOpenPinChanger.PinChangeToHigh;
@@ -1457,7 +1458,7 @@ begin
   repeat
    if not(IVCharCurrentMeasuring()) then Exit;
 
-   if (High(IVResult^.Y)<0) then Break;
+   if (IVResult.IsEmpty) then Break;
 
    if (ItIsBegining)or(IVCurrentGrowth()) then Break;
 
@@ -1802,9 +1803,9 @@ end;
 function TIVchar.IVCurrentGrowth: boolean;
 begin
    if TIVParameters.ItIsForward then
-       Result:=IVMeasResult.CurrentMeasured>IVResult^.Y[High(IVResult^.Y)]
+       Result:=IVMeasResult.CurrentMeasured>IVResult.Y[IVResult.HighNumber]
                                 else
-       Result:=IVMeasResult.CurrentMeasured<IVResult^.Y[High(IVResult^.Y)]
+       Result:=IVMeasResult.CurrentMeasured<IVResult.Y[IVResult.HighNumber]
 end;
 
 function TIVchar.IVForeseeCorrection(): double;
@@ -1835,21 +1836,21 @@ begin
  IVMeasResult.isEmpty:=True;
  IVMeasResult.DeltaToExpected:=ErResult;
 
- if (IVResult^.n<1) then Exit;
+ if IVResult.IsEmpty then Exit;
 
 
- if (VoltageInputSign*IVResult^.X[IVResult^.n-1]<0) then Exit;
+ if (VoltageInputSign*IVResult.X[IVResult.HighNumber]<0) then Exit;
  IVMeasResult.isEmpty:=False;
 
 
- if (IVResult^.n<2) then Exit;
- if (VoltageInputSign*IVResult^.X[IVResult^.n-2]<0) then Exit;
+ if (IVResult.Count<2) then Exit;
+ if (VoltageInputSign*IVResult.X[IVResult.Count-2]<0) then Exit;
 
- IVMRFirst.VoltageMeasured:=IVResult^.X[IVResult^.n-2];
- IVMRFirst.CurrentMeasured:=IVResult^.Y[IVResult^.n-2];
+ IVMRFirst.VoltageMeasured:=IVResult.X[IVResult.Count-2];
+ IVMRFirst.CurrentMeasured:=IVResult.Y[IVResult.Count-2];
  IVMRFirst.DeltaToExpected:=ErResult;
  try
- IVMRFirst.Correction:=VolCorrectionNew^.Y[VolCorrectionNew^.n-2];
+ IVMRFirst.Correction:=VolCorrectionNew.Y[VolCorrectionNew.Count-2];
  finally
 
  end;
@@ -1988,17 +1989,17 @@ end;
 
 procedure TIVchar.CalibrHookDataSave;
  var tempdir:string;
-     tempVec:PVector;
+     tempVec:TVector;
 begin
   if TDependence.PointNumber=0 then Exit;
   if (TDependence.PointNumber mod 1000)<>0 then Exit;
-    new(tempVec);
-    IVResult^.Copy(tempVec^);
+    tempVec:=TVector.Create;
+    IVResult.CopyTo(tempVec);
     tempdir:=GetCurrentDir;
     ChDir(ExtractFilePath(Application.ExeName));
     DACR2R.SaveFileWithCalibrData(tempVec);
     ChDir(tempdir);
-    dispose(tempVec);
+    tempVec.Free;
 end;
 
 
@@ -2053,7 +2054,7 @@ begin
   BIVStart.Enabled := True;
   BConnect.Enabled := True;
   BParamReceive.Enabled := True;
-  if High(IVResult^.X) > 0 then
+  if IVResult.HighNumber > 0 then
   begin
     BIVSave.Enabled := True;
     BIVSave.Font.Style := BIVSave.Font.Style - [fsStrikeOut];
@@ -2074,7 +2075,7 @@ begin
   begin
     VolCorrectionNew.Sorting;
     VolCorrectionNew.DeleteDuplicate;
-    VolCorrectionNew^.Copy(VolCorrection^);
+    VolCorrectionNew.CopyTo(VolCorrection);
   end;
 
   SaveDialogPrepare;
@@ -2086,13 +2087,13 @@ begin
 
     if (Key=MeasTimeD)or(Key=MeasControlParametr)
         or(Key=MeasTempOnTime)or(Key=MeasIVonTemper)
-      then Write_File(SaveDialog.FileName,IVResult,9);
+      then IVResult.WriteToFile(SaveDialog.FileName,9);
 
     if Key=MeasTwoTimeD then
      begin
        if TimeTwoDependenceTimer.isTwoValueOnTime
           then ToFileFromTwoSeries(SaveDialog.FileName,ForwLine,ForwLg,6)
-          else Write_File(SaveDialog.FileName,IVResult,9);
+          else IVResult.WriteToFile(SaveDialog.FileName,9);
      end;
 
     if (Key=MeasIscAndVocOnTime) then
@@ -2171,11 +2172,11 @@ begin
   AnyObjectArray.Add([GDS_806S,GDS_806S_Channel[1],GDS_806S_Channel[2]]);
 end;
 
-procedure TIVchar.SaveIVMeasurementResults(FileName: string; DataVector:PVector);
+procedure TIVchar.SaveIVMeasurementResults(FileName: string; DataVector:TVector);
 begin
   DataVector.Sorting;
   DataVector.DeleteDuplicate;
-  Write_File(FileName, DataVector);
+  DataVector.WriteToFile(FileName);
   //       ToFileFromTwoVector(SaveDialog.FileName,IVResult,VolCorrectionNew);
   LTLastValue.Caption := FloatToStrF(Temperature, ffFixed, 5, 2);
   SaveCommentsFile(FileName);
@@ -2257,7 +2258,7 @@ end;
 procedure TIVchar.BFBDeleteClick(Sender: TObject);
 begin
  if (SGFBStep.Row=(SGFBStep.RowCount-1))or(SGFBStep.Row<1) then Exit;
- ForwSteps.Delete(SGFBStep.Row-1);
+ ForwSteps.DeletePoint(SGFBStep.Row-1);
  ForwStepShow();
 end;
 
@@ -2324,7 +2325,7 @@ end;
 procedure TIVchar.BRBDeleteClick(Sender: TObject);
 begin
  if (SGRBStep.Row=(SGRBStep.RowCount-1))or(SGRBStep.Row<1) then Exit;
- RevSteps.Delete(SGRBStep.Row-1);
+ RevSteps.DeletePoint(SGRBStep.Row-1);
  RevStepShow();
 end;
 
@@ -2505,7 +2506,7 @@ begin
       BIVStart.Enabled := True;
       BConnect.Enabled := True;
       BParamReceive.Enabled := True;
-      if High(FastIVMeasuring.Results^.X) > 0 then
+      if FastIVMeasuring.Results.HighNumber > 0 then
       begin
         BIVSave.Enabled := True;
         BIVSave.Font.Style := BIVSave.Font.Style - [fsStrikeOut];
@@ -2794,15 +2795,15 @@ procedure TIVchar.StepsReadFromIniFile;
 begin
   StepReadFromIniFile(ForwSteps,'Forw');
   StepReadFromIniFile(RevSteps,'Rev');
-  VolCorrection^.ReadFromIniFile(ConfigFile, 'Step', 'Correction');
-  VolCorrection^.DeleteErResult;
-  VolCorrection^.Sorting;
+  VolCorrection.ReadFromIniFile(ConfigFile, 'Step', 'Correction');
+  VolCorrection.DeleteErResult;
+  VolCorrection.Sorting;
 end;
 
 function TIVchar.StepDetermine(Voltage: Double;
                               ItForward: Boolean): double;
 var
-  Steps: PVector;
+  Steps: TVector;
   I: Integer;
 begin
   Result := StepDefault;
@@ -2810,36 +2811,38 @@ begin
     Steps := ForwSteps
   else
     Steps := RevSteps;
-  for I := 0 to High(Steps^.X) do
-    if abs(Voltage) < Steps^.X[i] then
+  for I := 0 to Steps.HighNumber do
+    if abs(Voltage) < Steps.X[i] then
     begin
-      Result := Steps^.Y[i];
+      Result := Steps.Y[i];
       Break;
     end;
 end;
 
-procedure TIVchar.StepReadFromIniFile(A:PVector; Ident:string);
+procedure TIVchar.StepReadFromIniFile(A:TVector; Ident:string);
 begin
-  A^.ReadFromIniFile(ConfigFile, 'Step', Ident);
-  A^.DeleteErResult;
-  A^.DeleteDuplicate;
-  A^.Sorting;
-  while (A^.n > 0) and (A^.X[High(A^.X)] > Vmax) do
-    A^.Delete(A^.n - 1);
-  while (A^.n > 0) and (A^.X[0] < 0) do
-    A^.Delete(A^.n - 1);
-  if (A^.n > 0) and (A^.X[High(A^.X)] <> Vmax) then
+  A.ReadFromIniFile(ConfigFile, 'Step', Ident);
+  A.DeleteErResult;
+  A.DeleteDuplicate;
+  A.Sorting;
+  while (A.Count > 0) and (A.X[A.HighNumber] > Vmax) do
+    A.DeletePoint(A.HighNumber);
+  while (A.Count > 0) and (A.X[0] < 0) do
+    A.DeletePoint(A.HighNumber);
+  if (A.Count > 0) and (A.X[A.HighNumber] <> Vmax) then
     begin
-     A^.SetLenVector(A^.n+1);
-     A^.X[High(A^.X)] := Vmax;
-     A^.Y[High(A^.X)] := StepDefault;
+     A.Add(Vmax,StepDefault);
+//     A^.SetLenVector(A^.n+1);
+//     A^.X[High(A^.X)] := Vmax;
+//     A^.Y[High(A^.X)] := StepDefault;
     end;
-  if A^.n < 1 then
-    begin
-      A^.SetLenVector(1);
-      A^.X[0] := Vmax;
-      A^.Y[0] := StepDefault;
-    end;
+  if A.IsEmpty then
+      A.Add(Vmax,StepDefault);
+//    begin
+//      A.SetLenVector(1);
+//      A.X[0] := Vmax;
+//      A.Y[0] := StepDefault;
+//    end;
 end;
 
 procedure TIVchar.StepsWriteToIniFile;
@@ -2854,11 +2857,11 @@ procedure TIVchar.ForwStepShow;
  var
   I: Integer;
 begin
-  SGFBStep.RowCount := ForwSteps^.n + 1;
-  for I := 0 to High(ForwSteps^.X) do
+  SGFBStep.RowCount := ForwSteps.Count + 1;
+  for I := 0 to ForwSteps.HighNumber do
    begin
-     SGFBStep.Cells[0,i+1]:=FloatToStrF(ForwSteps^.X[i],ffGeneral,2,1);
-     SGFBStep.Cells[1,i+1]:=FloatToStrF(ForwSteps^.Y[i],ffGeneral,4,3);
+     SGFBStep.Cells[0,i+1]:=FloatToStrF(ForwSteps.X[i],ffGeneral,2,1);
+     SGFBStep.Cells[1,i+1]:=FloatToStrF(ForwSteps.Y[i],ffGeneral,4,3);
    end;
 end;
 
@@ -2866,11 +2869,11 @@ procedure TIVchar.RevStepShow;
  var
   I: Integer;
 begin
-  SGRBStep.RowCount := RevSteps^.n + 1;
-  for I := 0 to High(RevSteps^.X) do
+  SGRBStep.RowCount := RevSteps.Count + 1;
+  for I := 0 to RevSteps.HighNumber do
    begin
-     SGRBStep.Cells[0,i+1]:=FloatToStrF(-RevSteps^.X[i],ffGeneral,2,1);
-     SGRBStep.Cells[1,i+1]:=FloatToStrF(RevSteps^.Y[i],ffGeneral,3,2);
+     SGRBStep.Cells[0,i+1]:=FloatToStrF(-RevSteps.X[i],ffGeneral,2,1);
+     SGRBStep.Cells[1,i+1]:=FloatToStrF(RevSteps.Y[i],ffGeneral,3,2);
    end;
 end;
 
@@ -2966,22 +2969,22 @@ end;
 
 procedure TIVchar.VectorsCreate;
 begin
-  new(ForwSteps);
-  new(RevSteps);
-  new(IVResult);
-  new(VolCorrection);
-  new(VolCorrectionNew);
-  new(TemperData);
+  ForwSteps:=TVector.Create;
+  RevSteps:=TVector.Create;
+  IVResult:=TVector.Create;
+  VolCorrection:=TVector.Create;
+  VolCorrectionNew:=TVector.Create;
+  TemperData:=TVector.Create;
 end;
 
 procedure TIVchar.VectorsDispose;
 begin
-  dispose(ForwSteps);
-  dispose(RevSteps);
-  dispose(IVResult);
-  dispose(VolCorrection);
-  dispose(VolCorrectionNew);
-  dispose(TemperData);
+  ForwSteps.Free;
+  RevSteps.Free;
+  IVResult.Free;
+  VolCorrection.Free;
+  VolCorrectionNew.Free;
+  TemperData.Free;
 end;
 
 
@@ -3025,15 +3028,15 @@ procedure TIVchar.SBGeneratorClick(Sender: TObject);
 //                     else
 //   ET1255_DACs[0].Reset();
  var
-    Vec:PVector;
+    Vec:TVector;
 //    i,Np:word;
-    Filtr:TDigitalManipulation;
+    Filtr:TVDigitalManipulation;
 begin
 //Np:=30;
 //i:=11;
 //showmessage(floattostr(sin(Pi*(i-(Np-1)/2.0)/2.0)/(Pi*(i-(Np-1)/2.0))));
 //  showmessage(floattostr(Log10((Power(10,0.1*Hz)-1)/(Power(10,0.1*Hc)-1))/2.0/Log10(wz/wc)));
-  new(Vec);
+  Vec:=TVector.Create;
 
 //    SetLenVector(Vec,1000);
 //    for I := 0 to Vec^.n - 1 do Vec^.X[i]:=i;
@@ -3048,27 +3051,18 @@ begin
 //   VectorToGraph(Filtr.DataVector,PointET1255);
 
 //   showmessage('Ok to Continue');
-   Vec.Load_File('f8v03shot.dat');
-   Filtr:=TDigitalManipulation.Create(Vec);
+   Vec.ReadFromFile('f8v03shot.dat');
+   Filtr:=TVDigitalManipulation.Create(Vec);
 
-   VectorToGraph(Vec,PointET1255);
-   Vec.Write_File('o1.dat',10);
+   Vec.WriteToGraph(PointET1255);
+   Vec.WriteToFile('o1.dat',10);
 
    showmessage('Ok to Continue');
    Filtr.LP_UniformIIRfilter4k(0.025,true);
-   Filtr.DataVector.Write_File('b1.dat',10);
-   VectorToGraph(Filtr.DataVector,PointET1255);
+   Filtr.WriteToFile('b1.dat',10);
+   Filtr.WriteToGraph(PointET1255);
    showmessage('Ok to Continue');
 
-   Vec.Decimation(20);
-   VectorToGraph(Vec,PointET1255);
-   Vec.Write_File('o2.dat',10);
-
-   showmessage('Ok to Continue');
-   Filtr.CopyData(Vec);
-   Filtr.LP_UniformIIRfilter4k(0.025,true);
-   VectorToGraph(Filtr.DataVector,PointET1255);
-   Filtr.DataVector.Write_File('b2.dat',10);
 //
 //   showmessage('Ok to Continue');
 //   Vec.Chebyshev;
@@ -3080,7 +3074,7 @@ begin
 
 
   Filtr.Free;
-  dispose(Vec);
+  Vec.Free;
 end;
 
 procedure TIVchar.SBTAutoClick(Sender: TObject);

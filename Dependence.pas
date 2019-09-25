@@ -5,7 +5,7 @@ interface
 uses
   ArduinoDevice, StdCtrls, ComCtrls, OlegType, Series, ShowTypes,
   ExtCtrls, Classes, OlegTypePart2, MDevice, HighResolutionTimer, 
-  OlegShowTypes, IniFiles;
+  OlegShowTypes, IniFiles, OlegVector;
 
 var EventToStopDependence:THandle;
 //    EventFastIVDone: THandle;
@@ -47,7 +47,7 @@ private
 
  public
 //  property isActive:boolean read FisActive;
-  Results:PVector;
+  Results:TVector;
   property HookBeginMeasuring:TSimpleEvent read FHookBeginMeasuring write FHookBeginMeasuring;
   property HookEndMeasuring:TSimpleEvent read fHookEndMeasuring write fHookEndMeasuring;
   property HookAction:TSimpleEvent read fHookAction write fHookAction;
@@ -55,7 +55,7 @@ private
   property HookSecondMeas:TSimpleEvent read fHookSecondMeas write fHookSecondMeas;
   property HookFirstMeas:TSimpleEvent read fHookFirstMeas write fHookFirstMeas;
   Constructor Create(BS: TButton;
-                     Res:PVector;
+                     Res:TVector;
                      FLn,FLg:TPointSeries);overload;
   Constructor Create(BS: TButton;
                      FLn,FLg:TPointSeries);overload;
@@ -85,7 +85,7 @@ private
   property isActive:boolean read FisActive;
   Constructor Create(PB:TProgressBar;
                      BS: TButton;
-                     Res:PVector;
+                     Res:TVector;
                      FLn,FLg:TPointSeries);
   procedure PeriodicMeasuring();virtual;
 end;
@@ -197,7 +197,7 @@ private
   property Duration:int64 read FDuration write SetDuration;
   Constructor Create(PB:TProgressBar;
                      BS: TButton;
-                     Res:PVector;
+                     Res:TVector;
                      FLn,FLg:TPointSeries;
                      Tim:TTimer);
   procedure BeginMeasuring();override;
@@ -214,7 +214,7 @@ TTimeTwoDependenceTimer=class(TTimeDependenceTimer)
   FastIVisUsed:boolean;
   Constructor Create(PB:TProgressBar;
                      BS: TButton;
-                     Res:PVector;
+                     Res:TVector;
                      FLn,FLg:TPointSeries;
                      Tim:TTimer);
   procedure BeginMeasuring();override;
@@ -272,7 +272,7 @@ public
                      CBF,CBR: TCheckBox;
                      PB:TProgressBar;
                      BS: TButton;
-                     Res:PVector;
+                     Res:TVector;
                      FLn,RLn,FLg,RLg:TPointSeries);
   procedure Measuring();
   procedure SetVoltage();
@@ -315,7 +315,7 @@ TFastIVDependence=class (TFastDependence)
 
    procedure SeriesClear();override;
    procedure BeginMeasuring();override;
-   function StepFromVector(Vector:Pvector):double;
+   function StepFromVector(Vector:TVector):double;
    function VoltageStep:double;
    procedure VoltageChange;
    procedure ActionMeasurement();override;
@@ -332,8 +332,8 @@ TFastIVDependence=class (TFastDependence)
  public
   RangeFor:TLimitShow;
   RangeRev:TLimitShowRev;
-  ForwardDelV:PVector;
-  ReverseDelV:PVector;
+  ForwardDelV:TVector;
+  ReverseDelV:TVector;
   CBForw,CBRev: TCheckBox;
   SettingDevice:TSettingDevice;
   RGDiodOrientation: TRadioGroup;
@@ -351,7 +351,7 @@ TFastIVDependence=class (TFastDependence)
 
   Constructor Create(
                      BS: TButton;
-//                     Res:PVector;
+//                     Res:TVector;
                      FLn,RLn,FLg,RLg:TPointSeries);
   procedure Cycle(ItIsForwardInput: Boolean);
   procedure Measuring(SingleMeasurement:boolean=true;FilePrefix:string='');
@@ -487,7 +487,7 @@ constructor TIVDependence.Create(
               CBF,CBR: TCheckBox;
               PB:TProgressBar;
               BS: TButton;
-              Res:PVector;
+              Res:TVector;
               FLn,RLn,FLg,RLg:TPointSeries
                      );
 begin
@@ -700,7 +700,7 @@ end;
 
 constructor TTimeDependenceTimer.Create(PB: TProgressBar;
                                    BS: TButton;
-                                   Res: PVector;
+                                   Res: TVector;
                                    FLn, FLg: TPointSeries;
                                    Tim:TTimer);
 begin
@@ -816,7 +816,7 @@ end;
 
 constructor TDependence.Create(PB: TProgressBar;
                                BS: TButton;
-                               Res: PVector;
+                               Res: TVector;
                                FLn, FLg: TPointSeries);
 begin
  inherited Create(BS,Res, FLn, FLg);
@@ -916,7 +916,7 @@ begin
 end;
 
 constructor TTimeTwoDependenceTimer.Create(PB: TProgressBar; BS: TButton;
-  Res: PVector; FLn, FLg: TPointSeries; Tim: TTimer);
+  Res: TVector; FLn, FLg: TPointSeries; Tim: TTimer);
 begin
   inherited Create(PB,BS,Res,FLn, FLg, Tim);
   isTwoValueOnTime:=True;
@@ -1078,7 +1078,7 @@ begin
 //  fIVMeasuringToStop:=False;
   DecimalSeparator:='.';
   fPointNumber:=0;
-  SetLenVector(Results,fPointNumber);
+  Results.SetLenVector(fPointNumber);
   ButtonStop.Enabled:=True;
 //-----------------
   SeriesClear();
@@ -1097,13 +1097,13 @@ end;
 constructor TFastDependence.Create(BS: TButton; FLn, FLg: TPointSeries);
 begin
  inherited Create;
- new(Results);
+ Results:=TVector.Create;
  fOwnResultsVectorIsUsed:=True;
  CreateFooter(BS, FLn, FLg);
 end;
 
 constructor TFastDependence.Create(BS: TButton;
-                                   Res: PVector;
+                                   Res: TVector;
                                    FLn, FLg: TPointSeries);
 begin
  inherited Create;
@@ -1137,7 +1137,7 @@ end;
 
 procedure TFastDependence.Free;
 begin
- if fOwnResultsVectorIsUsed then  Dispose(Results);
+ if fOwnResultsVectorIsUsed then  Results.Free;
  inherited Free;
 end;
 
@@ -1205,7 +1205,7 @@ end;
 
 
 constructor TFastIVDependence.Create(BS: TButton;
-//                                        Res: PVector;
+//                                        Res: TVector;
                                         FLn, RLn, FLg, RLg: TPointSeries);
 begin
 // inherited Create(BS,Res,FLn, FLg);
@@ -1221,9 +1221,9 @@ end;
 function TFastIVDependence.CurrentGrowth: boolean;
 begin
  if fForwardBranch then
-     Result:=fCurrentMeasured>Results^.Y[High(Results^.Y)]
+     Result:=fCurrentMeasured>Results.Y[Results.HighNumber]
                                else
-     Result:=fCurrentMeasured<Results^.Y[High(Results^.Y)]
+     Result:=fCurrentMeasured<Results.Y[Results.HighNumber]
 end;
 
 procedure TFastIVDependence.CurrentMeasuring;
@@ -1234,7 +1234,7 @@ begin
   repeat
    fCurrentMeasured:= ValueMeasuring(Current_MD);
    if fCurrentMeasured=ErResult then Exit;
-   if (High(Results^.Y)<0) then Break;
+   if (Results.IsEmpty) then Break;
    if fItIsBranchBegining then Break;
    if CurrentGrowth() then Break;
    inc(AtempNumber);
@@ -1316,27 +1316,27 @@ var
   i: Integer;
 begin
     if CBRev.Checked then
-      for i := 0 to High(Results^.X) do
+      for i := 0 to Results.HighNumber do
       begin
-        if Results^.X[i] < 0 then
+        if Results.X[i] < 0 then
         begin
-          RevLine.AddXY(-Results^.X[i], -Results^.Y[i]);
-          if abs(Results^.Y[i]) > 1E-11 then
-            RevLg.AddXY(-Results^.X[i], abs(Results^.Y[i]));
+          RevLine.AddXY(-Results.X[i], -Results.Y[i]);
+          if abs(Results.Y[i]) > 1E-11 then
+            RevLg.AddXY(-Results.X[i], abs(Results.Y[i]));
         end
         else
         begin
-          ForwLine.AddXY(Results^.X[i], Results^.Y[i]);
-          if abs(Results^.Y[i]) > 1E-11 then
-            ForwLg.AddXY(Results^.X[i], abs(Results^.Y[i]));
+          ForwLine.AddXY(Results.X[i], Results.Y[i]);
+          if abs(Results.Y[i]) > 1E-11 then
+            ForwLg.AddXY(Results.X[i], abs(Results.Y[i]));
         end;
       end
     else
-      for i := 0 to High(Results^.X) do
+      for i := 0 to Results.HighNumber do
       begin
-        ForwLine.AddXY(Results^.X[i], Results^.Y[i]);
-        if abs(Results^.Y[i]) > 1E-11 then
-          ForwLg.AddXY(Results^.X[i], abs(Results^.Y[i]));
+        ForwLine.AddXY(Results.X[i], Results.Y[i]);
+        if abs(Results.Y[i]) > 1E-11 then
+          ForwLg.AddXY(Results.X[i], abs(Results.Y[i]));
       end;
 end;
 
@@ -1451,14 +1451,14 @@ begin
   fVoltageMeasured :=ValueMeasuring(Voltage_MD);
 end;
 
-function TFastIVDependence.StepFromVector(Vector: Pvector): double;
+function TFastIVDependence.StepFromVector(Vector: TVector): double;
  var i:integer;
 begin
   Result := VoltageStepDefault;
-  for I := 0 to High(Vector^.X) do
-    if abs(fAbsVoltageValue) < Vector^.X[i] then
+  for I := 0 to Vector.HighNumber do
+    if abs(fAbsVoltageValue) < Vector.X[i] then
     begin
-      Result := Vector^.Y[i];
+      Result := Vector.Y[i];
       Break;
     end;
 end;
@@ -1494,13 +1494,16 @@ begin
 
  if fItIsLightIV and CBForw.Checked then
    begin
-     if Results^.MaxY>0 then fVoc:=Results^.Xvalue(0)
+     if Results.MaxY>0 then fVoc:=Results.Xvalue(0)
                         else FVoc:=0;
-     if Results^.MinX<=0 then fIsc:=-Results^.Yvalue(0)
-                         else fIsc:=-Y_X0(Results^.X[0],
-                                         Results^.Y[0],
-                                         Results^.X[1],
-                                         Results^.Y[1],
+     if Results.MinX<=0 then fIsc:=-Results.Yvalue(0)
+//                         else fIsc:=-Y_X0(Results.X[0],
+//                                         Results.Y[0],
+//                                         Results.X[1],
+//                                         Results.Y[1],
+//                                         0);
+                         else fIsc:=-Y_X0(Results[0],
+                                         Results[1],
                                          0);
     if fVoc=ErResult then fVoc:=0;
     if fIsc=ErResult then fIsc:=0;

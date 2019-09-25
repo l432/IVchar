@@ -5,7 +5,7 @@ interface
 uses
   RS232device, CPort, ShowTypes, StdCtrls, Classes, IniFiles, OlegType, 
   Measurement, Buttons, ExtCtrls, Series, PacketParameters, OlegTypePart2, 
-  OlegShowTypes;
+  OlegShowTypes, OlegVector;
 
 type
 
@@ -191,7 +191,7 @@ type
      procedure PrepareString;
      Procedure PacketReceiving(Sender: TObject; const Str: string);override;
    public
-    DataVectors:array[TGDS_Channel]of PVector;
+    DataVectors:array[TGDS_Channel]of TVector;
     property ActiveChannel:TGDS_Channel read FActiveChannel write FActiveChannel;
     Constructor Create(CP:TComPort;Nm:string);
     procedure Free;override;
@@ -440,7 +440,7 @@ begin
      fInvert[j]:=False;
      fDisplay[j]:=True;
      fOffset[j]:=0;
-     new(DataVectors[j]);
+     DataVectors[j]:=TVector.Create;
    end;
 end;
 
@@ -474,8 +474,8 @@ procedure TGDS_806S.Free;
 begin
 // HelpForMe(Name+Name);
  for j := Low(TGDS_Channel) to High(TGDS_Channel) do
-     dispose(DataVectors[j]);
- inherited Free;    
+     DataVectors[j].Free;
+ inherited Free;
 end;
 
 function TGDS_806S.GetAverageNumber: boolean;
@@ -773,12 +773,12 @@ begin
            SampleRate:=FourByteToSingle(ord(Str[DataOffset+3]),ord(Str[DataOffset+2]),
                        ord(Str[DataOffset+1]),ord(Str[DataOffset]));
            fActiveChannel:=ord(Str[DataOffset+4]);
-           SetLenVector(DataVectors[fActiveChannel],DataSize);
+           DataVectors[fActiveChannel].SetLenVector(DataSize);
            DataOffset:=DataOffset+8;
            for k := 0 to DataSize - 1 do
              begin
-              DataVectors[fActiveChannel]^.X[k]:=k/SampleRate;
-              DataVectors[fActiveChannel]^.Y[k]:=TwoByteToData(ord(Str[DataOffset+2*k]),
+              DataVectors[fActiveChannel].X[k]:=k/SampleRate;
+              DataVectors[fActiveChannel].Y[k]:=TwoByteToData(ord(Str[DataOffset+2*k]),
                                                     ord(Str[DataOffset+2*k+1]));
              end;
            fValue:=1;
@@ -1301,20 +1301,20 @@ begin
      TTShow.Interval:=max(2000,2*fGDS_806S.fTimeTransfer);
      fGDS_806S.GetMeasuringDataVectors(1);
      fGraphs[2].Clear;
-     VectorToGraph(fGDS_806S.DataVectors[1],fGraphs[1]);
+     fGDS_806S.DataVectors[1].WriteToGraph(fGraphs[1]);
     end;
   1:begin
      TTShow.Interval:=max(2000,2*fGDS_806S.fTimeTransfer);
      fGDS_806S.GetMeasuringDataVectors(2);
      fGraphs[1].Clear;
-     VectorToGraph(fGDS_806S.DataVectors[2],fGraphs[2]);
+     fGDS_806S.DataVectors[2].WriteToGraph(fGraphs[2]);
     end;
   2:begin
      TTShow.Interval:=max(2000,4*fGDS_806S.fTimeTransfer);
      fGDS_806S.GetMeasuringDataVectors(1);
-     VectorToGraph(fGDS_806S.DataVectors[1],fGraphs[1]);
+     fGDS_806S.DataVectors[1].WriteToGraph(fGraphs[1]);
      fGDS_806S.GetMeasuringDataVectors(2);
-     VectorToGraph(fGDS_806S.DataVectors[2],fGraphs[2]);
+     fGDS_806S.DataVectors[2].WriteToGraph(fGraphs[2]);
     end;
  end;
 end;
