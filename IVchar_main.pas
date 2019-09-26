@@ -876,7 +876,7 @@ type
 
 const
   Undefined='NoData';
-  Vmax=6.5;
+//  Vmax=6.6;
   StepDefault=0.01;
   AtempNumbermax=3;
 

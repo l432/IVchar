@@ -11,6 +11,8 @@ const DACR2R_MaxValue=65535;
 
       DACR2RCommand=$4;
 
+       Vmax=6.6;
+
 //      DACR2R_Pos=$0F; //додатня напруга
 //      DACR2R_Neg=$FF; //від'ємна напруга
 //      DACR2R_Reset=$AA; //встановлюється нульова напруга
@@ -451,7 +453,7 @@ begin
   if abs(Volt)<1.001 then
            Result:=min(10000,VoltToKod(Volt))-1
                      else
-           Result:=min(6500,Round(VoltToKod(Volt)/10))-1001;
+           Result:=min(round(Vmax*1000),Round(VoltToKod(Volt)/10))-1001;
 end;
 
 //procedure TDACR2R_Calibr.WriteToFile(FileName: string; arr: TArrWord);
