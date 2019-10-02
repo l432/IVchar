@@ -1538,6 +1538,8 @@ begin
   Application.ProcessMessages;
   if TIVParameters.IVMeasuringToStop then Exit;
   TDependence.tempIChange(DACR2R_MD.GetMeasurementResult());
+//  if TDependence.tempI=ErResult then TDependence.tempIChange(0);
+
   LADCurrentValue.Caption:=FloatToStrF(TDependence.tempI,ffFixed, 6, 4);
 end;
 

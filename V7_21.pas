@@ -274,6 +274,8 @@ end;
 Procedure TV721A.DiapazonDetermination(Data:array of byte);
 begin
   fDiapazon:=-1;
+  if Data[3]<1 then  Exit;
+  
   if Frac(Log2( Data[3]))=0 then
    begin
     if fMeasureMode=ord(ID) then
