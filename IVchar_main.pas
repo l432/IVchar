@@ -2573,6 +2573,7 @@ begin
 
 
  RS232_MediatorTread:=TRS232_MediatorTread.Create(
+//                 [DACR2R,V721A]);
                  [INA226_Module,ADS11115module,HTU21D,
                  DACR2R,V721A,V721_I,V721_II,DS18B20,
                  TMP102,
@@ -3029,54 +3030,55 @@ procedure TIVchar.SBGeneratorClick(Sender: TObject);
 //  end
 //                     else
 //   ET1255_DACs[0].Reset();
- var
-    Vec:TVector;
+// var
+//    Vec:TVector;
 //    i,Np:word;
-    Filtr:TVDigitalManipulation;
+//    Filtr:TVDigitalManipulation;
 begin
-//Np:=30;
-//i:=11;
-//showmessage(floattostr(sin(Pi*(i-(Np-1)/2.0)/2.0)/(Pi*(i-(Np-1)/2.0))));
-//  showmessage(floattostr(Log10((Power(10,0.1*Hz)-1)/(Power(10,0.1*Hc)-1))/2.0/Log10(wz/wc)));
-  Vec:=TVector.Create;
-
-//    SetLenVector(Vec,1000);
-//    for I := 0 to Vec^.n - 1 do Vec^.X[i]:=i;
-//     Vec^.Y[0]:=1;
-//    for I := 1 to 500 do Vec^.Y[i]:=0;
-//    for I := 501 to Vec^.n - 1 do Vec^.Y[i]:=1;
-//   VectorToGraph(Vec,PointET1255);
-//   showmessage('Ok to Continue');
-
-
-//   Filtr.LP_FIR_Chebyshev(20,0.4,false,20);
-//   VectorToGraph(Filtr.DataVector,PointET1255);
-
-//   showmessage('Ok to Continue');
-   Vec.ReadFromFile('f8v03shot.dat');
-   Filtr:=TVDigitalManipulation.Create(Vec);
-
-   Vec.WriteToGraph(PointET1255);
-   Vec.WriteToFile('o1.dat',10);
-
-   showmessage('Ok to Continue');
-   Filtr.LP_UniformIIRfilter4k(0.025,true);
-   Filtr.WriteToFile('b1.dat',10);
-   Filtr.WriteToGraph(PointET1255);
-   showmessage('Ok to Continue');
-
+showmessage(inttostr(ord(PacketEndChar)));
+////Np:=30;
+////i:=11;
+////showmessage(floattostr(sin(Pi*(i-(Np-1)/2.0)/2.0)/(Pi*(i-(Np-1)/2.0))));
+////  showmessage(floattostr(Log10((Power(10,0.1*Hz)-1)/(Power(10,0.1*Hc)-1))/2.0/Log10(wz/wc)));
+//  Vec:=TVector.Create;
+//
+////    SetLenVector(Vec,1000);
+////    for I := 0 to Vec^.n - 1 do Vec^.X[i]:=i;
+////     Vec^.Y[0]:=1;
+////    for I := 1 to 500 do Vec^.Y[i]:=0;
+////    for I := 501 to Vec^.n - 1 do Vec^.Y[i]:=1;
+////   VectorToGraph(Vec,PointET1255);
+////   showmessage('Ok to Continue');
+//
+//
+////   Filtr.LP_FIR_Chebyshev(20,0.4,false,20);
+////   VectorToGraph(Filtr.DataVector,PointET1255);
+//
+////   showmessage('Ok to Continue');
+//   Vec.ReadFromFile('f8v03shot.dat');
+//   Filtr:=TVDigitalManipulation.Create(Vec);
+//
+//   Vec.WriteToGraph(PointET1255);
+//   Vec.WriteToFile('o1.dat',10);
 //
 //   showmessage('Ok to Continue');
-//   Vec.Chebyshev;
-//   VectorToGraph(Vec,PointET1255);
-
-
-
-//   Filtr.DataVector.Write_File('olegHHH.dat',10);
-
-
-  Filtr.Free;
-  Vec.Free;
+//   Filtr.LP_UniformIIRfilter4k(0.025,true);
+//   Filtr.WriteToFile('b1.dat',10);
+//   Filtr.WriteToGraph(PointET1255);
+//   showmessage('Ok to Continue');
+//
+////
+////   showmessage('Ok to Continue');
+////   Vec.Chebyshev;
+////   VectorToGraph(Vec,PointET1255);
+//
+//
+//
+////   Filtr.DataVector.Write_File('olegHHH.dat',10);
+//
+//
+//  Filtr.Free;
+//  Vec.Free;
 end;
 
 procedure TIVchar.SBTAutoClick(Sender: TObject);

@@ -183,7 +183,7 @@ type
 implementation
 
 uses
-  Math, Forms, Graphics, Controls, OlegFunction, HighResolutionTimer;
+  Math, Forms, Graphics, Controls, OlegFunction, HighResolutionTimer, Dialogs;
 
 
 { TArduinoMeter }
@@ -218,7 +218,6 @@ procedure TArduinoMeter.PacketReceiving(Sender: TObject; const Str: string);
   var i:integer;
 begin
 // ShowData(fData);
-
  if not(PacketIsReceived(Str,fData,fMetterKod)) then Exit;
  if fData[2]<>Pins.PinControl then Exit;
 //   ?
@@ -525,7 +524,6 @@ begin
   CreateHook;
   fData[0] := fSetterKod;
   PinsToDataArray();
-//showmessage(Name);
 end;
 
 procedure TArduinoSetter.CreateHook;

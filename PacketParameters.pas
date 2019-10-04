@@ -62,7 +62,7 @@ Function CRC8(Data:array of byte;poly:byte=$07):byte;
 implementation
 
 uses
-  HighResolutionTimer;
+  HighResolutionTimer, ArduinoDevice;
 
 Procedure PacketCreate( Args: array of byte);
 var i,ProblemByteNumber,counter:byte;
@@ -126,11 +126,22 @@ Function PacketIsReceived(const Str: string; var pData:TArrByte):boolean;
 begin
  Result:=True;
 
+
  SetLength(pData,Length(Str));
  for I := 0 to High(pData) do
    pData[i]:=ord(str[i+1]);
+
+ if pData[0]=Length(Str)+1 then
+  begin
+    SetLength(pData,High(pData)+2);
+    pData[High(pData)]:=ord(PacketEndChar);
+  end;
 //  ShowData(pData);
- if pData[0]<>Length(Str) then Result:=False;
+
+ if (pData[0]<>Length(Str))
+    and(pData[0]<>Length(Str)+1) then Result:=False;
+
+
  if FCSCalculate(pData)<>0 then Result:=False;
 
      WrongByteNumber:=pData[1];
@@ -141,12 +152,14 @@ begin
          pData[i]:=pData[i+1+WrongByteNumber];
          end;
      SetLength(pData,High(pData)-WrongByteNumber);
+
 end;
 
 Function PacketIsReceived(const Str: string; var pData:TArrByte; Command:byte):boolean;overload;
 begin
  Result:=False;
  if not(PacketIsReceived(Str,pData)) then Exit;
+
  if pData[1]=Command then Result:=True;
 end;
 

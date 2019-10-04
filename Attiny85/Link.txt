@@ -1,3 +1,5 @@
 https://voltiq.ru/digispark-attiny85-review/
+http://arduino.ua/art54-znakomstvo-s-digispark
 http://www.electronica52.in.ua/proekty-arduino/nachalo-raboty-s-digispark-a-dlya-kogo-to-prosto--attiny85-s-usb--
 http://robocraft.ru/blog/arduino/3423.html
+https://habr.com/ru/post/234477/

@@ -303,10 +303,9 @@ begin
   MModeDetermination(fData);
   if fMeasureMode=-1 then Exit;
   DiapazonDetermination(fData);
-  if fDiapazon=-1 then Exit;
+  if fDiapazon=-1 then  Exit;
 
   ValueDetermination(fData);
-//  fIsready:=True;
 end;
 
 constructor TRS232Meter.Create(CP:TComPort;Nm:string);

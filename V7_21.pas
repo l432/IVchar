@@ -41,6 +41,7 @@ type
                              D_Begin, D_End:TV721_Diapazons);
    Function MeasureModeLabelRead():string;override;
    procedure   PacketCreateToSend(); override;
+
   public
    Procedure ConvertToValue();override;
    Function ResultProblem(Rez:double):boolean;//override;
@@ -94,7 +95,7 @@ type
 implementation
 
 uses   PacketParameters, Math, SysUtils, OlegMath, OlegType,
-      RS232_Meas_Tread;
+      RS232_Meas_Tread, Dialogs;
 
 Constructor TVoltmetr.Create(CP:TComPort;Nm:string);
  var V721_MeasureMode:TV721_MeasureMode;

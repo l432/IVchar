@@ -21,7 +21,12 @@ bool ParameterReceive() {
 
     byte number = Serial.readBytesUntil(PacketEnd, PinAndID::DataFromPC, PacketMaxLength);
 
-//    if (number != PinAndID::DataFromPC[0] + 1) return false;
+    //    if (number != PinAndID::DataFromPC[0] + 1) return false;
+    if (number = PinAndID::DataFromPC[0] - 1)
+    {
+      PinAndID::DataFromPC[number] = PacketEnd;
+      number += 1;
+    }
     if (number != PinAndID::DataFromPC[0] ) return false;
 
 
