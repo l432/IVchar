@@ -36,17 +36,17 @@ int main(void) {
 // SetMode();
 // _delay_ms(5000);
     
-    int Value = anRead();
+//    int Value = anRead();
 
-    showResult(Value);
-    PORTB = B00001011;
-    _delay_ms(500);
-    PORTB = B00001000;
-    _delay_ms(500);
-    PORTB = B00001011;
-    _delay_ms(500);
-    PORTB = B00001000;
-    _delay_ms(500);
+//    showResult(Value);
+//    PORTB = B00001011;
+//    _delay_ms(500);
+//    PORTB = B00001000;
+//    _delay_ms(500);
+//    PORTB = B00001011;
+//    _delay_ms(500);
+//    PORTB = B00001000;
+//    _delay_ms(500);
 
 
     //    if (((Value < MaxLow) || (Value > MaxHigh)) && (Mode > 0)) {
