@@ -1,7 +1,7 @@
 #include <avr/io.h>
 #include <util/delay.h>
 
-byte Mode = 3;
+byte Mode = 2;
 const int MaxLow = 142;
 const int MaxHigh = 896;
 const int MinLow = 511;
@@ -17,7 +17,8 @@ int main(void) {
   //  ADCSRB |= _BV(BIN);
   ADCSRA = B10000010;
   while (1) {
-ResistCarousel();
+//ResistCarousel();
+
 //
 //    int Value = anRead();
 //
