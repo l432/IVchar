@@ -2178,7 +2178,7 @@ procedure TIVchar.SaveIVMeasurementResults(FileName: string; DataVector:TVector)
 begin
   DataVector.Sorting;
   DataVector.DeleteDuplicate;
-  DataVector.WriteToFile(FileName);
+  DataVector.WriteToFile(FileName,5);
   //       ToFileFromTwoVector(SaveDialog.FileName,IVResult,VolCorrectionNew);
   LTLastValue.Caption := FloatToStrF(Temperature, ffFixed, 5, 2);
   SaveCommentsFile(FileName);

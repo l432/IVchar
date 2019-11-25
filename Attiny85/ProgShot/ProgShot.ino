@@ -1,7 +1,7 @@
 #include <avr/io.h>
 #include <util/delay.h>
 
-byte Mode = 2;
+byte Mode = 3;
 const int MaxLow = 142;
 const int MaxHigh = 896;
 const int MinLow = 511;
