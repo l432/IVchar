@@ -19,20 +19,20 @@ int main(void) {
   while (1) {
 //ResistCarousel();
 
-//
-//    int Value = anRead();
-//
-//    //    showResult(Value);
-//
-//
-//    if ((Mode > 0) && ((Value < MaxLow) || (Value > MaxHigh))) {
-//      Mode--;
-//      SetMode();
-//    };
-//    if ((Mode < 2) && ((Value < MinHigh) && (Value > MinLow))) {
-//      Mode++;
-//      SetMode();
-//    };
+
+    int Value = anRead();
+
+    //    showResult(Value);
+
+
+    if ((Mode > 0) && ((Value < MaxLow) || (Value > MaxHigh))) {
+      Mode--;
+      SetMode();
+    };
+    if ((Mode < 2) && ((Value < MinHigh) && (Value > MinLow))) {
+      Mode++;
+      SetMode();
+    };
   }
 }
 

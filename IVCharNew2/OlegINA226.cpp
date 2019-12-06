@@ -12,7 +12,8 @@ INA226o::INA226o()
 
 
 bool INA226o::Begin() {
-
+// ControlBlink();
+// delay(1000);
   if (DeviceId != INA226Command) return false;
 
 //ActionId = _address;

@@ -11,21 +11,26 @@
 
 
 bool ParameterReceive() {
+
+ 
   byte incomingByte = Serial.read();
   if (incomingByte = PacketStart)
   {
-
-    for (byte i = 0; i < PacketMaxLength; i++)
+     for (byte i = 0; i < PacketMaxLength; i++)
       PinAndID::DataFromPC[i] = 0;
 
 
     byte number = Serial.readBytesUntil(PacketEnd, PinAndID::DataFromPC, PacketMaxLength);
 
-    //    if (number != PinAndID::DataFromPC[0] + 1) return false;
-    if (number = PinAndID::DataFromPC[0] - 1)
+// for (byte i = 0; i < number; i++)
+//ControlBlink();
+
+ 
+    if (number == PinAndID::DataFromPC[0] - 1)
     {
       PinAndID::DataFromPC[number] = PacketEnd;
       number += 1;
+//      ControlBlink();
     }
     if (number != PinAndID::DataFromPC[0] ) return false;
 
@@ -33,6 +38,7 @@ bool ParameterReceive() {
     PinAndID::DataFromPC[PinAndID::DataFromPC[0]] = 0;
 
     if (FCS(PinAndID::DataFromPC, sizeof(PinAndID::DataFromPC)) != 0) return false;
+
 
 
     number = PinAndID::DataFromPC[1];

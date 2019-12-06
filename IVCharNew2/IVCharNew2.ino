@@ -32,37 +32,39 @@ INA226o ina226;
 
 
 void setup() {
-//  Serial.begin(115200);
-    Serial.begin(256000);
+    Serial.begin(115200);
+//  Serial.begin(256000);
   Serial.setTimeout(50);
   SPI.begin();
   Wire.begin();
-  
+
   for (byte i = 0; i < sizeof(DrivePins); i++)
   {
     pinMode(DrivePins[i], OUTPUT);
     digitalWrite(DrivePins[i], HIGH);
   }
   pinMode(LEDPin, OUTPUT);
- for (byte i = 0; i < sizeof(InputPins); i++)
+  for (byte i = 0; i < sizeof(InputPins); i++)
   {
     pinMode(InputPins[i], INPUT);
   }
-   
+
   dacR2R.Setup();
   d3006.Setup();
   mcp3424.Setup();
 
-//  wdt_enable(WDTO_4S);
+  //  wdt_enable(WDTO_4S);
 }
 
 void loop() {
-
+// ControlBlink();
+// delay(1000);
   if (Serial.available() > 0) {
+
     if (ParameterReceive()) {
-//          byte hhhh[2] = {140, 204};
-//    PinAndID::CreateAndSendPacket( hhhh, 2);
-              
+      //          byte hhhh[2] = {140, 204};
+      //    PinAndID::CreateAndSendPacket( hhhh, 2);
+
       if (cd.V721()) goto start;
       if (SendParameters()) goto start;
       if (dacR2R.Action()) goto start;
@@ -72,9 +74,9 @@ void loop() {
       if (htu21.Begin()) goto start;
       if (tmp102.Begin()) goto start;
       if (mcp3424.Begin()) goto start;
-      if (ads1115.Begin()) goto start; 
-      if (ad9833.Action()) goto start;     
-      if (mlx90615.Begin()) goto start;        
+      if (ads1115.Begin()) goto start;
+      if (ad9833.Action()) goto start;
+      if (mlx90615.Begin()) goto start;
       if (ina226.Begin()) goto start;
     }
   }
@@ -85,8 +87,8 @@ start:
   tmp102.End();
   mcp3424.End();
   ads1115.End();
-  ina226.End(); 
-//  wdt_reset();
+  ina226.End();
+  //  wdt_reset();
 }
 
 

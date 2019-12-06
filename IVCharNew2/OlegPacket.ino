@@ -50,6 +50,7 @@ void ControlBlink() {
   digitalWrite(LEDPin, HIGH);
   delay(200);
   digitalWrite(LEDPin, LOW);
+  delay(500);
 }
 
 byte PinToInterruptNumber(byte PinNumber) {
