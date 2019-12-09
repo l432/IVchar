@@ -17,6 +17,7 @@
 #include "OlegAD9833.h"
 #include "OlegMLX90615.h"
 #include "OlegINA226.h"
+#include "OlegSTS21.h"
 
 DS18B20o ds18b20;
 CustomDevice cd;
@@ -29,7 +30,7 @@ ADS1115o ads1115;
 AD9833o ad9833;
 MLX90615o mlx90615;
 INA226o ina226;
-
+STS21o  sts21;
 
 void setup() {
     Serial.begin(115200);
@@ -62,8 +63,6 @@ void loop() {
   if (Serial.available() > 0) {
 
     if (ParameterReceive()) {
-      //          byte hhhh[2] = {140, 204};
-      //    PinAndID::CreateAndSendPacket( hhhh, 2);
 
       if (cd.V721()) goto start;
       if (SendParameters()) goto start;
@@ -72,6 +71,7 @@ void loop() {
       if (ds18b20.Begin()) goto start;
       if (cd.PinChange()) goto start;
       if (htu21.Begin()) goto start;
+      if (sts21.Begin()) goto start;
       if (tmp102.Begin()) goto start;
       if (mcp3424.Begin()) goto start;
       if (ads1115.Begin()) goto start;
@@ -84,6 +84,7 @@ start:
   ds18b20.End();
   d3006.End();
   htu21.End();
+  sts21.End();
   tmp102.End();
   mcp3424.End();
   ads1115.End();

@@ -35,7 +35,7 @@ object IVchar: TIVchar
     Top = 0
     Width = 786
     Height = 496
-    ActivePage = TS_ADC
+    ActivePage = TS_Temper
     Align = alTop
     Font.Charset = RUSSIAN_CHARSET
     Font.Color = clWindowText
@@ -418,10 +418,6 @@ object IVchar: TIVchar
     object TS_B7_21A: TTabSheet
       Caption = 'B7_21A'
       ImageIndex = 1
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object LV721A: TLabel
         Left = 269
         Top = 19
@@ -551,10 +547,6 @@ object IVchar: TIVchar
     object TS_B7_21: TTabSheet
       Caption = 'B7_21'
       ImageIndex = 2
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object PanelV721_I: TPanel
         Left = 0
         Top = 0
@@ -988,7 +980,7 @@ object IVchar: TIVchar
           Font.Height = -15
           Font.Name = 'Verdana'
           Font.Style = [fsBold]
-          ItemHeight = 0
+          ItemHeight = 18
           ParentFont = False
           TabOrder = 2
         end
@@ -1114,7 +1106,7 @@ object IVchar: TIVchar
             Width = 111
             Height = 24
             Style = csDropDownList
-            ItemHeight = 0
+            ItemHeight = 16
             TabOrder = 2
           end
           object BMeasChA: TButton
@@ -1145,7 +1137,7 @@ object IVchar: TIVchar
         Font.Height = -21
         Font.Name = 'Arial'
         Font.Style = [fsBold]
-        ItemHeight = 0
+        ItemHeight = 24
         ParentFont = False
         TabOrder = 1
       end
@@ -1325,7 +1317,7 @@ object IVchar: TIVchar
           Font.Height = -15
           Font.Name = 'Verdana'
           Font.Style = [fsBold]
-          ItemHeight = 0
+          ItemHeight = 18
           ParentFont = False
           TabOrder = 2
         end
@@ -1451,7 +1443,7 @@ object IVchar: TIVchar
             Width = 111
             Height = 24
             Style = csDropDownList
-            ItemHeight = 0
+            ItemHeight = 16
             TabOrder = 2
           end
           object BMeasChB: TButton
@@ -1881,7 +1873,7 @@ object IVchar: TIVchar
             Font.Height = -13
             Font.Name = 'Arial'
             Font.Style = [fsBold]
-            ItemHeight = 0
+            ItemHeight = 16
             ParentFont = False
             TabOrder = 2
           end
@@ -2013,7 +2005,7 @@ object IVchar: TIVchar
             Font.Height = -13
             Font.Name = 'Arial'
             Font.Style = [fsBold]
-            ItemHeight = 0
+            ItemHeight = 16
             ParentFont = False
             TabOrder = 2
           end
@@ -2734,7 +2726,7 @@ object IVchar: TIVchar
           Font.Height = -13
           Font.Name = 'Arial'
           Font.Style = [fsBold]
-          ItemHeight = 0
+          ItemHeight = 16
           ParentFont = False
           TabOrder = 0
         end
@@ -2774,7 +2766,7 @@ object IVchar: TIVchar
           Font.Height = -13
           Font.Name = 'Arial'
           Font.Style = [fsBold]
-          ItemHeight = 0
+          ItemHeight = 16
           ParentFont = False
           TabOrder = 4
         end
@@ -2790,7 +2782,7 @@ object IVchar: TIVchar
           Font.Height = -13
           Font.Name = 'Arial'
           Font.Style = [fsBold]
-          ItemHeight = 0
+          ItemHeight = 16
           ParentFont = False
           TabOrder = 5
         end
@@ -2957,7 +2949,7 @@ object IVchar: TIVchar
         Font.Height = -13
         Font.Name = 'Arial'
         Font.Style = [fsBold]
-        ItemHeight = 0
+        ItemHeight = 16
         ParentFont = False
         TabOrder = 1
       end
@@ -3028,7 +3020,7 @@ object IVchar: TIVchar
           Font.Height = -13
           Font.Name = 'Arial'
           Font.Style = [fsBold]
-          ItemHeight = 0
+          ItemHeight = 16
           ParentFont = False
           TabOrder = 1
         end
@@ -3208,7 +3200,7 @@ object IVchar: TIVchar
           Font.Height = -13
           Font.Name = 'Arial'
           Font.Style = [fsBold]
-          ItemHeight = 0
+          ItemHeight = 16
           ParentFont = False
           TabOrder = 0
         end
@@ -3315,9 +3307,9 @@ object IVchar: TIVchar
       object GBTMP102: TGroupBox
         Left = 390
         Top = 5
-        Width = 168
+        Width = 181
         Height = 58
-        Caption = 'TMP102   I2C, 3.3V'
+        Caption = 'TMP102   I2C, 3.3V, 0.07'
         Font.Charset = RUSSIAN_CHARSET
         Font.Color = clOlive
         Font.Height = -15
@@ -3328,7 +3320,7 @@ object IVchar: TIVchar
         object PTMP102Pin: TPanel
           Left = 5
           Top = 19
-          Width = 158
+          Width = 170
           Height = 32
           Cursor = crHandPoint
           BevelOuter = bvLowered
@@ -3347,9 +3339,9 @@ object IVchar: TIVchar
       object GBHTU21: TGroupBox
         Left = 390
         Top = 69
-        Width = 168
-        Height = 57
-        Caption = 'HTU21D,  I2C, 3.3V'
+        Width = 181
+        Height = 58
+        Caption = 'HTU21D,  I2C, 3.3V, 0.01'
         Font.Charset = RUSSIAN_CHARSET
         Font.Color = clOlive
         Font.Height = -15
@@ -3360,7 +3352,7 @@ object IVchar: TIVchar
         object PHTU21: TPanel
           Left = 5
           Top = 19
-          Width = 158
+          Width = 170
           Height = 32
           BevelOuter = bvLowered
           Caption = 'Adress is $40'
@@ -3376,11 +3368,11 @@ object IVchar: TIVchar
         end
       end
       object GBMLX615: TGroupBox
-        Left = 598
+        Left = 580
         Top = 5
-        Width = 168
+        Width = 195
         Height = 135
-        Caption = 'MLX90615,  I2C, 3.3V'
+        Caption = 'MLX90615,  I2C, 3.3V, 0.02'
         Font.Charset = RUSSIAN_CHARSET
         Font.Color = clOlive
         Font.Height = -15
@@ -3626,6 +3618,37 @@ object IVchar: TIVchar
           Font.Style = [fsBold]
           ParentFont = False
           TabOrder = 4
+        end
+      end
+      object GBSTS21: TGroupBox
+        Left = 390
+        Top = 132
+        Width = 181
+        Height = 57
+        Caption = 'STS21,  I2C, 3.3V, 0.01'
+        Font.Charset = RUSSIAN_CHARSET
+        Font.Color = clOlive
+        Font.Height = -15
+        Font.Name = 'Arial'
+        Font.Style = [fsBold]
+        ParentFont = False
+        TabOrder = 10
+        object PSTS21: TPanel
+          Left = 5
+          Top = 19
+          Width = 170
+          Height = 32
+          BevelOuter = bvLowered
+          Caption = 'Adress is $4A'
+          Color = clSilver
+          Font.Charset = DEFAULT_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -17
+          Font.Name = 'Tahoma'
+          Font.Style = [fsBold]
+          ParentBackground = False
+          ParentFont = False
+          TabOrder = 0
         end
       end
     end
@@ -4209,7 +4232,7 @@ object IVchar: TIVchar
               Font.Height = -13
               Font.Name = 'Arial'
               Font.Style = [fsBold]
-              ItemHeight = 0
+              ItemHeight = 16
               ParentFont = False
               TabOrder = 2
             end
@@ -4389,7 +4412,7 @@ object IVchar: TIVchar
               Font.Height = -13
               Font.Name = 'Arial'
               Font.Style = [fsBold]
-              ItemHeight = 0
+              ItemHeight = 16
               ParentFont = False
               TabOrder = 2
             end
@@ -4566,7 +4589,7 @@ object IVchar: TIVchar
               Font.Height = -13
               Font.Name = 'Arial'
               Font.Style = [fsBold]
-              ItemHeight = 0
+              ItemHeight = 16
               ParentFont = False
               TabOrder = 2
             end
@@ -4716,10 +4739,6 @@ object IVchar: TIVchar
     object TS_ET1255ADC: TTabSheet
       Caption = 'ET1255_ADC'
       ImageIndex = 11
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object LET1255I: TLabel
         Left = 4
         Top = 289
@@ -5031,7 +5050,7 @@ object IVchar: TIVchar
         Font.Height = -13
         Font.Name = 'Arial'
         Font.Style = [fsBold]
-        ItemHeight = 0
+        ItemHeight = 16
         ParentFont = False
         TabOrder = 1
       end
@@ -5249,7 +5268,7 @@ object IVchar: TIVchar
           Font.Height = -13
           Font.Name = 'Arial'
           Font.Style = [fsBold]
-          ItemHeight = 0
+          ItemHeight = 16
           ParentFont = False
           TabOrder = 0
         end
@@ -5279,7 +5298,7 @@ object IVchar: TIVchar
           Font.Height = -13
           Font.Name = 'Arial'
           Font.Style = [fsBold]
-          ItemHeight = 0
+          ItemHeight = 16
           ParentFont = False
           TabOrder = 2
         end
@@ -5423,7 +5442,7 @@ object IVchar: TIVchar
         Font.Height = -13
         Font.Name = 'Arial'
         Font.Style = [fsBold]
-        ItemHeight = 0
+        ItemHeight = 16
         ParentFont = False
         TabOrder = 6
       end
@@ -5494,7 +5513,7 @@ object IVchar: TIVchar
           Font.Height = -13
           Font.Name = 'Arial'
           Font.Style = [fsBold]
-          ItemHeight = 0
+          ItemHeight = 16
           ParentFont = False
           TabOrder = 0
         end
@@ -5510,7 +5529,7 @@ object IVchar: TIVchar
           Font.Height = -13
           Font.Name = 'Arial'
           Font.Style = [fsBold]
-          ItemHeight = 0
+          ItemHeight = 16
           ParentFont = False
           TabOrder = 1
         end
@@ -5646,7 +5665,7 @@ object IVchar: TIVchar
             Font.Height = -13
             Font.Name = 'Arial'
             Font.Style = [fsBold]
-            ItemHeight = 0
+            ItemHeight = 16
             ParentFont = False
             TabOrder = 2
           end
@@ -5764,10 +5783,6 @@ object IVchar: TIVchar
     object TS_D30_06: TTabSheet
       Caption = 'AD9833'
       ImageIndex = 10
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object LFreqRangeAD9866: TLabel
         Left = 3
         Top = 50

@@ -39,6 +39,13 @@ type
    Procedure ConvertToValue();override;
   end;
 
+  TSTS21=class(THTU21D)
+  {базовий клас для датчика STS21}
+  protected
+  public
+   Constructor Create(CP:TComPort;Nm:string);//override;
+  end;
+
   TTMP102=class(TTempSensor)
   {базовий клас для датчика TMP102}
   protected
@@ -247,6 +254,17 @@ end;
 procedure TTMP102.PinsCreate;
 begin
   Pins := TPins_I2C.Create(Name);
+end;
+
+{ TSTS21 }
+
+constructor TSTS21.Create(CP: TComPort; Nm: string);
+begin
+  inherited Create(CP,Nm);
+
+  fMetterKod:=STS21Command;
+  Pins.PinControl:=STS21Command;
+  fMinDelayTime:=85;
 end;
 
 end.
