@@ -511,7 +511,6 @@ type
     ST9866PhaseCh1: TStaticText;
     ST9866FreqCh1: TStaticText;
     RGAD9833Mode: TRadioGroup;
-    ComPortGDS: TComPort;
     TS_GDS: TTabSheet;
     GB_GDS_Com: TGroupBox;
     ComCBGDS_Port: TComComboBox;
@@ -614,6 +613,25 @@ type
     LTemDepTolCoef: TLabel;
     GBSTS21: TGroupBox;
     PSTS21: TPanel;
+    TS_HandMade: TTabSheet;
+    GB_oCur: TGroupBox;
+    LoCur: TLabel;
+    LUoCur: TLabel;
+    B_oCur_Meas: TButton;
+    SB_oCur_Auto: TSpeedButton;
+    GB_oCurMeasVal: TGroupBox;
+    L_oCurMeasVal: TLabel;
+    B_oCurMeasVal: TButton;
+    ST_oCurMeasVal: TStaticText;
+    CB_oCurMeasVal: TComboBox;
+    GB_oCurMeasDiap: TGroupBox;
+    L_oCurMeasDiap: TLabel;
+    B_oCurMeasDiap: TButton;
+    ST_oCurMeasDiap: TStaticText;
+    CB_oCurMeasDiap: TComboBox;
+    ST_oCurBias: TStaticText;
+    L_oCurBias: TLabel;
+    ComPortGDS: TComPort;
 
     procedure FormCreate(Sender: TObject);
     procedure BConnectClick(Sender: TObject);
@@ -1631,7 +1649,7 @@ begin
        begin
         ET1255_DACs[i]:=TET1255_DAC.Create(i);
         ET1255_DACs[i].Reset();
-        AnyObjectArray.Add([ET1255_DACs[i]]);
+        AnyObjectArray.Add(ET1255_DACs[i]);
        end;
      ET1255_DACsShow[0]:=TDAC_Show.Create(ET1255_DACs[0],
                     STOV1255ch0,STOK1255Ch0,

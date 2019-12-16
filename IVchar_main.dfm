@@ -3,7 +3,7 @@ object IVchar: TIVchar
   Top = 0
   BorderIcons = [biSystemMenu, biMinimize]
   Caption = 'IVchar'
-  ClientHeight = 537
+  ClientHeight = 573
   ClientWidth = 786
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -19,7 +19,7 @@ object IVchar: TIVchar
   TextHeight = 13
   object LConnected: TLabel
     Left = 6
-    Top = 508
+    Top = 540
     Width = 74
     Height = 21
     Caption = 'ComPort'
@@ -34,8 +34,8 @@ object IVchar: TIVchar
     Left = 0
     Top = 0
     Width = 786
-    Height = 496
-    ActivePage = TS_Temper
+    Height = 530
+    ActivePage = TS_ADC
     Align = alTop
     Font.Charset = RUSSIAN_CHARSET
     Font.Color = clWindowText
@@ -106,7 +106,7 @@ object IVchar: TIVchar
       end
       object ChLg: TChart
         Left = 0
-        Top = 234
+        Top = 243
         Width = 551
         Height = 205
         Legend.Visible = False
@@ -683,7 +683,7 @@ object IVchar: TIVchar
       end
       object PanelV721_II: TPanel
         Left = 0
-        Top = 235
+        Top = 244
         Width = 778
         Height = 201
         Align = alBottom
@@ -6995,13 +6995,14 @@ object IVchar: TIVchar
           ParentFont = False
         end
         object ComCBGDS_Port: TComComboBox
-          Left = 10
-          Top = 32
+          Left = 8
+          Top = 31
           Width = 74
           Height = 26
           ComPort = ComPortGDS
           ComProperty = cpPort
           AutoApply = True
+          Text = 'COM1'
           Style = csDropDownList
           Font.Charset = RUSSIAN_CHARSET
           Font.Color = clWindowText
@@ -7009,7 +7010,7 @@ object IVchar: TIVchar
           Font.Name = 'Arial'
           Font.Style = [fsBold]
           ItemHeight = 18
-          ItemIndex = -1
+          ItemIndex = 0
           ParentFont = False
           TabOrder = 0
         end
@@ -7021,6 +7022,7 @@ object IVchar: TIVchar
           ComPort = ComPortGDS
           ComProperty = cpBaudRate
           AutoApply = True
+          Text = '9600'
           Style = csDropDownList
           Font.Charset = RUSSIAN_CHARSET
           Font.Color = clWindowText
@@ -7028,7 +7030,7 @@ object IVchar: TIVchar
           Font.Name = 'Arial'
           Font.Style = [fsBold]
           ItemHeight = 18
-          ItemIndex = -1
+          ItemIndex = 7
           ParentFont = False
           TabOrder = 1
         end
@@ -7068,6 +7070,7 @@ object IVchar: TIVchar
           ComPort = ComPortGDS
           ComProperty = cpStopBits
           AutoApply = True
+          Text = '1'
           Style = csDropDownList
           Font.Charset = RUSSIAN_CHARSET
           Font.Color = clWindowText
@@ -7075,7 +7078,7 @@ object IVchar: TIVchar
           Font.Name = 'Arial'
           Font.Style = [fsBold]
           ItemHeight = 18
-          ItemIndex = -1
+          ItemIndex = 0
           ParentFont = False
           TabOrder = 4
         end
@@ -7101,6 +7104,7 @@ object IVchar: TIVchar
           ComPort = ComPortGDS
           ComProperty = cpParity
           AutoApply = True
+          Text = 'None'
           Style = csDropDownList
           Font.Charset = RUSSIAN_CHARSET
           Font.Color = clWindowText
@@ -7108,7 +7112,7 @@ object IVchar: TIVchar
           Font.Name = 'Arial'
           Font.Style = [fsBold]
           ItemHeight = 18
-          ItemIndex = -1
+          ItemIndex = 0
           ParentFont = False
           TabOrder = 6
         end
@@ -7889,10 +7893,248 @@ object IVchar: TIVchar
         end
       end
     end
+    object TS_HandMade: TTabSheet
+      Caption = 'HandMade'
+      ImageIndex = 14
+      object GB_oCur: TGroupBox
+        Left = 2
+        Top = 2
+        Width = 243
+        Height = 345
+        Caption = 'Current'
+        Font.Charset = RUSSIAN_CHARSET
+        Font.Color = clMaroon
+        Font.Height = -21
+        Font.Name = 'Courier'
+        Font.Style = [fsBold]
+        ParentFont = False
+        TabOrder = 0
+        object LoCur: TLabel
+          Left = 17
+          Top = 24
+          Width = 174
+          Height = 31
+          AutoSize = False
+          Caption = '  ERROR'
+          Color = clWhite
+          Font.Charset = RUSSIAN_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -25
+          Font.Name = 'Verdana'
+          Font.Style = [fsBold]
+          ParentColor = False
+          ParentFont = False
+        end
+        object LUoCur: TLabel
+          Left = 191
+          Top = 24
+          Width = 40
+          Height = 31
+          AutoSize = False
+          Caption = 'a'
+          Color = clInfoText
+          Font.Charset = RUSSIAN_CHARSET
+          Font.Color = clWhite
+          Font.Height = -27
+          Font.Name = 'Arial'
+          Font.Style = [fsBold]
+          ParentColor = False
+          ParentFont = False
+        end
+        object SB_oCur_Auto: TSpeedButton
+          Left = 138
+          Top = 70
+          Width = 45
+          Height = 19
+          AllowAllUp = True
+          GroupIndex = 2
+          Caption = 'AUTO'
+          Font.Charset = RUSSIAN_CHARSET
+          Font.Color = clDefault
+          Font.Height = -13
+          Font.Name = 'Arial'
+          Font.Style = [fsBold]
+          ParentFont = False
+        end
+        object L_oCurBias: TLabel
+          Left = 20
+          Top = 294
+          Width = 31
+          Height = 13
+          Caption = 'L1PR'
+          Font.Charset = RUSSIAN_CHARSET
+          Font.Color = clMaroon
+          Font.Height = -11
+          Font.Name = 'Verdana'
+          Font.Style = [fsBold]
+          ParentFont = False
+        end
+        object B_oCur_Meas: TButton
+          Left = 23
+          Top = 70
+          Width = 79
+          Height = 19
+          Caption = 'measure'
+          Font.Charset = RUSSIAN_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -13
+          Font.Name = 'Arial'
+          Font.Style = [fsBold]
+          ParentFont = False
+          TabOrder = 0
+        end
+        object GB_oCurMeasVal: TGroupBox
+          Tag = 110
+          Left = 17
+          Top = 109
+          Width = 193
+          Height = 84
+          Caption = 'Value'
+          Font.Charset = RUSSIAN_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -13
+          Font.Name = 'Arial'
+          Font.Style = [fsBold]
+          ParentFont = False
+          TabOrder = 1
+          object L_oCurMeasVal: TLabel
+            Left = 114
+            Top = 26
+            Width = 71
+            Height = 16
+            Caption = '-0.0008'
+            Font.Charset = RUSSIAN_CHARSET
+            Font.Color = clBlack
+            Font.Height = -17
+            Font.Name = 'Courier'
+            Font.Style = [fsBold]
+            ParentFont = False
+          end
+          object B_oCurMeasVal: TButton
+            Left = 3
+            Top = 23
+            Width = 105
+            Height = 23
+            Caption = 'to measure'
+            Font.Charset = RUSSIAN_CHARSET
+            Font.Color = clWindowText
+            Font.Height = -17
+            Font.Name = 'Arial'
+            Font.Style = [fsBold]
+            ParentFont = False
+            TabOrder = 0
+          end
+          object ST_oCurMeasVal: TStaticText
+            Left = 11
+            Top = 58
+            Width = 47
+            Height = 20
+            Caption = 'Device'
+            TabOrder = 1
+          end
+          object CB_oCurMeasVal: TComboBox
+            Tag = 5
+            Left = 64
+            Top = 52
+            Width = 122
+            Height = 24
+            Style = csDropDownList
+            Font.Charset = RUSSIAN_CHARSET
+            Font.Color = clWindowText
+            Font.Height = -13
+            Font.Name = 'Arial'
+            Font.Style = [fsBold]
+            ItemHeight = 16
+            ParentFont = False
+            TabOrder = 2
+          end
+        end
+        object GB_oCurMeasDiap: TGroupBox
+          Tag = 110
+          Left = 17
+          Top = 203
+          Width = 193
+          Height = 84
+          Caption = 'Diapazone'
+          Font.Charset = RUSSIAN_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -13
+          Font.Name = 'Arial'
+          Font.Style = [fsBold]
+          ParentFont = False
+          TabOrder = 2
+          object L_oCurMeasDiap: TLabel
+            Left = 114
+            Top = 26
+            Width = 71
+            Height = 16
+            Caption = '-0.0008'
+            Font.Charset = RUSSIAN_CHARSET
+            Font.Color = clBlack
+            Font.Height = -17
+            Font.Name = 'Courier'
+            Font.Style = [fsBold]
+            ParentFont = False
+          end
+          object B_oCurMeasDiap: TButton
+            Left = 3
+            Top = 23
+            Width = 105
+            Height = 23
+            Caption = 'to measure'
+            Font.Charset = RUSSIAN_CHARSET
+            Font.Color = clWindowText
+            Font.Height = -17
+            Font.Name = 'Arial'
+            Font.Style = [fsBold]
+            ParentFont = False
+            TabOrder = 0
+          end
+          object ST_oCurMeasDiap: TStaticText
+            Left = 11
+            Top = 58
+            Width = 47
+            Height = 20
+            Caption = 'Device'
+            TabOrder = 1
+          end
+          object CB_oCurMeasDiap: TComboBox
+            Tag = 5
+            Left = 64
+            Top = 52
+            Width = 122
+            Height = 24
+            Style = csDropDownList
+            Font.Charset = RUSSIAN_CHARSET
+            Font.Color = clWindowText
+            Font.Height = -13
+            Font.Name = 'Arial'
+            Font.Style = [fsBold]
+            ItemHeight = 16
+            ParentFont = False
+            TabOrder = 2
+          end
+        end
+        object ST_oCurBias: TStaticText
+          Left = 62
+          Top = 312
+          Width = 97
+          Height = 24
+          Caption = '1.34E+01'
+          Font.Charset = RUSSIAN_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -17
+          Font.Name = 'Verdana'
+          Font.Style = [fsBold]
+          ParentFont = False
+          TabOrder = 3
+        end
+      end
+    end
   end
   object BBClose: TBitBtn
     Left = 584
-    Top = 508
+    Top = 540
     Width = 75
     Height = 25
     TabOrder = 1
@@ -7900,7 +8142,7 @@ object IVchar: TIVchar
   end
   object BConnect: TButton
     Left = 154
-    Top = 508
+    Top = 540
     Width = 75
     Height = 25
     Caption = 'BConnect'
@@ -7909,7 +8151,7 @@ object IVchar: TIVchar
   end
   object BParamReceive: TButton
     Left = 295
-    Top = 508
+    Top = 540
     Width = 75
     Height = 25
     Caption = 'Receive pin numbers'
@@ -8038,7 +8280,7 @@ object IVchar: TIVchar
     FlowControl.XonXoffIn = False
     StoredProps = [spBasic]
     TriggersOnRxChar = True
-    Left = 624
-    Top = 656
+    Left = 460
+    Top = 432
   end
 end

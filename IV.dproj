@@ -52,6 +52,7 @@
     <DCCReference Include="MDevice.pas" />
     <DCCReference Include="Measurement.pas" />
     <DCCReference Include="MLX90615.pas" />
+    <DCCReference Include="OlegDevice.pas" />
     <DCCReference Include="PacketParameters.pas" />
     <DCCReference Include="PID.pas" />
     <DCCReference Include="RS232device.pas" />
