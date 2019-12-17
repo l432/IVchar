@@ -3,17 +3,14 @@ unit MDevice;
 interface
 
 uses
-  StdCtrls, IniFiles, Measurement, OlegTypePart2, OlegType;
+  StdCtrls, IniFiles, Measurement, OlegTypePart2;
 
 
 type
 TDevice=class(TNamedInterfacedObject)
 private
  DevicesComboBox:TComboBox;
- fHookParameterChange: TSimpleEvent;
- procedure ParameterChange(Sender: TObject);virtual;
 public
- property HookParameterChange:TSimpleEvent read fHookParameterChange write fHookParameterChange;
  Constructor Create(DevCB: TComboBox; IdentName: string);
  procedure ReadFromIniFile(ConfigFile: TIniFile);override;
  procedure WriteToIniFile(ConfigFile: TIniFile);override;
@@ -84,7 +81,7 @@ end;
 implementation
 
 uses
-  SysUtils;
+  OlegType, SysUtils;
 
 { TDevice }
 
@@ -93,17 +90,7 @@ begin
  inherited Create;
  DevicesComboBox:=DevCB;
  DevicesComboBox.Clear;
- DevicesComboBox.OnChange:=ParameterChange;
  fName:=IdentName;
- HookParameterChange:=TSimpleClass.EmptyProcedure;
-end;
-
-procedure TDevice.ParameterChange(Sender: TObject);
-begin
- try
- HookParameterChange;
- finally
- end;
 end;
 
 procedure TDevice.ReadFromIniFile(ConfigFile: TIniFile);

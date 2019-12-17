@@ -3,7 +3,8 @@ unit OlegDevice;
 interface
 
 uses
-  OlegTypePart2, Measurement;
+  OlegTypePart2, Measurement, OlegShowTypes, MDevice, IniFiles, StdCtrls, 
+  Buttons, ExtCtrls;
 
 type
 
@@ -31,11 +32,43 @@ type
     public
      property NewData:boolean read GetNewData  write SetNewData;
      property Value:double read GetValue;
+//     property Bias:double read fBias write fBias;
      Constructor Create();
      function GetData:double;
      procedure GetDataThread(WPARAM: word;EventEnd:THandle);
   end;
 
+  TCurrentResultShow=class(TMeasurementShowSimple)
+    protected
+     function UnitModeLabel():string;override;
+    public
+  end;
+
+  TCurrentShow=class(TNamedInterfacedObject)
+    private
+     fModule:TCurrent;
+     fBiasShow: TDoubleParameterShow;
+     TTShow:TTimer;
+     fResultShow:TCurrentResultShow;
+     fDiapazMeasuring:TMeasuringDevice;
+     fValueMeasuring:TMeasuringDevice;
+    protected
+     procedure ModuleUpDate();
+    public
+      Constructor Create(Module:TCurrent;
+                         STBias:TStaticText;
+                         LBias,DL,UL,RIDiap,RIVal:TLabel;
+                         MB,BMeasDiap,BMeasVal:TButton;
+                         AB:TSpeedButton;
+                         const SOI: array of IMeasurement;
+                         DevDiapCB,DevValCB: TComboBox);
+      procedure ReadFromIniFile(ConfigFile:TIniFile);override;
+      procedure WriteToIniFile(ConfigFile:TIniFile);override;
+      Procedure Free;override;
+  end;
+
+
+ var OlegCurrent:TCurrent;
 
 implementation
 
@@ -133,4 +166,84 @@ begin
 
 end;
 
+{ TCurrentResultShow }
+
+function TCurrentResultShow.UnitModeLabel: string;
+begin
+  Result:='A';
+end;
+
+{ TCurrentShow }
+
+constructor TCurrentShow.Create(Module: TCurrent;
+                                STBias:TStaticText;
+                                LBias,DL,UL,RIDiap,RIVal:TLabel;
+                                MB,BMeasDiap,BMeasVal:TButton;
+                                AB:TSpeedButton;
+                                const SOI: array of IMeasurement;
+                                DevDiapCB,DevValCB: TComboBox);
+begin
+ inherited Create;
+ fModule:=Module;
+ fBiasShow:=
+     TDoubleParameterShow.Create(STBias,LBias,'Bias:',0);
+ fBiasShow.SetName(fModule.Name);
+ fBiasShow.HookParameterClick:=ModuleUpDate;
+
+ TTShow:=TTimer.Create(nil);
+ fResultShow:=TCurrentResultShow.Create(fModule,DL,UL,MB,AB,TTShow);
+
+ fDiapazMeasuring:=TMeasuringDevice.Create(SOI,DevDiapCB,
+                                    fModule.Name+'Dia',RIDiap,
+                                    srPreciseVoltage);
+ fDiapazMeasuring.HookParameterChange:=ModuleUpDate;
+ fDiapazMeasuring.AddActionButton(BMeasDiap);
+
+ fValueMeasuring:=TMeasuringDevice.Create(SOI,DevValCB,
+                                   fModule.Name+'Val',RIVal,
+                                   srPreciseVoltage);
+ fValueMeasuring.HookParameterChange:=ModuleUpDate;
+ fValueMeasuring.AddActionButton(BMeasVal);
+
+ ModuleUpDate;
+end;
+
+procedure TCurrentShow.Free;
+begin
+  TTShow.Free;
+  fDiapazMeasuring.Free;
+  fValueMeasuring.Free;
+  fResultShow.Free;
+  fBiasShow.Free;
+  inherited Free;
+end;
+
+procedure TCurrentShow.ModuleUpDate;
+begin
+  fModule.fBias:=fBiasShow.Data;
+  fModule.fDiapazonMeas:=fDiapazMeasuring.ActiveInterface;
+  fModule.fValueMeas:=fValueMeasuring.ActiveInterface;
+end;
+
+procedure TCurrentShow.ReadFromIniFile(ConfigFile: TIniFile);
+begin
+  inherited ReadFromIniFile(ConfigFile);
+  fBiasShow.ReadFromIniFile(ConfigFile);
+  fDiapazMeasuring.ReadFromIniFile(ConfigFile);
+  fValueMeasuring.ReadFromIniFile(ConfigFile);
+  ModuleUpDate;
+end;
+
+procedure TCurrentShow.WriteToIniFile(ConfigFile: TIniFile);
+begin
+  inherited WriteToIniFile(ConfigFile);
+  fBiasShow.WriteToIniFile(ConfigFile);
+  fDiapazMeasuring.WriteToIniFile(ConfigFile);
+  fValueMeasuring.WriteToIniFile(ConfigFile);
+end;
+
+initialization
+  OlegCurrent:=TCurrent.Create;
+finalization
+  OlegCurrent.Free;
 end.

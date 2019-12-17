@@ -11,7 +11,7 @@ uses
   ComCtrls, CPort, StdCtrls, Dialogs, Controls, Classes, D30_06,Math, PID, 
   MDevice, Spin,HighResolutionTimer, MCP3424, ADS1115, ArduinoDeviceShow, 
   AD9833, GDS_806S, MLX90615, OlegShowTypes, INA226, OlegTypePart2, OlegVector, 
-  OlegDigitalManipulation, OlegDevice;
+  OlegDigitalManipulation;
 
 const
   MeasIV='IV characteristic';
@@ -511,6 +511,7 @@ type
     ST9866PhaseCh1: TStaticText;
     ST9866FreqCh1: TStaticText;
     RGAD9833Mode: TRadioGroup;
+    ComPortGDS: TComPort;
     TS_GDS: TTabSheet;
     GB_GDS_Com: TGroupBox;
     ComCBGDS_Port: TComComboBox;
@@ -611,27 +612,6 @@ type
     STTemDepIsoInterval: TStaticText;
     STTemDepTolCoef: TStaticText;
     LTemDepTolCoef: TLabel;
-    GBSTS21: TGroupBox;
-    PSTS21: TPanel;
-    TS_HandMade: TTabSheet;
-    GB_oCur: TGroupBox;
-    LoCur: TLabel;
-    LUoCur: TLabel;
-    B_oCur_Meas: TButton;
-    SB_oCur_Auto: TSpeedButton;
-    GB_oCurMeasVal: TGroupBox;
-    L_oCurMeasVal: TLabel;
-    B_oCurMeasVal: TButton;
-    ST_oCurMeasVal: TStaticText;
-    CB_oCurMeasVal: TComboBox;
-    GB_oCurMeasDiap: TGroupBox;
-    L_oCurMeasDiap: TLabel;
-    B_oCurMeasDiap: TButton;
-    ST_oCurMeasDiap: TStaticText;
-    CB_oCurMeasDiap: TComboBox;
-    ST_oCurBias: TStaticText;
-    L_oCurBias: TLabel;
-    ComPortGDS: TComPort;
 
     procedure FormCreate(Sender: TObject);
     procedure BConnectClick(Sender: TObject);
@@ -791,7 +771,6 @@ type
     TMP102:TTMP102;
     TMP102show:TI2C_PinsShow;
     HTU21D:THTU21D;
-    STS21:TSTS21;
     MLX90615:TMLX90615;
     MLX90615Show:TMLX90615Show;
 
@@ -817,8 +796,6 @@ type
     GDS_806S:TGDS_806S;
     GDS_806S_Channel:array[TGDS_Channel]of TGDS_806S_Channel;
     GDS_806S_Show:TGDS_806S_Show;
-
-    CurrentShow:TCurrentShow;
 
     IscVocPinChanger,LEDOpenPinChanger:TArduinoPinChanger;
     IscVocPinChangerShow,LEDOpenPinChangerShow:TArduinoPinChangerShow;
@@ -1651,7 +1628,7 @@ begin
        begin
         ET1255_DACs[i]:=TET1255_DAC.Create(i);
         ET1255_DACs[i].Reset();
-        AnyObjectArray.Add(ET1255_DACs[i]);
+        AnyObjectArray.Add([ET1255_DACs[i]]);
        end;
      ET1255_DACsShow[0]:=TDAC_Show.Create(ET1255_DACs[0],
                     STOV1255ch0,STOK1255Ch0,
@@ -2602,7 +2579,7 @@ begin
                  TMP102,
                  MLX90615,
                  D30_06,IscVocPinChanger,LEDOpenPinChanger,
-                 MCP3424,AD9833,STS21]);
+                 MCP3424,AD9833]);
 
  if (ComPort1.Connected)and(SettingDevice.ActiveInterface.Name=DACR2R.Name) then SettingDevice.Reset();
  if (ComPort1.Connected) then D30_06.Reset;
@@ -3259,8 +3236,6 @@ begin
 
 
   HTU21D:=THTU21D.Create(ComPort1, 'HTU21D');
-  STS21:=TSTS21.Create(ComPort1, 'STS21');
-
 
   ThermoCuple:=TThermoCuple.Create;
   AnyObjectArray.Add(ThermoCuple);
@@ -3275,7 +3250,7 @@ begin
   ShowArray.Add([DS18B20show,TMP102show,
                 IscVocPinChangerShow,LEDOpenPinChangerShow]);
   AnyObjectArray.Add([V721A,V721_I,V721_II]);
-  AnyObjectArray.Add([DS18B20,TMP102,HTU21D,MLX90615,STS21,
+  AnyObjectArray.Add([DS18B20,TMP102,HTU21D,MLX90615,
                       IscVocPinChanger,LEDOpenPinChanger]);
 
   MCP3424Create();
@@ -3464,10 +3439,7 @@ begin
   Devices[3]:=V721_II;
 
   TermoCouple_MD:=TMeasuringDevice.Create(Devices, CBTcVMD, 'Thermocouple', LTRValue, srVoltge);
-  Temperature_MD:=TTemperature_MD.Create([Simulator,ThermoCuple,
-                                  DS18B20,HTU21D,TMP102,
-                                  MLX90615,STS21],
-                                  CBTD,'Temperature',LTRValue);
+  Temperature_MD:=TTemperature_MD.Create([Simulator,ThermoCuple,DS18B20,HTU21D,TMP102,MLX90615],CBTD,'Temperature',LTRValue);
 
   MLX90615Show:=TMLX90615Show.Create(MLX90615,STMLX615_GC, BMLX615_GCread,
                           BMLX615_GCwrite,BMLX615_Calib,Temperature_MD);
@@ -3504,17 +3476,6 @@ begin
   Devices[High(Devices)-1]:=INA226_Shunt;
   Devices[High(Devices)]:=INA226_Bus;
 
-  CurrentShow:=TCurrentShow.Create(OlegCurrent,ST_oCurBias,
-                     L_oCurBias,LoCur,LUoCur,
-                     L_oCurMeasDiap,L_oCurMeasVal,
-                     B_oCur_Meas,B_oCurMeasDiap,B_oCurMeasVal,
-                     SB_oCur_Auto,Devices,
-                     CB_oCurMeasDiap,CB_oCurMeasVal);
-  ShowArray.Add(CurrentShow);
-
-  SetLength(Devices,High(Devices)+2);
-  Devices[High(Devices)]:=OlegCurrent;
-
   Current_MD:=TMeasuringDevice.Create(Devices, CBCMD,'Current', LADCurrentValue, srCurrent);
   VoltageIV_MD:=TMeasuringDevice.Create(Devices, CBVMD,'Voltage', LADVoltageValue, srVoltge);
 
@@ -3530,14 +3491,12 @@ begin
 
   ShowArray.Add([Current_MD,VoltageIV_MD,DACR2R_MD,D30_MD,Isc_MD,Voc_MD]);
 
-  SetLength(Devices,High(Devices)+7);
-  Devices[High(Devices)-5]:=ThermoCuple;
-  Devices[High(Devices)-4]:=DS18B20;
-  Devices[High(Devices)-3]:=HTU21D;
-  Devices[High(Devices)-2]:=TMP102;
-  Devices[High(Devices)-1]:=MLX90615;
-  Devices[High(Devices)]:=STS21;
-
+  SetLength(Devices,High(Devices)+6);
+  Devices[High(Devices)-4]:=ThermoCuple;
+  Devices[High(Devices)-3]:=DS18B20;
+  Devices[High(Devices)-2]:=HTU21D;
+  Devices[High(Devices)-1]:=TMP102;
+  Devices[High(Devices)]:=MLX90615;
 
   TimeD_MD:=
     TMeasuringDevice.Create(Devices, CBTimeMD,'Time Dependence', LADCurrentValue, srVoltge);

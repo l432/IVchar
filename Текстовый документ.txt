@@ -1,3 +1,0 @@
-http://forum.arduino.cc/index.php?topic=157330.0
-
-https://github.com/mjoldfield/adt74x0

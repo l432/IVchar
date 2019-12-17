@@ -64,7 +64,7 @@ type
 implementation
 
 uses
-  PacketParameters, OlegType, Math, Dialogs, SysUtils;
+  PacketParameters, OlegType, Math;
 
 { TMLX90615 }
 
@@ -110,7 +110,6 @@ begin
 //     (temp>=$2D8A)and(temp<=$4BD0)
        then fValue:=temp*0.02;
 
-// showmessage(floattostr(fValue));
  if (fstate in [mlx_gcRead,mlx_gcWrite])and(temp<=MLX90615_GrayCoefficientMax)
    then
     begin
