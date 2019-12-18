@@ -361,7 +361,6 @@ end;
 
 procedure TDAC_Show.ReadFromIniFile(ConfigFile: TIniFile);
 begin
-//   HelpForMe(fOutputInterface.Name);
    fValueShow.ReadFromIniFile(ConfigFile);
    fKodShow.ReadFromIniFile(ConfigFile);
 end;

@@ -1,0 +1,32 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<BorlandProject>
+	<Transactions>
+    <Transaction>2015.09.14 11:33:44.062.pas,C:\Documents and Settings\oleg\Мои документы\RAD Studio\Projects\Unit1.pas=D:\Oleg\Shottky_Program\ComPort\Com.pas</Transaction>
+    <Transaction>2015.09.14 11:33:44.062.dfm,C:\Documents and Settings\oleg\Мои документы\RAD Studio\Projects\Unit1.dfm=D:\Oleg\Shottky_Program\ComPort\Com.dfm</Transaction>
+    <Transaction>2015.09.14 12:15:39.828.dproj,C:\Documents and Settings\oleg\Мои документы\RAD Studio\Projects\Project1.dproj=D:\Oleg\Shottky_Program\ComPort\ComNew.dproj</Transaction>
+    <Transaction>2015.10.26 13:23:11.062.dproj,D:\Oleg\Shottky_Program\ComPort\ComNew.dproj=D:\Oleg\Shottky_Program\ComPort\Experiment.dproj</Transaction>
+    <Transaction>2015.10.26 13:24:12.812.pas,D:\Oleg\Shottky_Program\ComPort\Com.pas=D:\Oleg\Shottky_Program\ComPort\IVchar.pas</Transaction>
+    <Transaction>2015.10.26 13:24:12.812.dfm,D:\Oleg\Shottky_Program\ComPort\Com.dfm=D:\Oleg\Shottky_Program\ComPort\IVchar.dfm</Transaction>
+    <Transaction>2015.10.26 13:24:45.718.pas,D:\Oleg\Shottky_Program\ComPort\IVchar.pas=D:\Oleg\Shottky_Program\ComPort\IVchar_main.pas</Transaction>
+    <Transaction>2015.10.26 13:24:45.718.dfm,D:\Oleg\Shottky_Program\ComPort\IVchar.dfm=D:\Oleg\Shottky_Program\ComPort\IVchar_main.dfm</Transaction>
+    <Transaction>2015.10.26 13:34:14.812.dproj,D:\Oleg\Shottky_Program\IVChar\Experiment.dproj=D:\Oleg\Shottky_Program\IVChar\IV.dproj</Transaction>
+    <Transaction>2015.10.26 14:40:05.000.pas,D:\Oleg\Shottky_Program\IVChar\Unit1.pas=D:\Oleg\Shottky_Program\IVChar\V721.pas</Transaction>
+    <Transaction>2017.09.12 11:13:21.734.pas,D:\Oleg\Shottky_Program\IVChar\Unit1.pas=D:\Oleg\Shottky_Program\IVChar\RS232device.pas</Transaction>
+    <Transaction>2017.09.12 13:26:31.203.pas,D:\Oleg\Shottky_Program\IVChar\Unit1.pas=D:\Oleg\Shottky_Program\IVChar\V7_21.pas</Transaction>
+    <Transaction>2017.09.12 15:21:24.421.pas,D:\Oleg\Shottky_Program\IVChar\Unit1.pas=D:\Oleg\Shottky_Program\IVChar\TemperatureSensor.pas</Transaction>
+    <Transaction>2017.09.12 15:26:30.640.pas,D:\Oleg\Shottky_Program\IVChar\Unit1.pas=D:\Oleg\Shottky_Program\IVChar\AD5752R.pas</Transaction>
+    <Transaction>2017.09.12 15:48:48.859.pas,D:\Oleg\Shottky_Program\IVChar\Unit1.pas=D:\Oleg\Shottky_Program\IVChar\DACR2R.pas</Transaction>
+    <Transaction>2017.09.26 11:35:56.171.pas,D:\Oleg\Shottky_Program\IVChar\Unit1.pas=D:\Oleg\Shottky_Program\IVChar\RS232_Meas_Tread.pas</Transaction>
+    <Transaction>2017.09.26 12:08:51.390.pas,D:\Oleg\Shottky_Program\IVChar\RS232_Meas_Tread.pas=</Transaction>
+    <Transaction>2017.10.02 10:26:39.734.pas,D:\Oleg\Shottky_Program\IVChar\Unit2.pas=D:\Oleg\Shottky_Program\IVChar\ET1255.pas</Transaction>
+    <Transaction>2017.10.03 11:02:38.671.pas,D:\Oleg\Shottky_Program\IVChar\Unit2.pas=D:\Oleg\Shottky_Program\IVChar\RS232_Mediator_Tread.pas</Transaction>
+    <Transaction>2017.10.27 14:15:18.406.pas,D:\Oleg\Shottky_Program\IVChar\Unit2.pas=D:\Oleg\Shottky_Program\IVChar\D30_06.pas</Transaction>
+    <Transaction>2017.12.12 12:14:27.812.pas,D:\Oleg\Shottky_Program\IVChar\Unit1.pas=D:\Oleg\Shottky_Program\IVChar\PID.pas</Transaction>
+    <Transaction>2017.12.12 12:23:20.781.pas,D:\Oleg\Shottky_Program\IVChar\Unit1.pas=D:\Oleg\Shottky_Program\IVChar\MeasurementDevice.pas</Transaction>
+    <Transaction>2017.12.12 12:23:45.593.pas,D:\Oleg\Shottky_Program\IVChar\MeasurementDevice.pas=D:\Oleg\Shottky_Program\IVChar\MDevice.pas</Transaction>
+    <Transaction>2018.10.08 12:10:53.677.pas,D:\Oleg\Shottky_Program\IVChar\Unit1.pas=D:\Oleg\Shottky_Program\IVChar\MCP3424.pas</Transaction>
+    <Transaction>2018.11.16 15:52:45.203.pas,D:\Oleg\Shottky_Program\IVChar\Unit1.pas=D:\Oleg\Shottky_Program\IVChar\ArduinoADC.pas</Transaction>
+    <Transaction>2018.11.17 13:25:46.390.pas,D:\Oleg\Shottky_Program\IVChar\Unit1.pas=D:\Oleg\Shottky_Program\IVChar\ADS1115.pas</Transaction>
+    <Transaction>2018.12.14 12:32:15.828.pas,D:\Oleg\Shottky_Program\IVChar\Unit1.pas=D:\Oleg\Shottky_Program\IVChar\GDS_806S.pas</Transaction>
+  </Transactions>
+</BorlandProject>

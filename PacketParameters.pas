@@ -53,6 +53,9 @@ Function PacketIsReceived(const Str: string; var pData:TArrByte; Command:byte):b
 Function FCSCalculate(Data:array of byte):byte;
 {розраховується інвертована
 перша комплементарна сума}
+
+Function ByteArrayToString(Data:array of byte):string;
+
 Procedure ShowData(Data:array of byte);
 {виводиться віконечко з числами, які містить Data}
 
@@ -63,7 +66,7 @@ Function CRC8(Data:array of byte;poly:byte=$07):byte;
 implementation
 
 uses
-  HighResolutionTimer, ArduinoDevice;
+  HighResolutionTimer, ArduinoDevice, OlegFunction;
 
 Procedure PacketCreate( Args: array of byte);
 var i,ProblemByteNumber,counter:byte;
@@ -110,6 +113,7 @@ end;
 Function PacketIsSend(ComPort:TComPort; report:string):boolean;
 begin
 //  ShowData(aPacket);
+//  HelpForMe(inttostr(MilliSecond)+ByteArrayToString(aPacket));
   if ComPort.Connected then
    begin
 
@@ -139,6 +143,7 @@ begin
     pData[High(pData)]:=ord(PacketEndChar);
   end;
 //  ShowData(pData);
+//   HelpForMe(inttostr(MilliSecond)+ByteArrayToString(pData));
 
  if (pData[0]<>Length(Str))
     and(pData[0]<>Length(Str)+1) then Result:=False;
@@ -154,7 +159,7 @@ begin
          pData[i]:=pData[i+1+WrongByteNumber];
          end;
      SetLength(pData,High(pData)-WrongByteNumber);
-
+//  HelpForMe(inttostr(MilliSecond)+ByteArrayToString(pData));
 end;
 
 Function PacketIsReceived(const Str: string; var pData:TArrByte; Command:byte):boolean;overload;
@@ -163,6 +168,8 @@ begin
  if not(PacketIsReceived(Str,pData)) then Exit;
 
  if pData[1]=Command then Result:=True;
+
+// HelpForMe(inttostr(MilliSecond)+ByteArrayToString(pData));
 end;
 
 Function FCSCalculate(Data:array of byte):byte;
@@ -183,13 +190,23 @@ begin
  Result:=byte(FCS and $FF);
 end;
 
-Procedure ShowData(Data:array of byte);
+
+Function ByteArrayToString(Data:array of byte):string;
  var i:integer;
-     temp:string;
 begin
- temp:='';
- for I := 0 to High(Data) do temp:=temp+'$'+inttohex(Data[i],2)+' ';
- MessageDlg(temp,mtInformation,[mbOK], 0);
+ Result:='';
+ for I := 0 to High(Data) do Result:=Result+'$'+inttohex(Data[i],2)+' ';
+end;
+
+Procedure ShowData(Data:array of byte);
+// var i:integer;
+//     temp:string;
+begin
+// temp:='';
+// for I := 0 to High(Data) do temp:=temp+'$'+inttohex(Data[i],2)+' ';
+// MessageDlg(temp,mtInformation,[mbOK], 0);
+ MessageDlg(ByteArrayToString(Data),mtInformation,[mbOK], 0);
+
 end;
 
 

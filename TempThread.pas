@@ -65,7 +65,7 @@ type
 implementation
 
 uses
-  Windows;
+  Windows, OlegFunction, SysUtils;
 
 { TTemperatureMeasuringThread }
 
@@ -74,6 +74,7 @@ constructor TTemperatureMeasuringThread.Create(TemperatureMeasurement:ITemperatu
                                                 EventEnd:THandle);
 begin
   inherited Create(Interval);
+//  HelpForMe(inttostr(MilliSecond));
   fTemperatureMeasurement:=TemperatureMeasurement;
   fEventEnd:=EventEnd;
   Resume;
@@ -81,6 +82,8 @@ end;
 
 procedure TTemperatureMeasuringThread.DoSomething;
 begin
+//   HelpForMe(inttostr(MilliSecond));
+
   fTemperatureMeasurement.GetTemperatureThread(fEventEnd);
 end;
 

@@ -78,7 +78,7 @@ type
 implementation
 
 uses
-  PacketParameters, OlegType;
+  PacketParameters, OlegType, OlegFunction, SysUtils;
 
 { TDS18B20 }
 
@@ -176,6 +176,7 @@ end;
 
 function TTempSensor.GetTemperature: double;
 begin
+//  HelpForMe(inttostr(MilliSecond));
   Result:=Measurement();
 end;
 

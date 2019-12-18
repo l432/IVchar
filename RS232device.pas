@@ -231,7 +231,7 @@ implementation
 
 uses
   OlegType, Dialogs, SysUtils, Forms, Graphics, RS232_Meas_Tread, 
-  HighResolutionTimer;
+  HighResolutionTimer, OlegFunction;
 
 { TRS232Device }
 
@@ -371,7 +371,7 @@ label start;
 var i:integer;
     isFirst:boolean;
 begin
-
+//   HelpForMe(inttostr(MilliSecond)+ByteArrayToString(fData));
 // Result:=ErResult;
  fValue:=ErResult;
  isFirst:=True;
@@ -397,6 +397,8 @@ end;
 // showmessage(inttostr((GetTickCount-i0)));
 
 //ShowData(fData);
+
+
  if fIsReceived then ConvertToValue();
 // if fIsReady then
  Result:=fValue;

@@ -219,6 +219,8 @@ procedure TArduinoMeter.PacketReceiving(Sender: TObject; const Str: string);
 begin
 // ShowData(fData);
  if not(PacketIsReceived(Str,fData,fMetterKod)) then Exit;
+// HelpForMe(inttostr(MilliSecond)+ByteArrayToString(fData));
+
  if fData[2]<>Pins.PinControl then Exit;
 //   ?
  fComPort.ClearBuffer(True, False);
@@ -228,6 +230,8 @@ begin
    fData[i]:=fData[i+3];
  SetLength(fData,High(fData)-3);
  fIsReceived:=True;
+// HelpForMe(inttostr(MilliSecond)+ByteArrayToString(fData));
+
 end;
 
 { TPins }
