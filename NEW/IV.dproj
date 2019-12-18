@@ -1,0 +1,68 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <ProjectGuid>{15f36f01-f9f8-4f4b-9f82-d2ac0eb53191}</ProjectGuid>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <DCC_DCCCompiler>DCC32</DCC_DCCCompiler>
+    <DCC_DependencyCheckOutputName>IV.exe</DCC_DependencyCheckOutputName>
+    <MainSource>IV.dpr</MainSource>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <Version>7.0</Version>
+    <DCC_DebugInformation>False</DCC_DebugInformation>
+    <DCC_LocalDebugSymbols>False</DCC_LocalDebugSymbols>
+    <DCC_SymbolReferenceInfo>0</DCC_SymbolReferenceInfo>
+    <DCC_Define>RELEASE</DCC_Define>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <Version>7.0</Version>
+    <DCC_Define>DEBUG</DCC_Define>
+    <DCC_IntegerOverflowCheck>True</DCC_IntegerOverflowCheck>
+    <DCC_RangeChecking>True</DCC_RangeChecking>
+  </PropertyGroup>
+  <ProjectExtensions>
+    <Borland.Personality>Delphi.Personality</Borland.Personality>
+    <Borland.ProjectType />
+    <BorlandProject>
+<BorlandProject><Delphi.Personality><Parameters><Parameters Name="UseLauncher">False</Parameters><Parameters Name="LoadAllSymbols">True</Parameters><Parameters Name="LoadUnspecifiedSymbols">False</Parameters></Parameters><VersionInfo><VersionInfo Name="IncludeVerInfo">False</VersionInfo><VersionInfo Name="AutoIncBuild">False</VersionInfo><VersionInfo Name="MajorVer">1</VersionInfo><VersionInfo Name="MinorVer">0</VersionInfo><VersionInfo Name="Release">0</VersionInfo><VersionInfo Name="Build">0</VersionInfo><VersionInfo Name="Debug">False</VersionInfo><VersionInfo Name="PreRelease">False</VersionInfo><VersionInfo Name="Special">False</VersionInfo><VersionInfo Name="Private">False</VersionInfo><VersionInfo Name="DLL">False</VersionInfo><VersionInfo Name="Locale">1049</VersionInfo><VersionInfo Name="CodePage">1251</VersionInfo></VersionInfo><VersionInfoKeys><VersionInfoKeys Name="CompanyName"></VersionInfoKeys><VersionInfoKeys Name="FileDescription"></VersionInfoKeys><VersionInfoKeys Name="FileVersion">1.0.0.0</VersionInfoKeys><VersionInfoKeys Name="InternalName"></VersionInfoKeys><VersionInfoKeys Name="LegalCopyright"></VersionInfoKeys><VersionInfoKeys Name="LegalTrademarks"></VersionInfoKeys><VersionInfoKeys Name="OriginalFilename"></VersionInfoKeys><VersionInfoKeys Name="ProductName"></VersionInfoKeys><VersionInfoKeys Name="ProductVersion">1.0.0.0</VersionInfoKeys><VersionInfoKeys Name="Comments"></VersionInfoKeys></VersionInfoKeys><Source><Source Name="MainSource">IV.dpr</Source></Source></Delphi.Personality><ModelSupport>False</ModelSupport></BorlandProject></BorlandProject>
+  </ProjectExtensions>
+  <Import Project="$(MSBuildBinPath)\Borland.Delphi.Targets" />
+  <ItemGroup>
+    <DelphiCompile Include="IV.dpr">
+      <MainSource>MainSource</MainSource>
+    </DelphiCompile>
+    <DCCReference Include="AD5752R.pas" />
+    <DCCReference Include="AD9833.pas" />
+    <DCCReference Include="ADS1115.pas" />
+    <DCCReference Include="ArduinoADC.pas" />
+    <DCCReference Include="ArduinoDevice.pas" />
+    <DCCReference Include="ArduinoDeviceShow.pas" />
+    <DCCReference Include="D30_06.pas" />
+    <DCCReference Include="DACR2R.pas" />
+    <DCCReference Include="Dependence.pas" />
+    <DCCReference Include="ET1255.pas" />
+    <DCCReference Include="GDS_806S.pas" />
+    <DCCReference Include="HighResolutionTimer.pas" />
+    <DCCReference Include="INA226.pas" />
+    <DCCReference Include="IVchar_main.pas">
+      <Form>IVchar</Form>
+    </DCCReference>
+    <DCCReference Include="MCP3424.pas" />
+    <DCCReference Include="MDevice.pas" />
+    <DCCReference Include="Measurement.pas" />
+    <DCCReference Include="MLX90615.pas" />
+    <DCCReference Include="OlegDevice.pas" />
+    <DCCReference Include="PacketParameters.pas" />
+    <DCCReference Include="PID.pas" />
+    <DCCReference Include="RS232device.pas" />
+    <DCCReference Include="RS232_Meas_Tread.pas" />
+    <DCCReference Include="RS232_Mediator_Tread.pas" />
+    <DCCReference Include="ShowTypes.pas" />
+    <DCCReference Include="TemperatureSensor.pas" />
+    <DCCReference Include="TempThread.pas" />
+    <DCCReference Include="UT70.pas" />
+    <DCCReference Include="V7_21.pas" />
+    <None Include="IV.todo" />
+  </ItemGroup>
+</Project>
