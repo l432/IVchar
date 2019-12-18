@@ -64,7 +64,7 @@ type
 implementation
 
 uses
-  PacketParameters, OlegType, Math, OlegFunction, SysUtils;
+  PacketParameters, OlegType, Math;
 
 { TMLX90615 }
 
@@ -101,7 +101,6 @@ end;
 procedure TMLX90615.ConvertToValue;
  var temp:word;
 begin
-// HelpForMe(inttostr(MilliSecond)+ByteArrayToString(fData));
 
  if High(fData)<>2 then Exit;
  if not(CRCCorrect()) then Exit;
@@ -147,7 +146,6 @@ end;
 
 function TMLX90615.GetTemperature: double;
 begin
-//  HelpForMe(inttostr(MilliSecond));
  fstate:=mlx_tObject;
  Result:=Measurement();
 end;

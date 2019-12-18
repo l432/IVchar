@@ -10,30 +10,38 @@ File_7=TSourceModule,'D:\Oleg\Shottky_Program\IVChar\ArduinoDeviceShow.pas',0,1,
 File_8=TSourceModule,'D:\Oleg\Shottky_Program\IVChar\AD5752R.pas',0,1,1,1,1,0,0,,
 
 [Modules]
-Module0=D:\Oleg\Shottky_Program\IVChar\RS232_Meas_Tread.pas
-Module1=D:\Oleg\Shottky_Program\IVChar\RS232device.pas
-Module2=D:\Oleg\Shottky_Program\IVChar\TemperatureSensor.pas
-Module3=D:\Oleg\Shottky_Program\IVChar\Measurement.pas
-Module4=D:\Oleg\Shottky_Program\IVChar\MLX90615.pas
-Module5=D:\Oleg\Shottky_Program\IVChar\TempThread.pas
-Module6=D:\Oleg\Shottky_Program\IVChar\IVchar_main.pas
-Module7=D:\Oleg\Shottky_Program\IVChar\ArduinoDevice.pas
-Module8=D:\Oleg\Shottky_Program\IVChar\PacketParameters.pas
-Module9=D:\Oleg\Shottky_Program\IVChar\ShowTypes.pas
-Module10=D:\Oleg\Shottky_Program\Shcottky\OlegFunction.pas
-Module11=D:\Oleg\Shottky_Program\IVChar\Dependence.pas
-Module12=D:\Oleg\Shottky_Program\IVChar\OlegDevice.pas
-Module13=D:\Oleg\Shottky_Program\IVChar\GDS_806S.pas
-Module14=D:\Oleg\Shottky_Program\IVChar\MDevice.pas
-Module15=D:\Oleg\Shottky_Program\IVChar\RS232_Mediator_Tread.pas
-Module16=D:\Oleg\Shottky_Program\Shcottky\OlegShowTypes.pas
-Module17=D:\Oleg\Shottky_Program\IVChar\ArduinoADC.pas
-Module18=D:\Oleg\Shottky_Program\IVChar\INA226.pas
-Module19=D:\Oleg\Shottky_Program\IVChar\V7_21.pas
-Module20=D:\Oleg\Shottky_Program\IVChar\DACR2R.pas
-Module21=default.htm
+Module0=D:\Oleg\Shottky_Program\IVChar\IVchar_main.pas
+Module1=default.htm
+Module2=D:\Oleg\Shottky_Program\IVChar\RS232_Meas_Tread.pas
+Module3=D:\Oleg\Shottky_Program\IVChar\RS232device.pas
+Module4=D:\Oleg\Shottky_Program\IVChar\TemperatureSensor.pas
+Module5=D:\Oleg\Shottky_Program\IVChar\Measurement.pas
+Module6=D:\Oleg\Shottky_Program\IVChar\MLX90615.pas
+Module7=D:\Oleg\Shottky_Program\IVChar\TempThread.pas
+Module8=D:\Oleg\Shottky_Program\IVChar\ArduinoDevice.pas
+Module9=D:\Oleg\Shottky_Program\IVChar\PacketParameters.pas
+Module10=D:\Oleg\Shottky_Program\IVChar\ShowTypes.pas
+Module11=D:\Oleg\Shottky_Program\Shcottky\OlegFunction.pas
+Module12=D:\Oleg\Shottky_Program\IVChar\Dependence.pas
+Module13=D:\Oleg\Shottky_Program\IVChar\OlegDevice.pas
+Module14=D:\Oleg\Shottky_Program\IVChar\GDS_806S.pas
+Module15=D:\Oleg\Shottky_Program\IVChar\MDevice.pas
+Module16=D:\Oleg\Shottky_Program\IVChar\RS232_Mediator_Tread.pas
+Module17=D:\Oleg\Shottky_Program\Shcottky\OlegShowTypes.pas
+Module18=D:\Oleg\Shottky_Program\IVChar\ArduinoADC.pas
+Module19=D:\Oleg\Shottky_Program\IVChar\INA226.pas
+Module20=D:\Oleg\Shottky_Program\IVChar\V7_21.pas
+Module21=D:\Oleg\Shottky_Program\IVChar\DACR2R.pas
 Count=22
 EditWindowCount=1
+
+[D:\Oleg\Shottky_Program\IVChar\IVchar_main.pas]
+ModuleType=TSourceModule
+FormState=1
+FormOnTop=0
+
+[default.htm]
+ModuleType=TURLModule
 
 [D:\Oleg\Shottky_Program\IVChar\RS232_Meas_Tread.pas]
 ModuleType=TSourceModule
@@ -63,11 +71,6 @@ FormOnTop=0
 [D:\Oleg\Shottky_Program\IVChar\TempThread.pas]
 ModuleType=TSourceModule
 FormState=0
-FormOnTop=0
-
-[D:\Oleg\Shottky_Program\IVChar\IVchar_main.pas]
-ModuleType=TSourceModule
-FormState=1
 FormOnTop=0
 
 [D:\Oleg\Shottky_Program\IVChar\ArduinoDevice.pas]
@@ -140,12 +143,9 @@ ModuleType=TSourceModule
 FormState=0
 FormOnTop=0
 
-[default.htm]
-ModuleType=TURLModule
-
 [EditWindow0]
 ViewCount=22
-CurrentEditView=D:\Oleg\Shottky_Program\IVChar\RS232_Meas_Tread.pas
+CurrentEditView=D:\Oleg\Shottky_Program\IVChar\IVchar_main.pas
 View0=0
 View1=1
 View2=2
@@ -205,8 +205,8 @@ WelcomePageURL=bds:/default.htm
 [View1]
 CustomEditViewType=TEditView
 Module=D:\Oleg\Shottky_Program\IVChar\IVchar_main.pas
-CursorX=36
-CursorY=3162
+CursorX=19
+CursorY=3165
 TopLine=3147
 LeftCol=1
 Elisions=
@@ -949,7 +949,7 @@ Dockable=1
 StayOnTop=0
 TabPosition=1
 ActiveTabID=RefactoringForm
-TabDockClients=RefactoringForm,FindReferencsForm,ToDo List,RefactoringsView,UsagesView,QAView,MetricsView
+TabDockClients=RefactoringForm,FindReferencsForm,ToDo List,QAView,MetricsView,RefactoringsView,UsagesView
 
 [DockSite1]
 HostDockSite=DockBottomPanel

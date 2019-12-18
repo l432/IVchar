@@ -32,7 +32,7 @@ type
 implementation
 
 uses
-  Windows, OlegType, Math, OlegMath, SysUtils, DateUtils, Forms, OlegFunction;
+  Windows, OlegType, Math, OlegMath, SysUtils, DateUtils, Forms;
 
 { RS232Measuring }
 
@@ -46,8 +46,6 @@ begin
   inherited Create(RS_Meter,WPARAM,EventEnd);
   fRS232Meter := RS_Meter;
   fMeasurement:=fRS232Meter;
-//  HelpForMe(inttostr(MilliSecond));
-
   Resume;
 end;
 
