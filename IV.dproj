@@ -50,6 +50,7 @@
       <Form>IVchar</Form>
     </DCCReference>
     <DCCReference Include="MCP3424.pas" />
+    <DCCReference Include="MCP9808.pas" />
     <DCCReference Include="MDevice.pas" />
     <DCCReference Include="Measurement.pas" />
     <DCCReference Include="MLX90615.pas" />

@@ -32,7 +32,8 @@ uses
   INA226 in 'INA226.pas',
   OlegDevice in 'OlegDevice.pas',
   ADT74x0 in 'ADT74x0.pas',
-  TMP102 in 'TMP102.pas';
+  TMP102 in 'TMP102.pas',
+  MCP9808 in 'MCP9808.pas';
 
 {$R *.res}
 

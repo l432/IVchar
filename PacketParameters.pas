@@ -28,6 +28,7 @@ const
   INA226Command=$E;
   STS21Command=$10;
   ADT74x0Command=$11;
+  MCP9808Command=$12;
 
 var
   aPacket:array of byte;
