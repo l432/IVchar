@@ -18,6 +18,7 @@
 #include "OlegMLX90615.h"
 #include "OlegINA226.h"
 #include "OlegSTS21.h"
+#include "OlegADT74x0.h"
 
 DS18B20o ds18b20;
 CustomDevice cd;
@@ -31,6 +32,7 @@ AD9833o ad9833;
 MLX90615o mlx90615;
 INA226o ina226;
 STS21o  sts21;
+ADT74o adt74x0;
 
 void setup() {
     Serial.begin(115200);
@@ -78,6 +80,7 @@ void loop() {
       if (ad9833.Action()) goto start;
       if (mlx90615.Begin()) goto start;
       if (ina226.Begin()) goto start;
+      if (adt74x0.Begin()) goto start;
     }
   }
 start:
@@ -89,6 +92,7 @@ start:
   mcp3424.End();
   ads1115.End();
   ina226.End();
+  adt74x0.End();
   //  wdt_reset();
 }
 

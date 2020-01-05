@@ -29,5 +29,7 @@
     <Transaction>2018.11.17 13:25:46.390.pas,D:\Oleg\Shottky_Program\IVChar\Unit1.pas=D:\Oleg\Shottky_Program\IVChar\ADS1115.pas</Transaction>
     <Transaction>2018.12.14 12:32:15.828.pas,D:\Oleg\Shottky_Program\IVChar\Unit1.pas=D:\Oleg\Shottky_Program\IVChar\GDS_806S.pas</Transaction>
     <Transaction>2019.12.16 10:50:01.608.pas,D:\Oleg\Shottky_Program\IVChar\Unit2.pas=D:\Oleg\Shottky_Program\IVChar\OlegDevice.pas</Transaction>
+    <Transaction>2020.01.05 12:28:03.453.pas,D:\oleg\IVchar\Unit2.pas=D:\oleg\IVchar\ADT74x0.pas</Transaction>
+    <Transaction>2020.01.05 12:33:15.750.pas,D:\oleg\IVchar\Unit2.pas=D:\oleg\IVchar\TMP102.pas</Transaction>
   </Transactions>
 </BorlandProject>

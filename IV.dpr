@@ -30,7 +30,9 @@ uses
   GDS_806S in 'GDS_806S.pas',
   MLX90615 in 'MLX90615.pas',
   INA226 in 'INA226.pas',
-  OlegDevice in 'OlegDevice.pas';
+  OlegDevice in 'OlegDevice.pas',
+  ADT74x0 in 'ADT74x0.pas',
+  TMP102 in 'TMP102.pas';
 
 {$R *.res}
 
