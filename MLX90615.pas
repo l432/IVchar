@@ -27,8 +27,8 @@ type
    fNewGrCoef:Word;
   protected
    Function CRCCorrect():boolean;
-   Procedure PacketCreateToSend();override;
   public
+   Procedure PacketCreateToSend();override;
    function GetTemperature():double;override;
    Constructor Create(CP:TComPort;Nm:string);
    Procedure ConvertToValue();override;

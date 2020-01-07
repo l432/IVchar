@@ -33,7 +33,11 @@ uses
   OlegDevice in 'OlegDevice.pas',
   ADT74x0 in 'ADT74x0.pas',
   TMP102 in 'TMP102.pas',
-  MCP9808 in 'MCP9808.pas';
+  MCP9808 in 'MCP9808.pas',
+  RS232deviceNew in 'RS232deviceNew.pas',
+  UT70new in 'UT70new.PAS',
+  GDS_806Snew in 'GDS_806Snew.pas',
+  ArduinoDeviceNew in 'ArduinoDeviceNew.pas';
 
 {$R *.res}
 

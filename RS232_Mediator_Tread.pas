@@ -3,7 +3,8 @@ unit RS232_Mediator_Tread;
 interface
 
 uses
-  RS232device,  Measurement, HighResolutionTimer;
+  RS232device,  Measurement, HighResolutionTimer, ArduinoDevice, CPort, 
+  ArduinoDeviceNew;
 
 Const
   ScanningPeriodShot=5;
@@ -11,13 +12,15 @@ Const
 type
   TRS232_MediatorTread = class(TTheadSleep)
   private
+   fArduinoComPort:TRS232_Arduino;
    fArrayDevice:array of TRS232Device;
    fDeviceNumber:byte;
    procedure DoSomething;
   protected
     procedure Execute; override;
   public
-    constructor Create(ArrayDevice:array of TRS232Device);
+    constructor Create(CP:TComPort; ArrayDevice:array of TRS232Device);
+    procedure Free;overload;
   end;
 
 implementation
@@ -28,10 +31,12 @@ uses
 
 { RS232_Mediator }
 
-constructor TRS232_MediatorTread.Create(ArrayDevice: array of TRS232Device);
+constructor TRS232_MediatorTread.Create(CP:TComPort;
+                     ArrayDevice: array of TRS232Device);
  var i:byte;
 begin
   inherited Create;
+  fArduinoComPort:=TRS232_Arduino.Create(CP);
   SetLength(fArrayDevice,High(ArrayDevice)+1);
   for I := 0 to High(ArrayDevice) do
    fArrayDevice[i]:=ArrayDevice[i];
@@ -42,13 +47,13 @@ end;
 procedure TRS232_MediatorTread.DoSomething;
  var i:byte;
 begin
-
-
   for I := 0 to High(fArrayDevice) do
     if fArrayDevice[i].isNeededComPort then
       begin
-      fArrayDevice[i].ComPortUsing();
-      fArrayDevice[i].isNeededComPort:=False;
+//      fArrayDevice[i].ComPortUsing();
+       fArrayDevice[i].PacketCreateToSend();
+       fArrayDevice[i].Error:=not(fArduinoComPort.IsSend(fArrayDevice[i].MessageError));
+       fArrayDevice[i].isNeededComPort:=False;
       _Sleep(2);
       end;
 end;
@@ -74,6 +79,12 @@ begin
      end;
    i:=1-i;
   end;
+end;
+
+procedure TRS232_MediatorTread.Free;
+begin
+ fArduinoComPort.Free;
+ inherited Free;
 end;
 
 end.

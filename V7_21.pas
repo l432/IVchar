@@ -40,9 +40,8 @@ type
    Procedure DiapazonFilling(DiapazonNumber:byte;
                              D_Begin, D_End:TV721_Diapazons);
    Function MeasureModeLabelRead():string;override;
-   procedure   PacketCreateToSend(); override;
-
   public
+   procedure   PacketCreateToSend(); override;
    Procedure ConvertToValue();override;
    Function ResultProblem(Rez:double):boolean;//override;
    Constructor Create(CP:TComPort;Nm:string);//override;

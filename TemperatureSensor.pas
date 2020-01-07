@@ -37,8 +37,8 @@ type
   {базовий клас для датчика HTU21D}
   protected
     Function CRCCorrect():boolean;
-    Procedure PacketCreateToSend();override;
   public
+   Procedure PacketCreateToSend();override;
    Constructor Create(CP:TComPort;Nm:string);//override;
    Procedure ConvertToValue();override;
   end;
@@ -193,7 +193,6 @@ begin
 
  if (fValue<-40)or(fValue>125) then fValue:=ErResult
                                else fValue:=fValue+273.16;
-// fIsReady:=True;
 end;
 
 function THTU21D.CRCCorrect: boolean;

@@ -3,7 +3,7 @@ unit RS232_Meas_Tread;
 interface
 
 uses
-  Classes, RS232device, Measurement;
+  Classes, RS232device, Measurement, RS232deviceNew;
 
 
 type
@@ -20,6 +20,17 @@ type
    procedure ExuteBegin;override;
   public
    constructor Create(RS_Meter:TRS232Meter;WPARAM: word; EventEnd: THandle);
+  end;
+
+  TRS232MeasuringTreadNew = class(TMeasuringTread)
+  private
+   fRS232Meter:TRS232MeterDevice;
+   procedure FalseStatement();
+//   procedure ConvertToValue();
+  protected
+   procedure ExuteBegin;override;
+  public
+   constructor Create(RS_Meter:TRS232MeterDevice;WPARAM: word; EventEnd: THandle);
   end;
 
 
@@ -121,5 +132,56 @@ begin
    end;
 end;
 
+
+{ TRS232MeasuringTreadNew }
+
+//procedure TRS232MeasuringTreadNew.ConvertToValue;
+//begin
+//   fRS232Meter.ConvertToValue()
+//end;
+
+constructor TRS232MeasuringTreadNew.Create(RS_Meter: TRS232MeterDevice;
+  WPARAM: word; EventEnd: THandle);
+begin
+  inherited Create(RS_Meter,WPARAM,EventEnd);
+  fRS232Meter := RS_Meter;
+  fMeasurement:=fRS232Meter;
+  Resume;
+end;
+
+procedure TRS232MeasuringTreadNew.ExuteBegin;
+label
+  start;
+var
+  i: Integer;
+  isFirst: Boolean;
+begin
+  isFirst := True;
+start:
+  Synchronize(FalseStatement);
+  fRS232Meter.Request;
+//  sleep(fRS232Meter.MinDelayTime);
+  _Sleep(fRS232Meter.MinDelayTime);
+  i := 0;
+
+ while not((i > fRS232Meter.DelayTimeMax) or (fRS232Meter.IsReceived) or (fRS232Meter.Error)) do
+ begin
+    _Sleep(fRS232Meter.DelayTimeStep);
+    inc(i);
+ end;
+
+//  if fRS232Meter.IsReceived then
+//    Synchronize(ConvertToValue);
+  if (fRS232Meter.RepeatInErrorCase) and (fRS232Meter.Value = ErResult) and (isFirst) then
+  begin
+    isFirst := false;
+    goto start;
+  end;
+end;
+
+procedure TRS232MeasuringTreadNew.FalseStatement;
+begin
+  fRS232Meter.MeasurementBegin;
+end;
 
 end.

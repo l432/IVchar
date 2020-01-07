@@ -2,7 +2,8 @@ unit ArduinoDevice;
 
 interface
  uses OlegType,CPort,SysUtils,Classes,PacketParameters,
-      StdCtrls, IniFiles, RS232device, ExtCtrls, Measurement, OlegTypePart2;
+      StdCtrls, IniFiles, RS232device, ExtCtrls, Measurement, OlegTypePart2, 
+  RS232deviceNew;
 
 const
   UndefinedPin=255;
@@ -22,6 +23,13 @@ const
 
 
 type
+
+//  TRS232_Arduino=class(TRS232)
+//    {початкові налаштування COM-порту}
+//    protected
+//    public
+//     Constructor Create(CP:TComPort);
+//    end;
 
   TPins=class
   {клас для опису пінів, які використовуються
@@ -117,9 +125,9 @@ type
  TArduinoPinChanger=class(TArduinoRS232Device)
   protected
    fPinUnderControl:byte;
-   procedure   PacketCreateToSend(); override;
    procedure PinsCreate();override;
   public
+   procedure   PacketCreateToSend(); override;
    property PinUnderControl:byte read fPinUnderControl write fPinUnderControl;
    Constructor Create(CP:TComPort;Nm:string);//override;
    procedure PinChangeToHigh();
@@ -132,10 +140,10 @@ type
   protected
    fMetterKod:byte;
    Procedure PacketReceiving(Sender: TObject; const Str: string);override;
-   procedure   PacketCreateToSend(); override;
    procedure PinsCreate();virtual;
   public
    Pins:TPins;
+   procedure   PacketCreateToSend(); override;
    Constructor Create(CP:TComPort;Nm:string);//override;
    Procedure Free;override;
   end;
@@ -148,9 +156,9 @@ type
    fSetterKod:byte;
    procedure PinsCreate();virtual;
    procedure CreateHook;virtual;
-   procedure PacketCreateToSend(); override;
   public
    Pins:TPins;
+   procedure PacketCreateToSend(); override;
    Constructor Create(CP:TComPort;Nm:string);//override;
    Procedure Free;override;
    procedure PinsToDataArray;virtual;
@@ -716,5 +724,12 @@ begin
    Result:=PinValueToStr(Index);
 end;
 
+
+//{ TRS232_Arduino }
+//
+//constructor TRS232_Arduino.Create(CP: TComPort);
+//begin
+// inherited Create(CP,PacketBeginChar,PacketEndChar);
+//end;
 
 end.

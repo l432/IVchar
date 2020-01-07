@@ -38,12 +38,14 @@
     <DCCReference Include="ADT74x0.pas" />
     <DCCReference Include="ArduinoADC.pas" />
     <DCCReference Include="ArduinoDevice.pas" />
+    <DCCReference Include="ArduinoDeviceNew.pas" />
     <DCCReference Include="ArduinoDeviceShow.pas" />
     <DCCReference Include="D30_06.pas" />
     <DCCReference Include="DACR2R.pas" />
     <DCCReference Include="Dependence.pas" />
     <DCCReference Include="ET1255.pas" />
     <DCCReference Include="GDS_806S.pas" />
+    <DCCReference Include="GDS_806Snew.pas" />
     <DCCReference Include="HighResolutionTimer.pas" />
     <DCCReference Include="INA226.pas" />
     <DCCReference Include="IVchar_main.pas">
@@ -58,6 +60,7 @@
     <DCCReference Include="PacketParameters.pas" />
     <DCCReference Include="PID.pas" />
     <DCCReference Include="RS232device.pas" />
+    <DCCReference Include="RS232deviceNew.pas" />
     <DCCReference Include="RS232_Meas_Tread.pas" />
     <DCCReference Include="RS232_Mediator_Tread.pas" />
     <DCCReference Include="ShowTypes.pas" />
@@ -65,6 +68,7 @@
     <DCCReference Include="TempThread.pas" />
     <DCCReference Include="TMP102.pas" />
     <DCCReference Include="UT70.pas" />
+    <DCCReference Include="UT70new.PAS" />
     <DCCReference Include="V7_21.pas" />
     <None Include="IV.todo" />
   </ItemGroup>

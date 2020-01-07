@@ -39,6 +39,8 @@ PacketBegin - 0-й байт
 Довжину пакету (PacketBegin та PacketEnd не враховуються) - 1-й байт
 Контрольну суму - передостанній байт
 PacketEnd - останній байт}
+procedure StrToArrByte(const Str: string; var pData: TArrByte);
+
 Function PacketIsSend(ComPort:TComPort; report:string):boolean;
 {спроба відіслати aPacket через ComPort}
 Function PacketIsReceived(const Str: string; var pData:TArrByte):boolean;overload;
@@ -128,16 +130,21 @@ begin
  if not(Result) then MessageDlg(report,mtError, [mbOK], 0);
 end;
 
+procedure StrToArrByte(const Str: string; var pData: TArrByte);
+var
+  i: Integer;
+begin
+  SetLength(pData, Length(Str));
+  for I := 0 to High(pData) do
+    pData[i] := ord(str[i + 1]);
+end;
+
 Function PacketIsReceived(const Str: string; var pData:TArrByte):boolean;
  var i:integer;
      WrongByteNumber:byte;
 begin
  Result:=True;
-
-
- SetLength(pData,Length(Str));
- for I := 0 to High(pData) do
-   pData[i]:=ord(str[i+1]);
+ StrToArrByte(Str, pData);
 
  if pData[0]=Length(Str)+1 then
   begin

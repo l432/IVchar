@@ -16,12 +16,12 @@ type
   protected
     FActiveChannel: byte;
     fConfigByte:byte;
-   procedure PacketCreateToSend(); override;
    procedure Configuration();virtual;
    procedure Intitiation();virtual;
    procedure FinalPacketCreateToSend();virtual;
    procedure PinsCreate();override;
  public
+   procedure PacketCreateToSend(); override;
    property  ActiveChannel:byte read FActiveChannel write FActiveChannel;
    constructor Create(CP:TComPort;Nm:string);//override;
  end;

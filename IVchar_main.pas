@@ -822,9 +822,9 @@ type
     INA226_Shunt,INA226_Bus:TINA226_Channel;
     INA226_ShuntShow,INA226_BusShow:TINA226_ChannelShow;
 
-    GDS_806S:TGDS_806S;
-    GDS_806S_Channel:array[TGDS_Channel]of TGDS_806S_Channel;
-    GDS_806S_Show:TGDS_806S_Show;
+//    GDS_806S:TGDS_806S;
+//    GDS_806S_Channel:array[TGDS_Channel]of TGDS_806S_Channel;
+//    GDS_806S_Show:TGDS_806S_Show;
 
     CurrentShow:TCurrentShow;
 
@@ -848,10 +848,10 @@ type
 
     Simulator:TSimulator;
 
-    UT70B:TUT70B;
-    UT70BShow:TUT70BShow;
-    UT70C:TUT70C;
-    UT70CShow:TUT70CShow;
+//    UT70B:TUT70B;
+//    UT70BShow:TUT70BShow;
+//    UT70C:TUT70C;
+//    UT70CShow:TUT70CShow;
 
     ET1255_DACs:array[TET1255_DAC_ChanelNumber] of TET1255_DAC;
     ET1255_DACsShow:array[TET1255_DAC_ChanelNumber] of TDAC_Show;
@@ -917,7 +917,7 @@ var
 implementation
 
 uses
-  ArduinoADC, OlegFunction;
+  ArduinoADC, OlegFunction, UT70new, GDS_806Snew;
 
 {$R *.dfm}
 
@@ -2177,12 +2177,38 @@ end;
 procedure TIVchar.GDS_Create;
  var i:TGDS_Channel;
 begin
-  GDS_806S := TGDS_806S.Create(ComPortGDS, 'GDS-806');
+//  GDS_806S := TGDS_806S.Create(ComPortGDS, 'GDS-806');
+//  for I := Low(TGDS_Channel) to High(TGDS_Channel) do
+//      GDS_806S_Channel[i]:=TGDS_806S_Channel.Create(i,GDS_806S);
+//
+//  GDS_806S_Show := TGDS_806S_Show.Create(GDS_806S,
+//                      GDS_806S_Channel,
+//                     [STGDS_Mode, STGDS_RLength, STGDS_AveNum, STGDS_ScaleGoriz,
+//                     STGDS_CoupleCh1, STGDS_ProbCh1, STGDS_MeasCh1, STGDS_ScaleCh1,
+//                     STGDS_CoupleCh2, STGDS_ProbCh2, STGDS_MeasCh2, STGDS_ScaleCh2,
+//                     STGDS_OffsetCh1, STGDS_OffsetCh2],
+//                     [LGDS_Mode, LGDS_RLength, LGDS_AveNum,
+//                     LGDS_OffsetCh1, LGDS_OffsetCh2],
+//                     [B_GDS_SetSet, B_GDS_SetGet, B_GDS_Test,
+//                     B_GDS_SetSav, B_GDS_SetLoad, B_GDS_SetAuto,
+//                     B_GDS_SetDef, B_GDS_Refresh, B_GDS_Run,
+//                     B_GDS_Stop, B_GDS_Unlock],
+//                     [CBGDS_InvertCh1, CBGDS_InvertCh2],
+//                     [CBGDS_DisplayCh1, CBGDS_DisplayCh2],
+//                     [LGDS_Ch1,LGDSU_Ch1,LGDS_Ch2,LGDSU_Ch2],
+//                     [B_GDS_MeasCh1,B_GDS_MeasCh2,B_GDS_MeasShow],
+//                     [SB_GDS_AutoCh1,SB_GDS_AutoCh2,SB_GDS_AutoShow],
+//                     [GDS_SeriesCh1,GDS_SeriesCh2],
+//                     PGGDS_Show);
+//
+//  ShowArray.Add([GDS_806S_Show]);
+//  AnyObjectArray.Add([GDS_806S,GDS_806S_Channel[1],GDS_806S_Channel[2]]);
+  GDS_806Snw := TGDS_806Snew.Create(ComPortGDS);
   for I := Low(TGDS_Channel) to High(TGDS_Channel) do
-      GDS_806S_Channel[i]:=TGDS_806S_Channel.Create(i,GDS_806S);
+      GDS_806Snew_Channel[i]:=TGDS_806Snew_Channel.Create(i,GDS_806Snw);
 
-  GDS_806S_Show := TGDS_806S_Show.Create(GDS_806S,
-                      GDS_806S_Channel,
+  GDS_806Snew_Show := TGDS_806Snew_Show.Create(GDS_806Snw,
+                      GDS_806Snew_Channel,
                      [STGDS_Mode, STGDS_RLength, STGDS_AveNum, STGDS_ScaleGoriz,
                      STGDS_CoupleCh1, STGDS_ProbCh1, STGDS_MeasCh1, STGDS_ScaleCh1,
                      STGDS_CoupleCh2, STGDS_ProbCh2, STGDS_MeasCh2, STGDS_ScaleCh2,
@@ -2201,8 +2227,9 @@ begin
                      [GDS_SeriesCh1,GDS_SeriesCh2],
                      PGGDS_Show);
 
-  ShowArray.Add([GDS_806S_Show]);
-  AnyObjectArray.Add([GDS_806S,GDS_806S_Channel[1],GDS_806S_Channel[2]]);
+  ShowArray.Add([GDS_806Snew_Show]);
+  AnyObjectArray.Add([GDS_806Snw,GDS_806Snew_Channel[1],GDS_806Snew_Channel[2]]);
+
 end;
 
 procedure TIVchar.SaveIVMeasurementResults(FileName: string; DataVector:TVector);
@@ -2603,7 +2630,7 @@ begin
  ComPortsBegining;
 
 
- RS232_MediatorTread:=TRS232_MediatorTread.Create(
+ RS232_MediatorTread:=TRS232_MediatorTread.Create(ComPort1,
 //                 [DACR2R,V721A]);
                  [INA226_Module,ADS11115module,HTU21D,
                  DACR2R,V721A,V721_I,V721_II,DS18B20,
@@ -3295,16 +3322,27 @@ begin
 
 
 
-  UT70B:=TUT70B.Create(ComPortUT70B, 'UT70B');
-  UT70BShow:= TUT70BShow.Create(UT70B, RGUT70B_MM, RGUT70B_Range, RGUT70B_RangeM, LUT70B, LUT70BU, BUT70BMeas, SBUT70BAuto, Time);
-  UT70C:=TUT70C.Create(ComPortUT70C, 'UT70C');
-  UT70CShow:= TUT70CShow.Create(UT70C, RGUT70C_MM,
+//  UT70B:=TUT70B.Create(ComPortUT70B, 'UT70B');
+//  UT70BShow:= TUT70BShow.Create(UT70B, RGUT70B_MM, RGUT70B_Range, RGUT70B_RangeM, LUT70B, LUT70BU, BUT70BMeas, SBUT70BAuto, Time);
+//  UT70C:=TUT70C.Create(ComPortUT70C, 'UT70C');
+//  UT70CShow:= TUT70CShow.Create(UT70C, RGUT70C_MM,
+//       RGUT70C_Range, RGUT70C_RangeM, LUT70C, LUT70CU,
+//       BUT70CMeas, SBUT70CAuto, Time,
+//       LUT70C_Hold,LUT70C_rec,LUT70C_AvTime,LUT70C_AVG);
+//
+//  ShowArray.Add([UT70BShow,UT70CShow]);
+//  AnyObjectArray.Add([UT70B,UT70C]);
+
+  UT70Bnew:=TUT70Bnew.Create(ComPortUT70B);
+  UT70BShowNew:= TUT70BShowNew.Create(UT70Bnew, RGUT70B_MM, RGUT70B_Range, RGUT70B_RangeM, LUT70B, LUT70BU, BUT70BMeas, SBUT70BAuto, Time);
+  UT70Cnew:=TUT70Cnew.Create(ComPortUT70C);
+  UT70CShowNew:= TUT70CShowNew.Create(UT70Cnew, RGUT70C_MM,
        RGUT70C_Range, RGUT70C_RangeM, LUT70C, LUT70CU,
        BUT70CMeas, SBUT70CAuto, Time,
        LUT70C_Hold,LUT70C_rec,LUT70C_AvTime,LUT70C_AVG);
 
-  ShowArray.Add([UT70BShow,UT70CShow]);
-  AnyObjectArray.Add([UT70B,UT70C]);
+  ShowArray.Add([UT70BShowNew,UT70CShowNew]);
+  AnyObjectArray.Add([UT70Bnew,UT70Cnew]);
 
   GDS_Create();
 
@@ -3487,8 +3525,10 @@ begin
   ShowArray.Add([TermoCouple_MD,Temperature_MD,MLX90615Show]);
 
   SetLength(Devices,High(Devices)+3);
-  Devices[High(Devices)-1]:=UT70B;
-  Devices[High(Devices)]:=UT70C;
+//  Devices[High(Devices)-1]:=UT70B;
+//  Devices[High(Devices)]:=UT70C;
+  Devices[High(Devices)-1]:=UT70Bnew;
+  Devices[High(Devices)]:=UT70Cnew;
 
   if ET1255isPresent then
    begin
@@ -3510,8 +3550,10 @@ begin
   Devices[High(Devices)]:=ADS11115_Channels[2];
 
   SetLength(Devices,High(Devices)+3);
-  Devices[High(Devices)-1]:=GDS_806S_Channel[1];
-  Devices[High(Devices)]:=GDS_806S_Channel[2];
+//  Devices[High(Devices)-1]:=GDS_806S_Channel[1];
+//  Devices[High(Devices)]:=GDS_806S_Channel[2];
+  Devices[High(Devices)-1]:=GDS_806Snew_Channel[1];
+  Devices[High(Devices)]:=GDS_806Snew_Channel[2];
 
   SetLength(Devices,High(Devices)+3);
   Devices[High(Devices)-1]:=INA226_Shunt;
@@ -3600,8 +3642,10 @@ begin
  if Measurement.Name= 'B7-21A' then Result:=V721A.Diapazon;
  if Measurement.Name= 'B7-21 (1)' then Result:=V721_I.Diapazon;
  if Measurement.Name= 'B7-21 (2)' then Result:=V721_II.Diapazon;
- if Measurement.Name= 'UT70B' then Result:=UT70B.Diapazon;
- if Measurement.Name= 'UT70C' then Result:=UT70C.Diapazon;
+// if Measurement.Name= 'UT70B' then Result:=UT70B.Diapazon;
+// if Measurement.Name= 'UT70C' then Result:=UT70C.Diapazon;
+ if Measurement.Name= 'UT70B' then Result:=UT70Bnew.Diapazon;
+ if Measurement.Name= 'UT70C' then Result:=UT70Cnew.Diapazon;
 end;
 
 procedure TIVchar.CorrectionLimit(var NewCorrection: Double);
