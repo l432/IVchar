@@ -4,7 +4,8 @@ interface
 
 uses
   StdCtrls, IniFiles, Windows, ComCtrls, ArduinoDevice, OlegType, {Series,}
-  Measurement, ExtCtrls, Classes, ArduinoDeviceShow, {TeCanvas,} OlegTypePart2, OlegShowTypes;
+  Measurement, ExtCtrls, Classes, ArduinoDeviceShow, {TeCanvas,} OlegTypePart2, OlegShowTypes, 
+  ArduinoDeviceShowNew, ArduinoDeviceNew;
 
 
 type
@@ -85,6 +86,23 @@ end;
                        VSB, KSB, RB: TButton);
    Procedure Free;
    procedure ReadFromIniFile(ConfigFile:TIniFile);override;
+   Procedure WriteToIniFile(ConfigFile:TIniFile);override;
+  end;
+
+
+  TArduinoDACShowNew=class(TArduinoSetterShowNew)
+  private
+   fDAC_Show:TDAC_Show;
+  public
+   Constructor Create(ArdDAC:TArduinoDACNew;
+                       PinLs: array of TPanel;
+                       PinVariant:TStringList;
+                       VData,KData:TStaticText;
+                       VL, KL: TLabel;
+                       VSB, KSB, RB: TButton);
+   Procedure Free;override;
+//   procedure ReadFromIniFile(ConfigFile:TIniFile);override;
+   Procedure HookReadFromIniFile(ConfigFile:TIniFile);override;
    Procedure WriteToIniFile(ConfigFile:TIniFile);override;
   end;
 
@@ -418,5 +436,42 @@ begin
   fDAC_Show.WriteToIniFile(ConfigFile);
 end;
 
+
+{ TArduinoDACShowNew }
+
+constructor TArduinoDACShowNew.Create(ArdDAC: TArduinoDACNew;
+                                      PinLs: array of TPanel;
+                                      PinVariant: TStringList;
+                                      VData, KData: TStaticText;
+                                      VL, KL: TLabel;
+                                      VSB, KSB, RB: TButton);
+begin
+ inherited Create(ArdDAC,PinLs,PinVariant);
+ fDAC_Show:=TDAC_Show.Create(ArdDAC,VData, KData,VL, KL, VSB, KSB, RB);
+end;
+
+procedure TArduinoDACShowNew.Free;
+begin
+ fDAC_Show.Free;
+ inherited Free;
+end;
+
+procedure TArduinoDACShowNew.HookReadFromIniFile(ConfigFile: TIniFile);
+begin
+  inherited HookReadFromIniFile(ConfigFile);
+  fDAC_Show.ReadFromIniFile(ConfigFile);
+end;
+
+//procedure TArduinoDACShowNew.ReadFromIniFile(ConfigFile: TIniFile);
+//begin
+//  inherited ReadFromIniFile(ConfigFile);
+//  fDAC_Show.ReadFromIniFile(ConfigFile);
+//end;
+
+procedure TArduinoDACShowNew.WriteToIniFile(ConfigFile: TIniFile);
+begin
+  inherited WriteToIniFile(ConfigFile);
+  fDAC_Show.WriteToIniFile(ConfigFile);
+end;
 
 end.

@@ -837,14 +837,14 @@ type
     ForwSteps,RevSteps,IVResult,VolCorrection,
     VolCorrectionNew,TemperData:TVector;
 
-    DACR2R:TDACR2R;
-    DACR2RShow:TDACR2RShow;
+//    DACR2R:TDACR2R;
+//    DACR2RShow:TDACR2RShow;
 
-    D30_06:TD30_06;
-    D30_06Show:TD30_06Show;
+//    D30_06:TD30_06;
+//    D30_06Show:TD30_06Show;
 
-    AD9833:TAD9833;
-    AD9833Show:TAD9833Show;
+//    AD9833:TAD9833;
+//    AD9833Show:TAD9833Show;
 
     Simulator:TSimulator;
 
@@ -917,7 +917,7 @@ var
 implementation
 
 uses
-  ArduinoADC, OlegFunction, UT70new, GDS_806Snew;
+  ArduinoADC, OlegFunction, UT70new, GDS_806Snew, AD9833new;
 
 {$R *.dfm}
 
@@ -1285,7 +1285,8 @@ end;
 
 procedure TIVchar.CalibrationHookStep;
 begin
-  TIVParameters.VoltageStepChange(DACR2R.CalibrationStep(TIVParameters.VoltageInput));
+//  TIVParameters.VoltageStepChange(DACR2R.CalibrationStep(TIVParameters.VoltageInput));
+  TIVParameters.VoltageStepChange(DACR2Rnw.CalibrationStep(TIVParameters.VoltageInput));
 end;
 
 procedure TIVchar.IVcharHookBegin;
@@ -1578,7 +1579,8 @@ procedure TIVchar.CalibrHookSetVoltage;
 begin
  LADInputVoltageValue.Caption:=FloatToStrF(TIVParameters.VoltageInputReal,ffFixed, 6, 4);
 // SettingDevice.SetValueCalibr(TIVDependence.VoltageInputReal);
- DACR2R.OutputCalibr(TIVParameters.VoltageInputReal);
+// DACR2R.OutputCalibr(TIVParameters.VoltageInputReal);
+ DACR2Rnw.OutputCalibr(TIVParameters.VoltageInputReal);
 end;
 
 procedure TIVchar.CalibrSaveClick(Sender: TObject);
@@ -1586,7 +1588,8 @@ procedure TIVchar.CalibrSaveClick(Sender: TObject);
 begin
   tempdir:=GetCurrentDir;
   ChDir(ExtractFilePath(Application.ExeName));
-  DACR2R.SaveFileWithCalibrData(IVResult);
+//  DACR2R.SaveFileWithCalibrData(IVResult);
+  DACR2Rnw.SaveFileWithCalibrData(IVResult);
   ChDir(tempdir);
   BIVSave.Font.Style:=BIVSave.Font.Style+[fsStrikeOut];
 end;
@@ -2030,7 +2033,8 @@ begin
     IVResult.CopyTo(tempVec);
     tempdir:=GetCurrentDir;
     ChDir(ExtractFilePath(Application.ExeName));
-    DACR2R.SaveFileWithCalibrData(tempVec);
+//    DACR2R.SaveFileWithCalibrData(tempVec);
+    DACR2Rnw.SaveFileWithCalibrData(tempVec);
     ChDir(tempdir);
     tempVec.Free;
 end;
@@ -2490,8 +2494,10 @@ begin
   if OpenDialog.Execute()
      then
        begin
-         DACR2R.CalibrationFileProcessing(OpenDialog.FileName);
-         ParametersFileWork(DACR2R.CalibrationWrite);
+         DACR2Rnw.CalibrationFileProcessing(OpenDialog.FileName);
+//         DACR2R.CalibrationFileProcessing(OpenDialog.FileName);
+//         ParametersFileWork(DACR2R.CalibrationWrite);
+         ParametersFileWork(DACR2Rnw.CalibrationWrite);
        end;
 end;
 
@@ -2631,16 +2637,18 @@ begin
 
 
  RS232_MediatorTread:=TRS232_MediatorTread.Create(ComPort1,
-//                 [DACR2R,V721A]);
                  [INA226_Module,ADS11115module,HTU21D,
-                 DACR2R,V721A,V721_I,V721_II,DS18B20,
+                 {DACR2R}DACR2Rnw,V721A,V721_I,V721_II,DS18B20,
                  TMP102,
                  MLX90615,
-                 D30_06,IscVocPinChanger,LEDOpenPinChanger,
-                 MCP3424,AD9833,STS21,ADT74x0,MCP9808]);
+                 {D30_06}D30_06nw,IscVocPinChanger,LEDOpenPinChanger,
+                 MCP3424,{AD9833}AD9833nw,STS21,ADT74x0,MCP9808]);
 
- if (ComPort1.Connected)and(SettingDevice.ActiveInterface.Name=DACR2R.Name) then SettingDevice.Reset();
- if (ComPort1.Connected) then D30_06.Reset;
+
+// if (ComPort1.Connected)and(SettingDevice.ActiveInterface.Name=DACR2R.Name) then SettingDevice.Reset();
+ if (ComPort1.Connected)and(SettingDevice.ActiveInterface.Name=DACR2Rnw.Name) then SettingDevice.Reset();
+// if (ComPort1.Connected) then D30_06.Reset;
+ if (ComPort1.Connected) then D30_06nw.Reset;
 // if (ComPort1.Connected) then AD9833.Reset;
 end;
 
@@ -3435,72 +3443,97 @@ end;
 
 procedure TIVchar.DACCreate;
 begin
-  DACR2R:=TDACR2R.Create(ComPort1,'DAC R-2R');
+//  DACR2R:=TDACR2R.Create(ComPort1,'DAC R-2R');
 
-  DACR2RShow:=TDACR2RShow.Create(DACR2R,PDACR2RPinC,
+//  DACR2RShow:=TDACR2RShow.Create(DACR2R,PDACR2RPinC,
+//                                 STOVDACR2R,STOKDACR2R,
+//                                 LOVDACR2R,LOKDACR2R,
+//                                 BOVsetDACR2R, BOKsetDACR2R,
+//                                 BDACR2RReset, NumberPins);
+  DACR2RShowNew:=TDACR2RShow.Create(DACR2Rnw,PDACR2RPinC,
                                  STOVDACR2R,STOKDACR2R,
                                  LOVDACR2R,LOKDACR2R,
                                  BOVsetDACR2R, BOKsetDACR2R,
                                  BDACR2RReset, NumberPins);
-  D30_06:=TD30_06.Create(ComPort1,'D30_06');
-  D30_06Show:=TD30_06Show.Create(D30_06,PD30PinC,PD30PinG,
+
+//  D30_06:=TD30_06.Create(ComPort1,'D30_06');
+//  D30_06Show:=TD30_06Show.Create(D30_06,PD30PinC,PD30PinG,
+//                                 LOVD30,LOKD30,LValueRangeD30,
+//                                 STOVD30,STOKD30,
+//                                 BOVsetD30, BOKsetD30,BD30Reset,
+//                                 NumberPins, RGD30);
+
+  D30_06Show:=TD30_06Show.Create(D30_06nw,PD30PinC,PD30PinG,
                                  LOVD30,LOKD30,LValueRangeD30,
                                  STOVD30,STOKD30,
                                  BOVsetD30, BOKsetD30,BD30Reset,
                                  NumberPins, RGD30);
 
-  AD9833:=TAD9833.Create(ComPort1,'AD9833');
-  AD9833Show:=TAD9833Show.Create(AD9833,
+
+//  AD9833:=TAD9833.Create(ComPort1,'AD9833');
+//  AD9833Show:=TAD9833Show.Create(AD9833,
+//                                 PAD9833PinC,NumberPins,
+//                                 ST9866FreqCh0,ST9866PhaseCh0,ST9866FreqCh1,ST9866PhaseCh1,
+//                                 L9833FreqCh0,L9833PhaseCh0,L9833FreqCh1,L9833PhaseCh1,
+//                                 SBAD9833GenCh0,SBAD9833GenCh1,SBAD9833Stop,
+//                                 RGAD9833Mode);
+  AD9833ShowNew:=TAD9833ShowNew.Create(AD9833nw,
                                  PAD9833PinC,NumberPins,
                                  ST9866FreqCh0,ST9866PhaseCh0,ST9866FreqCh1,ST9866PhaseCh1,
                                  L9833FreqCh0,L9833PhaseCh0,L9833FreqCh1,L9833PhaseCh1,
                                  SBAD9833GenCh0,SBAD9833GenCh1,SBAD9833Stop,
                                  RGAD9833Mode);
+ ShowArray.Add([DACR2RShowNew,D30_06Show,AD9833ShowNew]);
 end;
 
 procedure TIVchar.DACFree;
 begin
-  if assigned(DACR2R) then
-    begin
-    DACR2R.Reset;
-    sleep(100);
-    DACR2R.Free;
-    end;
+//  if assigned(DACR2R) then
+//    begin
+//    DACR2R.Reset;
+//    sleep(100);
+//    DACR2R.Free;
+//    end;
+//
+//  DACR2RShow.Free;
 
-  DACR2RShow.Free;
+//  D30_06Show.Free;
+//  if assigned(D30_06) then
+//    begin
+//    D30_06.Reset;
+//    sleep(50);
+//    D30_06.Free;
+//    end;
 
-  D30_06Show.Free;
-  if assigned(D30_06) then
-    begin
-    D30_06.Reset;
-    sleep(50);
-    D30_06.Free;
-    end;
-
-  AD9833Show.Free;
-  if assigned(AD9833) then
-    begin
-    AD9833.Reset;
-    sleep(50);
-    AD9833.Free;
-    end;
+//  AD9833Show.Free;
+//  if assigned(AD9833) then
+//    begin
+//    AD9833.Reset;
+//    sleep(50);
+//    AD9833.Free;
+//    end;
 end;
 
 procedure TIVchar.DACReadFromIniFileAndToForm;
 begin
 
-  DACR2RShow.ReadFromIniFileAndToForm(ConfigFile);
-  ParametersFileWork(DACR2R.CalibrationRead);
+//  DACR2RShow.ReadFromIniFileAndToForm(ConfigFile);
+//  ParametersFileWork(DACR2R.CalibrationRead);
+  ParametersFileWork(DACR2Rnw.CalibrationRead);
 
-  D30_06Show.ReadFromIniFileAndToForm(ConfigFile);
-  AD9833Show.ReadFromIniFileAndToForm(ConfigFile);
+//  D30_06Show.ReadFromIniFileAndToForm(ConfigFile);
+//  AD9833Show.ReadFromIniFileAndToForm(ConfigFile);
+//  AD9833ShowNew.ReadFromIniFileAndToForm(ConfigFile);
+
 end;
 
 procedure TIVchar.DACWriteToIniFile;
 begin
-  DACR2RShow.WriteToIniFile(ConfigFile);
+//  DACR2RShow.WriteToIniFile(ConfigFile);
   D30_06Show.WriteToIniFile(ConfigFile);
-  AD9833Show.WriteToIniFile(ConfigFile);
+//  AD9833Show.WriteToIniFile(ConfigFile);
+//  AD9833ShowNew.WriteToIniFile(ConfigFile);
+
 end;
 
 procedure TIVchar.DevicesCreate;
@@ -3605,7 +3638,8 @@ begin
 
   SetLength(DevicesSet,2);
   DevicesSet[0]:=Simulator;
-  DevicesSet[1]:=DACR2R;
+//  DevicesSet[1]:=DACR2R;
+  DevicesSet[1]:=DACR2Rnw;
 
   if ET1255isPresent then
    begin
@@ -3627,7 +3661,8 @@ begin
    end;
 
   SetLength(DevicesSet,High(DevicesSet)+2);
-  DevicesSet[High(DevicesSet)]:=D30_06;
+//  DevicesSet[High(DevicesSet)]:=D30_06;
+  DevicesSet[High(DevicesSet)]:=D30_06nw;
 
   SettingDevice:=TSettingDevice.Create(DevicesSet,CBVS,'Input voltage');
   SettingDeviceControl:=TSettingDevice.Create(DevicesSet,CBControlCD,'Control input');

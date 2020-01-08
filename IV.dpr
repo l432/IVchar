@@ -37,7 +37,9 @@ uses
   RS232deviceNew in 'RS232deviceNew.pas',
   UT70new in 'UT70new.PAS',
   GDS_806Snew in 'GDS_806Snew.pas',
-  ArduinoDeviceNew in 'ArduinoDeviceNew.pas';
+  ArduinoDeviceNew in 'ArduinoDeviceNew.pas',
+  ArduinoDeviceShowNew in 'ArduinoDeviceShowNew.pas',
+  AD9833new in 'AD9833new.pas';
 
 {$R *.res}
 

@@ -38,5 +38,7 @@
     <Transaction>2020.01.07 19:18:19.375.pas,D:\oleg\IVchar\Unit1.pas=D:\oleg\IVchar\RS232DataRequest.pas</Transaction>
     <Transaction>2020.01.07 19:21:31.546.pas,D:\oleg\IVchar\RS232DataRequest.pas=</Transaction>
     <Transaction>2020.01.07 20:29:13.296.pas,D:\oleg\IVchar\Unit1.pas=D:\oleg\IVchar\ArduinoDeviceNew.pas</Transaction>
+    <Transaction>2020.01.08 13:46:51.593.pas,D:\oleg\IVchar\Unit1.pas=D:\oleg\IVchar\ArduinoDeviceShowNew.pas</Transaction>
+    <Transaction>2020.01.08 13:55:58.921.pas,D:\oleg\IVchar\Unit1.pas=D:\oleg\IVchar\AD9833new.pas</Transaction>
   </Transactions>
 </BorlandProject>

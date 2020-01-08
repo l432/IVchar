@@ -4,7 +4,7 @@ interface
 
 uses
   ArduinoDevice, StdCtrls, Measurement, ExtCtrls, IniFiles, Classes, ShowTypes, 
-  ArduinoDeviceShow;
+  ArduinoDeviceShow, ArduinoDeviceNew;
 
 const D30_06_MaxVoltage=28.75;
       D30_06_MaxCurrent=5.56;
@@ -17,7 +17,8 @@ const D30_06_MaxVoltage=28.75;
 
 type
 
-TD30_06=class(TArduinoDAC)
+//TD30_06=class(TArduinoDAC)
+TD30_06=class(TArduinoDACnew)
  private
   fCurrentMaxValue:double;
   FisVoltage: boolean;
@@ -29,10 +30,13 @@ TD30_06=class(TArduinoDAC)
  public
   procedure PinsToDataArray;override;
   property isVoltage:boolean read FisVoltage write FisVoltage;
+  constructor Create();
+  procedure Free;override;
 end;
 
 
-TD30_06Show=class(TArduinoDACShow)
+//TD30_06Show=class(TArduinoDACShow)
+TD30_06Show=class(TArduinoDACShowNew)
 private
  VoltageOrCurrentRG:TRadioGroup;
  ValueDiapazonLabel:TLabel;
@@ -49,9 +53,14 @@ private
                      VSB, KSB, RB: TButton;
                      PinVariants:TStringList;
                      VOCRG: TRadioGroup);
- procedure ReadFromIniFile(ConfigFile:TIniFile);override;
+// procedure ReadFromIniFile(ConfigFile:TIniFile);override;
+ Procedure HookReadFromIniFile(ConfigFile:TIniFile);override;
  Procedure WriteToIniFile(ConfigFile:TIniFile);override;
 end;
+
+var
+    D30_06nw:TD30_06;
+    D30_06Show:TD30_06Show;
 
 implementation
 
@@ -59,6 +68,11 @@ uses
   SysUtils, Dialogs;
 
 { TD30_06 }
+
+constructor TD30_06.Create;
+begin
+ inherited Create('D30_06');
+end;
 
 procedure TD30_06.CreateHook;
 begin
@@ -75,6 +89,13 @@ begin
   IntData:=NormedKod(IntData);
   fData[3] := ((IntData shr 8) and $3F);
   fData[4] := (IntData and $FF);
+end;
+
+procedure TD30_06.Free;
+begin
+ Reset;
+ sleep(50);
+ inherited Free;
 end;
 
 procedure TD30_06.PinsCreate;
@@ -134,6 +155,19 @@ begin
   PinShow:=TPinsShow.Create(fArduinoSetter.Pins,PinLs[0],PinLs[1],PinVariant);
 end;
 
+procedure TD30_06Show.HookReadFromIniFile(ConfigFile: TIniFile);
+ var TempItemIndex:integer;
+begin
+ inherited HookReadFromIniFile(ConfigFile);
+ if PinShow.Pins.Name='' then Exit;
+ TempItemIndex := ConfigFile.ReadInteger(PinShow.Pins.Name, 'VorC', -1);
+ if (TempItemIndex > -1) and (TempItemIndex < VoltageOrCurrentRG.Items.Count) then
+  begin
+   VoltageOrCurrentRG.ItemIndex:=TempItemIndex;
+   VoltageOrCurrentRGClick(fArduinoSetter);
+  end;
+end;
+
 procedure TD30_06Show.LabelFilling;
 begin
   if (fArduinoSetter as TD30_06).isVoltage then
@@ -148,18 +182,18 @@ begin
                                  + FloatToStrF(D30_06_MaxCurrent, ffFixed, 3, 2);
 end;
 
-procedure TD30_06Show.ReadFromIniFile(ConfigFile: TIniFile);
- var TempItemIndex:integer;
-begin
- inherited ReadFromIniFile(ConfigFile);
- if PinShow.Pins.Name='' then Exit;
- TempItemIndex := ConfigFile.ReadInteger(PinShow.Pins.Name, 'VorC', -1);
- if (TempItemIndex > -1) and (TempItemIndex < VoltageOrCurrentRG.Items.Count) then
-  begin
-   VoltageOrCurrentRG.ItemIndex:=TempItemIndex;
-   VoltageOrCurrentRGClick(fArduinoSetter);
-  end;
-end;
+//procedure TD30_06Show.ReadFromIniFile(ConfigFile: TIniFile);
+// var TempItemIndex:integer;
+//begin
+// inherited ReadFromIniFile(ConfigFile);
+// if PinShow.Pins.Name='' then Exit;
+// TempItemIndex := ConfigFile.ReadInteger(PinShow.Pins.Name, 'VorC', -1);
+// if (TempItemIndex > -1) and (TempItemIndex < VoltageOrCurrentRG.Items.Count) then
+//  begin
+//   VoltageOrCurrentRG.ItemIndex:=TempItemIndex;
+//   VoltageOrCurrentRGClick(fArduinoSetter);
+//  end;
+//end;
 
 
 procedure TD30_06Show.VoltageOrCurrentRGClick(Sender: TObject);
@@ -178,4 +212,9 @@ begin
  ConfigFile.WriteInteger(PinShow.Pins.Name, 'VorC', VoltageOrCurrentRG.ItemIndex);
 end;
 
+
+initialization
+   D30_06nw:=TD30_06.Create;
+finalization
+   D30_06nw.Free;
 end.

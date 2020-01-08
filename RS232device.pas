@@ -23,6 +23,22 @@ type
 
 //  http://www.sql.ru/forum/681753/delegirovanie-realizacii-metodov-interfeysa-drugomu-klassu
 
+  IArduinoSender = interface
+   ['{4E78ACBE-DD15-483D-8493-4B08E3E94454}']
+//    function GetDeviceKod:byte;
+//    function GetSecondDeviceKod:byte;
+    function GetisNeededComPort:boolean;
+    procedure SetisNeededComPort(const Value:boolean);
+    procedure  PacketCreateToSend();
+    procedure SetError(const Value:boolean);
+    function GetMessageError:string;
+//    property DeviceKod:byte read GetDeviceKod;
+//    property SecondDeviceKod:byte read GetSecondDeviceKod;
+    property isNeededComPort:boolean read GetisNeededComPort write SetisNeededComPort;
+    property Error:boolean write SetError;
+    property MessageError:string read GetMessageError;
+  end;
+
 //IRS232DataObserver = interface
 //  ['{0DC1F3EC-1356-45CE-96F7-7287DB006F1B}']
 ////  function GetDeviceKod:byte;
@@ -67,7 +83,9 @@ type
 //  procedure NotifyObservers;
 //end;
 //
-TRS232Device=class(TNamedInterfacedObject)
+TRS232Device=class(TNamedInterfacedObject,IArduinoSender)
+  private
+    function GetMessageError: string;
   {базовий клас для пристроїв, які керуються
   за допомогою COM-порту}
   protected
@@ -78,11 +96,15 @@ TRS232Device=class(TNamedInterfacedObject)
    fError:boolean;
    fMessageError:string;
    function PortConnected():boolean;
+   procedure SetError(const Value:boolean);
+   procedure SetMessageError(const Value:string);
+   function GetisNeededComPort:boolean;
+   procedure SetisNeededComPort(const Value:boolean);
   public
    procedure  PacketCreateToSend(); virtual;
-   property isNeededComPort:boolean read fisNeededComPort write fisNeededComPort;
-   property Error:boolean read fError write fError;
-   property MessageError:string read fMessageError;
+   property isNeededComPort:boolean read GetisNeededComPort write SetisNeededComPort;
+   property Error:boolean read fError write SetError;
+   property MessageError:string read GetMessageError write SetMessageError;
    Constructor Create();overload;
    Constructor Create(CP:TComPort);overload;
    Constructor Create(CP:TComPort;Nm:string);overload;//virtual;
@@ -280,6 +302,16 @@ begin
 end;
 
 
+function TRS232Device.GetisNeededComPort: boolean;
+begin
+  Result:=fisNeededComPort;
+end;
+
+function TRS232Device.GetMessageError: string;
+begin
+   Result:=fMessageError;
+end;
+
 procedure TRS232Device.isNeededComPortState;
 begin
  fisNeededComPort:=(WaitForSingleObject(EventComPortFree,1000)=WAIT_OBJECT_0);
@@ -299,6 +331,21 @@ begin
           fError:=True;
           showmessage('Port is not connected');
         end;
+end;
+
+procedure TRS232Device.SetError(const Value: boolean);
+begin
+   fError:=Value;
+end;
+
+procedure TRS232Device.SetisNeededComPort(const Value: boolean);
+begin
+  fisNeededComPort:=Value;
+end;
+
+procedure TRS232Device.SetMessageError(const Value: string);
+begin
+  fMessageError:=Value;
 end;
 
 { TRS232Meter }

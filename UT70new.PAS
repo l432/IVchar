@@ -117,7 +117,7 @@ type
      Constructor Create(CP:TComPort);
     end;
 
-  TDataSubject_UT70=class(TRS232DataSubject)
+  TDataSubject_UT70=class(TRS232DataSubjectSingle)
     protected
     procedure ComPortCreare(CP:TComPort);override;
   end;
@@ -153,11 +153,12 @@ type
     procedure CreateDataSubject(CP:TComPort);override;
     procedure CreateDataRequest;override;
 //    procedure FreeDataRequest;override;
-    procedure CreateDataConverter;override;
-    procedure FreeDataConverter;override;
+    procedure CreateDataConverter;virtual;
+//    procedure FreeDataConverter;override;
    public
      Constructor Create(CP:TComPort;Nm:string);overload;
      Constructor Create(CP:TComPort);overload;
+     procedure Free;override;
   end;
 
   TRS232_UT70C=class(TRS232)
@@ -166,7 +167,7 @@ type
      Constructor Create(CP:TComPort);
     end;
 
-  TDataSubject_UT70C=class(TRS232DataSubject)
+  TDataSubject_UT70C=class(TRS232DataSubjectSingle)
     protected
     procedure ComPortCreare(CP:TComPort);override;
   end;
@@ -316,6 +317,7 @@ begin
  inherited Create(CP,Nm);
  RepeatInErrorCase:=True;
  NamesFilling;
+ CreateDataConverter;
 end;
 
 constructor TUT70Bnew.Create(CP: TComPort);
@@ -326,13 +328,13 @@ end;
 procedure TUT70Bnew.CreateDataConverter;
 begin
   fDataConverter:=TComplexDeviceDataConverter.Create(Self);
-  fRS232DataConverter:=fDataConverter;
+//  fRS232DataConverter:=fDataConverter;
 end;
 
 procedure TUT70Bnew.CreateDataRequest;
 begin
  fDataRequest:=TDataRequest_UT70.Create(Self.fDataSubject.RS232,Self);
- fRS232DataRequest:=fDataRequest;
+// fRS232DataRequest:=fDataRequest;
 end;
 
 procedure TUT70Bnew.CreateDataSubject(CP: TComPort);
@@ -379,10 +381,21 @@ begin
 end;
 
 
-procedure TUT70Bnew.FreeDataConverter;
+procedure TUT70Bnew.Free;
 begin
-  fDataConverter.Free;
+ fDataConverter.Free;
 end;
+
+//procedure TUT70Bnew.FreeDataConverter;
+//begin
+//  inherited;
+//
+//end;
+
+//procedure TUT70Bnew.FreeDataConverter;
+//begin
+//  fDataConverter.Free;
+//end;
 
 //procedure TUT70Bnew.FreeDataRequest;
 //begin
@@ -463,8 +476,8 @@ end;
 procedure TUT70Bnew.UpDate;
 begin
   StrToArrByte(fDataSubject.ReceivedString,fData);
-
   if CorrectData() then inherited UpDate;
+  fDataConverter.DataConvert;
 end;
 
 procedure TUT70Bnew.ValueDetermination();
@@ -584,7 +597,7 @@ end;
 procedure TUT70Cnew.CreateDataRequest;
 begin
  fDataRequest:=TDataRequest_UT70C.Create(Self.fDataSubject.RS232,Self);
- fRS232DataRequest:=fDataRequest;
+// fRS232DataRequest:=fDataRequest;
 end;
 
 procedure TUT70Cnew.CreateDataSubject(CP: TComPort);

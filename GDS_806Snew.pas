@@ -163,7 +163,7 @@ type
      Constructor Create(CP:TComPort);
     end;
 
-  TDataSubject_GDS=class(TRS232DataSubject)
+  TDataSubject_GDS=class(TRS232DataSubjectSingle)
     protected
     procedure ComPortCreare(CP:TComPort);override;
   end;
@@ -213,8 +213,8 @@ type
      procedure CreateDataSubject(CP:TComPort);override;
      procedure CreateDataRequest;override;
 //     procedure FreeDataRequest;override;
-     procedure CreateDataConverter;override;
-     procedure FreeDataConverter;override;
+//     procedure CreateDataConverter;override;
+//     procedure FreeDataConverter;override;
 //     Procedure PacketReceiving(Sender: TObject; const Str: string);override;
    public
     DataVectors:array[TGDS_Channel]of TVector;
@@ -438,15 +438,15 @@ begin
  Create(CP,'GDS-806'); 
 end;
 
-procedure TGDS_806Snew.CreateDataConverter;
-begin
-
-end;
+//procedure TGDS_806Snew.CreateDataConverter;
+//begin
+//
+//end;
 
 procedure TGDS_806Snew.CreateDataRequest;
 begin
  fDataRequest:=TDataRequest_GDS.Create(Self.fDataSubject.RS232,Self);
- fRS232DataRequest:=fDataRequest;
+// fRS232DataRequest:=fDataRequest;
 end;
 
 procedure TGDS_806Snew.CreateDataSubject(CP: TComPort);
@@ -529,11 +529,11 @@ begin
  inherited Free;
 end;
 
-procedure TGDS_806Snew.FreeDataConverter;
-begin
-  inherited;
-
-end;
+//procedure TGDS_806Snew.FreeDataConverter;
+//begin
+//  inherited;
+//
+//end;
 
 //procedure TGDS_806Snew.FreeDataRequest;
 //begin

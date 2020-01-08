@@ -4,7 +4,7 @@ interface
 
 uses
   ArduinoDevice, Measurement, OlegType, StdCtrls, RS232device, CPort, Classes, 
-  ExtCtrls, ShowTypes, IniFiles, OlegVector;
+  ExtCtrls, ShowTypes, IniFiles, OlegVector, ArduinoDeviceNew;
 
 const DACR2R_MaxValue=65535;
       DACR2R_Factor=10000;
@@ -23,30 +23,18 @@ type
 
 TDACR2R_Calibr=class
 private
-// pos01:TArrWord;
-// neg01:TArrWord;
-// pos16:TArrWord;
-// neg16:TArrWord;
-// pos01:PArrWord;
-// neg01:PArrWord;
-// pos16:PArrWord;
-// neg16:PArrWord;
  pos01:TStringList;
  neg01:TStringList;
  pos16:TStringList;
  neg16:TStringList;
-// procedure WriteToFile(FileName:string;arr:TArrWord);
-// procedure ReadFromFile(FileName:string;arr:TArrWord);
  procedure WriteToFile(FileName:string;arr:TStringList);
  procedure ReadFromFile(FileName:string;arr:TStringList);
 public
  Constructor Create();
 class function VoltToKod(Volt:double):word;
  function VoltToKodIndex(Volt:double):word;
-// function VoltToArray(Volt:double):TArrWord;
  function VoltToArray(Volt:double):TStringList;
  procedure Add(RequiredVoltage,RealVoltage:double);
-// procedure AddWord(Index,Kod:word;Arr:TArrWord);
  procedure VectorToCalibr(Vec:TVector);
  procedure WriteToFileData();
  procedure ReadFromFileData();
@@ -55,7 +43,8 @@ end;
 
 
 
-TDACR2R=class(TArduinoDAC,ICalibration)
+//TDACR2R=class(TArduinoDAC,ICalibration)
+TDACR2R=class(TArduinoDACnew,ICalibration)
 private
  fCalibration:TDACR2R_Calibr;
 protected
@@ -63,7 +52,9 @@ protected
  procedure CreateHook;override;
  procedure PinsCreate();override;
 public
- Constructor Create(CP:TComPort;Nm:string);//override;
+// Constructor Create(CP:TComPort;Nm:string);//override;
+ Constructor Create(Nm:string);overload;
+ Constructor Create();overload;
  Procedure Free;override;
  Procedure CalibrationRead();
  Procedure CalibrationWrite();
@@ -74,7 +65,8 @@ public
  procedure PinsToDataArray;override;
 end;
 
-TDACR2RShow=class(TArduinoDACShow)
+//TDACR2RShow=class(TArduinoDACShow)
+TDACR2RShow=class(TArduinoDACShowNew)
 protected
    procedure CreatePinShow(PinLs: array of TPanel;
                              PinVariant:TStringList);override;
@@ -87,6 +79,9 @@ public
                      PinVariant:TStringList);
 end;
 
+var
+    DACR2Rnw:TDACR2R;
+    DACR2RShowNew:TDACR2RShow;
 
 implementation
 
@@ -95,33 +90,6 @@ uses
 
 
 { TDACR2R }
-
-//function TDACR2R.VoltageToKod(Voltage: double): integer;
-// var tempArrWord:TArrWord;
-//     Index,AddIndex:integer;
-//begin
-// Result:=0;
-// fOutPutValue:=Voltage;
-// if TDACR2R_Calibr.VoltToKod(Voltage)=0 then Exit;
-//
-// tempArrWord:=fCalibration.VoltToArray(Voltage);
-// if tempArrWord=nil then Exit;
-// Index:=fCalibration.VoltToKodIndex(Voltage);
-// AddIndex:=1;
-// repeat
-//   try
-//    Result:=tempArrWord[Index];
-//   except
-//    Break;
-//   end;
-//   Index:=Index-AddIndex;
-//   if AddIndex>0 then AddIndex:=AddIndex*(-1)
-//                 else AddIndex:=abs(AddIndex)+1;
-// until ((Result<>0)or
-//        (Index<Low(tempArrWord))or
-//        (Index>High(tempArrWord)));
-// if Result=0 then Result:=TDACR2R_Calibr.VoltToKod(Voltage);
-//end;
 
 
 function TDACR2R.VoltageToKod(Voltage: double): integer;
@@ -207,15 +175,21 @@ begin
 end;
 
 
-constructor TDACR2R.Create(CP:TComPort;Nm:string);
+//constructor TDACR2R.Create(CP:TComPort;Nm:string);
+constructor TDACR2R.Create(Nm:string);
 begin
-  inherited Create(CP,Nm);
+//  inherited Create(CP,Nm);
+  inherited Create(Nm);
   fCalibration:=TDACR2R_Calibr.Create;
+end;
+
+constructor TDACR2R.Create;
+begin
+ Create('DAC R-2R');
 end;
 
 procedure TDACR2R.CreateHook;
 begin
-
   fVoltageMaxValue:=5;
   fKodMaxValue:=DACR2R_MaxValue;
   fMessageError:='DAC R2R output is unsuccessful';
@@ -225,6 +199,8 @@ end;
 
 procedure TDACR2R.Free;
 begin
+ Reset;
+ sleep(100);
  fCalibration.Free;
  inherited Free;
 end;
@@ -504,5 +480,11 @@ procedure TDACR2RShow.CreatePinShow(PinLs: array of TPanel;
 begin
   PinShow:=TOnePinsShow.Create(fArduinoSetter.Pins,PinLs[0],PinVariant);
 end;
+
+initialization
+   DACR2Rnw:=TDACR2R.Create;
+finalization
+
+   DACR2Rnw.Free;
 
 end.

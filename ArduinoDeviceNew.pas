@@ -3,7 +3,7 @@ unit ArduinoDeviceNew;
 interface
  uses OlegType,CPort,SysUtils,Classes,PacketParameters,
       StdCtrls, IniFiles, RS232device, ExtCtrls, Measurement, OlegTypePart2,
-  RS232deviceNew;
+  RS232deviceNew, ArduinoDevice;
 
 //const
 //  UndefinedPin=255;
@@ -23,20 +23,47 @@ interface
 
 
 type
+//  IArduinoSender = interface
+//   ['{4E78ACBE-DD15-483D-8493-4B08E3E94454}']
+////    function GetDeviceKod:byte;
+////    function GetSecondDeviceKod:byte;
+//    function GetisNeededComPort:boolean;
+//    procedure SetisNeededComPort(const Value:boolean);
+//    procedure  PacketCreateToSend();
+//    procedure SetError(const Value:boolean);
+//    function GetMessageError:string;
+////    property DeviceKod:byte read GetDeviceKod;
+////    property SecondDeviceKod:byte read GetSecondDeviceKod;
+//    property isNeededComPort:boolean read GetisNeededComPort write SetisNeededComPort;
+//    property Error:boolean write SetError;
+//    property MessageError:string read GetMessageError;
+//  end;
 
-  IArduinoDevice = interface
+
+  IArduinoDevice = interface (IRS232DataObserver)
     ['{2FE4C890-9B48-4605-8593-EA54EF1A5742}']
     function GetDeviceKod:byte;
-    function GetisNeededComPort:boolean;
-    procedure SetisNeededComPort(const Value:boolean);
-    procedure  PacketCreateToSend();
+    function GetSecondDeviceKod:byte;
+//    function GetisNeededComPort:boolean;
+//    procedure SetisNeededComPort(const Value:boolean);
+//    procedure  PacketCreateToSend();
 //    procedure SetError(const Value:boolean);
 //    function GetMessageError:string;
     property DeviceKod:byte read GetDeviceKod;
-    property isNeededComPort:boolean read GetisNeededComPort write SetisNeededComPort;
+    property SecondDeviceKod:byte read GetSecondDeviceKod;
+//    property isNeededComPort:boolean read GetisNeededComPort write SetisNeededComPort;
 //    property Error:boolean write SetError;
 //    property MessageError:string read GetMessageError;
   end;
+
+  IArduinoDataSubject = interface
+     ['{F65EA0F8-5554-49E4-A5AB-5EDE666FE72B}']
+    procedure RegisterObserver(o:IArduinoDevice);
+    procedure RemoveObserver(o:IArduinoDevice);
+//    procedure NotifyObservers;
+//    function PortConnected():boolean;
+  end;
+
 
   TRS232_Arduino=class(TRS232)
     {початкові налаштування COM-порту}
@@ -45,7 +72,22 @@ type
      Constructor Create(CP:TComPort);
     end;
 
-// TArduinoDataSubject=class(TNamedInterfacedObject,IRS232DataSubject)
+  TArduinoDataSubject=class(TRS232DataSubjectBase,IArduinoDataSubject,IRS232DataSubject)
+   private
+    function ObserverIsRegistered(o:IArduinoDevice):boolean;
+   protected
+    Observers:array of IArduinoDevice;
+    procedure ComPortCreare(CP:TComPort);override;
+   public
+    ReceivedData:TArrByte;
+//    Constructor Create(CP:TComPort);
+//    Procedure Free;override;
+    procedure RegisterObserver(o:IArduinoDevice);
+    procedure RemoveObserver(o:IArduinoDevice);
+    procedure NotifyObservers;override;
+  end;
+
+
 
 //  TPins=class
 //  {клас для опису пінів, які використовуються
@@ -126,6 +168,52 @@ type
 //   procedure Free();override;//virtual;
 //   procedure VariantsShowAndSelect(Sender: TObject);
 //  end;
+
+
+//   TArduinoBase = class (TNamedInterfacedObject)
+//    private
+//     fisNeededComPort:boolean;
+//     fDeviceKod:byte;
+//     function GetDeviceKod:byte;
+//     function GetSecondDeviceKod:byte;
+//     function GetisNeededComPort:boolean;
+//     procedure SetisNeededComPort(const Value:boolean);
+//     procedure  PacketCreateToSend();
+//    procedure SetError(const Value:boolean);
+//    function GetMessageError:string;
+//     procedure PinsCreate();virtual;
+//    public
+//     Pins:TPins;
+//     property DeviceKod:byte read GetDeviceKod;
+//     property SecondDeviceKod:byte read GetSecondDeviceKod;
+//     property isNeededComPort:boolean read GetisNeededComPort write SetisNeededComPort;
+//    property Error:boolean write SetError;
+//    property MessageError:string read GetMessageError;
+//     procedure isNeededComPortState();
+//  end;
+
+
+
+  TArduinoSetterNew=class(TRS232CustomDevice,IArduinoSender)
+    {базовий клас для джерел сигналів, що керуються
+    за допомогою Arduino    }
+  protected
+   fSetterKod:byte;
+   fisNeededComPort:boolean;
+   procedure PinsCreate();virtual;
+   procedure CreateHook;virtual;
+   function GetisNeededComPort:boolean;
+   procedure SetisNeededComPort(const Value:boolean);
+  public
+   Pins:TPins;
+   property isNeededComPort:boolean read GetisNeededComPort write SetisNeededComPort;
+   procedure PacketCreateToSend(); virtual;
+   Constructor Create(Nm:string);//override;
+   Procedure Free;override;
+   procedure PinsToDataArray;virtual;
+   procedure isNeededComPortState();
+  end;
+
 //
 //
 //  TArduinoRS232Device=class(TRS232Device)
@@ -164,42 +252,28 @@ type
 //   Procedure Free;override;
 //  end;
 //
-//
-//  TArduinoSetter=class(TRS232Device)
-//    {базовий клас для джерел сигналів, що керуються
-//    за допомогою Arduino    }
-//  protected
-//   fSetterKod:byte;
-//   procedure PinsCreate();virtual;
-//   procedure CreateHook;virtual;
-//  public
-//   Pins:TPins;
-//   procedure PacketCreateToSend(); override;
-//   Constructor Create(CP:TComPort;Nm:string);//override;
-//   Procedure Free;override;
-//   procedure PinsToDataArray;virtual;
-//  end;
+
 //
 //
-//  TArduinoDAC=class(TArduinoSetter,IDAC)
-//    {базовий клас для ЦАП, що керується
-//    за допомогою Arduino    }
-//  protected
-//   fOutputValue:double;
-//   fVoltageMaxValue:double;
-//   fKodMaxValue:integer;
-//   function  VoltageToKod(Voltage:double):integer;virtual;
-//   procedure DataByteToSendFromInteger(IntData: Integer);virtual;
-//   procedure OutputDataSignDetermination(OutputData: Double);
-//   procedure CreateHook;override;
-//   function NormedKod(Kod: Integer):integer;
-//   function GetOutputValue:double;
-//  public
-//   property OutputValue:double read GetOutputValue;
-//   Procedure Output(Voltage:double);virtual;
-//   Procedure Reset();virtual;
-//   Procedure OutputInt(Kod:integer);virtual;
-//  end;
+  TArduinoDACnew=class(TArduinoSetterNew,IDAC)
+    {базовий клас для ЦАП, що керується
+    за допомогою Arduino    }
+  protected
+   fOutputValue:double;
+   fVoltageMaxValue:double;
+   fKodMaxValue:integer;
+   function  VoltageToKod(Voltage:double):integer;virtual;
+   procedure DataByteToSendFromInteger(IntData: Integer);virtual;
+   procedure OutputDataSignDetermination(OutputData: Double);
+   procedure CreateHook;override;
+   function NormedKod(Kod: Integer):integer;
+   function GetOutputValue:double;
+  public
+   property OutputValue:double read GetOutputValue;
+   Procedure Output(Voltage:double);virtual;
+   Procedure Reset();virtual;
+   Procedure OutputInt(Kod:integer);virtual;
+  end;
 //
 
 
@@ -208,7 +282,7 @@ implementation
 
 uses
   Math, Forms, Graphics, Controls, OlegFunction, HighResolutionTimer, Dialogs, 
-  ArduinoDevice;
+  Windows;
 
 
 //{ TArduinoMeter }
@@ -404,74 +478,74 @@ uses
 //end;
 //
 //
-//{ TArduinoDAC }
-//
-//
-//function TArduinoDAC.NormedKod(Kod: Integer):integer;
-//begin
-//  Result := min(abs(Kod), fKodMaxValue);
-//end;
-//
-//procedure TArduinoDAC.CreateHook;
-//begin
-//  inherited CreateHook;
-//  fVoltageMaxValue:=5;
-//  fKodMaxValue:=65535;
-//end;
-//
-//procedure TArduinoDAC.OutputDataSignDetermination(OutputData: Double);
-//begin
-//  if OutputData < 0 then  fData[5] := DAC_Neg
-//                    else  fData[5] := DAC_Pos;
-//end;
-//
-//procedure TArduinoDAC.DataByteToSendFromInteger(IntData: Integer);
-// var NormedIntData:integer;
-//begin
-//  NormedIntData:=NormedKod(IntData);
-//  fData[3] := ((NormedIntData shr 8) and $FF);
-//  fData[4] := (NormedIntData and $FF);
-//end;
-//
-//function TArduinoDAC.GetOutputValue: double;
-//begin
-//  Result:=fOutputValue;
-//end;
-//
-//procedure TArduinoDAC.Output(Voltage: double);
-//begin
-// if Voltage=ErResult then Exit;
-// OutputDataSignDetermination(Voltage);
-// DataByteToSendFromInteger(VoltageToKod(Voltage));
-// isNeededComPortState();
-//end;
-//
-//procedure TArduinoDAC.OutputInt(Kod: integer);
-//begin
-// fOutputValue:=Kod;
-// OutputDataSignDetermination(Kod);
-// DataByteToSendFromInteger(abs(Kod));
-// isNeededComPortState();
-//end;
-//
-//
-//procedure TArduinoDAC.Reset;
-//begin
-// fData[5]:=DAC_Pos;
-// fData[3] := $00;
-// fData[4] := $00;
-// isNeededComPortState();
-//end;
-//
-//function TArduinoDAC.VoltageToKod(Voltage: double): integer;
-//begin
-// fOutPutValue:=Voltage;
-// Voltage:=abs(Voltage);
-// if Voltage>fVoltageMaxValue
-//    then Result:=fKodMaxValue
-//    else Result:=round(Voltage/fVoltageMaxValue*fKodMaxValue);
-//end;
-//
+{ TArduinoDACnew }
+
+
+function TArduinoDACnew.NormedKod(Kod: Integer):integer;
+begin
+  Result := min(abs(Kod), fKodMaxValue);
+end;
+
+procedure TArduinoDACnew.CreateHook;
+begin
+  inherited CreateHook;
+  fVoltageMaxValue:=5;
+  fKodMaxValue:=65535;
+end;
+
+procedure TArduinoDACnew.OutputDataSignDetermination(OutputData: Double);
+begin
+  if OutputData < 0 then  fData[5] := DAC_Neg
+                    else  fData[5] := DAC_Pos;
+end;
+
+procedure TArduinoDACnew.DataByteToSendFromInteger(IntData: Integer);
+ var NormedIntData:integer;
+begin
+  NormedIntData:=NormedKod(IntData);
+  fData[3] := ((NormedIntData shr 8) and $FF);
+  fData[4] := (NormedIntData and $FF);
+end;
+
+function TArduinoDACnew.GetOutputValue: double;
+begin
+  Result:=fOutputValue;
+end;
+
+procedure TArduinoDACnew.Output(Voltage: double);
+begin
+ if Voltage=ErResult then Exit;
+ OutputDataSignDetermination(Voltage);
+ DataByteToSendFromInteger(VoltageToKod(Voltage));
+ isNeededComPortState();
+end;
+
+procedure TArduinoDACnew.OutputInt(Kod: integer);
+begin
+ fOutputValue:=Kod;
+ OutputDataSignDetermination(Kod);
+ DataByteToSendFromInteger(abs(Kod));
+ isNeededComPortState();
+end;
+
+
+procedure TArduinoDACnew.Reset;
+begin
+ fData[5]:=DAC_Pos;
+ fData[3] := $00;
+ fData[4] := $00;
+ isNeededComPortState();
+end;
+
+function TArduinoDACnew.VoltageToKod(Voltage: double): integer;
+begin
+ fOutPutValue:=Voltage;
+ Voltage:=abs(Voltage);
+ if Voltage>fVoltageMaxValue
+    then Result:=fKodMaxValue
+    else Result:=round(Voltage/fVoltageMaxValue*fKodMaxValue);
+end;
+
 //{ TArduinoRS232Device }
 //
 //constructor TArduinoRS232Device.Create(CP: TComPort; Nm: string);
@@ -747,6 +821,168 @@ uses
 constructor TRS232_Arduino.Create(CP: TComPort);
 begin
  inherited Create(CP,PacketBeginChar,PacketEndChar);
+end;
+
+{ TArduinoDataSubject }
+
+procedure TArduinoDataSubject.ComPortCreare(CP: TComPort);
+begin
+ fRS232:=TRS232_Arduino.Create(CP);
+end;
+
+//constructor TArduinoDataSubject.Create(CP: TComPort);
+//begin
+//
+//end;
+
+//procedure TArduinoDataSubject.Free;
+//begin
+//  inherited;
+//
+//end;
+
+procedure TArduinoDataSubject.NotifyObservers;
+ var Kod,SecondKod:byte;
+     i:integer;
+begin
+ if not(PacketIsReceived(ReceivedString,ReceivedData)) then Exit;
+ Kod:=ReceivedData[1];
+ SecondKod:=ReceivedData[2];
+ RS232.ComPort.ClearBuffer(True, False);
+ for I := 0 to High(ReceivedData)-4 do
+   ReceivedData[i]:=ReceivedData[i+3];
+ SetLength(ReceivedData,High(ReceivedData)-3);
+ for I := 0 to High(Observers) do
+  if (Observers[i].DeviceKod=Kod)
+      and(Observers[i].SecondDeviceKod=SecondKod) then
+      begin
+       Observers[i].UpDate;
+       Break;
+      end;
+// HelpForMe(inttostr(MilliSecond)+ByteArrayToString(fData));
+
+end;
+
+function TArduinoDataSubject.ObserverIsRegistered(o:IArduinoDevice): boolean;
+ var i:integer;
+begin
+ Result:=False;
+ for i:=0 to High(Observers)
+   do Result:=(Result or ((Observers[i].DeviceKod=o.DeviceKod)
+                            and(Observers[i].SecondDeviceKod=o.SecondDeviceKod)));
+end;
+
+procedure TArduinoDataSubject.RegisterObserver(o: IArduinoDevice);
+
+begin
+ if (not ObserverIsRegistered(o)) then
+   begin
+    SetLength(Observers,High(Observers)+1);
+    Observers[High(Observers)]:=o;
+   end;
+end;
+
+procedure TArduinoDataSubject.RemoveObserver(o: IArduinoDevice);
+  var i,j:integer;
+begin
+ for i:=0 to High(Observers) do
+   if (Observers[i].DeviceKod=o.DeviceKod)
+      and (Observers[i].SecondDeviceKod=o.SecondDeviceKod) then
+     begin
+       for j := i to High(Observers)-1 do Observers[j]:=Observers[j+1];
+       SetLength(Observers,High(Observers)-1);
+       Break;
+     end;
+end;
+
+{ TArduinoBase }
+
+//function TArduinoBase.GetDeviceKod: byte;
+//begin
+//  Result:=fDeviceKod;
+//end;
+
+//function TArduinoBase.GetisNeededComPort: boolean;
+//begin
+//  Result:=fisNeededComPort;
+//end;
+
+//function TArduinoBase.GetSecondDeviceKod: byte;
+//begin
+// Result:=Pins.PinControl;
+//end;
+
+//procedure TArduinoBase.isNeededComPortState;
+//begin
+//   fisNeededComPort:=(WaitForSingleObject(EventComPortFree,1000)=WAIT_OBJECT_0);
+//end;
+
+//procedure TArduinoBase.PacketCreateToSend;
+//begin
+//
+//end;
+
+//procedure TArduinoBase.PinsCreate;
+//begin
+//
+//end;
+
+//procedure TArduinoBase.SetisNeededComPort(const Value: boolean);
+//begin
+//  fisNeededComPort:=Value;
+//end;
+
+{ TArduinoSetterNew }
+
+constructor TArduinoSetterNew.Create(Nm: string);
+begin
+  inherited Create(Nm);
+  PinsCreate();
+  CreateHook;
+  fData[0] := fSetterKod;
+  PinsToDataArray();
+end;
+
+procedure TArduinoSetterNew.CreateHook;
+begin
+  SetLength(fData,6);
+  fSetterKod:=$FF;
+end;
+
+procedure TArduinoSetterNew.Free;
+begin
+ Pins.Free;
+ inherited Free;
+end;
+
+function TArduinoSetterNew.GetisNeededComPort: boolean;
+begin
+ Result:=fisNeededComPort;
+end;
+
+procedure TArduinoSetterNew.isNeededComPortState;
+begin
+  fisNeededComPort:=(WaitForSingleObject(EventComPortFree,1000)=WAIT_OBJECT_0);
+end;
+
+procedure TArduinoSetterNew.PacketCreateToSend;
+begin
+   PacketCreate(fData);
+end;
+
+procedure TArduinoSetterNew.PinsCreate;
+begin
+  Pins := TPins.Create(Name);
+end;
+
+procedure TArduinoSetterNew.PinsToDataArray;
+begin
+  fData[1] := Pins.PinControl;
+end;
+
+procedure TArduinoSetterNew.SetisNeededComPort(const Value: boolean);
+begin
+ fisNeededComPort:=Value;
 end;
 
 end.
