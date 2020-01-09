@@ -190,7 +190,7 @@ TRS232MeterDevice=class(TRS232CustomDevice,IMeasurement,IRS232DataObserver)
    function GetData():double;virtual;
    procedure MeasurementBegin;
    procedure GetDataThread(WPARAM: word;EventEnd:THandle);virtual;
-   procedure AddDataSubject(DataSubject:IRS232DataSubject);
+//   procedure AddDataSubject(DataSubject:IRS232DataSubject);
 //   procedure Free;override;
   end;
 
@@ -386,10 +386,10 @@ end;
 //  inherited Free;
 //end;
 
-procedure TRS232MeterDevice.AddDataSubject(DataSubject: IRS232DataSubject);
-begin
-  fIRS232DataSubject:=DataSubject;
-end;
+//procedure TRS232MeterDevice.AddDataSubject(DataSubject: IRS232DataSubject);
+//begin
+//  fIRS232DataSubject:=DataSubject;
+//end;
 
 constructor TRS232MeterDevice.Create(Nm: string);
 begin

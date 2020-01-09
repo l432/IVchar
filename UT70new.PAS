@@ -261,9 +261,9 @@ type
 var
     PacketToSendNew:array of byte;
     UT70Bnew:TUT70Bnew;
-    UT70BShowNew:TUT70BShowNew;
+//    UT70BShowNew:TUT70BShowNew;
     UT70Cnew:TUT70Cnew;
-    UT70CShowNew:TUT70CShowNew;
+//    UT70CShowNew:TUT70CShowNew;
 
 implementation
 
@@ -384,6 +384,7 @@ end;
 procedure TUT70Bnew.Free;
 begin
  fDataConverter.Free;
+ inherited Free;
 end;
 
 //procedure TUT70Bnew.FreeDataConverter;

@@ -4,13 +4,14 @@ interface
 
 uses
   ArduinoDevice, CPort, Measurement, StdCtrls, MDevice, ExtCtrls,
-  OlegTypePart2;
+  OlegTypePart2, ArduinoDeviceNew;
 
 
 type
 
 
-  TArduinoADC_Module=class(TArduinoMeter)
+//  TArduinoADC_Module=class(TArduinoMeter)
+  TArduinoADC_Module=class(TArduinoMeterNew)
   private
 
   protected
@@ -23,7 +24,8 @@ type
  public
    procedure PacketCreateToSend(); override;
    property  ActiveChannel:byte read FActiveChannel write FActiveChannel;
-   constructor Create(CP:TComPort;Nm:string);//override;
+//   constructor Create(CP:TComPort;Nm:string);//override;
+   constructor Create(Nm:string);//override;
  end;
 
   TArdADC_Mod_2ConfigByte=class(TArduinoADC_Module)
@@ -75,9 +77,11 @@ begin
 
 end;
 
-constructor TArduinoADC_Module.Create(CP: TComPort; Nm: string);
+//constructor TArduinoADC_Module.Create(CP: TComPort; Nm: string);
+constructor TArduinoADC_Module.Create(Nm: string);
 begin
- inherited Create (CP,Nm);
+// inherited Create (CP,Nm);
+ inherited Create (Nm);
  FActiveChannel:=0;
  Intitiation();
 end;

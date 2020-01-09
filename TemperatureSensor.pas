@@ -3,11 +3,13 @@ unit TemperatureSensor;
 interface
 
 uses
-  ArduinoDevice, CPort, Measurement, RS232device, OlegTypePart2;
+  ArduinoDevice, CPort, Measurement, RS232device, OlegTypePart2, 
+  ArduinoDeviceNew;
 
 
 type
-  TTempSensor=class(TArduinoMeter,ITemperatureMeasurement)
+//  TTempSensor=class(TArduinoMeter,ITemperatureMeasurement)
+  TTempSensor=class(TArduinoMeterNew,ITemperatureMeasurement)
   {базовий клас для датчиків температури}
   protected
   public
@@ -20,7 +22,8 @@ type
   protected
    procedure PinsCreate();override;
   public
-   Constructor Create(CP:TComPort;Nm:string);//override;
+//   Constructor Create(CP:TComPort;Nm:string);//override;
+   Constructor Create(Nm:string);//override;
   end;
 
 
@@ -29,7 +32,8 @@ type
   protected
    procedure PinsCreate();override;
   public
-   Constructor Create(CP:TComPort;Nm:string);//override;
+//   Constructor Create(CP:TComPort;Nm:string);//override;
+   Constructor Create(Nm:string);//override;
    Procedure ConvertToValue();override;
   end;
 
@@ -39,7 +43,8 @@ type
     Function CRCCorrect():boolean;
   public
    Procedure PacketCreateToSend();override;
-   Constructor Create(CP:TComPort;Nm:string);//override;
+//   Constructor Create(CP:TComPort;Nm:string);//override;
+   Constructor Create(Nm:string);//override;
    Procedure ConvertToValue();override;
   end;
 
@@ -47,7 +52,8 @@ type
   {базовий клас для датчика STS21}
   protected
   public
-   Constructor Create(CP:TComPort;Nm:string);//override;
+//   Constructor Create(CP:TComPort;Nm:string);//override;
+   Constructor Create(Nm:string);//override;
   end;
 
 
@@ -70,6 +76,11 @@ type
      procedure GetTemperatureThread(EventEnd:THandle);
   end;
 
+var
+  DS18B20:TDS18B20;
+  HTU21D:THTU21D;
+  STS21:TSTS21;
+
 implementation
 
 uses
@@ -77,9 +88,11 @@ uses
 
 { TDS18B20 }
 
-constructor TDS18B20.Create(CP:TComPort;Nm:string);
+//constructor TDS18B20.Create(CP:TComPort;Nm:string);
+constructor TDS18B20.Create(Nm:string);
 begin
-  inherited Create(CP,Nm);
+//  inherited Create(CP,Nm);
+  inherited Create(Nm);
 
   fMetterKod:=DS18B20Command;
   fMinDelayTime:=500;
@@ -200,9 +213,11 @@ begin
  Result:= (CRC8(fData,$31)=0);
 end;
 
-constructor THTU21D.Create(CP: TComPort; Nm: string);
+//constructor THTU21D.Create(CP: TComPort; Nm: string);
+constructor THTU21D.Create(Nm: string);
 begin
-  inherited Create(CP,Nm);
+//  inherited Create(CP,Nm);
+  inherited Create(Nm);
 
   fMetterKod:=HTU21DCommand;
   SetLength(Pins.fPins,1);
@@ -220,9 +235,11 @@ end;
 
 { TSTS21 }
 
-constructor TSTS21.Create(CP: TComPort; Nm: string);
+//constructor TSTS21.Create(CP: TComPort; Nm: string);
+constructor TSTS21.Create(Nm: string);
 begin
-  inherited Create(CP,Nm);
+//  inherited Create(CP,Nm);
+  inherited Create(Nm);
 
   fMetterKod:=STS21Command;
   Pins.PinControl:=STS21Command;
@@ -231,9 +248,11 @@ end;
 
 { TTempSensor_I2C }
 
-constructor TTempSensor_I2C.Create(CP: TComPort; Nm: string);
+//constructor TTempSensor_I2C.Create(CP: TComPort; Nm: string);
+constructor TTempSensor_I2C.Create(Nm: string);
 begin
-  inherited Create(CP,Nm);
+//  inherited Create(CP,Nm);
+  inherited Create(Nm);
   SetLength(Pins.fPins,1);
   RepeatInErrorCase:=True;
   fDelayTimeStep:=2;
@@ -244,4 +263,13 @@ begin
  Pins := TPins_I2C.Create(Name);
 end;
 
+initialization
+   DS18B20:=TDS18B20.Create('DS18B20');
+   HTU21D:=THTU21D.Create('HTU21D');
+   STS21:=TSTS21.Create('STS21');
+
+finalization
+   DS18B20.Free;
+   HTU21D.Free;
+   STS21.Free;
 end.

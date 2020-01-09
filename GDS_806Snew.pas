@@ -407,7 +407,7 @@ var
   StringToSend:string;
   GDS_806Snw:TGDS_806Snew;
   GDS_806Snew_Channel:array[TGDS_Channel]of TGDS_806Snew_Channel;
-  GDS_806Snew_Show:TGDS_806Snew_Show;
+//  GDS_806Snew_Show:TGDS_806Snew_Show;
 
 implementation
 

@@ -14,9 +14,13 @@ type
  TTMP102=class(TTempSensor_I2C)
   {базовий клас для датчика TMP102}
   public
-   Constructor Create(CP:TComPort;Nm:string);//override;
+//   Constructor Create(CP:TComPort;Nm:string);//override;
+   Constructor Create();//override;
    Procedure ConvertToValue();override;
   end;
+
+var
+       TMP102nw:TTMP102;
 
 
 implementation
@@ -40,15 +44,17 @@ begin
                                 else fValue:=fValue+273.16;
 end;
 
-constructor TTMP102.Create(CP: TComPort; Nm: string);
+//constructor TTMP102.Create(CP: TComPort; Nm: string);
+constructor TTMP102.Create();
 begin
-  inherited Create(CP,Nm);
+  inherited Create('TMP102');
+//  inherited Create(CP,Nm);
   fMetterKod:=TMP102Command;
-//  SetLength(Pins.fPins,1);
   fMinDelayTime:=30;
-//  RepeatInErrorCase:=True;
-//  fDelayTimeStep:=2;
 end;
 
-
+initialization
+   TMP102nw:=TTMP102.Create;
+finalization
+   TMP102nw.Free;
 end.

@@ -81,7 +81,7 @@ end;
 
 var
     DACR2Rnw:TDACR2R;
-    DACR2RShowNew:TDACR2RShow;
+//    DACR2RShowNew:TDACR2RShow;
 
 implementation
 

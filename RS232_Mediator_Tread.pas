@@ -25,6 +25,9 @@ type
     procedure Free;overload;
   end;
 
+var
+ RS232_MediatorTread:TRS232_MediatorTread;
+
 implementation
 
 uses

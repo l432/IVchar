@@ -60,7 +60,7 @@ end;
 
 var
     D30_06nw:TD30_06;
-    D30_06Show:TD30_06Show;
+//    D30_06Show:TD30_06Show;
 
 implementation
 

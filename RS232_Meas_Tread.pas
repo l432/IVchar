@@ -40,6 +40,12 @@ type
    procedure ExuteBegin;override;
   end;
 
+  TV721_MeasuringTreadNew = class(TRS232MeasuringTreadNew)
+  private
+  protected
+   procedure ExuteBegin;override;
+  end;
+
 implementation
 
 uses
@@ -182,6 +188,41 @@ end;
 procedure TRS232MeasuringTreadNew.FalseStatement;
 begin
   fRS232Meter.MeasurementBegin;
+end;
+
+{ TV721_MeasuringTreadNew }
+
+procedure TV721_MeasuringTreadNew.ExuteBegin;
+ label st;
+ var a,b,c:double;
+     isFirst:boolean;
+begin
+  isFirst:=True;
+  st:
+  inherited ExuteBegin;
+  a:=fRS232Meter.Value;
+//  sleep(100);
+  _Sleep(100);
+  inherited ExuteBegin;
+  b:=fRS232Meter.Value;
+  if abs(a-b)<1e-5*Max(abs(a),abs(b))
+     then
+      fRS232Meter.Value:=(a+b)/2
+     else
+      begin
+//        sleep(100);
+        _Sleep(100);
+        inherited ExuteBegin;
+        c:=fRS232Meter.Value;
+        fRS232Meter.Value:=MedianFiltr(a,b,c);
+      end;
+  if (fRS232Meter.Value=0)and(isFirst) then
+   begin
+//    sleep(300);
+    _Sleep(300);
+    isFirst:=False;
+    goto st;
+   end;
 end;
 
 end.

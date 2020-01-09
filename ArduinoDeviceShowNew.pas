@@ -68,10 +68,11 @@ type
 //                      );
 //
 //  end;
-//
+
   TArduinoSetterShowNew=class(TSimpleFreeAndAiniObject)
   protected
    fArduinoSetter:TArduinoSetterNew;
+
    PinShow:TPinsShowUniversal;
    procedure CreatePinShow(PinLs: array of TPanel;
                    PinVariant:TStringList);virtual;

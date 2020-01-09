@@ -226,35 +226,78 @@ type
 //   procedure Free;override;
 //  end;
 //
-// TArduinoPinChanger=class(TArduinoRS232Device)
-//  protected
-//   fPinUnderControl:byte;
-//   procedure PinsCreate();override;
-//  public
-//   procedure   PacketCreateToSend(); override;
-//   property PinUnderControl:byte read fPinUnderControl write fPinUnderControl;
+ TArduinoPinChangerNew=class(TArduinoSetterNew)
+  protected
+   fPinUnderControl:byte;
+   procedure PinsCreate();override;
+  public
+   procedure   PacketCreateToSend(); override;
+   property PinUnderControl:byte read fPinUnderControl write fPinUnderControl;
 //   Constructor Create(CP:TComPort;Nm:string);//override;
-//   procedure PinChangeToHigh();
-//   procedure PinChangeToLow();
-//  end;
-//
-//  TArduinoMeter=class(TRS232Meter)
-//  {базовий клас для вимірювальних об'єктів,
-//  які використовують обмін даних з Arduino}
-//  protected
-//   fMetterKod:byte;
-//   Procedure PacketReceiving(Sender: TObject; const Str: string);override;
-//   procedure PinsCreate();virtual;
-//  public
-//   Pins:TPins;
-//   procedure   PacketCreateToSend(); override;
-//   Constructor Create(CP:TComPort;Nm:string);//override;
-//   Procedure Free;override;
-//  end;
-//
+   Constructor Create(Nm:string);//override;
+   procedure PinChangeToHigh();
+   procedure PinChangeToLow();
+  end;
 
-//
-//
+ TArduinoDataRequest = class
+  public
+  procedure Request;virtual;abstract;
+ end;
+
+  TArduinoMeterNew=class(TRS232MeterDevice,IArduinoSender,IArduinoDevice)
+  {базовий клас для вимірювальних об'єктів,
+  які використовують обмін даних з Arduino}
+  protected
+   fMetterKod:byte;
+   fisNeededComPort:boolean;
+   fArduinoDataSubject:TArduinoDataSubject;
+   fRequestState:TArduinoDataRequest;
+   fInitRequestState:TArduinoDataRequest;
+   fAddedRequestState:TArduinoDataRequest;
+   fWorkRequestState:TArduinoDataRequest;
+//   Procedure PacketReceiving(Sender: TObject; const Str: string);override;
+   procedure PinsCreate();virtual;
+   function GetisNeededComPort:boolean;
+   procedure SetisNeededComPort(const Value:boolean);
+   procedure UpDate ();override;
+   function GetDeviceKod:byte;
+   function GetSecondDeviceKod:byte;
+  public
+   Pins:TPins;
+   property isNeededComPort:boolean read GetisNeededComPort write SetisNeededComPort;
+   property DeviceKod:byte read GetDeviceKod;
+   property SecondDeviceKod:byte read GetSecondDeviceKod;
+   procedure   PacketCreateToSend(); virtual;
+//   Constructor Create(CP:TComPort;Nm:string);//override;
+   Constructor Create(Nm:string);//override;
+   Procedure Free;override;
+   procedure isNeededComPortState();
+   procedure Request();override;
+   Procedure ConvertToValue();virtual;abstract;
+   procedure AddDataSubject(DataSubject:TArduinoDataSubject);
+  end;
+
+ TInitRequestState = class(TArduinoDataRequest)
+  public
+  procedure Request;override;
+ end;
+
+ TWorkRequestState = class(TArduinoDataRequest)
+  private
+   fArduinoMeter:TArduinoMeterNew;
+  public
+   procedure Request;override;
+   Constructor Create(ArduinoMeter:TArduinoMeterNew);
+ end;
+
+ TAddedRequestState= class(TWorkRequestState)
+//  private
+//   fArduinoMeter:TArduinoMeterNew;
+  public
+   procedure Request;override;
+//   Constructor Create(ArduinoMeter:TArduinoMeterNew);
+ end;
+
   TArduinoDACnew=class(TArduinoSetterNew,IDAC)
     {базовий клас для ЦАП, що керується
     за допомогою Arduino    }
@@ -276,63 +319,15 @@ type
   end;
 //
 
-
+var
+ ArduinoDataSubject:TArduinoDataSubject;
 
 implementation
 
 uses
-  Math, Forms, Graphics, Controls, OlegFunction, HighResolutionTimer, Dialogs, 
+  Math, Forms, Graphics, Controls, OlegFunction, HighResolutionTimer, Dialogs,
   Windows;
 
-
-//{ TArduinoMeter }
-//
-//Constructor TArduinoMeter.Create(CP:TComPort;Nm:string);
-//begin
-//  inherited Create(CP,Nm);
-//  PinsCreate();
-//
-//  fComPacket.StartString:=PacketBeginChar;
-//  fComPacket.StopString:=PacketEndChar;
-//end;
-//
-//
-//procedure TArduinoMeter.Free;
-//begin
-// Pins.Free;
-// inherited Free;
-//end;
-//
-//procedure TArduinoMeter.PinsCreate();
-//begin
-//  Pins := TPins.Create(Name);
-//end;
-//
-//procedure TArduinoMeter.PacketCreateToSend;
-//begin
-// PacketCreate([fMetterKod,Pins.PinControl]);
-//end;
-//
-//procedure TArduinoMeter.PacketReceiving(Sender: TObject; const Str: string);
-//  var i:integer;
-//begin
-//// ShowData(fData);
-// if not(PacketIsReceived(Str,fData,fMetterKod)) then Exit;
-//// HelpForMe(inttostr(MilliSecond)+ByteArrayToString(fData));
-//
-// if fData[2]<>Pins.PinControl then Exit;
-////   ?
-// fComPort.ClearBuffer(True, False);
-////------------------------------
-//
-// for I := 0 to High(fData)-4 do
-//   fData[i]:=fData[i+3];
-// SetLength(fData,High(fData)-3);
-// fIsReceived:=True;
-//// HelpForMe(inttostr(MilliSecond)+ByteArrayToString(fData));
-//
-//end;
-//
 //{ TPins }
 //
 //constructor TPins.Create(Nm: string);
@@ -546,58 +541,39 @@ begin
     else Result:=round(Voltage/fVoltageMaxValue*fKodMaxValue);
 end;
 
-//{ TArduinoRS232Device }
-//
-//constructor TArduinoRS232Device.Create(CP: TComPort; Nm: string);
-//begin
-//  inherited Create(CP,Nm);
-//  PinsCreate();
-//  fComPacket.StartString:=PacketBeginChar;
-//  fComPacket.StopString:=PacketEndChar;
-//end;
-//
-//procedure TArduinoRS232Device.Free;
-//begin
-// Pins.Free;
-// inherited Free;
-//end;
-//
-//procedure TArduinoRS232Device.PinsCreate();
-//begin
-//  Pins := TPins.Create(Name);
-//end;
-//
-//{ TArduinoPinChanger }
-//
-//constructor TArduinoPinChanger.Create(CP: TComPort; Nm: string);
-//begin
+{ TArduinoPinChangerNew }
+
+//constructor TArduinoPinChangerNew.Create(CP: TComPort; Nm: string);
+constructor TArduinoPinChangerNew.Create(Nm: string);
+begin
 // inherited Create(CP,Nm);
-// fDeviceKod:=PinChangeCommand;
-// PinUnderControl:=PinToHigh;
-//end;
-//
-//
-//procedure TArduinoPinChanger.PacketCreateToSend;
-//begin
-// PacketCreate([fDeviceKod,Pins.PinControl,PinUnderControl]);
-//end;
-//
-//procedure TArduinoPinChanger.PinChangeToHigh;
-//begin
-// PinUnderControl:=PinToHigh;
-// isNeededComPortState();
-//end;
-//
-//procedure TArduinoPinChanger.PinChangeToLow;
-//begin
-// PinUnderControl:=PinToLow;
-// isNeededComPortState();
-//end;
-//
-//procedure TArduinoPinChanger.PinsCreate;
-//begin
-// Pins := TPins.Create(Name,1);
-//end;
+ inherited Create(Nm);
+ fSetterKod:=PinChangeCommand;
+ PinUnderControl:=PinToHigh;
+end;
+
+
+procedure TArduinoPinChangerNew.PacketCreateToSend;
+begin
+ PacketCreate([fSetterKod,Pins.PinControl,PinUnderControl]);
+end;
+
+procedure TArduinoPinChangerNew.PinChangeToHigh;
+begin
+ PinUnderControl:=PinToHigh;
+ isNeededComPortState();
+end;
+
+procedure TArduinoPinChangerNew.PinChangeToLow;
+begin
+ PinUnderControl:=PinToLow;
+ isNeededComPortState();
+end;
+
+procedure TArduinoPinChangerNew.PinsCreate;
+begin
+ Pins := TPins.Create(Name,1);
+end;
 //
 //
 //{ TPins_I2C }
@@ -613,47 +589,6 @@ end;
 // Result:='$'+IntToHex(fPins[Index],2);
 //end;
 //
-//
-//{ TArduinoSetter }
-//
-//constructor TArduinoSetter.Create(CP: TComPort; Nm: string);
-//begin
-//  inherited Create(CP,Nm);
-//  PinsCreate();
-//  fComPacket.StartString:=PacketBeginChar;
-//  fComPacket.StopString:=PacketEndChar;
-//  SetLength(fData,6);
-//
-//  CreateHook;
-//  fData[0] := fSetterKod;
-//  PinsToDataArray();
-//end;
-//
-//procedure TArduinoSetter.CreateHook;
-//begin
-//  fSetterKod:=$FF;
-//end;
-//
-//procedure TArduinoSetter.Free;
-//begin
-// Pins.Free;
-// inherited Free;
-//end;
-//
-//procedure TArduinoSetter.PacketCreateToSend;
-//begin
-// PacketCreate(fData);
-//end;
-//
-//procedure TArduinoSetter.PinsCreate;
-//begin
-//  Pins := TPins.Create(Name);
-//end;
-//
-//procedure TArduinoSetter.PinsToDataArray;
-//begin
-//  fData[1] := Pins.PinControl;
-//end;
 //
 //{ TPinsShowShot }
 //
@@ -830,17 +765,6 @@ begin
  fRS232:=TRS232_Arduino.Create(CP);
 end;
 
-//constructor TArduinoDataSubject.Create(CP: TComPort);
-//begin
-//
-//end;
-
-//procedure TArduinoDataSubject.Free;
-//begin
-//  inherited;
-//
-//end;
-
 procedure TArduinoDataSubject.NotifyObservers;
  var Kod,SecondKod:byte;
      i:integer;
@@ -877,7 +801,7 @@ procedure TArduinoDataSubject.RegisterObserver(o: IArduinoDevice);
 begin
  if (not ObserverIsRegistered(o)) then
    begin
-    SetLength(Observers,High(Observers)+1);
+    SetLength(Observers,High(Observers)+2);
     Observers[High(Observers)]:=o;
    end;
 end;
@@ -895,42 +819,6 @@ begin
      end;
 end;
 
-{ TArduinoBase }
-
-//function TArduinoBase.GetDeviceKod: byte;
-//begin
-//  Result:=fDeviceKod;
-//end;
-
-//function TArduinoBase.GetisNeededComPort: boolean;
-//begin
-//  Result:=fisNeededComPort;
-//end;
-
-//function TArduinoBase.GetSecondDeviceKod: byte;
-//begin
-// Result:=Pins.PinControl;
-//end;
-
-//procedure TArduinoBase.isNeededComPortState;
-//begin
-//   fisNeededComPort:=(WaitForSingleObject(EventComPortFree,1000)=WAIT_OBJECT_0);
-//end;
-
-//procedure TArduinoBase.PacketCreateToSend;
-//begin
-//
-//end;
-
-//procedure TArduinoBase.PinsCreate;
-//begin
-//
-//end;
-
-//procedure TArduinoBase.SetisNeededComPort(const Value: boolean);
-//begin
-//  fisNeededComPort:=Value;
-//end;
 
 { TArduinoSetterNew }
 
@@ -938,6 +826,7 @@ constructor TArduinoSetterNew.Create(Nm: string);
 begin
   inherited Create(Nm);
   PinsCreate();
+  SetLength(fData,6);
   CreateHook;
   fData[0] := fSetterKod;
   PinsToDataArray();
@@ -945,7 +834,7 @@ end;
 
 procedure TArduinoSetterNew.CreateHook;
 begin
-  SetLength(fData,6);
+//  SetLength(fData,6);
   fSetterKod:=$FF;
 end;
 
@@ -983,6 +872,111 @@ end;
 procedure TArduinoSetterNew.SetisNeededComPort(const Value: boolean);
 begin
  fisNeededComPort:=Value;
+end;
+
+{ TArduinoMeterNew }
+
+procedure TArduinoMeterNew.AddDataSubject(DataSubject: TArduinoDataSubject);
+begin
+ fArduinoDataSubject:=DataSubject;
+ fIRS232DataSubject:=fArduinoDataSubject;
+ fRequestState:=fAddedRequestState;
+end;
+
+
+constructor TArduinoMeterNew.Create(Nm: string);
+begin
+  inherited Create(Nm);
+  PinsCreate();
+  fInitRequestState:=TInitRequestState.Create;
+  fRequestState:=fInitRequestState;
+  fWorkRequestState:=TWorkRequestState.Create(Self);
+  fAddedRequestState:=TAddedRequestState.Create(Self);
+end;
+
+procedure TArduinoMeterNew.Free;
+begin
+ Pins.Free;
+ fInitRequestState.Free;
+ inherited Free;
+end;
+
+function TArduinoMeterNew.GetDeviceKod: byte;
+begin
+  Result:=fMetterKod;
+end;
+
+function TArduinoMeterNew.GetisNeededComPort: boolean;
+begin
+ Result:=fisNeededComPort;
+end;
+
+function TArduinoMeterNew.GetSecondDeviceKod: byte;
+begin
+ Result:=Pins.PinControl;
+end;
+
+procedure TArduinoMeterNew.isNeededComPortState;
+begin
+  fisNeededComPort:=(WaitForSingleObject(EventComPortFree,1000)=WAIT_OBJECT_0);
+end;
+
+procedure TArduinoMeterNew.PacketCreateToSend;
+begin
+  PacketCreate([fMetterKod,Pins.PinControl]);
+end;
+
+procedure TArduinoMeterNew.PinsCreate;
+begin
+   Pins := TPins.Create(Name);
+end;
+
+procedure TArduinoMeterNew.Request;
+begin
+ fRequestState.Request;
+// isNeededComPortState();
+end;
+
+procedure TArduinoMeterNew.SetisNeededComPort(const Value: boolean);
+begin
+ fisNeededComPort:=Value;
+end;
+
+procedure TArduinoMeterNew.UpDate;
+ var i:integer;
+begin
+  inherited UpDate;
+  SetLength(fData,High(fArduinoDataSubject.ReceivedData)+1);
+  for I := 0 to High(fData)
+     do  fData[i]:=fArduinoDataSubject.ReceivedData[i];
+  ConvertToValue();
+end;
+
+{ TInitRequestState }
+
+procedure TInitRequestState.Request;
+begin
+
+end;
+
+{ TWorkRequestState }
+
+constructor TWorkRequestState.Create(ArduinoMeter: TArduinoMeterNew);
+begin
+ fArduinoMeter:=ArduinoMeter;
+end;
+
+procedure TWorkRequestState.Request;
+begin
+ fArduinoMeter.isNeededComPortState();
+end;
+
+{ TAddedRequestState }
+
+procedure TAddedRequestState.Request;
+begin
+  fArduinoMeter.fArduinoDataSubject.RegisterObserver(fArduinoMeter);
+  fArduinoMeter.fRequestState:=fArduinoMeter.fWorkRequestState;
 end;
 
 end.

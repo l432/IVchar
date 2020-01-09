@@ -30,7 +30,8 @@ type
   public
    Procedure PacketCreateToSend();override;
    function GetTemperature():double;override;
-   Constructor Create(CP:TComPort;Nm:string);
+//   Constructor Create(CP:TComPort;Nm:string);
+   Constructor Create(Nm:string);
    Procedure ConvertToValue();override;
    function GetTemperatureAmbient():double;
    function ReadGrayCoefficient():double;
@@ -60,6 +61,9 @@ type
    procedure ReadFromIniFile(ConfigFile:TIniFile);override;
    procedure WriteToIniFile(ConfigFile:TIniFile);override;
  end;
+
+var
+     MLX90615nw:TMLX90615;
 
 implementation
 
@@ -127,9 +131,11 @@ begin
     Result:= (CRC8([$B6,MLX90615_OperationCod[fstate],$B7,fData[0],fData[1],fData[2]])=0);
 end;
 
-constructor TMLX90615.Create(CP: TComPort; Nm: string);
+//constructor TMLX90615.Create(CP: TComPort; Nm: string);
+constructor TMLX90615.Create(Nm: string);
 begin
-  inherited Create(CP,Nm);
+//  inherited Create(CP,Nm);
+  inherited Create(Nm);
 
   fMetterKod:=MLX90615Command;
   SetLength(Pins.fPins,1);
@@ -250,4 +256,8 @@ begin
  fGrayScaleShow.WriteToIniFile(ConfigFile);
 end;
 
+initialization
+   MLX90615nw:=TMLX90615.Create('MLX90615');
+finalization
+   MLX90615nw.Free;
 end.

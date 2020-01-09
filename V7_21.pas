@@ -4,7 +4,7 @@ interface
 
 uses
   ArduinoDevice, ExtCtrls, StdCtrls, Buttons, RS232device, CPort, Classes, 
-  ArduinoDeviceShow, IniFiles;
+  ArduinoDeviceShow, IniFiles, ArduinoDeviceNew, RS232deviceNew;
 
 
 
@@ -32,11 +32,15 @@ const
   LongTimeToMeasurement=300;
 
 type
-  TVoltmetr=class(TArduinoMeter)
+//  TVoltmetr=class(TArduinoMeter)
+  TVoltmetr=class(TArduinoMeterNew)
   {базовий клас для вольтметрів серії В7-21}
+  private
+   fDataConverter:TComplexDeviceDataConverter;
   protected
    fTimeToMeasurement:word;
-   Procedure ValueDetermination(Data:array of byte);override;
+//   Procedure ValueDetermination(Data:array of byte);override;
+   Procedure ValueDetermination();override;
    Procedure DiapazonFilling(DiapazonNumber:byte;
                              D_Begin, D_End:TV721_Diapazons);
    Function MeasureModeLabelRead():string;override;
@@ -44,35 +48,45 @@ type
    procedure   PacketCreateToSend(); override;
    Procedure ConvertToValue();override;
    Function ResultProblem(Rez:double):boolean;//override;
-   Constructor Create(CP:TComPort;Nm:string);//override;
+//   Constructor Create(CP:TComPort;Nm:string);//override;
+   Constructor Create(Nm:string);//override;
    function GetData():double;override;
    procedure GetDataThread(WPARAM: word;EventEnd:THandle);override;
+   procedure Free;override;
   end;
 
   TV721A=class(TVoltmetr)
   protected
-   Procedure MModeDetermination(Data:array of byte);override;
-   Procedure DiapazonDetermination(Data:array of byte);override;
+//   Procedure MModeDetermination(Data:array of byte);override;
+//   Procedure DiapazonDetermination(Data:array of byte);override;
+   Procedure MModeDetermination();override;
+   Procedure DiapazonDetermination();override;
   public
   end;
 
   TV721=class(TVoltmetr)
   protected
-   Procedure MModeDetermination(Data:array of byte);override;
-   Procedure DiapazonDetermination(Data:array of byte);override;
-   Procedure ValueDetermination(Data:array of byte);override;
+//   Procedure MModeDetermination(Data:array of byte);override;
+//   Procedure DiapazonDetermination(Data:array of byte);override;
+//   Procedure ValueDetermination(Data:array of byte);override;
+   Procedure MModeDetermination();override;
+   Procedure DiapazonDetermination();override;
+   Procedure ValueDetermination();override;
   public
-   Constructor Create(CP:TComPort;Nm:string);//override;
+//   Constructor Create(CP:TComPort;Nm:string);//override;
+   Constructor Create(Nm:string);//override;
   end;
 
   TV721_Brak=class(TV721)
   {коричнева банка, при пайці переплутано 2 контакти}
   protected
-   Procedure DiapazonDetermination(Data:array of byte);override;
+//   Procedure DiapazonDetermination(Data:array of byte);override;
+   Procedure DiapazonDetermination();override;
   public
   end;
 
-  TVoltmetrShow=class(TRS232MetterShow)
+//  TVoltmetrShow=class(TRS232MetterShow)
+  TVoltmetrShow=class(TRS232MetterShowNew)
   protected
    PinShow:TPinsShow;
   public
@@ -91,15 +105,27 @@ type
    procedure WriteToIniFile(ConfigFile: TIniFile);override;//virtual;
   end;
 
+var
+    V721A:TV721A;
+    V721_I,V721_II:TV721;
+//    V721_I:TV721;
+//    V721_II:TV721_Brak;
+//    VoltmetrShows:array of TVoltmetrShow;
+
+
 implementation
 
 uses   PacketParameters, Math, SysUtils, OlegMath, OlegType,
       RS232_Meas_Tread, Dialogs;
 
-Constructor TVoltmetr.Create(CP:TComPort;Nm:string);
+//Constructor TVoltmetr.Create(CP:TComPort;Nm:string);
+Constructor TVoltmetr.Create(Nm:string);
  var V721_MeasureMode:TV721_MeasureMode;
 begin
-  inherited Create(CP,Nm);
+//  inherited Create(CP,Nm);
+  inherited Create(Nm);
+  fDataConverter:=TComplexDeviceDataConverter.Create(Self);
+
   RepeatInErrorCase:=True;
   fMetterKod:=V7_21Command;
   fTimeToMeasurement:=80;
@@ -130,6 +156,12 @@ begin
         do fDiapazonAll[DiapazonNumber][ord(V721_Diapazons)-ord(D_Begin)]:=V721_DiapazonsLabels[V721_Diapazons];
 end;
 
+procedure TVoltmetr.Free;
+begin
+ fDataConverter.Free;
+ inherited Free;
+end;
+
 function TVoltmetr.GetData(): double;
  function AditionMeasurement(a,b:double):double;
   var c:double;
@@ -150,7 +182,8 @@ function TVoltmetr.GetData(): double;
 
 begin
   Result:=ErResult;
-  if not(PortConnected) then Exit;
+//  if not(PortConnected) then Exit;
+  if not(fIRS232DataSubject.PortConnected) then Exit;
 
  a:=Measurement();
  sleep(fTimeToMeasurement);
@@ -171,8 +204,10 @@ end;
 
 procedure TVoltmetr.GetDataThread(WPARAM: word;EventEnd:THandle);
 begin
-  if PortConnected then
-   fRS232MeasuringTread:=TV721_MeasuringTread.Create(Self,WPARAM,EventEnd);
+//  if PortConnected then
+//   fRS232MeasuringTread:=TV721_MeasuringTread.Create(Self,WPARAM,EventEnd);
+  if fIRS232DataSubject.PortConnected then
+   fRS232MeasuringTread:=TV721_MeasuringTreadNew.Create(Self,WPARAM,EventEnd);
 end;
 
 function TVoltmetr.MeasureModeLabelRead: string;
@@ -189,16 +224,17 @@ begin
   PacketCreate([fMetterKod,Pins.PinControl,Pins.PinGate]);
 end;
 
-Procedure TVoltmetr.ValueDetermination(Data:array of byte);
+//Procedure TVoltmetr.ValueDetermination(Data:array of byte);
+Procedure TVoltmetr.ValueDetermination();
  var temp:double;
 begin
- temp:=BCDtoDec(Data[0],True);
+ temp:=BCDtoDec(fData[0],True);
 
- temp:=BCDtoDec(Data[0],False)*10+temp;
- temp:=temp+BCDtoDec(Data[1],True)*100;
- temp:=temp+BCDtoDec(Data[1],False)*1000;
- temp:=temp+((Data[2] shr 4)and$1)*10000;
- if (Data[2] shr 5)and$1>0 then temp:=-temp;
+ temp:=BCDtoDec(fData[0],False)*10+temp;
+ temp:=temp+BCDtoDec(fData[1],True)*100;
+ temp:=temp+BCDtoDec(fData[1],False)*1000;
+ temp:=temp+((fData[2] shr 4)and$1)*10000;
+ if (fData[2] shr 5)and$1>0 then temp:=-temp;
 
  fValue:=ErResult;
  if fMeasureMode=ord(IA) then
@@ -247,12 +283,14 @@ end;
 Procedure TVoltmetr.ConvertToValue();
 begin
   if High(fData)<>3 then Exit;
-  inherited ConvertToValue();
+//  inherited ConvertToValue();
+  fDataConverter.DataConvert;
 end;
 
-Procedure TV721A.MModeDetermination(Data:array of byte);
+//Procedure TV721A.MModeDetermination(Data:array of byte);
+Procedure TV721A.MModeDetermination();
 begin
-  case (Data[2] and $0F) of
+  case (fData[2] and $0F) of
    1: fMeasureMode:=ord(UD);
    2: fMeasureMode:=ord(UA);
    4: fMeasureMode:=ord(ID);
@@ -261,9 +299,10 @@ begin
   end;
 end;
 
-Procedure TV721.MModeDetermination(Data:array of byte);
+//Procedure TV721.MModeDetermination(Data:array of byte);
+Procedure TV721.MModeDetermination();
 begin
-  case (Data[2] and $0F) of
+  case (fData[2] and $0F) of
    7: fMeasureMode:=ord(UD);
    5: fMeasureMode:=ord(UA);
    3: fMeasureMode:=ord(ID);
@@ -271,19 +310,20 @@ begin
   end;
 end;
 
-Procedure TV721A.DiapazonDetermination(Data:array of byte);
+//Procedure TV721A.DiapazonDetermination(Data:array of byte);
+Procedure TV721A.DiapazonDetermination();
 begin
   fDiapazon:=-1;
-  if Data[3]<1 then  Exit;
+  if fData[3]<1 then  Exit;
   
-  if Frac(Log2( Data[3]))=0 then
+  if Frac(Log2( fData[3]))=0 then
    begin
     if fMeasureMode=ord(ID) then
-       fDiapazon:= round(Log2( Data[3]));
+       fDiapazon:= round(Log2( fData[3]));
     if (fMeasureMode=ord(IA))or(fMeasureMode=ord(UA)) then
-       fDiapazon:= round(Log2( Data[3]))-3;
+       fDiapazon:= round(Log2( fData[3]))-3;
     if fMeasureMode=ord(UD) then
-       fDiapazon:= round(Log2( Data[3]))-2;
+       fDiapazon:= round(Log2( fData[3]))-2;
    end;
   if fDiapazon<-1 then fDiapazon:=-1;
 
@@ -331,20 +371,23 @@ begin
 end;
 
 
-constructor TV721.Create(CP:TComPort;Nm:string);
+//constructor TV721.Create(CP:TComPort;Nm:string);
+constructor TV721.Create(Nm:string);
 begin
-  inherited Create(CP,Nm);
+//  inherited Create(CP,Nm);
+  inherited Create(Nm);
   fTimeToMeasurement:=60;
   SetLength(fMeasureModeAll,High(fMeasureModeAll));
   fDiapazonAll[0][High(fDiapazonAll[0])]:='500 V';
   fDiapazonAll[1][High(fDiapazonAll[1])]:='500 V';
 end;
 
-Procedure TV721.DiapazonDetermination(Data:array of byte);
+//Procedure TV721.DiapazonDetermination(Data:array of byte);
+Procedure TV721.DiapazonDetermination();
 begin
   fDiapazon:=-1;
   if fMeasureMode=ord(ID) then
-   case Data[3] of
+   case fData[3] of
    127:fDiapazon:=7;  // mA1000
    191: fDiapazon:=6;  // mA100
    223: fDiapazon:=5;  // mA10
@@ -357,7 +400,7 @@ begin
 
 
   if fMeasureMode=ord(UD) then
-   case Data[3] of
+   case fData[3] of
    127:fDiapazon:=5;  // V1000
    191:fDiapazon:=4;  // V100
    223:fDiapazon:=3;  // V10
@@ -368,7 +411,7 @@ begin
 
 
   if fMeasureMode=ord(UA) then
-   case Data[3] of
+   case fData[3] of
    127:fDiapazon:=4;  // V1000
    191:fDiapazon:=3;  // V100
    223:fDiapazon:=2;  // V10
@@ -378,9 +421,11 @@ begin
 end;
 
 
-Procedure TV721.ValueDetermination(Data:array of byte);
+//Procedure TV721.ValueDetermination(Data:array of byte);
+Procedure TV721.ValueDetermination();
 begin
-  inherited ValueDetermination(Data);
+//  inherited ValueDetermination(Data);
+  inherited ValueDetermination;
   if fValue<>ErResult then fValue:=-fValue;
 end;
 
@@ -428,11 +473,12 @@ end;
 
 { TV721_Brak }
 
-procedure TV721_Brak.DiapazonDetermination(Data:array of byte);
+//procedure TV721_Brak.DiapazonDetermination(Data:array of byte);
+procedure TV721_Brak.DiapazonDetermination();
 begin
   fDiapazon:=-1;
   if fMeasureMode=ord(ID) then
-   case Data[3] of
+   case fData[3] of
    127:fDiapazon:=7;  // mA1000
    239: fDiapazon:=6;  // mA100
    223: fDiapazon:=5;  // mA10
@@ -444,7 +490,7 @@ begin
    end;
 
   if fMeasureMode=ord(UD) then
-   case Data[3] of
+   case fData[3] of
    127:fDiapazon:=5;  // V1000
    239:fDiapazon:=4;  // V100
    223:fDiapazon:=3;  // V10
@@ -454,7 +500,7 @@ begin
    end;
 
   if fMeasureMode=ord(UA) then
-   case Data[3] of
+   case fData[3] of
    127:fDiapazon:=4;  // V1000
    239:fDiapazon:=3;  // V100
    223:fDiapazon:=2;  // V10
@@ -463,4 +509,13 @@ begin
    end;
 end;
 
+initialization
+  V721A := TV721A.Create('B7-21A');
+  V721_I := TV721.Create('B7-21 (1)');
+  V721_II := TV721.Create('B7-21 (2)');
+//  V721_II := TV721_Brak.Create(ComPort1, 'B7-21 (2)');
+finalization
+  V721A.Free;
+  V721_I.Free;
+  V721_II.Free;
 end.

@@ -132,6 +132,11 @@ TPins_MCP3424=class(TPinsForCustomValues)
    Procedure Free;override;
  end;
 
+var
+    MCP3424nw:TMCP3424_Module;
+    MCP3424_Channels:array [TMCP3424_ChanelNumber] of TMCP3424_Channel;
+//    MCP3424_ChannelShows:array [TMCP3424_ChanelNumber] of TMCP3424_ChannelShow;
+
 
 implementation
 
@@ -313,5 +318,20 @@ begin
 
  Result:=UndefinedPin;
 end;
+
+initialization
+   MCP3424nw := TMCP3424_Module.Create('MCP3424');
+   MCP3424_Channels[0]:=TMCP3424_Channel.Create(0, MCP3424nw);
+   MCP3424_Channels[1]:=TMCP3424_Channel.Create(0, MCP3424nw);
+   MCP3424_Channels[2]:=TMCP3424_Channel.Create(0, MCP3424nw);
+   MCP3424_Channels[3]:=TMCP3424_Channel.Create(0, MCP3424nw);
+
+
+finalization
+   MCP3424_Channels[0].Free;
+   MCP3424_Channels[1].Free;
+   MCP3424_Channels[2].Free;
+   MCP3424_Channels[3].Free;
+   MCP3424nw.Free;
 
 end.

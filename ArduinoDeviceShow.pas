@@ -2,7 +2,7 @@ unit ArduinoDeviceShow;
 
 interface
  uses OlegType,SysUtils,Classes,
-      StdCtrls, IniFiles,  ExtCtrls,  ArduinoDevice;
+      StdCtrls, IniFiles,  ExtCtrls,  ArduinoDevice, ArduinoDeviceNew;
 
 
 type
@@ -51,14 +51,16 @@ type
 
   TArduinoPinChangerShow=class(TOnePinsShow)
   protected
-   ArduinoPinChanger:TArduinoPinChanger;
+//   ArduinoPinChanger:TArduinoPinChanger;
+   ArduinoPinChanger:TArduinoPinChangerNew;
    ToChangeButton:TButton;
    fLowStateButtonCaption:string;
    fHighStateButtonCaption:string;
    procedure CaptionButtonSynhronize();
    procedure ToChangeButtonClick(Sender: TObject);
   public
-   Constructor Create(APC:TArduinoPinChanger;
+//   Constructor Create(APC:TArduinoPinChanger;
+   Constructor Create(APC:TArduinoPinChangerNew;
                       ControlPinLabel:TPanel;
                       TCBut:TButton;
                       PinVariant:TStringList;
@@ -130,7 +132,8 @@ begin
           else  ToChangeButton.Caption:='U-u-ps';
 end;
 
-constructor TArduinoPinChangerShow.Create(APC: TArduinoPinChanger;
+//constructor TArduinoPinChangerShow.Create(APC: TArduinoPinChanger;
+constructor TArduinoPinChangerShow.Create(APC: TArduinoPinChangerNew;
                                           ControlPinLabel: TPanel;
                                           TCBut: TButton;
                                           PinVariant:TStringList;
