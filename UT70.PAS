@@ -3,7 +3,7 @@ unit UT70;
 interface
 
 uses
-  RS232device, ExtCtrls, StdCtrls, Buttons, CPort;
+  ExtCtrls, StdCtrls, Buttons, CPort, RS232deviceNew;
 
 
 type
@@ -111,29 +111,76 @@ const
 
 type
 
-  TUT70B=class(TRS232Meter)
+  TRS232_UT70=class(TRS232)
+    protected
+    public
+     Constructor Create(CP:TComPort);
+    end;
+
+  TDataSubject_UT70=class(TRS232DataSubjectSingle)
+    protected
+    procedure ComPortCreare(CP:TComPort);override;
+  end;
+
+  TDataRequest_UT70=class(TCDDataRequest)
+    protected
+     function IsNoSuccessSend:Boolean;override;
+  end;
+
+
+  TUT70B=class(TRS232MeterDeviceSingle)
   private
     fAUTO:Boolean;
     {TRUE при автоматичному виборі діапазону вимірювань та FALSE при ручному}
     fOUT: Boolean;
     {TRUE при зашкалюванні}
     fDiapazoneModeAll:array of string;
+//    fDataRequest:TCDDataRequest;
+    fDataConverter:TComplexDeviceDataConverter;
     procedure NamesFilling;virtual;
     procedure DiapazonFilling(DiapazonNumber:byte;
                               D_Begin, D_End:TUT70_Diapazons);overload;
     procedure MeasureModesFilling;virtual;
     procedure DiapazonsFilling;virtual;
     procedure DiapasonModesFilling;
+    function CorrectData:boolean;virtual;
    protected
-     Procedure PacketReceiving(Sender: TObject; const Str: string);override;
-     Procedure MModeDetermination(Data:array of byte);override;
-     Procedure DiapazonDetermination(Data:array of byte);override;
-     Procedure ValueDetermination(Data:array of byte);override;
-     Function MeasureModeLabelRead():string;override;
+    procedure UpDate ();override;
+    Procedure MModeDetermination();override;
+    Procedure DiapazonDetermination();override;
+    Procedure ValueDetermination();override;
+    function MeasureModeLabelRead():string;override;
+    procedure CreateDataSubject(CP:TComPort);override;
+    procedure CreateDataRequest;override;
+//    procedure FreeDataRequest;override;
+    procedure CreateDataConverter;virtual;
+//    procedure FreeDataConverter;override;
    public
-     Constructor Create(CP:TComPort;Nm:string);//override;
-     procedure Request();override;
+     Constructor Create(CP:TComPort;Nm:string);overload;
+     Constructor Create(CP:TComPort);overload;
+     procedure Free;override;
   end;
+
+  TRS232_UT70C=class(TRS232)
+    protected
+    public
+     Constructor Create(CP:TComPort);
+    end;
+
+  TDataSubject_UT70C=class(TRS232DataSubjectSingle)
+    protected
+    procedure ComPortCreare(CP:TComPort);override;
+  end;
+
+
+ TDataRequest_UT70C=class(TDataRequest_UT70)
+   protected
+    function IsNoSuccessSend:Boolean;override;
+   public
+    procedure Request;override;
+    procedure PushButtom(ByteToSend: Byte);
+  end;
+
 
   TUT70C=class(TUT70B)
   private
@@ -157,17 +204,17 @@ type
     procedure NamesFilling;override;
     procedure DiapazonFilling(DiapazonNumber:byte;
                               D_Begin, D_End:TUT70C_Diapazons);overload;
-    procedure MeasurementTypeDetermination(Data: array of Byte);
+    procedure MeasurementTypeDetermination();
     procedure PushButtom(ByteToSend: Byte);
+    function CorrectData:boolean;override;
    protected
-     Procedure PacketReceiving(Sender: TObject; const Str: string);override;
-     Procedure MModeDetermination(Data:array of byte);override;
-     Procedure DiapazonDetermination(Data:array of byte);override;
-     Procedure ValueDetermination(Data:array of byte);override;
+     Procedure MModeDetermination;override;
+     Procedure DiapazonDetermination;override;
+     Procedure ValueDetermination;override;
      Function MeasureModeLabelRead():string;override;
+     procedure CreateDataSubject(CP:TComPort);override;
+     procedure CreateDataRequest;override;
    public
-     Constructor Create(CP:TComPort;Nm:string);//override;
-     procedure Request();override;
      procedure PushPeak;
      procedure PushHold;
      procedure PushMaxMin;
@@ -175,10 +222,10 @@ type
      procedure PushRel;
      procedure PushHz;
      procedure PushAcDc;
+     Constructor Create(CP:TComPort);
   end;
 
-
-  TUT70BShow=class(TRS232MetterShow)
+  TUT70BShow=class(TRS232MetterShowNew)
     protected
      DiapazoneMode:TRadioGroup;
      AdapterDiapazoneMode:TAdapterRadioGroupClick;
@@ -211,86 +258,50 @@ type
    procedure MetterDataShow();override;
   end;
 
-
 var
-  PacketToSend:array of byte;
+    PacketToSend:array of byte;
+    UT70B:TUT70B;
+//    UT70BShowNew:TUT70BShowNew;
+    UT70C:TUT70C;
+//    UT70CShowNew:TUT70CShowNew;
 
 implementation
 
 uses
-  OlegType, Dialogs, SysUtils;
+  OlegType, Dialogs, SysUtils, PacketParameters;
 
-{ UT70B }
 
-constructor TUT70B.Create(CP:TComPort;Nm:string);
+{ TRS232_UT70 }
+
+constructor TRS232_UT70.Create(CP: TComPort);
 begin
- inherited Create(CP,Nm);
- RepeatInErrorCase:=True;
- fComPacket.StartString := UT70_PacketBeginChar;
- fComPacket.StopString := UT70_PacketEndChar;
- NamesFilling;
-end;
-
-procedure TUT70B.DiapazonDetermination(Data: array of byte);
-begin
-  fDiapazon:=-1;
-  fAUTO:=((Data[8] and 2)>0);
-  fDiapazon:=Data[0];
-  if fDiapazon>7 then fDiapazon:=-1;
-end;
-
-procedure TUT70B.DiapazonFilling(DiapazonNumber: byte;
-                                 D_Begin,D_End: TUT70_Diapazons);
- var UT70_D:TUT70_Diapazons;
-begin
-  SetLength(fDiapazonAll[DiapazonNumber],ord(D_End)-ord(D_Begin)+1);
-  for UT70_D := D_Begin to D_End
-        do fDiapazonAll[DiapazonNumber][ord(UT70_D)-ord(D_Begin)]:=UT70_DiapazonsLabels[UT70_D];
+  inherited Create(CP,UT70_PacketBeginChar,UT70_PacketEndChar);
 end;
 
 
-function TUT70B.MeasureModeLabelRead: string;
+{ TDataSubject_UT70 }
+
+procedure TDataSubject_UT70.ComPortCreare(CP: TComPort);
 begin
- inherited MeasureModeLabelRead();
- if (fMeasureMode=ord(IA))or(fMeasureMode=ord(ID))
-    then Result:=' A';
- if (fMeasureMode=ord(UA))or(fMeasureMode=ord(UD))
-    then Result:=' V';
- if (fMeasureMode=ord(O)) then Result:='RP';
- if (fMeasureMode=ord(F)) then Result:='Hz';
- if (fMeasureMode=ord(T)) then Result:=' C';
- if (fMeasureMode=ord(G)) then Result:=' f';
- if (fMeasureMode=ord(C)) then Result:=' F';
- if (fMeasureMode=ord(R)) then Result:=' R';
+ fRS232:=TRS232_UT70.Create(CP);
+end;
+
+{ TDataRequest_UT70 }
+
+function TDataRequest_UT70.IsNoSuccessSend: Boolean;
+begin
+ fRS232.ComPort.SetDTR(True);
+ Result:=inherited IsNoSuccessSend;
 end;
 
 
-procedure TUT70B.MModeDetermination(Data: array of byte);
-begin
-  case Data[5] of
-   1: fMeasureMode:=ord(D);
-   2: if (Data[6] and $08)>0 then fMeasureMode:=ord(O)
-                             else fMeasureMode:=ord(F);
-   3: fMeasureMode:=ord(R);
-   4: if (Data[6] and $08)>0 then fMeasureMode:=ord(T)
-                             else fMeasureMode:=ord(G);
-   5: fMeasureMode:=ord(P);
-   6: fMeasureMode:=ord(C);
-   9,13,15: if (Data[8] and $08)>0 then fMeasureMode:=ord(ID)
-                                   else fMeasureMode:=ord(IA);
-   11:      if (Data[8] and $08)>0 then fMeasureMode:=ord(UD)
-                                   else fMeasureMode:=ord(UA);
-   else fMeasureMode:=-1;
-  end;
-end;
+{ TUT70Bnew }
 
-procedure TUT70B.PacketReceiving(Sender: TObject; const Str: string);
-  var i:integer;
-begin
-  SetLength(fData,Length(Str));
-  for I := 0 to High(fData) do
-    fData[i]:=ord(str[i+1]);
 
+function TUT70B.CorrectData: boolean;
+ var i:byte;
+begin
+ Result:=False;
   if High(fData)<>8 then Exit;
   if fData[7]<>48 then Exit;
   for i := 0 to 8 do
@@ -298,21 +309,37 @@ begin
     if (fData[i] shr 4)<>3 then Exit;
     fData[i]:=(fData[i] and $0F)
    end;
-
- fIsReceived:=True;
+ Result:=True;
 end;
 
-procedure TUT70B.Request;
+constructor TUT70B.Create(CP: TComPort; Nm: string);
 begin
-  if fComPort.Connected then
-    begin
-     fComPort.AbortAllAsync;
-     fComPort.ClearBuffer(True, True);
-     fComPort.SetDTR(True);
-     fError:=False;
-    end
-                        else
-     fError:=True;
+ inherited Create(CP,Nm);
+ RepeatInErrorCase:=True;
+ NamesFilling;
+ CreateDataConverter;
+end;
+
+constructor TUT70B.Create(CP: TComPort);
+begin
+ Create(CP,'UT70B');
+end;
+
+procedure TUT70B.CreateDataConverter;
+begin
+  fDataConverter:=TComplexDeviceDataConverter.Create(Self);
+//  fRS232DataConverter:=fDataConverter;
+end;
+
+procedure TUT70B.CreateDataRequest;
+begin
+ fDataRequest:=TDataRequest_UT70.Create(Self.fDataSubject.RS232,Self);
+// fRS232DataRequest:=fDataRequest;
+end;
+
+procedure TUT70B.CreateDataSubject(CP: TComPort);
+begin
+  fDataSubject:=TDataSubject_UT70.Create(CP);
 end;
 
 procedure TUT70B.DiapasonModesFilling;
@@ -353,6 +380,64 @@ begin
   DiapazonFilling(11, TemF, TemF);
 end;
 
+
+procedure TUT70B.Free;
+begin
+ fDataConverter.Free;
+ inherited Free;
+end;
+
+//procedure TUT70Bnew.FreeDataConverter;
+//begin
+//  inherited;
+//
+//end;
+
+//procedure TUT70Bnew.FreeDataConverter;
+//begin
+//  fDataConverter.Free;
+//end;
+
+//procedure TUT70Bnew.FreeDataRequest;
+//begin
+//  fDataRequest.Free;
+//end;
+
+
+procedure TUT70B.DiapazonDetermination();
+begin
+  fDiapazon:=-1;
+  fAUTO:=((fData[8] and 2)>0);
+  fDiapazon:=fData[0];
+  if fDiapazon>7 then fDiapazon:=-1;
+end;
+
+procedure TUT70B.DiapazonFilling(DiapazonNumber: byte;
+                                 D_Begin,D_End: TUT70_Diapazons);
+ var UT70_D:TUT70_Diapazons;
+begin
+  SetLength(fDiapazonAll[DiapazonNumber],ord(D_End)-ord(D_Begin)+1);
+  for UT70_D := D_Begin to D_End
+        do fDiapazonAll[DiapazonNumber][ord(UT70_D)-ord(D_Begin)]:=UT70_DiapazonsLabels[UT70_D];
+end;
+
+
+function TUT70B.MeasureModeLabelRead: string;
+begin
+ inherited MeasureModeLabelRead();
+ if (fMeasureMode=ord(IA))or(fMeasureMode=ord(ID))
+    then Result:=' A';
+ if (fMeasureMode=ord(UA))or(fMeasureMode=ord(UD))
+    then Result:=' V';
+ if (fMeasureMode=ord(O)) then Result:='RP';
+ if (fMeasureMode=ord(F)) then Result:='Hz';
+ if (fMeasureMode=ord(T)) then Result:=' C';
+ if (fMeasureMode=ord(G)) then Result:=' f';
+ if (fMeasureMode=ord(C)) then Result:=' F';
+ if (fMeasureMode=ord(R)) then Result:=' R';
+end;
+
+
 procedure TUT70B.MeasureModesFilling;
 var
   UT70_MeasureMode: TUT70_MeasureMode;
@@ -362,24 +447,58 @@ begin
     fMeasureModeAll[ord(UT70_MeasureMode)] := UT70_MeasureModeLabels[UT70_MeasureMode];
 end;
 
-procedure TUT70B.ValueDetermination(Data: array of byte);
+
+procedure TUT70B.MModeDetermination();
+begin
+  case fData[5] of
+   1: fMeasureMode:=ord(D);
+   2: if (fData[6] and $08)>0 then fMeasureMode:=ord(O)
+                             else fMeasureMode:=ord(F);
+   3: fMeasureMode:=ord(R);
+   4: if (fData[6] and $08)>0 then fMeasureMode:=ord(T)
+                             else fMeasureMode:=ord(G);
+   5: fMeasureMode:=ord(P);
+   6: fMeasureMode:=ord(C);
+   9,13,15: if (fData[8] and $08)>0 then fMeasureMode:=ord(ID)
+                                    else fMeasureMode:=ord(IA);
+   11:      if (fData[8] and $08)>0 then fMeasureMode:=ord(UD)
+                                    else fMeasureMode:=ord(UA);
+   else fMeasureMode:=-1;
+  end;
+end;
+
+procedure TUT70B.NamesFilling;
+begin
+  MeasureModesFilling;
+  DiapazonsFilling;
+  DiapasonModesFilling;
+end;
+
+procedure TUT70B.UpDate;
+begin
+  StrToArrByte(fDataSubject.ReceivedString,fData);
+  if CorrectData() then inherited UpDate;
+  fDataConverter.DataConvert;
+end;
+
+procedure TUT70B.ValueDetermination();
  var x:double;
 begin
  fValue:=ErResult;
- fOUT:=((Data[6] and 1)>0);
+ fOUT:=((fData[6] and 1)>0);
  if fOUT then Exit;
 
- x:=Data[4]+10*Data[3]+100*Data[2]+1000*Data[1];
+ x:=fData[4]+10*fData[3]+100*fData[2]+1000*fData[1];
 
  if (fMeasureMode=ord(IA))or(fMeasureMode=ord(ID)) then
        case fDiapazon of
-         0:case Data[5] of
+         0:case fData[5] of
            15:x:=x*1e-2;
             9:x:=x*1e-5;
            13:x:=x*1e-7;
            else Exit;
            end;
-         1:case Data[5] of
+         1:case fData[5] of
             9:x:=x*1e-4;
            13:x:=x*1e-6;
            else Exit;
@@ -448,78 +567,54 @@ begin
 
  if fMeasureMode=ord(O) then x:=x*0.01;
 
- if ((Data[6] and 4)>0) then fValue:=-1*x
-                        else fValue:=x;
+ if ((fData[6] and 4)>0) then fValue:=-1*x
+                         else fValue:=x;
 
 end;
 
 
-procedure TUT70B.NamesFilling;
+
+{ TUT70Cnew }
+
+
+function TUT70C.CorrectData: boolean;
+ var i:byte;
 begin
-  MeasureModesFilling;
-  DiapazonsFilling;
-  DiapasonModesFilling;
+  Result:=False;
+  if High(fData)<>9 then Exit;
+  for i := 0 to 9 do
+    fData[i]:=(fData[i] and $7F);
+
+  for I := 4 to 8 do
+    fData[i]:=(fData[i] and $0F);
+  Result:=True;
 end;
 
-{ TUT70BShow }
-
-constructor TUT70BShow.Create(UT70B: TUT70B;
-                              MM, R, DM: TRadioGroup;
-                              DL, UL: TLabel;
-                              MB: TButton;
-                              AB: TSpeedButton;
-                              TT: TTimer);
+constructor TUT70C.Create(CP: TComPort);
 begin
- inherited Create(UT70B,MM,R,DL,UL,MB,AB,TT);
- DiapazoneMode:=DM;
- StringArrayToRadioGroup(UT70B.fDiapazoneModeAll,DiapazoneMode);
- IndexToRadioGroup(1,DiapazoneMode);
-
-  AdapterDiapazoneMode:=TAdapterRadioGroupClick.Create(DiapazoneMode.Items.Count-1);
-  DiapazoneMode.OnClick:=AdapterDiapazoneMode.RadioGroupClick;
-  DiapazoneMode.onEnter:=AdapterDiapazoneMode.RadioGroupOnEnter;
+ inherited Create(CP,'UT70C');
 end;
 
-procedure TUT70BShow.Free;
+procedure TUT70C.CreateDataRequest;
 begin
-  AdapterDiapazoneMode.Free;
-  inherited Free;
+ fDataRequest:=TDataRequest_UT70C.Create(Self.fDataSubject.RS232,Self);
+// fRS232DataRequest:=fDataRequest;
 end;
 
-procedure TUT70BShow.MetterDataShow;
+procedure TUT70C.CreateDataSubject(CP: TComPort);
 begin
-  inherited MetterDataShow;
-
-  DiapazoneMode.OnClick:=nil;
-  IndexToRadioGroup(ord((RS232Meter as TUT70B).fAUTO),DiapazoneMode);
-  DiapazoneMode.OnClick:=AdapterDiapazoneMode.RadioGroupClick;
-
-  if (RS232Meter as TUT70B).fOUT then
-     begin
-      DataLabel.Caption:='     .OL';
-     end;
-
-
+  fDataSubject:=TDataSubject_UT70C.Create(CP);
 end;
 
-{ TUT70C }
-
-constructor TUT70C.Create(CP: TComPort; Nm: string);
-begin
-  inherited Create(CP,Nm);
- fComPacket.StartString := UT70C_PacketBeginChar;
- fComPacket.StopString := UT70C_PacketEndChar;
-end;
-
-procedure TUT70C.DiapazonDetermination(Data: array of byte);
+procedure TUT70C.DiapazonDetermination;
 begin
   fDiapazon:=-1;
-  fAUTO:=((Data[1] and $40)=0);
-  fDiapazon:=((Data[1] shr 3) and $07);
+  fAUTO:=((fData[1] and $40)=0);
+  fDiapazon:=((fData[1] shr 3) and $07);
   if fDiapazon>7 then fDiapazon:=-1;
   if (fMeasureMode=ord(S_c))or(fMeasureMode=ord(P_c))
                 then fDiapazon:=0;
-  if (Data[0] in [40,41,112]) then fDiapazon:=fDiapazon+2;
+  if (fData[0] in [40,41,112]) then fDiapazon:=fDiapazon+2;
 end;
 
 procedure TUT70C.DiapazonFilling(DiapazonNumber: byte;
@@ -530,6 +625,7 @@ begin
   for D := D_Begin to D_End
         do fDiapazonAll[DiapazonNumber][ord(D)-ord(D_Begin)]:=UT70C_DiapazonsLabels[D];
 end;
+
 
 procedure TUT70C.DiapazonsFilling;
 begin
@@ -558,150 +654,14 @@ begin
   DiapazonFilling(10, nS80, nS80);
 end;
 
-procedure TUT70C.MeasurementTypesFilling;
-var
-  MT: TUT70_MeasurementType;
-begin
-  SetLength(fMeasurementTypeAll, ord(High(UT70_MeasureTypeLabels)) + 1);
-  for MT := Low(TUT70_MeasurementType) to High(TUT70_MeasurementType) do
-    fMeasurementTypeAll[ord(MT)] := UT70_MeasureTypeLabels[MT];
-end;
 
-function TUT70C.MeasureModeLabelRead: string;
-begin
- Result:='';
- if (fMeasureMode=ord(IA_c))or(fMeasureMode=ord(ID_c))
-    then Result:=' A';
- if (fMeasureMode=ord(UA_c))or(fMeasureMode=ord(UD_c))
-    then Result:=' V';
- if (fMeasureMode=ord(S_c)) then Result:='S';
- if (fMeasureMode=ord(F_c)) then Result:='Hz';
- if (fMeasureMode=ord(M_c)) then Result:=' %';
- if (fMeasureMode=ord(C_c)) then Result:=' F';
- if (fMeasureMode=ord(R_c)) then Result:=' R';
-end;
-
-procedure TUT70C.MeasureModesFilling;
-var
-  MM: TUT70C_MeasureMode;
-begin
-  SetLength(fMeasureModeAll, ord(High(UT70C_MeasureModeLabels)) + 1);
-  for MM := Low(TUT70C_MeasureMode) to High(TUT70C_MeasureMode) do
-    fMeasureModeAll[ord(MM)] := UT70C_MeasureModeLabels[MM];
-end;
-
-procedure TUT70C.MModeDetermination(Data: array of byte);
- var b,b2:byte;
-begin
-  fMeasureMode:=-1;
-  b:=Data[1] and $07;
-  if (b=0)and(Data[0]=97) then fMeasureMode:=ord(C_c);
-  if (b=4)and(Data[0] in [120,112,104,40,41,48,49])
-                          then fMeasureMode:=ord(F_c);
-  if (b=5)and(Data[0] in [120,112,104,40,41,48,49])
-                          then fMeasureMode:=ord(M_c);
-  if (b=2) then
-   case  Data[0] of
-     120:fMeasureMode:=ord(UA_c);
-     112,104:fMeasureMode:=ord(UD_c);
-     96:begin
-          b2:=(Data[2] and $04);
-          if b2>0 then fMeasureMode:=ord(P_c)
-                  else fMeasureMode:=ord(R_c);
-          if (b2=0)and(((Data[1] shr 3) and $07)=6)
-                  then fMeasureMode:=ord(S_c);
-        end;
-     88:fMeasureMode:=ord(D_c);
-     40,48:fMeasureMode:=ord(ID_c);
-     41,49:fMeasureMode:=ord(IA_c);
-   end;
-end;
-
-procedure TUT70C.NamesFilling;
-begin
-  inherited NamesFilling;
-  MeasurementTypesFilling;
-end;
-
-procedure TUT70C.PacketReceiving(Sender: TObject; const Str: string);
-  var i:integer;
-begin
-  SetLength(fData,Length(Str));
-  for I := 0 to High(fData) do
-    fData[i]:=ord(str[i+1]);
-
-  if High(fData)<>9 then Exit;
-  for i := 0 to 9 do
-    fData[i]:=(fData[i] and $7F);
-
-  for I := 4 to 8 do
-    fData[i]:=(fData[i] and $0F);
-
- fIsReceived:=True;
-end;
-
-procedure TUT70C.PushAcDc;
-begin
- PushButtom(173);
-end;
-
-procedure TUT70C.PushButtom(ByteToSend: Byte);
-begin
-  if fComPort.Connected then
-    begin
-     fComPort.AbortAllAsync;
-     fComPort.ClearBuffer(True, True);
-     fComPort.SetDTR(True);
-     SetLength(PacketToSend,1);
-     PacketToSend[0]:=ByteToSend;
-     fError:=(fComPort.Write(PacketToSend[0], 1)<>1);
-    end
-                        else
-     fError:=True;
-end;
-
-procedure TUT70C.PushHold;
-begin
-  PushButtom(165);
-end;
-
-procedure TUT70C.PushHz;
-begin
-  PushButtom(163);
-end;
-
-procedure TUT70C.PushMaxMin;
-begin
-   PushButtom(169);
-end;
-
-procedure TUT70C.PushPeak;
-begin
-   PushButtom(171);
-end;
-
-procedure TUT70C.PushRange;
-begin
-  PushButtom(161);
-end;
-
-procedure TUT70C.PushRel;
-begin
-   PushButtom(167);
-end;
-
-procedure TUT70C.Request;
-begin
- PushButtom(137);
-end;
-
-procedure TUT70C.MeasurementTypeDetermination(Data: array of Byte);
+procedure TUT70C.MeasurementTypeDetermination();
 var
   b: Byte;
 begin
   if fREC then
     begin
-      b:=((Data[2] shr 3) and $03);
+      b:=((fData[2] shr 3) and $03);
       if fms1 then
          case b of
           0:fMeasurementType:=MAXX;
@@ -717,26 +677,98 @@ begin
     end   else fMeasurementType:=CUR;
 end;
 
-procedure TUT70C.ValueDetermination(Data: array of byte);
+
+
+procedure TUT70C.MeasurementTypesFilling;
+var
+  MT: TUT70_MeasurementType;
+begin
+  SetLength(fMeasurementTypeAll, ord(High(UT70_MeasureTypeLabels)) + 1);
+  for MT := Low(TUT70_MeasurementType) to High(TUT70_MeasurementType) do
+    fMeasurementTypeAll[ord(MT)] := UT70_MeasureTypeLabels[MT];
+end;
+
+
+function TUT70C.MeasureModeLabelRead: string;
+begin
+ Result:='';
+ if (fMeasureMode=ord(IA_c))or(fMeasureMode=ord(ID_c))
+    then Result:=' A';
+ if (fMeasureMode=ord(UA_c))or(fMeasureMode=ord(UD_c))
+    then Result:=' V';
+ if (fMeasureMode=ord(S_c)) then Result:='S';
+ if (fMeasureMode=ord(F_c)) then Result:='Hz';
+ if (fMeasureMode=ord(M_c)) then Result:=' %';
+ if (fMeasureMode=ord(C_c)) then Result:=' F';
+ if (fMeasureMode=ord(R_c)) then Result:=' R';
+end;
+
+
+procedure TUT70C.MeasureModesFilling;
+var
+  MM: TUT70C_MeasureMode;
+begin
+  SetLength(fMeasureModeAll, ord(High(UT70C_MeasureModeLabels)) + 1);
+  for MM := Low(TUT70C_MeasureMode) to High(TUT70C_MeasureMode) do
+    fMeasureModeAll[ord(MM)] := UT70C_MeasureModeLabels[MM];
+end;
+
+
+procedure TUT70C.MModeDetermination();
+ var b,b2:byte;
+begin
+  fMeasureMode:=-1;
+  b:=fData[1] and $07;
+  if (b=0)and(fData[0]=97) then fMeasureMode:=ord(C_c);
+  if (b=4)and(fData[0] in [120,112,104,40,41,48,49])
+                          then fMeasureMode:=ord(F_c);
+  if (b=5)and(fData[0] in [120,112,104,40,41,48,49])
+                          then fMeasureMode:=ord(M_c);
+  if (b=2) then
+   case  fData[0] of
+     120:fMeasureMode:=ord(UA_c);
+     112,104:fMeasureMode:=ord(UD_c);
+     96:begin
+          b2:=(fData[2] and $04);
+          if b2>0 then fMeasureMode:=ord(P_c)
+                  else fMeasureMode:=ord(R_c);
+          if (b2=0)and(((fData[1] shr 3) and $07)=6)
+                  then fMeasureMode:=ord(S_c);
+        end;
+     88:fMeasureMode:=ord(D_c);
+     40,48:fMeasureMode:=ord(ID_c);
+     41,49:fMeasureMode:=ord(IA_c);
+   end;
+end;
+
+
+
+procedure TUT70C.NamesFilling;
+begin
+  inherited NamesFilling;
+  MeasurementTypesFilling;
+end;
+
+procedure TUT70C.ValueDetermination;
  var x:double;
 begin
  fValue:=ErResult;
 
- fREC:=((Data[2] and $40)>0);
+ fREC:=((fData[2] and $40)>0);
 
 
- fHOLD:=((Data[3] and $01)>0);
- fms1:=((Data[2] and $04)>0)and(fREC);
+ fHOLD:=((fData[3] and $01)>0);
+ fms1:=((fData[2] and $04)>0)and(fREC);
 
- MeasurementTypeDetermination(Data);
+ MeasurementTypeDetermination();
 
- fOUT:=((Data[3] and $08)>0);
+ fOUT:=((fData[3] and $08)>0);
  if fOUT then Exit;
 
 
- x:=Data[8]+10*Data[7]+100*Data[6]+1000*Data[5];
- if (fMeasureMode=ord(F_c))and(Data[4]<10)
-                   then x:=x+10000*Data[4];
+ x:=fData[8]+10*fData[7]+100*fData[6]+1000*fData[5];
+ if (fMeasureMode=ord(F_c))and(fData[4]<10)
+                   then x:=x+10000*fData[4];
 
  if fMeasureMode=ord(UA_c) then
       case fDiapazon of
@@ -809,12 +841,131 @@ begin
 
  if fMeasureMode=ord(M_c) then x:=x*0.01;
 
- if ((Data[3] and $10)>0) then fValue:=-1*x
+ if ((fData[3] and $10)>0) then fValue:=-1*x
                          else fValue:=x;
 
 end;
 
-{ TUT70CShow }
+procedure TUT70C.PushHold;
+begin
+  PushButtom(165);
+end;
+
+procedure TUT70C.PushHz;
+begin
+  PushButtom(163);
+end;
+
+procedure TUT70C.PushMaxMin;
+begin
+   PushButtom(169);
+end;
+
+procedure TUT70C.PushPeak;
+begin
+   PushButtom(171);
+end;
+
+procedure TUT70C.PushRange;
+begin
+  PushButtom(161);
+end;
+
+procedure TUT70C.PushRel;
+begin
+   PushButtom(167);
+end;
+
+procedure TUT70C.PushAcDc;
+begin
+ PushButtom(173);
+end;
+
+procedure TUT70C.PushButtom(ByteToSend: Byte);
+begin
+ (fDataRequest as TDataRequest_UT70C).PushButtom(ByteToSend);
+end;
+
+
+{ TRS232_UT70C }
+
+constructor TRS232_UT70C.Create(CP: TComPort);
+begin
+  inherited Create(CP,UT70C_PacketBeginChar,UT70C_PacketEndChar);
+end;
+
+{ TDataSubject_UT70C }
+
+procedure TDataSubject_UT70C.ComPortCreare(CP: TComPort);
+begin
+ fRS232:=TRS232_UT70C.Create(CP);
+end;
+
+{ TDataRequest_UT70C }
+
+function TDataRequest_UT70C.IsNoSuccessSend: Boolean;
+begin
+ Result:=(fRS232.ComPort.Write(PacketToSend[0], 1)<>1);
+end;
+
+procedure TDataRequest_UT70C.PushButtom(ByteToSend: Byte);
+begin
+  if fRS232.ComPort.Connected then
+    begin
+     PreparePort;
+     fRS232.ComPort.SetDTR(True);
+     PacketToSend[0]:=ByteToSend;
+     fRS232CustomDevice.Error:=IsNoSuccessSend;
+    end
+                        else
+     fRS232CustomDevice.Error:=True;
+end;
+
+procedure TDataRequest_UT70C.Request;
+begin
+  PushButtom(137);
+end;
+
+{ TUT70BShowNew }
+
+
+Constructor TUT70BShow.Create(UT70B: TUT70B;
+                              MM, R, DM: TRadioGroup;
+                              DL, UL: TLabel;
+                              MB: TButton;
+                              AB: TSpeedButton;
+                              TT: TTimer);
+begin
+ inherited Create(UT70B,MM,R,DL,UL,MB,AB,TT);
+ DiapazoneMode:=DM;
+ StringArrayToRadioGroup(UT70B.fDiapazoneModeAll,DiapazoneMode);
+ IndexToRadioGroup(1,DiapazoneMode);
+
+  AdapterDiapazoneMode:=TAdapterRadioGroupClick.Create(DiapazoneMode.Items.Count-1);
+  DiapazoneMode.OnClick:=AdapterDiapazoneMode.RadioGroupClick;
+  DiapazoneMode.onEnter:=AdapterDiapazoneMode.RadioGroupOnEnter;
+end;
+
+procedure TUT70BShow.Free;
+begin
+  AdapterDiapazoneMode.Free;
+  inherited Free;
+end;
+
+procedure TUT70BShow.MetterDataShow;
+begin
+  inherited MetterDataShow;
+  DiapazoneMode.OnClick:=nil;
+  IndexToRadioGroup(ord((RS232Meter as TUT70B).fAUTO),DiapazoneMode);
+  DiapazoneMode.OnClick:=AdapterDiapazoneMode.RadioGroupClick;
+
+  if (RS232Meter as TUT70B).fOUT then
+     begin
+      DataLabel.Caption:='     .OL';
+     end;
+end;
+
+{ TUT70CShowNew }
 
 constructor TUT70CShow.Create(UT70C: TUT70C;
                               MM, R, DM: TRadioGroup;
@@ -860,13 +1011,15 @@ begin
      MeasTypeLabel.Visible:=False;
     end;
 
-
   if (RS232Meter as TUT70B).fOUT then
      begin
       DataLabel.Caption:='     .OL';
      end;
-
-
 end;
+
+
+initialization
+   SetLength(PacketToSend,1);
+finalization
 
 end.

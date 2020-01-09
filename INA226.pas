@@ -4,8 +4,8 @@
 interface
 
 uses
-  ArduinoADC, ArduinoDevice, OlegShowTypes, ExtCtrls, StdCtrls, IniFiles, 
-  ArduinoDeviceShow, MDevice;
+  ArduinoADC, OlegShowTypes, ExtCtrls, StdCtrls, IniFiles, 
+  MDevice, ArduinoDeviceShow, ArduinoDeviceNew;
 
 type
 
@@ -399,7 +399,6 @@ begin
   inherited WriteToIniFile(ConfigFile);
   fRshShow.WriteToIniFile(ConfigFile);
   fTimeFactorShow.WriteToIniFile(ConfigFile);
-//  HelpForMe(Pins.Name+Pins.Name);
 end;
 
 { TINA226_ADS1115_Chanel }

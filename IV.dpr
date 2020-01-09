@@ -3,7 +3,6 @@ program IV;
 uses
   Forms,
   IVchar_main in 'IVchar_main.pas' {IVchar},
-  ArduinoDevice in 'ArduinoDevice.pas',
   PacketParameters in 'PacketParameters.pas',
   Measurement in 'Measurement.pas',
   TempThread in 'TempThread.pas',
@@ -14,7 +13,6 @@ uses
   TemperatureSensor in 'TemperatureSensor.pas',
   AD5752R in 'AD5752R.pas',
   DACR2R in 'DACR2R.pas',
-  UT70 in 'UT70.pas',
   HighResolutionTimer in 'HighResolutionTimer.pas',
   RS232_Meas_Tread in 'RS232_Meas_Tread.pas',
   ET1255 in 'ET1255.pas',
@@ -25,9 +23,6 @@ uses
   MCP3424 in 'MCP3424.pas',
   ArduinoADC in 'ArduinoADC.pas',
   ADS1115 in 'ADS1115.pas',
-  AD9833 in 'AD9833.pas',
-  ArduinoDeviceShow in 'ArduinoDeviceShow.pas',
-  GDS_806S in 'GDS_806S.pas',
   MLX90615 in 'MLX90615.pas',
   INA226 in 'INA226.pas',
   OlegDevice in 'OlegDevice.pas',
@@ -35,11 +30,11 @@ uses
   TMP102 in 'TMP102.pas',
   MCP9808 in 'MCP9808.pas',
   RS232deviceNew in 'RS232deviceNew.pas',
-  UT70new in 'UT70new.PAS',
-  GDS_806Snew in 'GDS_806Snew.pas',
+  UT70 in 'UT70.PAS',
+  GDS_806S in 'GDS_806S.pas',
   ArduinoDeviceNew in 'ArduinoDeviceNew.pas',
-  ArduinoDeviceShowNew in 'ArduinoDeviceShowNew.pas',
-  AD9833new in 'AD9833new.pas';
+  ArduinoDeviceShow in 'ArduinoDeviceShow.pas',
+  AD9833 in 'AD9833.pas';
 
 {$R *.res}
 

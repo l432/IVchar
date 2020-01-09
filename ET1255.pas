@@ -276,7 +276,8 @@ end;
 implementation
 
 uses
-  Dialogs, SysUtils, Windows, Forms, OlegGraph, OlegMath, HighResolutionTimer;
+  Dialogs, SysUtils, Windows, Forms, OlegGraph, OlegMath, HighResolutionTimer, 
+  RS232deviceNew;
 
 { TET1255_DAC }
 

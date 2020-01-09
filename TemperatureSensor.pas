@@ -3,12 +3,11 @@ unit TemperatureSensor;
 interface
 
 uses
-  ArduinoDevice, CPort, Measurement, RS232device, OlegTypePart2, 
+  CPort, Measurement, RS232device, OlegTypePart2, 
   ArduinoDeviceNew;
 
 
 type
-//  TTempSensor=class(TArduinoMeter,ITemperatureMeasurement)
   TTempSensor=class(TArduinoMeterNew,ITemperatureMeasurement)
   {базовий клас для датчиків температури}
   protected
@@ -22,7 +21,6 @@ type
   protected
    procedure PinsCreate();override;
   public
-//   Constructor Create(CP:TComPort;Nm:string);//override;
    Constructor Create(Nm:string);//override;
   end;
 
@@ -32,7 +30,6 @@ type
   protected
    procedure PinsCreate();override;
   public
-//   Constructor Create(CP:TComPort;Nm:string);//override;
    Constructor Create(Nm:string);//override;
    Procedure ConvertToValue();override;
   end;
@@ -43,7 +40,6 @@ type
     Function CRCCorrect():boolean;
   public
    Procedure PacketCreateToSend();override;
-//   Constructor Create(CP:TComPort;Nm:string);//override;
    Constructor Create(Nm:string);//override;
    Procedure ConvertToValue();override;
   end;
@@ -52,7 +48,6 @@ type
   {базовий клас для датчика STS21}
   protected
   public
-//   Constructor Create(CP:TComPort;Nm:string);//override;
    Constructor Create(Nm:string);//override;
   end;
 
@@ -88,10 +83,8 @@ uses
 
 { TDS18B20 }
 
-//constructor TDS18B20.Create(CP:TComPort;Nm:string);
 constructor TDS18B20.Create(Nm:string);
 begin
-//  inherited Create(CP,Nm);
   inherited Create(Nm);
 
   fMetterKod:=DS18B20Command;
@@ -183,7 +176,6 @@ end;
 
 function TTempSensor.GetTemperature: double;
 begin
-//  HelpForMe(inttostr(MilliSecond));
   Result:=Measurement();
 end;
 
@@ -213,10 +205,8 @@ begin
  Result:= (CRC8(fData,$31)=0);
 end;
 
-//constructor THTU21D.Create(CP: TComPort; Nm: string);
 constructor THTU21D.Create(Nm: string);
 begin
-//  inherited Create(CP,Nm);
   inherited Create(Nm);
 
   fMetterKod:=HTU21DCommand;
@@ -235,10 +225,8 @@ end;
 
 { TSTS21 }
 
-//constructor TSTS21.Create(CP: TComPort; Nm: string);
 constructor TSTS21.Create(Nm: string);
 begin
-//  inherited Create(CP,Nm);
   inherited Create(Nm);
 
   fMetterKod:=STS21Command;
@@ -248,10 +236,8 @@ end;
 
 { TTempSensor_I2C }
 
-//constructor TTempSensor_I2C.Create(CP: TComPort; Nm: string);
 constructor TTempSensor_I2C.Create(Nm: string);
 begin
-//  inherited Create(CP,Nm);
   inherited Create(Nm);
   SetLength(Pins.fPins,1);
   RepeatInErrorCase:=True;

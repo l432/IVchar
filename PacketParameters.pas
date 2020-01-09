@@ -70,7 +70,7 @@ Function CRC8(Data:array of byte;poly:byte=$07):byte;
 implementation
 
 uses
-  HighResolutionTimer, ArduinoDevice, OlegFunction;
+  HighResolutionTimer,  OlegFunction, ArduinoDeviceNew;
 
 Procedure PacketCreate( Args: array of byte);
 var i,ProblemByteNumber,counter:byte;

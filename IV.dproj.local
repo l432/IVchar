@@ -40,5 +40,18 @@
     <Transaction>2020.01.07 20:29:13.296.pas,D:\oleg\IVchar\Unit1.pas=D:\oleg\IVchar\ArduinoDeviceNew.pas</Transaction>
     <Transaction>2020.01.08 13:46:51.593.pas,D:\oleg\IVchar\Unit1.pas=D:\oleg\IVchar\ArduinoDeviceShowNew.pas</Transaction>
     <Transaction>2020.01.08 13:55:58.921.pas,D:\oleg\IVchar\Unit1.pas=D:\oleg\IVchar\AD9833new.pas</Transaction>
+    <Transaction>2020.01.09 22:30:22.218.pas,D:\oleg\IVchar\AD9833.pas=</Transaction>
+    <Transaction>2020.01.09 22:34:15.203.pas,D:\oleg\IVchar\AD9833new.pas=D:\oleg\IVchar\AD9833.pas</Transaction>
+    <Transaction>2020.01.09 23:08:40.015.pas,D:\oleg\IVchar\ArduinoDeviceShow.pas=</Transaction>
+    <Transaction>2020.01.09 23:11:01.921.pas,D:\oleg\IVchar\ArduinoDeviceShowNew.pas=D:\oleg\IVchar\ArduinoDeviceShow.pas</Transaction>
+    <Transaction>2020.01.09 23:21:58.703.pas,D:\oleg\IVchar\GDS_806S.pas=</Transaction>
+    <Transaction>2020.01.09 23:22:54.234.pas,D:\oleg\IVchar\GDS_806Snew.pas=D:\oleg\IVchar\GDS_806S.pas</Transaction>
+    <Transaction>2020.01.09 23:48:06.156.pas,D:\oleg\IVchar\UT70.pas=</Transaction>
+    <Transaction>2020.01.09 23:48:43.953.PAS,D:\oleg\IVchar\UT70new.PAS=D:\oleg\IVchar\UT70.PAS</Transaction>
+    <Transaction>2020.01.10 00:04:45.546.pas,D:\oleg\IVchar\ArduinoDevice.pas=</Transaction>
+    <Transaction>2020.01.10 00:07:06.937.pas,D:\oleg\IVchar\ArduinoDeviceNew.pas=D:\oleg\IVchar\ArduinoDevice.pas</Transaction>
+    <Transaction>2020.01.10 00:31:47.734.pas,D:\oleg\IVchar\ArduinoDevice.pas=D:\oleg\IVchar\ArduinoDeviceNew.pas</Transaction>
+    <Transaction>2020.01.10 00:38:59.406.pas,D:\oleg\IVchar\ArduinoDeviceNew.pas=D:\oleg\IVchar\ArduinoDevice.pas</Transaction>
+    <Transaction>2020.01.10 00:43:58.125.pas,D:\oleg\IVchar\ArduinoDevice.pas=D:\oleg\IVchar\ArduinoDeviceNew.pas</Transaction>
   </Transactions>
 </BorlandProject>

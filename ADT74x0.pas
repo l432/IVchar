@@ -13,7 +13,6 @@ type
  TADT74x0=class(TTempSensor_I2C)
   {базовий клас для датчиків ADT7420 та ADT7410}
   public
-//   Constructor Create(CP:TComPort;Nm:string);//override;
    Constructor Create();//override;
    Procedure ConvertToValue();override;
   end;
@@ -43,10 +42,8 @@ begin
 
 end;
 
-//constructor TADT74x0.Create(CP: TComPort; Nm: string);
 constructor TADT74x0.Create();
 begin
-//  inherited Create(CP,Nm);
   inherited Create('ADT74x0');
   fMetterKod:=ADT74x0Command;
   fMinDelayTime:=240;

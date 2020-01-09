@@ -3,8 +3,8 @@ unit D30_06;
 interface
 
 uses
-  ArduinoDevice, StdCtrls, Measurement, ExtCtrls, IniFiles, Classes, ShowTypes, 
-  ArduinoDeviceShow, ArduinoDeviceNew;
+   StdCtrls, Measurement, ExtCtrls, IniFiles, Classes, ShowTypes, 
+   ArduinoDeviceNew;
 
 const D30_06_MaxVoltage=28.75;
       D30_06_MaxCurrent=5.56;
@@ -17,7 +17,6 @@ const D30_06_MaxVoltage=28.75;
 
 type
 
-//TD30_06=class(TArduinoDAC)
 TD30_06=class(TArduinoDACnew)
  private
   fCurrentMaxValue:double;
@@ -35,8 +34,7 @@ TD30_06=class(TArduinoDACnew)
 end;
 
 
-//TD30_06Show=class(TArduinoDACShow)
-TD30_06Show=class(TArduinoDACShowNew)
+TD30_06Show=class(TArduinoDACShow)
 private
  VoltageOrCurrentRG:TRadioGroup;
  ValueDiapazonLabel:TLabel;
@@ -53,7 +51,6 @@ private
                      VSB, KSB, RB: TButton;
                      PinVariants:TStringList;
                      VOCRG: TRadioGroup);
-// procedure ReadFromIniFile(ConfigFile:TIniFile);override;
  Procedure HookReadFromIniFile(ConfigFile:TIniFile);override;
  Procedure WriteToIniFile(ConfigFile:TIniFile);override;
 end;
@@ -65,7 +62,7 @@ var
 implementation
 
 uses
-  SysUtils, Dialogs;
+  SysUtils, Dialogs, ArduinoDeviceShow;
 
 { TD30_06 }
 

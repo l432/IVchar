@@ -5,155 +5,155 @@ interface
 uses
   RS232device, CPort, ShowTypes, StdCtrls, Classes, IniFiles, OlegType,
   Measurement, Buttons, ExtCtrls, Series, PacketParameters, OlegTypePart2,
-  OlegShowTypes, OlegVector, GDS_806S, RS232deviceNew;
+  OlegShowTypes, OlegVector, RS232deviceNew;
 
-//type
-//
-// TGDS_Settings=(gds_mode,gds_rl,gds_an,gds_ts,
-//                gds_ch1_coup,gds_ch1_prob,gds_ch1_mtype,gds_ch1_scale,
-//                gds_ch2_coup,gds_ch2_prob,gds_ch2_mtype,gds_ch2_scale);
-//
-// TGDS_ModeSym=(gds_msam,gds_mpd,gds_maver);
-// TGDS_Mode=0..2;
-//
-// TGDS_Channel=1..2;
-// TGDS_MemoryAdress=1..15;
-//
-// TGDS_RecordLengthSym=(gds_rl500,gds_rl1250,gds_rl2500,
-//                    gds_r5000,gds_rl12500,gds_rl25000,
-//                    gds_rl50000,gds_rl125000);
-// TGDS_RecordLength=0..7;
-//
-// TGDS_AverageNumber=0..8;
-// TGDS_AverageNumberSym=(gds_an1,
-//                    gds_an2,
-//                    gds_an4,
-//                    gds_an8,
-//                    gds_an16,
-//                    gds_an32,
-//                    gds_an64,
-//                    gds_an128,
-//                    gds_an256);
-//
-// TGDS_ChanCoupl=0..2;
-// TGDS_ChanCouplSym=(gds_ccAC, gds_ccDC, gds_ccGRN);
-//
-// TGDS_TimeScale=0..30;
-// TGDS_TimeScaleSym=(gds_ts1ns,gds_ts2_5ns,gds_ts5ns,gds_ts10ns,gds_ts25ns,
-//                 gds_ts50ns,gds_ts100ns,gds_ts250ns,gds_ts500ns,gds_ts1us,
-//                 gds_ts2_5us,gds_ts5us,gds_ts10us,gds_ts25us,gds_ts50us,
-//                 gds_ts100us,gds_ts250us,gds_ts500us,gds_ts1ms,gds_ts2_5ms,
-//                 gds_ts5ms,gds_ts10ms,gds_ts25ms,gds_ts50ms,gds_ts100ms,
-//                 gds_ts250ms,gds_ts500ms,gds_ts1s,gds_ts2_5s,gds_ts5s,gds_ts10s);
-//
-// TGDS_VoltageScale=0..16;
-// TGDS_VoltageScaleSym=(gds_vs2mV,gds_vs5mV,gds_vs10mV,gds_vs20mV,gds_vs50mV,
-//                 gds_vs100mV,gds_vs200mV,gds_vs500mV,gds_vs1V,
-//                 gds_vs2V,gds_vs5V,gds_vs10V,gds_vs20V,gds_vs50V,
-//                 gds_vs100V,gds_vs200V,gds_vs500V);
-//
-// TGDS_Probe=0..2;
-// TGDS_ProbeSym=(gds_p1X,gds_p10X,gds_p100X);
-//
-// TGDS_MeasureType=0..14;
-// TGDS_MeasureTypeSym=(gds_m_ft,gds_m_fr,gds_m_npt,gds_m_dr,gds_m_pr,
-//              gds_m_ppt,gds_m_rt,gds_m_vamp,gds_m_avv,gds_m_hv,
-//              gds_m_lv,gds_m_maxamp,gds_m_minamp,gds_m_vpp,gds_m_rms);
-//
-//
-//
-//const
-//  TestShow=False;
-//
-//  GDS_806S_PacketBeginChar='';
-//  GDS_806S_PacketEndChar=#10;
-//
-//  GDS_806S_Test='GW,GDS-806S,EF211754,V1.10';
-//
-//  RootNood:array[0..12]of string=
-//  ('*idn?','*rcl','*rst','*sav',':acq',':aut',':chan',':meas',':refr',
-////   0       1      2      3      4      5       6       7      8
-//  ':run',':stop','syst:unl',':tim:scal');
-////  9       10     11           12
-//
-//  FirstNode_4:array[0..3]of string=
-//  ('aver','leng','mod','mem');
-////   0      1     2      3
-//
-//  FirstNode_6:array[0..5]of string=
-//  ('coup','disp','inv','offs','prob','scal');
-////   0      1     2      3       4      5
-//
-//  FirstNode_7:array[0..15]of string=
-//  ('fall','freq','nwid','pdut','per','pwid','ris',
-////   0      1     2      3       4      5     6
-//   'vamp','vav','vhi','vlo','vmax','vmin','vpp','vrms','sour');
-////   7      8     9     10    11     12     13    14     15
-//
-//  OperationKod:array [TGDS_Settings] of array[0..2] of byte=
-////                  RootNood  FirstNode  VariantsNumber
-//{gds_mode}        ((   4,         2,           3),
-//{gds_rl}           (   4,         1,           8),
-//{gds_an}           (   4,         0,           9),
-//{gds_ts}           (   12,        0,           31),
-//{gds_ch1_coup}     (   6,         0,           3),
-//{gds_ch1_prob}     (   6,         4,           3),
-//{gds_ch1_mtype}    (   7,         0,           15),
-//{gds_ch1_scale}    (   6,         5,           17),
-//{gds_ch2_coup}     (   6,         0,           3),
-//{gds_ch2_prob}     (   6,         4,           3),
-//{gds_ch2_mtype}    (   7,         0,           15),
-//{gds_ch2_scale}    (   6,         5,           17));
-//
-//
-//
-//  GDS_MeasureTypeLabels:array[TGDS_MeasureType]of string=
-//   ('Falling time','Frequency','Negative pulse timing',
-//   'Duty ratio','Period','Positive pulse timing','Rising time',
-//   'Voltage amplitude','Average voltage','High voltage',
-//   'Low voltage','Maximum amplitude','Minimum amplitude',
-//   'Peak-to-peak voltage','Root mean square');
-//
-//  GDS_ModeLabels:array[TGDS_Mode]of string=
-//    ('Sample','Peak detection','Average');
-//
-//  GDS_RecordLengthData:array[TGDS_RecordLength]of integer=
-//    (500,1250,2500,5000,12500,25000,50000,125000);
-//
-//  GDS_ChanCouplLabels:array[TGDS_ChanCoupl]of string=
-//   ('AC','DC','GRN');
-//
-//  GDS_ProbeLabels:array[TGDS_Probe]of string=
-//   ('1X','10X','100X');
-//
-//  GDS_TimeScaleLabels:array[TGDS_TimeScale]of string=
-//   ('1.000ns','2.500ns','5.000ns','10.00ns',
-//   '25.00ns','50.00ns','100.0ns','250.0ns',
-//   '500.0ns','1.000us','2.500us','5.000us',
-//   '10.00us','25.00us','50.00us','100.0us',
-//   '250.0us','500.0us','1.000ms','2.500ms',
-//   '5.000ms','10.00ms','25.00ms','50.00ms',
-//   '100.0ms','250.0ms','500.0ms','1.000s',
-//   '2.500s','5.000s','10.00s');
-//
-//  GDS_TimeScaleData:array[TGDS_TimeScale]of string=
-//   ('1e-9','2.5e-9','5e-9','10e-9','25e-9','50e-9','100e-9','250e-9',
-//   '500e-9','1e-6','2.5e-6','5e-6','10e-6','25e-6','50e-6','100e-6',
-//   '250e-6','500e-6','1e-3','2.5e-3','5e-3','10e-3','25e-3','50e-3',
-//   '100e-3','250e-3','500e-3','1','2.5','5','10');
-//
-// GDS_VoltageScaleLabels:array[TGDS_VoltageScale]of string=
-// ('2.00mV','5.00mV','10.0mV','20.0mV','50.0mV','100mV',
-// '200mV','500mV','1.00V','2.00V','5.00V',
-// '10.0V','20.0V','50.0V','100V','200V','500V');
-//
-// GDS_VoltageScaleData:array[TGDS_VoltageScale]of string=
-// ('0.002','0.005','0.01','0.02','0.05','0.1','0.2',
-// '0.5','1','2','5','10','20','50','100','200','500');
-//
-//
-//
-//  ButtonNumber = 10;
+type
+
+ TGDS_Settings=(gds_mode,gds_rl,gds_an,gds_ts,
+                gds_ch1_coup,gds_ch1_prob,gds_ch1_mtype,gds_ch1_scale,
+                gds_ch2_coup,gds_ch2_prob,gds_ch2_mtype,gds_ch2_scale);
+
+ TGDS_ModeSym=(gds_msam,gds_mpd,gds_maver);
+ TGDS_Mode=0..2;
+
+ TGDS_Channel=1..2;
+ TGDS_MemoryAdress=1..15;
+
+ TGDS_RecordLengthSym=(gds_rl500,gds_rl1250,gds_rl2500,
+                    gds_r5000,gds_rl12500,gds_rl25000,
+                    gds_rl50000,gds_rl125000);
+ TGDS_RecordLength=0..7;
+
+ TGDS_AverageNumber=0..8;
+ TGDS_AverageNumberSym=(gds_an1,
+                    gds_an2,
+                    gds_an4,
+                    gds_an8,
+                    gds_an16,
+                    gds_an32,
+                    gds_an64,
+                    gds_an128,
+                    gds_an256);
+
+ TGDS_ChanCoupl=0..2;
+ TGDS_ChanCouplSym=(gds_ccAC, gds_ccDC, gds_ccGRN);
+
+ TGDS_TimeScale=0..30;
+ TGDS_TimeScaleSym=(gds_ts1ns,gds_ts2_5ns,gds_ts5ns,gds_ts10ns,gds_ts25ns,
+                 gds_ts50ns,gds_ts100ns,gds_ts250ns,gds_ts500ns,gds_ts1us,
+                 gds_ts2_5us,gds_ts5us,gds_ts10us,gds_ts25us,gds_ts50us,
+                 gds_ts100us,gds_ts250us,gds_ts500us,gds_ts1ms,gds_ts2_5ms,
+                 gds_ts5ms,gds_ts10ms,gds_ts25ms,gds_ts50ms,gds_ts100ms,
+                 gds_ts250ms,gds_ts500ms,gds_ts1s,gds_ts2_5s,gds_ts5s,gds_ts10s);
+
+ TGDS_VoltageScale=0..16;
+ TGDS_VoltageScaleSym=(gds_vs2mV,gds_vs5mV,gds_vs10mV,gds_vs20mV,gds_vs50mV,
+                 gds_vs100mV,gds_vs200mV,gds_vs500mV,gds_vs1V,
+                 gds_vs2V,gds_vs5V,gds_vs10V,gds_vs20V,gds_vs50V,
+                 gds_vs100V,gds_vs200V,gds_vs500V);
+
+ TGDS_Probe=0..2;
+ TGDS_ProbeSym=(gds_p1X,gds_p10X,gds_p100X);
+
+ TGDS_MeasureType=0..14;
+ TGDS_MeasureTypeSym=(gds_m_ft,gds_m_fr,gds_m_npt,gds_m_dr,gds_m_pr,
+              gds_m_ppt,gds_m_rt,gds_m_vamp,gds_m_avv,gds_m_hv,
+              gds_m_lv,gds_m_maxamp,gds_m_minamp,gds_m_vpp,gds_m_rms);
+
+
+
+const
+  TestShow=False;
+
+  GDS_806S_PacketBeginChar='';
+  GDS_806S_PacketEndChar=#10;
+
+  GDS_806S_Test='GW,GDS-806S,EF211754,V1.10';
+
+  RootNood:array[0..12]of string=
+  ('*idn?','*rcl','*rst','*sav',':acq',':aut',':chan',':meas',':refr',
+//   0       1      2      3      4      5       6       7      8
+  ':run',':stop','syst:unl',':tim:scal');
+//  9       10     11           12
+
+  FirstNode_4:array[0..3]of string=
+  ('aver','leng','mod','mem');
+//   0      1     2      3
+
+  FirstNode_6:array[0..5]of string=
+  ('coup','disp','inv','offs','prob','scal');
+//   0      1     2      3       4      5
+
+  FirstNode_7:array[0..15]of string=
+  ('fall','freq','nwid','pdut','per','pwid','ris',
+//   0      1     2      3       4      5     6
+   'vamp','vav','vhi','vlo','vmax','vmin','vpp','vrms','sour');
+//   7      8     9     10    11     12     13    14     15
+
+  OperationKod:array [TGDS_Settings] of array[0..2] of byte=
+//                  RootNood  FirstNode  VariantsNumber
+{gds_mode}        ((   4,         2,           3),
+{gds_rl}           (   4,         1,           8),
+{gds_an}           (   4,         0,           9),
+{gds_ts}           (   12,        0,           31),
+{gds_ch1_coup}     (   6,         0,           3),
+{gds_ch1_prob}     (   6,         4,           3),
+{gds_ch1_mtype}    (   7,         0,           15),
+{gds_ch1_scale}    (   6,         5,           17),
+{gds_ch2_coup}     (   6,         0,           3),
+{gds_ch2_prob}     (   6,         4,           3),
+{gds_ch2_mtype}    (   7,         0,           15),
+{gds_ch2_scale}    (   6,         5,           17));
+
+
+
+  GDS_MeasureTypeLabels:array[TGDS_MeasureType]of string=
+   ('Falling time','Frequency','Negative pulse timing',
+   'Duty ratio','Period','Positive pulse timing','Rising time',
+   'Voltage amplitude','Average voltage','High voltage',
+   'Low voltage','Maximum amplitude','Minimum amplitude',
+   'Peak-to-peak voltage','Root mean square');
+
+  GDS_ModeLabels:array[TGDS_Mode]of string=
+    ('Sample','Peak detection','Average');
+
+  GDS_RecordLengthData:array[TGDS_RecordLength]of integer=
+    (500,1250,2500,5000,12500,25000,50000,125000);
+
+  GDS_ChanCouplLabels:array[TGDS_ChanCoupl]of string=
+   ('AC','DC','GRN');
+
+  GDS_ProbeLabels:array[TGDS_Probe]of string=
+   ('1X','10X','100X');
+
+  GDS_TimeScaleLabels:array[TGDS_TimeScale]of string=
+   ('1.000ns','2.500ns','5.000ns','10.00ns',
+   '25.00ns','50.00ns','100.0ns','250.0ns',
+   '500.0ns','1.000us','2.500us','5.000us',
+   '10.00us','25.00us','50.00us','100.0us',
+   '250.0us','500.0us','1.000ms','2.500ms',
+   '5.000ms','10.00ms','25.00ms','50.00ms',
+   '100.0ms','250.0ms','500.0ms','1.000s',
+   '2.500s','5.000s','10.00s');
+
+  GDS_TimeScaleData:array[TGDS_TimeScale]of string=
+   ('1e-9','2.5e-9','5e-9','10e-9','25e-9','50e-9','100e-9','250e-9',
+   '500e-9','1e-6','2.5e-6','5e-6','10e-6','25e-6','50e-6','100e-6',
+   '250e-6','500e-6','1e-3','2.5e-3','5e-3','10e-3','25e-3','50e-3',
+   '100e-3','250e-3','500e-3','1','2.5','5','10');
+
+ GDS_VoltageScaleLabels:array[TGDS_VoltageScale]of string=
+ ('2.00mV','5.00mV','10.0mV','20.0mV','50.0mV','100mV',
+ '200mV','500mV','1.00V','2.00V','5.00V',
+ '10.0V','20.0V','50.0V','100V','200V','500V');
+
+ GDS_VoltageScaleData:array[TGDS_VoltageScale]of string=
+ ('0.002','0.005','0.01','0.02','0.05','0.1','0.2',
+ '0.5','1','2','5','10','20','50','100','200','500');
+
+
+
+  ButtonNumber = 10;
 
 type
 

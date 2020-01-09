@@ -3,8 +3,8 @@ unit ADS1115;
 interface
 
 uses
-  ArduinoDevice, StdCtrls, ExtCtrls, ArduinoADC, Classes, MDevice, 
-  ArduinoDeviceShow;
+  StdCtrls, ExtCtrls, ArduinoADC, Classes, MDevice, 
+  ArduinoDeviceShow, ArduinoDeviceNew;
 
 type
 
@@ -194,8 +194,8 @@ TPins_ADS1115_Chanel=class(TPinsForCustomValues)
   procedure SetModuleParameters;override;
   procedure PinsCreate;override;
  public
-  Constructor Create(ChanelNumber: TADS1115_ChanelNumber;
-                      ADS1115_Module: TADS1115_Module);//override;
+//  Constructor Create(ChanelNumber: TADS1115_ChanelNumber;
+//                      ADS1115_Module: TADS1115_Module);//override;
  end;
 
  TADS1115_ChannelShow=class(TPinsShowUniversal)
@@ -367,11 +367,11 @@ end;
 
 { TADS1115_Channel }
 
-constructor TADS1115_Channel.Create(ChanelNumber: TADS1115_ChanelNumber;
-  ADS1115_Module: TADS1115_Module);
-begin
-  inherited Create(ChanelNumber,ADS1115_Module);
-end;
+//constructor TADS1115_Channel.Create(ChanelNumber: TADS1115_ChanelNumber;
+//  ADS1115_Module: TADS1115_Module);
+//begin
+//  inherited Create(ChanelNumber,ADS1115_Module);
+//end;
 
 procedure TADS1115_Channel.PinsCreate;
 begin

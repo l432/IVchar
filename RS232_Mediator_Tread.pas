@@ -3,7 +3,7 @@ unit RS232_Mediator_Tread;
 interface
 
 uses
-  RS232device,  Measurement, HighResolutionTimer, ArduinoDevice, CPort, 
+  RS232device,  Measurement, HighResolutionTimer, CPort, 
   ArduinoDeviceNew;
 
 Const
@@ -31,7 +31,7 @@ var
 implementation
 
 uses
-  Windows, Forms;
+  Windows, Forms, RS232deviceNew;
 
 
 { RS232_Mediator }

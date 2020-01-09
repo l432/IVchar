@@ -13,7 +13,6 @@ type
  TMCP9808=class(TTempSensor_I2C)
   {базовий клас для датчика MCP9808}
   public
-//   Constructor Create(CP:TComPort;Nm:string);
    Constructor Create();
    Procedure ConvertToValue();override;
   end;
@@ -41,15 +40,11 @@ begin
 
 end;
 
-//constructor TMCP9808.Create(CP: TComPort; Nm: string);
 constructor TMCP9808.Create();
 begin
   inherited Create('MCP9808');
   fMetterKod:=MCP9808Command;
-//  SetLength(Pins.fPins,1);
   fMinDelayTime:=250;
-//  RepeatInErrorCase:=True;
-//  fDelayTimeStep:=2;
 end;
 
 initialization

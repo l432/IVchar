@@ -2,12 +2,11 @@ unit ArduinoDeviceShow;
 
 interface
  uses OlegType,SysUtils,Classes,
-      StdCtrls, IniFiles,  ExtCtrls,  ArduinoDevice, ArduinoDeviceNew;
+      StdCtrls, IniFiles,  ExtCtrls,  ArduinoDeviceNew,
+  OlegTypePart2;
 
 
 type
-
-
 
   TAdapterSetButton=class
   private
@@ -51,7 +50,6 @@ type
 
   TArduinoPinChangerShow=class(TOnePinsShow)
   protected
-//   ArduinoPinChanger:TArduinoPinChanger;
    ArduinoPinChanger:TArduinoPinChangerNew;
    ToChangeButton:TButton;
    fLowStateButtonCaption:string;
@@ -59,7 +57,6 @@ type
    procedure CaptionButtonSynhronize();
    procedure ToChangeButtonClick(Sender: TObject);
   public
-//   Constructor Create(APC:TArduinoPinChanger;
    Constructor Create(APC:TArduinoPinChangerNew;
                       ControlPinLabel:TPanel;
                       TCBut:TButton;
@@ -70,20 +67,22 @@ type
 
   end;
 
-  TArduinoSetterShow=class
+  TArduinoSetterShow=class(TSimpleFreeAndAiniObject)
   protected
-   fArduinoSetter:TArduinoSetter;
+   fArduinoSetter:TArduinoSetterNew;
+
    PinShow:TPinsShowUniversal;
    procedure CreatePinShow(PinLs: array of TPanel;
                    PinVariant:TStringList);virtual;
   public
-   Constructor Create(ArdSet:TArduinoSetter;
+   Constructor Create(ArdSet:TArduinoSetterNew;
                        PinLs: array of TPanel;
                        PinVariant:TStringList);
-   Procedure Free;
-   procedure ReadFromIniFile(ConfigFile:TIniFile);virtual;
-   procedure ReadFromIniFileAndToForm(ConfigFile:TIniFile);
-   Procedure WriteToIniFile(ConfigFile:TIniFile);virtual;
+   Procedure Free;override;
+   procedure ReadFromIniFile(ConfigFile:TIniFile);override;
+//   procedure ReadFromIniFileAndToForm(ConfigFile:TIniFile);
+   Procedure WriteToIniFile(ConfigFile:TIniFile);override;
+   Procedure HookReadFromIniFile(ConfigFile:TIniFile);virtual;
   end;
 
 implementation
@@ -132,7 +131,6 @@ begin
           else  ToChangeButton.Caption:='U-u-ps';
 end;
 
-//constructor TArduinoPinChangerShow.Create(APC: TArduinoPinChanger;
 constructor TArduinoPinChangerShow.Create(APC: TArduinoPinChangerNew;
                                           ControlPinLabel: TPanel;
                                           TCBut: TButton;
@@ -191,7 +189,7 @@ end;
 
 { TArduinoSetterShow }
 
-constructor TArduinoSetterShow.Create(ArdSet: TArduinoSetter;
+constructor TArduinoSetterShow.Create(ArdSet: TArduinoSetterNew;
                                      PinLs: array of TPanel;
                                      PinVariant:TStringList);
 begin
@@ -213,19 +211,27 @@ begin
  inherited Free;
 end;
 
-procedure TArduinoSetterShow.ReadFromIniFile(ConfigFile: TIniFile);
+procedure TArduinoSetterShow.HookReadFromIniFile(ConfigFile: TIniFile);
 begin
  PinShow.ReadFromIniFile(ConfigFile);
 end;
 
-procedure TArduinoSetterShow.ReadFromIniFileAndToForm(ConfigFile: TIniFile);
+procedure TArduinoSetterShow.ReadFromIniFile(ConfigFile: TIniFile);
 begin
- ReadFromIniFile(ConfigFile);
+ inherited ReadFromIniFile(ConfigFile);
+ HookReadFromIniFile(ConfigFile);
  PinShow.NumberPinShow;
 end;
 
+//procedure TArduinoSetterShowNew.ReadFromIniFileAndToForm(ConfigFile: TIniFile);
+//begin
+// ReadFromIniFile(ConfigFile);
+// PinShow.NumberPinShow;
+//end;
+
 procedure TArduinoSetterShow.WriteToIniFile(ConfigFile: TIniFile);
 begin
+  inherited WriteToIniFile(ConfigFile);
   PinShow.WriteToIniFile(ConfigFile);
 end;
 

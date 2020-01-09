@@ -14,7 +14,6 @@ type
  TTMP102=class(TTempSensor_I2C)
   {базовий клас для датчика TMP102}
   public
-//   Constructor Create(CP:TComPort;Nm:string);//override;
    Constructor Create();//override;
    Procedure ConvertToValue();override;
   end;
@@ -26,7 +25,7 @@ var
 implementation
 
 uses
-  OlegType, PacketParameters, ArduinoDevice;
+  OlegType, PacketParameters;
 
 { TTMP102 }
 
@@ -44,11 +43,9 @@ begin
                                 else fValue:=fValue+273.16;
 end;
 
-//constructor TTMP102.Create(CP: TComPort; Nm: string);
 constructor TTMP102.Create();
 begin
   inherited Create('TMP102');
-//  inherited Create(CP,Nm);
   fMetterKod:=TMP102Command;
   fMinDelayTime:=30;
 end;

@@ -3,9 +3,9 @@ unit GDS_806S;
 interface
 
 uses
-  RS232device, CPort, ShowTypes, StdCtrls, Classes, IniFiles, OlegType, 
-  Measurement, Buttons, ExtCtrls, Series, PacketParameters, OlegTypePart2, 
-  OlegShowTypes, OlegVector;
+  RS232device, CPort, ShowTypes, StdCtrls, Classes, IniFiles, OlegType,
+  Measurement, Buttons, ExtCtrls, Series, PacketParameters, OlegTypePart2,
+  OlegShowTypes, OlegVector, RS232deviceNew;
 
 type
 
@@ -157,7 +157,26 @@ const
 
 type
 
-  TGDS_806S=class(TRS232Meter)
+  TRS232_GDS=class(TRS232)
+    protected
+    public
+     Constructor Create(CP:TComPort);
+    end;
+
+  TDataSubject_GDS=class(TRS232DataSubjectSingle)
+    protected
+    procedure ComPortCreare(CP:TComPort);override;
+  end;
+
+  TDataRequest_GDS=class(TCDDataRequest)
+    protected
+     function IsNoSuccessSend:Boolean;override;
+    public
+     procedure Request;override;
+  end;
+
+
+  TGDS_806S=class(TRS232MeterDeviceSingle)
    private
      fSettings:array[TGDS_Settings]of byte;
      fActiveChannel:TGDS_Channel;
@@ -189,13 +208,15 @@ type
     function TwoByteToData(byte_High,byte_Low:byte):double;
   protected
      procedure PrepareString;
-     Procedure PacketReceiving(Sender: TObject; const Str: string);override;
+     procedure UpDate();override;
+     procedure CreateDataSubject(CP:TComPort);override;
+     procedure CreateDataRequest;override;
    public
     DataVectors:array[TGDS_Channel]of TVector;
     property ActiveChannel:TGDS_Channel read FActiveChannel write FActiveChannel;
-    Constructor Create(CP:TComPort;Nm:string);
+    Constructor Create(CP:TComPort;Nm:string);overload;
+    Constructor Create(CP:TComPort);overload;
     procedure Free;override;
-    procedure Request();override;
 
     procedure SetMode(mode: Byte);overload;
     procedure SetMode(mode: TGDS_ModeSym);overload;
@@ -378,13 +399,16 @@ end;
 
 var
   StringToSend:string;
+  GDS_806Snw:TGDS_806S;
+  GDS_806Snew_Channel:array[TGDS_Channel]of TGDS_806S_Channel;
+//  GDS_806Snew_Show:TGDS_806Snew_Show;
 
 implementation
 
 uses
   Dialogs, Controls, SysUtils, Graphics, OlegFunction, OlegGraph, Math;
 
-{ TGDS_806S }
+{ TGDS_806Snew }
 
 procedure TGDS_806S.AutoSetting;
 begin
@@ -395,17 +419,38 @@ constructor TGDS_806S.Create(CP: TComPort; Nm: string);
 begin
  inherited Create(CP,Nm);
  RepeatInErrorCase:=True;
- fComPacket.MaxBufferSize:=250052;
- fComPacket.StartString := GDS_806S_PacketBeginChar;
- fComPacket.StopString := GDS_806S_PacketEndChar;
- fComPort.Buffer.InputSize:=250052;
+// fComPacket.MaxBufferSize:=250052;
+// fComPacket.StartString := GDS_806S_PacketBeginChar;
+// fComPacket.StopString := GDS_806S_PacketEndChar;
+// fComPort.Buffer.InputSize:=250052;
  DefaultSettings();
  SetFlags(0,0,0,true);
 end;
 
+constructor TGDS_806S.Create(CP: TComPort);
+begin
+ Create(CP,'GDS-806'); 
+end;
+
+//procedure TGDS_806Snew.CreateDataConverter;
+//begin
+//
+//end;
+
+procedure TGDS_806S.CreateDataRequest;
+begin
+ fDataRequest:=TDataRequest_GDS.Create(Self.fDataSubject.RS232,Self);
+// fRS232DataRequest:=fDataRequest;
+end;
+
+procedure TGDS_806S.CreateDataSubject(CP: TComPort);
+begin
+  fDataSubject:=TDataSubject_GDS.Create(CP);
+end;
+
 function TGDS_806S.CurrentBaudRate: integer;
 begin
- case fComPort.BaudRate of
+ case fDataSubject.RS232.ComPort.BaudRate of
   br110:Result:=110;
   br300:Result:=300;
   br600:Result:=600;
@@ -477,6 +522,17 @@ begin
      DataVectors[j].Free;
  inherited Free;
 end;
+
+//procedure TGDS_806Snew.FreeDataConverter;
+//begin
+//  inherited;
+//
+//end;
+
+//procedure TGDS_806Snew.FreeDataRequest;
+//begin
+// fDataRequest.Free;
+//end;
 
 function TGDS_806S.GetAverageNumber: boolean;
  var i:TGDS_AverageNumber;
@@ -621,14 +677,14 @@ begin
  fActiveChannel:=Chan;
  fMinDelayTime:=TimeForDataTransfer();
  GetActiveChannelScale();
- fComPacket.StopString :='';
+ fDataSubject.RS232.ComPacket.StopString :='';
  if fActiveChannel=1 then
    fLSB:=StrtoFloat(GDS_VoltageScaleData[fSettings[gds_ch1_scale]])/25
                       else
    fLSB:=StrtoFloat(GDS_VoltageScaleData[fSettings[gds_ch2_scale]])/25;
  QuireOperation(4,3,0);
  fMinDelayTime:=0;
- fComPacket.StopString := GDS_806S_PacketEndChar;
+ fDataSubject.RS232.ComPacket.StopString := GDS_806S_PacketEndChar;
 end;
 
 function TGDS_806S.GetMode:boolean;
@@ -746,7 +802,7 @@ begin
  end;
 end;
 
-procedure TGDS_806S.PacketReceiving(Sender: TObject; const Str: string);
+procedure TGDS_806S.UpDate;
 var
   I: TGDS_TimeScale;
   j:TGDS_VoltageScale;
@@ -755,7 +811,10 @@ var
   DataOffset:integer;
   SampleRate:single;
   k:integer;
+  Str:string;
 begin
+ Str:=fDataSubject.ReceivedString;
+
  case fRootNode of
   0:if Str=GDS_806S_Test then fValue:=314;
   4:begin
@@ -883,18 +942,18 @@ begin
   SetupOperation(8,0,0);
 end;
 
-procedure TGDS_806S.Request;
-begin
-if TestShow then showmessage('send:  '+StringToSend);
- if fComPort.Connected then
-  begin
-   fComPort.AbortAllAsync;
-   fComPort.ClearBuffer(True, True);
-   fError:=(fComPort.WriteStr(StringToSend+GDS_806S_PacketEndChar)<>(Length(StringToSend)+1));
-  end
-                      else
-   fError:=True;
-end;
+//procedure TGDS_806Snew.Request;
+//begin
+//if TestShow then showmessage('send:  '+StringToSend);
+// if fComPort.Connected then
+//  begin
+//   fComPort.AbortAllAsync;
+//   fComPort.ClearBuffer(True, True);
+//   fError:=(fComPort.WriteStr(StringToSend+GDS_806S_PacketEndChar)<>(Length(StringToSend)+1));
+//  end
+//                      else
+//   fError:=True;
+//end;
 
 procedure TGDS_806S.Run;
 begin
@@ -1045,13 +1104,13 @@ end;
 
 function TGDS_806S.TimeForDataTransfer: integer;
 begin
- fComPacket.Size:=GDS_RecordLengthData[fSettings[gds_rl]]*2;
+ fDataSubject.RS232.ComPacket.Size:=GDS_RecordLengthData[fSettings[gds_rl]]*2;
  case fSettings[gds_rl] of
-  0..2:fComPacket.Size:=fComPacket.Size+14;
-  3..5:fComPacket.Size:=fComPacket.Size+15;
-  6..7:fComPacket.Size:=fComPacket.Size+16;
+  0..2:fDataSubject.RS232.ComPacket.Size:=fDataSubject.RS232.ComPacket.Size+14;
+  3..5:fDataSubject.RS232.ComPacket.Size:=fDataSubject.RS232.ComPacket.Size+15;
+  6..7:fDataSubject.RS232.ComPacket.Size:=fDataSubject.RS232.ComPacket.Size+16;
  end;
- Result:=round(1.1*fComPacket.Size*8000/CurrentBaudRate());
+ Result:=round(1.1*fDataSubject.RS232.ComPacket.Size*8000/CurrentBaudRate());
  fTimeTransfer:=Result;
 end;
 
@@ -1069,7 +1128,7 @@ begin
    SetupOperation(11,0,0);
 end;
 
-{ TGDS_806S_Show }
+{ TGDS_806Snew_Show }
 
 procedure TGDS_806S_Show.AutoButtonClick(Sender: TObject);
 begin
@@ -1639,7 +1698,7 @@ begin
  fParentModule:=GDS_806S;
 end;
 
-//procedure TGDS_806S_Channel.Free;
+//procedure TGDS_806Snew_Channel.Free;
 //begin
 //
 //end;
@@ -1689,7 +1748,7 @@ begin
   fNewData:=Value;
 end;
 
-{ TGDS_Chan_Show }
+{ TGDSnew_Chan_Show }
 
 constructor TGDS_Chan_Show.Create(GDSChan: TGDS_806S_Channel;
                                   DL, UL: TLabel;
@@ -1704,6 +1763,35 @@ end;
 function TGDS_Chan_Show.UnitModeLabel: string;
 begin
  Result:=fGDSChan.MeasureModeLabel;
+end;
+
+{ TRS232_GDS }
+
+constructor TRS232_GDS.Create(CP: TComPort);
+begin
+ inherited Create(CP,GDS_806S_PacketBeginChar,GDS_806S_PacketEndChar);
+ fComPacket.MaxBufferSize:=250052;
+ fComPort.Buffer.InputSize:=250052;
+end;
+
+{ TDataSubject_GDS }
+
+procedure TDataSubject_GDS.ComPortCreare(CP: TComPort);
+begin
+ fRS232:=TRS232_GDS.Create(CP);
+end;
+
+{ TDataRequest_GDS }
+
+function TDataRequest_GDS.IsNoSuccessSend: Boolean;
+begin
+ Result:=(fRS232.ComPort.WriteStr(StringToSend+GDS_806S_PacketEndChar)<>(Length(StringToSend)+1));
+end;
+
+procedure TDataRequest_GDS.Request;
+begin
+ if TestShow then showmessage('send:  '+StringToSend);
+ inherited Request;
 end;
 
 end.

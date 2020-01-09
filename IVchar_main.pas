@@ -3,16 +3,16 @@
 interface
 
 uses
-  Windows, Messages, SysUtils, Graphics, Forms,ArduinoDevice, IniFiles,PacketParameters,
+  Windows, Messages, SysUtils, Graphics, Forms,IniFiles,PacketParameters,
   OlegType, OlegMath,Measurement,
   TempThread, ShowTypes,OlegGraph, Dependence, V7_21,
-  TemperatureSensor, DACR2R, UT70, RS232device,ET1255, RS232_Mediator_Tread,
+  TemperatureSensor, DACR2R, {RS232device,}ET1255, RS232_Mediator_Tread,
   CPortCtl, Grids, Chart, TeeProcs, Series, TeEngine, ExtCtrls, Buttons,
   ComCtrls, CPort, StdCtrls, Dialogs, Controls, Classes, D30_06,Math, PID, 
-  MDevice, Spin,HighResolutionTimer, MCP3424, ADS1115, ArduinoDeviceShow, 
-  AD9833, GDS_806S, MLX90615, OlegShowTypes, INA226, OlegTypePart2, OlegVector, 
-  OlegDigitalManipulation, OlegDevice, TMP102, ADT74x0, MCP9808, 
-  ArduinoDeviceNew, AD9833new, GDS_806Snew, UT70new;
+  MDevice, Spin,HighResolutionTimer, MCP3424, ADS1115,
+  MLX90615, OlegShowTypes, INA226, OlegTypePart2, OlegVector,
+  OlegDigitalManipulation, OlegDevice, TMP102, ADT74x0, MCP9808,
+  ArduinoDeviceNew, AD9833, GDS_806S, UT70, ArduinoDeviceShow;
 
 const
   MeasIV='IV characteristic';
@@ -827,7 +827,7 @@ type
 //    GDS_806S:TGDS_806S;
 //    GDS_806S_Channel:array[TGDS_Channel]of TGDS_806S_Channel;
 //    GDS_806S_Show:TGDS_806S_Show;
-     GDS_806Snew_Show:TGDS_806Snew_Show;
+     GDS_806Snew_Show:TGDS_806S_Show;
 
     CurrentShow:TCurrentShow;
 
@@ -851,7 +851,7 @@ type
 //    AD9833:TAD9833;
 //    AD9833Show:TAD9833Show;
 //   AD9833nw:TAD9833new;
-   AD9833ShowNew:TAD9833ShowNew;
+   AD9833ShowNew:TAD9833Show;
 
     Simulator:TSimulator;
 
@@ -859,8 +859,8 @@ type
 //    UT70BShow:TUT70BShow;
 //    UT70C:TUT70C;
 //    UT70CShow:TUT70CShow;
-    UT70BShowNew:TUT70BShowNew;
-    UT70CShowNew:TUT70CShowNew;
+    UT70BShowNew:TUT70BShow;
+    UT70CShowNew:TUT70CShow;
 
 
     ET1255_DACs:array[TET1255_DAC_ChanelNumber] of TET1255_DAC;
@@ -927,7 +927,7 @@ var
 implementation
 
 uses
-  ArduinoADC, OlegFunction;
+  ArduinoADC, OlegFunction, RS232deviceNew;
 
 {$R *.dfm}
 
@@ -2220,11 +2220,11 @@ begin
 //
 //  ShowArray.Add([GDS_806S_Show]);
 //  AnyObjectArray.Add([GDS_806S,GDS_806S_Channel[1],GDS_806S_Channel[2]]);
-  GDS_806Snw := TGDS_806Snew.Create(ComPortGDS);
+  GDS_806Snw := TGDS_806S.Create(ComPortGDS);
   for I := Low(TGDS_Channel) to High(TGDS_Channel) do
-      GDS_806Snew_Channel[i]:=TGDS_806Snew_Channel.Create(i,GDS_806Snw);
+      GDS_806Snew_Channel[i]:=TGDS_806S_Channel.Create(i,GDS_806Snw);
 
-  GDS_806Snew_Show := TGDS_806Snew_Show.Create(GDS_806Snw,
+  GDS_806Snew_Show := TGDS_806S_Show.Create(GDS_806Snw,
                       GDS_806Snew_Channel,
                      [STGDS_Mode, STGDS_RLength, STGDS_AveNum, STGDS_ScaleGoriz,
                      STGDS_CoupleCh1, STGDS_ProbCh1, STGDS_MeasCh1, STGDS_ScaleCh1,
@@ -2683,8 +2683,8 @@ begin
  if assigned(DependTimer) then DependTimer.Free;
 
  DACWriteToIniFile();
- DACFree();
- ObjectsFree();
+// DACFree();
+// ObjectsFree();
 
  ConfigFile.EraseSection(DoubleConstantSection);
 
@@ -2694,8 +2694,8 @@ begin
 
  ConfigFile.Free;
 
-// DACFree();
-// ObjectsFree();
+ DACFree();
+ ObjectsFree();
 
  ShowArray.Free;
  AnyObjectArray.Free;
@@ -3377,16 +3377,16 @@ begin
 //  ShowArray.Add([UT70BShow,UT70CShow]);
 //  AnyObjectArray.Add([UT70B,UT70C]);
 
-  UT70Bnew:=TUT70Bnew.Create(ComPortUT70B);
-  UT70BShowNew:= TUT70BShowNew.Create(UT70Bnew, RGUT70B_MM, RGUT70B_Range, RGUT70B_RangeM, LUT70B, LUT70BU, BUT70BMeas, SBUT70BAuto, Time);
-  UT70Cnew:=TUT70Cnew.Create(ComPortUT70C);
-  UT70CShowNew:= TUT70CShowNew.Create(UT70Cnew, RGUT70C_MM,
+  UT70B:=TUT70B.Create(ComPortUT70B);
+  UT70BShowNew:= TUT70BShow.Create(UT70B, RGUT70B_MM, RGUT70B_Range, RGUT70B_RangeM, LUT70B, LUT70BU, BUT70BMeas, SBUT70BAuto, Time);
+  UT70C:=TUT70C.Create(ComPortUT70C);
+  UT70CShowNew:= TUT70CShow.Create(UT70C, RGUT70C_MM,
        RGUT70C_Range, RGUT70C_RangeM, LUT70C, LUT70CU,
        BUT70CMeas, SBUT70CAuto, Time,
        LUT70C_Hold,LUT70C_rec,LUT70C_AvTime,LUT70C_AVG);
 
   ShowArray.Add([UT70BShowNew,UT70CShowNew]);
-  AnyObjectArray.Add([UT70Bnew,UT70Cnew]);
+  AnyObjectArray.Add([UT70B,UT70C]);
 
   GDS_Create();
 
@@ -3512,8 +3512,8 @@ begin
 //                                 L9833FreqCh0,L9833PhaseCh0,L9833FreqCh1,L9833PhaseCh1,
 //                                 SBAD9833GenCh0,SBAD9833GenCh1,SBAD9833Stop,
 //                                 RGAD9833Mode);
-  AD9833nw:=TAD9833new.Create;
-  AD9833ShowNew:=TAD9833ShowNew.Create(AD9833nw,
+  AD9833nw:=TAD9833.Create;
+  AD9833ShowNew:=TAD9833Show.Create(AD9833nw,
                                  PAD9833PinC,NumberPins,
                                  ST9866FreqCh0,ST9866PhaseCh0,ST9866FreqCh1,ST9866PhaseCh1,
                                  L9833FreqCh0,L9833PhaseCh0,L9833FreqCh1,L9833PhaseCh1,
@@ -3608,8 +3608,8 @@ begin
   SetLength(Devices,High(Devices)+3);
 //  Devices[High(Devices)-1]:=UT70B;
 //  Devices[High(Devices)]:=UT70C;
-  Devices[High(Devices)-1]:=UT70Bnew;
-  Devices[High(Devices)]:=UT70Cnew;
+  Devices[High(Devices)-1]:=UT70B;
+  Devices[High(Devices)]:=UT70C;
 
   if ET1255isPresent then
    begin
@@ -3728,8 +3728,8 @@ begin
  if Measurement.Name= 'B7-21 (2)' then Result:=V721_II.Diapazon;
 // if Measurement.Name= 'UT70B' then Result:=UT70B.Diapazon;
 // if Measurement.Name= 'UT70C' then Result:=UT70C.Diapazon;
- if Measurement.Name= 'UT70B' then Result:=UT70Bnew.Diapazon;
- if Measurement.Name= 'UT70C' then Result:=UT70Cnew.Diapazon;
+ if Measurement.Name= 'UT70B' then Result:=UT70B.Diapazon;
+ if Measurement.Name= 'UT70C' then Result:=UT70C.Diapazon;
 end;
 
 procedure TIVchar.CorrectionLimit(var NewCorrection: Double);

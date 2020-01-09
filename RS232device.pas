@@ -4,20 +4,20 @@ interface
 
 uses
   Measurement, CPort, PacketParameters, ExtCtrls, StdCtrls, Buttons, Windows,
-  Classes,OlegTypePart2;
+  Classes,OlegTypePart2, RS232deviceNew;
 
 
-const
- Error='Error';
- IA_Label='~I';
- ID_Label='=I';
- UA_Label='~U';
- UD_Label='=U';
- ErrorMes=' connection with ComPort is unsuccessful';
-
-var
-    EventComPortFree: THandle;
-    EventMeasuringEnd: THandle;
+//const
+// Error='Error';
+// IA_Label='~I';
+// ID_Label='=I';
+// UA_Label='~U';
+// UD_Label='=U';
+// ErrorMes=' connection with ComPort is unsuccessful';
+//
+//var
+//    EventComPortFree: THandle;
+//    EventMeasuringEnd: THandle;
 
 type
 
@@ -211,12 +211,12 @@ TRS232Meter=class(TRS232Device,IMeasurement)
   end;
 
 
-TAdapterRadioGroupClick=class
-    findexx:integer;
-    Constructor Create(ind:integer);overload;
-    procedure RadioGroupClick(Sender: TObject);
-    procedure RadioGroupOnEnter(Sender: TObject);
-  end;
+//TAdapterRadioGroupClick=class
+//    findexx:integer;
+//    Constructor Create(ind:integer);overload;
+//    procedure RadioGroupClick(Sender: TObject);
+//    procedure RadioGroupOnEnter(Sender: TObject);
+//  end;
 
 
 TRS232MetterShow=class(TMeasurementShow)
@@ -240,16 +240,16 @@ TRS232MetterShow=class(TMeasurementShow)
 end;
 
 
-Function BCDtoDec(BCD:byte; isLow:boolean):byte;
-{виділяє з ВCD, яке містить дві десяткові
-цифри у двійково-десятковому представленні,
-ці цифри;
-якщо  isLow=true, то виділення із
-молодшої частини байта}
-
-Procedure PortBeginAction(Port:TComPort;Lab:TLabel;Button: TButton);
-
-Procedure PortEndAction(Port:TComPort);
+//Function BCDtoDec(BCD:byte; isLow:boolean):byte;
+//{виділяє з ВCD, яке містить дві десяткові
+//цифри у двійково-десятковому представленні,
+//ці цифри;
+//якщо  isLow=true, то виділення із
+//молодшої частини байта}
+//
+//Procedure PortBeginAction(Port:TComPort;Lab:TLabel;Button: TButton);
+//
+//Procedure PortEndAction(Port:TComPort);
 
 
 
@@ -501,7 +501,7 @@ begin
     then
       StringArrayToRadioGroup(RS232Meter.fDiapazonAll[RS232Meter.fMeasureMode],
                               Range);
-  Range.Items.Add(Error);
+  Range.Items.Add(ErrorL);
   IndexToRadioGroup(RS232Meter.fDiapazon,Range);
 end;
 
@@ -517,7 +517,7 @@ end;
 procedure TRS232MetterShow.MeasureModeFill;
 begin
     StringArrayToRadioGroup(RS232Meter.fMeasureModeAll,MeasureMode);
-    MeasureMode.Items.Add(Error);
+    MeasureMode.Items.Add(ErrorL);
 end;
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -566,84 +566,84 @@ begin
  Result:=RS232Meter.MeasureModeLabel;
 end;
 
-{ TAdapterRadioGroupClick }
-
-constructor TAdapterRadioGroupClick.Create(ind: integer);
-begin
- inherited Create;
- findexx:=ind;
-end;
-
-
-procedure TAdapterRadioGroupClick.RadioGroupClick(Sender: TObject);
-begin
- try
- (Sender as TRadioGroup).ItemIndex:=findexx;
- except
- end;
-end;
-
-
-procedure TAdapterRadioGroupClick.RadioGroupOnEnter(Sender: TObject);
-begin
- try
-  findexx:=(Sender as TRadioGroup).ItemIndex;
- except
- end;
-end;
-
-Function BCDtoDec(BCD:byte; isLow:boolean):byte;
-{виділяє з ВCD, яке містить дві десяткові
-цифри у двійково-десятковому представленні,
-ці цифри;
-якщо  isLow=true, то виділення із
-молодшої частини байта}
-begin
- if isLow then Result:=BCD and $0F
-          else Result:= BCD Shr 4;
-end;
-
-
-Procedure PortBeginAction(Port:TComPort;Lab:TLabel;Button: TButton);
-begin
-  try
-    Port.Open;
-    Port.Open;
-    Port.AbortAllAsync;
-    Port.AbortAllAsync;
-    Port.ClearBuffer(True, True);
-    Port.ClearBuffer(True, True);
-  finally
-   if Port.Connected then
-      begin
-       Lab.Caption:='Port is open';
-       Lab.Font.Color:=clBlue;
-       if Button<>nil then Button.Caption:='To close'
-      end
-                           else
-      begin
-       Lab.Caption:='Port is close';
-       Lab.Font.Color:=clRed;
-       if Button<>nil then Button.Caption:='To open'
-      end
-  end;
-
-
-end;
-
-Procedure PortEndAction(Port:TComPort);
-begin
-   try
-  if Port.Connected then
-   begin
-    Port.AbortAllAsync;
-    Port.ClearBuffer(True, True);
-    Port.Close;
-   end;
- finally
- end;
-end;
-
+//{ TAdapterRadioGroupClick }
+//
+//constructor TAdapterRadioGroupClick.Create(ind: integer);
+//begin
+// inherited Create;
+// findexx:=ind;
+//end;
+//
+//
+//procedure TAdapterRadioGroupClick.RadioGroupClick(Sender: TObject);
+//begin
+// try
+// (Sender as TRadioGroup).ItemIndex:=findexx;
+// except
+// end;
+//end;
+//
+//
+//procedure TAdapterRadioGroupClick.RadioGroupOnEnter(Sender: TObject);
+//begin
+// try
+//  findexx:=(Sender as TRadioGroup).ItemIndex;
+// except
+// end;
+//end;
+//
+//Function BCDtoDec(BCD:byte; isLow:boolean):byte;
+//{виділяє з ВCD, яке містить дві десяткові
+//цифри у двійково-десятковому представленні,
+//ці цифри;
+//якщо  isLow=true, то виділення із
+//молодшої частини байта}
+//begin
+// if isLow then Result:=BCD and $0F
+//          else Result:= BCD Shr 4;
+//end;
+//
+//
+//Procedure PortBeginAction(Port:TComPort;Lab:TLabel;Button: TButton);
+//begin
+//  try
+//    Port.Open;
+//    Port.Open;
+//    Port.AbortAllAsync;
+//    Port.AbortAllAsync;
+//    Port.ClearBuffer(True, True);
+//    Port.ClearBuffer(True, True);
+//  finally
+//   if Port.Connected then
+//      begin
+//       Lab.Caption:='Port is open';
+//       Lab.Font.Color:=clBlue;
+//       if Button<>nil then Button.Caption:='To close'
+//      end
+//                           else
+//      begin
+//       Lab.Caption:='Port is close';
+//       Lab.Font.Color:=clRed;
+//       if Button<>nil then Button.Caption:='To open'
+//      end
+//  end;
+//
+//
+//end;
+//
+//Procedure PortEndAction(Port:TComPort);
+//begin
+//   try
+//  if Port.Connected then
+//   begin
+//    Port.AbortAllAsync;
+//    Port.ClearBuffer(True, True);
+//    Port.Close;
+//   end;
+// finally
+// end;
+//end;
+//
 
 { TRS232MeterConvertData }
 
@@ -778,23 +778,23 @@ end;
 // fObserver:=nil;
 //end;
 
-initialization
-  EventComPortFree := CreateEvent(nil,
-                                 True, // тип сброса TRUE - ручной
-                                 True, // начальное состояние TRUE - сигнальное
-                                 nil);
-  EventMeasuringEnd := CreateEvent(nil,
-                                 True, // тип сброса TRUE - ручной
-                                 True, // начальное состояние TRUE - сигнальное
-                                 nil);
-
-
-finalization
-
-  SetEvent(EventComPortFree);
-  CloseHandle(EventComPortFree);
-
-
-  SetEvent(EventMeasuringEnd);
-  CloseHandle(EventMeasuringEnd);
+//initialization
+//  EventComPortFree := CreateEvent(nil,
+//                                 True, // тип сброса TRUE - ручной
+//                                 True, // начальное состояние TRUE - сигнальное
+//                                 nil);
+//  EventMeasuringEnd := CreateEvent(nil,
+//                                 True, // тип сброса TRUE - ручной
+//                                 True, // начальное состояние TRUE - сигнальное
+//                                 nil);
+//
+//
+//finalization
+//
+//  SetEvent(EventComPortFree);
+//  CloseHandle(EventComPortFree);
+//
+//
+//  SetEvent(EventMeasuringEnd);
+//  CloseHandle(EventMeasuringEnd);
 end.

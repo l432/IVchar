@@ -30,7 +30,6 @@ type
   public
    Procedure PacketCreateToSend();override;
    function GetTemperature():double;override;
-//   Constructor Create(CP:TComPort;Nm:string);
    Constructor Create(Nm:string);
    Procedure ConvertToValue();override;
    function GetTemperatureAmbient():double;
@@ -131,10 +130,8 @@ begin
     Result:= (CRC8([$B6,MLX90615_OperationCod[fstate],$B7,fData[0],fData[1],fData[2]])=0);
 end;
 
-//constructor TMLX90615.Create(CP: TComPort; Nm: string);
 constructor TMLX90615.Create(Nm: string);
 begin
-//  inherited Create(CP,Nm);
   inherited Create(Nm);
 
   fMetterKod:=MLX90615Command;

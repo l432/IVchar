@@ -3,7 +3,7 @@ unit DACR2R;
 interface
 
 uses
-  ArduinoDevice, Measurement, OlegType, StdCtrls, RS232device, CPort, Classes, 
+  Measurement, OlegType, StdCtrls, RS232device, CPort, Classes, 
   ExtCtrls, ShowTypes, IniFiles, OlegVector, ArduinoDeviceNew;
 
 const DACR2R_MaxValue=65535;
@@ -12,12 +12,6 @@ const DACR2R_MaxValue=65535;
       DACR2RCommand=$4;
 
        Vmax=6.6;
-
-//      DACR2R_Pos=$0F; //додатня напруга
-//      DACR2R_Neg=$FF; //від'ємна напруга
-//      DACR2R_Reset=$AA; //встановлюється нульова напруга
-
-//      DACR2R_Report='DAC R2R output is unsuccessful';
 
 type
 
@@ -43,7 +37,6 @@ end;
 
 
 
-//TDACR2R=class(TArduinoDAC,ICalibration)
 TDACR2R=class(TArduinoDACnew,ICalibration)
 private
  fCalibration:TDACR2R_Calibr;
@@ -52,7 +45,6 @@ protected
  procedure CreateHook;override;
  procedure PinsCreate();override;
 public
-// Constructor Create(CP:TComPort;Nm:string);//override;
  Constructor Create(Nm:string);overload;
  Constructor Create();overload;
  Procedure Free;override;
@@ -65,8 +57,7 @@ public
  procedure PinsToDataArray;override;
 end;
 
-//TDACR2RShow=class(TArduinoDACShow)
-TDACR2RShow=class(TArduinoDACShowNew)
+TDACR2RShow=class(TArduinoDACShow)
 protected
    procedure CreatePinShow(PinLs: array of TPanel;
                              PinVariant:TStringList);override;
@@ -86,7 +77,8 @@ var
 implementation
 
 uses
-  SysUtils, PacketParameters, OlegGraph, Math, Dialogs, ArduinoDeviceShow;
+  SysUtils, PacketParameters, OlegGraph, Math, Dialogs, 
+  ArduinoDeviceShow;
 
 
 { TDACR2R }

@@ -3,23 +3,23 @@ unit ArduinoDeviceNew;
 interface
  uses OlegType,CPort,SysUtils,Classes,PacketParameters,
       StdCtrls, IniFiles, RS232device, ExtCtrls, Measurement, OlegTypePart2,
-  RS232deviceNew, ArduinoDevice;
+  RS232deviceNew;
 
-//const
-//  UndefinedPin=255;
-//  PacketBeginChar=#10;
-//  PacketEndChar=#15;
-//
-//
-//  PinNames:array[0..3]of string=
-//   ('Control','Gate','LDAC','CLR');
-//
-//  DAC_Pos=$0F; //додатня напруга
-//  DAC_Neg=$FF; //від'ємна напруга
-//
-//  PinChangeCommand=$7;
-//  PinToHigh=$F0;
-//  PinToLow=$0F;
+const
+  UndefinedPin=255;
+  PacketBeginChar=#10;
+  PacketEndChar=#15;
+
+
+  PinNames:array[0..3]of string=
+   ('Control','Gate','LDAC','CLR');
+
+  DAC_Pos=$0F; //додатня напруга
+  DAC_Neg=$FF; //від'ємна напруга
+
+  PinChangeCommand=$7;
+  PinToHigh=$F0;
+  PinToLow=$0F;
 
 
 type
@@ -44,24 +44,14 @@ type
     ['{2FE4C890-9B48-4605-8593-EA54EF1A5742}']
     function GetDeviceKod:byte;
     function GetSecondDeviceKod:byte;
-//    function GetisNeededComPort:boolean;
-//    procedure SetisNeededComPort(const Value:boolean);
-//    procedure  PacketCreateToSend();
-//    procedure SetError(const Value:boolean);
-//    function GetMessageError:string;
     property DeviceKod:byte read GetDeviceKod;
     property SecondDeviceKod:byte read GetSecondDeviceKod;
-//    property isNeededComPort:boolean read GetisNeededComPort write SetisNeededComPort;
-//    property Error:boolean write SetError;
-//    property MessageError:string read GetMessageError;
   end;
 
   IArduinoDataSubject = interface
      ['{F65EA0F8-5554-49E4-A5AB-5EDE666FE72B}']
     procedure RegisterObserver(o:IArduinoDevice);
     procedure RemoveObserver(o:IArduinoDevice);
-//    procedure NotifyObservers;
-//    function PortConnected():boolean;
   end;
 
 
@@ -80,8 +70,6 @@ type
     procedure ComPortCreare(CP:TComPort);override;
    public
     ReceivedData:TArrByte;
-//    Constructor Create(CP:TComPort);
-//    Procedure Free;override;
     procedure RegisterObserver(o:IArduinoDevice);
     procedure RemoveObserver(o:IArduinoDevice);
     procedure NotifyObservers;override;
@@ -89,110 +77,85 @@ type
 
 
 
-//  TPins=class
-//  {клас для опису пінів, які використовуються
-//   при взаємодії з Аrduino}
-//  protected
-//   fName:string;
-//   Function GetPinStr(Index:integer):string;virtual;
-//   Function PinValueToStr(Index:integer):string;virtual;
-//   Function StrToPinValue(Str: string):integer;virtual;
-//   procedure SetStrToPinValue(Str: string;Index:integer);
-//   Function GetPin(Index:integer):byte;
-//   Procedure SetPin(Index:integer; value:byte);
-//
-//  public
-//   fPins:TArrByte;
-//   PNames:array of string;
-//   PinStrPart:string;
-//   {номери пінів Arduino;
-//   в цьому класі масив містить 2 елементи,
-//   за необхідності в нащадках треба міняти конструктор
-//   [0] для лінії Slave Select шини SPI
-//   [1] для керування буфером між Аrduino та приладом}
-//   property PinControl:byte Index 0 read GetPin write SetPin;
-//   property PinGate:byte Index 1 read GetPin write SetPin;
-//   property PinControlStr:string Index 0 read GetPinStr;
-//   property PinGateStr:string Index 1 read GetPinStr;
-//   property Name:string read fName write fName;
-//   Constructor Create(Nm:string);overload;
-//   Constructor Create(Nm:string;PNm:array of string;PNumber:byte);overload;
-//   Constructor Create(Nm:string;PNm:array of string);overload;
-//   Constructor Create(Nm:string;PNumber:byte);overload;
-//   Procedure ReadFromIniFile(ConfigFile:TIniFile);overload;
-//   Procedure ReadFromIniFile(ConfigFile:TIniFile;Strings:TStrings);overload;
-//   Procedure ReadFromIniFile(ConfigFile:TIniFile;PinsStrings:array of TStringList);overload;
-//   Procedure WriteToIniFile(ConfigFile:TIniFile);overload;
-//   Procedure WriteToIniFile(ConfigFile:TIniFile;Strings:TStrings);overload;
-//   Procedure WriteToIniFile(ConfigFile:TIniFile;PinsStrings:array of TStringList);overload;
-//  end;
-//
-//
-//  TPins_I2C=class(TPins)
-//  protected
-//   Function PinValueToStr(Index:integer):string;override;
-//   public
-//   Constructor Create(Nm:string);
-//  end;
-//
-//  TPinsForCustomValues=class(TPins)
-//   protected
-//    Function GetPinStr(Index:integer):string;override;
-//   public
-//    Constructor Create(Nm:string;PNm:array of string);
-//  end;
-//
-//
-//  TPinsShowUniversal=class(TSimpleFreeAndAiniObject)
-//  protected
-//   fHookNumberPinShow: TSimpleEvent;
-//   PinLabels:array of TPanel;
-//   fPinVariants:array of TStringList;
-//   procedure CreateFooter;virtual;
-//   procedure SetVariants(Index: byte; const S: TStringList);
-//  public
-//   Pins:TPins;
-//   property HookNumberPinShow:TSimpleEvent read fHookNumberPinShow write fHookNumberPinShow;
-//   property PinVariants[Index: byte]: TStringList write SetVariants;
-//   Constructor Create(Ps:TPins;
-//                      PinLs:array of TPanel);overload;
-//   Constructor Create(Ps:TPins;
-//                      PinLs:array of TPanel;
-//                      PinVar:array of TStringList);overload;
-//   Constructor Create(Ps:TPins;
-//                      PinLs:array of TPanel;
-//                      PinVarSingle: TStringList);overload;
-//   procedure ReadFromIniFile(ConfigFile:TIniFile);override;//virtual;
-//   procedure WriteToIniFile(ConfigFile:TIniFile);override;//virtual;
-//   procedure NumberPinShow();virtual;
-//   procedure Free();override;//virtual;
-//   procedure VariantsShowAndSelect(Sender: TObject);
-//  end;
+  TPins=class
+  {клас для опису пінів, які використовуються
+   при взаємодії з Аrduino}
+  protected
+   fName:string;
+   Function GetPinStr(Index:integer):string;virtual;
+   Function PinValueToStr(Index:integer):string;virtual;
+   Function StrToPinValue(Str: string):integer;virtual;
+   procedure SetStrToPinValue(Str: string;Index:integer);
+   Function GetPin(Index:integer):byte;
+   Procedure SetPin(Index:integer; value:byte);
+
+  public
+   fPins:TArrByte;
+   PNames:array of string;
+   PinStrPart:string;
+   {номери пінів Arduino;
+   в цьому класі масив містить 2 елементи,
+   за необхідності в нащадках треба міняти конструктор
+   [0] для лінії Slave Select шини SPI
+   [1] для керування буфером між Аrduino та приладом}
+   property PinControl:byte Index 0 read GetPin write SetPin;
+   property PinGate:byte Index 1 read GetPin write SetPin;
+   property PinControlStr:string Index 0 read GetPinStr;
+   property PinGateStr:string Index 1 read GetPinStr;
+   property Name:string read fName write fName;
+   Constructor Create(Nm:string);overload;
+   Constructor Create(Nm:string;PNm:array of string;PNumber:byte);overload;
+   Constructor Create(Nm:string;PNm:array of string);overload;
+   Constructor Create(Nm:string;PNumber:byte);overload;
+   Procedure ReadFromIniFile(ConfigFile:TIniFile);overload;
+   Procedure ReadFromIniFile(ConfigFile:TIniFile;Strings:TStrings);overload;
+   Procedure ReadFromIniFile(ConfigFile:TIniFile;PinsStrings:array of TStringList);overload;
+   Procedure WriteToIniFile(ConfigFile:TIniFile);overload;
+   Procedure WriteToIniFile(ConfigFile:TIniFile;Strings:TStrings);overload;
+   Procedure WriteToIniFile(ConfigFile:TIniFile;PinsStrings:array of TStringList);overload;
+  end;
 
 
-//   TArduinoBase = class (TNamedInterfacedObject)
-//    private
-//     fisNeededComPort:boolean;
-//     fDeviceKod:byte;
-//     function GetDeviceKod:byte;
-//     function GetSecondDeviceKod:byte;
-//     function GetisNeededComPort:boolean;
-//     procedure SetisNeededComPort(const Value:boolean);
-//     procedure  PacketCreateToSend();
-//    procedure SetError(const Value:boolean);
-//    function GetMessageError:string;
-//     procedure PinsCreate();virtual;
-//    public
-//     Pins:TPins;
-//     property DeviceKod:byte read GetDeviceKod;
-//     property SecondDeviceKod:byte read GetSecondDeviceKod;
-//     property isNeededComPort:boolean read GetisNeededComPort write SetisNeededComPort;
-//    property Error:boolean write SetError;
-//    property MessageError:string read GetMessageError;
-//     procedure isNeededComPortState();
-//  end;
+  TPins_I2C=class(TPins)
+  protected
+   Function PinValueToStr(Index:integer):string;override;
+   public
+   Constructor Create(Nm:string);
+  end;
+
+  TPinsForCustomValues=class(TPins)
+   protected
+    Function GetPinStr(Index:integer):string;override;
+   public
+    Constructor Create(Nm:string;PNm:array of string);
+  end;
 
 
+  TPinsShowUniversal=class(TSimpleFreeAndAiniObject)
+  protected
+   fHookNumberPinShow: TSimpleEvent;
+   PinLabels:array of TPanel;
+   fPinVariants:array of TStringList;
+   procedure CreateFooter;virtual;
+   procedure SetVariants(Index: byte; const S: TStringList);
+  public
+   Pins:TPins;
+   property HookNumberPinShow:TSimpleEvent read fHookNumberPinShow write fHookNumberPinShow;
+   property PinVariants[Index: byte]: TStringList write SetVariants;
+   Constructor Create(Ps:TPins;
+                      PinLs:array of TPanel);overload;
+   Constructor Create(Ps:TPins;
+                      PinLs:array of TPanel;
+                      PinVar:array of TStringList);overload;
+   Constructor Create(Ps:TPins;
+                      PinLs:array of TPanel;
+                      PinVarSingle: TStringList);overload;
+   procedure ReadFromIniFile(ConfigFile:TIniFile);override;//virtual;
+   procedure WriteToIniFile(ConfigFile:TIniFile);override;//virtual;
+   procedure NumberPinShow();virtual;
+   procedure Free();override;//virtual;
+   procedure VariantsShowAndSelect(Sender: TObject);
+  end;
 
   TArduinoSetterNew=class(TRS232CustomDevice,IArduinoSender)
     {базовий клас для джерел сигналів, що керуються
@@ -214,18 +177,6 @@ type
    procedure isNeededComPortState();
   end;
 
-//
-//
-//  TArduinoRS232Device=class(TRS232Device)
-//  protected
-//   fDeviceKod:byte;
-//   procedure PinsCreate();virtual;
-//  public
-//   Pins:TPins;
-//   Constructor Create(CP:TComPort;Nm:string);//override;
-//   procedure Free;override;
-//  end;
-//
  TArduinoPinChangerNew=class(TArduinoSetterNew)
   protected
    fPinUnderControl:byte;
@@ -233,7 +184,6 @@ type
   public
    procedure   PacketCreateToSend(); override;
    property PinUnderControl:byte read fPinUnderControl write fPinUnderControl;
-//   Constructor Create(CP:TComPort;Nm:string);//override;
    Constructor Create(Nm:string);//override;
    procedure PinChangeToHigh();
    procedure PinChangeToLow();
@@ -255,7 +205,6 @@ type
    fInitRequestState:TArduinoDataRequest;
    fAddedRequestState:TArduinoDataRequest;
    fWorkRequestState:TArduinoDataRequest;
-//   Procedure PacketReceiving(Sender: TObject; const Str: string);override;
    procedure PinsCreate();virtual;
    function GetisNeededComPort:boolean;
    procedure SetisNeededComPort(const Value:boolean);
@@ -268,7 +217,6 @@ type
    property DeviceKod:byte read GetDeviceKod;
    property SecondDeviceKod:byte read GetSecondDeviceKod;
    procedure   PacketCreateToSend(); virtual;
-//   Constructor Create(CP:TComPort;Nm:string);//override;
    Constructor Create(Nm:string);//override;
    Procedure Free;override;
    procedure isNeededComPortState();
@@ -291,11 +239,8 @@ type
  end;
 
  TAddedRequestState= class(TWorkRequestState)
-//  private
-//   fArduinoMeter:TArduinoMeterNew;
   public
    procedure Request;override;
-//   Constructor Create(ArduinoMeter:TArduinoMeterNew);
  end;
 
   TArduinoDACnew=class(TArduinoSetterNew,IDAC)
@@ -317,7 +262,6 @@ type
    Procedure Reset();virtual;
    Procedure OutputInt(Kod:integer);virtual;
   end;
-//
 
 var
  ArduinoDataSubject:TArduinoDataSubject;
@@ -328,151 +272,151 @@ uses
   Math, Forms, Graphics, Controls, OlegFunction, HighResolutionTimer, Dialogs,
   Windows;
 
-//{ TPins }
-//
-//constructor TPins.Create(Nm: string);
-//begin
-// Create(Nm,PinNames,2);
-//end;
-//
-//constructor TPins.Create(Nm: string; PNm: array of string; PNumber: byte);
-//  var i:integer;
-//begin
-//  inherited Create;
-//  fName:=Nm;
-//  SetLength(fPins,PNumber);
-//  SetLength(PNames,PNumber);
-//  for I := 0 to High(fPins) do
-//   begin
-//    if i<=High(PNm) then PNames[i]:=PNm[i]
-//                    else PNames[i]:='';
-//    fPins[i]:=UndefinedPin;
-//   end;
-//   PinStrPart:=' pin'
-//end;
-//
-//constructor TPins.Create(Nm: string; PNm: array of string);
-//begin
-//  Create(Nm,PNm,2);
-//end;
-//
-//constructor TPins.Create(Nm: string; PNumber: byte);
-//begin
-// Create(Nm,PinNames,PNumber);
-//end;
-//
-//function TPins.GetPin(Index: integer): byte;
-//begin
-//  Result:=fPins[Index];
-//end;
-//
-//function TPins.GetPinStr(Index: integer): string;
-//begin
-//  Result:=PNames[Index]+PinStrPart+' is ';
-//  if fPins[Index]=UndefinedPin then
-//    Result:=Result+'undefined'
-//                               else
-//    Result:=Result+PinValueToStr(Index);
-//end;
-//
-//function TPins.PinValueToStr(Index: integer): string;
-//begin
-// Result:=IntToStr(fPins[Index]);
-//end;
-//
-//procedure TPins.ReadFromIniFile(ConfigFile: TIniFile;
-//  PinsStrings: array of TStringList);
-//  var i,TempPin:integer;
-//begin
-//  if Name='' then Exit;
-//  for I := 0 to High(fPins) do
-//   begin
-//    TempPin := ConfigFile.ReadInteger(Name, PNames[i], -1);
-//    if (i<=High(PinsStrings))
-//        and (TempPin > -1)
-//        and (TempPin < PinsStrings[i].Count) then
-//          SetStrToPinValue (PinsStrings[i].Strings[TempPin],i )
-//                                                     else
-//          fPins[i]:=ConfigFile.ReadInteger(Name, PNames[i], UndefinedPin);
-//   end;
-//end;
-//
-//procedure TPins.ReadFromIniFile(ConfigFile: TIniFile);
-// var i:integer;
-//begin
-//  if Name='' then Exit;
-//  for I := 0 to High(fPins) do
-//      fPins[i]:=ConfigFile.ReadInteger(Name, PNames[i], UndefinedPin);
-//end;
-//
-//procedure TPins.ReadFromIniFile(ConfigFile: TIniFile; Strings: TStrings);
-// var i,TempPin:integer;
-//begin
-//  if Name='' then Exit;
-//  for I := 0 to High(fPins) do
-//   begin
-//    TempPin := ConfigFile.ReadInteger(Name, PNames[i], -1);
-//    if (TempPin > -1) and (TempPin < Strings.Count) then
-//      fPins[i] := StrToInt(Strings[TempPin]);
-//   end;
-//end;
-//
-//procedure TPins.WriteToIniFile(ConfigFile: TIniFile; Strings: TStrings);
-// var i,j:integer;
-//begin
-//  if Name='' then Exit;
-//  ConfigFile.EraseSection(Name);
-//  for I := 0 to Strings.Count - 1 do
-//    for j := 0 to High(fPins) do
-//      if (IntToStr(fPins[j]) = Strings[i]) then
-//        ConfigFile.WriteInteger(Name, PNames[j], i);
-//end;
-//
-//procedure TPins.WriteToIniFile(ConfigFile: TIniFile);
-// var i:integer;
-//begin
-//  if Name='' then Exit;
-//  ConfigFile.EraseSection(Name);
-//  for I := 0 to High(fPins) do
-//     WriteIniDef(ConfigFile,Name,PNames[i], UndefinedPin);
-//end;
-//
-//procedure TPins.SetPin(Index: integer; value: byte);
-//begin
-//  fPins[Index]:=value;
-//end;
-//
-//
-//function TPins.StrToPinValue(Str: string): integer;
-//begin
-// Result:=StrToInt(Str);
-//end;
-//
-//procedure TPins.SetStrToPinValue(Str: string;Index:integer);
-//begin
-// fPins[Index]:=StrToPinValue(Str);
-//end;
-//
-//procedure TPins.WriteToIniFile(ConfigFile: TIniFile;
-//  PinsStrings: array of TStringList);
-//  var i,j:integer;
-//begin
-//  if Name='' then Exit;
-//  ConfigFile.EraseSection(Name);
-//
-//   for j := 0 to High(fPins) do
-//     begin
-//     if j<=High(PinsStrings) then
-//        begin
-//          for I := 0 to PinsStrings[j].Count - 1 do
-//           if (fPins[j] = StrToPinValue ( PinsStrings[j].Strings[i])) then
-//                ConfigFile.WriteInteger(Name, PNames[j], i);
-//        end;
-//     end;
-//
-//end;
-//
-//
+{ TPins }
+
+constructor TPins.Create(Nm: string);
+begin
+ Create(Nm,PinNames,2);
+end;
+
+constructor TPins.Create(Nm: string; PNm: array of string; PNumber: byte);
+  var i:integer;
+begin
+  inherited Create;
+  fName:=Nm;
+  SetLength(fPins,PNumber);
+  SetLength(PNames,PNumber);
+  for I := 0 to High(fPins) do
+   begin
+    if i<=High(PNm) then PNames[i]:=PNm[i]
+                    else PNames[i]:='';
+    fPins[i]:=UndefinedPin;
+   end;
+   PinStrPart:=' pin'
+end;
+
+constructor TPins.Create(Nm: string; PNm: array of string);
+begin
+  Create(Nm,PNm,2);
+end;
+
+constructor TPins.Create(Nm: string; PNumber: byte);
+begin
+ Create(Nm,PinNames,PNumber);
+end;
+
+function TPins.GetPin(Index: integer): byte;
+begin
+  Result:=fPins[Index];
+end;
+
+function TPins.GetPinStr(Index: integer): string;
+begin
+  Result:=PNames[Index]+PinStrPart+' is ';
+  if fPins[Index]=UndefinedPin then
+    Result:=Result+'undefined'
+                               else
+    Result:=Result+PinValueToStr(Index);
+end;
+
+function TPins.PinValueToStr(Index: integer): string;
+begin
+ Result:=IntToStr(fPins[Index]);
+end;
+
+procedure TPins.ReadFromIniFile(ConfigFile: TIniFile;
+  PinsStrings: array of TStringList);
+  var i,TempPin:integer;
+begin
+  if Name='' then Exit;
+  for I := 0 to High(fPins) do
+   begin
+    TempPin := ConfigFile.ReadInteger(Name, PNames[i], -1);
+    if (i<=High(PinsStrings))
+        and (TempPin > -1)
+        and (TempPin < PinsStrings[i].Count) then
+          SetStrToPinValue (PinsStrings[i].Strings[TempPin],i )
+                                                     else
+          fPins[i]:=ConfigFile.ReadInteger(Name, PNames[i], UndefinedPin);
+   end;
+end;
+
+procedure TPins.ReadFromIniFile(ConfigFile: TIniFile);
+ var i:integer;
+begin
+  if Name='' then Exit;
+  for I := 0 to High(fPins) do
+      fPins[i]:=ConfigFile.ReadInteger(Name, PNames[i], UndefinedPin);
+end;
+
+procedure TPins.ReadFromIniFile(ConfigFile: TIniFile; Strings: TStrings);
+ var i,TempPin:integer;
+begin
+  if Name='' then Exit;
+  for I := 0 to High(fPins) do
+   begin
+    TempPin := ConfigFile.ReadInteger(Name, PNames[i], -1);
+    if (TempPin > -1) and (TempPin < Strings.Count) then
+      fPins[i] := StrToInt(Strings[TempPin]);
+   end;
+end;
+
+procedure TPins.WriteToIniFile(ConfigFile: TIniFile; Strings: TStrings);
+ var i,j:integer;
+begin
+  if Name='' then Exit;
+  ConfigFile.EraseSection(Name);
+  for I := 0 to Strings.Count - 1 do
+    for j := 0 to High(fPins) do
+      if (IntToStr(fPins[j]) = Strings[i]) then
+        ConfigFile.WriteInteger(Name, PNames[j], i);
+end;
+
+procedure TPins.WriteToIniFile(ConfigFile: TIniFile);
+ var i:integer;
+begin
+  if Name='' then Exit;
+  ConfigFile.EraseSection(Name);
+  for I := 0 to High(fPins) do
+     WriteIniDef(ConfigFile,Name,PNames[i], UndefinedPin);
+end;
+
+procedure TPins.SetPin(Index: integer; value: byte);
+begin
+  fPins[Index]:=value;
+end;
+
+
+function TPins.StrToPinValue(Str: string): integer;
+begin
+ Result:=StrToInt(Str);
+end;
+
+procedure TPins.SetStrToPinValue(Str: string;Index:integer);
+begin
+ fPins[Index]:=StrToPinValue(Str);
+end;
+
+procedure TPins.WriteToIniFile(ConfigFile: TIniFile;
+  PinsStrings: array of TStringList);
+  var i,j:integer;
+begin
+  if Name='' then Exit;
+  ConfigFile.EraseSection(Name);
+
+   for j := 0 to High(fPins) do
+     begin
+     if j<=High(PinsStrings) then
+        begin
+          for I := 0 to PinsStrings[j].Count - 1 do
+           if (fPins[j] = StrToPinValue ( PinsStrings[j].Strings[i])) then
+                ConfigFile.WriteInteger(Name, PNames[j], i);
+        end;
+     end;
+
+end;
+
+
 { TArduinoDACnew }
 
 
@@ -543,10 +487,8 @@ end;
 
 { TArduinoPinChangerNew }
 
-//constructor TArduinoPinChangerNew.Create(CP: TComPort; Nm: string);
 constructor TArduinoPinChangerNew.Create(Nm: string);
 begin
-// inherited Create(CP,Nm);
  inherited Create(Nm);
  fSetterKod:=PinChangeCommand;
  PinUnderControl:=PinToHigh;
@@ -574,182 +516,181 @@ procedure TArduinoPinChangerNew.PinsCreate;
 begin
  Pins := TPins.Create(Name,1);
 end;
-//
-//
-//{ TPins_I2C }
-//
-//constructor TPins_I2C.Create(Nm: string);
-//begin
-//  inherited Create(Nm,['Adress'],1);
-//  PinStrPart:=''
-//end;
-//
-//function TPins_I2C.PinValueToStr(Index: integer): string;
-//begin
-// Result:='$'+IntToHex(fPins[Index],2);
-//end;
-//
-//
-//{ TPinsShowShot }
-//
-//constructor TPinsShowUniversal.Create(Ps: TPins;
-//                          PinLs: array of TPanel);
-// var i:byte;
-//begin
-//  inherited Create();
-// Pins:=Ps;
-// SetLength(PinLabels,High(PinLs)+1);
-// for I := 0 to High(PinLabels) do
-//   begin
-//     PinLabels[i]:=PinLs[i];
-//     PinLabels[i].Tag:=i;
-//   end;
-//
-//
-// SetLength(fPinVariants,High(PinLs)+1);
-// for I := 0 to High(fPinVariants) do
-//  begin
-//  fPinVariants[i]:=TStringList.Create;
-//  fPinVariants[i].Clear;
-//
-//  end;
-//
-// HookNumberPinShow:=TSimpleClass.EmptyProcedure;
-// CreateFooter();
-//end;
-//
-//constructor TPinsShowUniversal.Create(Ps: TPins;
-//                      PinLs: array of TPanel;
-//                      PinVar: array of TStringList);
-// var i:byte;
-//begin
-//  inherited Create();
-// Pins:=Ps;
-// SetLength(PinLabels,High(PinLs)+1);
-// for I := 0 to High(PinLabels) do
-//   begin
-//     PinLabels[i]:=PinLs[i];
-//     PinLabels[i].Tag:=i;
-//   end;
-//
-// SetLength(fPinVariants,High(PinLabels)+1);
-// for I := 0 to High(fPinVariants) do
-//  begin
-//  fPinVariants[i]:=TStringList.Create;
-//  fPinVariants[i].Clear;
-//  if i<High(PinVar) then fPinVariants[i]:=PinVar[i]
-//                    else fPinVariants[i]:=PinVar[High(PinVar)];
-//  end;
-//
-// HookNumberPinShow:=TSimpleClass.EmptyProcedure;
-// CreateFooter();
-//
-//end;
-//
-//constructor TPinsShowUniversal.Create(Ps: TPins;
-//                                      PinLs: array of TPanel;
-//                                      PinVarSingle: TStringList);
-//begin
-// Create(Ps,PinLs,[PinVarSingle]);
-//end;
-//
-//procedure TPinsShowUniversal.CreateFooter;
-// var  i: Integer;
-//begin
-//  for I := 0 to High(PinLabels) do
-//    begin
-//    PinLabels[i].Caption:=Pins.GetPinStr(i);
-//    PinLabels[i].Cursor:=crHandPoint;
-//    PinLabels[i].Font.Color:=clActiveCaption;
-//    PinLabels[i].OnClick:=VariantsShowAndSelect;
-//    end;
-//end;
-//
-//procedure TPinsShowUniversal.Free;
-// var i:byte;
-//begin
-// for I := 0 to High(fPinVariants) do
-//   begin
-//   fPinVariants[i]:=nil;
-//   fPinVariants[i].Free;
-//   end;
-//end;
-//
-//
-//procedure TPinsShowUniversal.NumberPinShow;
-// var i:byte;
-//begin
-//  for I := 0 to High(PinLabels) do
-//   PinLabels[i].Caption:=Pins.GetPinStr(i);
-//   HookNumberPinShow;
-//end;
-//
-//procedure TPinsShowUniversal.ReadFromIniFile(ConfigFile: TIniFile);
-//begin
-//  Pins.ReadFromIniFile(ConfigFile,fPinVariants);
-//  NumberPinShow();
-//end;
-//
-//procedure TPinsShowUniversal.WriteToIniFile(ConfigFile: TIniFile);
-//begin
-// Pins.WriteToIniFile(ConfigFile,fPinVariants);
-//end;
-//
-//procedure TPinsShowUniversal.SetVariants(Index: byte; const S: TStringList);
-//begin
-//   if (Index <= High(fPinVariants)) then
-//     fPinVariants[Index]:=S;
-//end;
-//
-//procedure TPinsShowUniversal.VariantsShowAndSelect(Sender: TObject);
-//var
-//    PinNumber:byte;
-//    index:shortint;
-//    i:integer;
-//begin
-// if (Sender is TPanel) then
-//   PinNumber:=(Sender as TPanel).Tag
-//                       else
-//   PinNumber:=0;
-//
-// index:=-1;
-// for I := 0 to fPinVariants[PinNumber].Count - 1 do
-//  if Pins.StrToPinValue(fPinVariants[PinNumber].Strings[i])=Pins.fPins[PinNumber] then
-//   begin
-//     index:=i;
-//     Break;
-//   end;
-//
-//
-//i:=SelectFromVariants(fPinVariants[PinNumber],index,
-//                   'Set ' + LowerCase(Pins.PNames[PinNumber]+Pins.PinStrPart));
-//
-//if i>-1 then
-//  begin
-//    Pins.SetStrToPinValue(fPinVariants[PinNumber].Strings[i],PinNumber);
-//    NumberPinShow();
-//  end;
-//
-//end;
-//
-//
-//
-//{ TPinsForCustomValues }
-//
-//constructor TPinsForCustomValues.Create(Nm: string; PNm: array of string);
-//begin
-// inherited Create(Nm, PNm);
-// PinStrPart := '';
-//end;
-//
-//function TPinsForCustomValues.GetPinStr(Index: integer): string;
-//begin
-// if fPins[Index]=UndefinedPin then
-//   Result:=PNames[Index] +' is undefined'
-//                              else
-//   Result:=PinValueToStr(Index);
-//end;
-//
+
+{ TPins_I2C }
+
+constructor TPins_I2C.Create(Nm: string);
+begin
+  inherited Create(Nm,['Adress'],1);
+  PinStrPart:=''
+end;
+
+function TPins_I2C.PinValueToStr(Index: integer): string;
+begin
+ Result:='$'+IntToHex(fPins[Index],2);
+end;
+
+
+{ TPinsShowShot }
+
+constructor TPinsShowUniversal.Create(Ps: TPins;
+                          PinLs: array of TPanel);
+ var i:byte;
+begin
+  inherited Create();
+ Pins:=Ps;
+ SetLength(PinLabels,High(PinLs)+1);
+ for I := 0 to High(PinLabels) do
+   begin
+     PinLabels[i]:=PinLs[i];
+     PinLabels[i].Tag:=i;
+   end;
+
+
+ SetLength(fPinVariants,High(PinLs)+1);
+ for I := 0 to High(fPinVariants) do
+  begin
+  fPinVariants[i]:=TStringList.Create;
+  fPinVariants[i].Clear;
+
+  end;
+
+ HookNumberPinShow:=TSimpleClass.EmptyProcedure;
+ CreateFooter();
+end;
+
+constructor TPinsShowUniversal.Create(Ps: TPins;
+                      PinLs: array of TPanel;
+                      PinVar: array of TStringList);
+ var i:byte;
+begin
+  inherited Create();
+ Pins:=Ps;
+ SetLength(PinLabels,High(PinLs)+1);
+ for I := 0 to High(PinLabels) do
+   begin
+     PinLabels[i]:=PinLs[i];
+     PinLabels[i].Tag:=i;
+   end;
+
+ SetLength(fPinVariants,High(PinLabels)+1);
+ for I := 0 to High(fPinVariants) do
+  begin
+  fPinVariants[i]:=TStringList.Create;
+  fPinVariants[i].Clear;
+  if i<High(PinVar) then fPinVariants[i]:=PinVar[i]
+                    else fPinVariants[i]:=PinVar[High(PinVar)];
+  end;
+
+ HookNumberPinShow:=TSimpleClass.EmptyProcedure;
+ CreateFooter();
+
+end;
+
+constructor TPinsShowUniversal.Create(Ps: TPins;
+                                      PinLs: array of TPanel;
+                                      PinVarSingle: TStringList);
+begin
+ Create(Ps,PinLs,[PinVarSingle]);
+end;
+
+procedure TPinsShowUniversal.CreateFooter;
+ var  i: Integer;
+begin
+  for I := 0 to High(PinLabels) do
+    begin
+    PinLabels[i].Caption:=Pins.GetPinStr(i);
+    PinLabels[i].Cursor:=crHandPoint;
+    PinLabels[i].Font.Color:=clActiveCaption;
+    PinLabels[i].OnClick:=VariantsShowAndSelect;
+    end;
+end;
+
+procedure TPinsShowUniversal.Free;
+ var i:byte;
+begin
+ for I := 0 to High(fPinVariants) do
+   begin
+   fPinVariants[i]:=nil;
+   fPinVariants[i].Free;
+   end;
+end;
+
+
+procedure TPinsShowUniversal.NumberPinShow;
+ var i:byte;
+begin
+  for I := 0 to High(PinLabels) do
+   PinLabels[i].Caption:=Pins.GetPinStr(i);
+   HookNumberPinShow;
+end;
+
+procedure TPinsShowUniversal.ReadFromIniFile(ConfigFile: TIniFile);
+begin
+  Pins.ReadFromIniFile(ConfigFile,fPinVariants);
+  NumberPinShow();
+end;
+
+procedure TPinsShowUniversal.WriteToIniFile(ConfigFile: TIniFile);
+begin
+ Pins.WriteToIniFile(ConfigFile,fPinVariants);
+end;
+
+procedure TPinsShowUniversal.SetVariants(Index: byte; const S: TStringList);
+begin
+   if (Index <= High(fPinVariants)) then
+     fPinVariants[Index]:=S;
+end;
+
+procedure TPinsShowUniversal.VariantsShowAndSelect(Sender: TObject);
+var
+    PinNumber:byte;
+    index:shortint;
+    i:integer;
+begin
+ if (Sender is TPanel) then
+   PinNumber:=(Sender as TPanel).Tag
+                       else
+   PinNumber:=0;
+
+ index:=-1;
+ for I := 0 to fPinVariants[PinNumber].Count - 1 do
+  if Pins.StrToPinValue(fPinVariants[PinNumber].Strings[i])=Pins.fPins[PinNumber] then
+   begin
+     index:=i;
+     Break;
+   end;
+
+
+i:=SelectFromVariants(fPinVariants[PinNumber],index,
+                   'Set ' + LowerCase(Pins.PNames[PinNumber]+Pins.PinStrPart));
+
+if i>-1 then
+  begin
+    Pins.SetStrToPinValue(fPinVariants[PinNumber].Strings[i],PinNumber);
+    NumberPinShow();
+  end;
+
+end;
+
+
+
+{ TPinsForCustomValues }
+
+constructor TPinsForCustomValues.Create(Nm: string; PNm: array of string);
+begin
+ inherited Create(Nm, PNm);
+ PinStrPart := '';
+end;
+
+function TPinsForCustomValues.GetPinStr(Index: integer): string;
+begin
+ if fPins[Index]=UndefinedPin then
+   Result:=PNames[Index] +' is undefined'
+                              else
+   Result:=PinValueToStr(Index);
+end;
+
 
 { TRS232_Arduino }
 
@@ -783,8 +724,6 @@ begin
        Observers[i].UpDate;
        Break;
       end;
-// HelpForMe(inttostr(MilliSecond)+ByteArrayToString(fData));
-
 end;
 
 function TArduinoDataSubject.ObserverIsRegistered(o:IArduinoDevice): boolean;
@@ -834,7 +773,6 @@ end;
 
 procedure TArduinoSetterNew.CreateHook;
 begin
-//  SetLength(fData,6);
   fSetterKod:=$FF;
 end;
 
@@ -934,7 +872,6 @@ end;
 procedure TArduinoMeterNew.Request;
 begin
  fRequestState.Request;
-// isNeededComPortState();
 end;
 
 procedure TArduinoMeterNew.SetisNeededComPort(const Value: boolean);

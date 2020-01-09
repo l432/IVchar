@@ -3,7 +3,7 @@ unit Dependence;
 interface
 
 uses
-  ArduinoDevice, StdCtrls, ComCtrls, OlegType, Series, ShowTypes,
+  StdCtrls, ComCtrls, OlegType, Series, ShowTypes,
   ExtCtrls, Classes, OlegTypePart2, MDevice, HighResolutionTimer, 
   OlegShowTypes, IniFiles, OlegVector;
 

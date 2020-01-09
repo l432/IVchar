@@ -4,8 +4,8 @@ unit MCP3424;
 interface
 
 uses
-  ArduinoDevice, CPort, Measurement, StdCtrls, MDevice, ExtCtrls, ArduinoADC, 
-  IniFiles;
+  CPort, Measurement, StdCtrls, MDevice, ExtCtrls, ArduinoADC, 
+  IniFiles, ArduinoDeviceNew;
 
 type
 
