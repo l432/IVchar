@@ -3,12 +3,12 @@ unit TemperatureSensor;
 interface
 
 uses
-  CPort, Measurement, RS232device, OlegTypePart2, 
+  CPort, Measurement, OlegTypePart2, 
   ArduinoDeviceNew;
 
 
 type
-  TTempSensor=class(TArduinoMeterNew,ITemperatureMeasurement)
+  TTempSensor=class(TArduinoMeter,ITemperatureMeasurement)
   {базовий клас для датчиків температури}
   protected
   public
@@ -71,10 +71,10 @@ type
      procedure GetTemperatureThread(EventEnd:THandle);
   end;
 
-var
-  DS18B20:TDS18B20;
-  HTU21D:THTU21D;
-  STS21:TSTS21;
+//var
+//  DS18B20:TDS18B20;
+//  HTU21D:THTU21D;
+//  STS21:TSTS21;
 
 implementation
 
@@ -250,12 +250,12 @@ begin
 end;
 
 initialization
-   DS18B20:=TDS18B20.Create('DS18B20');
-   HTU21D:=THTU21D.Create('HTU21D');
-   STS21:=TSTS21.Create('STS21');
+//   DS18B20:=TDS18B20.Create('DS18B20');
+//   HTU21D:=THTU21D.Create('HTU21D');
+//   STS21:=TSTS21.Create('STS21');
 
 finalization
-   DS18B20.Free;
-   HTU21D.Free;
-   STS21.Free;
+//   DS18B20.Free;
+//   HTU21D.Free;
+//   STS21.Free;
 end.

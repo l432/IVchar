@@ -3,8 +3,9 @@ unit ET1255;
 interface
 
 uses
-  RS232device, Measurement, OlegType, Classes, OlegFunction, Spin, StdCtrls, 
-  ExtCtrls, Buttons, Series, IniFiles, OlegTypePart2, OlegVector,OlegDigitalManipulation;
+  Measurement, OlegType, Classes, OlegFunction, Spin, StdCtrls, 
+  ExtCtrls, Buttons, Series, IniFiles, OlegTypePart2,
+  OlegVector,OlegDigitalManipulation;
 
 const
  ET1255_DAC_MAX=2.5;
@@ -178,7 +179,7 @@ TET1255_ADCChannel=class(TNamedInterfacedObject,IMeasurement)
   function GetData:double;
   constructor Create(ChanelNumber:TET1255_ADC_ChanelNumber;
                      ET1255_Module:TET1255_Module);
-  procedure Free;override;
+  procedure Free;//override;
   function SetGain(Value: TET1255_ADC_Gain):boolean;
   function SetFrequency_Takt(const Value: TET1255_Frequency_Tackt):boolean;
   function MeasuringStart():boolean;
@@ -217,7 +218,7 @@ end;
    constructor Create();
    function GetData:double;
    procedure GetDataThread(WPARAM: word; EventEnd:THandle);
-   procedure Free;override;
+   procedure Free;//override;
    procedure WriteToIniFile(ConfigFile: TIniFile);override;
    procedure ReadFromIniFile(ConfigFile:TIniFile);override;
  end;
@@ -270,14 +271,14 @@ end;
    procedure OutputInt(Kod:integer); //virtual;
    Procedure Reset();    // virtual;
    Constructor Create(ChanelNumber:TET1255_DAC_ChanelNumber);
-   procedure Free;override;
+   procedure Free;//override;
  end;
 
 implementation
 
 uses
-  Dialogs, SysUtils, Windows, Forms, OlegGraph, OlegMath, HighResolutionTimer, 
-  RS232deviceNew;
+  Dialogs, SysUtils, Windows, Forms, OlegGraph, OlegMath,
+  HighResolutionTimer;
 
 { TET1255_DAC }
 
@@ -859,7 +860,8 @@ begin
  fET1255_Chan.PrepareToMeasurementPart1();
  Synchronize(ValueInitialization);
  if fET1255_Chan.MeasuringStart() then
-  if WaitForSingleObject(EventComPortFree,1500)=WAIT_OBJECT_0
+//  if WaitForSingleObject(EventComPortFree,1500)=WAIT_OBJECT_0
+  if WaitForSingleObject(EventET1255Measurement_Done,1500)=WAIT_OBJECT_0
    then  Synchronize(ResultRead)
    else  fET1255_Chan.MeasuringStop;
 end;

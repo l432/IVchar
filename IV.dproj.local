@@ -1,57 +1,10 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <BorlandProject>
 	<Transactions>
-    <Transaction>2015.09.14 11:33:44.062.pas,C:\Documents and Settings\oleg\Мои документы\RAD Studio\Projects\Unit1.pas=D:\Oleg\Shottky_Program\ComPort\Com.pas</Transaction>
-    <Transaction>2015.09.14 11:33:44.062.dfm,C:\Documents and Settings\oleg\Мои документы\RAD Studio\Projects\Unit1.dfm=D:\Oleg\Shottky_Program\ComPort\Com.dfm</Transaction>
-    <Transaction>2015.09.14 12:15:39.828.dproj,C:\Documents and Settings\oleg\Мои документы\RAD Studio\Projects\Project1.dproj=D:\Oleg\Shottky_Program\ComPort\ComNew.dproj</Transaction>
-    <Transaction>2015.10.26 13:23:11.062.dproj,D:\Oleg\Shottky_Program\ComPort\ComNew.dproj=D:\Oleg\Shottky_Program\ComPort\Experiment.dproj</Transaction>
-    <Transaction>2015.10.26 13:24:12.812.pas,D:\Oleg\Shottky_Program\ComPort\Com.pas=D:\Oleg\Shottky_Program\ComPort\IVchar.pas</Transaction>
-    <Transaction>2015.10.26 13:24:12.812.dfm,D:\Oleg\Shottky_Program\ComPort\Com.dfm=D:\Oleg\Shottky_Program\ComPort\IVchar.dfm</Transaction>
-    <Transaction>2015.10.26 13:24:45.718.pas,D:\Oleg\Shottky_Program\ComPort\IVchar.pas=D:\Oleg\Shottky_Program\ComPort\IVchar_main.pas</Transaction>
-    <Transaction>2015.10.26 13:24:45.718.dfm,D:\Oleg\Shottky_Program\ComPort\IVchar.dfm=D:\Oleg\Shottky_Program\ComPort\IVchar_main.dfm</Transaction>
-    <Transaction>2015.10.26 13:34:14.812.dproj,D:\Oleg\Shottky_Program\IVChar\Experiment.dproj=D:\Oleg\Shottky_Program\IVChar\IV.dproj</Transaction>
-    <Transaction>2015.10.26 14:40:05.000.pas,D:\Oleg\Shottky_Program\IVChar\Unit1.pas=D:\Oleg\Shottky_Program\IVChar\V721.pas</Transaction>
-    <Transaction>2017.09.12 11:13:21.734.pas,D:\Oleg\Shottky_Program\IVChar\Unit1.pas=D:\Oleg\Shottky_Program\IVChar\RS232device.pas</Transaction>
-    <Transaction>2017.09.12 13:26:31.203.pas,D:\Oleg\Shottky_Program\IVChar\Unit1.pas=D:\Oleg\Shottky_Program\IVChar\V7_21.pas</Transaction>
-    <Transaction>2017.09.12 15:21:24.421.pas,D:\Oleg\Shottky_Program\IVChar\Unit1.pas=D:\Oleg\Shottky_Program\IVChar\TemperatureSensor.pas</Transaction>
-    <Transaction>2017.09.12 15:26:30.640.pas,D:\Oleg\Shottky_Program\IVChar\Unit1.pas=D:\Oleg\Shottky_Program\IVChar\AD5752R.pas</Transaction>
-    <Transaction>2017.09.12 15:48:48.859.pas,D:\Oleg\Shottky_Program\IVChar\Unit1.pas=D:\Oleg\Shottky_Program\IVChar\DACR2R.pas</Transaction>
-    <Transaction>2017.09.26 11:35:56.171.pas,D:\Oleg\Shottky_Program\IVChar\Unit1.pas=D:\Oleg\Shottky_Program\IVChar\RS232_Meas_Tread.pas</Transaction>
-    <Transaction>2017.09.26 12:08:51.390.pas,D:\Oleg\Shottky_Program\IVChar\RS232_Meas_Tread.pas=</Transaction>
-    <Transaction>2017.10.02 10:26:39.734.pas,D:\Oleg\Shottky_Program\IVChar\Unit2.pas=D:\Oleg\Shottky_Program\IVChar\ET1255.pas</Transaction>
-    <Transaction>2017.10.03 11:02:38.671.pas,D:\Oleg\Shottky_Program\IVChar\Unit2.pas=D:\Oleg\Shottky_Program\IVChar\RS232_Mediator_Tread.pas</Transaction>
-    <Transaction>2017.10.27 14:15:18.406.pas,D:\Oleg\Shottky_Program\IVChar\Unit2.pas=D:\Oleg\Shottky_Program\IVChar\D30_06.pas</Transaction>
-    <Transaction>2017.12.12 12:14:27.812.pas,D:\Oleg\Shottky_Program\IVChar\Unit1.pas=D:\Oleg\Shottky_Program\IVChar\PID.pas</Transaction>
-    <Transaction>2017.12.12 12:23:20.781.pas,D:\Oleg\Shottky_Program\IVChar\Unit1.pas=D:\Oleg\Shottky_Program\IVChar\MeasurementDevice.pas</Transaction>
-    <Transaction>2017.12.12 12:23:45.593.pas,D:\Oleg\Shottky_Program\IVChar\MeasurementDevice.pas=D:\Oleg\Shottky_Program\IVChar\MDevice.pas</Transaction>
-    <Transaction>2018.10.08 12:10:53.677.pas,D:\Oleg\Shottky_Program\IVChar\Unit1.pas=D:\Oleg\Shottky_Program\IVChar\MCP3424.pas</Transaction>
-    <Transaction>2018.11.16 15:52:45.203.pas,D:\Oleg\Shottky_Program\IVChar\Unit1.pas=D:\Oleg\Shottky_Program\IVChar\ArduinoADC.pas</Transaction>
-    <Transaction>2018.11.17 13:25:46.390.pas,D:\Oleg\Shottky_Program\IVChar\Unit1.pas=D:\Oleg\Shottky_Program\IVChar\ADS1115.pas</Transaction>
-    <Transaction>2018.12.14 12:32:15.828.pas,D:\Oleg\Shottky_Program\IVChar\Unit1.pas=D:\Oleg\Shottky_Program\IVChar\GDS_806S.pas</Transaction>
-    <Transaction>2019.12.16 10:50:01.608.pas,D:\Oleg\Shottky_Program\IVChar\Unit2.pas=D:\Oleg\Shottky_Program\IVChar\OlegDevice.pas</Transaction>
-    <Transaction>2020.01.05 12:28:03.453.pas,D:\oleg\IVchar\Unit2.pas=D:\oleg\IVchar\ADT74x0.pas</Transaction>
-    <Transaction>2020.01.05 12:33:15.750.pas,D:\oleg\IVchar\Unit2.pas=D:\oleg\IVchar\TMP102.pas</Transaction>
-    <Transaction>2020.01.05 19:42:39.734.pas,D:\oleg\IVchar\Unit1.pas=D:\oleg\IVchar\MCP9808.pas</Transaction>
-    <Transaction>2020.01.06 19:56:48.687.pas,D:\oleg\IVchar\Unit1.pas=D:\oleg\IVchar\RS232deviceNew.pas</Transaction>
-    <Transaction>2020.01.07 13:32:33.156.pas,D:\oleg\IVchar\Unit1.pas=D:\oleg\IVchar\UT70new.pas</Transaction>
-    <Transaction>2020.01.07 17:11:40.187.pas,D:\oleg\IVchar\Unit1.pas=D:\oleg\IVchar\GDS_806Snew.pas</Transaction>
-    <Transaction>2020.01.07 19:18:19.375.pas,D:\oleg\IVchar\Unit1.pas=D:\oleg\IVchar\RS232DataRequest.pas</Transaction>
-    <Transaction>2020.01.07 19:21:31.546.pas,D:\oleg\IVchar\RS232DataRequest.pas=</Transaction>
-    <Transaction>2020.01.07 20:29:13.296.pas,D:\oleg\IVchar\Unit1.pas=D:\oleg\IVchar\ArduinoDeviceNew.pas</Transaction>
-    <Transaction>2020.01.08 13:46:51.593.pas,D:\oleg\IVchar\Unit1.pas=D:\oleg\IVchar\ArduinoDeviceShowNew.pas</Transaction>
-    <Transaction>2020.01.08 13:55:58.921.pas,D:\oleg\IVchar\Unit1.pas=D:\oleg\IVchar\AD9833new.pas</Transaction>
-    <Transaction>2020.01.09 22:30:22.218.pas,D:\oleg\IVchar\AD9833.pas=</Transaction>
-    <Transaction>2020.01.09 22:34:15.203.pas,D:\oleg\IVchar\AD9833new.pas=D:\oleg\IVchar\AD9833.pas</Transaction>
-    <Transaction>2020.01.09 23:08:40.015.pas,D:\oleg\IVchar\ArduinoDeviceShow.pas=</Transaction>
-    <Transaction>2020.01.09 23:11:01.921.pas,D:\oleg\IVchar\ArduinoDeviceShowNew.pas=D:\oleg\IVchar\ArduinoDeviceShow.pas</Transaction>
-    <Transaction>2020.01.09 23:21:58.703.pas,D:\oleg\IVchar\GDS_806S.pas=</Transaction>
-    <Transaction>2020.01.09 23:22:54.234.pas,D:\oleg\IVchar\GDS_806Snew.pas=D:\oleg\IVchar\GDS_806S.pas</Transaction>
-    <Transaction>2020.01.09 23:48:06.156.pas,D:\oleg\IVchar\UT70.pas=</Transaction>
-    <Transaction>2020.01.09 23:48:43.953.PAS,D:\oleg\IVchar\UT70new.PAS=D:\oleg\IVchar\UT70.PAS</Transaction>
-    <Transaction>2020.01.10 00:04:45.546.pas,D:\oleg\IVchar\ArduinoDevice.pas=</Transaction>
-    <Transaction>2020.01.10 00:07:06.937.pas,D:\oleg\IVchar\ArduinoDeviceNew.pas=D:\oleg\IVchar\ArduinoDevice.pas</Transaction>
-    <Transaction>2020.01.10 00:31:47.734.pas,D:\oleg\IVchar\ArduinoDevice.pas=D:\oleg\IVchar\ArduinoDeviceNew.pas</Transaction>
-    <Transaction>2020.01.10 00:38:59.406.pas,D:\oleg\IVchar\ArduinoDeviceNew.pas=D:\oleg\IVchar\ArduinoDevice.pas</Transaction>
-    <Transaction>2020.01.10 00:43:58.125.pas,D:\oleg\IVchar\ArduinoDevice.pas=D:\oleg\IVchar\ArduinoDeviceNew.pas</Transaction>
+    <Transaction>2020.01.10 13:08:45.687.pas,D:\Oleg\Shottky_Program\IVChar\RS232deviceOld.pas=D:\Oleg\Shottky_Program\IVChar\RS232deviceNew.pas</Transaction>
+    <Transaction>2020.01.10 13:36:03.250.pas,D:\Oleg\Shottky_Program\IVChar\RS232deviceNew.pas=D:\Oleg\Shottky_Program\IVChar\RS232device.pas</Transaction>
+    <Transaction>2020.01.10 13:47:32.656.pas,D:\Oleg\Shottky_Program\IVChar\RS232device.pas=D:\Oleg\Shottky_Program\IVChar\RS232deviceNew.pas</Transaction>
+    <Transaction>2020.01.10 13:57:37.734.pas,D:\Oleg\Shottky_Program\IVChar\RS232deviceNew.pas=D:\Oleg\Shottky_Program\IVChar\RS232device.pas</Transaction>
+    <Transaction>2020.01.10 14:02:38.109.pas,D:\Oleg\Shottky_Program\IVChar\RS232device.pas=D:\Oleg\Shottky_Program\IVChar\RS232deviceNew.pas</Transaction>
   </Transactions>
 </BorlandProject>

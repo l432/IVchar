@@ -158,7 +158,7 @@ type
    public
      Constructor Create(CP:TComPort;Nm:string);overload;
      Constructor Create(CP:TComPort);overload;
-     procedure Free;override;
+     procedure Free;//override;
   end;
 
   TRS232_UT70C=class(TRS232)
@@ -239,7 +239,7 @@ type
                         TT:TTimer
                         );
    procedure MetterDataShow();override;
-   Procedure Free;override;
+   Procedure Free;//override;
   end;
 
   TUT70CShow=class(TUT70BShow)
@@ -260,9 +260,9 @@ type
 
 var
     PacketToSend:array of byte;
-    UT70B:TUT70B;
+//    UT70B:TUT70B;
 //    UT70BShowNew:TUT70BShowNew;
-    UT70C:TUT70C;
+//    UT70C:TUT70C;
 //    UT70CShowNew:TUT70CShowNew;
 
 implementation

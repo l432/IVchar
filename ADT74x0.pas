@@ -17,8 +17,8 @@ type
    Procedure ConvertToValue();override;
   end;
 
-var
-   ADT74x:TADT74x0;
+//var
+//   ADT74x:TADT74x0;
 
 
 implementation
@@ -50,7 +50,7 @@ begin
 end;
 
 initialization
-   ADT74x:=TADT74x0.Create;
+//   ADT74x:=TADT74x0.Create;
 finalization
-   ADT74x.Free;
+//   ADT74x.Free;
 end.

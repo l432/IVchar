@@ -17,7 +17,7 @@ const D30_06_MaxVoltage=28.75;
 
 type
 
-TD30_06=class(TArduinoDACnew)
+TD30_06=class(TArduinoDAC)
  private
   fCurrentMaxValue:double;
   FisVoltage: boolean;
@@ -30,7 +30,7 @@ TD30_06=class(TArduinoDACnew)
   procedure PinsToDataArray;override;
   property isVoltage:boolean read FisVoltage write FisVoltage;
   constructor Create();
-  procedure Free;override;
+  procedure Free;//override;
 end;
 
 
@@ -55,8 +55,8 @@ private
  Procedure WriteToIniFile(ConfigFile:TIniFile);override;
 end;
 
-var
-    D30_06nw:TD30_06;
+//var
+//    D30_06nw:TD30_06;
 //    D30_06Show:TD30_06Show;
 
 implementation
@@ -73,6 +73,7 @@ end;
 
 procedure TD30_06.CreateHook;
 begin
+  inherited CreateHook;
   fVoltageMaxValue:=D30_06_MaxVoltage;
   fKodMaxValue:=D30_06_MaxKod;
   fCurrentMaxValue:=D30_06_MaxCurrent;
@@ -211,7 +212,7 @@ end;
 
 
 initialization
-   D30_06nw:=TD30_06.Create;
+//   D30_06nw:=TD30_06.Create;
 finalization
-   D30_06nw.Free;
+//   D30_06nw.Free;
 end.

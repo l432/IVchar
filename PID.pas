@@ -3,7 +3,8 @@ unit PID;
 interface
 
 uses
-  ShowTypes, Windows, StdCtrls, IniFiles, OlegShowTypes, OlegTypePart2;
+  ShowTypes, Windows, StdCtrls, IniFiles, OlegShowTypes,
+  OlegTypePart2;
 
 type
 

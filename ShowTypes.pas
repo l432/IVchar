@@ -71,7 +71,7 @@ TDAC_Show=class(TSimpleFreeAndAiniObject)
                       VSB, KSB, RB: TButton);
     procedure ReadFromIniFile(ConfigFile:TIniFile);override;//virtual;
     procedure WriteToIniFile(ConfigFile:TIniFile);override;//virtual;
-    procedure Free;override;
+    procedure Free;//override;
 end;
 
 
@@ -79,13 +79,13 @@ end;
   private
    fDAC_Show:TDAC_Show;
   public
-   Constructor Create(ArdDAC:TArduinoDACNew;
+   Constructor Create(ArdDAC:TArduinoDAC;
                        PinLs: array of TPanel;
                        PinVariant:TStringList;
                        VData,KData:TStaticText;
                        VL, KL: TLabel;
                        VSB, KSB, RB: TButton);
-   Procedure Free;override;
+   Procedure Free;//override;
    Procedure HookReadFromIniFile(ConfigFile:TIniFile);override;
    Procedure WriteToIniFile(ConfigFile:TIniFile);override;
   end;
@@ -392,7 +392,7 @@ end;
 
 { TArduinoDACShowNew }
 
-constructor TArduinoDACShow.Create(ArdDAC: TArduinoDACNew;
+constructor TArduinoDACShow.Create(ArdDAC: TArduinoDAC;
                                       PinLs: array of TPanel;
                                       PinVariant: TStringList;
                                       VData, KData: TStaticText;

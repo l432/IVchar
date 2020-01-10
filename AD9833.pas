@@ -27,7 +27,7 @@ const
 
 type
 
- TAD9833=class(TArduinoSetterNew)
+ TAD9833=class(TArduinoSetter)
   private
     procedure PrepareToPhaseChange;
     procedure PrepareToFreqChange;
@@ -59,7 +59,7 @@ type
    procedure Generate();
    procedure Action();
    Constructor Create();
-   procedure Free;override;
+   procedure Free;//override;
  end;
 
 TAD9833Show=class(TArduinoSetterShow)
@@ -87,19 +87,20 @@ TAD9833Show=class(TArduinoSetterShow)
                      Fr1L,Ph1L,Fr2L,Ph2L:TLabel;
                      Gen1SB,Gen2SB,StopSB:TSpeedButton;
                      RGM:TRadioGroup);
-  Procedure Free; override;
+  Procedure Free;// override;
   Procedure WriteToIniFile(ConfigFile:TIniFile);override;
   Procedure HookReadFromIniFile(ConfigFile:TIniFile);override;
  end;
 
- var
-  AD9833nw:TAD9833;
+// var
+//  AD9833nw:TAD9833;
 //  AD9833ShowNew:TAD9833ShowNew;
 
 implementation
 
 uses
-  PacketParameters, Math, OlegType, Windows, Dialogs, OlegFunction;
+  PacketParameters, Math, OlegType, Windows,
+  Dialogs, OlegFunction;
 
 { TAD9833new }
 
@@ -128,6 +129,7 @@ end;
 procedure TAD9833.CreateHook;
  var i:TAD9833_ChanelNumber;
 begin
+ inherited CreateHook;
  fSetterKod:=AD9833Command;
  MessageError:='AD9833 output is unsuccessful';
  fMode:=ad9833_mode_off;
@@ -400,7 +402,6 @@ begin
   fPhaseCh1Show.WriteToIniFile(ConfigFile);
   fFreqCh2Show.WriteToIniFile(ConfigFile);
   fFreqCh1Show.WriteToIniFile(ConfigFile);
-  HelpForMe(fArduinoSetter.Name);
   WriteIniDef(ConfigFile, fSetterNname, 'Mode', fMode.ItemIndex);
 end;
 

@@ -18,8 +18,8 @@ type
    Procedure ConvertToValue();override;
   end;
 
-var
-       TMP102nw:TTMP102;
+//var
+//       TMP102nw:TTMP102;
 
 
 implementation
@@ -51,7 +51,7 @@ begin
 end;
 
 initialization
-   TMP102nw:=TTMP102.Create;
+//   TMP102nw:=TTMP102.Create;
 finalization
-   TMP102nw.Free;
+//   TMP102nw.Free;
 end.

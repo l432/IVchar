@@ -56,13 +56,13 @@ type
                       STGrayC:TStaticText;
                       BRead,BWrite,Bcalibr:TButton;
                       TTemp_MD:TTemperature_MD);
-   procedure Free;override;
+   procedure Free;//override;
    procedure ReadFromIniFile(ConfigFile:TIniFile);override;
    procedure WriteToIniFile(ConfigFile:TIniFile);override;
  end;
 
-var
-     MLX90615nw:TMLX90615;
+//var
+//     MLX90615nw:TMLX90615;
 
 implementation
 
@@ -254,7 +254,7 @@ begin
 end;
 
 initialization
-   MLX90615nw:=TMLX90615.Create('MLX90615');
+//   MLX90615nw:=TMLX90615.Create('MLX90615');
 finalization
-   MLX90615nw.Free;
+//   MLX90615nw.Free;
 end.

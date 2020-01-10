@@ -50,14 +50,14 @@ type
 
   TArduinoPinChangerShow=class(TOnePinsShow)
   protected
-   ArduinoPinChanger:TArduinoPinChangerNew;
+   ArduinoPinChanger:TArduinoPinChanger;
    ToChangeButton:TButton;
    fLowStateButtonCaption:string;
    fHighStateButtonCaption:string;
    procedure CaptionButtonSynhronize();
    procedure ToChangeButtonClick(Sender: TObject);
   public
-   Constructor Create(APC:TArduinoPinChangerNew;
+   Constructor Create(APC:TArduinoPinChanger;
                       ControlPinLabel:TPanel;
                       TCBut:TButton;
                       PinVariant:TStringList;
@@ -69,16 +69,16 @@ type
 
   TArduinoSetterShow=class(TSimpleFreeAndAiniObject)
   protected
-   fArduinoSetter:TArduinoSetterNew;
+   fArduinoSetter:TArduinoSetter;
 
    PinShow:TPinsShowUniversal;
    procedure CreatePinShow(PinLs: array of TPanel;
                    PinVariant:TStringList);virtual;
   public
-   Constructor Create(ArdSet:TArduinoSetterNew;
+   Constructor Create(ArdSet:TArduinoSetter;
                        PinLs: array of TPanel;
                        PinVariant:TStringList);
-   Procedure Free;override;
+   Procedure Free;//override;
    procedure ReadFromIniFile(ConfigFile:TIniFile);override;
 //   procedure ReadFromIniFileAndToForm(ConfigFile:TIniFile);
    Procedure WriteToIniFile(ConfigFile:TIniFile);override;
@@ -131,7 +131,7 @@ begin
           else  ToChangeButton.Caption:='U-u-ps';
 end;
 
-constructor TArduinoPinChangerShow.Create(APC: TArduinoPinChangerNew;
+constructor TArduinoPinChangerShow.Create(APC: TArduinoPinChanger;
                                           ControlPinLabel: TPanel;
                                           TCBut: TButton;
                                           PinVariant:TStringList;
@@ -189,7 +189,7 @@ end;
 
 { TArduinoSetterShow }
 
-constructor TArduinoSetterShow.Create(ArdSet: TArduinoSetterNew;
+constructor TArduinoSetterShow.Create(ArdSet: TArduinoSetter;
                                      PinLs: array of TPanel;
                                      PinVariant:TStringList);
 begin

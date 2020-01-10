@@ -3,7 +3,8 @@ unit OlegDevice;
 interface
 
 uses
-  OlegTypePart2, Measurement, OlegShowTypes, MDevice, IniFiles, StdCtrls, 
+  OlegTypePart2, Measurement, OlegShowTypes,
+  MDevice, IniFiles, StdCtrls, 
   Buttons, ExtCtrls;
 
 type
@@ -64,11 +65,11 @@ type
                          DevDiapCB,DevValCB: TComboBox);
       procedure ReadFromIniFile(ConfigFile:TIniFile);override;
       procedure WriteToIniFile(ConfigFile:TIniFile);override;
-      Procedure Free;override;
+      Procedure Free;//override;
   end;
 
 
- var OlegCurrent:TCurrent;
+// var OlegCurrent:TCurrent;
 
 implementation
 
@@ -243,7 +244,7 @@ begin
 end;
 
 initialization
-  OlegCurrent:=TCurrent.Create;
+//  OlegCurrent:=TCurrent.Create;
 finalization
-  OlegCurrent.Free;
+//  OlegCurrent.Free;
 end.

@@ -426,7 +426,8 @@ end;
 implementation
 
 uses
-  SysUtils, Forms, Windows, Math, DateUtils, Dialogs, OlegGraph, OlegFunction, 
+  SysUtils, Forms, Windows, Math, DateUtils,
+  Dialogs, OlegGraph, OlegFunction, 
   OlegMath, Measurement;
 
 var

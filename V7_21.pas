@@ -3,9 +3,9 @@ unit V7_21;
 interface
 
 uses
-  ExtCtrls, StdCtrls, Buttons, RS232device, CPort, Classes, 
-  IniFiles, ArduinoDeviceNew, RS232deviceNew,
-  ArduinoDeviceShow;
+  ExtCtrls, StdCtrls, Buttons, CPort, Classes, 
+  IniFiles, ArduinoDeviceNew, 
+  ArduinoDeviceShow, RS232deviceNew;
 
 
 
@@ -33,7 +33,7 @@ const
   LongTimeToMeasurement=300;
 
 type
-  TVoltmetr=class(TArduinoMeterNew)
+  TVoltmetr=class(TArduinoMeter)
   {базовий клас для вольтметрів серії В7-21}
   private
    fDataConverter:TComplexDeviceDataConverter;
@@ -50,7 +50,7 @@ type
    Constructor Create(Nm:string);//override;
    function GetData():double;override;
    procedure GetDataThread(WPARAM: word;EventEnd:THandle);override;
-   procedure Free;override;
+   procedure Free;//override;
   end;
 
   TV721A=class(TVoltmetr)
@@ -89,16 +89,16 @@ type
                       AB:TSpeedButton;
                       PinVariants:TStringList;
                       TT:TTimer);
-   Procedure Free; override;
+   Procedure Free; //override;
    procedure NumberPinShow();
    procedure ButtonEnabled();
    procedure ReadFromIniFile(ConfigFile: TIniFile);override;//virtual;
    procedure WriteToIniFile(ConfigFile: TIniFile);override;//virtual;
   end;
 
-var
-    V721A:TV721A;
-    V721_I,V721_II:TV721;
+//var
+//    V721A:TV721A;
+//    V721_I,V721_II:TV721;
 //    V721_I:TV721;
 //    V721_II:TV721_Brak;
 //    VoltmetrShows:array of TVoltmetrShow;
@@ -485,12 +485,12 @@ begin
 end;
 
 initialization
-  V721A := TV721A.Create('B7-21A');
-  V721_I := TV721.Create('B7-21 (1)');
-  V721_II := TV721.Create('B7-21 (2)');
+//  V721A := TV721A.Create('B7-21A');
+//  V721_I := TV721.Create('B7-21 (1)');
+//  V721_II := TV721.Create('B7-21 (2)');
 //  V721_II := TV721_Brak.Create(ComPort1, 'B7-21 (2)');
 finalization
-  V721A.Free;
-  V721_I.Free;
-  V721_II.Free;
+//  V721A.Free;
+//  V721_I.Free;
+//  V721_II.Free;
 end.

@@ -3,7 +3,7 @@ unit RS232_Mediator_Tread;
 interface
 
 uses
-  RS232device,  Measurement, HighResolutionTimer, CPort, 
+  Measurement, HighResolutionTimer, CPort, 
   ArduinoDeviceNew;
 
 Const
@@ -13,20 +13,18 @@ type
   TRS232_MediatorTread = class(TTheadSleep)
   private
    fArduinoComPort:TRS232_Arduino;
-//   fArrayDevice:array of TRS232Device;
    fArrayDevice:array of IArduinoSender;
    fDeviceNumber:byte;
    procedure DoSomething;
   protected
     procedure Execute; override;
   public
-//    constructor Create(CP:TComPort; ArrayDevice:array of TRS232Device);
     constructor Create(CP:TComPort; ArrayDevice:array of IArduinoSender);
     procedure Free;overload;
   end;
 
-var
- RS232_MediatorTread:TRS232_MediatorTread;
+//var
+// RS232_MediatorTread:TRS232_MediatorTread;
 
 implementation
 
@@ -36,8 +34,6 @@ uses
 
 { RS232_Mediator }
 
-//constructor TRS232_MediatorTread.Create(CP:TComPort;
-//                     ArrayDevice: array of TRS232Device);
 constructor TRS232_MediatorTread.Create(CP:TComPort;
                      ArrayDevice: array of IArduinoSender);
  var i:byte;

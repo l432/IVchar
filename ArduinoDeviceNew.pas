@@ -2,8 +2,8 @@ unit ArduinoDeviceNew;
 
 interface
  uses OlegType,CPort,SysUtils,Classes,PacketParameters,
-      StdCtrls, IniFiles, RS232device, ExtCtrls, Measurement, OlegTypePart2,
-  RS232deviceNew;
+      StdCtrls, IniFiles, ExtCtrls, Measurement,
+      OlegTypePart2, RS232deviceNew;
 
 const
   UndefinedPin=255;
@@ -23,21 +23,17 @@ const
 
 
 type
-//  IArduinoSender = interface
-//   ['{4E78ACBE-DD15-483D-8493-4B08E3E94454}']
-////    function GetDeviceKod:byte;
-////    function GetSecondDeviceKod:byte;
-//    function GetisNeededComPort:boolean;
-//    procedure SetisNeededComPort(const Value:boolean);
-//    procedure  PacketCreateToSend();
-//    procedure SetError(const Value:boolean);
-//    function GetMessageError:string;
-////    property DeviceKod:byte read GetDeviceKod;
-////    property SecondDeviceKod:byte read GetSecondDeviceKod;
-//    property isNeededComPort:boolean read GetisNeededComPort write SetisNeededComPort;
-//    property Error:boolean write SetError;
-//    property MessageError:string read GetMessageError;
-//  end;
+  IArduinoSender = interface
+   ['{4E78ACBE-DD15-483D-8493-4B08E3E94454}']
+    function GetisNeededComPort:boolean;
+    procedure SetisNeededComPort(const Value:boolean);
+    procedure  PacketCreateToSend();
+    procedure SetError(const Value:boolean);
+    function GetMessageError:string;
+    property isNeededComPort:boolean read GetisNeededComPort write SetisNeededComPort;
+    property Error:boolean write SetError;
+    property MessageError:string read GetMessageError;
+  end;
 
 
   IArduinoDevice = interface (IRS232DataObserver)
@@ -153,11 +149,11 @@ type
    procedure ReadFromIniFile(ConfigFile:TIniFile);override;//virtual;
    procedure WriteToIniFile(ConfigFile:TIniFile);override;//virtual;
    procedure NumberPinShow();virtual;
-   procedure Free();override;//virtual;
+   procedure Free();//override;//virtual;
    procedure VariantsShowAndSelect(Sender: TObject);
   end;
 
-  TArduinoSetterNew=class(TRS232CustomDevice,IArduinoSender)
+  TArduinoSetter=class(TRS232CustomDevice,IArduinoSender)
     {базовий клас для джерел сигналів, що керуються
     за допомогою Arduino    }
   protected
@@ -172,12 +168,12 @@ type
    property isNeededComPort:boolean read GetisNeededComPort write SetisNeededComPort;
    procedure PacketCreateToSend(); virtual;
    Constructor Create(Nm:string);//override;
-   Procedure Free;override;
+   Procedure Free;//virtual;//override;
    procedure PinsToDataArray;virtual;
    procedure isNeededComPortState();
   end;
 
- TArduinoPinChangerNew=class(TArduinoSetterNew)
+ TArduinoPinChanger=class(TArduinoSetter)
   protected
    fPinUnderControl:byte;
    procedure PinsCreate();override;
@@ -194,7 +190,7 @@ type
   procedure Request;virtual;abstract;
  end;
 
-  TArduinoMeterNew=class(TRS232MeterDevice,IArduinoSender,IArduinoDevice)
+  TArduinoMeter=class(TRS232MeterDevice,IArduinoSender,IArduinoDevice)
   {базовий клас для вимірювальних об'єктів,
   які використовують обмін даних з Arduino}
   protected
@@ -218,7 +214,7 @@ type
    property SecondDeviceKod:byte read GetSecondDeviceKod;
    procedure   PacketCreateToSend(); virtual;
    Constructor Create(Nm:string);//override;
-   Procedure Free;override;
+   Procedure Free;//override;
    procedure isNeededComPortState();
    procedure Request();override;
    Procedure ConvertToValue();virtual;abstract;
@@ -232,10 +228,10 @@ type
 
  TWorkRequestState = class(TArduinoDataRequest)
   private
-   fArduinoMeter:TArduinoMeterNew;
+   fArduinoMeter:TArduinoMeter;
   public
    procedure Request;override;
-   Constructor Create(ArduinoMeter:TArduinoMeterNew);
+   Constructor Create(ArduinoMeter:TArduinoMeter);
  end;
 
  TAddedRequestState= class(TWorkRequestState)
@@ -243,7 +239,7 @@ type
    procedure Request;override;
  end;
 
-  TArduinoDACnew=class(TArduinoSetterNew,IDAC)
+  TArduinoDAC=class(TArduinoSetter,IDAC)
     {базовий клас для ЦАП, що керується
     за допомогою Arduino    }
   protected
@@ -263,13 +259,14 @@ type
    Procedure OutputInt(Kod:integer);virtual;
   end;
 
-var
- ArduinoDataSubject:TArduinoDataSubject;
+//var
+// ArduinoDataSubject:TArduinoDataSubject;
 
 implementation
 
 uses
-  Math, Forms, Graphics, Controls, OlegFunction, HighResolutionTimer, Dialogs,
+  Math, Forms, Graphics, Controls, OlegFunction,
+  HighResolutionTimer, Dialogs,
   Windows;
 
 { TPins }
@@ -420,25 +417,25 @@ end;
 { TArduinoDACnew }
 
 
-function TArduinoDACnew.NormedKod(Kod: Integer):integer;
+function TArduinoDAC.NormedKod(Kod: Integer):integer;
 begin
   Result := min(abs(Kod), fKodMaxValue);
 end;
 
-procedure TArduinoDACnew.CreateHook;
+procedure TArduinoDAC.CreateHook;
 begin
   inherited CreateHook;
   fVoltageMaxValue:=5;
   fKodMaxValue:=65535;
 end;
 
-procedure TArduinoDACnew.OutputDataSignDetermination(OutputData: Double);
+procedure TArduinoDAC.OutputDataSignDetermination(OutputData: Double);
 begin
   if OutputData < 0 then  fData[5] := DAC_Neg
                     else  fData[5] := DAC_Pos;
 end;
 
-procedure TArduinoDACnew.DataByteToSendFromInteger(IntData: Integer);
+procedure TArduinoDAC.DataByteToSendFromInteger(IntData: Integer);
  var NormedIntData:integer;
 begin
   NormedIntData:=NormedKod(IntData);
@@ -446,12 +443,12 @@ begin
   fData[4] := (NormedIntData and $FF);
 end;
 
-function TArduinoDACnew.GetOutputValue: double;
+function TArduinoDAC.GetOutputValue: double;
 begin
   Result:=fOutputValue;
 end;
 
-procedure TArduinoDACnew.Output(Voltage: double);
+procedure TArduinoDAC.Output(Voltage: double);
 begin
  if Voltage=ErResult then Exit;
  OutputDataSignDetermination(Voltage);
@@ -459,7 +456,7 @@ begin
  isNeededComPortState();
 end;
 
-procedure TArduinoDACnew.OutputInt(Kod: integer);
+procedure TArduinoDAC.OutputInt(Kod: integer);
 begin
  fOutputValue:=Kod;
  OutputDataSignDetermination(Kod);
@@ -468,7 +465,7 @@ begin
 end;
 
 
-procedure TArduinoDACnew.Reset;
+procedure TArduinoDAC.Reset;
 begin
  fData[5]:=DAC_Pos;
  fData[3] := $00;
@@ -476,7 +473,7 @@ begin
  isNeededComPortState();
 end;
 
-function TArduinoDACnew.VoltageToKod(Voltage: double): integer;
+function TArduinoDAC.VoltageToKod(Voltage: double): integer;
 begin
  fOutPutValue:=Voltage;
  Voltage:=abs(Voltage);
@@ -487,7 +484,7 @@ end;
 
 { TArduinoPinChangerNew }
 
-constructor TArduinoPinChangerNew.Create(Nm: string);
+constructor TArduinoPinChanger.Create(Nm: string);
 begin
  inherited Create(Nm);
  fSetterKod:=PinChangeCommand;
@@ -495,24 +492,24 @@ begin
 end;
 
 
-procedure TArduinoPinChangerNew.PacketCreateToSend;
+procedure TArduinoPinChanger.PacketCreateToSend;
 begin
  PacketCreate([fSetterKod,Pins.PinControl,PinUnderControl]);
 end;
 
-procedure TArduinoPinChangerNew.PinChangeToHigh;
+procedure TArduinoPinChanger.PinChangeToHigh;
 begin
  PinUnderControl:=PinToHigh;
  isNeededComPortState();
 end;
 
-procedure TArduinoPinChangerNew.PinChangeToLow;
+procedure TArduinoPinChanger.PinChangeToLow;
 begin
  PinUnderControl:=PinToLow;
  isNeededComPortState();
 end;
 
-procedure TArduinoPinChangerNew.PinsCreate;
+procedure TArduinoPinChanger.PinsCreate;
 begin
  Pins := TPins.Create(Name,1);
 end;
@@ -609,11 +606,15 @@ end;
 procedure TPinsShowUniversal.Free;
  var i:byte;
 begin
+ for I := 0 to High(PinLabels) do PinLabels[i]:=nil;
+ fHookNumberPinShow:=nil;
+
  for I := 0 to High(fPinVariants) do
    begin
    fPinVariants[i]:=nil;
    fPinVariants[i].Free;
    end;
+  inherited;
 end;
 
 
@@ -761,7 +762,7 @@ end;
 
 { TArduinoSetterNew }
 
-constructor TArduinoSetterNew.Create(Nm: string);
+constructor TArduinoSetter.Create(Nm: string);
 begin
   inherited Create(Nm);
   PinsCreate();
@@ -771,50 +772,51 @@ begin
   PinsToDataArray();
 end;
 
-procedure TArduinoSetterNew.CreateHook;
+procedure TArduinoSetter.CreateHook;
 begin
   fSetterKod:=$FF;
 end;
 
-procedure TArduinoSetterNew.Free;
+procedure TArduinoSetter.Free;
 begin
+// HelpForMe(Pins.Name);
  Pins.Free;
- inherited Free;
+// inherited Free;
 end;
 
-function TArduinoSetterNew.GetisNeededComPort: boolean;
+function TArduinoSetter.GetisNeededComPort: boolean;
 begin
  Result:=fisNeededComPort;
 end;
 
-procedure TArduinoSetterNew.isNeededComPortState;
+procedure TArduinoSetter.isNeededComPortState;
 begin
   fisNeededComPort:=(WaitForSingleObject(EventComPortFree,1000)=WAIT_OBJECT_0);
 end;
 
-procedure TArduinoSetterNew.PacketCreateToSend;
+procedure TArduinoSetter.PacketCreateToSend;
 begin
    PacketCreate(fData);
 end;
 
-procedure TArduinoSetterNew.PinsCreate;
+procedure TArduinoSetter.PinsCreate;
 begin
   Pins := TPins.Create(Name);
 end;
 
-procedure TArduinoSetterNew.PinsToDataArray;
+procedure TArduinoSetter.PinsToDataArray;
 begin
   fData[1] := Pins.PinControl;
 end;
 
-procedure TArduinoSetterNew.SetisNeededComPort(const Value: boolean);
+procedure TArduinoSetter.SetisNeededComPort(const Value: boolean);
 begin
  fisNeededComPort:=Value;
 end;
 
 { TArduinoMeterNew }
 
-procedure TArduinoMeterNew.AddDataSubject(DataSubject: TArduinoDataSubject);
+procedure TArduinoMeter.AddDataSubject(DataSubject: TArduinoDataSubject);
 begin
  fArduinoDataSubject:=DataSubject;
  fIRS232DataSubject:=fArduinoDataSubject;
@@ -822,7 +824,7 @@ begin
 end;
 
 
-constructor TArduinoMeterNew.Create(Nm: string);
+constructor TArduinoMeter.Create(Nm: string);
 begin
   inherited Create(Nm);
   PinsCreate();
@@ -832,54 +834,54 @@ begin
   fAddedRequestState:=TAddedRequestState.Create(Self);
 end;
 
-procedure TArduinoMeterNew.Free;
+procedure TArduinoMeter.Free;
 begin
  Pins.Free;
  fInitRequestState.Free;
- inherited Free;
+ inherited;
 end;
 
-function TArduinoMeterNew.GetDeviceKod: byte;
+function TArduinoMeter.GetDeviceKod: byte;
 begin
   Result:=fMetterKod;
 end;
 
-function TArduinoMeterNew.GetisNeededComPort: boolean;
+function TArduinoMeter.GetisNeededComPort: boolean;
 begin
  Result:=fisNeededComPort;
 end;
 
-function TArduinoMeterNew.GetSecondDeviceKod: byte;
+function TArduinoMeter.GetSecondDeviceKod: byte;
 begin
  Result:=Pins.PinControl;
 end;
 
-procedure TArduinoMeterNew.isNeededComPortState;
+procedure TArduinoMeter.isNeededComPortState;
 begin
   fisNeededComPort:=(WaitForSingleObject(EventComPortFree,1000)=WAIT_OBJECT_0);
 end;
 
-procedure TArduinoMeterNew.PacketCreateToSend;
+procedure TArduinoMeter.PacketCreateToSend;
 begin
   PacketCreate([fMetterKod,Pins.PinControl]);
 end;
 
-procedure TArduinoMeterNew.PinsCreate;
+procedure TArduinoMeter.PinsCreate;
 begin
    Pins := TPins.Create(Name);
 end;
 
-procedure TArduinoMeterNew.Request;
+procedure TArduinoMeter.Request;
 begin
  fRequestState.Request;
 end;
 
-procedure TArduinoMeterNew.SetisNeededComPort(const Value: boolean);
+procedure TArduinoMeter.SetisNeededComPort(const Value: boolean);
 begin
  fisNeededComPort:=Value;
 end;
 
-procedure TArduinoMeterNew.UpDate;
+procedure TArduinoMeter.UpDate;
  var i:integer;
 begin
   inherited UpDate;
@@ -898,7 +900,7 @@ end;
 
 { TWorkRequestState }
 
-constructor TWorkRequestState.Create(ArduinoMeter: TArduinoMeterNew);
+constructor TWorkRequestState.Create(ArduinoMeter: TArduinoMeter);
 begin
  fArduinoMeter:=ArduinoMeter;
 end;

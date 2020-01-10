@@ -119,7 +119,7 @@ type
                        STRsh,STTimeF:TStaticText);
     procedure ReadFromIniFile(ConfigFile:TIniFile);override;
     procedure WriteToIniFile(ConfigFile:TIniFile);override;
-    Procedure Free;override;
+    Procedure Free;//override;
  end;
 
   TPins_INA226_Chanel=class(TPins)
@@ -154,14 +154,14 @@ type
                        PanelConvTime:TPanel;
                        LabelMeas:TLabel;
                        ButMeas:TButton);
-   Procedure Free;override;
+   Procedure Free;//override;
  end;
 
-var
-  INA226_Module:TINA226_Module;
+//var
+//  INA226_Module:TINA226_Module;
 //  INA226_ModuleShow:TINA226_ModuleShow;
 
-  INA226_Shunt,INA226_Bus:TINA226_Channel;
+//  INA226_Shunt,INA226_Bus:TINA226_Channel;
 //  INA226_ShuntShow,INA226_BusShow:TINA226_ChannelShow;
 
 
@@ -359,6 +359,10 @@ end;
 
 procedure TINA226_ModuleShow.Free;
 begin
+  fModule:=nil;
+  fRshShow:=nil;
+  fTimeFactorShow:=nil;
+
   fTimeFactorShow.Free;
   fRshShow.Free;
   inherited Free;
@@ -486,12 +490,12 @@ begin
 end;
 
 initialization
-  INA226_Module:=TINA226_Module.Create('INA226');
-  INA226_Shunt:=TINA226_Channel.Create(ina_mShunt,INA226_Module);
-  INA226_Bus:=TINA226_Channel.Create(ina_mBus,INA226_Module);
+//  INA226_Module:=TINA226_Module.Create('INA226');
+//  INA226_Shunt:=TINA226_Channel.Create(ina_mShunt,INA226_Module);
+//  INA226_Bus:=TINA226_Channel.Create(ina_mBus,INA226_Module);
 
 finalization
-   INA226_Module.Free;
-   INA226_Shunt.Free;
-   INA226_Bus.Free;
+//   INA226_Module.Free;
+//   INA226_Shunt.Free;
+//   INA226_Bus.Free;
 end.

@@ -17,14 +17,12 @@ type
    Procedure ConvertToValue();override;
   end;
 
-var MCP9808nw:TMCP9808;
+//var MCP9808nw:TMCP9808;
 
 implementation
 
 uses
   PacketParameters, OlegType;
-
-{ TADT74x0 }
 
 procedure TMCP9808.ConvertToValue;
 begin
@@ -48,8 +46,8 @@ begin
 end;
 
 initialization
-   MCP9808nw:=TMCP9808.Create;
+//   MCP9808nw:=TMCP9808.Create;
 finalization
-   MCP9808nw.Free;
+//   MCP9808nw.Free;
 
 end.

@@ -3,7 +3,8 @@ unit Measurement;
 interface
 
 uses
-  StdCtrls, IniFiles, Messages, Classes, ExtCtrls, Buttons, OlegTypePart2;
+  StdCtrls, IniFiles, Messages, Classes, ExtCtrls,
+  Buttons, OlegTypePart2;
 
 Const
    WM_MyMeasure=WM_USER+1;
@@ -165,8 +166,8 @@ end;
 implementation
 
 uses
-  SysUtils, OlegType,Dialogs, Graphics, Windows, Forms, DateUtils, 
-  OlegFunction;
+  SysUtils, OlegType,Dialogs, Graphics, Windows,
+  Forms, DateUtils, OlegFunction;
 
 { Simulator }
 

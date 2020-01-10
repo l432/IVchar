@@ -3,7 +3,7 @@ unit DACR2R;
 interface
 
 uses
-  Measurement, OlegType, StdCtrls, RS232device, CPort, Classes, 
+  Measurement, OlegType, StdCtrls,  CPort, Classes, 
   ExtCtrls, ShowTypes, IniFiles, OlegVector, ArduinoDeviceNew;
 
 const DACR2R_MaxValue=65535;
@@ -37,7 +37,7 @@ end;
 
 
 
-TDACR2R=class(TArduinoDACnew,ICalibration)
+TDACR2R=class(TArduinoDAC,ICalibration)
 private
  fCalibration:TDACR2R_Calibr;
 protected
@@ -47,7 +47,7 @@ protected
 public
  Constructor Create(Nm:string);overload;
  Constructor Create();overload;
- Procedure Free;override;
+ Procedure Free;//override;
  Procedure CalibrationRead();
  Procedure CalibrationWrite();
  procedure CalibrationFileProcessing(filename:string);
@@ -70,8 +70,8 @@ public
                      PinVariant:TStringList);
 end;
 
-var
-    DACR2Rnw:TDACR2R;
+//var
+//    DACR2Rnw:TDACR2R;
 //    DACR2RShowNew:TDACR2RShow;
 
 implementation
@@ -182,6 +182,7 @@ end;
 
 procedure TDACR2R.CreateHook;
 begin
+  inherited CreateHook;
   fVoltageMaxValue:=5;
   fKodMaxValue:=DACR2R_MaxValue;
   fMessageError:='DAC R2R output is unsuccessful';
@@ -474,9 +475,9 @@ begin
 end;
 
 initialization
-   DACR2Rnw:=TDACR2R.Create;
+//   DACR2Rnw:=TDACR2R.Create;
 finalization
 
-   DACR2Rnw.Free;
+//   DACR2Rnw.Free;
 
 end.

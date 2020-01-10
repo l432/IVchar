@@ -150,6 +150,7 @@ type
    property Gain: TADS1115_Gain read FGain write FGain;
    property DataRate: TADS1115_DataRate read FDataRate write FDataRate;
    procedure ConvertToValue();override;
+   constructor Create();
  end;
 
 //--------------------------------------------------
@@ -209,16 +210,16 @@ TPins_ADS1115_Chanel=class(TPinsForCustomValues)
                        LabelBit,LabelGain:TPanel;
                        LabelMeas:TLabel;
                        ButMeas:TButton);
-   Procedure Free;override;
+   Procedure Free;//override;
  end;
 
-var
-    ADS11115module:TADS1115_Module;
-    ADS11115show:TI2C_PinsShow;
+//var
+//    ADS11115module:TADS1115_Module;
+//    ADS11115show:TI2C_PinsShow;
 
-    ADS11115_Channels:array [TADS1115_ChanelNumber] of TADS1115_Channel;
+//    ADS11115_Channels:array [TADS1115_ChanelNumber] of TADS1115_Channel;
 //    ADS11115_ChannelShows:array [TADS1115_ChanelNumber] of TADS1115_ChannelShow;
-    iADS1115_CN:TADS1115_ChanelNumber;
+//    iADS1115_CN:TADS1115_ChanelNumber;
 
 implementation
 
@@ -256,6 +257,11 @@ begin
                     ADS1115_CalibrateA[FActiveChannel,FGain],
                     ADS1115_CalibrateB[FActiveChannel,FGain,FDataRate])
                     *ADS1115_Gain_Data[FGain];
+end;
+
+constructor TADS1115_Module.Create;
+begin
+ inherited Create('ADS1115');
 end;
 
 procedure TADS1115_Module.Intitiation;
@@ -438,20 +444,20 @@ end;
 
 
 initialization
-  ADS11115module := TADS1115_Module.Create('ADS1115');
+//  ADS11115module := TADS1115_Module.Create('ADS1115');
 //  for iADS1115_CN := Low(TADS1115_ChanelNumber) to High(TADS1115_ChanelNumber) do
 //    ADS11115_Channels[iADS1115_CN] := TADS1115_Channel.Create(iADS1115_CN, ADS11115module);
-  ADS11115_Channels[0] := TADS1115_Channel.Create(0, ADS11115module);
-  ADS11115_Channels[1] := TADS1115_Channel.Create(1, ADS11115module);
-  ADS11115_Channels[2] := TADS1115_Channel.Create(2, ADS11115module);
+//  ADS11115_Channels[0] := TADS1115_Channel.Create(0, ADS11115module);
+//  ADS11115_Channels[1] := TADS1115_Channel.Create(1, ADS11115module);
+//  ADS11115_Channels[2] := TADS1115_Channel.Create(2, ADS11115module);
 
 finalization
 //   for iADS1115_CN:=Low(TADS1115_ChanelNumber) to High(TADS1115_ChanelNumber) do
 //    ADS11115_Channels[iADS1115_CN].Free;
-  ADS11115_Channels[0].Free;
-  ADS11115_Channels[1].Free;
-  ADS11115_Channels[2].Free;
+//  ADS11115_Channels[0].Free;
+//  ADS11115_Channels[1].Free;
+//  ADS11115_Channels[2].Free;
 
-  ADS11115module.Free;
+//  ADS11115module.Free;
 
 end.

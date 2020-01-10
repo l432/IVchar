@@ -3,8 +3,9 @@ unit GDS_806S;
 interface
 
 uses
-  RS232device, CPort, ShowTypes, StdCtrls, Classes, IniFiles, OlegType,
-  Measurement, Buttons, ExtCtrls, Series, PacketParameters, OlegTypePart2,
+  CPort, ShowTypes, StdCtrls, Classes, IniFiles, OlegType,
+  Measurement, Buttons, ExtCtrls, Series,
+  PacketParameters, OlegTypePart2,
   OlegShowTypes, OlegVector, RS232deviceNew;
 
 type
@@ -216,7 +217,7 @@ type
     property ActiveChannel:TGDS_Channel read FActiveChannel write FActiveChannel;
     Constructor Create(CP:TComPort;Nm:string);overload;
     Constructor Create(CP:TComPort);overload;
-    procedure Free;override;
+    procedure Free;//override;
 
     procedure SetMode(mode: Byte);overload;
     procedure SetMode(mode: TGDS_ModeSym);overload;
@@ -390,7 +391,7 @@ end;
                        Gr:array of TCustomSeries;
                        VecRG:TRadioGroup
                        );
-    Procedure Free;override;
+    Procedure Free;//override;
     procedure ReadFromIniFile(ConfigFile:TIniFile);override;
     procedure WriteToIniFile(ConfigFile:TIniFile);override;
     procedure SettingToObject;
@@ -399,14 +400,15 @@ end;
 
 var
   StringToSend:string;
-  GDS_806Snw:TGDS_806S;
-  GDS_806Snew_Channel:array[TGDS_Channel]of TGDS_806S_Channel;
+//  GDS_806Snw:TGDS_806S;
+//  GDS_806Snew_Channel:array[TGDS_Channel]of TGDS_806S_Channel;
 //  GDS_806Snew_Show:TGDS_806Snew_Show;
 
 implementation
 
 uses
-  Dialogs, Controls, SysUtils, Graphics, OlegFunction, OlegGraph, Math;
+  Dialogs, Controls, SysUtils, Graphics,
+  OlegFunction, OlegGraph, Math;
 
 { TGDS_806Snew }
 
@@ -517,7 +519,6 @@ end;
 procedure TGDS_806S.Free;
  var j:TGDS_Channel;
 begin
-// HelpForMe(Name+Name);
  for j := Low(TGDS_Channel) to High(TGDS_Channel) do
      DataVectors[j].Free;
  inherited Free;
