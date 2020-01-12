@@ -5,7 +5,7 @@ interface
 
 uses
   ArduinoADC, OlegShowTypes, ExtCtrls, StdCtrls, IniFiles, 
-  MDevice, ArduinoDeviceShow, ArduinoDeviceNew;
+  MDevice, ArduinoDeviceShow, ArduinoDeviceNew, Measurement;
 
 type
 
@@ -141,14 +141,17 @@ type
  public
   Constructor Create(Mode:TINA226_Mode;
                       INA: TINA226_Module);
+//  procedure Free;override;
+  destructor Destroy; override;
  end;
 
  TINA226_ChannelShow=class(TOnePinsShow)
    private
     fChan:TINA226_Channel;
+//    fMI:IMeasurement;
     MeasuringDeviceSimple:TMeasuringDeviceSimple;
    protected
-    procedure CreateFooter;override;   
+    procedure CreateFooter;override;
    public
     Constructor Create(Chan:TINA226_Channel;
                        PanelConvTime:TPanel;
@@ -168,7 +171,7 @@ type
 implementation
 
 uses
-  Math, OlegType, PacketParameters, SysUtils, Dialogs;
+  Math, OlegType, PacketParameters, SysUtils, Dialogs, OlegFunction;
 
 
 { TINA226_Module }
@@ -444,6 +447,19 @@ begin
  end;
 end;
 
+
+destructor TINA226_Channel.Destroy;
+begin
+//  HelpForMe('kk');
+  inherited;
+end;
+
+//procedure TINA226_Channel.Free;
+//begin
+// HelpForMe('kk');
+// inherited;
+//end;
+
 procedure TINA226_Channel.PinsCreate;
 begin
  Pins:=TPins_INA226_Chanel.Create(fName);
@@ -470,9 +486,11 @@ constructor TINA226_ChannelShow.Create(Chan: TINA226_Channel;
                                        ButMeas: TButton);
 begin
   fChan:=Chan;
+//  fMI:=fChan;
   inherited Create(fChan.Pins,PanelConvTime);
   MeasuringDeviceSimple:=
      TMeasuringDeviceSimple.Create(fChan,LabelMeas,srCurrent,ButMeas);
+
 end;
 
 procedure TINA226_ChannelShow.CreateFooter;
@@ -485,6 +503,9 @@ end;
 
 procedure TINA226_ChannelShow.Free;
 begin
+//  fMI:=nil;
+  fChan:=nil;
+
   MeasuringDeviceSimple.Free;
   inherited Free;
 end;

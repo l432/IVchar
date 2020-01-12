@@ -54,6 +54,7 @@ ICalibration = interface
  {встановлює на виході напругу Value під час калібрування}
 end;
 
+  TArrIMeas=array of IMeasurement;
 
 ITemperatureMeasurement = interface (IMeasurement)
   ['{DDC24597-B316-4E8B-B246-1DDD0B4D5E5D}']
@@ -161,6 +162,11 @@ end;
 
 
 
+procedure EnlargeIMeasArray(Source, Additive:array of IMeasurement);
+procedure EnlargeIDACArray(Source, Additive:array of IDAC);
+{функції "правильно" приєднують елементи Additive
+у кінець Source, але розмір Source треба змінювати в іншому місці!!!
+(наприклад, перед викликом процедури)}
 
 
 implementation
@@ -415,6 +421,22 @@ end;
 function TMeasurementShowSimple.UnitModeLabel: string;
 begin
   Result:='';
+end;
+
+procedure EnlargeIMeasArray(Source, Additive:array of IMeasurement);
+ var i:integer;
+begin
+//  SetLength(Source,High(Source)+High(Additive)+2);
+  for i := High(Additive) downto 0
+    do Pointer(Source[High(Source)-i]):= Pointer(Additive[High(Additive)-i])
+
+end;
+
+procedure EnlargeIDACArray(Source, Additive:array of IDAC);
+ var i:integer;
+begin
+  for i := High(Additive) downto 0
+    do Pointer(Source[High(Source)-i]):= Pointer(Additive[High(Additive)-i])
 end;
 
 end.

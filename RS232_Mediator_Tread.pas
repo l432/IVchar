@@ -20,7 +20,8 @@ type
     procedure Execute; override;
   public
     constructor Create(CP:TComPort; ArrayDevice:array of IArduinoSender);
-    procedure Free;overload;
+    destructor Destroy;override;
+//    procedure Free;overload;
   end;
 
 //var
@@ -45,6 +46,12 @@ begin
    fArrayDevice[i]:=ArrayDevice[i];
    fDeviceNumber:=Low(ArrayDevice);
   Resume;
+end;
+
+destructor TRS232_MediatorTread.Destroy;
+begin
+ fArduinoComPort.Free;
+ inherited;
 end;
 
 procedure TRS232_MediatorTread.DoSomething;
@@ -84,10 +91,10 @@ begin
   end;
 end;
 
-procedure TRS232_MediatorTread.Free;
-begin
- fArduinoComPort.Free;
- inherited Free;
-end;
+//procedure TRS232_MediatorTread.Free;
+//begin
+// fArduinoComPort.Free;
+// inherited Free;
+//end;
 
 end.

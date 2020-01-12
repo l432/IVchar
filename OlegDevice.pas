@@ -65,7 +65,8 @@ type
                          DevDiapCB,DevValCB: TComboBox);
       procedure ReadFromIniFile(ConfigFile:TIniFile);override;
       procedure WriteToIniFile(ConfigFile:TIniFile);override;
-      Procedure Free;//override;
+//      Procedure Free;//override;
+      destructor Destroy;override;
   end;
 
 
@@ -209,14 +210,24 @@ begin
  ModuleUpDate;
 end;
 
-procedure TCurrentShow.Free;
+//procedure TCurrentShow.Free;
+//begin
+//  TTShow.Free;
+//  fDiapazMeasuring.Free;
+//  fValueMeasuring.Free;
+//  fResultShow.Free;
+//  fBiasShow.Free;
+//  inherited Free;
+//end;
+
+destructor TCurrentShow.Destroy;
 begin
   TTShow.Free;
   fDiapazMeasuring.Free;
   fValueMeasuring.Free;
   fResultShow.Free;
   fBiasShow.Free;
-  inherited Free;
+  inherited;
 end;
 
 procedure TCurrentShow.ModuleUpDate;

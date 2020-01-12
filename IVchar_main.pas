@@ -13,8 +13,7 @@ uses
   TeEngine, ExtCtrls, Buttons,
   ComCtrls, CPort, StdCtrls, Dialogs,
   Controls, Classes, D30_06,Math, PID,
-  MDevice,
-  Spin,
+  MDevice,  Spin,
   HighResolutionTimer,
   MCP3424,
   ADS1115,
@@ -50,7 +49,8 @@ const
 
   IscVocTimeToWait=1000;
 
-
+  FreeTest=False;
+//  FreeTest=True;
 type
   TIVchar = class(TForm)
     ComPort1: TComPort;
@@ -721,6 +721,8 @@ type
     procedure DACFree;
     procedure DACReadFromIniFileAndToForm;
     procedure DACWriteToIniFile;
+    procedure TestVarCreate;
+    procedure TestVarFree;
     procedure DevicesCreate;
     procedure TemperatureThreadCreate;
     procedure ControllerThreadCreate;
@@ -804,6 +806,12 @@ type
     procedure GDS_Create;
     procedure SaveIVMeasurementResults(FileName: string; DataVector:TVector);
   public
+    TestVar2:TINA226_Channel;
+//     TestVar:TINA226_Module;
+     TestVar:TSimpleFreeAndAiniObject;
+//    TestVar2:TSimpleFreeAndAiniObject;
+    TestVar3:TSimpleFreeAndAiniObject;
+    TestVar4:array of IMeasurement;
     ShowArray:TObjectArray;
     AnyObjectArray:TObjectArray;
     ArduinoMeters:TObjectArray;
@@ -2636,6 +2644,9 @@ begin
  DependenceMeasuringCreate();
  ShowArray.ReadFromIniFile(ConfigFile);
 
+ if FreeTest then TestVarCreate;
+
+
  ComPortsBegining;
 
 
@@ -2649,7 +2660,6 @@ begin
 
 
   ArduinoDataSubject:=TArduinoDataSubject.Create(ComPort1);
-  AnyObjectArray.Add(ArduinoDataSubject);
   for I := 0 to ArduinoMeters.HighIndex do
     (ArduinoMeters[i] as TArduinoMeter).AddDataSubject(ArduinoDataSubject);
 
@@ -2657,6 +2667,8 @@ begin
  if (ComPort1.Connected)and(SettingDevice.ActiveInterface.Name=DACR2R.Name) then SettingDevice.Reset();
  if (ComPort1.Connected) then D30_06.Reset;
 // if (ComPort1.Connected) then AD9833.Reset;
+
+
 end;
 
 procedure TIVchar.FormDestroy(Sender: TObject);
@@ -2672,15 +2684,22 @@ begin
 // ObjectsFree();
 
  ConfigFile.EraseSection(DoubleConstantSection);
-
- ShowArray.WriteToIniFileAndFree(ConfigFile);
  PinsWriteToIniFile;
  SettingWriteToIniFile();
 
- ConfigFile.Free;
+
+ if FreeTest then TestVarFree
+             else
+             begin
+
+ ShowArray.WriteToIniFileAndFree(ConfigFile);
+
+
 
  DACFree();
  ObjectsFree();
+             end;
+  ConfigFile.Free;
 
  ShowArray.Free;
  AnyObjectArray.Free;
@@ -3289,6 +3308,25 @@ begin
   Temperature_MD.ActiveInterface.NewData:=False;
 end;
 
+procedure TIVchar.TestVarCreate;
+begin
+ TestVar:=TINA226_Module.Create('INA226');;
+ TestVar2:=TINA226_Channel.Create(ina_mBus,(TestVar as TINA226_Module));
+ SetLength(TestVar4,1);
+// EnlargeIMeasArray(TestVar4,[TestVar2]);
+ Pointer(TestVar4[0]):=Pointer(TestVar2);
+ TestVar3:=TMeasuringDevice.Create(TestVar4, CBCMD,'Current', LADCurrentValue, srCurrent);
+
+end;
+
+procedure TIVchar.TestVarFree;
+begin
+ TestVar3.Free;
+
+ TestVar2.Free;
+ TestVar.Free;
+end;
+
 procedure TIVchar.VoltmetrsCreate;
 begin
   INA226Create();
@@ -3539,10 +3577,15 @@ begin
   AnyObjectArray.Add(Simulator);
 
   SetLength(Devices,4);
+//  EnlargeIMeasArray(Devices,[Simulator,V721A,V721_I,V721_II]);
   Devices[0]:=Simulator;
   Devices[1]:=V721A;
   Devices[2]:=V721_I;
   Devices[3]:=V721_II;
+//  Pointer(Devices[0]):=Pointer(Simulator);
+//  Pointer(Devices[1]):=Pointer(V721A);
+//  Pointer(Devices[2]):=Pointer(V721_I);
+//  Pointer(Devices[3]):=Pointer(V721_II);
 
   TermoCouple_MD:=TMeasuringDevice.Create(Devices, CBTcVMD, 'Thermocouple', LTRValue, srVoltge);
   Temperature_MD:=TTemperature_MD.Create([Simulator,ThermoCuple,
@@ -3556,38 +3599,53 @@ begin
   ShowArray.Add([TermoCouple_MD,Temperature_MD,MLX90615Show]);
 
   SetLength(Devices,High(Devices)+3);
+//  EnlargeIMeasArray(Devices,[UT70B,UT70C]);
   Devices[High(Devices)-1]:=UT70B;
   Devices[High(Devices)]:=UT70C;
 
   if ET1255isPresent then
    begin
     SetLength(Devices,High(Devices)+4);
+//    EnlargeIMeasArray(Devices,[ET1255_ADCModule.Channels[0],
+//                               ET1255_ADCModule.Channels[1],
+//                               ET1255_ADCModule.Channels[2]]);
     Devices[High(Devices)-2]:=ET1255_ADCModule.Channels[0];
     Devices[High(Devices)-1]:=ET1255_ADCModule.Channels[1];
     Devices[High(Devices)]:=ET1255_ADCModule.Channels[2];
    end;
 
   SetLength(Devices,High(Devices)+5);
+//  EnlargeIMeasArray(Devices,[MCP3424_Channels[0],
+//                             MCP3424_Channels[1],
+//                             MCP3424_Channels[2],
+//                             MCP3424_Channels[3]]);
   Devices[High(Devices)-3]:=MCP3424_Channels[0];
   Devices[High(Devices)-2]:=MCP3424_Channels[1];
   Devices[High(Devices)-1]:=MCP3424_Channels[2];
   Devices[High(Devices)]:=MCP3424_Channels[3];
 
   SetLength(Devices,High(Devices)+4);
+//  EnlargeIMeasArray(Devices,[ADS11115_Channels[0],
+//                             ADS11115_Channels[1],
+//                             ADS11115_Channels[2]]);
   Devices[High(Devices)-2]:=ADS11115_Channels[0];
   Devices[High(Devices)-1]:=ADS11115_Channels[1];
   Devices[High(Devices)]:=ADS11115_Channels[2];
 
   SetLength(Devices,High(Devices)+3);
+//  EnlargeIMeasArray(Devices,[GDS_806S_Channel[1],
+//                            GDS_806S_Channel[2]]);
   Devices[High(Devices)-1]:=GDS_806S_Channel[1];
   Devices[High(Devices)]:=GDS_806S_Channel[2];
 
   SetLength(Devices,High(Devices)+3);
+//  EnlargeIMeasArray(Devices,[INA226_Shunt,INA226_Bus]);
   Devices[High(Devices)-1]:=INA226_Shunt;
   Devices[High(Devices)]:=INA226_Bus;
+//  Pointer(FInterfaceField) := Pointer(InterfaceVariable)
 
   OlegCurrent:=TCurrent.Create;
-   AnyObjectArray.Add(OlegCurrent);
+  AnyObjectArray.Add(OlegCurrent);
 
   CurrentShow:=TCurrentShow.Create(OlegCurrent,ST_oCurBias,
                      L_oCurBias,LoCur,LUoCur,
@@ -3598,6 +3656,7 @@ begin
   ShowArray.Add(CurrentShow);
 
   SetLength(Devices,High(Devices)+2);
+//  EnlargeIMeasArray(Devices,[OlegCurrent]);
   Devices[High(Devices)]:=OlegCurrent;
 
   Current_MD:=TMeasuringDevice.Create(Devices, CBCMD,'Current', LADCurrentValue, srCurrent);
@@ -3616,6 +3675,8 @@ begin
   ShowArray.Add([Current_MD,VoltageIV_MD,DACR2R_MD,D30_MD,Isc_MD,Voc_MD]);
 
   SetLength(Devices,High(Devices)+9);
+//  EnlargeIMeasArray(Devices,[ThermoCuple,DS18B20,HTU21D,
+//                             TMP102,MLX90615,STS21,ADT74x0,MCP9808]);
   Devices[High(Devices)-7]:=ThermoCuple;
   Devices[High(Devices)-6]:=DS18B20;
   Devices[High(Devices)-5]:=HTU21D;
@@ -3633,13 +3694,17 @@ begin
     TMeasuringDevice.Create(Devices, CBControlMD,'Control setup', LControlCVValue, srPreciseVoltage);
   ShowArray.Add([TimeD_MD,TimeD_MD2,Control_MD]);
 
-  SetLength(DevicesSet,High(DevicesSet)+3);
+  SetLength(DevicesSet,High(DevicesSet)+4);
+//  EnlargeIDACArray(DevicesSet,[Simulator,DACR2R,D30_06]);
   DevicesSet[0]:=Simulator;
   DevicesSet[1]:=DACR2R;
+  DevicesSet[High(DevicesSet)]:=D30_06;
 
   if ET1255isPresent then
    begin
     SetLength(DevicesSet,High(DevicesSet)+4);
+//    EnlargeIDACArray(DevicesSet,[ET1255_DACs[0],
+//                     ET1255_DACs[1],ET1255_DACs[2]]);
     DevicesSet[High(DevicesSet)-2]:=ET1255_DACs[0];
     DevicesSet[High(DevicesSet)-1]:=ET1255_DACs[1];
     DevicesSet[High(DevicesSet)]:=ET1255_DACs[2];
@@ -3656,8 +3721,6 @@ begin
     ShowArray.Add([ET1255_DAC_MD[0],ET1255_DAC_MD[1],ET1255_DAC_MD[2]]);
    end;
 
-  SetLength(DevicesSet,High(DevicesSet)+2);
-  DevicesSet[High(DevicesSet)]:=D30_06;
 
   SettingDevice:=TSettingDevice.Create(DevicesSet,CBVS,'Input voltage');
   SettingDeviceControl:=TSettingDevice.Create(DevicesSet,CBControlCD,'Control input');
@@ -3672,8 +3735,6 @@ begin
  if Measurement.Name= 'B7-21A' then Result:=V721A.Diapazon;
  if Measurement.Name= 'B7-21 (1)' then Result:=V721_I.Diapazon;
  if Measurement.Name= 'B7-21 (2)' then Result:=V721_II.Diapazon;
-// if Measurement.Name= 'UT70B' then Result:=UT70B.Diapazon;
-// if Measurement.Name= 'UT70C' then Result:=UT70C.Diapazon;
  if Measurement.Name= 'UT70B' then Result:=UT70B.Diapazon;
  if Measurement.Name= 'UT70C' then Result:=UT70C.Diapazon;
 end;

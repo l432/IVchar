@@ -109,6 +109,7 @@ type
    Procedure WriteToIniFile(ConfigFile:TIniFile);overload;
    Procedure WriteToIniFile(ConfigFile:TIniFile;Strings:TStrings);overload;
    Procedure WriteToIniFile(ConfigFile:TIniFile;PinsStrings:array of TStringList);overload;
+//   procedure Free;
   end;
 
 
@@ -215,6 +216,7 @@ type
    procedure   PacketCreateToSend(); virtual;
    Constructor Create(Nm:string);//override;
    Procedure Free;//override;
+//   destructor Destroy;override;
    procedure isNeededComPortState();
    procedure Request();override;
    Procedure ConvertToValue();virtual;abstract;
@@ -301,6 +303,11 @@ constructor TPins.Create(Nm: string; PNumber: byte);
 begin
  Create(Nm,PinNames,PNumber);
 end;
+
+//procedure TPins.Free;
+//begin
+//// inherited;
+//end;
 
 function TPins.GetPin(Index: integer): byte;
 begin
@@ -833,6 +840,13 @@ begin
   fWorkRequestState:=TWorkRequestState.Create(Self);
   fAddedRequestState:=TAddedRequestState.Create(Self);
 end;
+
+//destructor TArduinoMeter.Destroy;
+//begin
+// Pins.Free;
+// fInitRequestState.Free;
+// inherited;
+//end;
 
 procedure TArduinoMeter.Free;
 begin

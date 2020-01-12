@@ -56,7 +56,8 @@ type
                       STGrayC:TStaticText;
                       BRead,BWrite,Bcalibr:TButton;
                       TTemp_MD:TTemperature_MD);
-   procedure Free;//override;
+//   procedure Free;//override;
+   destructor Destroy;override;
    procedure ReadFromIniFile(ConfigFile:TIniFile);override;
    procedure WriteToIniFile(ConfigFile:TIniFile);override;
  end;
@@ -220,10 +221,16 @@ begin
  fTemperature_MD:=TTemp_MD;
 end;
 
-procedure TMLX90615Show.Free;
+destructor TMLX90615Show.Destroy;
 begin
- fGrayScaleShow.Free;
+  fGrayScaleShow.Free;
+  inherited;
 end;
+
+//procedure TMLX90615Show.Free;
+//begin
+// fGrayScaleShow.Free;
+//end;
 
 procedure TMLX90615Show.ReadButtonClick(Sender: TObject);
 begin

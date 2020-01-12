@@ -11,12 +11,16 @@ TDevice=class(TNamedInterfacedObject)
 private
  DevicesComboBox:TComboBox;
  fHookParameterChange: TSimpleEvent;
+ fSetOfInterface:array of Pointer;
  procedure ParameterChange(Sender: TObject);virtual;
 public
  property HookParameterChange:TSimpleEvent read fHookParameterChange write fHookParameterChange;
  Constructor Create(DevCB: TComboBox; IdentName: string);
+// Constructor Create(const SOI: array of IName;
+//                    DevCB: TComboBox; IdentName: string);
  procedure ReadFromIniFile(ConfigFile: TIniFile);override;
  procedure WriteToIniFile(ConfigFile: TIniFile);override;
+ procedure Free;
 end;
 
 TMeasuringStringResult=(srCurrent,srVoltge,srPreciseVoltage);
@@ -24,17 +28,16 @@ TMeasuringStringResult=(srCurrent,srVoltge,srPreciseVoltage);
 
 TMeasuringDevice =class(TDevice)
 private
- fSetOfInterface:array of IMeasurement;
+// fSetOfInterface:array of IMeasurement;
+// fSetOfInterface:array of Pointer;
  fStringResult:TMeasuringStringResult;
  ResultIndicator:TLabel;
- fShowResult:boolean;
  ActionButton:TButton;
  procedure ActionButtonOnClick(Sender: TObject);
 // function GetResult():double;virtual;
  function GetActiveInterface():IMeasurement;virtual;
 public
  property ActiveInterface:IMeasurement read GetActiveInterface;
- property ShowResult:boolean  read fShowResult write fShowResult;
  Constructor Create(const SOI: array of IMeasurement;
                   DevCB: TComboBox; IdentName: string;
                   RI: TLabel; SR: TMeasuringStringResult);
@@ -42,6 +45,7 @@ public
  function GetMeasurementResult():double;
  procedure AddActionButton(AB:TButton);
  procedure Add(IO:IMeasurement);
+ procedure Free;
 end;
 
 TMeasuringDeviceSimple =class(TMeasuringDevice)
@@ -51,11 +55,12 @@ TMeasuringDeviceSimple =class(TMeasuringDevice)
  Constructor Create(const Measurement:IMeasurement;
                   RI: TLabel; SR: TMeasuringStringResult;
                   AB:TButton);
+ procedure Free;
 end;
 
 TSettingDevice =class(TDevice)
 private
- fSetOfInterface:array of IDAC;
+// fSetOfInterface:array of IDAC;
  function GetActiveInterface():IDAC;
 public
  property ActiveInterface:IDAC read GetActiveInterface;
@@ -67,7 +72,7 @@ end;
 
 TTemperature_MD =class(TDevice)
 private
- fSetOfInterface:array of ITemperatureMeasurement;
+// fSetOfInterface:array of ITemperatureMeasurement;
  ResultIndicator:TLabel;
  function GetResult():double;virtual;
  function GetActiveInterface():ITemperatureMeasurement;
@@ -89,13 +94,37 @@ uses
 { TDevice }
 
 constructor TDevice.Create(DevCB: TComboBox; IdentName: string);
+//Constructor TDevice.Create(const SOI: array of IName;
+//                           DevCB: TComboBox; IdentName: string);
+// var i:integer;
 begin
  inherited Create;
- DevicesComboBox:=DevCB;
- DevicesComboBox.Clear;
- DevicesComboBox.OnChange:=ParameterChange;
+ if DevCB<>nil then
+ begin
+   DevicesComboBox:=DevCB;
+   DevicesComboBox.Clear;
+   DevicesComboBox.OnChange:=ParameterChange;
+ end;
  fName:=IdentName;
  HookParameterChange:=TSimpleClass.EmptyProcedure;
+
+
+// if High(SOI)<0 then Exit;
+// SetLength(fSetOfInterface,High(SOI)+1);
+// for I := 0 to High(SOI) do
+//  begin
+//   if DevicesComboBox<>nil then DevicesComboBox.Items.Add(SOI[i].Name);
+//   fSetOfInterface[i] := Pointer(SOI[i]);
+//  end;
+//
+//  if (DevicesComboBox<>nil)and
+//     (DevicesComboBox.Items.Count>0) then DevicesComboBox.ItemIndex:=0;
+
+end;
+
+procedure TDevice.Free;
+begin
+ inherited;
 end;
 
 procedure TDevice.ParameterChange(Sender: TObject);
@@ -129,21 +158,34 @@ constructor TSettingDevice.Create(const SOI: array of IDAC;
 var I: Integer;
 begin
  inherited Create(DevCB,IdentName);
+
  if High(SOI)<0 then Exit;
  SetLength(fSetOfInterface,High(SOI)+1);
  for I := 0 to High(SOI) do
   begin
-   DevicesComboBox.Items.Add(SOI[i].Name);
-   fSetOfInterface[i]:=SOI[i];
+//   if DevicesComboBox<>nil then DevicesComboBox.Items.Add(IMeasurement(fSetOfInterface[i]).Name);
+   fSetOfInterface[i] := Pointer(SOI[i]);
+   if DevicesComboBox<>nil then DevicesComboBox.Items.Add(IMeasurement(fSetOfInterface[i]).Name);
   end;
- if DevicesComboBox.Items.Count>0 then DevicesComboBox.ItemIndex:=0;
+
+// if High(SOI)<0 then Exit;
+// SetLength(fSetOfInterface,High(SOI)+1);
+// for I := 0 to High(SOI) do
+//  begin
+//   DevicesComboBox.Items.Add(SOI[i].Name);
+//   fSetOfInterface[i]:=SOI[i];
+//  end;
+  if (DevicesComboBox<>nil)and
+     (DevicesComboBox.Items.Count>0) then DevicesComboBox.ItemIndex:=0;
 end;
 
 function TSettingDevice.GetActiveInterface: IDAC;
 begin
   if DevicesComboBox=nil
    then Result:=nil
-   else Result:=fSetOfInterface[DevicesComboBox.ItemIndex];
+//   else Result:=fSetOfInterface[DevicesComboBox.ItemIndex];
+   else Result:=IDAC(fSetOfInterface[DevicesComboBox.ItemIndex]);
+
 end;
 
 procedure TSettingDevice.Reset;
@@ -169,8 +211,10 @@ end;
 procedure TMeasuringDevice.Add(IO: IMeasurement);
 begin
  SetLength(fSetOfInterface,High(fSetOfInterface)+2);
- fSetOfInterface[High(fSetOfInterface)]:=IO;
- DevicesComboBox.Items.Add(fSetOfInterface[High(fSetOfInterface)].Name);
+// fSetOfInterface[High(fSetOfInterface)]:=IO;
+// DevicesComboBox.Items.Add(fSetOfInterface[High(fSetOfInterface)].Name);
+ fSetOfInterface[High(fSetOfInterface)]:=Pointer(IO);
+ DevicesComboBox.Items.Add(IMeasurement(fSetOfInterface[High(fSetOfInterface)]).Name);
 end;
 
 procedure TMeasuringDevice.AddActionButton(AB: TButton);
@@ -184,27 +228,52 @@ constructor TMeasuringDevice.Create(const SOI: array of IMeasurement;
                             RI: TLabel; SR: TMeasuringStringResult);
 var I: Integer;
 begin
+
  inherited Create(DevCB,IdentName);
+
  if High(SOI)<0 then Exit;
  SetLength(fSetOfInterface,High(SOI)+1);
  for I := 0 to High(SOI) do
   begin
-   DevicesComboBox.Items.Add(SOI[i].Name);
-   fSetOfInterface[i]:=SOI[i];
+   if DevicesComboBox<>nil then DevicesComboBox.Items.Add(SOI[i].Name);
+   fSetOfInterface[i] := Pointer(SOI[i]);
+//   if DevicesComboBox<>nil then DevicesComboBox.Items.Add(IMeasurement(fSetOfInterface[i]).Name);
   end;
 
-  if DevicesComboBox.Items.Count>0 then DevicesComboBox.ItemIndex:=0;
+// if High(SOI)<0 then Exit;
+// SetLength(fSetOfInterface,High(SOI)+1);
+// for I := 0 to High(SOI) do
+//  begin
+//   if DevicesComboBox<>nil then DevicesComboBox.Items.Add(SOI[i].Name);
+////   fSetOfInterface[i]:=SOI[i];
+//   Pointer(fSetOfInterface[i]) := Pointer(SOI[i]);
+//  end;
+
+
+  if (DevicesComboBox<>nil)and
+     (DevicesComboBox.Items.Count>0) then DevicesComboBox.ItemIndex:=0;
 
  ResultIndicator:=RI;
- fShowResult:=True;
  fStringResult:=SR;
+end;
+
+procedure TMeasuringDevice.Free;
+// var i:integer;
+begin
+// for I := 0 to High(fSetOfInterface) do  fSetOfInterface[i]:=nil;
+// SetLength(fSetOfInterface,0);
+// ResultIndicator:=nil;
+// ActionButton:=nil;
+
+ inherited;
 end;
 
 function TMeasuringDevice.GetActiveInterface: IMeasurement;
 begin
  if DevicesComboBox=nil
    then Result:=nil
-   else Result:=fSetOfInterface[DevicesComboBox.ItemIndex];
+//   else Result:=fSetOfInterface[DevicesComboBox.ItemIndex];
+   else Result:=IMeasurement(fSetOfInterface[DevicesComboBox.ItemIndex]);
 end;
 
 function TMeasuringDevice.GetMeasurementResult(): double;
@@ -234,14 +303,24 @@ constructor TTemperature_MD.Create(const SOI: array of ITemperatureMeasurement;
 var I: Integer;
 begin
  inherited Create(DevCB,IdentName);
+
  if High(SOI)<0 then Exit;
  SetLength(fSetOfInterface,High(SOI)+1);
  for I := 0 to High(SOI) do
   begin
-   DevicesComboBox.Items.Add(SOI[i].Name);
-   fSetOfInterface[i]:=SOI[i];
+   if DevicesComboBox<>nil then DevicesComboBox.Items.Add(SOI[i].Name);
+   fSetOfInterface[i] := Pointer(SOI[i]);
   end;
- if DevicesComboBox.Items.Count>0 then DevicesComboBox.ItemIndex:=0;
+
+// if High(SOI)<0 then Exit;
+// SetLength(fSetOfInterface,High(SOI)+1);
+// for I := 0 to High(SOI) do
+//  begin
+//   DevicesComboBox.Items.Add(SOI[i].Name);
+//   fSetOfInterface[i]:=SOI[i];
+//  end;
+  if (DevicesComboBox<>nil)and
+     (DevicesComboBox.Items.Count>0) then DevicesComboBox.ItemIndex:=0;
 
  ResultIndicator:=RI;
 end;
@@ -250,7 +329,8 @@ function TTemperature_MD.GetActiveInterface: ITemperatureMeasurement;
 begin
  if DevicesComboBox=nil
    then Result:=nil
-   else Result:=fSetOfInterface[DevicesComboBox.ItemIndex];
+//   else Result:=fSetOfInterface[DevicesComboBox.ItemIndex];
+   else Result:=ITemperatureMeasurement(fSetOfInterface[DevicesComboBox.ItemIndex]);
 end;
 
 function TTemperature_MD.GetMeasurementResult: double;
@@ -277,17 +357,27 @@ constructor TMeasuringDeviceSimple.Create(const Measurement: IMeasurement;
                     RI: TLabel; SR: TMeasuringStringResult; AB: TButton);
 begin
  if Measurement=nil then Exit;
- SetLength(fSetOfInterface,1);
- fSetOfInterface[0]:=Measurement;
- ResultIndicator:=RI;
- fStringResult:=SR;
+ inherited Create([Measurement],nil,'',RI,SR);
+
+// SetLength(fSetOfInterface,1);
+// fSetOfInterface[0]:=Measurement;
+// ResultIndicator:=RI;
+// fStringResult:=SR;
  AddActionButton(AB);
+
+// fShowResult:=True;
 end;
 
 
+procedure TMeasuringDeviceSimple.Free;
+begin
+ inherited;
+end;
+
 function TMeasuringDeviceSimple.GetActiveInterface: IMeasurement;
 begin
- Result:=fSetOfInterface[0];
+ Result:=IMeasurement(fSetOfInterface[0])
+// Result:=fSetOfInterface[0];
 end;
 
 end.

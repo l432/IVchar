@@ -78,7 +78,8 @@ type
    Constructor Create(ArdSet:TArduinoSetter;
                        PinLs: array of TPanel;
                        PinVariant:TStringList);
-   Procedure Free;//override;
+//   Procedure Free;//override;
+   destructor Destroy;override;
    procedure ReadFromIniFile(ConfigFile:TIniFile);override;
 //   procedure ReadFromIniFileAndToForm(ConfigFile:TIniFile);
    Procedure WriteToIniFile(ConfigFile:TIniFile);override;
@@ -205,11 +206,17 @@ begin
  PinShow:=TPinsShowUniversal.Create(fArduinoSetter.Pins,PinLs,[PinVariant]);
 end;
 
-procedure TArduinoSetterShow.Free;
+destructor TArduinoSetterShow.Destroy;
 begin
  PinShow.Free;
- inherited Free;
+ inherited;
 end;
+
+//procedure TArduinoSetterShow.Free;
+//begin
+// PinShow.Free;
+// inherited Free;
+//end;
 
 procedure TArduinoSetterShow.HookReadFromIniFile(ConfigFile: TIniFile);
 begin

@@ -50,7 +50,8 @@ type
    Constructor Create(Nm:string);//override;
    function GetData():double;override;
    procedure GetDataThread(WPARAM: word;EventEnd:THandle);override;
-   procedure Free;//override;
+//   procedure Free;//override;
+   destructor Destroy;override;
   end;
 
   TV721A=class(TVoltmetr)
@@ -77,7 +78,7 @@ type
   end;
 
 //  TVoltmetrShow=class(TRS232MetterShow)
-  TVoltmetrShow=class(TRS232MetterShowNew)
+  TVoltmetrShow=class(TRS232MetterShow)
   protected
    PinShow:TPinsShow;
   public
@@ -89,7 +90,8 @@ type
                       AB:TSpeedButton;
                       PinVariants:TStringList;
                       TT:TTimer);
-   Procedure Free; //override;
+//   Procedure Free; //override;
+   destructor Destroy;override;
    procedure NumberPinShow();
    procedure ButtonEnabled();
    procedure ReadFromIniFile(ConfigFile: TIniFile);override;//virtual;
@@ -136,6 +138,12 @@ begin
   DiapazonFilling(3,micA100,mA1000);
 end;
 
+destructor TVoltmetr.Destroy;
+begin
+ fDataConverter.Free;
+ inherited;
+end;
+
 procedure TVoltmetr.DiapazonFilling(DiapazonNumber:byte;
                               D_Begin, D_End: TV721_Diapazons);
  var V721_Diapazons:TV721_Diapazons;
@@ -145,11 +153,11 @@ begin
         do fDiapazonAll[DiapazonNumber][ord(V721_Diapazons)-ord(D_Begin)]:=V721_DiapazonsLabels[V721_Diapazons];
 end;
 
-procedure TVoltmetr.Free;
-begin
- fDataConverter.Free;
- inherited Free;
-end;
+//procedure TVoltmetr.Free;
+//begin
+// fDataConverter.Free;
+// inherited Free;
+//end;
 
 function TVoltmetr.GetData(): double;
  function AditionMeasurement(a,b:double):double;
@@ -418,11 +426,17 @@ begin
   PinShow:=TPinsShow.Create(V.Pins,CPL,GPL,PinVariants);
 end;
 
-procedure TVoltmetrShow.Free;
+destructor TVoltmetrShow.Destroy;
 begin
  PinShow.Free;
- inherited Free;
+ inherited;
 end;
+
+//procedure TVoltmetrShow.Free;
+//begin
+// PinShow.Free;
+// inherited Free;
+//end;
 
 procedure TVoltmetrShow.NumberPinShow();
 begin

@@ -71,7 +71,8 @@ TDAC_Show=class(TSimpleFreeAndAiniObject)
                       VSB, KSB, RB: TButton);
     procedure ReadFromIniFile(ConfigFile:TIniFile);override;//virtual;
     procedure WriteToIniFile(ConfigFile:TIniFile);override;//virtual;
-    procedure Free;//override;
+//    procedure Free;//override;
+    destructor Destroy;override;
 end;
 
 
@@ -85,7 +86,8 @@ end;
                        VData,KData:TStaticText;
                        VL, KL: TLabel;
                        VSB, KSB, RB: TButton);
-   Procedure Free;//override;
+//   Procedure Free;//override;
+   destructor Destroy;override;
    Procedure HookReadFromIniFile(ConfigFile:TIniFile);override;
    Procedure WriteToIniFile(ConfigFile:TIniFile);override;
   end;
@@ -348,10 +350,17 @@ begin
 end;
 
 
-procedure TDAC_Show.Free;
+//procedure TDAC_Show.Free;
+//begin
+// fKodShow.Free;
+// fValueShow.Free;
+//end;
+
+destructor TDAC_Show.Destroy;
 begin
  fKodShow.Free;
  fValueShow.Free;
+ inherited;
 end;
 
 procedure TDAC_Show.KodSetButtonAction(Sender: TObject);
@@ -403,10 +412,16 @@ begin
  fDAC_Show:=TDAC_Show.Create(ArdDAC,VData, KData,VL, KL, VSB, KSB, RB);
 end;
 
-procedure TArduinoDACShow.Free;
+//procedure TArduinoDACShow.Free;
+//begin
+// fDAC_Show.Free;
+// inherited Free;
+//end;
+
+destructor TArduinoDACShow.Destroy;
 begin
  fDAC_Show.Free;
- inherited Free;
+ inherited;
 end;
 
 procedure TArduinoDACShow.HookReadFromIniFile(ConfigFile: TIniFile);

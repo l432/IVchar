@@ -158,7 +158,8 @@ type
    public
      Constructor Create(CP:TComPort;Nm:string);overload;
      Constructor Create(CP:TComPort);overload;
-     procedure Free;//override;
+//     procedure Free;//override;
+     destructor Destroy;override;
   end;
 
   TRS232_UT70C=class(TRS232)
@@ -225,7 +226,7 @@ type
      Constructor Create(CP:TComPort);
   end;
 
-  TUT70BShow=class(TRS232MetterShowNew)
+  TUT70BShow=class(TRS232MetterShow)
     protected
      DiapazoneMode:TRadioGroup;
      AdapterDiapazoneMode:TAdapterRadioGroupClick;
@@ -239,7 +240,8 @@ type
                         TT:TTimer
                         );
    procedure MetterDataShow();override;
-   Procedure Free;//override;
+//   Procedure Free;//override;
+   destructor Destroy;override;
   end;
 
   TUT70CShow=class(TUT70BShow)
@@ -342,6 +344,12 @@ begin
   fDataSubject:=TDataSubject_UT70.Create(CP);
 end;
 
+destructor TUT70B.Destroy;
+begin
+ fDataConverter.Free;
+ inherited;
+end;
+
 procedure TUT70B.DiapasonModesFilling;
 var
   UT70_DM: TUT70_DiapazoneMode;
@@ -381,11 +389,11 @@ begin
 end;
 
 
-procedure TUT70B.Free;
-begin
- fDataConverter.Free;
- inherited Free;
-end;
+//procedure TUT70B.Free;
+//begin
+// fDataConverter.Free;
+// inherited Free;
+//end;
 
 //procedure TUT70Bnew.FreeDataConverter;
 //begin
@@ -946,10 +954,16 @@ begin
   DiapazoneMode.onEnter:=AdapterDiapazoneMode.RadioGroupOnEnter;
 end;
 
-procedure TUT70BShow.Free;
+//procedure TUT70BShow.Free;
+//begin
+//  AdapterDiapazoneMode.Free;
+//  inherited Free;
+//end;
+
+destructor TUT70BShow.Destroy;
 begin
   AdapterDiapazoneMode.Free;
-  inherited Free;
+  inherited;
 end;
 
 procedure TUT70BShow.MetterDataShow;

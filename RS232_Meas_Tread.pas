@@ -22,7 +22,7 @@ type
 //   constructor Create(RS_Meter:TRS232Meter;WPARAM: word; EventEnd: THandle);
 //  end;
 
-  TRS232MeasuringTreadNew = class(TMeasuringTread)
+  TRS232MeasuringTread = class(TMeasuringTread)
   private
    fRS232Meter:TRS232MeterDevice;
    procedure FalseStatement();
@@ -40,7 +40,7 @@ type
 //   procedure ExuteBegin;override;
 //  end;
 
-  TV721_MeasuringTreadNew = class(TRS232MeasuringTreadNew)
+  TV721_MeasuringTreadNew = class(TRS232MeasuringTread)
   private
   protected
    procedure ExuteBegin;override;
@@ -142,7 +142,7 @@ uses
 { TRS232MeasuringTreadNew }
 
 
-constructor TRS232MeasuringTreadNew.Create(RS_Meter: TRS232MeterDevice;
+constructor TRS232MeasuringTread.Create(RS_Meter: TRS232MeterDevice;
   WPARAM: word; EventEnd: THandle);
 begin
   inherited Create(RS_Meter,WPARAM,EventEnd);
@@ -151,7 +151,7 @@ begin
   Resume;
 end;
 
-procedure TRS232MeasuringTreadNew.ExuteBegin;
+procedure TRS232MeasuringTread.ExuteBegin;
 label
   start;
 var
@@ -181,7 +181,7 @@ start:
   end;
 end;
 
-procedure TRS232MeasuringTreadNew.FalseStatement;
+procedure TRS232MeasuringTread.FalseStatement;
 begin
   fRS232Meter.MeasurementBegin;
 end;

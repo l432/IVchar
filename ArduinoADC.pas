@@ -48,9 +48,10 @@ type
   property Value:double read GetValue;
   property ParentModule:TArduinoADC_Module read fParentModule;
   Constructor Create(ChanelNumber: byte; Module: TArduinoADC_Module);//override;
-  Procedure Free;//override;
+//  Procedure Free;override;
   function GetData:double;
   procedure GetDataThread(WPARAM: word; EventEnd:THandle);
+  destructor Destroy; override;
  end;
 
 Function TwosComplementToDouble(HiByte,LowByte:byte;LSB:double;
@@ -116,9 +117,16 @@ begin
   PinsCreate();
 end;
 
-procedure TArduinoADC_Channel.Free;
+//procedure TArduinoADC_Channel.Free;
+//begin
+//  Pins.Free;
+//  inherited;
+//end;
+
+destructor TArduinoADC_Channel.Destroy;
 begin
   Pins.Free;
+  inherited;
 end;
 
 function TArduinoADC_Channel.GetData: double;

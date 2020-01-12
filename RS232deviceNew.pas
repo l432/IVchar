@@ -52,7 +52,8 @@ TRS232=class
    property ComPort:TComPort read fComPort;
    property ComPacket:TComDataPacket read fComPacket;
    Constructor Create(CP:TComPort; StartString,StopString:string);
-   Procedure Free;//virtual;
+//   Procedure Free;//virtual;
+   destructor Destroy;override;
    Function IsSend(report:string):boolean;
   end;
 
@@ -68,7 +69,8 @@ TRS232DataSubjectBase=class(TNamedInterfacedObject)
   property ReceivedString:string read fReceivedString;
   property RS232:TRS232 read fRS232;
   Constructor Create(CP:TComPort);
-  Procedure Free;
+//  Procedure Free;
+  destructor Destroy;override;
   procedure NotifyObservers;virtual;abstract;
 end;
 
@@ -171,11 +173,12 @@ TRS232MeterDeviceSingle=class(TRS232MeterDevice)
   procedure CreateDataRequest;virtual;abstract;
  public
   Constructor Create(CP:TComPort;Nm:string);
-  procedure Free;
+//  procedure Free;
+  destructor Destroy;override;
   Procedure Request();override;
 end;
 
-TComplexDeviceDataConverter=class(TInterfacedObject{,IRS232DataConverter})
+TComplexDeviceDataConverter=class(TInterfacedObject)
   private
    fMeterDevice:TRS232MeterDevice;
   public
@@ -193,7 +196,7 @@ TAdapterRadioGroupClick=class
   end;
 
 
-TRS232MetterShowNew=class(TMeasurementShow)
+TRS232MetterShow=class(TMeasurementShow)
   protected
    RS232Meter:TRS232MeterDevice;
    AdapterMeasureMode,AdapterRange:TAdapterRadioGroupClick;
@@ -208,7 +211,8 @@ TRS232MetterShowNew=class(TMeasurementShow)
                       AB:TSpeedButton;
                       TT:TTimer
                       );
-   Procedure Free;
+//   Procedure Free;
+   destructor Destroy;override;
    procedure MetterDataShow();override;
 end;
 
@@ -269,7 +273,7 @@ end;
 procedure TRS232MeterDevice.GetDataThread(WPARAM: word;EventEnd:THandle);
 begin
  if fIRS232DataSubject.PortConnected then
-   fRS232MeasuringTread:=TRS232MeasuringTreadNew.Create(Self,WPARAM,EventEnd);
+   fRS232MeasuringTread:=TRS232MeasuringTread.Create(Self,WPARAM,EventEnd);
 end;
 
 procedure TRS232MeterDevice.MeasurementBegin;
@@ -398,12 +402,16 @@ end;
 Procedure PortBeginAction(Port:TComPort;Lab:TLabel;Button: TButton);
 begin
   try
+  try
     Port.Open;
     Port.Open;
     Port.AbortAllAsync;
     Port.AbortAllAsync;
     Port.ClearBuffer(True, True);
     Port.ClearBuffer(True, True);
+  except
+    showmessage('Port '+Port.Name+' is absent');
+  end;
   finally
    if Port.Connected then
       begin
@@ -418,7 +426,6 @@ begin
        if Button<>nil then Button.Caption:='To open'
       end
   end;
-
 
 end;
 
@@ -453,9 +460,15 @@ begin
   fComPacket.StopString:=StopString;
 end;
 
-procedure TRS232.Free;
+//procedure TRS232.Free;
+//begin
+//  fComPacket.Free;
+//end;
+
+destructor TRS232.Destroy;
 begin
   fComPacket.Free;
+  inherited;
 end;
 
 function TRS232.IsSend(report: string): boolean;
@@ -522,13 +535,20 @@ begin
   CreateDataRequest;
 end;
 
-procedure TRS232MeterDeviceSingle.Free;
+//procedure TRS232MeterDeviceSingle.Free;
+//begin
+//  fDataRequest.Free;
+//  fDataSubject.Free;
+//  inherited Free;
+//end;
+
+
+destructor TRS232MeterDeviceSingle.Destroy;
 begin
   fDataRequest.Free;
   fDataSubject.Free;
-  inherited Free;
+  inherited;
 end;
-
 
 procedure TRS232MeterDeviceSingle.Request;
 begin
@@ -556,7 +576,7 @@ end;
 
 { TRS232MetterShowNew }
 
-constructor TRS232MetterShowNew.Create(Meter: TRS232MeterDevice;
+constructor TRS232MetterShow.Create(Meter: TRS232MeterDevice;
                                        MM, R: TRadioGroup;
                                        DL, UL: TLabel;
                                        MB: TButton;
@@ -579,7 +599,14 @@ begin
 end;
 
 
-procedure TRS232MetterShowNew.DiapazonFill;
+destructor TRS232MetterShow.Destroy;
+begin
+ AdapterMeasureMode.Free;
+ AdapterRange.Free;
+ inherited;
+end;
+
+procedure TRS232MetterShow.DiapazonFill;
 begin
   Range.Items.Clear;
   if RS232Meter.fMeasureMode>-1
@@ -590,25 +617,25 @@ begin
   IndexToRadioGroup(RS232Meter.fDiapazon,Range);
 end;
 
-procedure TRS232MetterShowNew.Free;
-begin
- AdapterMeasureMode.Free;
- AdapterRange.Free;
- inherited Free;
-end;
+//procedure TRS232MetterShowNew.Free;
+//begin
+// AdapterMeasureMode.Free;
+// AdapterRange.Free;
+// inherited Free;
+//end;
 
-procedure TRS232MetterShowNew.MeasureModeFill;
+procedure TRS232MetterShow.MeasureModeFill;
 begin
     StringArrayToRadioGroup(RS232Meter.fMeasureModeAll,MeasureMode);
     MeasureMode.Items.Add(ErrorL);
 end;
 
-function TRS232MetterShowNew.UnitModeLabel: string;
+function TRS232MetterShow.UnitModeLabel: string;
 begin
  Result:=RS232Meter.MeasureModeLabel;
 end;
 
-procedure TRS232MetterShowNew.MetterDataShow;
+procedure TRS232MetterShow.MetterDataShow;
 begin
   MeasureMode.OnClick:=nil;
   Range.OnClick:=nil;
@@ -663,10 +690,16 @@ begin
   fRS232.fComPacket.OnPacket:=PacketReceiving;
 end;
 
-procedure TRS232DataSubjectBase.Free;
+//procedure TRS232DataSubjectBase.Free;
+//begin
+// fRS232.Free;
+// inherited Free;
+//end;
+
+destructor TRS232DataSubjectBase.Destroy;
 begin
  fRS232.Free;
- inherited Free;
+ inherited;
 end;
 
 procedure TRS232DataSubjectBase.PacketReceiving(Sender: TObject;
