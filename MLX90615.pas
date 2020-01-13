@@ -105,7 +105,7 @@ end;
 procedure TMLX90615.ConvertToValue;
  var temp:word;
 begin
-
+// ShowData(fData);
  if High(fData)<>2 then Exit;
  if not(CRCCorrect()) then Exit;
 

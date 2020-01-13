@@ -95,7 +95,9 @@ TRS232CustomDevice=class(TNamedInterfacedObject)
    function GetMessageError:string;
    procedure SetError(const Value:boolean);
    procedure SetMessageError(const Value:string);
+   function GetData(Index: Integer): Byte;
   public
+   property Data[Index: Integer]:byte read GetData;
    property Error:boolean read fError write SetError;
    property MessageError:string read GetMessageError write SetMessageError;
    Constructor Create(Nm:string);
@@ -120,17 +122,17 @@ TRS232MeterDevice=class(TRS232CustomDevice,IMeasurement,IRS232DataObserver)
    надходження даних, []=штук, за замовчуванням 130,
    тобто за замовчуванням інтервал очікуввання
    складає 0+10*130=1300 мс}
-   fMeasureMode:Shortint;
-   fDiapazon:Shortint;
-   fMeasureModeAll:array of string;
-   fDiapazonAll:array of array of string;
+//   fMeasureMode:Shortint;
+//   fDiapazon:Shortint;
+//   fMeasureModeAll:array of string;
+//   fDiapazonAll:array of array of string;
    fRS232MeasuringTread:TThread;
    fNewData:boolean;
    function GetNewData:boolean;
-   Procedure MModeDetermination(); virtual;
-   Procedure DiapazonDetermination(); virtual;
-   Procedure ValueDetermination();virtual;
-   Function MeasureModeLabelRead():string;virtual;
+//   Procedure MModeDetermination(); virtual;
+//   Procedure DiapazonDetermination(); virtual;
+//   Procedure ValueDetermination();virtual;
+//   Function MeasureModeLabelRead():string;virtual;
    Function Measurement():double;virtual;
    Function GetValue():double;virtual;
    procedure SetNewData(Value:boolean);
@@ -143,8 +145,8 @@ TRS232MeterDevice=class(TRS232CustomDevice,IMeasurement,IRS232DataObserver)
    property MinDelayTime:integer read  fMinDelayTime;
    property DelayTimeStep:integer read  fDelayTimeStep;
    property DelayTimeMax:integer read  fDelayTimeMax;
-   property MeasureModeLabel:string read MeasureModeLabelRead;
-   property Diapazon:Shortint read fDiapazon;
+//   property MeasureModeLabel:string read MeasureModeLabelRead;
+//   property Diapazon:Shortint read fDiapazon;
    Constructor Create(Nm:string);
    Procedure Request();virtual;abstract;
    function GetData():double;virtual;
@@ -179,9 +181,19 @@ TRS232MeterDeviceSingle=class(TRS232MeterDevice)
 end;
 
 TComplexDeviceDataConverter=class(TInterfacedObject)
-  private
-   fMeterDevice:TRS232MeterDevice;
+  protected
+   fMD:TRS232MeterDevice;
+   fMeasureMode:Shortint;
+   fDiapazon:Shortint;
+   fMeasureModeAll:array of string;
+   fDiapazonAll:array of array of string;
+   Procedure MModeDetermination(); virtual;abstract;
+   Procedure DiapazonDetermination(); virtual;abstract;
+   Procedure ValueDetermination();virtual;abstract;
+   Function MeasureModeLabelRead():string;virtual;
   public
+   property MeasureModeLabel:string read MeasureModeLabelRead;
+//   property Diapazon:Shortint read fDiapazon;
    procedure DataConvert();
    Constructor Create(MD:TRS232MeterDevice);
 end;
@@ -199,12 +211,14 @@ TAdapterRadioGroupClick=class
 TRS232MetterShow=class(TMeasurementShow)
   protected
    RS232Meter:TRS232MeterDevice;
+   DeviceDataConverter:TComplexDeviceDataConverter;
    AdapterMeasureMode,AdapterRange:TAdapterRadioGroupClick;
    procedure DiapazonFill();
    procedure MeasureModeFill();
    function UnitModeLabel():string;override;
   public
    Constructor Create(Meter:TRS232MeterDevice;
+                      DDataConverter:TComplexDeviceDataConverter;
                       MM,R:TRadioGroup;
                       DL,UL:TLabel;
                       MB:TButton;
@@ -233,10 +247,10 @@ implementation
 uses
   OlegType, Dialogs, RS232_Meas_Tread, Windows, Forms, Graphics;
 
-procedure TRS232MeterDevice.DiapazonDetermination();
-begin
-
-end;
+//procedure TRS232MeterDevice.DiapazonDetermination();
+//begin
+//
+//end;
 
 
 constructor TRS232MeterDevice.Create(Nm: string);
@@ -247,8 +261,8 @@ begin
   fMinDelayTime:=0;
   fDelayTimeStep:=10;
   fDelayTimeMax:=130;
-  fMeasureMode:=-1;
-  fDiapazon:=-1;
+//  fMeasureMode:=-1;
+//  fDiapazon:=-1;
   fValue:=ErResult;
   fNewData:=False;
   fError:=False;
@@ -333,16 +347,16 @@ end;
     end;
 end;
 
-function TRS232MeterDevice.MeasureModeLabelRead: string;
-begin
- Result:='';
-end;
+//function TRS232MeterDevice.MeasureModeLabelRead: string;
+//begin
+// Result:='';
+//end;
 
 
-procedure TRS232MeterDevice.MModeDetermination();
-begin
-
-end;
+//procedure TRS232MeterDevice.MModeDetermination();
+//begin
+//
+//end;
 
 
 procedure TRS232MeterDevice.SetNewData(Value: boolean);
@@ -355,10 +369,10 @@ begin
  fIsReceived:=True;
 end;
 
-procedure TRS232MeterDevice.ValueDetermination();
-begin
-
-end;
+//procedure TRS232MeterDevice.ValueDetermination();
+//begin
+//
+//end;
 
 
 { TAdapterRadioGroupClick }
@@ -509,6 +523,14 @@ begin
  fMessageError:=fName+ErrorMes;
 end;
 
+function TRS232CustomDevice.GetData(Index: Integer): byte;
+begin
+//  if Index>High(fData)
+//    then Result:=ErResult
+//    else
+    Result:=fData[Index];
+end;
+
 function TRS232CustomDevice.GetMessageError: string;
 begin
  Result:=fMessageError;
@@ -559,24 +581,32 @@ end;
 
 constructor TComplexDeviceDataConverter.Create(MD: TRS232MeterDevice);
 begin
-  fMeterDevice:=MD;
+  fMD:=MD;
+  fMeasureMode:=-1;
+  fDiapazon:=-1;
 end;
 
 procedure TComplexDeviceDataConverter.DataConvert();
 begin
-  with fMeterDevice do
-  begin
+//  with fMD do
+//  begin
   MModeDetermination();
   if fMeasureMode=-1 then Exit;
   DiapazonDetermination();
   if fDiapazon=-1 then  Exit;
   ValueDetermination();
-  end;
+//  end;
+end;
+
+function TComplexDeviceDataConverter.MeasureModeLabelRead: string;
+begin
+ Result:='';
 end;
 
 { TRS232MetterShowNew }
 
 constructor TRS232MetterShow.Create(Meter: TRS232MeterDevice;
+                                    DDataConverter:TComplexDeviceDataConverter;
                                        MM, R: TRadioGroup;
                                        DL, UL: TLabel;
                                        MB: TButton;
@@ -585,9 +615,10 @@ constructor TRS232MetterShow.Create(Meter: TRS232MeterDevice;
 begin
    inherited Create(Meter, MM, R, DL, UL, MB, AB, TT);
    RS232Meter:=Meter;
-
+   DeviceDataConverter:=DDataConverter;
    MeasureModeFill();
-   IndexToRadioGroup(RS232Meter.fMeasureMode,MeasureMode);
+//   IndexToRadioGroup(RS232Meter.fMeasureMode,MeasureMode);
+   IndexToRadioGroup(DeviceDataConverter.fMeasureMode,MeasureMode);
    DiapazonFill();
 
    AdapterMeasureMode:=TAdapterRadioGroupClick.Create(MeasureMode.Items.Count-1);
@@ -609,12 +640,16 @@ end;
 procedure TRS232MetterShow.DiapazonFill;
 begin
   Range.Items.Clear;
-  if RS232Meter.fMeasureMode>-1
+//  if RS232Meter.fMeasureMode>-1
+  if DeviceDataConverter.fMeasureMode>-1
     then
-      StringArrayToRadioGroup(RS232Meter.fDiapazonAll[RS232Meter.fMeasureMode],
+//      StringArrayToRadioGroup(RS232Meter.fDiapazonAll[RS232Meter.fMeasureMode],
+//                              Range);
+      StringArrayToRadioGroup(DeviceDataConverter.fDiapazonAll[DeviceDataConverter.fMeasureMode],
                               Range);
   Range.Items.Add(ErrorL);
-  IndexToRadioGroup(RS232Meter.fDiapazon,Range);
+//  IndexToRadioGroup(RS232Meter.fDiapazon,Range);
+  IndexToRadioGroup(DeviceDataConverter.fDiapazon,Range);
 end;
 
 //procedure TRS232MetterShowNew.Free;
@@ -626,13 +661,15 @@ end;
 
 procedure TRS232MetterShow.MeasureModeFill;
 begin
-    StringArrayToRadioGroup(RS232Meter.fMeasureModeAll,MeasureMode);
+//    StringArrayToRadioGroup(RS232Meter.fMeasureModeAll,MeasureMode);
+    StringArrayToRadioGroup(DeviceDataConverter.fMeasureModeAll,MeasureMode);
     MeasureMode.Items.Add(ErrorL);
 end;
 
 function TRS232MetterShow.UnitModeLabel: string;
 begin
- Result:=RS232Meter.MeasureModeLabel;
+// Result:=RS232Meter.MeasureModeLabel;
+ Result:=DeviceDataConverter.MeasureModeLabel;
 end;
 
 procedure TRS232MetterShow.MetterDataShow;
@@ -640,7 +677,8 @@ begin
   MeasureMode.OnClick:=nil;
   Range.OnClick:=nil;
 
-  IndexToRadioGroup(RS232Meter.fMeasureMode,MeasureMode);
+//  IndexToRadioGroup(RS232Meter.fMeasureMode,MeasureMode);
+  IndexToRadioGroup(DeviceDataConverter.fMeasureMode,MeasureMode);
   DiapazonFill();
 
   MeasureMode.OnClick:=AdapterMeasureMode.RadioGroupClick;

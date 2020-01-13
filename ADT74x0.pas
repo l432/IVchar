@@ -31,6 +31,7 @@ uses
 procedure TADT74x0.ConvertToValue;
  var temp:integer;
 begin
+// ShowData(fData);
  fValue:=ErResult;
  if High(fData)<>1 then Exit;
 

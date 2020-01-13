@@ -127,35 +127,62 @@ type
      function IsNoSuccessSend:Boolean;override;
   end;
 
-
-  TUT70B=class(TRS232MeterDeviceSingle)
-  private
+  TUT70DataConverter=class(TComplexDeviceDataConverter)
+   protected
     fAUTO:Boolean;
     {TRUE при автоматичному виборі діапазону вимірювань та FALSE при ручному}
     fOUT: Boolean;
     {TRUE при зашкалюванні}
     fDiapazoneModeAll:array of string;
-//    fDataRequest:TCDDataRequest;
-    fDataConverter:TComplexDeviceDataConverter;
     procedure NamesFilling;virtual;
     procedure DiapazonFilling(DiapazonNumber:byte;
                               D_Begin, D_End:TUT70_Diapazons);overload;
     procedure MeasureModesFilling;virtual;
     procedure DiapazonsFilling;virtual;
     procedure DiapasonModesFilling;
-    function CorrectData:boolean;virtual;
-   protected
-    procedure UpDate ();override;
     Procedure MModeDetermination();override;
     Procedure DiapazonDetermination();override;
     Procedure ValueDetermination();override;
     function MeasureModeLabelRead():string;override;
+
+  end;
+
+//   Procedure MModeDetermination(); virtual;abstract;
+//   Procedure DiapazonDetermination(); virtual;abstract;
+//   Procedure ValueDetermination();virtual;abstract;
+//   Function MeasureModeLabelRead():string;virtual;abstract;
+
+  TUT70B=class(TRS232MeterDeviceSingle)
+  private
+//    fAUTO:Boolean;
+//    {TRUE при автоматичному виборі діапазону вимірювань та FALSE при ручному}
+//    fOUT: Boolean;
+//    {TRUE при зашкалюванні}
+//    fDiapazoneModeAll:array of string;
+
+//    fDataConverter:TComplexDeviceDataConverter;
+    fDataConverter:TUT70DataConverter;
+//    procedure NamesFilling;virtual;
+//    procedure DiapazonFilling(DiapazonNumber:byte;
+//                              D_Begin, D_End:TUT70_Diapazons);overload;
+//    procedure MeasureModesFilling;virtual;
+//    procedure DiapazonsFilling;virtual;
+//    procedure DiapasonModesFilling;
+    function CorrectData:boolean;virtual;
+   protected
+    procedure UpDate ();override;
+//    Procedure MModeDetermination();override;
+//    Procedure DiapazonDetermination();override;
+//    Procedure ValueDetermination();override;
+//    function MeasureModeLabelRead():string;override;
     procedure CreateDataSubject(CP:TComPort);override;
     procedure CreateDataRequest;override;
 //    procedure FreeDataRequest;override;
     procedure CreateDataConverter;virtual;
 //    procedure FreeDataConverter;override;
+    function GetDiapazon:Shortint;
    public
+     property Diapazon:Shortint read GetDiapazon;
      Constructor Create(CP:TComPort;Nm:string);overload;
      Constructor Create(CP:TComPort);overload;
 //     procedure Free;//override;
@@ -182,9 +209,8 @@ type
     procedure PushButtom(ByteToSend: Byte);
   end;
 
-
-  TUT70C=class(TUT70B)
-  private
+ TUT70CDataConverter=class(TUT70DataConverter)
+    protected
     fHOLD:Boolean;
     {TRUE при натиснутій HOLD}
     fREC :Boolean;
@@ -206,15 +232,46 @@ type
     procedure DiapazonFilling(DiapazonNumber:byte;
                               D_Begin, D_End:TUT70C_Diapazons);overload;
     procedure MeasurementTypeDetermination();
-    procedure PushButtom(ByteToSend: Byte);
-    function CorrectData:boolean;override;
    protected
      Procedure MModeDetermination;override;
      Procedure DiapazonDetermination;override;
      Procedure ValueDetermination;override;
      Function MeasureModeLabelRead():string;override;
+ end;
+
+  TUT70C=class(TUT70B)
+  private
+//    fHOLD:Boolean;
+//    {TRUE при натиснутій HOLD}
+//    fREC :Boolean;
+//    {TRUE при режимі MAX-MIN}
+//    fMeasurementType:TUT70_MeasurementType;
+//   {що саме показує мультиметр:
+//    поточне значення (CUR), максимальне(MAX),
+//    мінімальне (MIN) чи середнє(AVE)}
+//    fms1: Boolean;
+//    {TRUE при увімкненні пікового детектору
+//     (час накопичення 1 мс) та FALSE при
+//     часах накопичення 100 мс або 1 с --
+//     використовується в режимі REC}
+//    fMeasurementTypeAll:array of string;
+//    procedure MeasureModesFilling;override;
+//    procedure DiapazonsFilling;override;
+//    procedure MeasurementTypesFilling;
+//    procedure NamesFilling;override;
+//    procedure DiapazonFilling(DiapazonNumber:byte;
+//                              D_Begin, D_End:TUT70C_Diapazons);overload;
+//    procedure MeasurementTypeDetermination();
+    procedure PushButtom(ByteToSend: Byte);
+    function CorrectData:boolean;override;
+   protected
+//     Procedure MModeDetermination;override;
+//     Procedure DiapazonDetermination;override;
+//     Procedure ValueDetermination;override;
+//     Function MeasureModeLabelRead():string;override;
      procedure CreateDataSubject(CP:TComPort);override;
      procedure CreateDataRequest;override;
+    procedure CreateDataConverter;override;
    public
      procedure PushPeak;
      procedure PushHold;
@@ -318,8 +375,10 @@ constructor TUT70B.Create(CP: TComPort; Nm: string);
 begin
  inherited Create(CP,Nm);
  RepeatInErrorCase:=True;
- NamesFilling;
+// NamesFilling;
+
  CreateDataConverter;
+ fDataConverter.NamesFilling;
 end;
 
 constructor TUT70B.Create(CP: TComPort);
@@ -329,7 +388,8 @@ end;
 
 procedure TUT70B.CreateDataConverter;
 begin
-  fDataConverter:=TComplexDeviceDataConverter.Create(Self);
+  fDataConverter:=TUT70DataConverter.Create(Self);
+//  fDataConverter:=TComplexDeviceDataConverter.Create(Self);
 //  fRS232DataConverter:=fDataConverter;
 end;
 
@@ -350,43 +410,48 @@ begin
  inherited;
 end;
 
-procedure TUT70B.DiapasonModesFilling;
-var
-  UT70_DM: TUT70_DiapazoneMode;
+function TUT70B.GetDiapazon: Shortint;
 begin
-  SetLength(fDiapazoneModeAll, ord(High(UT70_DiapazoneModeLabels)) + 1);
-  for UT70_DM := Low(TUT70_DiapazoneMode) to High(TUT70_DiapazoneMode) do
-    fDiapazoneModeAll[ord(UT70_DM)] := UT70_DiapazoneModeLabels[UT70_DM];
+ Result:=fDataConverter.fDiapazon;
 end;
 
-procedure TUT70B.DiapazonsFilling;
-begin
-  SetLength(fDiapazonAll, High(fMeasureModeAll) + 1);
-  {UD}
-  DiapazonFilling(0, mV400, V750);
-  {UA}
-  DiapazonFilling(1, mV400, V750);
-  {ID}
-  DiapazonFilling(2, micA400, A10);
-  {IA}
-  DiapazonFilling(3, micA400, A10);
-  {R}
-  DiapazonFilling(4, O400, MO40);
-  {P}
-  DiapazonFilling(5, CT, CT);
-  {D}
-  DiapazonFilling(6, DT, DT);
-  {C}
-  DiapazonFilling(7, nF4, mF40);
-  {F}
-  DiapazonFilling(8, kHz4, MHz400);
-  {O}
-  DiapazonFilling(9, RMP, RMP);
-  {T}
-  DiapazonFilling(10, TemC, TemC);
-  {G}
-  DiapazonFilling(11, TemF, TemF);
-end;
+//procedure TUT70B.DiapasonModesFilling;
+//var
+//  UT70_DM: TUT70_DiapazoneMode;
+//begin
+//  SetLength(fDiapazoneModeAll, ord(High(UT70_DiapazoneModeLabels)) + 1);
+//  for UT70_DM := Low(TUT70_DiapazoneMode) to High(TUT70_DiapazoneMode) do
+//    fDiapazoneModeAll[ord(UT70_DM)] := UT70_DiapazoneModeLabels[UT70_DM];
+//end;
+
+//procedure TUT70B.DiapazonsFilling;
+//begin
+//  SetLength(fDiapazonAll, High(fMeasureModeAll) + 1);
+//  {UD}
+//  DiapazonFilling(0, mV400, V750);
+//  {UA}
+//  DiapazonFilling(1, mV400, V750);
+//  {ID}
+//  DiapazonFilling(2, micA400, A10);
+//  {IA}
+//  DiapazonFilling(3, micA400, A10);
+//  {R}
+//  DiapazonFilling(4, O400, MO40);
+//  {P}
+//  DiapazonFilling(5, CT, CT);
+//  {D}
+//  DiapazonFilling(6, DT, DT);
+//  {C}
+//  DiapazonFilling(7, nF4, mF40);
+//  {F}
+//  DiapazonFilling(8, kHz4, MHz400);
+//  {O}
+//  DiapazonFilling(9, RMP, RMP);
+//  {T}
+//  DiapazonFilling(10, TemC, TemC);
+//  {G}
+//  DiapazonFilling(11, TemF, TemF);
+//end;
 
 
 //procedure TUT70B.Free;
@@ -412,75 +477,75 @@ end;
 //end;
 
 
-procedure TUT70B.DiapazonDetermination();
-begin
-  fDiapazon:=-1;
-  fAUTO:=((fData[8] and 2)>0);
-  fDiapazon:=fData[0];
-  if fDiapazon>7 then fDiapazon:=-1;
-end;
+//procedure TUT70B.DiapazonDetermination();
+//begin
+//  fDiapazon:=-1;
+//  fAUTO:=((fData[8] and 2)>0);
+//  fDiapazon:=fData[0];
+//  if fDiapazon>7 then fDiapazon:=-1;
+//end;
 
-procedure TUT70B.DiapazonFilling(DiapazonNumber: byte;
-                                 D_Begin,D_End: TUT70_Diapazons);
- var UT70_D:TUT70_Diapazons;
-begin
-  SetLength(fDiapazonAll[DiapazonNumber],ord(D_End)-ord(D_Begin)+1);
-  for UT70_D := D_Begin to D_End
-        do fDiapazonAll[DiapazonNumber][ord(UT70_D)-ord(D_Begin)]:=UT70_DiapazonsLabels[UT70_D];
-end;
-
-
-function TUT70B.MeasureModeLabelRead: string;
-begin
- inherited MeasureModeLabelRead();
- if (fMeasureMode=ord(IA))or(fMeasureMode=ord(ID))
-    then Result:=' A';
- if (fMeasureMode=ord(UA))or(fMeasureMode=ord(UD))
-    then Result:=' V';
- if (fMeasureMode=ord(O)) then Result:='RP';
- if (fMeasureMode=ord(F)) then Result:='Hz';
- if (fMeasureMode=ord(T)) then Result:=' C';
- if (fMeasureMode=ord(G)) then Result:=' f';
- if (fMeasureMode=ord(C)) then Result:=' F';
- if (fMeasureMode=ord(R)) then Result:=' R';
-end;
+//procedure TUT70B.DiapazonFilling(DiapazonNumber: byte;
+//                                 D_Begin,D_End: TUT70_Diapazons);
+// var UT70_D:TUT70_Diapazons;
+//begin
+//  SetLength(fDiapazonAll[DiapazonNumber],ord(D_End)-ord(D_Begin)+1);
+//  for UT70_D := D_Begin to D_End
+//        do fDiapazonAll[DiapazonNumber][ord(UT70_D)-ord(D_Begin)]:=UT70_DiapazonsLabels[UT70_D];
+//end;
 
 
-procedure TUT70B.MeasureModesFilling;
-var
-  UT70_MeasureMode: TUT70_MeasureMode;
-begin
-  SetLength(fMeasureModeAll, ord(High(UT70_MeasureModeLabels)) + 1);
-  for UT70_MeasureMode := Low(TUT70_MeasureMode) to High(TUT70_MeasureMode) do
-    fMeasureModeAll[ord(UT70_MeasureMode)] := UT70_MeasureModeLabels[UT70_MeasureMode];
-end;
+//function TUT70B.MeasureModeLabelRead: string;
+//begin
+// inherited MeasureModeLabelRead();
+// if (fMeasureMode=ord(IA))or(fMeasureMode=ord(ID))
+//    then Result:=' A';
+// if (fMeasureMode=ord(UA))or(fMeasureMode=ord(UD))
+//    then Result:=' V';
+// if (fMeasureMode=ord(O)) then Result:='RP';
+// if (fMeasureMode=ord(F)) then Result:='Hz';
+// if (fMeasureMode=ord(T)) then Result:=' C';
+// if (fMeasureMode=ord(G)) then Result:=' f';
+// if (fMeasureMode=ord(C)) then Result:=' F';
+// if (fMeasureMode=ord(R)) then Result:=' R';
+//end;
 
 
-procedure TUT70B.MModeDetermination();
-begin
-  case fData[5] of
-   1: fMeasureMode:=ord(D);
-   2: if (fData[6] and $08)>0 then fMeasureMode:=ord(O)
-                             else fMeasureMode:=ord(F);
-   3: fMeasureMode:=ord(R);
-   4: if (fData[6] and $08)>0 then fMeasureMode:=ord(T)
-                             else fMeasureMode:=ord(G);
-   5: fMeasureMode:=ord(P);
-   6: fMeasureMode:=ord(C);
-   9,13,15: if (fData[8] and $08)>0 then fMeasureMode:=ord(ID)
-                                    else fMeasureMode:=ord(IA);
-   11:      if (fData[8] and $08)>0 then fMeasureMode:=ord(UD)
-                                    else fMeasureMode:=ord(UA);
-   else fMeasureMode:=-1;
-  end;
-end;
+//procedure TUT70B.MeasureModesFilling;
+//var
+//  UT70_MeasureMode: TUT70_MeasureMode;
+//begin
+//  SetLength(fMeasureModeAll, ord(High(UT70_MeasureModeLabels)) + 1);
+//  for UT70_MeasureMode := Low(TUT70_MeasureMode) to High(TUT70_MeasureMode) do
+//    fMeasureModeAll[ord(UT70_MeasureMode)] := UT70_MeasureModeLabels[UT70_MeasureMode];
+//end;
 
-procedure TUT70B.NamesFilling;
-begin
-  MeasureModesFilling;
-  DiapazonsFilling;
-  DiapasonModesFilling;
-end;
+
+//procedure TUT70B.MModeDetermination();
+//begin
+//  case fData[5] of
+//   1: fMeasureMode:=ord(D);
+//   2: if (fData[6] and $08)>0 then fMeasureMode:=ord(O)
+//                             else fMeasureMode:=ord(F);
+//   3: fMeasureMode:=ord(R);
+//   4: if (fData[6] and $08)>0 then fMeasureMode:=ord(T)
+//                             else fMeasureMode:=ord(G);
+//   5: fMeasureMode:=ord(P);
+//   6: fMeasureMode:=ord(C);
+//   9,13,15: if (fData[8] and $08)>0 then fMeasureMode:=ord(ID)
+//                                    else fMeasureMode:=ord(IA);
+//   11:      if (fData[8] and $08)>0 then fMeasureMode:=ord(UD)
+//                                    else fMeasureMode:=ord(UA);
+//   else fMeasureMode:=-1;
+//  end;
+//end;
+
+//procedure TUT70B.NamesFilling;
+//begin
+//  MeasureModesFilling;
+//  DiapazonsFilling;
+//  DiapasonModesFilling;
+//end;
 
 procedure TUT70B.UpDate;
 begin
@@ -489,96 +554,96 @@ begin
   fDataConverter.DataConvert;
 end;
 
-procedure TUT70B.ValueDetermination();
- var x:double;
-begin
- fValue:=ErResult;
- fOUT:=((fData[6] and 1)>0);
- if fOUT then Exit;
-
- x:=fData[4]+10*fData[3]+100*fData[2]+1000*fData[1];
-
- if (fMeasureMode=ord(IA))or(fMeasureMode=ord(ID)) then
-       case fDiapazon of
-         0:case fData[5] of
-           15:x:=x*1e-2;
-            9:x:=x*1e-5;
-           13:x:=x*1e-7;
-           else Exit;
-           end;
-         1:case fData[5] of
-            9:x:=x*1e-4;
-           13:x:=x*1e-6;
-           else Exit;
-           end;
-         else Exit;
-       end;
- //-------??????????????????
- if fMeasureMode=ord(UA) then
-      case fDiapazon of
-         0:x:=x*1e-4;
-         1:x:=x*1e-3;
-         2:x:=x*1e-2;
-         3:x:=x*1e-1;
-         4:;
-         else Exit;
-      end;
-
- if fMeasureMode=ord(UD) then
-      case fDiapazon of
-         0:x:=x*1e-4;
-         1:x:=x*1e-3;
-         2:x:=x*1e-2;
-         3:x:=x*1e-1;
-         4:;
-         else Exit;
-      end;
-
- if fMeasureMode=ord(R) then
-      case fDiapazon of
-         0:x:=x*1e-1;
-         1:x:=x;
-         2:x:=x*1e1;
-         3:x:=x*1e2;
-         4:x:=x*1e3;
-         5:x:=x*1e4;
-         else Exit;
-      end;
-
- if (fMeasureMode=ord(P))or(fMeasureMode=ord(D)) then
-   if fDiapazon=0 then x:=x*1e-1 else Exit;
-
- if fMeasureMode=ord(C) then
-      case fDiapazon of
-          0:x:=x*1e-12;
-          1:x:=x*1e-11;
-          2:x:=x*1e-10;
-          3:x:=x*1e-9;
-          4:x:=x*1e-8;
-          5:x:=x*1e-7;
-          6:x:=x*1e-6;
-          7:x:=x*1e-5
-          else Exit;
-      end;
-
- if fMeasureMode=ord(F) then
-      case fDiapazon of
-          0:x:=x;
-          1:x:=x*1e1;
-          2:x:=x*1e2;
-          3:x:=x*1e3;
-          4:x:=x*1e4;
-          5:x:=x*1e5;
-          else Exit;
-      end;
-
-
- if fMeasureMode=ord(O) then x:=x*0.01;
-
- if ((fData[6] and 4)>0) then fValue:=-1*x
-                         else fValue:=x;
-
-end;
+//procedure TUT70B.ValueDetermination();
+// var x:double;
+//begin
+// fValue:=ErResult;
+// fOUT:=((fData[6] and 1)>0);
+// if fOUT then Exit;
+//
+// x:=fData[4]+10*fData[3]+100*fData[2]+1000*fData[1];
+//
+// if (fMeasureMode=ord(IA))or(fMeasureMode=ord(ID)) then
+//       case fDiapazon of
+//         0:case fData[5] of
+//           15:x:=x*1e-2;
+//            9:x:=x*1e-5;
+//           13:x:=x*1e-7;
+//           else Exit;
+//           end;
+//         1:case fData[5] of
+//            9:x:=x*1e-4;
+//           13:x:=x*1e-6;
+//           else Exit;
+//           end;
+//         else Exit;
+//       end;
+// //-------??????????????????
+// if fMeasureMode=ord(UA) then
+//      case fDiapazon of
+//         0:x:=x*1e-4;
+//         1:x:=x*1e-3;
+//         2:x:=x*1e-2;
+//         3:x:=x*1e-1;
+//         4:;
+//         else Exit;
+//      end;
+//
+// if fMeasureMode=ord(UD) then
+//      case fDiapazon of
+//         0:x:=x*1e-4;
+//         1:x:=x*1e-3;
+//         2:x:=x*1e-2;
+//         3:x:=x*1e-1;
+//         4:;
+//         else Exit;
+//      end;
+//
+// if fMeasureMode=ord(R) then
+//      case fDiapazon of
+//         0:x:=x*1e-1;
+//         1:x:=x;
+//         2:x:=x*1e1;
+//         3:x:=x*1e2;
+//         4:x:=x*1e3;
+//         5:x:=x*1e4;
+//         else Exit;
+//      end;
+//
+// if (fMeasureMode=ord(P))or(fMeasureMode=ord(D)) then
+//   if fDiapazon=0 then x:=x*1e-1 else Exit;
+//
+// if fMeasureMode=ord(C) then
+//      case fDiapazon of
+//          0:x:=x*1e-12;
+//          1:x:=x*1e-11;
+//          2:x:=x*1e-10;
+//          3:x:=x*1e-9;
+//          4:x:=x*1e-8;
+//          5:x:=x*1e-7;
+//          6:x:=x*1e-6;
+//          7:x:=x*1e-5
+//          else Exit;
+//      end;
+//
+// if fMeasureMode=ord(F) then
+//      case fDiapazon of
+//          0:x:=x;
+//          1:x:=x*1e1;
+//          2:x:=x*1e2;
+//          3:x:=x*1e3;
+//          4:x:=x*1e4;
+//          5:x:=x*1e5;
+//          else Exit;
+//      end;
+//
+//
+// if fMeasureMode=ord(O) then x:=x*0.01;
+//
+// if ((fData[6] and 4)>0) then fValue:=-1*x
+//                         else fValue:=x;
+//
+//end;
 
 
 
@@ -603,6 +668,11 @@ begin
  inherited Create(CP,'UT70C');
 end;
 
+procedure TUT70C.CreateDataConverter;
+begin
+ fDataConverter:=TUT70CDataConverter.Create(Self);
+end;
+
 procedure TUT70C.CreateDataRequest;
 begin
  fDataRequest:=TDataRequest_UT70C.Create(Self.fDataSubject.RS232,Self);
@@ -614,245 +684,245 @@ begin
   fDataSubject:=TDataSubject_UT70C.Create(CP);
 end;
 
-procedure TUT70C.DiapazonDetermination;
-begin
-  fDiapazon:=-1;
-  fAUTO:=((fData[1] and $40)=0);
-  fDiapazon:=((fData[1] shr 3) and $07);
-  if fDiapazon>7 then fDiapazon:=-1;
-  if (fMeasureMode=ord(S_c))or(fMeasureMode=ord(P_c))
-                then fDiapazon:=0;
-  if (fData[0] in [40,41,112]) then fDiapazon:=fDiapazon+2;
-end;
+//procedure TUT70C.DiapazonDetermination;
+//begin
+//  fDiapazon:=-1;
+//  fAUTO:=((fData[1] and $40)=0);
+//  fDiapazon:=((fData[1] shr 3) and $07);
+//  if fDiapazon>7 then fDiapazon:=-1;
+//  if (fMeasureMode=ord(S_c))or(fMeasureMode=ord(P_c))
+//                then fDiapazon:=0;
+//  if (fData[0] in [40,41,112]) then fDiapazon:=fDiapazon+2;
+//end;
 
-procedure TUT70C.DiapazonFilling(DiapazonNumber: byte;
-                                D_Begin,D_End: TUT70C_Diapazons);
- var D:TUT70C_Diapazons;
-begin
-  SetLength(fDiapazonAll[DiapazonNumber],ord(D_End)-ord(D_Begin)+1);
-  for D := D_Begin to D_End
-        do fDiapazonAll[DiapazonNumber][ord(D)-ord(D_Begin)]:=UT70C_DiapazonsLabels[D];
-end;
-
-
-procedure TUT70C.DiapazonsFilling;
-begin
-  SetLength(fDiapazonAll, High(fMeasureModeAll) + 1);
-  {UD_c}
-  DiapazonFilling(0, mV80, V1000);
-  {UA_c}
-  DiapazonFilling(1, mV800, V1000);
-  {ID_c}
-  DiapazonFilling(2, mA80, A10_c);
-  {IA_c}
-  DiapazonFilling(3, mA80, A10_c);
-  {R_c}
-  DiapazonFilling(4, O800, MO80);
-  {P_c}
-  DiapazonFilling(5, CT, CT);
-  {D_c}
-  DiapazonFilling(6, DT, DT);
-  {C_c}
-  DiapazonFilling(7, nF1, micF100);
-  {F_c}
-  DiapazonFilling(8, kHz1, MHz1);
-  {M_c}
-  DiapazonFilling(9, DC, DC);
-  {S_c}
-  DiapazonFilling(10, nS80, nS80);
-end;
+//procedure TUT70C.DiapazonFilling(DiapazonNumber: byte;
+//                                D_Begin,D_End: TUT70C_Diapazons);
+// var D:TUT70C_Diapazons;
+//begin
+//  SetLength(fDiapazonAll[DiapazonNumber],ord(D_End)-ord(D_Begin)+1);
+//  for D := D_Begin to D_End
+//        do fDiapazonAll[DiapazonNumber][ord(D)-ord(D_Begin)]:=UT70C_DiapazonsLabels[D];
+//end;
 
 
-procedure TUT70C.MeasurementTypeDetermination();
-var
-  b: Byte;
-begin
-  if fREC then
-    begin
-      b:=((fData[2] shr 3) and $03);
-      if fms1 then
-         case b of
-          0:fMeasurementType:=MAXX;
-          1:fMeasurementType:=MINN;
-         end{case b of}
-            else
-         case b of
-          0:fMeasurementType:=CUR;
-          1:fMeasurementType:=MAXX;
-          2:fMeasurementType:=MINN;
-          3:fMeasurementType:=AVE;
-         end;
-    end   else fMeasurementType:=CUR;
-end;
+//procedure TUT70C.DiapazonsFilling;
+//begin
+//  SetLength(fDiapazonAll, High(fMeasureModeAll) + 1);
+//  {UD_c}
+//  DiapazonFilling(0, mV80, V1000);
+//  {UA_c}
+//  DiapazonFilling(1, mV800, V1000);
+//  {ID_c}
+//  DiapazonFilling(2, mA80, A10_c);
+//  {IA_c}
+//  DiapazonFilling(3, mA80, A10_c);
+//  {R_c}
+//  DiapazonFilling(4, O800, MO80);
+//  {P_c}
+//  DiapazonFilling(5, CT, CT);
+//  {D_c}
+//  DiapazonFilling(6, DT, DT);
+//  {C_c}
+//  DiapazonFilling(7, nF1, micF100);
+//  {F_c}
+//  DiapazonFilling(8, kHz1, MHz1);
+//  {M_c}
+//  DiapazonFilling(9, DC, DC);
+//  {S_c}
+//  DiapazonFilling(10, nS80, nS80);
+//end;
 
 
-
-procedure TUT70C.MeasurementTypesFilling;
-var
-  MT: TUT70_MeasurementType;
-begin
-  SetLength(fMeasurementTypeAll, ord(High(UT70_MeasureTypeLabels)) + 1);
-  for MT := Low(TUT70_MeasurementType) to High(TUT70_MeasurementType) do
-    fMeasurementTypeAll[ord(MT)] := UT70_MeasureTypeLabels[MT];
-end;
-
-
-function TUT70C.MeasureModeLabelRead: string;
-begin
- Result:='';
- if (fMeasureMode=ord(IA_c))or(fMeasureMode=ord(ID_c))
-    then Result:=' A';
- if (fMeasureMode=ord(UA_c))or(fMeasureMode=ord(UD_c))
-    then Result:=' V';
- if (fMeasureMode=ord(S_c)) then Result:='S';
- if (fMeasureMode=ord(F_c)) then Result:='Hz';
- if (fMeasureMode=ord(M_c)) then Result:=' %';
- if (fMeasureMode=ord(C_c)) then Result:=' F';
- if (fMeasureMode=ord(R_c)) then Result:=' R';
-end;
-
-
-procedure TUT70C.MeasureModesFilling;
-var
-  MM: TUT70C_MeasureMode;
-begin
-  SetLength(fMeasureModeAll, ord(High(UT70C_MeasureModeLabels)) + 1);
-  for MM := Low(TUT70C_MeasureMode) to High(TUT70C_MeasureMode) do
-    fMeasureModeAll[ord(MM)] := UT70C_MeasureModeLabels[MM];
-end;
-
-
-procedure TUT70C.MModeDetermination();
- var b,b2:byte;
-begin
-  fMeasureMode:=-1;
-  b:=fData[1] and $07;
-  if (b=0)and(fData[0]=97) then fMeasureMode:=ord(C_c);
-  if (b=4)and(fData[0] in [120,112,104,40,41,48,49])
-                          then fMeasureMode:=ord(F_c);
-  if (b=5)and(fData[0] in [120,112,104,40,41,48,49])
-                          then fMeasureMode:=ord(M_c);
-  if (b=2) then
-   case  fData[0] of
-     120:fMeasureMode:=ord(UA_c);
-     112,104:fMeasureMode:=ord(UD_c);
-     96:begin
-          b2:=(fData[2] and $04);
-          if b2>0 then fMeasureMode:=ord(P_c)
-                  else fMeasureMode:=ord(R_c);
-          if (b2=0)and(((fData[1] shr 3) and $07)=6)
-                  then fMeasureMode:=ord(S_c);
-        end;
-     88:fMeasureMode:=ord(D_c);
-     40,48:fMeasureMode:=ord(ID_c);
-     41,49:fMeasureMode:=ord(IA_c);
-   end;
-end;
+//procedure TUT70C.MeasurementTypeDetermination();
+//var
+//  b: Byte;
+//begin
+//  if fREC then
+//    begin
+//      b:=((fData[2] shr 3) and $03);
+//      if fms1 then
+//         case b of
+//          0:fMeasurementType:=MAXX;
+//          1:fMeasurementType:=MINN;
+//         end{case b of}
+//            else
+//         case b of
+//          0:fMeasurementType:=CUR;
+//          1:fMeasurementType:=MAXX;
+//          2:fMeasurementType:=MINN;
+//          3:fMeasurementType:=AVE;
+//         end;
+//    end   else fMeasurementType:=CUR;
+//end;
 
 
 
-procedure TUT70C.NamesFilling;
-begin
-  inherited NamesFilling;
-  MeasurementTypesFilling;
-end;
-
-procedure TUT70C.ValueDetermination;
- var x:double;
-begin
- fValue:=ErResult;
-
- fREC:=((fData[2] and $40)>0);
+//procedure TUT70C.MeasurementTypesFilling;
+//var
+//  MT: TUT70_MeasurementType;
+//begin
+//  SetLength(fMeasurementTypeAll, ord(High(UT70_MeasureTypeLabels)) + 1);
+//  for MT := Low(TUT70_MeasurementType) to High(TUT70_MeasurementType) do
+//    fMeasurementTypeAll[ord(MT)] := UT70_MeasureTypeLabels[MT];
+//end;
 
 
- fHOLD:=((fData[3] and $01)>0);
- fms1:=((fData[2] and $04)>0)and(fREC);
+//function TUT70C.MeasureModeLabelRead: string;
+//begin
+// Result:='';
+// if (fMeasureMode=ord(IA_c))or(fMeasureMode=ord(ID_c))
+//    then Result:=' A';
+// if (fMeasureMode=ord(UA_c))or(fMeasureMode=ord(UD_c))
+//    then Result:=' V';
+// if (fMeasureMode=ord(S_c)) then Result:='S';
+// if (fMeasureMode=ord(F_c)) then Result:='Hz';
+// if (fMeasureMode=ord(M_c)) then Result:=' %';
+// if (fMeasureMode=ord(C_c)) then Result:=' F';
+// if (fMeasureMode=ord(R_c)) then Result:=' R';
+//end;
 
- MeasurementTypeDetermination();
 
- fOUT:=((fData[3] and $08)>0);
- if fOUT then Exit;
+//procedure TUT70C.MeasureModesFilling;
+//var
+//  MM: TUT70C_MeasureMode;
+//begin
+//  SetLength(fMeasureModeAll, ord(High(UT70C_MeasureModeLabels)) + 1);
+//  for MM := Low(TUT70C_MeasureMode) to High(TUT70C_MeasureMode) do
+//    fMeasureModeAll[ord(MM)] := UT70C_MeasureModeLabels[MM];
+//end;
 
 
- x:=fData[8]+10*fData[7]+100*fData[6]+1000*fData[5];
- if (fMeasureMode=ord(F_c))and(fData[4]<10)
-                   then x:=x+10000*fData[4];
+//procedure TUT70C.MModeDetermination();
+// var b,b2:byte;
+//begin
+//  fMeasureMode:=-1;
+//  b:=fData[1] and $07;
+//  if (b=0)and(fData[0]=97) then fMeasureMode:=ord(C_c);
+//  if (b=4)and(fData[0] in [120,112,104,40,41,48,49])
+//                          then fMeasureMode:=ord(F_c);
+//  if (b=5)and(fData[0] in [120,112,104,40,41,48,49])
+//                          then fMeasureMode:=ord(M_c);
+//  if (b=2) then
+//   case  fData[0] of
+//     120:fMeasureMode:=ord(UA_c);
+//     112,104:fMeasureMode:=ord(UD_c);
+//     96:begin
+//          b2:=(fData[2] and $04);
+//          if b2>0 then fMeasureMode:=ord(P_c)
+//                  else fMeasureMode:=ord(R_c);
+//          if (b2=0)and(((fData[1] shr 3) and $07)=6)
+//                  then fMeasureMode:=ord(S_c);
+//        end;
+//     88:fMeasureMode:=ord(D_c);
+//     40,48:fMeasureMode:=ord(ID_c);
+//     41,49:fMeasureMode:=ord(IA_c);
+//   end;
+//end;
 
- if fMeasureMode=ord(UA_c) then
-      case fDiapazon of
-         0:x:=x*1e-4;
-         1:x:=x*1e-3;
-         2:x:=x*1e-2;
-         3:x:=x*1e-1;
-         4:;
-         else Exit;
-      end;
 
-   if fMeasureMode=ord(UD_c) then
-       case fDiapazon of
-           0:x:=x*1e-5;
-           1:x:=x*1e-4;
-           2:x:=x*1e-3;
-           3:x:=x*1e-2;
-           4:x:=x*1e-1;
-           5:;
-           else Exit;
-         end;
 
- if fMeasureMode=ord(R_c) then
-      case fDiapazon of
-         0:x:=x*1e-1;
-         1:x:=x;
-         2:x:=x*1e1;
-         3:x:=x*1e2;
-         4:x:=x*1e3;
-         5:x:=x*1e4;
-         else Exit;
-      end;
+//procedure TUT70C.NamesFilling;
+//begin
+//  inherited NamesFilling;
+//  MeasurementTypesFilling;
+//end;
 
- if fMeasureMode=ord(S_c) then
-    if fDiapazon=0 then x:=x*1e-11
-                   else Exit;
-
- if (fMeasureMode=ord(P_c))or(fMeasureMode=ord(D_c)) then
-   if fDiapazon=0 then x:=x*1e-1 else Exit;
-
- if fMeasureMode=ord(C_c) then
-      case fDiapazon of
-          0:x:=x*1e-12;
-          1:x:=x*1e-11;
-          2:x:=x*1e-10;
-          3:x:=x*1e-9;
-          4:x:=x*1e-8;
-          5:x:=x*1e-7;
-          else Exit;
-      end;
-
- if (fMeasureMode=ord(ID_c))or
-    (fMeasureMode=ord(IA_c)) then
-       case fDiapazon of
-           0:x:=x*1e-5;
-           1:x:=x*1e-4;
-           2:x:=x*1e-3;
-           3:x:=x*1e-2;
-           else Exit;
-         end;
-
- if fMeasureMode=ord(F_c) then
-      case fDiapazon of
-          0:x:=x*1e-2;
-          1:x:=x*1e-1;
-          2:;
-          3:x:=x*1e1;
-          else Exit;
-      end;
-
- if fMeasureMode=ord(M_c) then x:=x*0.01;
-
- if ((fData[3] and $10)>0) then fValue:=-1*x
-                         else fValue:=x;
-
-end;
+//procedure TUT70C.ValueDetermination;
+// var x:double;
+//begin
+// fValue:=ErResult;
+//
+// fREC:=((fData[2] and $40)>0);
+//
+//
+// fHOLD:=((fData[3] and $01)>0);
+// fms1:=((fData[2] and $04)>0)and(fREC);
+//
+// MeasurementTypeDetermination();
+//
+// fOUT:=((fData[3] and $08)>0);
+// if fOUT then Exit;
+//
+//
+// x:=fData[8]+10*fData[7]+100*fData[6]+1000*fData[5];
+// if (fMeasureMode=ord(F_c))and(fData[4]<10)
+//                   then x:=x+10000*fData[4];
+//
+// if fMeasureMode=ord(UA_c) then
+//      case fDiapazon of
+//         0:x:=x*1e-4;
+//         1:x:=x*1e-3;
+//         2:x:=x*1e-2;
+//         3:x:=x*1e-1;
+//         4:;
+//         else Exit;
+//      end;
+//
+//   if fMeasureMode=ord(UD_c) then
+//       case fDiapazon of
+//           0:x:=x*1e-5;
+//           1:x:=x*1e-4;
+//           2:x:=x*1e-3;
+//           3:x:=x*1e-2;
+//           4:x:=x*1e-1;
+//           5:;
+//           else Exit;
+//         end;
+//
+// if fMeasureMode=ord(R_c) then
+//      case fDiapazon of
+//         0:x:=x*1e-1;
+//         1:x:=x;
+//         2:x:=x*1e1;
+//         3:x:=x*1e2;
+//         4:x:=x*1e3;
+//         5:x:=x*1e4;
+//         else Exit;
+//      end;
+//
+// if fMeasureMode=ord(S_c) then
+//    if fDiapazon=0 then x:=x*1e-11
+//                   else Exit;
+//
+// if (fMeasureMode=ord(P_c))or(fMeasureMode=ord(D_c)) then
+//   if fDiapazon=0 then x:=x*1e-1 else Exit;
+//
+// if fMeasureMode=ord(C_c) then
+//      case fDiapazon of
+//          0:x:=x*1e-12;
+//          1:x:=x*1e-11;
+//          2:x:=x*1e-10;
+//          3:x:=x*1e-9;
+//          4:x:=x*1e-8;
+//          5:x:=x*1e-7;
+//          else Exit;
+//      end;
+//
+// if (fMeasureMode=ord(ID_c))or
+//    (fMeasureMode=ord(IA_c)) then
+//       case fDiapazon of
+//           0:x:=x*1e-5;
+//           1:x:=x*1e-4;
+//           2:x:=x*1e-3;
+//           3:x:=x*1e-2;
+//           else Exit;
+//         end;
+//
+// if fMeasureMode=ord(F_c) then
+//      case fDiapazon of
+//          0:x:=x*1e-2;
+//          1:x:=x*1e-1;
+//          2:;
+//          3:x:=x*1e1;
+//          else Exit;
+//      end;
+//
+// if fMeasureMode=ord(M_c) then x:=x*0.01;
+//
+// if ((fData[3] and $10)>0) then fValue:=-1*x
+//                         else fValue:=x;
+//
+//end;
 
 procedure TUT70C.PushHold;
 begin
@@ -944,9 +1014,10 @@ Constructor TUT70BShow.Create(UT70B: TUT70B;
                               AB: TSpeedButton;
                               TT: TTimer);
 begin
- inherited Create(UT70B,MM,R,DL,UL,MB,AB,TT);
+ inherited Create(UT70B,UT70B.fDataConverter,MM,R,DL,UL,MB,AB,TT);
  DiapazoneMode:=DM;
- StringArrayToRadioGroup(UT70B.fDiapazoneModeAll,DiapazoneMode);
+// StringArrayToRadioGroup(UT70B.fDiapazoneModeAll,DiapazoneMode);
+ StringArrayToRadioGroup(UT70B.fDataConverter.fDiapazoneModeAll,DiapazoneMode);
  IndexToRadioGroup(1,DiapazoneMode);
 
   AdapterDiapazoneMode:=TAdapterRadioGroupClick.Create(DiapazoneMode.Items.Count-1);
@@ -970,10 +1041,12 @@ procedure TUT70BShow.MetterDataShow;
 begin
   inherited MetterDataShow;
   DiapazoneMode.OnClick:=nil;
-  IndexToRadioGroup(ord((RS232Meter as TUT70B).fAUTO),DiapazoneMode);
+//  IndexToRadioGroup(ord((RS232Meter as TUT70B).fAUTO),DiapazoneMode);
+  IndexToRadioGroup(ord((DeviceDataConverter as TUT70DataConverter).fAUTO),DiapazoneMode);
   DiapazoneMode.OnClick:=AdapterDiapazoneMode.RadioGroupClick;
 
-  if (RS232Meter as TUT70B).fOUT then
+//  if (RS232Meter as TUT70B).fOUT then
+  if (DeviceDataConverter as TUT70DataConverter).fOUT then
      begin
       DataLabel.Caption:='     .OL';
      end;
@@ -1006,16 +1079,22 @@ procedure TUT70CShow.MetterDataShow;
 begin
   inherited MetterDataShow;
 
-  HoldLabel.Enabled:=(RS232Meter as TUT70C).fHOLD;
-  RecLabel.Enabled:=(RS232Meter as TUT70C).fREC;
-  if (RS232Meter as TUT70C).fREC then
+//  HoldLabel.Enabled:=(RS232Meter as TUT70C).fHOLD;
+//  RecLabel.Enabled:=(RS232Meter as TUT70C).fREC;
+//  if (RS232Meter as TUT70C).fREC then
+//    begin
+//     if (RS232Meter as TUT70C).fms1
+  HoldLabel.Enabled:=(DeviceDataConverter as TUT70CDataConverter).fHOLD;
+  RecLabel.Enabled:=(DeviceDataConverter as TUT70CDataConverter).fREC;
+  if (DeviceDataConverter as TUT70CDataConverter).fREC then
     begin
-     if (RS232Meter as TUT70C).fms1
+     if (DeviceDataConverter as TUT70CDataConverter).fms1
         then AvTimeLabel.Caption:=' 1 ms'
         else AvTimeLabel.Caption:='100 ms';
 
      MeasTypeLabel.Caption:=
-        UT70_MeasureTypeLabels[(RS232Meter as TUT70C).fMeasurementType];
+//        UT70_MeasureTypeLabels[(RS232Meter as TUT70C).fMeasurementType];
+        UT70_MeasureTypeLabels[(DeviceDataConverter as TUT70CDataConverter).fMeasurementType];
 
      AvTimeLabel.Visible:=True;
      MeasTypeLabel.Visible:=True;
@@ -1025,12 +1104,448 @@ begin
      MeasTypeLabel.Visible:=False;
     end;
 
-  if (RS232Meter as TUT70B).fOUT then
+//  if (RS232Meter as TUT70B).fOUT then
+  if (DeviceDataConverter as TUT70CDataConverter).fOUT then
      begin
       DataLabel.Caption:='     .OL';
      end;
 end;
 
+
+{ TUT70DataConverter }
+
+procedure TUT70DataConverter.DiapasonModesFilling;
+var
+  UT70_DM: TUT70_DiapazoneMode;
+begin
+  SetLength(fDiapazoneModeAll, ord(High(UT70_DiapazoneModeLabels)) + 1);
+  for UT70_DM := Low(TUT70_DiapazoneMode) to High(TUT70_DiapazoneMode) do
+    fDiapazoneModeAll[ord(UT70_DM)] := UT70_DiapazoneModeLabels[UT70_DM];
+end;
+
+procedure TUT70DataConverter.DiapazonDetermination;
+begin
+  fDiapazon:=-1;
+  fAUTO:=((fMD.Data[8] and 2)>0);
+  fDiapazon:=fMD.Data[0];
+  if fDiapazon>7 then fDiapazon:=-1;
+end;
+
+procedure TUT70DataConverter.DiapazonFilling(DiapazonNumber: byte; D_Begin,
+  D_End: TUT70_Diapazons);
+  var UT70_D:TUT70_Diapazons;
+begin
+  SetLength(fDiapazonAll[DiapazonNumber],ord(D_End)-ord(D_Begin)+1);
+  for UT70_D := D_Begin to D_End
+        do fDiapazonAll[DiapazonNumber][ord(UT70_D)-ord(D_Begin)]:=UT70_DiapazonsLabels[UT70_D];
+
+end;
+
+procedure TUT70DataConverter.DiapazonsFilling;
+begin
+  SetLength(fDiapazonAll, High(fMeasureModeAll) + 1);
+  {UD}
+  DiapazonFilling(0, mV400, V750);
+  {UA}
+  DiapazonFilling(1, mV400, V750);
+  {ID}
+  DiapazonFilling(2, micA400, A10);
+  {IA}
+  DiapazonFilling(3, micA400, A10);
+  {R}
+  DiapazonFilling(4, O400, MO40);
+  {P}
+  DiapazonFilling(5, CT, CT);
+  {D}
+  DiapazonFilling(6, DT, DT);
+  {C}
+  DiapazonFilling(7, nF4, mF40);
+  {F}
+  DiapazonFilling(8, kHz4, MHz400);
+  {O}
+  DiapazonFilling(9, RMP, RMP);
+  {T}
+  DiapazonFilling(10, TemC, TemC);
+  {G}
+  DiapazonFilling(11, TemF, TemF);
+end;
+
+function TUT70DataConverter.MeasureModeLabelRead: string;
+begin
+ Result:= inherited MeasureModeLabelRead;
+// Result:='';
+ if (fMeasureMode=ord(IA))or(fMeasureMode=ord(ID))
+    then Result:=' A';
+ if (fMeasureMode=ord(UA))or(fMeasureMode=ord(UD))
+    then Result:=' V';
+ if (fMeasureMode=ord(O)) then Result:='RP';
+ if (fMeasureMode=ord(F)) then Result:='Hz';
+ if (fMeasureMode=ord(T)) then Result:=' C';
+ if (fMeasureMode=ord(G)) then Result:=' f';
+ if (fMeasureMode=ord(C)) then Result:=' F';
+ if (fMeasureMode=ord(R)) then Result:=' R';
+end;
+
+procedure TUT70DataConverter.MeasureModesFilling;
+var
+  UT70_MeasureMode: TUT70_MeasureMode;
+begin
+  SetLength(fMeasureModeAll, ord(High(UT70_MeasureModeLabels)) + 1);
+  for UT70_MeasureMode := Low(TUT70_MeasureMode) to High(TUT70_MeasureMode) do
+    fMeasureModeAll[ord(UT70_MeasureMode)] := UT70_MeasureModeLabels[UT70_MeasureMode];
+end;
+
+procedure TUT70DataConverter.MModeDetermination;
+begin
+  case fMD.Data[5] of
+   1: fMeasureMode:=ord(D);
+   2: if (fMD.Data[6] and $08)>0 then fMeasureMode:=ord(O)
+                             else fMeasureMode:=ord(F);
+   3: fMeasureMode:=ord(R);
+   4: if (fMD.Data[6] and $08)>0 then fMeasureMode:=ord(T)
+                             else fMeasureMode:=ord(G);
+   5: fMeasureMode:=ord(P);
+   6: fMeasureMode:=ord(C);
+   9,13,15: if (fMD.Data[8] and $08)>0 then fMeasureMode:=ord(ID)
+                                    else fMeasureMode:=ord(IA);
+   11:      if (fMD.Data[8] and $08)>0 then fMeasureMode:=ord(UD)
+                                    else fMeasureMode:=ord(UA);
+   else fMeasureMode:=-1;
+  end;
+
+end;
+
+procedure TUT70DataConverter.NamesFilling;
+begin
+  MeasureModesFilling;
+  DiapazonsFilling;
+  DiapasonModesFilling;
+end;
+
+procedure TUT70DataConverter.ValueDetermination;
+ var x:double;
+begin
+ fMD.Value:=ErResult;
+ fOUT:=((fMD.Data[6] and 1)>0);
+ if fOUT then Exit;
+
+ x:=fMD.Data[4]+10*fMD.Data[3]+100*fMD.Data[2]+1000*fMD.Data[1];
+
+ if (fMeasureMode=ord(IA))or(fMeasureMode=ord(ID)) then
+       case fDiapazon of
+         0:case fMD.Data[5] of
+           15:x:=x*1e-2;
+            9:x:=x*1e-5;
+           13:x:=x*1e-7;
+           else Exit;
+           end;
+         1:case fMD.Data[5] of
+            9:x:=x*1e-4;
+           13:x:=x*1e-6;
+           else Exit;
+           end;
+         else Exit;
+       end;
+ //-------??????????????????
+ if fMeasureMode=ord(UA) then
+      case fDiapazon of
+         0:x:=x*1e-4;
+         1:x:=x*1e-3;
+         2:x:=x*1e-2;
+         3:x:=x*1e-1;
+         4:;
+         else Exit;
+      end;
+
+ if fMeasureMode=ord(UD) then
+      case fDiapazon of
+         0:x:=x*1e-4;
+         1:x:=x*1e-3;
+         2:x:=x*1e-2;
+         3:x:=x*1e-1;
+         4:;
+         else Exit;
+      end;
+
+ if fMeasureMode=ord(R) then
+      case fDiapazon of
+         0:x:=x*1e-1;
+         1:x:=x;
+         2:x:=x*1e1;
+         3:x:=x*1e2;
+         4:x:=x*1e3;
+         5:x:=x*1e4;
+         else Exit;
+      end;
+
+ if (fMeasureMode=ord(P))or(fMeasureMode=ord(D)) then
+   if fDiapazon=0 then x:=x*1e-1 else Exit;
+
+ if fMeasureMode=ord(C) then
+      case fDiapazon of
+          0:x:=x*1e-12;
+          1:x:=x*1e-11;
+          2:x:=x*1e-10;
+          3:x:=x*1e-9;
+          4:x:=x*1e-8;
+          5:x:=x*1e-7;
+          6:x:=x*1e-6;
+          7:x:=x*1e-5
+          else Exit;
+      end;
+
+ if fMeasureMode=ord(F) then
+      case fDiapazon of
+          0:x:=x;
+          1:x:=x*1e1;
+          2:x:=x*1e2;
+          3:x:=x*1e3;
+          4:x:=x*1e4;
+          5:x:=x*1e5;
+          else Exit;
+      end;
+
+
+ if fMeasureMode=ord(O) then x:=x*0.01;
+
+ if ((fMD.Data[6] and 4)>0) then fMD.Value:=-1*x
+                         else fMD.Value:=x;
+
+end;
+
+{ TUT70CDataConverter }
+
+procedure TUT70CDataConverter.DiapazonDetermination;
+begin
+  fDiapazon:=-1;
+  fAUTO:=((fMD.Data[1] and $40)=0);
+  fDiapazon:=((fMD.Data[1] shr 3) and $07);
+  if fDiapazon>7 then fDiapazon:=-1;
+  if (fMeasureMode=ord(S_c))or(fMeasureMode=ord(P_c))
+                then fDiapazon:=0;
+  if (fMD.Data[0] in [40,41,112]) then fDiapazon:=fDiapazon+2;
+end;
+
+procedure TUT70CDataConverter.DiapazonFilling(DiapazonNumber: byte; D_Begin,
+  D_End: TUT70C_Diapazons);
+ var D:TUT70C_Diapazons;
+begin
+  SetLength(fDiapazonAll[DiapazonNumber],ord(D_End)-ord(D_Begin)+1);
+  for D := D_Begin to D_End
+        do fDiapazonAll[DiapazonNumber][ord(D)-ord(D_Begin)]:=UT70C_DiapazonsLabels[D];
+end;
+
+procedure TUT70CDataConverter.DiapazonsFilling;
+begin
+  SetLength(fDiapazonAll, High(fMeasureModeAll) + 1);
+  {UD_c}
+  DiapazonFilling(0, mV80, V1000);
+  {UA_c}
+  DiapazonFilling(1, mV800, V1000);
+  {ID_c}
+  DiapazonFilling(2, mA80, A10_c);
+  {IA_c}
+  DiapazonFilling(3, mA80, A10_c);
+  {R_c}
+  DiapazonFilling(4, O800, MO80);
+  {P_c}
+  DiapazonFilling(5, CT, CT);
+  {D_c}
+  DiapazonFilling(6, DT, DT);
+  {C_c}
+  DiapazonFilling(7, nF1, micF100);
+  {F_c}
+  DiapazonFilling(8, kHz1, MHz1);
+  {M_c}
+  DiapazonFilling(9, DC, DC);
+  {S_c}
+  DiapazonFilling(10, nS80, nS80);
+end;
+
+
+procedure TUT70CDataConverter.MeasurementTypeDetermination;
+var
+  b: Byte;
+begin
+  if fREC then
+    begin
+      b:=((fMD.Data[2] shr 3) and $03);
+      if fms1 then
+         case b of
+          0:fMeasurementType:=MAXX;
+          1:fMeasurementType:=MINN;
+         end{case b of}
+            else
+         case b of
+          0:fMeasurementType:=CUR;
+          1:fMeasurementType:=MAXX;
+          2:fMeasurementType:=MINN;
+          3:fMeasurementType:=AVE;
+         end;
+    end   else fMeasurementType:=CUR;
+end;
+
+procedure TUT70CDataConverter.MeasurementTypesFilling;
+var
+  MT: TUT70_MeasurementType;
+begin
+  SetLength(fMeasurementTypeAll, ord(High(UT70_MeasureTypeLabels)) + 1);
+  for MT := Low(TUT70_MeasurementType) to High(TUT70_MeasurementType) do
+    fMeasurementTypeAll[ord(MT)] := UT70_MeasureTypeLabels[MT];
+end;
+
+function TUT70CDataConverter.MeasureModeLabelRead: string;
+begin
+ Result:='';
+ if (fMeasureMode=ord(IA_c))or(fMeasureMode=ord(ID_c))
+    then Result:=' A';
+ if (fMeasureMode=ord(UA_c))or(fMeasureMode=ord(UD_c))
+    then Result:=' V';
+ if (fMeasureMode=ord(S_c)) then Result:='S';
+ if (fMeasureMode=ord(F_c)) then Result:='Hz';
+ if (fMeasureMode=ord(M_c)) then Result:=' %';
+ if (fMeasureMode=ord(C_c)) then Result:=' F';
+ if (fMeasureMode=ord(R_c)) then Result:=' R';
+end;
+
+procedure TUT70CDataConverter.MeasureModesFilling;
+var
+  MM: TUT70C_MeasureMode;
+begin
+  SetLength(fMeasureModeAll, ord(High(UT70C_MeasureModeLabels)) + 1);
+  for MM := Low(TUT70C_MeasureMode) to High(TUT70C_MeasureMode) do
+    fMeasureModeAll[ord(MM)] := UT70C_MeasureModeLabels[MM];
+end;
+
+procedure TUT70CDataConverter.MModeDetermination;
+ var b,b2:byte;
+begin
+  fMeasureMode:=-1;
+  b:=fMD.Data[1] and $07;
+  if (b=0)and(fMD.Data[0]=97) then fMeasureMode:=ord(C_c);
+  if (b=4)and(fMD.Data[0] in [120,112,104,40,41,48,49])
+                          then fMeasureMode:=ord(F_c);
+  if (b=5)and(fMD.Data[0] in [120,112,104,40,41,48,49])
+                          then fMeasureMode:=ord(M_c);
+  if (b=2) then
+   case  fMD.Data[0] of
+     120:fMeasureMode:=ord(UA_c);
+     112,104:fMeasureMode:=ord(UD_c);
+     96:begin
+          b2:=(fMD.Data[2] and $04);
+          if b2>0 then fMeasureMode:=ord(P_c)
+                  else fMeasureMode:=ord(R_c);
+          if (b2=0)and(((fMD.Data[1] shr 3) and $07)=6)
+                  then fMeasureMode:=ord(S_c);
+        end;
+     88:fMeasureMode:=ord(D_c);
+     40,48:fMeasureMode:=ord(ID_c);
+     41,49:fMeasureMode:=ord(IA_c);
+   end;
+end;
+
+procedure TUT70CDataConverter.NamesFilling;
+begin
+  inherited NamesFilling;
+  MeasurementTypesFilling;
+end;
+
+procedure TUT70CDataConverter.ValueDetermination;
+ var x:double;
+begin
+ fMD.Value:=ErResult;
+
+ fREC:=((fMD.Data[2] and $40)>0);
+
+
+ fHOLD:=((fMD.Data[3] and $01)>0);
+ fms1:=((fMD.Data[2] and $04)>0)and(fREC);
+
+ MeasurementTypeDetermination();
+
+ fOUT:=((fMD.Data[3] and $08)>0);
+ if fOUT then Exit;
+
+
+ x:=fMD.Data[8]+10*fMD.Data[7]+100*fMD.Data[6]+1000*fMD.Data[5];
+ if (fMeasureMode=ord(F_c))and(fMD.Data[4]<10)
+                   then x:=x+10000*fMD.Data[4];
+
+ if fMeasureMode=ord(UA_c) then
+      case fDiapazon of
+         0:x:=x*1e-4;
+         1:x:=x*1e-3;
+         2:x:=x*1e-2;
+         3:x:=x*1e-1;
+         4:;
+         else Exit;
+      end;
+
+   if fMeasureMode=ord(UD_c) then
+       case fDiapazon of
+           0:x:=x*1e-5;
+           1:x:=x*1e-4;
+           2:x:=x*1e-3;
+           3:x:=x*1e-2;
+           4:x:=x*1e-1;
+           5:;
+           else Exit;
+         end;
+
+ if fMeasureMode=ord(R_c) then
+      case fDiapazon of
+         0:x:=x*1e-1;
+         1:x:=x;
+         2:x:=x*1e1;
+         3:x:=x*1e2;
+         4:x:=x*1e3;
+         5:x:=x*1e4;
+         else Exit;
+      end;
+
+ if fMeasureMode=ord(S_c) then
+    if fDiapazon=0 then x:=x*1e-11
+                   else Exit;
+
+ if (fMeasureMode=ord(P_c))or(fMeasureMode=ord(D_c)) then
+   if fDiapazon=0 then x:=x*1e-1 else Exit;
+
+ if fMeasureMode=ord(C_c) then
+      case fDiapazon of
+          0:x:=x*1e-12;
+          1:x:=x*1e-11;
+          2:x:=x*1e-10;
+          3:x:=x*1e-9;
+          4:x:=x*1e-8;
+          5:x:=x*1e-7;
+          else Exit;
+      end;
+
+ if (fMeasureMode=ord(ID_c))or
+    (fMeasureMode=ord(IA_c)) then
+       case fDiapazon of
+           0:x:=x*1e-5;
+           1:x:=x*1e-4;
+           2:x:=x*1e-3;
+           3:x:=x*1e-2;
+           else Exit;
+         end;
+
+ if fMeasureMode=ord(F_c) then
+      case fDiapazon of
+          0:x:=x*1e-2;
+          1:x:=x*1e-1;
+          2:;
+          3:x:=x*1e1;
+          else Exit;
+      end;
+
+ if fMeasureMode=ord(M_c) then x:=x*0.01;
+
+ if ((fMD.Data[3] and $10)>0) then fMD.Value:=-1*x
+                         else fMD.Value:=x;
+
+end;
 
 initialization
    SetLength(PacketToSend,1);

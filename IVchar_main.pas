@@ -896,6 +896,7 @@ type
     ET1255_ADCShow:TET1255_ADCShow;
 
     Devices:array of IMeasurement;
+//    PDevices:array of Pointer;
     DevicesSet:array of IDAC;
     Temperature_MD:TTemperature_MD;
     Current_MD,VoltageIV_MD,DACR2R_MD,D30_MD,
@@ -3587,7 +3588,15 @@ begin
 //  Pointer(Devices[2]):=Pointer(V721_I);
 //  Pointer(Devices[3]):=Pointer(V721_II);
 
+//  SetLength(PDevices,4);
+//  PDevices[0]:=Pointer(Simulator);
+//  PDevices[1]:=Pointer(V721A);
+//  PDevices[2]:=Pointer(V721_I);
+//  PDevices[3]:=Pointer(V721_II);
+
+
   TermoCouple_MD:=TMeasuringDevice.Create(Devices, CBTcVMD, 'Thermocouple', LTRValue, srVoltge);
+//  TermoCouple_MD:=TMeasuringDevice.Create(PDevices, CBTcVMD, 'Thermocouple', LTRValue, LTRValue,srVoltge);
   Temperature_MD:=TTemperature_MD.Create([Simulator,ThermoCuple,
                                   DS18B20,HTU21D,TMP102,ADT74x0,
                                   MLX90615,STS21,
