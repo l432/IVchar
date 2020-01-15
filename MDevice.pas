@@ -7,6 +7,22 @@ uses
 
 
 type
+
+TArrIMeas=class
+ private
+  fSetOfInterface:array of Pointer;
+  function  GetHighIndex:integer;
+  function  GetMeasurement(Index:Integer):IMeasurement;
+  function  GetMeasurementName(Index:Integer):string;
+ public
+  property HighIndex:integer read GetHighIndex;
+  property Measurement[Index:Integer]:IMeasurement read GetMeasurement;
+  property MeasurementName[Index:Integer]:string read GetMeasurementName;
+  Constructor Create(const SOI: array of IMeasurement);overload;
+  Constructor Create;overload;
+  procedure Add(const IO:IMeasurement);
+end;
+
 TDevice=class(TNamedInterfacedObject)
 private
  DevicesComboBox:TComboBox;
@@ -267,20 +283,9 @@ begin
  SetLength(fSetOfInterface,High(SOI)+1);
  for I := 0 to High(SOI) do
   begin
-//   if DevicesComboBox<>nil then DevicesComboBox.Items.Add(SOI[i].Name);
    fSetOfInterface[i] := Pointer(SOI[i]);
    if DevicesComboBox<>nil then DevicesComboBox.Items.Add(IMeasurement(fSetOfInterface[i]).Name);
   end;
-
-// if High(SOI)<0 then Exit;
-// SetLength(fSetOfInterface,High(SOI)+1);
-// for I := 0 to High(SOI) do
-//  begin
-//   if DevicesComboBox<>nil then DevicesComboBox.Items.Add(SOI[i].Name);
-////   fSetOfInterface[i]:=SOI[i];
-//   Pointer(fSetOfInterface[i]) := Pointer(SOI[i]);
-//  end;
-
 
   if (DevicesComboBox<>nil)and
      (DevicesComboBox.Items.Count>0) then DevicesComboBox.ItemIndex:=0;
@@ -412,6 +417,48 @@ function TMeasuringDeviceSimple.GetActiveInterface: IMeasurement;
 begin
  Result:=IMeasurement(fSetOfInterface[0])
 // Result:=fSetOfInterface[0];
+end;
+
+{ TArrIMeas }
+
+constructor TArrIMeas.Create(const SOI: array of IMeasurement);
+var I: Integer;
+begin
+ if High(SOI)<0 then Exit;
+ SetLength(fSetOfInterface,High(SOI)+1);
+ for I := 0 to High(SOI) do
+   fSetOfInterface[i] := Pointer(SOI[i]);
+ inherited Create;
+end;
+
+procedure TArrIMeas.Add(const IO: IMeasurement);
+begin
+  SetLength(fSetOfInterface,High(fSetOfInterface)+2);
+  fSetOfInterface[High(fSetOfInterface)]:=Pointer(IO);
+end;
+
+constructor TArrIMeas.Create;
+begin
+ inherited;
+end;
+
+function TArrIMeas.GetHighIndex: integer;
+begin
+ Result:=High(fSetOfInterface);
+end;
+
+function TArrIMeas.GetMeasurement(Index: Integer): IMeasurement;
+begin
+ if (Index<0) or (Index>HighIndex)
+   then Result:=nil
+   else Result:=IMeasurement(fSetOfInterface[Index]);
+end;
+
+function TArrIMeas.GetMeasurementName(Index: Integer): string;
+begin
+ if (Index<0) or (Index>HighIndex)
+   then Result:=''
+   else Result:=IMeasurement(fSetOfInterface[Index]).Name;
 end;
 
 end.
