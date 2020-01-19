@@ -162,13 +162,6 @@ end;
 
 
 
-procedure EnlargeIMeasArray(Source, Additive:array of IMeasurement);
-procedure EnlargeIDACArray(Source, Additive:array of IDAC);
-{функції "правильно" приєднують елементи Additive
-у кінець Source, але розмір Source треба змінювати в іншому місці!!!
-(наприклад, перед викликом процедури)}
-
-
 implementation
 
 uses
@@ -421,22 +414,6 @@ end;
 function TMeasurementShowSimple.UnitModeLabel: string;
 begin
   Result:='';
-end;
-
-procedure EnlargeIMeasArray(Source, Additive:array of IMeasurement);
- var i:integer;
-begin
-//  SetLength(Source,High(Source)+High(Additive)+2);
-  for i := High(Additive) downto 0
-    do Pointer(Source[High(Source)-i]):= Pointer(Additive[High(Additive)-i])
-
-end;
-
-procedure EnlargeIDACArray(Source, Additive:array of IDAC);
- var i:integer;
-begin
-  for i := High(Additive) downto 0
-    do Pointer(Source[High(Source)-i]):= Pointer(Additive[High(Additive)-i])
 end;
 
 end.

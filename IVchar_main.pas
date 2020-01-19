@@ -895,6 +895,13 @@ type
     ET1255_ADCModule:TET1255_ModuleAndChan;
     ET1255_ADCShow:TET1255_ADCShow;
 
+
+    TermoCoupleDevices,AllDevices,VandIDevices:TArrIMeas;
+    SetingDevices:TArrIDAC;
+    TemperMeasurDevices:TArrITempMeas;
+//    Current_MDNew,VoltageIV_MDNew,DACR2R_MDNew,D30_MDNew,
+//    TermoCouple_MDNew,TimeD_MDNew,Control_MDNew,TimeD_MD2New,
+//    Isc_MDNew,Voc_MDNew:TMeasuringDeviceNew;
     Devices:array of IMeasurement;
 //    PDevices:array of Pointer;
     DevicesSet:array of IDAC;
@@ -3316,7 +3323,7 @@ begin
  SetLength(TestVar4,1);
 // EnlargeIMeasArray(TestVar4,[TestVar2]);
  Pointer(TestVar4[0]):=Pointer(TestVar2);
- TestVar3:=TMeasuringDevice.Create(TestVar4, CBCMD,'Current', LADCurrentValue, srCurrent);
+// TestVar3:=TMeasuringDevice.Create(TestVar4, CBCMD,'Current', LADCurrentValue, srCurrent);
 
 end;
 
@@ -3577,81 +3584,114 @@ begin
   Simulator:=TSimulator.Create;
   AnyObjectArray.Add(Simulator);
 
-  SetLength(Devices,4);
-//  EnlargeIMeasArray(Devices,[Simulator,V721A,V721_I,V721_II]);
-  Devices[0]:=Simulator;
-  Devices[1]:=V721A;
-  Devices[2]:=V721_I;
-  Devices[3]:=V721_II;
-//  Pointer(Devices[0]):=Pointer(Simulator);
-//  Pointer(Devices[1]):=Pointer(V721A);
-//  Pointer(Devices[2]):=Pointer(V721_I);
-//  Pointer(Devices[3]):=Pointer(V721_II);
+  TermoCoupleDevices:=TArrIMeas.Create([Simulator,V721A,V721_I,V721_II]);
+  AllDevices:=TArrIMeas.Create([Simulator,V721A,V721_I,V721_II]);
+  VandIDevices:=TArrIMeas.Create([Simulator,V721A,V721_I,V721_II]);
 
-//  SetLength(PDevices,4);
-//  PDevices[0]:=Pointer(Simulator);
-//  PDevices[1]:=Pointer(V721A);
-//  PDevices[2]:=Pointer(V721_I);
-//  PDevices[3]:=Pointer(V721_II);
+  AnyObjectArray.Add([TermoCoupleDevices,AllDevices,VandIDevices]);
 
 
-  TermoCouple_MD:=TMeasuringDevice.Create(Devices, CBTcVMD, 'Thermocouple', LTRValue, srVoltge);
-//  TermoCouple_MD:=TMeasuringDevice.Create(PDevices, CBTcVMD, 'Thermocouple', LTRValue, LTRValue,srVoltge);
-  Temperature_MD:=TTemperature_MD.Create([Simulator,ThermoCuple,
+//  SetLength(Devices,4);
+//  Devices[0]:=Simulator;
+//  Devices[1]:=V721A;
+//  Devices[2]:=V721_I;
+//  Devices[3]:=V721_II;
+
+
+//  TermoCouple_MD:=TMeasuringDevice.Create(Devices, CBTcVMD, 'Thermocouple', LTRValue, srVoltge);
+  TermoCouple_MD:=TMeasuringDevice.Create(TermoCoupleDevices,
+               CBTcVMD, 'Thermocouple', LTRValue, srVoltge);
+
+  TemperMeasurDevices:=TArrITempMeas.Create([Simulator,ThermoCuple,
                                   DS18B20,HTU21D,TMP102,ADT74x0,
                                   MLX90615,STS21,
-                                  MCP9808],
+                                  MCP9808]);
+  AnyObjectArray.Add(TemperMeasurDevices);
+
+//  Temperature_MD:=TTemperature_MD.Create([Simulator,ThermoCuple,
+//                                  DS18B20,HTU21D,TMP102,ADT74x0,
+//                                  MLX90615,STS21,
+//                                  MCP9808],
+//                                  CBTD,'Temperature',LTRValue);
+  Temperature_MD:=TTemperature_MD.Create(TemperMeasurDevices,
                                   CBTD,'Temperature',LTRValue);
 
   MLX90615Show:=TMLX90615Show.Create(MLX90615,STMLX615_GC, BMLX615_GCread,
                           BMLX615_GCwrite,BMLX615_Calib,Temperature_MD);
-  ShowArray.Add([TermoCouple_MD,Temperature_MD,MLX90615Show]);
 
-  SetLength(Devices,High(Devices)+3);
-//  EnlargeIMeasArray(Devices,[UT70B,UT70C]);
-  Devices[High(Devices)-1]:=UT70B;
-  Devices[High(Devices)]:=UT70C;
+  ShowArray.Add([TermoCouple_MD,Temperature_MD,MLX90615Show]);
+//  ShowArray.Add([TermoCouple_MDNew,Temperature_MD,MLX90615Show]);
+
+//  SetLength(Devices,High(Devices)+3);
+//  Devices[High(Devices)-1]:=UT70B;
+//  Devices[High(Devices)]:=UT70C;
+
+  AllDevices.Add([UT70B,UT70C]);
+  VandIDevices.Add([UT70B,UT70C]);
+
 
   if ET1255isPresent then
    begin
-    SetLength(Devices,High(Devices)+4);
-//    EnlargeIMeasArray(Devices,[ET1255_ADCModule.Channels[0],
-//                               ET1255_ADCModule.Channels[1],
-//                               ET1255_ADCModule.Channels[2]]);
-    Devices[High(Devices)-2]:=ET1255_ADCModule.Channels[0];
-    Devices[High(Devices)-1]:=ET1255_ADCModule.Channels[1];
-    Devices[High(Devices)]:=ET1255_ADCModule.Channels[2];
+//    SetLength(Devices,High(Devices)+4);
+//    Devices[High(Devices)-2]:=ET1255_ADCModule.Channels[0];
+//    Devices[High(Devices)-1]:=ET1255_ADCModule.Channels[1];
+//    Devices[High(Devices)]:=ET1255_ADCModule.Channels[2];
+    AllDevices.Add([ET1255_ADCModule.Channels[0],
+                    ET1255_ADCModule.Channels[1],
+                    ET1255_ADCModule.Channels[2]]);
+    VandIDevices.Add([ET1255_ADCModule.Channels[0],
+                    ET1255_ADCModule.Channels[1],
+                    ET1255_ADCModule.Channels[2]]);
    end;
 
-  SetLength(Devices,High(Devices)+5);
-//  EnlargeIMeasArray(Devices,[MCP3424_Channels[0],
-//                             MCP3424_Channels[1],
-//                             MCP3424_Channels[2],
-//                             MCP3424_Channels[3]]);
-  Devices[High(Devices)-3]:=MCP3424_Channels[0];
-  Devices[High(Devices)-2]:=MCP3424_Channels[1];
-  Devices[High(Devices)-1]:=MCP3424_Channels[2];
-  Devices[High(Devices)]:=MCP3424_Channels[3];
+//  SetLength(Devices,High(Devices)+5);
+//  Devices[High(Devices)-3]:=MCP3424_Channels[0];
+//  Devices[High(Devices)-2]:=MCP3424_Channels[1];
+//  Devices[High(Devices)-1]:=MCP3424_Channels[2];
+//  Devices[High(Devices)]:=MCP3424_Channels[3];
+  AllDevices.Add([MCP3424_Channels[0],
+                  MCP3424_Channels[1],
+                  MCP3424_Channels[2],
+                  MCP3424_Channels[3]]);
+  VandIDevices.Add([MCP3424_Channels[0],
+                    MCP3424_Channels[1],
+                    MCP3424_Channels[2],
+                    MCP3424_Channels[3]]);
 
-  SetLength(Devices,High(Devices)+4);
-//  EnlargeIMeasArray(Devices,[ADS11115_Channels[0],
-//                             ADS11115_Channels[1],
-//                             ADS11115_Channels[2]]);
-  Devices[High(Devices)-2]:=ADS11115_Channels[0];
-  Devices[High(Devices)-1]:=ADS11115_Channels[1];
-  Devices[High(Devices)]:=ADS11115_Channels[2];
 
-  SetLength(Devices,High(Devices)+3);
-//  EnlargeIMeasArray(Devices,[GDS_806S_Channel[1],
-//                            GDS_806S_Channel[2]]);
-  Devices[High(Devices)-1]:=GDS_806S_Channel[1];
-  Devices[High(Devices)]:=GDS_806S_Channel[2];
 
-  SetLength(Devices,High(Devices)+3);
-//  EnlargeIMeasArray(Devices,[INA226_Shunt,INA226_Bus]);
-  Devices[High(Devices)-1]:=INA226_Shunt;
-  Devices[High(Devices)]:=INA226_Bus;
+//  SetLength(Devices,High(Devices)+4);
+//  Devices[High(Devices)-2]:=ADS11115_Channels[0];
+//  Devices[High(Devices)-1]:=ADS11115_Channels[1];
+//  Devices[High(Devices)]:=ADS11115_Channels[2];
+  AllDevices.Add([ADS11115_Channels[0],
+                  ADS11115_Channels[1],
+                  ADS11115_Channels[2]]);
+  VandIDevices.Add([ADS11115_Channels[0],
+                  ADS11115_Channels[1],
+                  ADS11115_Channels[2]]);
+
+
+//  SetLength(Devices,High(Devices)+3);
+//  Devices[High(Devices)-1]:=GDS_806S_Channel[1];
+//  Devices[High(Devices)]:=GDS_806S_Channel[2];
+  AllDevices.Add([GDS_806S_Channel[1],
+                  GDS_806S_Channel[2]]);
+  VandIDevices.Add([GDS_806S_Channel[1],
+                  GDS_806S_Channel[2]]);
+
+
+
+//  SetLength(Devices,High(Devices)+3);
+//  Devices[High(Devices)-1]:=INA226_Shunt;
+//  Devices[High(Devices)]:=INA226_Bus;
 //  Pointer(FInterfaceField) := Pointer(InterfaceVariable)
+
+  AllDevices.Add([INA226_Shunt,
+                  INA226_Bus]);
+  VandIDevices.Add([INA226_Shunt,
+                  INA226_Bus]);
+
 
   OlegCurrent:=TCurrent.Create;
   AnyObjectArray.Add(OlegCurrent);
@@ -3660,81 +3700,129 @@ begin
                      L_oCurBias,LoCur,LUoCur,
                      L_oCurMeasDiap,L_oCurMeasVal,
                      B_oCur_Meas,B_oCurMeasDiap,B_oCurMeasVal,
-                     SB_oCur_Auto,Devices,
+//                     SB_oCur_Auto,Devices,
+                     SB_oCur_Auto,VandIDevices,
                      CB_oCurMeasDiap,CB_oCurMeasVal);
   ShowArray.Add(CurrentShow);
 
-  SetLength(Devices,High(Devices)+2);
-//  EnlargeIMeasArray(Devices,[OlegCurrent]);
-  Devices[High(Devices)]:=OlegCurrent;
+//  SetLength(Devices,High(Devices)+2);
+//  Devices[High(Devices)]:=OlegCurrent;
+  AllDevices.Add(OlegCurrent);
+  VandIDevices.Add(OlegCurrent);
 
-  Current_MD:=TMeasuringDevice.Create(Devices, CBCMD,'Current', LADCurrentValue, srCurrent);
-  VoltageIV_MD:=TMeasuringDevice.Create(Devices, CBVMD,'Voltage', LADVoltageValue, srVoltge);
 
-  DACR2R_MD:=TMeasuringDevice.Create(Devices, CBMeasDACR2R,'R2R', LMeasR2R, srPreciseVoltage);
+
+//  Current_MD:=TMeasuringDevice.Create(Devices, CBCMD,'Current', LADCurrentValue, srCurrent);
+//  VoltageIV_MD:=TMeasuringDevice.Create(Devices, CBVMD,'Voltage', LADVoltageValue, srVoltge);
+//
+//  DACR2R_MD:=TMeasuringDevice.Create(Devices, CBMeasDACR2R,'R2R', LMeasR2R, srPreciseVoltage);
+//  DACR2R_MD.AddActionButton(BMeasR2R);
+//  D30_MD:=TMeasuringDevice.Create(Devices, CBMeasD30,'D30', LMeasD30, srPreciseVoltage);
+//  D30_MD.AddActionButton(BMeasD30);
+//
+//  Isc_MD:=TMeasuringDevice.Create(Devices, CBIscMD,'Isc' , LIscResult, srCurrent);
+//  Isc_MD.AddActionButton(BIscMeasure);
+//  Voc_MD:=TMeasuringDevice.Create(Devices, CBVocMD,'Voc' , LVocResult, srPreciseVoltage);
+//  Voc_MD.AddActionButton(BVocMeasure);
+
+  Current_MD:=TMeasuringDevice.Create(VandIDevices, CBCMD,'Current', LADCurrentValue, srCurrent);
+  VoltageIV_MD:=TMeasuringDevice.Create(VandIDevices, CBVMD,'Voltage', LADVoltageValue, srVoltge);
+
+  DACR2R_MD:=TMeasuringDevice.Create(VandIDevices, CBMeasDACR2R,'R2R', LMeasR2R, srPreciseVoltage);
   DACR2R_MD.AddActionButton(BMeasR2R);
-  D30_MD:=TMeasuringDevice.Create(Devices, CBMeasD30,'D30', LMeasD30, srPreciseVoltage);
+  D30_MD:=TMeasuringDevice.Create(VandIDevices, CBMeasD30,'D30', LMeasD30, srPreciseVoltage);
   D30_MD.AddActionButton(BMeasD30);
 
-  Isc_MD:=TMeasuringDevice.Create(Devices, CBIscMD,'Isc' , LIscResult, srCurrent);
+  Isc_MD:=TMeasuringDevice.Create(VandIDevices, CBIscMD,'Isc' , LIscResult, srCurrent);
   Isc_MD.AddActionButton(BIscMeasure);
-  Voc_MD:=TMeasuringDevice.Create(Devices, CBVocMD,'Voc' , LVocResult, srPreciseVoltage);
+  Voc_MD:=TMeasuringDevice.Create(VandIDevices, CBVocMD,'Voc' , LVocResult, srPreciseVoltage);
   Voc_MD.AddActionButton(BVocMeasure);
 
-  ShowArray.Add([Current_MD,VoltageIV_MD,DACR2R_MD,D30_MD,Isc_MD,Voc_MD]);
 
-  SetLength(Devices,High(Devices)+9);
-//  EnlargeIMeasArray(Devices,[ThermoCuple,DS18B20,HTU21D,
-//                             TMP102,MLX90615,STS21,ADT74x0,MCP9808]);
-  Devices[High(Devices)-7]:=ThermoCuple;
-  Devices[High(Devices)-6]:=DS18B20;
-  Devices[High(Devices)-5]:=HTU21D;
-  Devices[High(Devices)-4]:=TMP102;
-  Devices[High(Devices)-3]:=MLX90615;
-  Devices[High(Devices)-2]:=STS21;
-  Devices[High(Devices)-1]:=ADT74x0;
-  Devices[High(Devices)]:=MCP9808;
+  ShowArray.Add([Current_MD,VoltageIV_MD,DACR2R_MD,D30_MD,Isc_MD,Voc_MD]);
+//  ShowArray.Add([Current_MDNew,VoltageIV_MDNew,DACR2R_MDNew,D30_MDNew,Isc_MDNew,Voc_MDNew]);
+
+//  SetLength(Devices,High(Devices)+9);
+//  Devices[High(Devices)-7]:=ThermoCuple;
+//  Devices[High(Devices)-6]:=DS18B20;
+//  Devices[High(Devices)-5]:=HTU21D;
+//  Devices[High(Devices)-4]:=TMP102;
+//  Devices[High(Devices)-3]:=MLX90615;
+//  Devices[High(Devices)-2]:=STS21;
+//  Devices[High(Devices)-1]:=ADT74x0;
+//  Devices[High(Devices)]:=MCP9808;
+  AllDevices.Add([ThermoCuple,DS18B20,HTU21D,
+                             TMP102,MLX90615,STS21,ADT74x0,MCP9808]);
+
+
+//  TimeD_MD:=
+//    TMeasuringDevice.Create(Devices, CBTimeMD,'Time Dependence', LADCurrentValue, srVoltge);
+//  TimeD_MD2:=
+//    TMeasuringDevice.Create(Devices, CBTimeMD2,'Time Dependence Two', LADInputVoltageValue, srVoltge);
+//  Control_MD:=
+//    TMeasuringDevice.Create(Devices, CBControlMD,'Control setup', LControlCVValue, srPreciseVoltage);
+//  ShowArray.Add([TimeD_MD,TimeD_MD2,Control_MD]);
 
   TimeD_MD:=
-    TMeasuringDevice.Create(Devices, CBTimeMD,'Time Dependence', LADCurrentValue, srVoltge);
+    TMeasuringDevice.Create(AllDevices, CBTimeMD,'Time Dependence', LADCurrentValue, srVoltge);
   TimeD_MD2:=
-    TMeasuringDevice.Create(Devices, CBTimeMD2,'Time Dependence Two', LADInputVoltageValue, srVoltge);
+    TMeasuringDevice.Create(AllDevices, CBTimeMD2,'Time Dependence Two', LADInputVoltageValue, srVoltge);
   Control_MD:=
-    TMeasuringDevice.Create(Devices, CBControlMD,'Control setup', LControlCVValue, srPreciseVoltage);
+    TMeasuringDevice.Create(AllDevices, CBControlMD,'Control setup', LControlCVValue, srPreciseVoltage);
   ShowArray.Add([TimeD_MD,TimeD_MD2,Control_MD]);
 
-  SetLength(DevicesSet,High(DevicesSet)+4);
-//  EnlargeIDACArray(DevicesSet,[Simulator,DACR2R,D30_06]);
-  DevicesSet[0]:=Simulator;
-  DevicesSet[1]:=DACR2R;
-  DevicesSet[High(DevicesSet)]:=D30_06;
+
+//  SetLength(DevicesSet,High(DevicesSet)+4);
+////  EnlargeIDACArray(DevicesSet,[Simulator,DACR2R,D30_06]);
+//  DevicesSet[0]:=Simulator;
+//  DevicesSet[1]:=DACR2R;
+//  DevicesSet[High(DevicesSet)]:=D30_06;
+
+  SetingDevices:=TArrIDAC.Create([Simulator,DACR2R,D30_06]);
+  AnyObjectArray.Add(SetingDevices);
 
   if ET1255isPresent then
    begin
-    SetLength(DevicesSet,High(DevicesSet)+4);
-//    EnlargeIDACArray(DevicesSet,[ET1255_DACs[0],
-//                     ET1255_DACs[1],ET1255_DACs[2]]);
-    DevicesSet[High(DevicesSet)-2]:=ET1255_DACs[0];
-    DevicesSet[High(DevicesSet)-1]:=ET1255_DACs[1];
-    DevicesSet[High(DevicesSet)]:=ET1255_DACs[2];
+//    SetLength(DevicesSet,High(DevicesSet)+4);
+////    EnlargeIDACArray(DevicesSet,[ET1255_DACs[0],
+////                     ET1255_DACs[1],ET1255_DACs[2]]);
+//    DevicesSet[High(DevicesSet)-2]:=ET1255_DACs[0];
+//    DevicesSet[High(DevicesSet)-1]:=ET1255_DACs[1];
+//    DevicesSet[High(DevicesSet)]:=ET1255_DACs[2];
 
-    ET1255_DAC_MD[0]:=TMeasuringDevice.Create(Devices,
+    SetingDevices.Add([ET1255_DACs[0],ET1255_DACs[1],ET1255_DACs[2]]);
+
+    ET1255_DAC_MD[0]:=TMeasuringDevice.Create(VandIDevices,
                       CBMeasET1255Ch0,'ET1255_DAC_Ch0',LMeas1255Ch0,srPreciseVoltage);
     ET1255_DAC_MD[0].AddActionButton(BMeas1255Ch0);
-    ET1255_DAC_MD[1]:=TMeasuringDevice.Create(Devices,
+    ET1255_DAC_MD[1]:=TMeasuringDevice.Create(VandIDevices,
                       CBMeasET1255Ch1,'ET1255_DAC_Ch1',LMeas1255Ch1,srPreciseVoltage);
     ET1255_DAC_MD[1].AddActionButton(BMeas1255Ch1);
-    ET1255_DAC_MD[2]:=TMeasuringDevice.Create(Devices,
+    ET1255_DAC_MD[2]:=TMeasuringDevice.Create(VandIDevices,
                       CBMeasET1255Ch2,'ET1255_DAC_Ch2',LMeas1255Ch2,srPreciseVoltage);
     ET1255_DAC_MD[2].AddActionButton(BMeas1255Ch2);
+
+//    ET1255_DAC_MD[0]:=TMeasuringDevice.Create(Devices,
+//                      CBMeasET1255Ch0,'ET1255_DAC_Ch0',LMeas1255Ch0,srPreciseVoltage);
+//    ET1255_DAC_MD[0].AddActionButton(BMeas1255Ch0);
+//    ET1255_DAC_MD[1]:=TMeasuringDevice.Create(Devices,
+//                      CBMeasET1255Ch1,'ET1255_DAC_Ch1',LMeas1255Ch1,srPreciseVoltage);
+//    ET1255_DAC_MD[1].AddActionButton(BMeas1255Ch1);
+//    ET1255_DAC_MD[2]:=TMeasuringDevice.Create(Devices,
+//                      CBMeasET1255Ch2,'ET1255_DAC_Ch2',LMeas1255Ch2,srPreciseVoltage);
+//    ET1255_DAC_MD[2].AddActionButton(BMeas1255Ch2);
     ShowArray.Add([ET1255_DAC_MD[0],ET1255_DAC_MD[1],ET1255_DAC_MD[2]]);
    end;
 
 
-  SettingDevice:=TSettingDevice.Create(DevicesSet,CBVS,'Input voltage');
-  SettingDeviceControl:=TSettingDevice.Create(DevicesSet,CBControlCD,'Control input');
-  SettingTermostat:=TSettingDevice.Create(DevicesSet,CBTermostatCD,'Termostat input');
-  SettingDeviceLED:=TSettingDevice.Create(DevicesSet,CBLED_onCD,'LED output');
+//  SettingDevice:=TSettingDevice.Create(DevicesSet,CBVS,'Input voltage');
+//  SettingDeviceControl:=TSettingDevice.Create(DevicesSet,CBControlCD,'Control input');
+//  SettingTermostat:=TSettingDevice.Create(DevicesSet,CBTermostatCD,'Termostat input');
+//  SettingDeviceLED:=TSettingDevice.Create(DevicesSet,CBLED_onCD,'LED output');
+  SettingDevice:=TSettingDevice.Create(SetingDevices,CBVS,'Input voltage');
+  SettingDeviceControl:=TSettingDevice.Create(SetingDevices,CBControlCD,'Control input');
+  SettingTermostat:=TSettingDevice.Create(SetingDevices,CBTermostatCD,'Termostat input');
+  SettingDeviceLED:=TSettingDevice.Create(SetingDevices,CBLED_onCD,'LED output');
   ShowArray.Add([SettingDevice,SettingDeviceControl,SettingTermostat,SettingDeviceLED]);
  end;
 
