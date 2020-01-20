@@ -16,9 +16,9 @@ TArrI=class(TNamedInterfacedObject)
  public
   property HighIndex:integer read GetHighIndex;
   property MeasurementName[Index:Integer]:string read GetMeasurementName;
-  Constructor Create(const SOI: array of IName);
-  procedure Add(const IO:IName);overload;
-  procedure Add(const SOI:array of IName);overload;
+//  Constructor Create(const SOI: array of IName);
+//  procedure Add(const IO:IName);overload;
+//  procedure Add(const SOI:array of IName);overload;
 end;
 
 //TArrIMeas=class(TNamedInterfacedObject)
@@ -32,10 +32,10 @@ TArrIMeas=class(TArrI)
 //  property HighIndex:integer read GetHighIndex;
   property Measurement[Index:Integer]:IMeasurement read GetMeasurement;
 //  property MeasurementName[Index:Integer]:string read GetMeasurementName;
-//  Constructor Create(const SOI: array of IMeasurement);overload;
+  Constructor Create(const SOI: array of IMeasurement);overload;
 //  Constructor Create;overload;
-//  procedure Add(const IO:IMeasurement);overload;
-//  procedure Add(const SOI:array of IMeasurement);overload;
+  procedure Add(const IO:IMeasurement);overload;
+  procedure Add(const SOI:array of IMeasurement);overload;
 end;
 
 
@@ -44,6 +44,10 @@ TArrIDAC=class(TArrI)
   function  GetDAC(Index:Integer):IDAC;
  public
   property DAC[Index:Integer]:IDAC read GetDAC;
+  Constructor Create(const SOI: array of IDAC);
+  procedure Add(const IO:IDAC);overload;
+  procedure Add(const SOI:array of IDAC);overload;
+
 end;
 
 TArrITempMeas=class(TArrI)
@@ -51,6 +55,10 @@ TArrITempMeas=class(TArrI)
   function  GetTempMeas(Index:Integer):ITemperatureMeasurement;
  public
   property TemperatureMeasurement[Index:Integer]:ITemperatureMeasurement read GetTempMeas;
+  Constructor Create(const SOI: array of ITemperatureMeasurement);
+  procedure Add(const IO:ITemperatureMeasurement);overload;
+  procedure Add(const SOI:array of ITemperatureMeasurement);overload;
+
 end;
 
 
@@ -491,6 +499,7 @@ end;
 constructor TMeasuringDeviceSimple.Create(const Measurement: IMeasurement;
                     RI: TLabel; SR: TMeasuringStringResult; AB: TButton);
 begin
+ HookParameterChange:=TSimpleClass.EmptyProcedure;
 
  if Measurement=nil then Exit;
 
@@ -530,30 +539,30 @@ end;
 
 { TArrIMeas }
 
-//constructor TArrIMeas.Create(const SOI: array of IMeasurement);
-//var I: Integer;
-//begin
-// if High(SOI)<0 then Exit;
-// SetLength(fSetOfInterface,High(SOI)+1);
-// for I := 0 to High(SOI) do
-//   fSetOfInterface[i] := Pointer(SOI[i]);
-// inherited Create;
-//end;
-//
-//procedure TArrIMeas.Add(const IO: IMeasurement);
-//begin
-//  SetLength(fSetOfInterface,High(fSetOfInterface)+2);
-//  fSetOfInterface[High(fSetOfInterface)]:=Pointer(IO);
-//end;
-//
-//procedure TArrIMeas.Add(const SOI: array of IMeasurement);
-// var i:integer;
-//begin
-// SetLength(fSetOfInterface,High(SOI)+High(fSetOfInterface)+2);
-// for I := 0 to High(SOI) do
-//  fSetOfInterface[High(fSetOfInterface)-High(SOI)+i]:=Pointer(SOI[i]);
-//end;
-//
+constructor TArrIMeas.Create(const SOI: array of IMeasurement);
+var I: Integer;
+begin
+ if High(SOI)<0 then Exit;
+ SetLength(fSetOfInterface,High(SOI)+1);
+ for I := 0 to High(SOI) do
+   fSetOfInterface[i] := Pointer(SOI[i]);
+ inherited Create;
+end;
+
+procedure TArrIMeas.Add(const IO: IMeasurement);
+begin
+  SetLength(fSetOfInterface,High(fSetOfInterface)+2);
+  fSetOfInterface[High(fSetOfInterface)]:=Pointer(IO);
+end;
+
+procedure TArrIMeas.Add(const SOI: array of IMeasurement);
+ var i:integer;
+begin
+ SetLength(fSetOfInterface,High(SOI)+High(fSetOfInterface)+2);
+ for I := 0 to High(SOI) do
+  fSetOfInterface[High(fSetOfInterface)-High(SOI)+i]:=Pointer(SOI[i]);
+end;
+
 //constructor TArrIMeas.Create;
 //begin
 // inherited;
@@ -649,29 +658,29 @@ end;
 
 { TArrI }
 
-procedure TArrI.Add(const IO: IName);
-begin
-  SetLength(fSetOfInterface,High(fSetOfInterface)+2);
-  fSetOfInterface[High(fSetOfInterface)]:=Pointer(IO);
-end;
-
-procedure TArrI.Add(const SOI: array of IName);
- var i:integer;
-begin
- SetLength(fSetOfInterface,High(SOI)+High(fSetOfInterface)+2);
- for I := 0 to High(SOI) do
-  fSetOfInterface[High(fSetOfInterface)-High(SOI)+i]:=Pointer(SOI[i]);
-end;
-
-constructor TArrI.Create(const SOI: array of IName);
-var I: Integer;
-begin
- if High(SOI)<0 then Exit;
- SetLength(fSetOfInterface,High(SOI)+1);
- for I := 0 to High(SOI) do
-   fSetOfInterface[i] := Pointer(SOI[i]);
- inherited Create;
-end;
+//procedure TArrI.Add(const IO: IName);
+//begin
+//  SetLength(fSetOfInterface,High(fSetOfInterface)+2);
+//  fSetOfInterface[High(fSetOfInterface)]:=Pointer(IO);
+//end;
+//
+//procedure TArrI.Add(const SOI: array of IName);
+// var i:integer;
+//begin
+// SetLength(fSetOfInterface,High(SOI)+High(fSetOfInterface)+2);
+// for I := 0 to High(SOI) do
+//  fSetOfInterface[High(fSetOfInterface)-High(SOI)+i]:=Pointer(SOI[i]);
+//end;
+//
+//constructor TArrI.Create(const SOI: array of IName);
+//var I: Integer;
+//begin
+// if High(SOI)<0 then Exit;
+// SetLength(fSetOfInterface,High(SOI)+1);
+// for I := 0 to High(SOI) do
+//   fSetOfInterface[i] := Pointer(SOI[i]);
+// inherited Create;
+//end;
 
 function TArrI.GetHighIndex: integer;
 begin
@@ -687,6 +696,30 @@ end;
 
 { TArrIDAC }
 
+procedure TArrIDAC.Add(const IO: IDAC);
+begin
+  SetLength(fSetOfInterface,High(fSetOfInterface)+2);
+  fSetOfInterface[High(fSetOfInterface)]:=Pointer(IO);
+end;
+
+procedure TArrIDAC.Add(const SOI: array of IDAC);
+ var i:integer;
+begin
+ SetLength(fSetOfInterface,High(SOI)+High(fSetOfInterface)+2);
+ for I := 0 to High(SOI) do
+  fSetOfInterface[High(fSetOfInterface)-High(SOI)+i]:=Pointer(SOI[i]);
+end;
+
+constructor TArrIDAC.Create(const SOI: array of IDAC);
+var I: Integer;
+begin
+ if High(SOI)<0 then Exit;
+ SetLength(fSetOfInterface,High(SOI)+1);
+ for I := 0 to High(SOI) do
+   fSetOfInterface[i] := Pointer(SOI[i]);
+ inherited Create;
+end;
+
 function TArrIDAC.GetDAC(Index: Integer): IDAC;
 begin
  if (Index<0) or (Index>HighIndex)
@@ -695,6 +728,30 @@ begin
 end;
 
 { TArrITempMeas }
+
+procedure TArrITempMeas.Add(const IO: ITemperatureMeasurement);
+begin
+  SetLength(fSetOfInterface,High(fSetOfInterface)+2);
+  fSetOfInterface[High(fSetOfInterface)]:=Pointer(IO);
+end;
+
+procedure TArrITempMeas.Add(const SOI: array of ITemperatureMeasurement);
+ var i:integer;
+begin
+ SetLength(fSetOfInterface,High(SOI)+High(fSetOfInterface)+2);
+ for I := 0 to High(SOI) do
+  fSetOfInterface[High(fSetOfInterface)-High(SOI)+i]:=Pointer(SOI[i]);
+end;
+
+constructor TArrITempMeas.Create(const SOI: array of ITemperatureMeasurement);
+var I: Integer;
+begin
+ if High(SOI)<0 then Exit;
+ SetLength(fSetOfInterface,High(SOI)+1);
+ for I := 0 to High(SOI) do
+   fSetOfInterface[i] := Pointer(SOI[i]);
+ inherited Create;
+end;
 
 function TArrITempMeas.GetTempMeas(Index: Integer): ITemperatureMeasurement;
 begin
