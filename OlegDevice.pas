@@ -61,8 +61,8 @@ type
                          LBias,DL,UL,RIDiap,RIVal:TLabel;
                          MB,BMeasDiap,BMeasVal:TButton;
                          AB:TSpeedButton;
-//                         const SOI: array of IMeasurement;
-                         ArrIMeas:TArrIMeas;
+                         const SOI: array of IMeasurement;
+//                         ArrIMeas:TArrIMeas;
                          DevDiapCB,DevValCB: TComboBox);
       procedure ReadFromIniFile(ConfigFile:TIniFile);override;
       procedure WriteToIniFile(ConfigFile:TIniFile);override;
@@ -183,8 +183,8 @@ constructor TCurrentShow.Create(Module: TCurrent;
                                 LBias,DL,UL,RIDiap,RIVal:TLabel;
                                 MB,BMeasDiap,BMeasVal:TButton;
                                 AB:TSpeedButton;
-//                                const SOI: array of IMeasurement;
-                                ArrIMeas:TArrIMeas;
+                                const SOI: array of IMeasurement;
+//                                ArrIMeas:TArrIMeas;
                                 DevDiapCB,DevValCB: TComboBox);
 begin
  inherited Create;
@@ -197,15 +197,15 @@ begin
  TTShow:=TTimer.Create(nil);
  fResultShow:=TCurrentResultShow.Create(fModule,DL,UL,MB,AB,TTShow);
 
-// fDiapazMeasuring:=TMeasuringDevice.Create(SOI,DevDiapCB,
- fDiapazMeasuring:=TMeasuringDevice.Create(ArrIMeas,DevDiapCB,
+ fDiapazMeasuring:=TMeasuringDevice.Create(SOI,DevDiapCB,
+// fDiapazMeasuring:=TMeasuringDevice.Create(ArrIMeas,DevDiapCB,
                                     fModule.Name+'Dia',RIDiap,
                                     srPreciseVoltage);
  fDiapazMeasuring.HookParameterChange:=ModuleUpDate;
  fDiapazMeasuring.AddActionButton(BMeasDiap);
 
-// fValueMeasuring:=TMeasuringDevice.Create(SOI,DevValCB,
-  fValueMeasuring:=TMeasuringDevice.Create(ArrIMeas,DevValCB,
+ fValueMeasuring:=TMeasuringDevice.Create(SOI,DevValCB,
+//  fValueMeasuring:=TMeasuringDevice.Create(ArrIMeas,DevValCB,
                                    fModule.Name+'Val',RIVal,
                                    srPreciseVoltage);
  fValueMeasuring.HookParameterChange:=ModuleUpDate;

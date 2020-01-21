@@ -141,7 +141,7 @@ type
  public
   Constructor Create(Mode:TINA226_Mode;
                       INA: TINA226_Module);
-//  procedure Free;override;
+//  procedure Free;//override;
   destructor Destroy; override;
  end;
 
@@ -456,8 +456,8 @@ end;
 
 //procedure TINA226_Channel.Free;
 //begin
-// HelpForMe('kk');
-// inherited;
+//// HelpForMe('kk');
+// inherited Free;
 //end;
 
 procedure TINA226_Channel.PinsCreate;

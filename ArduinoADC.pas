@@ -48,7 +48,7 @@ type
   property Value:double read GetValue;
   property ParentModule:TArduinoADC_Module read fParentModule;
   Constructor Create(ChanelNumber: byte; Module: TArduinoADC_Module);//override;
-//  Procedure Free;override;
+//  Procedure Free;//override;
   function GetData:double;
   procedure GetDataThread(WPARAM: word; EventEnd:THandle);
   destructor Destroy; override;
