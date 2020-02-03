@@ -12,7 +12,8 @@ type
   TMeasuringThread = class(TTheadCycle)
   private
     fEventEnd:THandle;
-    fMeasurement:IMeasurement;
+//    fMeasurement:IMeasurement;
+    fMeasurement:Pointer;
     fWPARAM:word;
   protected
    procedure DoSomething;override;
@@ -29,27 +30,33 @@ type
   TTemperatureMeasuringThread = class(TTheadCycle)
   private
     fEventEnd:THandle;
-    fTemperatureMeasurement:ITemperatureMeasurement;
+//    fTemperatureMeasurement:ITemperatureMeasurement;
+    fTemperatureMeasurement:Pointer;
   protected
     procedure DoSomething;override;
   public
    constructor Create(TemperatureMeasurement:ITemperatureMeasurement;
-                      Interval:double;
+                      const Interval:double;
                       EventEnd:THandle);
 
   end;
 
   TControllerThread = class(TTheadCycle)
   private
-    fMeasurement:IMeasurement;
-    fDAC:IDAC;
+//    fMeasurement:IMeasurement;
+//    fDAC:IDAC;
+    fMeasurement,fDAC:Pointer;
     fPID:TPID;
     fInterialPIDused:boolean;
+    function GetMeasurement:IMeasurement;
+    function GetDAC:IDAC;
     function Mesuring():double;
     procedure ControllerOutput;
   protected
     procedure DoSomething;override;
   public
+   property Measurement:IMeasurement read GetMeasurement;
+   property DAC:IDAC read GetDAC;
    destructor Destroy; override;
    constructor Create(Measurement:IMeasurement;
                       IDAC:IDAC;
@@ -70,21 +77,20 @@ uses
 { TTemperatureMeasuringThread }
 
 constructor TTemperatureMeasuringThread.Create(TemperatureMeasurement:ITemperatureMeasurement;
-                                               Interval:double;
+                                               const Interval:double;
                                                 EventEnd:THandle);
 begin
   inherited Create(Interval);
-//  HelpForMe(inttostr(MilliSecond));
-  fTemperatureMeasurement:=TemperatureMeasurement;
+//  fTemperatureMeasurement:=TemperatureMeasurement;
+  fTemperatureMeasurement:=Pointer(TemperatureMeasurement);
   fEventEnd:=EventEnd;
   Resume;
 end;
 
 procedure TTemperatureMeasuringThread.DoSomething;
 begin
-//   HelpForMe(inttostr(MilliSecond));
-
-  fTemperatureMeasurement.GetTemperatureThread(fEventEnd);
+//  fTemperatureMeasurement.GetTemperatureThread(fEventEnd);
+  ITemperatureMeasurement(fTemperatureMeasurement).GetTemperatureThread(fEventEnd);
 end;
 
 { TMeasuringThread }
@@ -94,14 +100,16 @@ constructor TMeasuringThread.Create(Measurement: IMeasurement; Interval: double;
 begin
  inherited Create(Interval);
  fEventEnd:=EventEnd;
- fMeasurement:=Measurement;
+// fMeasurement:=Measurement;
+ fMeasurement:=Pointer(Measurement);
  fWPARAM:=WPARAM;
  Resume;
 end;
 
 procedure TMeasuringThread.DoSomething;
 begin
-  fMeasurement.GetDataThread(fWPARAM, fEventEnd);
+//  fMeasurement.GetDataThread(fWPARAM, fEventEnd);
+  IMeasurement(fMeasurement).GetDataThread(fWPARAM, fEventEnd);
 end;
 
 { TControllerThread }
@@ -115,8 +123,10 @@ constructor TControllerThread.Create(Measurement: IMeasurement;
 begin
   inherited Create(Interval);
 
-  fMeasurement:=Measurement;
-  fDAC:=IDAC;
+//  fMeasurement:=Measurement;
+//  fDAC:=IDAC;
+  fMeasurement:=Pointer(Measurement);
+  fDAC:=Pointer(IDAC);
   fPID:=TPID.Create(Kpp, Kii, Kdd, NeededValue,Tolerance, Interval);
   fInterialPIDused:=True;
   Resume;
@@ -124,10 +134,10 @@ end;
 
 procedure TControllerThread.ControllerOutput;
 begin
-  if (fDAC.Name = 'Ch2_ET1255') and (abs(fPID.OutputValue) > VdiodMax) then
-    fDAC.Output(VdiodMax)
+  if (DAC.Name = 'Ch2_ET1255') and (abs(fPID.OutputValue) > VdiodMax) then
+    DAC.Output(VdiodMax)
   else
-    fDAC.Output(fPID.OutputValue);
+    DAC.Output(fPID.OutputValue);
   PostMessage(FindWindow('TIVchar', 'IVchar'), WM_MyMeasure, ControlOutputMessage, 0);
 end;
 
@@ -136,12 +146,12 @@ function TControllerThread.Mesuring:double;
 begin
 bb:
   ResetEvent(FEventTerminate);
-  fMeasurement.GetDataThread(ControlMessage, FEventTerminate);
+  Measurement.GetDataThread(ControlMessage, FEventTerminate);
 //  WaitForSingleObject(FEventTerminate, INFINITE);
   if WaitForSingleObject(FEventTerminate,5000)<>WAIT_OBJECT_0
     then goto bb;
    ResetEvent(FEventTerminate);
-   Result:=fMeasurement.Value;
+   Result:=Measurement.Value;
 end;
 
 constructor TControllerThread.Create(Measurement: IMeasurement; IDAC: IDAC;
@@ -149,8 +159,10 @@ constructor TControllerThread.Create(Measurement: IMeasurement; IDAC: IDAC;
 begin
   inherited Create(Interval);
 
-  fMeasurement:=Measurement;
-  fDAC:=IDAC;
+//  fMeasurement:=Measurement;
+//  fDAC:=IDAC;
+  fMeasurement:=Pointer(Measurement);
+  fDAC:=Pointer(IDAC);
   fPID:=PID;
   fInterialPIDused:=False;
   Resume;
@@ -169,5 +181,15 @@ begin
   ControllerOutput;
 end;
 
+
+function TControllerThread.GetDAC: IDAC;
+begin
+  Result:=IDAC(fDAC);
+end;
+
+function TControllerThread.GetMeasurement: IMeasurement;
+begin
+ Result:=IMeasurement(fMeasurement);
+end;
 
 end.

@@ -40,7 +40,7 @@ type
 //   procedure ExuteBegin;override;
 //  end;
 
-  TV721_MeasuringTreadNew = class(TRS232MeasuringTread)
+  TV721_MeasuringTread = class(TRS232MeasuringTread)
   private
   protected
    procedure ExuteBegin;override;
@@ -188,7 +188,7 @@ end;
 
 { TV721_MeasuringTreadNew }
 
-procedure TV721_MeasuringTreadNew.ExuteBegin;
+procedure TV721_MeasuringTread.ExuteBegin;
  label st;
  var a,b,c:double;
      isFirst:boolean;

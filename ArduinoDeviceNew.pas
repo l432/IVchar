@@ -826,7 +826,7 @@ end;
 procedure TArduinoMeter.AddDataSubject(DataSubject: TArduinoDataSubject);
 begin
  fArduinoDataSubject:=DataSubject;
- fIRS232DataSubject:=fArduinoDataSubject;
+ RS232DataSubject:=fArduinoDataSubject;
  fRequestState:=fAddedRequestState;
 end;
 

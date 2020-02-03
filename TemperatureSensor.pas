@@ -53,17 +53,21 @@ type
 
 
   TThermoCuple=class(TNamedInterfacedObject,ITemperatureMeasurement,IMeasurement)
+    private
+     fMeasurement:pointer;
+     function  GetMeasurement:IMeasurement;
+     procedure SetMeasurement(Value:IMeasurement);
     protected
      function GetNewData:boolean;
      function GetValue:double;
      procedure SetNewData(value:boolean);
     public
-     Measurement:IMeasurement;
+     property Measurement:IMeasurement read GetMeasurement write SetMeasurement;
      property NewData:boolean read GetNewData  write SetNewData;
      property Value:double read GetValue;
      class function T_CuKo(Voltage:double):double;
-     {функция расчета температури по значениям напряжения
-     согласно градуировке термопары медь-константан}
+     {функція розрахунку температури за значеннями напруги
+     відповідно до градуювання термопари мідь-константан}
      function GetTemperature():double;
      Constructor Create();
      function GetData:double;
@@ -137,6 +141,11 @@ begin
  Measurement.GetDataThread(WPARAM,EventEnd);
 end;
 
+function TThermoCuple.GetMeasurement:IMeasurement;
+begin
+ Result:=IMeasurement(fMeasurement);
+end;
+
 function TThermoCuple.GetNewData: boolean;
 begin
   Result:=Measurement.NewData;
@@ -159,6 +168,11 @@ begin
                 Result:=T_CuKo(Measurement.Value)
                                 else
                 Result:=Measurement.Value;
+end;
+
+procedure TThermoCuple.SetMeasurement(Value: IMeasurement);
+begin
+ fMeasurement:=Pointer(Value);
 end;
 
 procedure TThermoCuple.SetNewData(Value: boolean);

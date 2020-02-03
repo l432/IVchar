@@ -77,8 +77,11 @@ end;
 
 TRS232DataSubjectSingle=class(TRS232DataSubjectBase,IRS232DataSubjectSingle,IRS232DataSubject)
  protected
-  fObserver:IRS232DataObserver;
+//  fObserver:IRS232DataObserver;
+  fObserver:pointer;
+  function GetObserver:IRS232DataObserver;
  public
+  property Observer:IRS232DataObserver read GetObserver;
   Constructor Create(CP:TComPort);
   procedure RegisterObserver(o:IRS232DataObserver);
   procedure RemoveObserver(o:IRS232DataObserver);
@@ -108,7 +111,8 @@ TRS232MeterDevice=class(TRS232CustomDevice,IMeasurement,IRS232DataObserver)
 //  {базовий клас для вимірювальних об'єктів,
 //  які використовують обмін даних з COM-портом}
   protected
-   fIRS232DataSubject:IRS232DataSubject;
+//   fIRS232DataSubject:IRS232DataSubject;
+   fIRS232DataSubject:pointer;
    fValue:double;
    fIsReceived:boolean;
    fMinDelayTime:integer;
@@ -137,8 +141,12 @@ TRS232MeterDevice=class(TRS232CustomDevice,IMeasurement,IRS232DataObserver)
    Function GetValue():double;virtual;
    procedure SetNewData(Value:boolean);
    procedure UpDate ();virtual;
+   function GetRS232DataSubject:IRS232DataSubject;
+   procedure SetRS232DataSubject(Value:IRS232DataSubject);
   public
    RepeatInErrorCase:boolean;
+   property RS232DataSubject:IRS232DataSubject read GetRS232DataSubject
+                                                write SetRS232DataSubject;
    property NewData:boolean read GetNewData write SetNewData;
    property Value:double read GetValue write fValue;
    property isReceived:boolean read fIsReceived write fIsReceived;
@@ -272,7 +280,7 @@ end;
 function TRS232MeterDevice.GetData: double;
 begin
   Result:=ErResult;
-  if fIRS232DataSubject.PortConnected then
+  if RS232DataSubject.PortConnected then
    begin
     Result:=Measurement();
     fNewData:=True;
@@ -286,8 +294,13 @@ end;
 
 procedure TRS232MeterDevice.GetDataThread(WPARAM: word;EventEnd:THandle);
 begin
- if fIRS232DataSubject.PortConnected then
+ if RS232DataSubject.PortConnected then
    fRS232MeasuringTread:=TRS232MeasuringTread.Create(Self,WPARAM,EventEnd);
+end;
+
+function TRS232MeterDevice.GetRS232DataSubject:IRS232DataSubject;
+begin
+ Result:=IRS232DataSubject(fIRS232DataSubject);
 end;
 
 procedure TRS232MeterDevice.MeasurementBegin;
@@ -359,10 +372,16 @@ end;
 //end;
 
 
+procedure TRS232MeterDevice.SetRS232DataSubject(Value: IRS232DataSubject);
+begin
+  fIRS232DataSubject:=pointer(Value);
+end;
+
 procedure TRS232MeterDevice.SetNewData(Value: boolean);
 begin
  fNewData:=Value;
 end;
+
 
 procedure TRS232MeterDevice.UpDate();
 begin
@@ -500,14 +519,22 @@ begin
 end;
 
 
+function TRS232DataSubjectSingle.GetObserver: IRS232DataObserver;
+begin
+ if fObserver=nil then Result:=nil
+                  else Result:=IRS232DataObserver(fObserver);
+end;
+
 procedure TRS232DataSubjectSingle.NotifyObservers;
 begin
-  if  fObserver<>nil then fObserver.UpDate();
+//  if  fObserver<>nil then fObserver.UpDate();
+  if  Observer<>nil then Observer.UpDate();
 end;
 
 procedure TRS232DataSubjectSingle.RegisterObserver(o: IRS232DataObserver);
 begin
-  fObserver:=o;
+  fObserver:=pointer(o);
+//  fObserver:=o;
 end;
 
 procedure TRS232DataSubjectSingle.RemoveObserver(o: IRS232DataObserver);
@@ -552,7 +579,7 @@ constructor TRS232MeterDeviceSingle.Create(CP: TComPort; Nm: string);
 begin
   CreateDataSubject(CP);
   inherited Create(Nm);
-  fIRS232DataSubject:=fDataSubject;
+  RS232DataSubject:=fDataSubject;
   fDataSubject.RegisterObserver(Self);
   CreateDataRequest;
 end;

@@ -17,13 +17,19 @@ type
 
 
   TCurrent=class(TNamedInterfacedObject,IMeasurement)
+  private
+    function GetDiapazonMeas: IMeasurement;
+    function GetValueMeas: IMeasurement;
+    procedure SetDiapazonMeas(const Value: IMeasurement);
+    procedure SetValueMeas(const Value: IMeasurement);
     protected
      fValue:double;
      fBias:double;
      fNewData:boolean;
      fMode:TOCurrent_Mode;
-     fDiapazonMeas:IMeasurement;
-     fValueMeas:IMeasurement;
+//     fDiapazonMeas:IMeasurement;
+//     fValueMeas:IMeasurement;
+     fDiapazonMeas,fValueMeas:pointer;
      function GetNewData:boolean;
      function GetValue:double;
      procedure SetNewData(value:boolean);
@@ -31,6 +37,8 @@ type
      function ValueCalculate(Voltage:double):double;
      procedure ValueMeasOptimize;
     public
+     property DiapazonMeas:IMeasurement read GetDiapazonMeas write SetDiapazonMeas;
+     property ValueMeas:IMeasurement read GetValueMeas write SetValueMeas;
      property NewData:boolean read GetNewData  write SetNewData;
      property Value:double read GetValue;
 //     property Bias:double read fBias write fBias;
@@ -61,8 +69,8 @@ type
                          LBias,DL,UL,RIDiap,RIVal:TLabel;
                          MB,BMeasDiap,BMeasVal:TButton;
                          AB:TSpeedButton;
-                         const SOI: array of IMeasurement;
-//                         ArrIMeas:TArrIMeas;
+//                         const SOI: array of IMeasurement;
+                         ArrIMeas:TArrIMeas;
                          DevDiapCB,DevValCB: TComboBox);
       procedure ReadFromIniFile(ConfigFile:TIniFile);override;
       procedure WriteToIniFile(ConfigFile:TIniFile);override;
@@ -96,7 +104,7 @@ begin
    then fValue:=ErResult
    else
     begin
-     fValue:=ValueCalculate(fValueMeas.GetData);
+     fValue:=ValueCalculate(ValueMeas.GetData);
     end;
  Result:=fValue;
  fNewData:=True;
@@ -105,6 +113,11 @@ end;
 procedure TCurrent.GetDataThread(WPARAM: word; EventEnd: THandle);
 begin
 
+end;
+
+function TCurrent.GetDiapazonMeas: IMeasurement;
+begin
+ Result:=IMeasurement(fDiapazonMeas);
 end;
 
 function TCurrent.GetNewData: boolean;
@@ -117,6 +130,11 @@ begin
  Result:=fValue;
 end;
 
+function TCurrent.GetValueMeas: IMeasurement;
+begin
+ Result:=IMeasurement(fValueMeas);
+end;
+
 procedure TCurrent.ModeDetermine;
  var DiapVoltage:double;
      attemptCount:byte;
@@ -124,7 +142,7 @@ procedure TCurrent.ModeDetermine;
 begin
   attemptCount:=0;
 start:
-  DiapVoltage:=fDiapazonMeas.GetData;
+  DiapVoltage:=DiapazonMeas.GetData;
   if abs(DiapVoltage)<0.02
    then fMode:=oc_m0
    else
@@ -142,9 +160,19 @@ start:
 end;
 
 
+procedure TCurrent.SetDiapazonMeas(const Value: IMeasurement);
+begin
+ fDiapazonMeas:=pointer(Value);
+end;
+
 procedure TCurrent.SetNewData(value: boolean);
 begin
  fNewData:=value;
+end;
+
+procedure TCurrent.SetValueMeas(const Value: IMeasurement);
+begin
+  fValueMeas:=pointer(Value);
 end;
 
 function TCurrent.ValueCalculate(Voltage: double): double;
@@ -165,7 +193,7 @@ end;
 
 procedure TCurrent.ValueMeasOptimize;
 begin
- if AnsiPos('ADS1115',fValueMeas.Name)>0  then Exit;
+ if AnsiPos('ADS1115',ValueMeas.Name)>0  then Exit;
 
 end;
 
@@ -183,8 +211,9 @@ constructor TCurrentShow.Create(Module: TCurrent;
                                 LBias,DL,UL,RIDiap,RIVal:TLabel;
                                 MB,BMeasDiap,BMeasVal:TButton;
                                 AB:TSpeedButton;
-                                const SOI: array of IMeasurement;
-//                                ArrIMeas:TArrIMeas;
+//                                SOI: TIMeasArr;
+//                                const SOI: array of IMeasurement;
+                                ArrIMeas:TArrIMeas;
                                 DevDiapCB,DevValCB: TComboBox);
 begin
  inherited Create;
@@ -197,15 +226,15 @@ begin
  TTShow:=TTimer.Create(nil);
  fResultShow:=TCurrentResultShow.Create(fModule,DL,UL,MB,AB,TTShow);
 
- fDiapazMeasuring:=TMeasuringDevice.Create(SOI,DevDiapCB,
-// fDiapazMeasuring:=TMeasuringDevice.Create(ArrIMeas,DevDiapCB,
+// fDiapazMeasuring:=TMeasuringDevice.Create(SOI,DevDiapCB,
+ fDiapazMeasuring:=TMeasuringDevice.Create(ArrIMeas,DevDiapCB,
                                     fModule.Name+'Dia',RIDiap,
                                     srPreciseVoltage);
  fDiapazMeasuring.HookParameterChange:=ModuleUpDate;
  fDiapazMeasuring.AddActionButton(BMeasDiap);
 
- fValueMeasuring:=TMeasuringDevice.Create(SOI,DevValCB,
-//  fValueMeasuring:=TMeasuringDevice.Create(ArrIMeas,DevValCB,
+// fValueMeasuring:=TMeasuringDevice.Create(SOI,DevValCB,
+  fValueMeasuring:=TMeasuringDevice.Create(ArrIMeas,DevValCB,
                                    fModule.Name+'Val',RIVal,
                                    srPreciseVoltage);
  fValueMeasuring.HookParameterChange:=ModuleUpDate;
@@ -237,8 +266,8 @@ end;
 procedure TCurrentShow.ModuleUpDate;
 begin
   fModule.fBias:=fBiasShow.Data;
-  fModule.fDiapazonMeas:=fDiapazMeasuring.ActiveInterface;
-  fModule.fValueMeas:=fValueMeasuring.ActiveInterface;
+  fModule.DiapazonMeas:=fDiapazMeasuring.ActiveInterface;
+  fModule.ValueMeas:=fValueMeasuring.ActiveInterface;
 end;
 
 procedure TCurrentShow.ReadFromIniFile(ConfigFile: TIniFile);

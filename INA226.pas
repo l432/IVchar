@@ -158,6 +158,7 @@ type
                        LabelMeas:TLabel;
                        ButMeas:TButton);
    Procedure Free;//override;
+//   destructor Destroy; override;
  end;
 
 //var
@@ -450,8 +451,8 @@ end;
 
 destructor TINA226_Channel.Destroy;
 begin
-//  HelpForMe('kk');
-  inherited;
+//  HelpForMe('kk'+Name);
+  inherited Destroy;
 end;
 
 //procedure TINA226_Channel.Free;
@@ -501,9 +502,17 @@ begin
     fPinVariants[0].Add(INA226_ConversionTimeLabels[i]);
 end;
 
+//destructor TINA226_ChannelShow.Destroy;
+//begin
+//  HelpForMe('TINA226_ChannelShow');
+//  inherited;
+//end;
+
 procedure TINA226_ChannelShow.Free;
 begin
 //  fMI:=nil;
+//  HelpForMe('TINA226_ChannelShow');
+
   fChan:=nil;
 
   MeasuringDeviceSimple.Free;

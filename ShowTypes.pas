@@ -57,15 +57,18 @@ end;
 
 TDAC_Show=class(TSimpleFreeAndAiniObject)
   private
-   fOutputInterface: IDAC;
+//   fOutputInterface: IDAC;
+   fOutputInterface: pointer;
    fValueShow:TDoubleParameterShow;
    fKodShow:TIntegerParameterShow;
    ValueSetButton,KodSetButton,ResetButton:TButton;
    procedure ValueSetButtonAction(Sender:TObject);
    procedure KodSetButtonAction(Sender:TObject);
    procedure ResetButtonClick(Sender:TObject);
+   function GetDAC:IDAC;
   public
-   Constructor Create(OI: IDAC;
+   property DAC:IDAC read GetDAC;
+   Constructor Create(const OI: IDAC;
                       VData,KData:TStaticText;
                       VL, KL: TLabel;
                       VSB, KSB, RB: TButton);
@@ -325,12 +328,13 @@ end;
 
 { TDAC_ShowNew }
 
-constructor TDAC_Show.Create(OI: IDAC;
+constructor TDAC_Show.Create(const OI: IDAC;
                                 VData, KData: TStaticText;
                                 VL, KL: TLabel;
                                 VSB, KSB, RB: TButton);
 begin
-  fOutputInterface:=OI;
+//  fOutputInterface:=OI;
+  fOutputInterface:=pointer(OI);
   fValueShow:=TDoubleParameterShow.Create(VData,VL,'Output value',0,5);
   fValueShow.ForUseInShowObject(OI);
 
@@ -363,9 +367,15 @@ begin
  inherited;
 end;
 
+function TDAC_Show.GetDAC: IDAC;
+begin
+ Result:=IDAC(fOutputInterface);
+end;
+
 procedure TDAC_Show.KodSetButtonAction(Sender: TObject);
 begin
-   fOutputInterface.OutputInt(fKodShow.Data);
+//   fOutputInterface.OutputInt(fKodShow.Data);
+   DAC.OutputInt(fKodShow.Data);
    fKodShow.ColorToActive(true);
    fValueShow.ColorToActive(false);
 end;
@@ -378,7 +388,8 @@ end;
 
 procedure TDAC_Show.ResetButtonClick(Sender: TObject);
 begin
- fOutputInterface.Reset();
+// fOutputInterface.Reset();
+ DAC.Reset();
  fKodShow.ColorToActive(false);
  fValueShow.ColorToActive(false);
 end;
@@ -386,7 +397,8 @@ end;
 
 procedure TDAC_Show.ValueSetButtonAction(Sender: TObject);
 begin
- fOutputInterface.Output(fValueShow.Data);
+// fOutputInterface.Output(fValueShow.Data);
+ DAC.Output(fValueShow.Data);
  fValueShow.ColorToActive(true);
  fKodShow.ColorToActive(false);
 end;

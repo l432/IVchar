@@ -26,6 +26,7 @@ TPID_ParametersShow=class(TNamedInterfacedObject)
                      LKp,LKi,LKd,LNV,LTol:TLabel);
   procedure WriteToIniFile(ConfigFile:TIniFile);override;
   procedure ReadFromIniFile(ConfigFile:TIniFile);override;
+  destructor Destroy;override;
 end;
 
 TPID=class
@@ -172,6 +173,14 @@ begin
   fParameterShow[ppTol]:=TDoubleParameterShow.Create(STTol,LTol,'Tolerance','Tolerance to Needed Value',1e-4);
   for I := Low(TPID_Parameters) to High(TPID_Parameters) do
    fParameterShow[i].SetName(FName);
+end;
+
+destructor TPID_ParametersShow.Destroy;
+ var i:TPID_Parameters;
+begin
+  for I := Low(TPID_Parameters) to High(TPID_Parameters) do
+   fParameterShow[i].Free;
+  inherited;
 end;
 
 function TPID_ParametersShow.GetParameter(Index: TPID_Parameters): double;
