@@ -119,7 +119,8 @@ type
                        STRsh,STTimeF:TStaticText);
     procedure ReadFromIniFile(ConfigFile:TIniFile);override;
     procedure WriteToIniFile(ConfigFile:TIniFile);override;
-    Procedure Free;//override;
+//    Procedure Free;//override;
+    destructor Destroy;override;
  end;
 
   TPins_INA226_Chanel=class(TPins)
@@ -157,8 +158,8 @@ type
                        PanelConvTime:TPanel;
                        LabelMeas:TLabel;
                        ButMeas:TButton);
-   Procedure Free;//override;
-//   destructor Destroy; override;
+//   Procedure Free;//override;
+   destructor Destroy; override;
  end;
 
 //var
@@ -353,24 +354,34 @@ begin
 
   fRshShow:=
      TDoubleParameterShow.Create(STRsh,LabelRsh,'Rsh:',3.3,4);
+  fRshShow.Limits.SetLimits(0);
   fRshShow.SetName(fModule.Name);
   fRshShow.HookParameterClick:=ModuleUpDate;
   fTimeFactorShow:=
      TIntegerParameterShow.Create(STTimeF,LabelTimeF,'Time factor:',1);
+  fTimeFactorShow.IsPositive:=True;
   fTimeFactorShow.SetName(fModule.Name);
   fTimeFactorShow.HookParameterClick:=ModuleUpDate;
 end;
 
-procedure TINA226_ModuleShow.Free;
+destructor TINA226_ModuleShow.Destroy;
 begin
   fModule:=nil;
-  fRshShow:=nil;
-  fTimeFactorShow:=nil;
-
   fTimeFactorShow.Free;
   fRshShow.Free;
-  inherited Free;
+  inherited;
 end;
+
+//procedure TINA226_ModuleShow.Free;
+//begin
+//  fModule:=nil;
+//  fRshShow:=nil;
+//  fTimeFactorShow:=nil;
+//
+//  fTimeFactorShow.Free;
+//  fRshShow.Free;
+//  inherited Free;
+//end;
 
 procedure TINA226_ModuleShow.LabelsFilling;
  var adress:byte;
@@ -502,22 +513,23 @@ begin
     fPinVariants[0].Add(INA226_ConversionTimeLabels[i]);
 end;
 
-//destructor TINA226_ChannelShow.Destroy;
-//begin
-//  HelpForMe('TINA226_ChannelShow');
-//  inherited;
-//end;
-
-procedure TINA226_ChannelShow.Free;
+destructor TINA226_ChannelShow.Destroy;
 begin
-//  fMI:=nil;
-//  HelpForMe('TINA226_ChannelShow');
-
   fChan:=nil;
-
   MeasuringDeviceSimple.Free;
-  inherited Free;
+  inherited;
 end;
+
+//procedure TINA226_ChannelShow.Free;
+//begin
+////  fMI:=nil;
+////  HelpForMe('TINA226_ChannelShow');
+//
+//  fChan:=nil;
+//
+//  MeasuringDeviceSimple.Free;
+//  inherited Free;
+//end;
 
 initialization
 //  INA226_Module:=TINA226_Module.Create('INA226');

@@ -91,15 +91,18 @@ end;
 
 TMeasurementShowSimple=class(TSimpleFreeAndAiniObject)
   protected
-   fMeter:IMeasurement;
+//   fMeter:IMeasurement;
+   fMeter:pointer;
    DataLabel,UnitLabel:TLabel;
    MeasurementButton:TButton;
    Time:TTimer;
    procedure MeasurementButtonClick(Sender: TObject);
    procedure AutoSpeedButtonClick(Sender: TObject);
    function UnitModeLabel():string;virtual;
+   function GetMeter:IMeasurement;
   public
    AutoSpeedButton:TSpeedButton;
+   property Meter:IMeasurement read GetMeter;
    Constructor Create(Meter:IMeasurement;
                       DL,UL:TLabel;
                       MB:TButton;
@@ -380,7 +383,8 @@ constructor TMeasurementShowSimple.Create(Meter: IMeasurement;
                                            );
 begin
    inherited Create;
-   fMeter:=Meter;
+//   fMeter:=Meter;
+   fMeter:=pointer(Meter);
    DataLabel:=DL;
    UnitLabel:=UL;
    MeasurementButton:=MB;
@@ -391,18 +395,23 @@ begin
    AutoSpeedButton.OnClick:=AutoSpeedButtonClick;
 end;
 
+function TMeasurementShowSimple.GetMeter: IMeasurement;
+begin
+ Result:=IMeasurement(fMeter);
+end;
+
 procedure TMeasurementShowSimple.MeasurementButtonClick(Sender: TObject);
 begin
- fMeter.GetData();
+ Meter.GetData();
  MetterDataShow();
 end;
 
 procedure TMeasurementShowSimple.MetterDataShow;
 begin
-  if fMeter.Value<>ErResult then
+  if Meter.Value<>ErResult then
      begin
        UnitLabel.Caption:=UnitModeLabel();
-       DataLabel.Caption:=FloatToStrF(fMeter.Value,ffExponent,4,2)
+       DataLabel.Caption:=FloatToStrF(Meter.Value,ffExponent,4,2)
      end
                         else
      begin

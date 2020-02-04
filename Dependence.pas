@@ -176,6 +176,7 @@ TShowTemperatureDependence=class(TNamedInterfacedObject)
                       STStepTemp,STIsoInterval,STTolCoef:TStaticText;
                       LStartTemp,LFinishTemp,
                       LStepTemp,LIsoInterval,LTolCoef:TLabel);
+   destructor Destroy; override;
    procedure ReadFromIniFile(ConfigFile: TIniFile);override;
    procedure WriteToIniFile(ConfigFile: TIniFile);override;
 
@@ -1836,6 +1837,16 @@ begin
  fIsoInterval:=TIntegerParameterShow. Create(STIsoInterval,LIsoInterval,'Isotermal interval (s)',300);
  fIsoInterval.IsPositive:=True;
  fIsoInterval.HookParameterClick:=UpDate;
+end;
+
+destructor TShowTemperatureDependence.Destroy;
+begin
+ fStartTemp.Free;
+ fFinishTemp.Free;
+ fStepTemp.Free;
+ fToleranceCoef.Free;
+ fIsoInterval.Free;
+ inherited;
 end;
 
 procedure TShowTemperatureDependence.ReadFromIniFile(ConfigFile: TIniFile);

@@ -129,7 +129,8 @@ TPins_MCP3424=class(TPinsForCustomValues)
                        LabelBit,LabelGain:TPanel;
                        LabelMeas:TLabel;
                        ButMeas:TButton);
-   Procedure Free;//override;
+//   Procedure Free;//override;
+   destructor Destroy;override;
  end;
 
 //var
@@ -257,11 +258,17 @@ begin
     fPinVariants[1].Add('+/-'+MCP3424_Diapazons[j]+' V');
 end;
 
-procedure TMCP3424_ChannelShow.Free;
+destructor TMCP3424_ChannelShow.Destroy;
 begin
   MeasuringDeviceSimple.Free;
-  inherited Free;
+  inherited;
 end;
+
+//procedure TMCP3424_ChannelShow.Free;
+//begin
+//  MeasuringDeviceSimple.Free;
+//  inherited Free;
+//end;
 
 { TPins_MCP3424 }
 

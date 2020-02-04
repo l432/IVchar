@@ -60,9 +60,11 @@ type
 
   TArduinoDataSubject=class(TRS232DataSubjectBase,IArduinoDataSubject,IRS232DataSubject)
    private
+    fObservers:array of Pointer;
     function ObserverIsRegistered(o:IArduinoDevice):boolean;
+
    protected
-    Observers:array of IArduinoDevice;
+//    Observers:array of IArduinoDevice;
     procedure ComPortCreare(CP:TComPort);override;
    public
     ReceivedData:TArrByte;
@@ -150,7 +152,8 @@ type
    procedure ReadFromIniFile(ConfigFile:TIniFile);override;//virtual;
    procedure WriteToIniFile(ConfigFile:TIniFile);override;//virtual;
    procedure NumberPinShow();virtual;
-   procedure Free();//override;//virtual;
+//   procedure Free();//override;//virtual;
+   destructor Destroy; override;
    procedure VariantsShowAndSelect(Sender: TObject);
   end;
 
@@ -169,7 +172,8 @@ type
    property isNeededComPort:boolean read GetisNeededComPort write SetisNeededComPort;
    procedure PacketCreateToSend(); virtual;
    Constructor Create(Nm:string);//override;
-   Procedure Free;//virtual;//override;
+//   Procedure Free;//virtual;//override;
+   destructor Destroy; override;
    procedure PinsToDataArray;virtual;
    procedure isNeededComPortState();
   end;
@@ -215,8 +219,8 @@ type
    property SecondDeviceKod:byte read GetSecondDeviceKod;
    procedure   PacketCreateToSend(); virtual;
    Constructor Create(Nm:string);//override;
-   Procedure Free;//override;
-//   destructor Destroy;override;
+//   Procedure Free;//override;
+   destructor Destroy;override;
    procedure isNeededComPortState();
    procedure Request();override;
    Procedure ConvertToValue();virtual;abstract;
@@ -610,7 +614,7 @@ begin
     end;
 end;
 
-procedure TPinsShowUniversal.Free;
+destructor TPinsShowUniversal.Destroy;
  var i:byte;
 begin
  for I := 0 to High(PinLabels) do PinLabels[i]:=nil;
@@ -623,6 +627,20 @@ begin
    end;
   inherited;
 end;
+
+//procedure TPinsShowUniversal.Free;
+// var i:byte;
+//begin
+// for I := 0 to High(PinLabels) do PinLabels[i]:=nil;
+// fHookNumberPinShow:=nil;
+//
+// for I := 0 to High(fPinVariants) do
+//   begin
+//   fPinVariants[i]:=nil;
+//   fPinVariants[i].Free;
+//   end;
+//  inherited;
+//end;
 
 
 procedure TPinsShowUniversal.NumberPinShow;
@@ -725,11 +743,18 @@ begin
  for I := 0 to High(ReceivedData)-4 do
    ReceivedData[i]:=ReceivedData[i+3];
  SetLength(ReceivedData,High(ReceivedData)-3);
- for I := 0 to High(Observers) do
-  if (Observers[i].DeviceKod=Kod)
-      and(Observers[i].SecondDeviceKod=SecondKod) then
+// for I := 0 to High(Observers) do
+//  if (Observers[i].DeviceKod=Kod)
+//      and(Observers[i].SecondDeviceKod=SecondKod) then
+//      begin
+//       Observers[i].UpDate;
+//       Break;
+//      end;
+ for I := 0 to High(fObservers) do
+  if (IArduinoDevice(fObservers[i]).DeviceKod=Kod)
+      and(IArduinoDevice(fObservers[i]).SecondDeviceKod=SecondKod) then
       begin
-       Observers[i].UpDate;
+       IArduinoDevice(fObservers[i]).UpDate;
        Break;
       end;
 end;
@@ -738,9 +763,13 @@ function TArduinoDataSubject.ObserverIsRegistered(o:IArduinoDevice): boolean;
  var i:integer;
 begin
  Result:=False;
- for i:=0 to High(Observers)
-   do Result:=(Result or ((Observers[i].DeviceKod=o.DeviceKod)
-                            and(Observers[i].SecondDeviceKod=o.SecondDeviceKod)));
+// for i:=0 to High(Observers)
+//   do Result:=(Result or ((Observers[i].DeviceKod=o.DeviceKod)
+//                            and(Observers[i].SecondDeviceKod=o.SecondDeviceKod)));
+ for i:=0 to High(fObservers)
+   do Result:=(Result or ((IArduinoDevice(fObservers[i]).DeviceKod=o.DeviceKod)
+                            and(IArduinoDevice(fObservers[i]).SecondDeviceKod=o.SecondDeviceKod)));
+
 end;
 
 procedure TArduinoDataSubject.RegisterObserver(o: IArduinoDevice);
@@ -748,20 +777,30 @@ procedure TArduinoDataSubject.RegisterObserver(o: IArduinoDevice);
 begin
  if (not ObserverIsRegistered(o)) then
    begin
-    SetLength(Observers,High(Observers)+2);
-    Observers[High(Observers)]:=o;
+//    SetLength(Observers,High(Observers)+2);
+//    Observers[High(Observers)]:=o;
+    SetLength(fObservers,High(fObservers)+2);
+    fObservers[High(fObservers)]:=pointer(o);
    end;
 end;
 
 procedure TArduinoDataSubject.RemoveObserver(o: IArduinoDevice);
   var i,j:integer;
 begin
- for i:=0 to High(Observers) do
-   if (Observers[i].DeviceKod=o.DeviceKod)
-      and (Observers[i].SecondDeviceKod=o.SecondDeviceKod) then
+// for i:=0 to High(Observers) do
+//   if (Observers[i].DeviceKod=o.DeviceKod)
+//      and (Observers[i].SecondDeviceKod=o.SecondDeviceKod) then
+//     begin
+//       for j := i to High(Observers)-1 do Observers[j]:=Observers[j+1];
+//       SetLength(Observers,High(Observers)-1);
+//       Break;
+//     end;
+ for i:=0 to High(fObservers) do
+   if (IArduinoDevice(fObservers[i]).DeviceKod=o.DeviceKod)
+      and (IArduinoDevice(fObservers[i]).SecondDeviceKod=o.SecondDeviceKod) then
      begin
-       for j := i to High(Observers)-1 do Observers[j]:=Observers[j+1];
-       SetLength(Observers,High(Observers)-1);
+       for j := i to High(fObservers)-1 do fObservers[j]:=fObservers[j+1];
+       SetLength(fObservers,High(fObservers)-1);
        Break;
      end;
 end;
@@ -784,12 +823,18 @@ begin
   fSetterKod:=$FF;
 end;
 
-procedure TArduinoSetter.Free;
+destructor TArduinoSetter.Destroy;
 begin
-// HelpForMe(Pins.Name);
  Pins.Free;
-// inherited Free;
+  inherited;
 end;
+
+//procedure TArduinoSetter.Free;
+//begin
+//// HelpForMe(Pins.Name);
+// Pins.Free;
+//// inherited Free;
+//end;
 
 function TArduinoSetter.GetisNeededComPort: boolean;
 begin
@@ -841,19 +886,19 @@ begin
   fAddedRequestState:=TAddedRequestState.Create(Self);
 end;
 
-//destructor TArduinoMeter.Destroy;
-//begin
-// Pins.Free;
-// fInitRequestState.Free;
-// inherited;
-//end;
-
-procedure TArduinoMeter.Free;
+destructor TArduinoMeter.Destroy;
 begin
  Pins.Free;
  fInitRequestState.Free;
  inherited;
 end;
+
+//procedure TArduinoMeter.Free;
+//begin
+// Pins.Free;
+// fInitRequestState.Free;
+// inherited;
+//end;
 
 function TArduinoMeter.GetDeviceKod: byte;
 begin

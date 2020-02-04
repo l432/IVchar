@@ -25,6 +25,7 @@ private
  procedure ReadFromFile(FileName:string;arr:TStringList);
 public
  Constructor Create();
+ destructor Destroy; override;
 class function VoltToKod(Volt:double):word;
  function VoltToKodIndex(Volt:double):word;
  function VoltToArray(Volt:double):TStringList;
@@ -32,7 +33,7 @@ class function VoltToKod(Volt:double):word;
  procedure VectorToCalibr(Vec:TVector);
  procedure WriteToFileData();
  procedure ReadFromFileData();
- Procedure Free;
+// Procedure Free;
 end;
 
 
@@ -286,17 +287,26 @@ begin
    end;
 end;
 
-procedure TDACR2R_Calibr.Free;
+destructor TDACR2R_Calibr.Destroy;
 begin
-// dispose(pos01);
-// dispose(neg01);
-// dispose(pos16);
-// dispose(neg16);
  pos01.Free;
  neg01.Free;
  pos16.Free;
  neg16.Free;
- end;
+ inherited;
+end;
+
+//procedure TDACR2R_Calibr.Free;
+//begin
+//// dispose(pos01);
+//// dispose(neg01);
+//// dispose(pos16);
+//// dispose(neg16);
+// pos01.Free;
+// neg01.Free;
+// pos16.Free;
+// neg16.Free;
+// end;
 
 //procedure TDACR2R_Calibr.ReadFromFile(FileName: string; arr: TArrWord);
 // var F:TextFile;

@@ -59,7 +59,8 @@ type
    procedure Generate();
    procedure Action();
    Constructor Create();
-   procedure Free;//override;
+//   procedure Free;//override;
+   destructor Destroy; override;
  end;
 
 TAD9833Show=class(TArduinoSetterShow)
@@ -87,7 +88,8 @@ TAD9833Show=class(TArduinoSetterShow)
                      Fr1L,Ph1L,Fr2L,Ph2L:TLabel;
                      Gen1SB,Gen2SB,StopSB:TSpeedButton;
                      RGM:TRadioGroup);
-  Procedure Free;// override;
+//  Procedure Free;// override;
+  destructor Destroy; override;
   Procedure WriteToIniFile(ConfigFile:TIniFile);override;
   Procedure HookReadFromIniFile(ConfigFile:TIniFile);override;
  end;
@@ -146,12 +148,19 @@ begin
  SetLength(fData,2);
 end;
 
-procedure TAD9833.Free;
+destructor TAD9833.Destroy;
 begin
-  Reset;
+   Reset;
   sleep(50);
-  inherited Free;
+  inherited;
 end;
+
+//procedure TAD9833.Free;
+//begin
+//  Reset;
+//  sleep(50);
+//  inherited Free;
+//end;
 
 procedure TAD9833.Generate;
 begin
@@ -346,14 +355,23 @@ begin
   PinShow:=TOnePinsShow.Create(fArduinoSetter.Pins,PinLs[0],PinVariant);
 end;
 
-procedure TAD9833Show.Free;
+destructor TAD9833Show.Destroy;
 begin
  fPhaseCh2Show.Free;
  fPhaseCh1Show.Free;
  fFreqCh2Show.Free;
  fFreqCh1Show.Free;
- inherited Free;
+  inherited;
 end;
+
+//procedure TAD9833Show.Free;
+//begin
+// fPhaseCh2Show.Free;
+// fPhaseCh1Show.Free;
+// fFreqCh2Show.Free;
+// fFreqCh1Show.Free;
+// inherited Free;
+//end;
 
 procedure TAD9833Show.GenerateButtonClick(Sender: TObject);
 begin

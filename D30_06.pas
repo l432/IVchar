@@ -30,7 +30,8 @@ TD30_06=class(TArduinoDAC)
   procedure PinsToDataArray;override;
   property isVoltage:boolean read FisVoltage write FisVoltage;
   constructor Create();
-  procedure Free;//override;
+//  procedure Free;//override;
+  destructor Destroy; override;
 end;
 
 
@@ -89,12 +90,19 @@ begin
   fData[4] := (IntData and $FF);
 end;
 
-procedure TD30_06.Free;
+destructor TD30_06.Destroy;
 begin
  Reset;
  sleep(50);
- inherited Free;
+ inherited;
 end;
+
+//procedure TD30_06.Free;
+//begin
+// Reset;
+// sleep(50);
+// inherited Free;
+//end;
 
 procedure TD30_06.PinsCreate;
 begin

@@ -217,7 +217,8 @@ type
     property ActiveChannel:TGDS_Channel read FActiveChannel write FActiveChannel;
     Constructor Create(CP:TComPort;Nm:string);overload;
     Constructor Create(CP:TComPort);overload;
-    procedure Free;//override;
+//    procedure Free;//override;
+    destructor Destroy; override;
 
     procedure SetMode(mode: Byte);overload;
     procedure SetMode(mode: TGDS_ModeSym);overload;
@@ -391,7 +392,8 @@ end;
                        Gr:array of TCustomSeries;
                        VecRG:TRadioGroup
                        );
-    Procedure Free;//override;
+//    Procedure Free;//override;
+    destructor Destroy; override;
     procedure ReadFromIniFile(ConfigFile:TIniFile);override;
     procedure WriteToIniFile(ConfigFile:TIniFile);override;
     procedure SettingToObject;
@@ -491,6 +493,14 @@ begin
    end;
 end;
 
+destructor TGDS_806S.Destroy;
+ var j:TGDS_Channel;
+begin
+ for j := Low(TGDS_Channel) to High(TGDS_Channel) do
+     DataVectors[j].Free;
+  inherited;
+end;
+
 procedure TGDS_806S.DisplayOff(Chan: TGDS_Channel);
 begin
  fActiveChannel:=Chan;
@@ -516,13 +526,13 @@ begin
  Result:=a;
 end;
 
-procedure TGDS_806S.Free;
- var j:TGDS_Channel;
-begin
- for j := Low(TGDS_Channel) to High(TGDS_Channel) do
-     DataVectors[j].Free;
- inherited Free;
-end;
+//procedure TGDS_806S.Free;
+// var j:TGDS_Channel;
+//begin
+// for j := Low(TGDS_Channel) to High(TGDS_Channel) do
+//     DataVectors[j].Free;
+// inherited Free;
+//end;
 
 //procedure TGDS_806Snew.FreeDataConverter;
 //begin
@@ -1238,6 +1248,16 @@ begin
  fGDS_806S.DefaultSetting();
 end;
 
+destructor TGDS_806S_Show.Destroy;
+begin
+ TTShow.Free;
+ ShowFree;
+ SettingsShowFree;
+ SettingsShowSLFree;
+ OffsetShowFree;
+ inherited;
+end;
+
 procedure TGDS_806S_Show.DisplayInvertClick(Sender: TObject);
 begin
  if (Sender=fDisplayCheckBox[1]) then
@@ -1254,14 +1274,14 @@ begin
                                   else fGDS_806S.InvertOff(2);
 end;
 
-procedure TGDS_806S_Show.Free;
-begin
- TTShow.Free;
- ShowFree;
- SettingsShowFree;
- SettingsShowSLFree;
- OffsetShowFree;
-end;
+//procedure TGDS_806S_Show.Free;
+//begin
+// TTShow.Free;
+// ShowFree;
+// SettingsShowFree;
+// SettingsShowSLFree;
+// OffsetShowFree;
+//end;
 
 procedure TGDS_806S_Show.GetSettingButtonClick(Sender: TObject);
 begin

@@ -24,7 +24,7 @@ procedure ET_SetADCChnl(Chnl: word); stdcall; external 'ET1255.dll';
 {Установка номера входного канала для режима без аппаратного сканирования каналов
 Chnl - номер канала.}
 function  ET_ReadADC: single; stdcall; external 'ET1255.dll';
-{Ч тение данных АЦП в режиме непосредственного чтения
+{Чтение данных АЦП в режиме непосредственного чтения
 Выход:  результат измерения в V.  }
 procedure ET_SetScanMode(AChCount: integer; AScanEnable: boolean); stdcall; external 'ET1255.dll';
 {Установка режима сканирования 
@@ -179,7 +179,8 @@ TET1255_ADCChannel=class(TNamedInterfacedObject,IMeasurement)
   function GetData:double;
   constructor Create(ChanelNumber:TET1255_ADC_ChanelNumber;
                      ET1255_Module:TET1255_Module);
-  procedure Free;//override;
+//  procedure Free;//override;
+  destructor Destroy; override;
   function SetGain(Value: TET1255_ADC_Gain):boolean;
   function SetFrequency_Takt(const Value: TET1255_Frequency_Tackt):boolean;
   function MeasuringStart():boolean;
@@ -218,7 +219,8 @@ end;
    constructor Create();
    function GetData:double;
    procedure GetDataThread(WPARAM: word; EventEnd:THandle);
-   procedure Free;//override;
+//   procedure Free;//override;
+   destructor Destroy; override;
    procedure WriteToIniFile(ConfigFile: TIniFile);override;
    procedure ReadFromIniFile(ConfigFile:TIniFile);override;
  end;
@@ -255,7 +257,6 @@ end;
                       CBSer,CBToAv,CBAuG:TCheckBox;
                       Gr: TCustomSeries
                       );
-//    procedure Free;
     procedure MetterDataShow();override;
  end;
 
@@ -595,11 +596,17 @@ begin
                   DataMeasured);
 end;
 
-procedure TET1255_ADCChannel.Free;
+destructor TET1255_ADCChannel.Destroy;
 begin
- DataVector.Free;
- inherited Free;
+  DataVector.Free;
+  inherited;
 end;
+
+//procedure TET1255_ADCChannel.Free;
+//begin
+// DataVector.Free;
+// inherited Free;
+//end;
 
 function TET1255_ADCChannel.GetData: double;
 begin
@@ -886,12 +893,20 @@ begin
     Channels[i]:=TET1255_ADCChannel.Create(i,Self);
 end;
 
-procedure TET1255_ModuleAndChan.Free;
+destructor TET1255_ModuleAndChan.Destroy;
  var i:TET1255_ADC_ChanelNumber;
 begin
   for I := Low(TET1255_ADC_ChanelNumber) to High(TET1255_ADC_ChanelNumber)
      do Channels[i].Free;
+  inherited;
 end;
+
+//procedure TET1255_ModuleAndChan.Free;
+// var i:TET1255_ADC_ChanelNumber;
+//begin
+//  for I := Low(TET1255_ADC_ChanelNumber) to High(TET1255_ADC_ChanelNumber)
+//     do Channels[i].Free;
+//end;
 
 function TET1255_ModuleAndChan.GetData: double;
 begin
@@ -1097,7 +1112,7 @@ procedure TET1255_ADCShow.MetterDataShow;
 begin
   inherited MetterDataShow;
   Graph.Clear;
-    if fMeter.Value<>ErResult then
+    if Meter.Value<>ErResult then
 //     begin
       ET1255_ModuleAndChan.Channels[ET1255_ModuleAndChan.ActiveChannel].DataVector.WriteToGraph(Graph);
 //      VectorToGraph(ET1255_ModuleAndChan.Channels[ET1255_ModuleAndChan.ActiveChannel].DataVector,Graph);
