@@ -246,9 +246,9 @@ EditViewName=D:\oleg\IVchar\RS232_Meas_Tread.pas
 [View7]
 CustomEditViewType=TEditView
 Module=D:\oleg\IVchar\PID.pas
-CursorX=20
-CursorY=60
-TopLine=43
+CursorX=35
+CursorY=84
+TopLine=67
 LeftCol=1
 Elisions=
 Bookmarks=

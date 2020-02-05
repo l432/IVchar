@@ -3,6 +3,7 @@
 interface
 
 uses
+//  FastMM4,
   Windows, Messages, SysUtils, Graphics, Forms,IniFiles,
   PacketParameters,
   OlegType, OlegMath,Measurement,
@@ -987,14 +988,15 @@ begin
         'Reverse voltage precision',
         'Voltage precision for reverse I-V characteristic is expected',0.005,4);
 
-  TemperatureMeasIntervalCS:=TIntegerParameterShow.Create(STTMI,LTMI,
-        'Temperature measurement interval (s)',5);
-  TemperatureMeasIntervalCS.IsPositive:=True;
-
   MeasurementIntervalCS:=TIntegerParameterShow.Create(STTimeInterval,LTimeInterval,
         'Measurement interval, (s)',
         'Time dependence measurement interval',15);
   MeasurementIntervalCS.IsPositive:=True;
+
+  TemperatureMeasIntervalCS:=TIntegerParameterShow.Create(STTMI,LTMI,
+        'Temperature measurement interval (s)',5);
+  TemperatureMeasIntervalCS.IsPositive:=True;
+
 
   MeasurementDurationCS:=TIntegerParameterShow.Create(STTimeDuration,LTimeDuration,
         'Measurement duration (s), 0 - infinite',
@@ -1013,7 +1015,7 @@ begin
 
   ShowArray.Add([LEDVoltageCS,Dragon_backTimeCS,ControlIntervalCS,
                 MeasurementDurationCS,MeasurementIntervalCS,
-                TemperatureMeasIntervalCS,
+//                TemperatureMeasIntervalCS,
                 RevVoltagePrecisionCS,ForVoltagePrecisionCS,MinCurrentCS,
                 MaxCurrentCS,ParasiticResistanceCS]);
 end;
@@ -2652,6 +2654,7 @@ begin
  DevicesCreate();
  DependenceMeasuringCreate();
  ShowArray.ReadFromIniFile(ConfigFile);
+ TemperatureMeasIntervalCS.ReadFromIniFile(ConfigFile);
 
  if FreeTest then TestVarCreate;
 
@@ -2707,7 +2710,8 @@ begin
  if FreeTest then TestVarFree
              else
              begin
-
+ TemperatureMeasIntervalCS.WriteToIniFile(ConfigFile);
+// TemperatureMeasIntervalCS.Free;
  ShowArray.WriteToIniFileAndFree(ConfigFile);
 
 

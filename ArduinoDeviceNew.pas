@@ -888,8 +888,11 @@ end;
 
 destructor TArduinoMeter.Destroy;
 begin
- Pins.Free;
+ fWorkRequestState.Free;
+ fAddedRequestState.Free;
+
  fInitRequestState.Free;
+ Pins.Free;
  inherited;
 end;
 
