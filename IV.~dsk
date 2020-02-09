@@ -1,44 +1,53 @@
 [Closed Files]
-File_0=TSourceModule,'c:\program files\codegear\SOURCE\WIN32\RTL\SYS\System.pas',0,1,8804,1,8821,0,0,,
-File_1=TSourceModule,'c:\program files\codegear\SOURCE\WIN32\VCL\ExtCtrls.pas',0,1,1,1,1,0,0,,
-File_2=TSourceModule,'D:\oleg\IVchar\TMP102.pas',0,1,25,31,40,0,0,,
-File_3=TSourceModule,'D:\oleg\IVchar\RS232deviceNew.pas',0,1,44,91,46,0,0,,
-File_4=TSourceModule,'D:\oleg\IVchar\MLX90615.pas',0,1,38,29,49,0,0,,
-File_5=TSourceModule,'D:\oleg\IVchar\Measurement.pas',0,1,89,20,106,0,0,,
-File_6=TSourceModule,'D:\oleg\IVchar\MCP9808.pas',0,1,26,3,43,0,0,,
-File_7=TSourceModule,'D:\oleg\IVchar\MCP3424.pas',0,1,113,32,133,0,0,,
-File_8=TSourceModule,'D:\oleg\IVchar\D30_06.pas',0,1,1,17,48,0,0,,
-File_9=TSourceModule,'D:\oleg\IVchar\ArduinoDeviceShow.pas',0,1,61,22,83,0,0,,
+File_0=TSourceModule,'D:\oleg\Delphi2007\OlegVector.pas',0,1,1097,1,1114,0,0,,
+File_1=TSourceModule,'c:\program files\codegear\SOURCE\WIN32\RTL\SYS\System.pas',0,1,8812,1,8829,0,0,,
+File_2=TSourceModule,'D:\oleg\IVchar\RS232_Mediator_Tread.pas',0,1,7,2,152,0,0,,
+File_3=TSourceModule,'D:\oleg\Delphi2007\OlegType.pas',0,1,567,1,586,0,0,,
+File_4=TSourceModule,'c:\program files\codegear\SOURCE\WIN32\VCL\ExtCtrls.pas',0,1,1,1,1,0,0,,
+File_5=TSourceModule,'D:\oleg\IVchar\TMP102.pas',0,1,25,31,40,0,0,,
+File_6=TSourceModule,'D:\oleg\IVchar\RS232deviceNew.pas',0,1,44,91,46,0,0,,
+File_7=TSourceModule,'D:\oleg\IVchar\MLX90615.pas',0,1,38,29,49,0,0,,
+File_8=TSourceModule,'D:\oleg\IVchar\Measurement.pas',0,1,89,20,106,0,0,,
+File_9=TSourceModule,'D:\oleg\IVchar\MCP9808.pas',0,1,26,3,43,0,0,,
 
 [Modules]
-Module0=D:\oleg\IVchar\PID.pas
-Module1=D:\oleg\IVchar\IVchar_main.pas
-Module2=D:\oleg\Delphi2007\OlegTypePart2.pas
-Module3=D:\oleg\IVchar\ArduinoDeviceNew.pas
-Module4=D:\oleg\IVchar\MDevice.pas
-Module5=D:\oleg\IVchar\AD9833.pas
-Module6=D:\oleg\IVchar\INA226.pas
-Module7=D:\oleg\IVchar\ADS1115.pas
-Module8=D:\oleg\IVchar\ADT74x0.pas
-Module9=D:\oleg\IVchar\ArduinoADC.pas
-Module10=D:\oleg\IVchar\UT70.PAS
-Module11=D:\oleg\IVchar\RS232_Mediator_Tread.pas
-Module12=D:\oleg\IVchar\OlegDevice.pas
-Module13=D:\oleg\IVchar\RS232_Meas_Tread.pas
-Module14=D:\oleg\IVchar\PacketParameters.pas
-Module15=D:\oleg\IVchar\TemperatureSensor.pas
-Module16=D:\oleg\IVchar\TempThread.pas
-Count=17
+Module0=D:\oleg\IVchar\IVchar_main.pas
+Module1=D:\oleg\IVchar\IV.dproj
+Module2=D:\oleg\IVchar\ArduinoDeviceNew.pas
+Module3=D:\oleg\Delphi2007\OlegShowTypes.pas
+Module4=D:\oleg\Delphi2007\OlegTypePart2.pas
+Module5=D:\oleg\IVchar\INA226.pas
+Module6=D:\oleg\IVchar\ArduinoADC.pas
+Module7=D:\oleg\IVchar\PID.pas
+Module8=D:\oleg\IVchar\MDevice.pas
+Module9=D:\oleg\IVchar\AD9833.pas
+Module10=D:\oleg\IVchar\ADS1115.pas
+Module11=D:\oleg\IVchar\ADT74x0.pas
+Module12=D:\oleg\IVchar\UT70.PAS
+Module13=D:\oleg\IVchar\OlegDevice.pas
+Module14=D:\oleg\IVchar\RS232_Meas_Tread.pas
+Module15=D:\oleg\IVchar\PacketParameters.pas
+Module16=D:\oleg\IVchar\TemperatureSensor.pas
+Module17=D:\oleg\IVchar\TempThread.pas
+Count=18
 EditWindowCount=1
-
-[D:\oleg\IVchar\PID.pas]
-ModuleType=TSourceModule
-FormState=0
-FormOnTop=0
 
 [D:\oleg\IVchar\IVchar_main.pas]
 ModuleType=TSourceModule
 FormState=1
+FormOnTop=0
+
+[D:\oleg\IVchar\IV.dproj]
+ModuleType=TBaseProject
+
+[D:\oleg\IVchar\ArduinoDeviceNew.pas]
+ModuleType=TSourceModule
+FormState=0
+FormOnTop=0
+
+[D:\oleg\Delphi2007\OlegShowTypes.pas]
+ModuleType=TSourceModule
+FormState=0
 FormOnTop=0
 
 [D:\oleg\Delphi2007\OlegTypePart2.pas]
@@ -46,7 +55,17 @@ ModuleType=TSourceModule
 FormState=0
 FormOnTop=0
 
-[D:\oleg\IVchar\ArduinoDeviceNew.pas]
+[D:\oleg\IVchar\INA226.pas]
+ModuleType=TSourceModule
+FormState=0
+FormOnTop=0
+
+[D:\oleg\IVchar\ArduinoADC.pas]
+ModuleType=TSourceModule
+FormState=0
+FormOnTop=0
+
+[D:\oleg\IVchar\PID.pas]
 ModuleType=TSourceModule
 FormState=0
 FormOnTop=0
@@ -61,11 +80,6 @@ ModuleType=TSourceModule
 FormState=0
 FormOnTop=0
 
-[D:\oleg\IVchar\INA226.pas]
-ModuleType=TSourceModule
-FormState=0
-FormOnTop=0
-
 [D:\oleg\IVchar\ADS1115.pas]
 ModuleType=TSourceModule
 FormState=0
@@ -76,17 +90,7 @@ ModuleType=TSourceModule
 FormState=0
 FormOnTop=0
 
-[D:\oleg\IVchar\ArduinoADC.pas]
-ModuleType=TSourceModule
-FormState=0
-FormOnTop=0
-
 [D:\oleg\IVchar\UT70.PAS]
-ModuleType=TSourceModule
-FormState=0
-FormOnTop=0
-
-[D:\oleg\IVchar\RS232_Mediator_Tread.pas]
 ModuleType=TSourceModule
 FormState=0
 FormOnTop=0
@@ -117,8 +121,8 @@ FormState=0
 FormOnTop=0
 
 [EditWindow0]
-ViewCount=17
-CurrentEditView=D:\oleg\IVchar\PID.pas
+ViewCount=18
+CurrentEditView=D:\oleg\IVchar\IVchar_main.pas
 View0=0
 View1=1
 View2=2
@@ -136,6 +140,7 @@ View13=13
 View14=14
 View15=15
 View16=16
+View17=17
 PercentageSizes=1
 Create=1
 Visible=1
@@ -202,15 +207,37 @@ EditViewName=D:\oleg\IVchar\TemperatureSensor.pas
 [View3]
 CustomEditViewType=TEditView
 Module=D:\oleg\IVchar\IVchar_main.pas
-CursorX=32
-CursorY=3436
-TopLine=3420
+CursorX=1
+CursorY=1
+TopLine=1
 LeftCol=1
 Elisions=
-Bookmarks={2,1016,43}
+Bookmarks={2,1019,1}{5,2690,1}{7,935,7}
 EditViewName=D:\oleg\IVchar\IVchar_main.pas
 
 [View4]
+CustomEditViewType=TEditView
+Module=D:\oleg\IVchar\IV.dpr
+CursorX=2
+CursorY=5
+TopLine=1
+LeftCol=1
+Elisions=
+Bookmarks=
+EditViewName=D:\oleg\IVchar\IV.dpr
+
+[View5]
+CustomEditViewType=TEditView
+Module=D:\oleg\Delphi2007\OlegShowTypes.pas
+CursorX=16
+CursorY=323
+TopLine=306
+LeftCol=1
+Elisions=
+Bookmarks=
+EditViewName=D:\oleg\Delphi2007\OlegShowTypes.pas
+
+[View6]
 CustomEditViewType=TEditView
 Module=D:\oleg\IVchar\MDevice.pas
 CursorX=30
@@ -221,18 +248,18 @@ Elisions=
 Bookmarks=
 EditViewName=D:\oleg\IVchar\MDevice.pas
 
-[View5]
+[View7]
 CustomEditViewType=TEditView
 Module=D:\oleg\Delphi2007\OlegTypePart2.pas
-CursorX=17
-CursorY=36
-TopLine=16
+CursorX=3
+CursorY=72
+TopLine=1
 LeftCol=1
 Elisions=
 Bookmarks=
 EditViewName=D:\oleg\Delphi2007\OlegTypePart2.pas
 
-[View6]
+[View8]
 CustomEditViewType=TEditView
 Module=D:\oleg\IVchar\RS232_Meas_Tread.pas
 CursorX=54
@@ -243,18 +270,18 @@ Elisions=
 Bookmarks=
 EditViewName=D:\oleg\IVchar\RS232_Meas_Tread.pas
 
-[View7]
+[View9]
 CustomEditViewType=TEditView
 Module=D:\oleg\IVchar\PID.pas
-CursorX=35
-CursorY=84
+CursorX=36
+CursorY=78
 TopLine=67
 LeftCol=1
 Elisions=
 Bookmarks=
 EditViewName=D:\oleg\IVchar\PID.pas
 
-[View8]
+[View10]
 CustomEditViewType=TEditView
 Module=D:\oleg\IVchar\PacketParameters.pas
 CursorX=1
@@ -265,7 +292,7 @@ Elisions=
 Bookmarks=
 EditViewName=D:\oleg\IVchar\PacketParameters.pas
 
-[View9]
+[View11]
 CustomEditViewType=TEditView
 Module=D:\oleg\IVchar\OlegDevice.pas
 CursorX=21
@@ -276,51 +303,40 @@ Elisions=
 Bookmarks=
 EditViewName=D:\oleg\IVchar\OlegDevice.pas
 
-[View10]
+[View12]
 CustomEditViewType=TEditView
 Module=D:\oleg\IVchar\INA226.pas
-CursorX=33
-CursorY=162
-TopLine=135
+CursorX=20
+CursorY=418
+TopLine=401
 LeftCol=1
 Elisions=
 Bookmarks=
 EditViewName=D:\oleg\IVchar\INA226.pas
 
-[View11]
-CustomEditViewType=TEditView
-Module=D:\oleg\IVchar\RS232_Mediator_Tread.pas
-CursorX=2
-CursorY=152
-TopLine=7
-LeftCol=1
-Elisions=
-Bookmarks=
-EditViewName=D:\oleg\IVchar\RS232_Mediator_Tread.pas
-
-[View12]
+[View13]
 CustomEditViewType=TEditView
 Module=D:\oleg\IVchar\ArduinoDeviceNew.pas
-CursorX=19
-CursorY=223
-TopLine=248
+CursorX=18
+CursorY=245
+TopLine=1
 LeftCol=1
 Elisions=
 Bookmarks=
 EditViewName=D:\oleg\IVchar\ArduinoDeviceNew.pas
 
-[View13]
+[View14]
 CustomEditViewType=TEditView
 Module=D:\oleg\IVchar\ArduinoADC.pas
-CursorX=17
-CursorY=54
-TopLine=37
+CursorX=36
+CursorY=13
+TopLine=9
 LeftCol=1
 Elisions=
 Bookmarks=
 EditViewName=D:\oleg\IVchar\ArduinoADC.pas
 
-[View14]
+[View15]
 CustomEditViewType=TEditView
 Module=D:\oleg\IVchar\ADT74x0.pas
 CursorX=1
@@ -331,7 +347,7 @@ Elisions=
 Bookmarks=
 EditViewName=D:\oleg\IVchar\ADT74x0.pas
 
-[View15]
+[View16]
 CustomEditViewType=TEditView
 Module=D:\oleg\IVchar\ADS1115.pas
 CursorX=18
@@ -342,7 +358,7 @@ Elisions=
 Bookmarks=
 EditViewName=D:\oleg\IVchar\ADS1115.pas
 
-[View16]
+[View17]
 CustomEditViewType=TEditView
 Module=D:\oleg\IVchar\AD9833.pas
 CursorX=16
@@ -355,10 +371,10 @@ EditViewName=D:\oleg\IVchar\AD9833.pas
 
 [Watches]
 Count=1
-Watch0='TArduinoADC_Channel',256,0,18,1,0,'Watches'
+Watch0='PinsStrings[j]',256,0,18,1,0,'Watches'
 
 [WatchWindow]
-WatchColumnWidth=120
+WatchColumnWidth=230
 WatchShowColumnHeaders=1
 PercentageSizes=1
 Create=1
@@ -591,11 +607,11 @@ State=0
 Left=0
 Top=0
 Width=2339
-Height=1176
+Height=1061
 MaxLeft=-1
 MaxTop=-1
 ClientWidth=2339
-ClientHeight=1176
+ClientHeight=1061
 TBDockHeight=3212
 LRDockWidth=2828
 Dockable=1
@@ -610,11 +626,11 @@ State=0
 Left=0
 Top=0
 Width=2339
-Height=1176
+Height=1061
 MaxLeft=-1
 MaxTop=-1
 ClientWidth=2339
-ClientHeight=1176
+ClientHeight=1061
 TBDockHeight=1157
 LRDockWidth=3672
 Dockable=1
@@ -693,7 +709,7 @@ Visible=0
 Docked=1
 State=0
 Left=-367
-Top=-847
+Top=-875
 Width=3562
 Height=4828
 MaxLeft=-1
@@ -712,7 +728,7 @@ Visible=0
 Docked=1
 State=0
 Left=-367
-Top=-847
+Top=-875
 Width=13604
 Height=210
 MaxLeft=-1
@@ -731,7 +747,7 @@ Visible=0
 Docked=1
 State=0
 Left=-367
-Top=-847
+Top=-875
 Width=3562
 Height=4828
 MaxLeft=-1
@@ -750,7 +766,7 @@ Visible=0
 Docked=1
 State=0
 Left=-367
-Top=-847
+Top=-875
 Width=3562
 Height=2304
 MaxLeft=-1
@@ -856,14 +872,14 @@ Visible=0
 Docked=1
 State=0
 Left=0
-Top=0
+Top=28
 Width=2339
-Height=1472
+Height=1358
 MaxLeft=-1
 MaxTop=-1
 ClientWidth=2339
-ClientHeight=1472
-TBDockHeight=1472
+ClientHeight=1358
+TBDockHeight=1358
 LRDockWidth=2339
 Dockable=1
 StayOnTop=0
