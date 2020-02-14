@@ -213,13 +213,16 @@ TPins_ADS1115_Chanel=class(TPinsForCustomValues)
    Procedure Free;//override;
  end;
 
-//var
-//    ADS11115module:TADS1115_Module;
-//    ADS11115show:TI2C_PinsShow;
+var
+    ADS11115module:TADS1115_Module;
+    ADS11115show:TI2C_PinsShow;
 
-//    ADS11115_Channels:array [TADS1115_ChanelNumber] of TADS1115_Channel;
-//    ADS11115_ChannelShows:array [TADS1115_ChanelNumber] of TADS1115_ChannelShow;
+    ADS11115_Channels:array [TADS1115_ChanelNumber] of TADS1115_Channel;
+    ADS11115_ChannelShows:array [TADS1115_ChanelNumber] of TADS1115_ChannelShow;
 //    iADS1115_CN:TADS1115_ChanelNumber;
+
+procedure  ADS11115_ChannelsCreate;
+procedure  ADS11115_ChannelsFree;
 
 implementation
 
@@ -440,13 +443,25 @@ begin
   inherited Free;
 end;
 
+procedure  ADS11115_ChannelsCreate;
+ var i:TADS1115_ChanelNumber;
+begin
+  for i := Low(TADS1115_ChanelNumber) to High(TADS1115_ChanelNumber) do
+    ADS11115_Channels[i] := TADS1115_Channel.Create(i, ADS11115module);
+end;
 
+procedure  ADS11115_ChannelsFree;
+ var i:TADS1115_ChanelNumber;
+begin
+  for i := Low(TADS1115_ChanelNumber) to High(TADS1115_ChanelNumber) do
+    ADS11115_Channels[i].Free;
+end;
 
 
 initialization
-//  ADS11115module := TADS1115_Module.Create('ADS1115');
-//  for iADS1115_CN := Low(TADS1115_ChanelNumber) to High(TADS1115_ChanelNumber) do
-//    ADS11115_Channels[iADS1115_CN] := TADS1115_Channel.Create(iADS1115_CN, ADS11115module);
+  ADS11115module := TADS1115_Module.Create;
+  ADS11115_ChannelsCreate;
+
 //  ADS11115_Channels[0] := TADS1115_Channel.Create(0, ADS11115module);
 //  ADS11115_Channels[1] := TADS1115_Channel.Create(1, ADS11115module);
 //  ADS11115_Channels[2] := TADS1115_Channel.Create(2, ADS11115module);
@@ -457,7 +472,7 @@ finalization
 //  ADS11115_Channels[0].Free;
 //  ADS11115_Channels[1].Free;
 //  ADS11115_Channels[2].Free;
-
-//  ADS11115module.Free;
+  ADS11115_ChannelsFree;
+  ADS11115module.Free;
 
 end.

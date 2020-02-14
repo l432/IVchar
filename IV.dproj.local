@@ -6,5 +6,14 @@
     <Transaction>2020.01.10 13:47:32.656.pas,D:\Oleg\Shottky_Program\IVChar\RS232device.pas=D:\Oleg\Shottky_Program\IVChar\RS232deviceNew.pas</Transaction>
     <Transaction>2020.01.10 13:57:37.734.pas,D:\Oleg\Shottky_Program\IVChar\RS232deviceNew.pas=D:\Oleg\Shottky_Program\IVChar\RS232device.pas</Transaction>
     <Transaction>2020.01.10 14:02:38.109.pas,D:\Oleg\Shottky_Program\IVChar\RS232device.pas=D:\Oleg\Shottky_Program\IVChar\RS232deviceNew.pas</Transaction>
+    <Transaction>2020.02.14 09:12:22.600.pas,C:\Programs\IVChar\TMP102.pas=C:\Programs\IVChar\TMP102u.pas</Transaction>
+    <Transaction>2020.02.14 09:21:08.647.pas,C:\Programs\IVChar\MLX90615.pas=C:\Programs\IVChar\MLX90615u.pas</Transaction>
+    <Transaction>2020.02.14 09:24:56.585.pas,C:\Programs\IVChar\MCP9808.pas=C:\Programs\IVChar\MCP9808u.pas</Transaction>
+    <Transaction>2020.02.14 09:27:52.257.pas,C:\Programs\IVChar\MCP3424.pas=C:\Programs\IVChar\MCP3424u.pas</Transaction>
+    <Transaction>2020.02.14 09:53:59.882.pas,C:\Programs\IVChar\GDS_806S.pas=C:\Programs\IVChar\GDS_806Su.pas</Transaction>
+    <Transaction>2020.02.14 10:16:38.210.pas,C:\Programs\IVChar\DACR2R.pas=C:\Programs\IVChar\DACR2Ru.pas</Transaction>
+    <Transaction>2020.02.14 10:20:07.725.pas,C:\Programs\IVChar\D30_06.pas=C:\Programs\IVChar\D30_06u.pas</Transaction>
+    <Transaction>2020.02.14 10:23:57.179.pas,C:\Programs\IVChar\ADT74x0.pas=C:\Programs\IVChar\ADT74x0u.pas</Transaction>
+    <Transaction>2020.02.14 10:26:35.210.pas,C:\Programs\IVChar\AD9833.pas=C:\Programs\IVChar\AD9833u.pas</Transaction>
   </Transactions>
 </BorlandProject>

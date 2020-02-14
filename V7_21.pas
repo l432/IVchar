@@ -123,12 +123,12 @@ type
    procedure WriteToIniFile(ConfigFile: TIniFile);override;//virtual;
   end;
 
-//var
-//    V721A:TV721A;
-//    V721_I,V721_II:TV721;
+var
+    V721A:TV721A;
+    V721_I,V721_II:TV721;
 //    V721_I:TV721;
 //    V721_II:TV721_Brak;
-//    VoltmetrShows:array of TVoltmetrShow;
+    VoltmetrShows:array of TVoltmetrShow;
 
 
 implementation
@@ -510,12 +510,13 @@ begin
 end;
 
 initialization
-//  V721A := TV721A.Create('B7-21A');
-//  V721_I := TV721.Create('B7-21 (1)');
-//  V721_II := TV721.Create('B7-21 (2)');
+  V721A := TV721A.Create('B7-21A');
+  V721_I := TV721.Create('B7-21 (1)');
+  V721_II := TV721.Create('B7-21 (2)');
 //  V721_II := TV721_Brak.Create(ComPort1, 'B7-21 (2)');
+  SetLength(VoltmetrShows,3);
 finalization
-//  V721A.Free;
-//  V721_I.Free;
-//  V721_II.Free;
+  V721A.Free;
+  V721_I.Free;
+  V721_II.Free;
 end.

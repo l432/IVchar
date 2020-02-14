@@ -75,10 +75,11 @@ type
      procedure GetTemperatureThread(EventEnd:THandle);
   end;
 
-//var
-//  DS18B20:TDS18B20;
-//  HTU21D:THTU21D;
-//  STS21:TSTS21;
+var
+  DS18B20:TDS18B20;
+  HTU21D:THTU21D;
+  STS21:TSTS21;
+  ThermoCuple:TThermoCuple;
 
 implementation
 
@@ -264,12 +265,14 @@ begin
 end;
 
 initialization
-//   DS18B20:=TDS18B20.Create('DS18B20');
-//   HTU21D:=THTU21D.Create('HTU21D');
-//   STS21:=TSTS21.Create('STS21');
+   DS18B20:=TDS18B20.Create('DS18B20');
+   HTU21D:=THTU21D.Create('HTU21D');
+   STS21:=TSTS21.Create('STS21');
+   ThermoCuple:=TThermoCuple.Create;
 
 finalization
-//   DS18B20.Free;
-//   HTU21D.Free;
-//   STS21.Free;
+   DS18B20.Free;
+   HTU21D.Free;
+   STS21.Free;
+   ThermoCuple.Free;
 end.

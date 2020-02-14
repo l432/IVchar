@@ -79,7 +79,8 @@ type
   end;
 
 
-// var OlegCurrent:TCurrent;
+ var OlegCurrent:TCurrent;
+     CurrentShow:TCurrentShow;
 
 implementation
 
@@ -288,7 +289,7 @@ begin
 end;
 
 initialization
-//  OlegCurrent:=TCurrent.Create;
+  OlegCurrent:=TCurrent.Create;
 finalization
-//  OlegCurrent.Free;
+  OlegCurrent.Free;
 end.

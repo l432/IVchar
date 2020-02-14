@@ -319,10 +319,10 @@ type
 
 var
     PacketToSend:array of byte;
-//    UT70B:TUT70B;
-//    UT70BShowNew:TUT70BShowNew;
-//    UT70C:TUT70C;
-//    UT70CShowNew:TUT70CShowNew;
+    UT70B:TUT70B;
+    UT70C:TUT70C;
+    UT70BShow:TUT70BShow;
+    UT70CShow:TUT70CShow;
 
 implementation
 

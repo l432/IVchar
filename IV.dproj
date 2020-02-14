@@ -33,28 +33,27 @@
       <MainSource>MainSource</MainSource>
     </DelphiCompile>
     <DCCReference Include="AD5752R.pas" />
-    <DCCReference Include="AD9833.pas" />
+    <DCCReference Include="AD9833u.pas" />
     <DCCReference Include="ADS1115.pas" />
-    <DCCReference Include="ADT74x0.pas" />
+    <DCCReference Include="ADT74x0u.pas" />
     <DCCReference Include="ArduinoADC.pas" />
     <DCCReference Include="ArduinoDeviceNew.pas" />
     <DCCReference Include="ArduinoDeviceShow.pas" />
-    <DCCReference Include="D30_06.pas" />
-    <DCCReference Include="DACR2R.pas" />
+    <DCCReference Include="D30_06u.pas" />
+    <DCCReference Include="DACR2Ru.pas" />
     <DCCReference Include="Dependence.pas" />
     <DCCReference Include="ET1255.pas" />
-    <DCCReference Include="FastMM4.pas" />
-    <DCCReference Include="GDS_806S.pas" />
+    <DCCReference Include="GDS_806Su.pas" />
     <DCCReference Include="HighResolutionTimer.pas" />
     <DCCReference Include="INA226.pas" />
     <DCCReference Include="IVchar_main.pas">
       <Form>IVchar</Form>
     </DCCReference>
-    <DCCReference Include="MCP3424.pas" />
-    <DCCReference Include="MCP9808.pas" />
+    <DCCReference Include="MCP3424u.pas" />
+    <DCCReference Include="MCP9808u.pas" />
     <DCCReference Include="MDevice.pas" />
     <DCCReference Include="Measurement.pas" />
-    <DCCReference Include="MLX90615.pas" />
+    <DCCReference Include="MLX90615u.pas" />
     <DCCReference Include="OlegDevice.pas" />
     <DCCReference Include="PacketParameters.pas" />
     <DCCReference Include="PID.pas" />
@@ -64,7 +63,7 @@
     <DCCReference Include="ShowTypes.pas" />
     <DCCReference Include="TemperatureSensor.pas" />
     <DCCReference Include="TempThread.pas" />
-    <DCCReference Include="TMP102.pas" />
+    <DCCReference Include="TMP102u.pas" />
     <DCCReference Include="UT70.PAS" />
     <DCCReference Include="V7_21.pas" />
     <None Include="IV.todo" />

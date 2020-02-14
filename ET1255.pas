@@ -5,7 +5,7 @@ interface
 uses
   Measurement, OlegType, Classes, OlegFunction, Spin, StdCtrls, 
   ExtCtrls, Buttons, Series, IniFiles, OlegTypePart2,
-  OlegVector,OlegDigitalManipulation;
+  OlegVector,OlegDigitalManipulation, ShowTypes;
 
 const
  ET1255_DAC_MAX=2.5;
@@ -274,6 +274,13 @@ end;
    Constructor Create(ChanelNumber:TET1255_DAC_ChanelNumber);
    procedure Free;//override;
  end;
+
+//var
+//    ET1255_DACs:array[TET1255_DAC_ChanelNumber] of TET1255_DAC;
+//    ET1255_DACsShow:array[TET1255_DAC_ChanelNumber] of TDAC_Show;
+//    ET1255isPresent:boolean;
+//    ET1255_ADCModule:TET1255_ModuleAndChan;
+//    ET1255_ADCShow:TET1255_ADCShow;
 
 implementation
 
@@ -1143,13 +1150,38 @@ begin
  Result:='V';
 end;
 
+//procedure  ET1255_DAC_ChanelsCreate;
+// var I:TET1255_DAC_ChanelNumber;
+//begin
+// for I := Low(TET1255_DAC_ChanelNumber) to High(TET1255_DAC_ChanelNumber) do
+//   begin
+//    ET1255_DACs[i]:=TET1255_DAC.Create(i);
+//    ET1255_DACs[i].Reset();
+//   end;
+//end;
+//
+//procedure  ET1255_DAC_ChanelsFree;
+// var I:TET1255_DAC_ChanelNumber;
+//begin
+// for I := Low(TET1255_DAC_ChanelNumber) to High(TET1255_DAC_ChanelNumber) do
+//    ET1255_DACs[i].Free;
+//end;
+
+
+
+
 initialization
   EventET1255Measurement_Done := CreateEvent(nil,
                                  True, // тип сброса TRUE - ручной
                                  True, // начальное состояние TRUE - сигнальное
                                  nil);
+//  ET1255isPresent:=(ET_StartDrv = '');
+//  if ET1255isPresent then  ET1255_DAC_ChanelsCreate;
 
 finalization
+
+//  if ET1255isPresent then  ET1255_DAC_ChanelsFree;
   SetEvent(EventET1255Measurement_Done);
   CloseHandle(EventET1255Measurement_Done);
+
 end.
