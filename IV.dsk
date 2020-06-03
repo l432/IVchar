@@ -10,9 +10,7 @@ File_7=TSourceModule,'C:\Programs\IVChar\ADS1115.pas',0,1,217,1,224,0,0,,
 
 [Modules]
 Module0=D:\Oleg\Shottky_Program\IVChar\TMP102u.pas
-Module1=D:\Oleg\Shottky_Program\Fur\IVChar\ET1255.pas
-Module2=D:\Oleg\Shottky_Program\Fur\IVChar\IVchar_main.pas
-Count=3
+Count=1
 EditWindowCount=1
 
 [D:\Oleg\Shottky_Program\IVChar\TMP102u.pas]
@@ -20,22 +18,10 @@ ModuleType=TSourceModule
 FormState=0
 FormOnTop=0
 
-[D:\Oleg\Shottky_Program\Fur\IVChar\ET1255.pas]
-ModuleType=TSourceModule
-FormState=0
-FormOnTop=0
-
-[D:\Oleg\Shottky_Program\Fur\IVChar\IVchar_main.pas]
-ModuleType=TSourceModule
-FormState=1
-FormOnTop=0
-
 [EditWindow0]
-ViewCount=3
+ViewCount=1
 CurrentEditView=D:\Oleg\Shottky_Program\IVChar\TMP102u.pas
 View0=0
-View1=1
-View2=2
 PercentageSizes=1
 Create=1
 Visible=1
@@ -68,17 +54,6 @@ BottomMiddelPanelData=0000080001000100000009000000446F636B53697465302D1900000000
 
 [View0]
 CustomEditViewType=TEditView
-Module=D:\Oleg\Shottky_Program\Fur\IVChar\ET1255.pas
-CursorX=7
-CursorY=281
-TopLine=268
-LeftCol=1
-Elisions=
-Bookmarks=
-EditViewName=D:\Oleg\Shottky_Program\Fur\IVChar\ET1255.pas
-
-[View1]
-CustomEditViewType=TEditView
 Module=D:\Oleg\Shottky_Program\IVChar\TMP102u.pas
 CursorX=1
 CursorY=1
@@ -87,17 +62,6 @@ LeftCol=1
 Elisions=
 Bookmarks=
 EditViewName=D:\Oleg\Shottky_Program\IVChar\TMP102u.pas
-
-[View2]
-CustomEditViewType=TEditView
-Module=D:\Oleg\Shottky_Program\Fur\IVChar\IVchar_main.pas
-CursorX=47
-CursorY=1700
-TopLine=1691
-LeftCol=1
-Elisions=
-Bookmarks=
-EditViewName=D:\Oleg\Shottky_Program\Fur\IVChar\IVchar_main.pas
 
 [Watches]
 Count=2
@@ -184,7 +148,7 @@ MaxLeft=-1
 MaxTop=-1
 ClientWidth=2002
 ClientHeight=3875
-TBDockHeight=6707
+TBDockHeight=7154
 LRDockWidth=2002
 Dockable=1
 StayOnTop=0
@@ -319,11 +283,11 @@ State=0
 Left=0
 Top=0
 Width=2344
-Height=908
+Height=1138
 MaxLeft=-1
 MaxTop=-1
 ClientWidth=2344
-ClientHeight=908
+ClientHeight=1138
 TBDockHeight=2317
 LRDockWidth=2832
 Dockable=1
@@ -384,11 +348,11 @@ State=0
 Left=0
 Top=0
 Width=2002
-Height=6369
+Height=8401
 MaxLeft=-1
 MaxTop=-1
 ClientWidth=2002
-ClientHeight=6369
+ClientHeight=8401
 TBDockHeight=4878
 LRDockWidth=7148
 Dockable=1
@@ -423,11 +387,11 @@ State=0
 Left=0
 Top=0
 Width=2002
-Height=6369
+Height=8401
 MaxLeft=-1
 MaxTop=-1
 ClientWidth=2002
-ClientHeight=6369
+ClientHeight=8401
 TBDockHeight=4878
 LRDockWidth=5303
 Dockable=1
@@ -616,7 +580,7 @@ Dockable=1
 StayOnTop=0
 TabPosition=1
 ActiveTabID=RefactoringForm
-TabDockClients=RefactoringForm,FindReferencsForm,ToDo List,RefactoringsView,UsagesView,QAView,MetricsView
+TabDockClients=RefactoringForm,FindReferencsForm,ToDo List,QAView,MetricsView,RefactoringsView,UsagesView
 
 [DockSite1]
 HostDockSite=DockBottomPanel
@@ -627,7 +591,7 @@ Visible=0
 Docked=1
 State=0
 Left=0
-Top=22
+Top=0
 Width=3828
 Height=1477
 MaxLeft=-1

@@ -9,26 +9,19 @@ File_6=TSourceModule,'C:\Programs\IVChar\ET1255.pas',0,1,270,1,281,0,0,,
 File_7=TSourceModule,'C:\Programs\IVChar\ADS1115.pas',0,1,217,1,224,0,0,,
 
 [Modules]
-Module0=D:\Oleg\Shottky_Program\Fur\IVChar\IVchar_main.pas
-Module1=D:\Oleg\Shottky_Program\Fur\IVChar\ET1255.pas
-Count=2
+Module0=D:\Oleg\Shottky_Program\IVChar\TMP102u.pas
+Count=1
 EditWindowCount=1
 
-[D:\Oleg\Shottky_Program\Fur\IVChar\IVchar_main.pas]
-ModuleType=TSourceModule
-FormState=1
-FormOnTop=0
-
-[D:\Oleg\Shottky_Program\Fur\IVChar\ET1255.pas]
+[D:\Oleg\Shottky_Program\IVChar\TMP102u.pas]
 ModuleType=TSourceModule
 FormState=0
 FormOnTop=0
 
 [EditWindow0]
-ViewCount=2
-CurrentEditView=D:\Oleg\Shottky_Program\Fur\IVChar\IVchar_main.pas
+ViewCount=1
+CurrentEditView=D:\Oleg\Shottky_Program\IVChar\TMP102u.pas
 View0=0
-View1=1
 PercentageSizes=1
 Create=1
 Visible=1
@@ -61,25 +54,14 @@ BottomMiddelPanelData=0000080001000100000009000000446F636B53697465302D1900000000
 
 [View0]
 CustomEditViewType=TEditView
-Module=D:\Oleg\Shottky_Program\Fur\IVChar\ET1255.pas
-CursorX=7
-CursorY=281
-TopLine=268
+Module=D:\Oleg\Shottky_Program\IVChar\TMP102u.pas
+CursorX=1
+CursorY=1
+TopLine=1
 LeftCol=1
 Elisions=
 Bookmarks=
-EditViewName=D:\Oleg\Shottky_Program\Fur\IVChar\ET1255.pas
-
-[View1]
-CustomEditViewType=TEditView
-Module=D:\Oleg\Shottky_Program\Fur\IVChar\IVchar_main.pas
-CursorX=47
-CursorY=1700
-TopLine=1694
-LeftCol=1
-Elisions=
-Bookmarks=
-EditViewName=D:\Oleg\Shottky_Program\Fur\IVChar\IVchar_main.pas
+EditViewName=D:\Oleg\Shottky_Program\IVChar\TMP102u.pas
 
 [Watches]
 Count=2
@@ -598,7 +580,7 @@ Dockable=1
 StayOnTop=0
 TabPosition=1
 ActiveTabID=RefactoringForm
-TabDockClients=RefactoringForm,FindReferencsForm,ToDo List,RefactoringsView,UsagesView,QAView,MetricsView
+TabDockClients=RefactoringForm,FindReferencsForm,ToDo List,QAView,MetricsView,RefactoringsView,UsagesView
 
 [DockSite1]
 HostDockSite=DockBottomPanel
