@@ -659,6 +659,24 @@ type
     PADT74Pin: TPanel;
     GBMCP9808: TGroupBox;
     PMCP9808Pin: TPanel;
+    LTermostatOVmax: TLabel;
+    STTermostatOVmax: TStaticText;
+    LTermostatOVmin: TLabel;
+    STTermostatOVmin: TStaticText;
+    LControlOVmax: TLabel;
+    STControlOVmax: TStaticText;
+    LControlOVmin: TLabel;
+    STControlOVmin: TStaticText;
+    GB_oVol: TGroupBox;
+    LoVol: TLabel;
+    LUoVol: TLabel;
+    SB_oVol_Auto: TSpeedButton;
+    B_oVol_Meas: TButton;
+    GB_oVolMeasVal: TGroupBox;
+    L_oVolMeasVal: TLabel;
+    B_oVolMeasVal: TButton;
+    ST_oVolMeasVal: TStaticText;
+    CB_oVolMeasVal: TComboBox;
 
     procedure FormCreate(Sender: TObject);
     procedure BConnectClick(Sender: TObject);
@@ -2761,13 +2779,21 @@ procedure TIVchar.PIDShowCreateAndFromIniFile;
 begin
   PID_Termostat_ParametersShow:=
    TPID_ParametersShow.Create('PIDTermostat',
-           STTermostatKp,STTermostatKi,STTermostatKd,STTermostatNT,STTermostatTolerance,
-           LTermostatKp,LTermostatKi,LTermostatKd,LTermostatNT,LTermostatTolerance);
+           STTermostatKp,STTermostatKi,STTermostatKd,
+           STTermostatNT,STTermostatTolerance,
+           STTermostatOVmax,STTermostatOVmin,
+           LTermostatKp,LTermostatKi,LTermostatKd,
+           LTermostatNT,LTermostatTolerance,
+           LTermostatOVmax,LTermostatOVmin);
 
   PID_Control_ParametersShow:=
    TPID_ParametersShow.Create('PIDControl',
-           STControlKp,STControlKi,STControlKd,STControlNV,STControlTolerance,
-           LControlKp,LControlKi,LControlKd,LControlNV,LControlTolerance);
+           STControlKp,STControlKi,STControlKd,
+           STControlNV,STControlTolerance,
+           STControlOVmax,STControlOVmin,
+           LControlKp,LControlKi,LControlKd,
+           LControlNV,LControlTolerance,
+           LControlOVmax,LControlOVmin);
 
   ShowArray.Add([PID_Termostat_ParametersShow,PID_Control_ParametersShow]);
 
@@ -3717,11 +3743,20 @@ begin
                      CB_oCurMeasDiap,CB_oCurMeasVal);
   ShowArray.Add(CurrentShow);
 
+   VoltageShow:=TVoltageShow.Create(OlegVoltage,
+                     LoVol,LUoVol,
+                     L_oVolMeasVal,
+                     B_oVol_Meas,B_oVolMeasVal,
+                     SB_oVol_Auto,VandIDevices,
+                     CB_oVolMeasVal);
+  ShowArray.Add(VoltageShow);
+
 //  SetLength(Devices,High(Devices)+2);
 //  Devices[High(Devices)]:=OlegCurrent;
   AllDevices.Add(OlegCurrent);
   VandIDevices.Add(OlegCurrent);
-
+  AllDevices.Add(OlegVoltage);
+  VandIDevices.Add(OlegVoltage);
 
 
 //  Current_MD:=TMeasuringDevice.Create(Devices, CBCMD,'Current', LADCurrentValue, srCurrent);

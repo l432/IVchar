@@ -58,10 +58,11 @@ type
    property Measurement:IMeasurement read GetMeasurement;
    property DAC:IDAC read GetDAC;
    destructor Destroy; override;
-   constructor Create(Measurement:IMeasurement;
-                      IDAC:IDAC;
-                      Interval:double;
-                      Kpp,Kii,Kdd,NeededValue,Tolerance:double);overload;
+//   constructor Create(Measurement:IMeasurement;
+//                      IDAC:IDAC;
+//                      Interval:double;
+//                      PID_ParamArr:TPID_ParamArr);overload;
+////                      Kpp,Kii,Kdd,NeededValue,Tolerance:double);overload;
    constructor Create(Measurement:IMeasurement;
                       IDAC:IDAC;
                       Interval:double;
@@ -114,23 +115,25 @@ end;
 
 { TControllerThread }
 
-constructor TControllerThread.Create(Measurement: IMeasurement;
-                                     IDAC: IDAC;
-                                     Interval: double;
-                                     Kpp, Kii, Kdd,
-                                     NeededValue,Tolerance: double);
-
-begin
-  inherited Create(Interval);
-
-//  fMeasurement:=Measurement;
-//  fDAC:=IDAC;
-  fMeasurement:=Pointer(Measurement);
-  fDAC:=Pointer(IDAC);
-  fPID:=TPID.Create(Kpp, Kii, Kdd, NeededValue,Tolerance, Interval);
-  fInterialPIDused:=True;
-  Resume;
-end;
+//constructor TControllerThread.Create(Measurement: IMeasurement;
+//                                     IDAC: IDAC;
+//                                     Interval: double;
+//                                     PID_ParamArr:TPID_ParamArr);
+////                                     Kpp, Kii, Kdd,
+////                                     NeededValue,Tolerance: double);
+//
+//begin
+//  inherited Create(Interval);
+//
+////  fMeasurement:=Measurement;
+////  fDAC:=IDAC;
+//  fMeasurement:=Pointer(Measurement);
+//  fDAC:=Pointer(IDAC);
+////  fPID:=TPID.Create(Kpp, Kii, Kdd, NeededValue,Tolerance, Interval);
+//  fPID:=TPID.Create(PID_ParamArr, Interval);
+//  fInterialPIDused:=True;
+//  Resume;
+//end;
 
 procedure TControllerThread.ControllerOutput;
 begin
