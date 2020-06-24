@@ -10,30 +10,36 @@ File_7=TSourceModule,'C:\Programs\IVChar\D30_06u.pas',0,1,55,11,60,0,0,,
 File_8=TSourceModule,'C:\Programs\IVChar\DACR2Ru.pas',0,1,474,10,491,0,0,,
 
 [Modules]
-Module0=D:\oleg\IVchar\OlegDevice.pas
-Module1=D:\oleg\IVchar\MDevice.pas
-Module2=D:\oleg\IVchar\IVchar_main.pas
+<<<<<<< HEAD
+Module0=D:\oleg\IVchar\IVchar_main.pas
+Module1=D:\oleg\IVchar\OlegDevice.pas
+Module2=D:\oleg\IVchar\MDevice.pas
 Module3=D:\oleg\IVchar\Measurement.pas
 Module4=D:\oleg\IVchar\V7_21.pas
 Module5=D:\oleg\IVchar\PID.pas
 Module6=D:\oleg\Delphi2007\OlegShowTypes.pas
 Module7=D:\oleg\IVchar\TempThread.pas
 Count=8
+=======
+Module0=D:\Oleg\Shottky_Program\IVChar\TMP102u.pas
+Count=1
+>>>>>>> 3707084a45005109ca7a14b690f4438274b0ff00
 EditWindowCount=1
+
+[D:\oleg\IVchar\IVchar_main.pas]
+ModuleType=TSourceModule
+FormState=1
+FormOnTop=0
 
 [D:\oleg\IVchar\OlegDevice.pas]
 ModuleType=TSourceModule
 FormState=0
 FormOnTop=0
 
+<<<<<<< HEAD
 [D:\oleg\IVchar\MDevice.pas]
 ModuleType=TSourceModule
 FormState=0
-FormOnTop=0
-
-[D:\oleg\IVchar\IVchar_main.pas]
-ModuleType=TSourceModule
-FormState=1
 FormOnTop=0
 
 [D:\oleg\IVchar\Measurement.pas]
@@ -63,7 +69,7 @@ FormOnTop=0
 
 [EditWindow0]
 ViewCount=8
-CurrentEditView=D:\oleg\IVchar\OlegDevice.pas
+CurrentEditView=D:\oleg\IVchar\IVchar_main.pas
 View0=0
 View1=1
 View2=2
@@ -72,6 +78,12 @@ View4=4
 View5=5
 View6=6
 View7=7
+=======
+[EditWindow0]
+ViewCount=1
+CurrentEditView=D:\Oleg\Shottky_Program\IVChar\TMP102u.pas
+View0=0
+>>>>>>> 3707084a45005109ca7a14b690f4438274b0ff00
 PercentageSizes=1
 Create=1
 Visible=1
@@ -104,6 +116,7 @@ BottomMiddelPanelData=0000080001000100000009000000446F636B5369746530361900000000
 
 [View0]
 CustomEditViewType=TEditView
+<<<<<<< HEAD
 Module=D:\oleg\IVchar\PID.pas
 CursorX=1
 CursorY=232
@@ -116,6 +129,9 @@ EditViewName=D:\oleg\IVchar\PID.pas
 [View1]
 CustomEditViewType=TEditView
 Module=D:\oleg\Delphi2007\OlegShowTypes.pas
+=======
+Module=D:\Oleg\Shottky_Program\IVChar\TMP102u.pas
+>>>>>>> 3707084a45005109ca7a14b690f4438274b0ff00
 CursorX=1
 CursorY=112
 TopLine=95
@@ -124,6 +140,7 @@ Elisions=
 Bookmarks=
 EditViewName=D:\oleg\Delphi2007\OlegShowTypes.pas
 
+<<<<<<< HEAD
 [View2]
 CustomEditViewType=TEditView
 Module=D:\oleg\IVchar\TempThread.pas
@@ -138,9 +155,9 @@ EditViewName=D:\oleg\IVchar\TempThread.pas
 [View3]
 CustomEditViewType=TEditView
 Module=D:\oleg\IVchar\IVchar_main.pas
-CursorX=194
-CursorY=3387
-TopLine=3370
+CursorX=17
+CursorY=3744
+TopLine=3732
 LeftCol=1
 Elisions=
 Bookmarks=
@@ -149,9 +166,9 @@ EditViewName=D:\oleg\IVchar\IVchar_main.pas
 [View4]
 CustomEditViewType=TEditView
 Module=D:\oleg\IVchar\OlegDevice.pas
-CursorX=18
-CursorY=257
-TopLine=232
+CursorX=17
+CursorY=137
+TopLine=118
 LeftCol=1
 Elisions=
 Bookmarks=
@@ -160,9 +177,9 @@ EditViewName=D:\oleg\IVchar\OlegDevice.pas
 [View5]
 CustomEditViewType=TEditView
 Module=D:\oleg\IVchar\MDevice.pas
-CursorX=2
-CursorY=226
-TopLine=209
+CursorX=1
+CursorY=23
+TopLine=6
 LeftCol=1
 Elisions=
 Bookmarks=
@@ -171,8 +188,8 @@ EditViewName=D:\oleg\IVchar\MDevice.pas
 [View6]
 CustomEditViewType=TEditView
 Module=D:\oleg\IVchar\Measurement.pas
-CursorX=1
-CursorY=92
+CursorX=18
+CursorY=107
 TopLine=87
 LeftCol=1
 Elisions=
@@ -190,6 +207,8 @@ Elisions=
 Bookmarks=
 EditViewName=D:\oleg\IVchar\V7_21.pas
 
+=======
+>>>>>>> 3707084a45005109ca7a14b690f4438274b0ff00
 [Watches]
 Count=2
 Watch0='Devices',256,0,18,1,0,'Watches'
@@ -273,10 +292,17 @@ Width=2000
 Height=2141
 MaxLeft=-1
 MaxTop=-1
+<<<<<<< HEAD
 ClientWidth=2000
 ClientHeight=2141
 TBDockHeight=6864
 LRDockWidth=2000
+=======
+ClientWidth=2002
+ClientHeight=3875
+TBDockHeight=7154
+LRDockWidth=2002
+>>>>>>> 3707084a45005109ca7a14b690f4438274b0ff00
 Dockable=1
 StayOnTop=0
 
@@ -409,6 +435,7 @@ Docked=1
 State=0
 Left=0
 Top=0
+<<<<<<< HEAD
 Width=2339
 Height=946
 MaxLeft=-1
@@ -417,6 +444,16 @@ ClientWidth=2339
 ClientHeight=946
 TBDockHeight=2314
 LRDockWidth=2828
+=======
+Width=2344
+Height=1138
+MaxLeft=-1
+MaxTop=-1
+ClientWidth=2344
+ClientHeight=1138
+TBDockHeight=2317
+LRDockWidth=2832
+>>>>>>> 3707084a45005109ca7a14b690f4438274b0ff00
 Dockable=1
 StayOnTop=0
 
@@ -474,6 +511,7 @@ Docked=1
 State=0
 Left=0
 Top=0
+<<<<<<< HEAD
 Width=2000
 Height=6568
 MaxLeft=-1
@@ -482,6 +520,16 @@ ClientWidth=2000
 ClientHeight=6568
 TBDockHeight=4876
 LRDockWidth=7151
+=======
+Width=2002
+Height=8401
+MaxLeft=-1
+MaxTop=-1
+ClientWidth=2002
+ClientHeight=8401
+TBDockHeight=4878
+LRDockWidth=7148
+>>>>>>> 3707084a45005109ca7a14b690f4438274b0ff00
 Dockable=1
 StayOnTop=0
 
@@ -507,8 +555,8 @@ SplitPos=111
 
 [PropInspDesignerSelection]
 ArrangeBy=Category
-SelectedItem=Miscellaneous.Name,Input.OnClick
-ExpandedItems=Action=1,"Drag Drop/Docking=1","Help and Hints=1",Input=1,Layout=1,Legacy=1,Linkage=1,Locale=1,Localizable=1,Miscellaneous=1,Visual=1,Localizable.Constraints=0,Localizable.Font=0,Layout.Anchors=0,Layout.Constraints=0,Layout.Margins=0,Visual.BevelEdges=0,Visual.Font=0,Layout.Padding=0
+SelectedItem=Miscellaneous.Name,
+ExpandedItems=Action=1,"Drag Drop/Docking=1","Help and Hints=1",Input=1,Layout=1,Legacy=1,Linkage=1,Locale=1,Localizable=1,Miscellaneous=1,Visual=1,Layout.Anchors=0,Layout.Constraints=0,Layout.Margins=0,Localizable.Constraints=0,Localizable.Font=0
 
 [ModelViewTool]
 PercentageSizes=1
@@ -518,6 +566,7 @@ Docked=1
 State=0
 Left=0
 Top=0
+<<<<<<< HEAD
 Width=2000
 Height=6568
 MaxLeft=-1
@@ -526,6 +575,16 @@ ClientWidth=2000
 ClientHeight=6568
 TBDockHeight=4876
 LRDockWidth=5302
+=======
+Width=2002
+Height=8401
+MaxLeft=-1
+MaxTop=-1
+ClientWidth=2002
+ClientHeight=8401
+TBDockHeight=4878
+LRDockWidth=5303
+>>>>>>> 3707084a45005109ca7a14b690f4438274b0ff00
 Dockable=1
 StayOnTop=0
 
@@ -722,8 +781,13 @@ Create=1
 Visible=0
 Docked=1
 State=0
+<<<<<<< HEAD
 Left=960
 Top=28
+=======
+Left=0
+Top=0
+>>>>>>> 3707084a45005109ca7a14b690f4438274b0ff00
 Width=3828
 Height=1606
 MaxLeft=-1
