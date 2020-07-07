@@ -50,6 +50,26 @@ class SPIObject {
       SPI.endTransaction();
     }
 
+    void ThreeByteTransfer(byte Data1, byte Data2, byte Data3) {
+      SPI.beginTransaction(SPISettings(_speedMaximum, _dataOrder, _dataMode));
+      digitalWrite(_pin, LOW);
+      SPI.transfer(Data1);
+      SPI.transfer(Data2);
+      SPI.transfer(Data3);      
+      digitalWrite(_pin, HIGH);
+      SPI.endTransaction();
+    }
+    
+    void ArrayByteTransfer (byte Data[], int n) {
+      SPI.beginTransaction(SPISettings(_speedMaximum, _dataOrder, _dataMode));
+      digitalWrite(_pin, LOW);
+      for (byte i = 0; i < n; i++) {
+        SPI.transfer(Data[i]);
+      }
+      digitalWrite(_pin, HIGH);
+      SPI.endTransaction();
+    }
+
 };
 
 #endif
