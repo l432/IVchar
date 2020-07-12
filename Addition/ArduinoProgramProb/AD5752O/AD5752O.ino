@@ -31,7 +31,8 @@ void setup() {
   _Data[0]=0x10;
   _Data[1]=0x00;
   _Data[2]=0x11; 
-  ThreeByteTransfer(_Data[0],_Data[1],_Data[2]);
+//  ThreeByteTransfer(_Data[0],_Data[1],_Data[2]);
+  ThreeByteTransfer(B00010000,B00000000,B00010001);
   //живлення на REF та перший канал
   delay(5);
 }
@@ -63,12 +64,20 @@ void loop() {
   _Data[2]=0x00; 
   ThreeByteTransfer(_Data[0],_Data[1],_Data[2]);
   //2,5 на вихід А
+  delay(1);
+  ThreeByteTransfer(0x1D,0x00,0x00);
+  delay(1);
+  
   delay(5000);
   _Data[0]=0x00;
   _Data[1]=0xCC;
   _Data[2]=0xCC; 
   ThreeByteTransfer(_Data[0],_Data[1],_Data[2]);
   //4 на вихід А
+  delay(1);
+  ThreeByteTransfer(0x1D,0x00,0x00);
+  delay(1);
+  
   delay(5000);
 
 }
