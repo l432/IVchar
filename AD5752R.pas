@@ -1,28 +1,49 @@
 unit AD5752R;
 //
 interface
+
+uses
+  ShowTypes, ExtCtrls, Measurement, StdCtrls, IniFiles, ArduinoDeviceNew, 
+  OlegType;
 //
 //uses
 //  ArduinoDevice, IniFiles, StdCtrls, Buttons, ExtCtrls;
 //
-//type
-//  TOutputRange=(p050,p100,p108,pm050,pm100,pm108);
-//
-//const
-//  OutputRangeLabels:array[TOutputRange]of string=
-//  ('0..5','0..10','0..10.8',
-//  '-5..5','-10..10','-10.8..10.8');
-//
-//  GainValueOutputRange:array[TOutputRange]of double=
-//  (2,4,4.32,4,8,8.64);
-//
-//  REFIN=2.5;
-//
-//  {можливий відсоток напруги на виході від номінального діапазону}
-//  pVoltageLimit=0.99998; // 65535/65536
-//  pmVoltageLimit=0.99996; // 32767/32768
-//
-//
+type
+  T5752OutputRange=(p050,p100,p108,pm050,pm100,pm108,NA);
+  T5752ChanNumber=(chA,chB);
+
+const
+  AD5752_OutputRangeLabels:array[T5752OutputRange]of string=
+  ('0..5','0..10','0..10.8',
+  '-5..5','-10..10','-10.8..10.8','Error');
+
+  AD5752_ChanelNames:array[T5752ChanNumber]of string=
+  ('AD5752chA','AD5753chB');
+
+  AD5752_OutputRangeKodLabels:array[0..1] of string=
+  ('0..65535','32768..65535,0..32767');
+
+  AD5752_OutputRangeMaxVoltage:array[T5752OutputRange]of double=
+  (5,10,10.8,5,10,10.8,ErResult);
+
+  AD5752_OutputRangeMinVoltage:array[T5752OutputRange]of double=
+  (0,0,0,-5,-10,-10.8,ErResult);
+
+  AD5752_GainValueOutputRange:array[T5752OutputRange]of double=
+  (2,4,4.32,4,8,8.64,0);
+
+
+  AD5752_REFIN=2.5;
+  AD5752_MaxKod=65535;
+
+  {можливий відсоток напруги на виході від номінального діапазону}
+  AD5752_pVoltageLimit=0.99998; // 65535/65536
+  AD5752_pmVoltageLimit=0.99996; // 32767/32768
+
+
+
+
 //  {константи операцій з ЦАП}
 //  DAC_OR=1; //встановлення діапазону
 //  DAC_Mode=2; //встановлення параметрів роботи
@@ -33,7 +54,38 @@ interface
 //  DAC_Overcurrent=7; // перевантаження на виході
 //
 //
-//type
+type
+
+ TAD5752_Chanel=class(TArduinoDACbase)
+  private
+   fChanNumber:T5752ChanNumber;
+   fDiapazon:T5752OutputRange;
+   fSettedDiapazon:T5752OutputRange;
+   fPowerOn:boolean;
+//   fVoltageMinValue:double;
+   procedure SetDiapazon(D:T5752OutputRange);
+  protected
+   property Diapazon:T5752OutputRange read fDiapazon write SetDiapazon;
+   procedure CreateHook;override;
+   procedure PinsCreate();override;
+   function NormedVoltage(Voltage:double):double;override;
+  public
+   Constructor Create(ChanNumber:T5752ChanNumber);
+ end;
+
+ TAD5752_ChanelShow=class(TDAC_Show)
+   private
+    fRGDiapazon:TRadioGroup;
+   public
+//    Constructor Create(const OI: IDAC;
+//                      VData,KData:TStaticText;
+//                      VL, KL: TLabel;
+//                      VSB, KSB, RB: TButton;
+//                      RGDiap:TRadioGroup);
+//    procedure ReadFromIniFile(ConfigFile:TIniFile);override;//virtual;
+//    procedure WriteToIniFile(ConfigFile:TIniFile);override;//virtual;
+//    destructor Destroy;override;
+ end;
 //
 //  TDACChannel=class
 //   Range:TOutputRange;
@@ -173,6 +225,9 @@ interface
 //
 //
 implementation
+
+uses
+  PacketParameters, Math;
 //
 //uses
 //  SysUtils, OlegType, PacketParameters, Dialogs, Graphics;
@@ -790,4 +845,47 @@ implementation
 //end;
 //
 //
+{ TAD5752_Chanel }
+
+constructor TAD5752_Chanel.Create(ChanNumber: T5752ChanNumber);
+begin
+ inherited Create(AD5752_ChanelNames[ChanNumber]);
+ fChanNumber:=ChanNumber;
+end;
+
+procedure TAD5752_Chanel.CreateHook;
+begin
+  inherited CreateHook;
+  fSetterKod:=AD5752Command;
+  fPowerOn:=False;
+  fSettedDiapazon:=NA;
+  SetLength(fData,2);
+  Diapazon:=p050;
+  fKodMaxValue:=AD5752_MaxKod;
+end;
+
+function TAD5752_Chanel.NormedVoltage(Voltage: double): double;
+begin
+ case fDiapazon of
+   p050,p100,p108: Result :=  EnsureRange(Voltage,0,fVoltageMaxValue);
+   else Result :=  EnsureRange(Voltage,-fVoltageMaxValue,fVoltageMaxValue)
+ end;
+end;
+
+procedure TAD5752_Chanel.PinsCreate;
+begin
+  Pins := TPins.Create(Name,['Control'],1);
+end;
+
+procedure TAD5752_Chanel.SetDiapazon(D: T5752OutputRange);
+begin
+ fDiapazon:=D;
+// fVoltageMinValue:=AD5752_OutputRangeMinVoltage[D];
+ case fDiapazon of
+   p050,p100,p108: fVoltageMaxValue:=AD5752_OutputRangeMaxVoltage[D]*65535/65536;
+   pm050,pm100,pm108: fVoltageMaxValue:=AD5752_OutputRangeMaxVoltage[D]*32767/32768;
+   NA: fVoltageMaxValue:=0;
+ end;
+end;
+
 end.

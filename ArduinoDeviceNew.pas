@@ -245,24 +245,53 @@ type
    procedure Request;override;
  end;
 
-  TArduinoDAC=class(TArduinoSetter,IDAC)
+  TArduinoDACbase=class(TArduinoSetter,IDAC)
     {базовий клас для ЦАП, що керується
     за допомогою Arduino    }
   protected
    fOutputValue:double;
    fVoltageMaxValue:double;
+//   fVoltageMinValue:double;
    fKodMaxValue:integer;
-   function  VoltageToKod(Voltage:double):integer;virtual;
-   procedure DataByteToSendFromInteger(IntData: Integer);virtual;
-   procedure OutputDataSignDetermination(OutputData: Double);
-   procedure CreateHook;override;
-   function NormedKod(Kod: Integer):integer;
    function GetOutputValue:double;
+   procedure CreateHook;override;
+   function  VoltageToKod(Voltage:double):integer;virtual;
+   procedure PrepareAction(Voltage:double);virtual;
+   procedure DataToSendFromKod(Kod:Integer);virtual;abstract;
+   procedure DataToSendFromReset;virtual;abstract;
+   function NormedKod(Kod: Integer):integer;virtual;
+   function NormedVoltage(Voltage:double):double;virtual;
   public
    property OutputValue:double read GetOutputValue;
    Procedure Output(Voltage:double);virtual;
    Procedure Reset();virtual;
    Procedure OutputInt(Kod:integer);virtual;
+  end;
+
+
+// TArduinoDAC=class(TArduinoSetter,IDAC)
+//    {базовий клас для ЦАП, що керується
+//    за допомогою Arduino    }
+ TArduinoDAC=class(TArduinoDACbase)
+    {базовий клас для ЦАП R-2R та D30_06}
+  protected
+//   fOutputValue:double;
+//   fVoltageMaxValue:double;
+//   fKodMaxValue:integer;
+//   function  VoltageToKod(Voltage:double):integer;virtual;
+//   procedure DataByteToSendFromInteger(IntData: Integer);virtual;
+   procedure DataToSendFromKod(Kod:Integer);override;
+   procedure DataToSendFromReset;override;
+   procedure OutputDataSignDetermination(OutputData: Double);
+//   procedure CreateHook;override;
+   procedure PrepareAction(Voltage:double);override;
+   function NormedKod(Kod: Integer):integer;override;
+//   function GetOutputValue:double;
+  public
+//   property OutputValue:double read GetOutputValue;
+//   Procedure Output(Voltage:double);virtual;
+//   Procedure Reset();virtual;
+//   Procedure OutputInt(Kod:integer);virtual;
   end;
 
 //var
@@ -428,17 +457,31 @@ end;
 { TArduinoDACnew }
 
 
-function TArduinoDAC.NormedKod(Kod: Integer):integer;
+procedure TArduinoDAC.DataToSendFromKod(Kod: Integer);
 begin
-  Result := min(abs(Kod), fKodMaxValue);
+ fData[3] := ((Kod shr 8) and $FF);
+ fData[4] := (Kod and $FF);
 end;
 
-procedure TArduinoDAC.CreateHook;
+procedure TArduinoDAC.DataToSendFromReset;
 begin
-  inherited CreateHook;
-  fVoltageMaxValue:=5;
-  fKodMaxValue:=65535;
+ fData[5]:=DAC_Pos;
+ fData[3] := $00;
+ fData[4] := $00;
 end;
+
+function TArduinoDAC.NormedKod(Kod: Integer):integer;
+begin
+ Result :=  EnsureRange(Kod,-fKodMaxValue,fKodMaxValue);
+//  Result := min(abs(Kod), fKodMaxValue);
+end;
+
+//procedure TArduinoDAC.CreateHook;
+//begin
+//  inherited CreateHook;
+//  fVoltageMaxValue:=5;
+//  fKodMaxValue:=65535;
+//end;
 
 procedure TArduinoDAC.OutputDataSignDetermination(OutputData: Double);
 begin
@@ -446,52 +489,57 @@ begin
                     else  fData[5] := DAC_Pos;
 end;
 
-procedure TArduinoDAC.DataByteToSendFromInteger(IntData: Integer);
- var NormedIntData:integer;
-begin
-  NormedIntData:=NormedKod(IntData);
-  fData[3] := ((NormedIntData shr 8) and $FF);
-  fData[4] := (NormedIntData and $FF);
-end;
+//procedure TArduinoDAC.DataByteToSendFromInteger(IntData: Integer);
+// var NormedIntData:integer;
+//begin
+//  NormedIntData:=NormedKod(IntData);
+//  fData[3] := ((NormedIntData shr 8) and $FF);
+//  fData[4] := (NormedIntData and $FF);
+//end;
 
-function TArduinoDAC.GetOutputValue: double;
-begin
-  Result:=fOutputValue;
-end;
+//function TArduinoDAC.GetOutputValue: double;
+//begin
+//  Result:=fOutputValue;
+//end;
 
-procedure TArduinoDAC.Output(Voltage: double);
+//procedure TArduinoDAC.Output(Voltage: double);
+//begin
+// if Voltage=ErResult then Exit;
+// OutputDataSignDetermination(Voltage);
+// DataByteToSendFromInteger(VoltageToKod(Voltage));
+// isNeededComPortState();
+//end;
+//
+//procedure TArduinoDAC.OutputInt(Kod: integer);
+//begin
+// fOutputValue:=Kod;
+// OutputDataSignDetermination(Kod);
+// DataByteToSendFromInteger(abs(Kod));
+// isNeededComPortState();
+//end;
+
+
+procedure TArduinoDAC.PrepareAction(Voltage: double);
 begin
- if Voltage=ErResult then Exit;
  OutputDataSignDetermination(Voltage);
- DataByteToSendFromInteger(VoltageToKod(Voltage));
- isNeededComPortState();
 end;
 
-procedure TArduinoDAC.OutputInt(Kod: integer);
-begin
- fOutputValue:=Kod;
- OutputDataSignDetermination(Kod);
- DataByteToSendFromInteger(abs(Kod));
- isNeededComPortState();
-end;
+//procedure TArduinoDAC.Reset;
+//begin
+// fData[5]:=DAC_Pos;
+// fData[3] := $00;
+// fData[4] := $00;
+// isNeededComPortState();
+//end;
 
-
-procedure TArduinoDAC.Reset;
-begin
- fData[5]:=DAC_Pos;
- fData[3] := $00;
- fData[4] := $00;
- isNeededComPortState();
-end;
-
-function TArduinoDAC.VoltageToKod(Voltage: double): integer;
-begin
- fOutPutValue:=Voltage;
- Voltage:=abs(Voltage);
- if Voltage>fVoltageMaxValue
-    then Result:=fKodMaxValue
-    else Result:=round(Voltage/fVoltageMaxValue*fKodMaxValue);
-end;
+//function TArduinoDAC.VoltageToKod(Voltage: double): integer;
+//begin
+// fOutPutValue:=Voltage;
+// Voltage:=abs(Voltage);
+// if Voltage>fVoltageMaxValue
+//    then Result:=fKodMaxValue
+//    else Result:=round(Voltage/fVoltageMaxValue*fKodMaxValue);
+//end;
 
 { TArduinoPinChangerNew }
 
@@ -978,6 +1026,65 @@ procedure TAddedRequestState.Request;
 begin
   fArduinoMeter.fArduinoDataSubject.RegisterObserver(fArduinoMeter);
   fArduinoMeter.fRequestState:=fArduinoMeter.fWorkRequestState;
+end;
+
+{ TArduinoDACbase }
+
+procedure TArduinoDACbase.CreateHook;
+begin
+  inherited CreateHook;
+  fVoltageMaxValue:=5;
+//  fVoltageMinValue:=0;
+  fKodMaxValue:=65535;
+end;
+
+function TArduinoDACbase.GetOutputValue: double;
+begin
+  Result:=fOutputValue;
+end;
+
+function TArduinoDACbase.NormedKod(Kod: Integer): integer;
+begin
+ Result :=  EnsureRange(Kod,0,fKodMaxValue);
+end;
+
+function TArduinoDACbase.NormedVoltage(Voltage: double): double;
+begin
+ Result :=  EnsureRange(Voltage,-fVoltageMaxValue,fVoltageMaxValue);
+end;
+
+procedure TArduinoDACbase.Output(Voltage: double);
+begin
+ if Voltage=ErResult then Exit;
+ fOutputValue:=NormedVoltage(Voltage);
+ PrepareAction(fOutputValue);
+ DataToSendFromKod(VoltageToKod(fOutputValue));
+ isNeededComPortState();
+end;
+
+procedure TArduinoDACbase.OutputInt(Kod: integer);
+ var NKod:integer;
+begin
+ Nkod:=NormedKod(Kod);
+ fOutputValue:=Nkod;
+ PrepareAction(fOutputValue);
+ DataToSendFromKod(abs(Nkod));
+ isNeededComPortState();
+end;
+
+procedure TArduinoDACbase.PrepareAction(Voltage: double);
+begin
+end;
+
+procedure TArduinoDACbase.Reset;
+begin
+ DataToSendFromReset();
+ isNeededComPortState();
+end;
+
+function TArduinoDACbase.VoltageToKod(Voltage: double): integer;
+begin
+ Result:=round(abs(Voltage)/fVoltageMaxValue*fKodMaxValue);
 end;
 
 end.

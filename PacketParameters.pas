@@ -29,6 +29,7 @@ const
   STS21Command=$10;
   ADT74x0Command=$11;
   MCP9808Command=$12;
+  AD5752Command=$13;
 
 var
   aPacket:array of byte;

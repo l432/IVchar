@@ -116,7 +116,8 @@ procedure TDACR2R.OutputCalibr(Voltage: double);
 begin
  OutputDataSignDetermination(Voltage);
  fOutputValue:=Voltage;
- DataByteToSendFromInteger(TDACR2R_Calibr.VoltToKod(Voltage));
+ DataToSendFromKod(TDACR2R_Calibr.VoltToKod(Voltage));
+// DataByteToSendFromInteger(TDACR2R_Calibr.VoltToKod(Voltage));
  isNeededComPortState();
 end;
 
@@ -198,6 +199,7 @@ begin
  fCalibration.Free;
  inherited Free;
 end;
+
 
 { TDACR2RShow }
 

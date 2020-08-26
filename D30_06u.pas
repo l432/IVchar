@@ -24,8 +24,10 @@ TD30_06=class(TArduinoDAC)
  protected
   procedure PinsCreate();override;
   procedure CreateHook;override;
-  procedure DataByteToSendFromInteger(IntData: Integer);override;
+//  procedure DataByteToSendFromInteger(IntData: Integer);override;
+  procedure DataToSendFromKod(Kod:Integer);override;
   function  VoltageToKod(Voltage:double):integer;override;
+  function NormedVoltage(Voltage:double):double;override;
  public
   procedure PinsToDataArray;override;
   property isVoltage:boolean read FisVoltage write FisVoltage;
@@ -63,7 +65,7 @@ var
 implementation
 
 uses
-  SysUtils, Dialogs, ArduinoDeviceShow;
+  SysUtils, Dialogs, ArduinoDeviceShow, Math;
 
 { TD30_06 }
 
@@ -83,11 +85,17 @@ begin
 end;
 
 
-procedure TD30_06.DataByteToSendFromInteger(IntData: Integer);
+//procedure TD30_06.DataByteToSendFromInteger(IntData: Integer);
+//begin
+//  IntData:=NormedKod(IntData);
+//  fData[3] := ((IntData shr 8) and $3F);
+//  fData[4] := (IntData and $FF);
+//end;
+
+procedure TD30_06.DataToSendFromKod(Kod: Integer);
 begin
-  IntData:=NormedKod(IntData);
-  fData[3] := ((IntData shr 8) and $3F);
-  fData[4] := (IntData and $FF);
+  fData[3] := ((Kod shr 8) and $3F);
+  fData[4] := (Kod and $FF);
 end;
 
 destructor TD30_06.Destroy;
@@ -95,6 +103,13 @@ begin
  Reset;
  sleep(50);
  inherited;
+end;
+
+function TD30_06.NormedVoltage(Voltage: double): double;
+begin
+ if FisVoltage
+  then Result:= EnsureRange(Voltage,-fVoltageMaxValue,fVoltageMaxValue)
+  else Result:= EnsureRange(Voltage,-fCurrentMaxValue,fCurrentMaxValue);
 end;
 
 //procedure TD30_06.Free;
@@ -124,18 +139,23 @@ end;
 
 function TD30_06.VoltageToKod(Voltage: double): integer;
 begin
- if (not(FisVoltage))and(Voltage<-3) then Voltage:=-3;
+ if FisVoltage
+   then Result:=round(abs(Voltage)/fVoltageMaxValue*fKodMaxValue)
+   else Result:=round(abs(Voltage)/fCurrentMaxValue*fKodMaxValue);
 
- fOutPutValue:=Voltage;
- Voltage:=abs(Voltage);
- if FisVoltage then
-     if Voltage>fVoltageMaxValue
-        then Result:=fKodMaxValue
-        else Result:=round(Voltage/fVoltageMaxValue*fKodMaxValue)
-               else
-     if Voltage>fCurrentMaxValue
-        then Result:=fKodMaxValue
-        else Result:=round(Voltage/fCurrentMaxValue*fKodMaxValue)
+
+// if (not(FisVoltage))and(Voltage<-3) then Voltage:=-3;
+
+// fOutPutValue:=Voltage;
+// Voltage:=abs(Voltage);
+// if FisVoltage then
+//     if Voltage>fVoltageMaxValue
+//        then Result:=fKodMaxValue
+//        else Result:=round(Voltage/fVoltageMaxValue*fKodMaxValue)
+//               else
+//     if Voltage>fCurrentMaxValue
+//        then Result:=fKodMaxValue
+//        else Result:=round(Voltage/fCurrentMaxValue*fKodMaxValue)
 end;
 
 { TD30_06Show }

@@ -35,7 +35,7 @@ object IVchar: TIVchar
     Top = 0
     Width = 1028
     Height = 693
-    ActivePage = TS_HandMade
+    ActivePage = TS_D30_06
     Align = alTop
     Font.Charset = RUSSIAN_CHARSET
     Font.Color = clWindowText
@@ -2629,6 +2629,7 @@ object IVchar: TIVchar
           ComPort = ComPort1
           ComProperty = cpPort
           AutoApply = True
+          Text = 'COM1'
           Style = csDropDownList
           Font.Charset = RUSSIAN_CHARSET
           Font.Color = clWindowText
@@ -2636,7 +2637,7 @@ object IVchar: TIVchar
           Font.Name = 'Arial'
           Font.Style = [fsBold]
           ItemHeight = 24
-          ItemIndex = -1
+          ItemIndex = 0
           ParentFont = False
           TabOrder = 0
         end
@@ -2648,6 +2649,7 @@ object IVchar: TIVchar
           ComPort = ComPort1
           ComProperty = cpBaudRate
           AutoApply = True
+          Text = '115200'
           Style = csDropDownList
           Font.Charset = RUSSIAN_CHARSET
           Font.Color = clWindowText
@@ -2655,7 +2657,7 @@ object IVchar: TIVchar
           Font.Name = 'Arial'
           Font.Style = [fsBold]
           ItemHeight = 24
-          ItemIndex = -1
+          ItemIndex = 13
           ParentFont = False
           TabOrder = 1
         end
@@ -3925,6 +3927,7 @@ object IVchar: TIVchar
           ComPort = ComPortUT70B
           ComProperty = cpPort
           AutoApply = True
+          Text = 'COM1'
           Style = csDropDownList
           Font.Charset = RUSSIAN_CHARSET
           Font.Color = clWindowText
@@ -3932,7 +3935,7 @@ object IVchar: TIVchar
           Font.Name = 'Arial'
           Font.Style = [fsBold]
           ItemHeight = 24
-          ItemIndex = -1
+          ItemIndex = 0
           ParentFont = False
           TabOrder = 5
         end
@@ -4139,6 +4142,7 @@ object IVchar: TIVchar
           ComPort = ComPortUT70C
           ComProperty = cpPort
           AutoApply = True
+          Text = 'COM1'
           Style = csDropDownList
           Font.Charset = RUSSIAN_CHARSET
           Font.Color = clWindowText
@@ -4146,7 +4150,7 @@ object IVchar: TIVchar
           Font.Name = 'Arial'
           Font.Style = [fsBold]
           ItemHeight = 24
-          ItemIndex = -1
+          ItemIndex = 0
           ParentFont = False
           TabOrder = 5
         end
@@ -5957,241 +5961,504 @@ object IVchar: TIVchar
       end
     end
     object TS_D30_06: TTabSheet
-      Caption = 'AD9833'
+      Caption = 'AD9833/5752'
       ImageIndex = 10
-      object LFreqRangeAD9866: TLabel
+      object GBad9833: TGroupBox
         Left = 4
-        Top = 65
-        Width = 226
-        Height = 25
-        Caption = 'Freq: 0...12 500 000'
+        Top = 3
+        Width = 455
+        Height = 574
+        Caption = 'AD9833'
         Font.Charset = RUSSIAN_CHARSET
-        Font.Color = clGreen
-        Font.Height = -20
-        Font.Name = 'Verdana'
-        Font.Style = [fsBold]
-        ParentFont = False
-      end
-      object LPhaseRangeAD9866: TLabel
-        Left = 4
-        Top = 97
-        Width = 159
-        Height = 25
-        Caption = 'Phase: 0...360'
-        Font.Charset = RUSSIAN_CHARSET
-        Font.Color = clGreen
-        Font.Height = -20
-        Font.Name = 'Verdana'
-        Font.Style = [fsBold]
-        ParentFont = False
-      end
-      object SBAD9833Stop: TSpeedButton
-        Left = 175
-        Top = 290
-        Width = 224
-        Height = 43
-        Caption = 'Stop'
-        Font.Charset = RUSSIAN_CHARSET
-        Font.Color = clWindowText
-        Font.Height = -22
-        Font.Name = 'Arial'
-        Font.Style = [fsBold]
-        ParentFont = False
-      end
-      object SBAD9833GenCh1: TSpeedButton
-        Left = 327
-        Top = 239
-        Width = 221
-        Height = 43
-        Caption = 'Generate'
-        Font.Charset = RUSSIAN_CHARSET
-        Font.Color = clWindowText
-        Font.Height = -22
-        Font.Name = 'Arial'
-        Font.Style = [fsBold]
-        ParentFont = False
-      end
-      object SBAD9833GenCh0: TSpeedButton
-        Left = 22
-        Top = 239
-        Width = 221
-        Height = 43
-        Caption = 'Generate'
-        Font.Charset = RUSSIAN_CHARSET
-        Font.Color = clWindowText
-        Font.Height = -22
-        Font.Name = 'Arial'
-        Font.Style = [fsBold]
-        ParentFont = False
-      end
-      object GBAD9866ch0: TGroupBox
-        Left = 4
-        Top = 128
-        Width = 267
-        Height = 103
-        Caption = 'channel I'
-        Font.Charset = RUSSIAN_CHARSET
-        Font.Color = clNavy
+        Font.Color = clMaroon
         Font.Height = -28
         Font.Name = 'Courier'
         Font.Style = [fsBold]
         ParentFont = False
         TabOrder = 0
-        object L9833PhaseCh0: TLabel
-          Left = 9
-          Top = 71
-          Width = 48
-          Height = 19
-          Caption = 'Phase'
+        object LFreqRangeAD9866: TLabel
+          Left = 239
+          Top = 28
+          Width = 209
+          Height = 22
+          Caption = 'Freq: 0...12 500 000'
           Font.Charset = RUSSIAN_CHARSET
-          Font.Color = clMaroon
-          Font.Height = -17
-          Font.Name = 'Arial'
-          Font.Style = [fsBold]
-          ParentFont = False
-        end
-        object L9833FreqCh0: TLabel
-          Left = 9
-          Top = 34
-          Width = 36
-          Height = 19
-          Caption = 'Freq'
-          Font.Charset = RUSSIAN_CHARSET
-          Font.Color = clMaroon
-          Font.Height = -17
-          Font.Name = 'Arial'
-          Font.Style = [fsBold]
-          ParentFont = False
-        end
-        object ST9866PhaseCh0: TStaticText
-          Left = 157
-          Top = 67
-          Width = 95
-          Height = 30
-          Caption = '-65000'
-          Font.Charset = RUSSIAN_CHARSET
-          Font.Color = clBlack
-          Font.Height = -22
+          Font.Color = clGreen
+          Font.Height = -18
           Font.Name = 'Verdana'
           Font.Style = [fsBold]
+          ParentFont = False
+        end
+        object LPhaseRangeAD9866: TLabel
+          Left = 239
+          Top = 56
+          Width = 147
+          Height = 22
+          Caption = 'Phase: 0...360'
+          Font.Charset = RUSSIAN_CHARSET
+          Font.Color = clGreen
+          Font.Height = -18
+          Font.Name = 'Verdana'
+          Font.Style = [fsBold]
+          ParentFont = False
+        end
+        object SBAD9833GenCh0: TSpeedButton
+          Left = 5
+          Top = 193
+          Width = 267
+          Height = 36
+          Caption = 'Generate'
+          Font.Charset = RUSSIAN_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -22
+          Font.Name = 'Arial'
+          Font.Style = [fsBold]
+          ParentFont = False
+        end
+        object SBAD9833GenCh1: TSpeedButton
+          Left = 5
+          Top = 365
+          Width = 267
+          Height = 36
+          Caption = 'Generate'
+          Font.Charset = RUSSIAN_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -22
+          Font.Name = 'Arial'
+          Font.Style = [fsBold]
+          ParentFont = False
+        end
+        object SBAD9833Stop: TSpeedButton
+          Left = 288
+          Top = 118
+          Width = 147
+          Height = 211
+          Caption = 'Stop'
+          Font.Charset = RUSSIAN_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -22
+          Font.Name = 'Arial'
+          Font.Style = [fsBold]
+          ParentFont = False
+        end
+        object PAD9833PinC: TPanel
+          Left = 5
+          Top = 36
+          Width = 222
+          Height = 42
+          Cursor = crHandPoint
+          BevelOuter = bvLowered
+          Caption = 'Control Pin is 26'
+          Color = clSilver
+          Font.Charset = DEFAULT_CHARSET
+          Font.Color = clHotLight
+          Font.Height = -22
+          Font.Name = 'Tahoma'
+          Font.Style = [fsBold]
+          ParentBackground = False
           ParentFont = False
           TabOrder = 0
         end
-        object ST9866FreqCh0: TStaticText
-          Left = 106
-          Top = 30
-          Width = 103
-          Height = 30
-          Caption = '-0.0008'
+        object GBAD9866ch0: TGroupBox
+          Left = 5
+          Top = 84
+          Width = 267
+          Height = 103
+          Caption = 'channel I'
           Font.Charset = RUSSIAN_CHARSET
-          Font.Color = clBlack
-          Font.Height = -22
-          Font.Name = 'Verdana'
+          Font.Color = clNavy
+          Font.Height = -28
+          Font.Name = 'Courier'
           Font.Style = [fsBold]
           ParentFont = False
           TabOrder = 1
+          object L9833PhaseCh0: TLabel
+            Left = 9
+            Top = 71
+            Width = 48
+            Height = 19
+            Caption = 'Phase'
+            Font.Charset = RUSSIAN_CHARSET
+            Font.Color = clMaroon
+            Font.Height = -17
+            Font.Name = 'Arial'
+            Font.Style = [fsBold]
+            ParentFont = False
+          end
+          object L9833FreqCh0: TLabel
+            Left = 9
+            Top = 34
+            Width = 36
+            Height = 19
+            Caption = 'Freq'
+            Font.Charset = RUSSIAN_CHARSET
+            Font.Color = clMaroon
+            Font.Height = -17
+            Font.Name = 'Arial'
+            Font.Style = [fsBold]
+            ParentFont = False
+          end
+          object ST9866PhaseCh0: TStaticText
+            Left = 157
+            Top = 67
+            Width = 95
+            Height = 30
+            Caption = '-65000'
+            Font.Charset = RUSSIAN_CHARSET
+            Font.Color = clBlack
+            Font.Height = -22
+            Font.Name = 'Verdana'
+            Font.Style = [fsBold]
+            ParentFont = False
+            TabOrder = 0
+          end
+          object ST9866FreqCh0: TStaticText
+            Left = 106
+            Top = 30
+            Width = 103
+            Height = 30
+            Caption = '-0.0008'
+            Font.Charset = RUSSIAN_CHARSET
+            Font.Color = clBlack
+            Font.Height = -22
+            Font.Name = 'Verdana'
+            Font.Style = [fsBold]
+            ParentFont = False
+            TabOrder = 1
+          end
+        end
+        object GBAD9866ch1: TGroupBox
+          Left = 5
+          Top = 250
+          Width = 267
+          Height = 108
+          Caption = 'channel II'
+          Font.Charset = RUSSIAN_CHARSET
+          Font.Color = clNavy
+          Font.Height = -28
+          Font.Name = 'Courier'
+          Font.Style = [fsBold]
+          ParentFont = False
+          TabOrder = 2
+          object L9833PhaseCh1: TLabel
+            Left = 9
+            Top = 71
+            Width = 54
+            Height = 19
+            Caption = 'Phase:'
+            Font.Charset = RUSSIAN_CHARSET
+            Font.Color = clMaroon
+            Font.Height = -17
+            Font.Name = 'Arial'
+            Font.Style = [fsBold]
+            ParentFont = False
+          end
+          object L9833FreqCh1: TLabel
+            Left = 9
+            Top = 34
+            Width = 36
+            Height = 19
+            Caption = 'Freq'
+            Font.Charset = RUSSIAN_CHARSET
+            Font.Color = clMaroon
+            Font.Height = -17
+            Font.Name = 'Arial'
+            Font.Style = [fsBold]
+            ParentFont = False
+          end
+          object ST9866PhaseCh1: TStaticText
+            Left = 157
+            Top = 67
+            Width = 95
+            Height = 30
+            Caption = '-65000'
+            Font.Charset = RUSSIAN_CHARSET
+            Font.Color = clBlack
+            Font.Height = -22
+            Font.Name = 'Verdana'
+            Font.Style = [fsBold]
+            ParentFont = False
+            TabOrder = 0
+          end
+          object ST9866FreqCh1: TStaticText
+            Left = 106
+            Top = 30
+            Width = 103
+            Height = 30
+            Caption = '-0.0008'
+            Font.Charset = RUSSIAN_CHARSET
+            Font.Color = clBlack
+            Font.Height = -22
+            Font.Name = 'Verdana'
+            Font.Style = [fsBold]
+            ParentFont = False
+            TabOrder = 1
+          end
+        end
+        object RGAD9833Mode: TRadioGroup
+          Left = 14
+          Top = 428
+          Width = 424
+          Height = 133
+          Caption = 'Mode'
+          Columns = 2
+          Font.Charset = RUSSIAN_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -22
+          Font.Name = 'Verdana'
+          Font.Style = []
+          ParentFont = False
+          TabOrder = 3
         end
       end
-      object PAD9833PinC: TPanel
-        Left = 4
-        Top = 4
-        Width = 267
-        Height = 42
-        Cursor = crHandPoint
-        BevelOuter = bvLowered
-        Caption = 'Control Pin is 26'
-        Color = clSilver
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = clHotLight
-        Font.Height = -22
-        Font.Name = 'Tahoma'
-        Font.Style = [fsBold]
-        ParentBackground = False
-        ParentFont = False
-        TabOrder = 1
-      end
-      object GBAD9866ch1: TGroupBox
-        Left = 297
-        Top = 123
-        Width = 267
-        Height = 108
-        Caption = 'channel II'
+      object GBad5752: TGroupBox
+        Left = 472
+        Top = 3
+        Width = 545
+        Height = 584
+        Caption = 'AD5752'
         Font.Charset = RUSSIAN_CHARSET
-        Font.Color = clNavy
+        Font.Color = clMaroon
         Font.Height = -28
         Font.Name = 'Courier'
         Font.Style = [fsBold]
         ParentFont = False
-        TabOrder = 2
-        object L9833PhaseCh1: TLabel
-          Left = 9
-          Top = 71
-          Width = 54
-          Height = 19
-          Caption = 'Phase:'
-          Font.Charset = RUSSIAN_CHARSET
-          Font.Color = clMaroon
-          Font.Height = -17
-          Font.Name = 'Arial'
-          Font.Style = [fsBold]
-          ParentFont = False
-        end
-        object L9833FreqCh1: TLabel
-          Left = 9
-          Top = 34
-          Width = 36
-          Height = 19
-          Caption = 'Freq'
-          Font.Charset = RUSSIAN_CHARSET
-          Font.Color = clMaroon
-          Font.Height = -17
-          Font.Name = 'Arial'
-          Font.Style = [fsBold]
-          ParentFont = False
-        end
-        object ST9866PhaseCh1: TStaticText
-          Left = 157
-          Top = 67
-          Width = 95
-          Height = 30
-          Caption = '-65000'
-          Font.Charset = RUSSIAN_CHARSET
-          Font.Color = clBlack
+        TabOrder = 1
+        object PAD5752: TPanel
+          Left = 5
+          Top = 36
+          Width = 222
+          Height = 42
+          Cursor = crHandPoint
+          BevelOuter = bvLowered
+          Caption = 'Control Pin is 26'
+          Color = clSilver
+          Font.Charset = DEFAULT_CHARSET
+          Font.Color = clHotLight
           Font.Height = -22
-          Font.Name = 'Verdana'
+          Font.Name = 'Tahoma'
           Font.Style = [fsBold]
+          ParentBackground = False
           ParentFont = False
           TabOrder = 0
         end
-        object ST9866FreqCh1: TStaticText
-          Left = 106
-          Top = 30
-          Width = 103
-          Height = 30
-          Caption = '-0.0008'
+        object GBad5752ChA: TGroupBox
+          Left = 5
+          Top = 84
+          Width = 284
+          Height = 497
+          Caption = 'Channel A'
           Font.Charset = RUSSIAN_CHARSET
-          Font.Color = clBlack
-          Font.Height = -22
-          Font.Name = 'Verdana'
+          Font.Color = clMaroon
+          Font.Height = -17
+          Font.Name = 'Arial'
           Font.Style = [fsBold]
           ParentFont = False
           TabOrder = 1
+          object LKodRange5752chA: TLabel
+            Left = 7
+            Top = 280
+            Width = 146
+            Height = 20
+            Caption = '-65535...65535'
+            Font.Charset = RUSSIAN_CHARSET
+            Font.Color = clGreen
+            Font.Height = -17
+            Font.Name = 'Verdana'
+            Font.Style = [fsBold]
+            ParentFont = False
+          end
+          object LOK5752chA: TLabel
+            Left = 29
+            Top = 306
+            Width = 107
+            Height = 19
+            Caption = 'Output Code:'
+            Font.Charset = RUSSIAN_CHARSET
+            Font.Color = clBlack
+            Font.Height = -17
+            Font.Name = 'Arial'
+            Font.Style = [fsBold]
+            ParentFont = False
+          end
+          object LOV5752chA: TLabel
+            Left = 13
+            Top = 177
+            Width = 109
+            Height = 19
+            Caption = 'Output Value:'
+            Font.Charset = RUSSIAN_CHARSET
+            Font.Color = clBlack
+            Font.Height = -17
+            Font.Name = 'Arial'
+            Font.Style = [fsBold]
+            ParentFont = False
+          end
+          object LValueRange5752chA: TLabel
+            Left = 20
+            Top = 202
+            Width = 98
+            Height = 20
+            Caption = '-6.6 ... 6.6'
+            Font.Charset = RUSSIAN_CHARSET
+            Font.Color = clGreen
+            Font.Height = -17
+            Font.Name = 'Verdana'
+            Font.Style = [fsBold]
+            ParentFont = False
+          end
+          object B5752ResetChA: TButton
+            Left = 7
+            Top = 234
+            Width = 137
+            Height = 37
+            Caption = 'Reset'
+            Font.Charset = RUSSIAN_CHARSET
+            Font.Color = clWindowText
+            Font.Height = -20
+            Font.Name = 'Verdana'
+            Font.Style = [fsBold]
+            ParentFont = False
+            TabOrder = 0
+          end
+          object BOKset5752chA: TButton
+            Left = 163
+            Top = 264
+            Width = 108
+            Height = 31
+            Caption = 'set code'
+            Font.Charset = RUSSIAN_CHARSET
+            Font.Color = clWindowText
+            Font.Height = -22
+            Font.Name = 'Arial'
+            Font.Style = [fsBold]
+            ParentFont = False
+            TabOrder = 1
+          end
+          object BOVset5752chA: TButton
+            Left = 163
+            Top = 215
+            Width = 108
+            Height = 30
+            Caption = 'set value'
+            Font.Charset = RUSSIAN_CHARSET
+            Font.Color = clWindowText
+            Font.Height = -22
+            Font.Name = 'Arial'
+            Font.Style = [fsBold]
+            ParentFont = False
+            TabOrder = 2
+          end
+          object STOK5752chA: TStaticText
+            Left = 180
+            Top = 304
+            Width = 95
+            Height = 30
+            Caption = '-65000'
+            Font.Charset = RUSSIAN_CHARSET
+            Font.Color = clBlack
+            Font.Height = -22
+            Font.Name = 'Verdana'
+            Font.Style = [fsBold]
+            ParentFont = False
+            TabOrder = 3
+          end
+          object STOV5752chA: TStaticText
+            Left = 163
+            Top = 173
+            Width = 103
+            Height = 30
+            Caption = '-0.0008'
+            Font.Charset = RUSSIAN_CHARSET
+            Font.Color = clBlack
+            Font.Height = -22
+            Font.Name = 'Verdana'
+            Font.Style = [fsBold]
+            ParentFont = False
+            TabOrder = 4
+          end
+          object GBMeas5752chA: TGroupBox
+            Tag = 110
+            Left = 3
+            Top = 355
+            Width = 274
+            Height = 139
+            Caption = 'Measurement'
+            Font.Charset = RUSSIAN_CHARSET
+            Font.Color = clWindowText
+            Font.Height = -17
+            Font.Name = 'Arial'
+            Font.Style = [fsBold]
+            ParentFont = False
+            TabOrder = 5
+            object LMeas5752chA: TLabel
+              Left = 169
+              Top = 25
+              Width = 92
+              Height = 20
+              Caption = '-0.0008'
+              Font.Charset = RUSSIAN_CHARSET
+              Font.Color = clBlack
+              Font.Height = -22
+              Font.Name = 'Courier'
+              Font.Style = [fsBold]
+              ParentFont = False
+            end
+            object BMeas5752chA: TButton
+              Left = 12
+              Top = 21
+              Width = 137
+              Height = 31
+              Caption = 'to measure'
+              Font.Charset = RUSSIAN_CHARSET
+              Font.Color = clWindowText
+              Font.Height = -22
+              Font.Name = 'Arial'
+              Font.Style = [fsBold]
+              ParentFont = False
+              TabOrder = 0
+            end
+            object STMD5752chA: TStaticText
+              Left = 31
+              Top = 64
+              Width = 127
+              Height = 23
+              Caption = 'Measure Device'
+              TabOrder = 1
+            end
+            object CBMeas5752chA: TComboBox
+              Tag = 5
+              Left = 33
+              Top = 93
+              Width = 174
+              Height = 27
+              Style = csDropDownList
+              Font.Charset = RUSSIAN_CHARSET
+              Font.Color = clWindowText
+              Font.Height = -17
+              Font.Name = 'Arial'
+              Font.Style = [fsBold]
+              ItemHeight = 19
+              ParentFont = False
+              TabOrder = 2
+            end
+          end
+          object RG5752chADiap: TRadioGroup
+            Left = 16
+            Top = 24
+            Width = 249
+            Height = 143
+            Caption = 'Diapazon'
+            Columns = 3
+            Font.Charset = RUSSIAN_CHARSET
+            Font.Color = clWindowText
+            Font.Height = -22
+            Font.Name = 'Verdana'
+            Font.Style = []
+            ParentFont = False
+            TabOrder = 6
+          end
         end
-      end
-      object RGAD9833Mode: TRadioGroup
-        Left = 22
-        Top = 356
-        Width = 526
-        Height = 95
-        Caption = 'Mode'
-        Columns = 4
-        Font.Charset = RUSSIAN_CHARSET
-        Font.Color = clWindowText
-        Font.Height = -22
-        Font.Name = 'Verdana'
-        Font.Style = []
-        ParentFont = False
-        TabOrder = 3
       end
     end
     object TS_ADC: TTabSheet
@@ -7178,6 +7445,7 @@ object IVchar: TIVchar
           ComPort = ComPortGDS
           ComProperty = cpPort
           AutoApply = True
+          Text = 'COM1'
           Style = csDropDownList
           Font.Charset = RUSSIAN_CHARSET
           Font.Color = clWindowText
@@ -7185,7 +7453,7 @@ object IVchar: TIVchar
           Font.Name = 'Arial'
           Font.Style = [fsBold]
           ItemHeight = 24
-          ItemIndex = -1
+          ItemIndex = 0
           ParentFont = False
           TabOrder = 0
         end
@@ -7197,6 +7465,7 @@ object IVchar: TIVchar
           ComPort = ComPortGDS
           ComProperty = cpBaudRate
           AutoApply = True
+          Text = '9600'
           Style = csDropDownList
           Font.Charset = RUSSIAN_CHARSET
           Font.Color = clWindowText
@@ -7204,7 +7473,7 @@ object IVchar: TIVchar
           Font.Name = 'Arial'
           Font.Style = [fsBold]
           ItemHeight = 24
-          ItemIndex = -1
+          ItemIndex = 7
           ParentFont = False
           TabOrder = 1
         end
@@ -7244,6 +7513,7 @@ object IVchar: TIVchar
           ComPort = ComPortGDS
           ComProperty = cpStopBits
           AutoApply = True
+          Text = '1'
           Style = csDropDownList
           Font.Charset = RUSSIAN_CHARSET
           Font.Color = clWindowText
@@ -7251,7 +7521,7 @@ object IVchar: TIVchar
           Font.Name = 'Arial'
           Font.Style = [fsBold]
           ItemHeight = 24
-          ItemIndex = -1
+          ItemIndex = 0
           ParentFont = False
           TabOrder = 4
         end
@@ -7277,6 +7547,7 @@ object IVchar: TIVchar
           ComPort = ComPortGDS
           ComProperty = cpParity
           AutoApply = True
+          Text = 'None'
           Style = csDropDownList
           Font.Charset = RUSSIAN_CHARSET
           Font.Color = clWindowText
@@ -7284,7 +7555,7 @@ object IVchar: TIVchar
           Font.Name = 'Arial'
           Font.Style = [fsBold]
           ItemHeight = 24
-          ItemIndex = -1
+          ItemIndex = 0
           ParentFont = False
           TabOrder = 6
         end

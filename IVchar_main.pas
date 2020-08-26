@@ -677,6 +677,25 @@ type
     B_oVolMeasVal: TButton;
     ST_oVolMeasVal: TStaticText;
     CB_oVolMeasVal: TComboBox;
+    GBad9833: TGroupBox;
+    GBad5752: TGroupBox;
+    PAD5752: TPanel;
+    GBad5752ChA: TGroupBox;
+    LKodRange5752chA: TLabel;
+    LOK5752chA: TLabel;
+    LOV5752chA: TLabel;
+    LValueRange5752chA: TLabel;
+    B5752ResetChA: TButton;
+    BOKset5752chA: TButton;
+    BOVset5752chA: TButton;
+    STOK5752chA: TStaticText;
+    STOV5752chA: TStaticText;
+    GBMeas5752chA: TGroupBox;
+    LMeas5752chA: TLabel;
+    BMeas5752chA: TButton;
+    STMD5752chA: TStaticText;
+    CBMeas5752chA: TComboBox;
+    RG5752chADiap: TRadioGroup;
 
     procedure FormCreate(Sender: TObject);
     procedure BConnectClick(Sender: TObject);
