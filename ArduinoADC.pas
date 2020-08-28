@@ -63,6 +63,11 @@ LSB - ціна найменшого розряду;
 Ureal = A + B * Umeasured;
 A та В в одиницях LSB}
 
+function IntToBin(Value: integer; Digits: integer=16): string;
+{представлення цілого у вигляді двійкового рядка,
+Digits - кількість цифр}
+
+
 implementation
 
 uses
@@ -184,6 +189,25 @@ begin
  if (HiByte and $80)>0 then
     temp:=-((not(temp)+$1)and $7fff);
  Result:=Linear(A,B,temp)*LSB;
+end;
+
+
+function IntToBin(Value: integer; Digits: integer=16): string;
+{представлення цілого у вигляді двійкового рядка,
+Digits - кількість цифр}
+var
+  i: integer;
+begin
+  result := '';
+  for i := 0 to Digits - 1 do
+    begin
+    if Value and (1 shl i) > 0 then
+      result := '1' + result
+    else
+      result := '0' + result;
+     if (((i+1) mod 4)=0) then Result:=' '+Result;
+
+    end;
 end;
 
 end.

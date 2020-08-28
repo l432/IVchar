@@ -83,7 +83,7 @@ end;
   private
    fDAC_Show:TDAC_Show;
   public
-   Constructor Create(ArdDAC:TArduinoDAC;
+   Constructor Create(ArdDAC:TArduinoDACbase;
                        PinLs: array of TPanel;
                        PinVariant:TStringList;
                        VData,KData:TStaticText;
@@ -413,7 +413,7 @@ end;
 
 { TArduinoDACShowNew }
 
-constructor TArduinoDACShow.Create(ArdDAC: TArduinoDAC;
+constructor TArduinoDACShow.Create(ArdDAC: TArduinoDACbase;
                                       PinLs: array of TPanel;
                                       PinVariant: TStringList;
                                       VData, KData: TStaticText;

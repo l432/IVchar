@@ -413,7 +413,6 @@ type
     STET122_Gain: TStaticText;
     BET1255_show_save: TButton;
     GBTMP102: TGroupBox;
-    SBGenerator: TSpeedButton;
     LDBtime: TLabel;
     STDBtime: TStaticText;
     GBLEDCon: TGroupBox;
@@ -679,7 +678,7 @@ type
     CB_oVolMeasVal: TComboBox;
     GBad9833: TGroupBox;
     GBad5752: TGroupBox;
-    PAD5752: TPanel;
+    PAD5752chA: TPanel;
     GBad5752ChA: TGroupBox;
     LKodRange5752chA: TLabel;
     LOK5752chA: TLabel;
@@ -696,6 +695,25 @@ type
     STMD5752chA: TStaticText;
     CBMeas5752chA: TComboBox;
     RG5752chADiap: TRadioGroup;
+    BPoff5752chA: TButton;
+    GBad5752ChB: TGroupBox;
+    LKodRange5752chB: TLabel;
+    LOK5752chB: TLabel;
+    LOV5752chB: TLabel;
+    LValueRange5752chB: TLabel;
+    B5752ResetChB: TButton;
+    BOKset5752chB: TButton;
+    BOVset5752chB: TButton;
+    STOK5752chB: TStaticText;
+    STOV5752chB: TStaticText;
+    GBMeas5752chB: TGroupBox;
+    LMeas5752chB: TLabel;
+    BMeas5752chB: TButton;
+    STMD5752chB: TStaticText;
+    CBMeas5752chB: TComboBox;
+    RG5752chBDiap: TRadioGroup;
+    BPoff5752chB: TButton;
+    PAD5752chB: TPanel;
 
     procedure FormCreate(Sender: TObject);
     procedure BConnectClick(Sender: TObject);
@@ -729,7 +747,6 @@ type
     procedure TermostatWatchDogTimer(Sender: TObject);
     procedure ControlWatchDogTimer(Sender: TObject);
     procedure BET1255_show_saveClick(Sender: TObject);
-    procedure SBGeneratorClick(Sender: TObject);
     procedure Button1Click(Sender: TObject);
     procedure RGIscVocModeClick(Sender: TObject);
   private
@@ -948,6 +965,7 @@ type
     TermoCouple_MD,TimeD_MD,Control_MD,TimeD_MD2,
     Isc_MD,Voc_MD:TMeasuringDevice;
         ET1255_DAC_MD:array[TET1255_DAC_ChanelNumber] of TMeasuringDevice;
+    AD5752chA_MD,AD5752chB_MD:TMeasuringDevice;
     SettingDevice,SettingDeviceControl,SettingTermostat,
     SettingDeviceLED:TSettingDevice;
     ArduinoSenders:TArrIArduinoSender;
@@ -1000,7 +1018,7 @@ var
 implementation
 
 uses
-  ArduinoADC, OlegFunction;
+  ArduinoADC, OlegFunction, AD5752R;
 
 {$R *.dfm}
 
@@ -2711,7 +2729,8 @@ begin
                  TMP102,
                  MLX90615,
                  D30_06,IscVocPinChanger,LEDOpenPinChanger,
-                 MCP3424,AD9833,STS21,ADT74x0,MCP9808]);
+                 MCP3424,AD9833,STS21,ADT74x0,MCP9808,
+                 AD5752_chA,AD5752_chB]);
  AnyObjectArray.Add(ArduinoSenders);
  RS232_MediatorTread:=TRS232_MediatorTread.Create(ComPort1,ArduinoSenders);
 
@@ -2722,6 +2741,8 @@ begin
 
  if (ComPort1.Connected)and(SettingDevice.ActiveInterface.Name=DACR2R.Name) then SettingDevice.Reset();
  if (ComPort1.Connected) then D30_06.Reset;
+ if (ComPort1.Connected) then AD5752_chA.Reset;
+ if (ComPort1.Connected) then AD5752_chB.Reset;
 // if (ComPort1.Connected) then AD9833.Reset;
 
 
@@ -3174,74 +3195,6 @@ begin
     end;
 end;
 
-procedure TIVchar.SBGeneratorClick(Sender: TObject);
-// var i:byte;
-//begin
-// if SBGenerator.Down then
-//  begin
-//    repeat
-//     for I := 0 to 20 do
-//       begin
-//         ET1255_DACs[0].Output(i*0.1+0.01*i);
-//         HRDelay(1);
-//         ET1255_DACs[0].Output(i*0.1);
-//         HRDelay(5);
-//       end;
-//      Application.ProcessMessages;
-//    until not(SBGenerator.Down);
-//  end
-//                     else
-//   ET1255_DACs[0].Reset();
-// var
-//    Vec:TVector;
-//    i,Np:word;
-//    Filtr:TVDigitalManipulation;
-begin
-showmessage(inttostr(ord(PacketEndChar)));
-////Np:=30;
-////i:=11;
-////showmessage(floattostr(sin(Pi*(i-(Np-1)/2.0)/2.0)/(Pi*(i-(Np-1)/2.0))));
-////  showmessage(floattostr(Log10((Power(10,0.1*Hz)-1)/(Power(10,0.1*Hc)-1))/2.0/Log10(wz/wc)));
-//  Vec:=TVector.Create;
-//
-////    SetLenVector(Vec,1000);
-////    for I := 0 to Vec^.n - 1 do Vec^.X[i]:=i;
-////     Vec^.Y[0]:=1;
-////    for I := 1 to 500 do Vec^.Y[i]:=0;
-////    for I := 501 to Vec^.n - 1 do Vec^.Y[i]:=1;
-////   VectorToGraph(Vec,PointET1255);
-////   showmessage('Ok to Continue');
-//
-//
-////   Filtr.LP_FIR_Chebyshev(20,0.4,false,20);
-////   VectorToGraph(Filtr.DataVector,PointET1255);
-//
-////   showmessage('Ok to Continue');
-//   Vec.ReadFromFile('f8v03shot.dat');
-//   Filtr:=TVDigitalManipulation.Create(Vec);
-//
-//   Vec.WriteToGraph(PointET1255);
-//   Vec.WriteToFile('o1.dat',10);
-//
-//   showmessage('Ok to Continue');
-//   Filtr.LP_UniformIIRfilter4k(0.025,true);
-//   Filtr.WriteToFile('b1.dat',10);
-//   Filtr.WriteToGraph(PointET1255);
-//   showmessage('Ok to Continue');
-//
-////
-////   showmessage('Ok to Continue');
-////   Vec.Chebyshev;
-////   VectorToGraph(Vec,PointET1255);
-//
-//
-//
-////   Filtr.DataVector.Write_File('olegHHH.dat',10);
-//
-//
-//  Filtr.Free;
-//  Vec.Free;
-end;
 
 procedure TIVchar.SBTAutoClick(Sender: TObject);
 begin
@@ -3575,7 +3528,24 @@ begin
                                  SBAD9833GenCh0,SBAD9833GenCh1,SBAD9833Stop,
                                  RGAD9833Mode);
 // AnyObjectArray.Add([AD9833{,D30_06{,DACR2R}]);
- ShowArray.Add([DACR2RShow,D30_06Show,AD9833Show]);
+
+  AD5752_ChanShowA:=TAD5752_ChanelShow.Create(AD5752_chA,
+                       PAD5752chA,
+                       STOV5752chA,STOK5752chA,
+                       LOV5752chA,LOK5752chA,LValueRange5752chA,LKodRange5752chA,
+                       BOVset5752chA,BOKset5752chA,B5752ResetChA,BPoff5752chA,
+                       NumberPins,RG5752chADiap);
+  AD5752_ChanShowB:=TAD5752_ChanelShow.Create(AD5752_chB,
+                       PAD5752chB,
+                       STOV5752chB,STOK5752chB,
+                       LOV5752chB,LOK5752chB,LValueRange5752chB,LKodRange5752chB,
+                       BOVset5752chB,BOKset5752chB,B5752ResetChB,BPoff5752chB,
+                       NumberPins,RG5752chBDiap);
+//  AD5752_ChanShowB:TAD5752_ChanelShow;
+
+
+ ShowArray.Add([DACR2RShow,D30_06Show,AD9833Show,
+          AD5752_ChanShowA,AD5752_ChanShowB]);
 end;
 
 procedure TIVchar.DACFree;
@@ -3799,13 +3769,22 @@ begin
   D30_MD:=TMeasuringDevice.Create(VandIDevices, CBMeasD30,'D30', LMeasD30, srPreciseVoltage);
   D30_MD.AddActionButton(BMeasD30);
 
+  AD5752chA_MD:=TMeasuringDevice.Create(VandIDevices,CBMeas5752chA,
+                             'AD5752A', LMeas5752chA, srPreciseVoltage);
+  AD5752chA_MD.AddActionButton(BMeas5752chA);
+
+  AD5752chB_MD:=TMeasuringDevice.Create(VandIDevices,CBMeas5752chB,
+                             'AD5752B', LMeas5752chB, srPreciseVoltage);
+  AD5752chB_MD.AddActionButton(BMeas5752chB);
+
   Isc_MD:=TMeasuringDevice.Create(VandIDevices, CBIscMD,'Isc' , LIscResult, srCurrent);
   Isc_MD.AddActionButton(BIscMeasure);
   Voc_MD:=TMeasuringDevice.Create(VandIDevices, CBVocMD,'Voc' , LVocResult, srPreciseVoltage);
   Voc_MD.AddActionButton(BVocMeasure);
 
 
-  ShowArray.Add([Current_MD,VoltageIV_MD,DACR2R_MD,D30_MD,Isc_MD,Voc_MD]);
+  ShowArray.Add([Current_MD,VoltageIV_MD,DACR2R_MD,D30_MD,
+                 Isc_MD,Voc_MD]);
 //  ShowArray.Add([Current_MDNew,VoltageIV_MDNew,DACR2R_MDNew,D30_MDNew,Isc_MDNew,Voc_MDNew]);
 
 //  SetLength(Devices,High(Devices)+9);
@@ -3844,7 +3823,7 @@ begin
 //  DevicesSet[1]:=DACR2R;
 //  DevicesSet[High(DevicesSet)]:=D30_06;
 
-  SetingDevices:=TArrIDAC.Create([Simulator,DACR2R,D30_06]);
+  SetingDevices:=TArrIDAC.Create([Simulator,DACR2R,D30_06,AD5752_chA,AD5752_chB]);
   AnyObjectArray.Add(SetingDevices);
 
   if ET1255isPresent then

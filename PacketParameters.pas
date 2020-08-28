@@ -112,7 +112,6 @@ begin
 //  aPacket[High(aPacket)-1]:=FCSCalculate(aPacket);
 //  aPacket[0]:=PacketBegin;
 //  aPacket[High(aPacket)]:=PacketEnd;
-
 end;
 
 Function PacketIsSend(ComPort:TComPort; report:string):boolean;

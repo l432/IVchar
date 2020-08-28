@@ -19,6 +19,7 @@
 #include "OlegINA226.h"
 #include "OlegSTS21.h"
 #include "OlegADT74x0.h"
+#include "OlegAD5752.h"
 
 DS18B20o ds18b20;
 CustomDevice cd;
@@ -33,6 +34,7 @@ MLX90615o mlx90615;
 INA226o ina226;
 STS21o  sts21;
 ADT74o adt74x0;
+AD5752o ad5752;
 
 void setup() {
     Serial.begin(115200);
@@ -81,6 +83,8 @@ void loop() {
       if (mlx90615.Begin()) goto start;
       if (ina226.Begin()) goto start;
       if (adt74x0.Begin()) goto start;
+      if (ad5752.Action()) goto start;
+
     }
   }
 start:
