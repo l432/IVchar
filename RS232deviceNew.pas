@@ -99,8 +99,9 @@ TRS232CustomDevice=class(TNamedInterfacedObject)
    procedure SetError(const Value:boolean);
    procedure SetMessageError(const Value:string);
    function GetData(Index: Integer): Byte;
+   procedure SetData(Index: integer; Value: byte);
   public
-   property Data[Index: Integer]:byte read GetData;
+   property Data[Index: Integer]:byte read GetData write SetData;
    property Error:boolean read fError write SetError;
    property MessageError:string read GetMessageError write SetMessageError;
    Constructor Create(Nm:string);
@@ -561,6 +562,13 @@ end;
 function TRS232CustomDevice.GetMessageError: string;
 begin
  Result:=fMessageError;
+end;
+
+procedure TRS232CustomDevice.SetData(Index: integer; Value:byte);
+begin
+  if Index>High(fData)
+   then  fData[Index]:=Value;
+  
 end;
 
 procedure TRS232CustomDevice.SetError(const Value: boolean);
