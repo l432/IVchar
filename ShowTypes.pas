@@ -72,10 +72,10 @@ TDAC_Show=class(TSimpleFreeAndAiniObject)
                       VData,KData:TStaticText;
                       VL, KL: TLabel;
                       VSB, KSB, RB: TButton);
-    procedure ReadFromIniFile(ConfigFile:TIniFile);override;//virtual;
-    procedure WriteToIniFile(ConfigFile:TIniFile);override;//virtual;
+   procedure ReadFromIniFile(ConfigFile:TIniFile);override;//virtual;
+   procedure WriteToIniFile(ConfigFile:TIniFile);override;//virtual;
 //    procedure Free;//override;
-    destructor Destroy;override;
+   destructor Destroy;override;
 end;
 
 

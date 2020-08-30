@@ -139,23 +139,22 @@ type
 
  TAD5752_ChanelShowNew=class(TDAC_Show)
    private
+    fChanel:TAD5752_ChanelNew;
     fDiapazonRG:TRadioGroup;
     fValueDiapazonLabel:TLabel;
     fKodDiapazonLabel:TLabel;
     fPowerOff:TButton;
-//    procedure DiapazonChange(Sender: TObject);
-//    procedure PowerOffOn(Sender: TObject);
+    procedure DiapazonChange(Sender: TObject);
+    procedure PowerOffOn(Sender: TObject);
    protected
-//    procedure CreatePinShow(PinLs: array of TPanel;
-//                             PinVariant:TStringList);override;
    public
-     Constructor Create(AD5752_Chanel:TAD5752_ChanelNew;
+    Constructor Create(AD5752_Chanel:TAD5752_ChanelNew;
                          VData,KData:TStaticText;
                          VL,KL,VDL,KDL:TLabel;
                          VSB,KSB,RB,OffB:TButton;
                          DiapRG:TRadioGroup);
-//    Procedure HookReadFromIniFile(ConfigFile:TIniFile);override;
-//    Procedure WriteToIniFile(ConfigFile:TIniFile);override;
+    procedure ReadFromIniFile(ConfigFile:TIniFile);override;
+    Procedure WriteToIniFile(ConfigFile:TIniFile);override;
  end;
 
  TAD5752_ChanelShow=class(TArduinoDACShow)
@@ -185,8 +184,12 @@ type
 
  var
     AD5752_Modul:TAD5752_Modul;
-    AD5752_chA,AD5752_chB:TAD5752_Chanel;
-    AD5752_ChanShowA,AD5752_ChanShowB:TAD5752_ChanelShow;
+    AD5752_chA,AD5752_chB:TAD5752_ChanelNew;
+    AD5752_ModulShow:TAD5752_ModulShow;
+    AD5752_ChanShowA,AD5752_ChanShowB:TAD5752_ChanelShowNew;
+
+//    AD5752_chA,AD5752_chB:TAD5752_Chanel;
+//    AD5752_ChanShowA,AD5752_ChanShowB:TAD5752_ChanelShow;
 implementation
 
 uses
@@ -657,28 +660,79 @@ constructor TAD5752_ChanelShowNew.Create(
 begin
   inherited Create(AD5752_Chanel,VData, KData,VL, KL, VSB, KSB, RB);
 
+ fChanel:=AD5752_Chanel;
  fDiapazonRG:=DiapRG;
  fDiapazonRG.Columns:=2;
  fDiapazonRG.Items.Clear;
  for I :=p050 to pm108 do
     fDiapazonRG.Items.Add(AD5752_OutputRangeLabels[i]);
-// fDiapazonRG.OnClick:=DiapazonChange;
-//
-// fValueDiapazonLabel:=VDL;
-// fValueDiapazonLabel.Font.Color:=clGreen;
-// fKodDiapazonLabel:=KDL;
-// fKodDiapazonLabel.Font.Color:=clGreen;
-//
-// fPowerOff:=OffB;
-// fPowerOff.Caption:='To power on';
-// fPowerOff.OnClick:=PowerOffOn;
+ fDiapazonRG.OnClick:=DiapazonChange;
 
+ fValueDiapazonLabel:=VDL;
+ fValueDiapazonLabel.Font.Color:=clGreen;
+ fKodDiapazonLabel:=KDL;
+ fKodDiapazonLabel.Font.Color:=clGreen;
+
+ fPowerOff:=OffB;
+ fPowerOff.OnClick:=PowerOffOn;
+
+end;
+
+procedure TAD5752_ChanelShowNew.DiapazonChange(Sender: TObject);
+begin
+ fChanel.Diapazon:=T5752OutputRange(fDiapazonRG.ItemIndex);
+ fValueDiapazonLabel.Caption:=AD5752_OutputRangeLabels[fChanel.Diapazon];
+ case fChanel.Diapazon of
+   p050,p100,p108:fKodDiapazonLabel.Caption:=AD5752_OutputRangeKodLabels[0];
+   else fKodDiapazonLabel.Caption:=AD5752_OutputRangeKodLabels[1];
+ end;
+
+ if fChanel.Power
+  then fPowerOff.Caption:='To power off'
+  else fPowerOff.Caption:='To power on';
+end;
+
+procedure TAD5752_ChanelShowNew.PowerOffOn(Sender: TObject);
+begin
+  if fChanel.Power
+  then
+   begin
+    fChanel.PowerOff;
+    fPowerOff.Caption:='To power on';
+   end
+  else
+   begin
+    fChanel.PowerOn;
+    fPowerOff.Caption:='To power off';
+   end
+end;
+
+procedure TAD5752_ChanelShowNew.ReadFromIniFile(ConfigFile: TIniFile);
+  var TempItemIndex:integer;
+begin
+ inherited ReadFromIniFile(ConfigFile);
+ TempItemIndex := ConfigFile.ReadInteger(fChanel.Name, 'Diap', -1);
+ if (TempItemIndex > -1) and (TempItemIndex < fDiapazonRG.Items.Count) then
+  begin
+   fDiapazonRG.ItemIndex:=TempItemIndex;
+   DiapazonChange(nil);
+  end;
+end;
+
+procedure TAD5752_ChanelShowNew.WriteToIniFile(ConfigFile: TIniFile);
+begin
+ inherited WriteToIniFile(ConfigFile);
+ if fChanel.Name='' then Exit;
+ ConfigFile.WriteInteger(fChanel.Name, 'Diap', fDiapazonRG.ItemIndex);
 end;
 
 initialization
    AD5752_Modul:=TAD5752_Modul.Create('AD5752');
-   AD5752_chA:=TAD5752_Chanel.Create(chA);
-   AD5752_chB:=TAD5752_Chanel.Create(chB);
+   AD5752_chA:=TAD5752_ChanelNew.Create(AD5752_Modul,chA);
+   AD5752_chB:=TAD5752_ChanelNew.Create(AD5752_Modul,chB);
+
+//   AD5752_chA:=TAD5752_Chanel.Create(chA);
+//   AD5752_chB:=TAD5752_Chanel.Create(chB);
 finalization
   AD5752_chA.Free;
   AD5752_chB.Free;

@@ -678,7 +678,7 @@ type
     CB_oVolMeasVal: TComboBox;
     GBad9833: TGroupBox;
     GBad5752: TGroupBox;
-    PAD5752chA: TPanel;
+    PAD5752Mod: TPanel;
     GBad5752ChA: TGroupBox;
     LKodRange5752chA: TLabel;
     LOK5752chA: TLabel;
@@ -2730,7 +2730,8 @@ begin
                  MLX90615,
                  D30_06,IscVocPinChanger,LEDOpenPinChanger,
                  MCP3424,AD9833,STS21,ADT74x0,MCP9808,
-                 AD5752_chA,AD5752_chB]);
+                 AD5752_Modul]);
+//                 AD5752_chA,AD5752_chB]);
  AnyObjectArray.Add(ArduinoSenders);
  RS232_MediatorTread:=TRS232_MediatorTread.Create(ComPort1,ArduinoSenders);
 
@@ -3529,23 +3530,40 @@ begin
                                  RGAD9833Mode);
 // AnyObjectArray.Add([AD9833{,D30_06{,DACR2R}]);
 
-  AD5752_ChanShowA:=TAD5752_ChanelShow.Create(AD5752_chA,
-                       PAD5752chA,
+  AD5752_ModulShow:=TAD5752_ModulShow.Create(AD5752_Modul,
+                                     PAD5752Mod,NumberPins);
+
+  AD5752_ChanShowA:=TAD5752_ChanelShowNew.Create(AD5752_chA,
                        STOV5752chA,STOK5752chA,
                        LOV5752chA,LOK5752chA,LValueRange5752chA,LKodRange5752chA,
                        BOVset5752chA,BOKset5752chA,B5752ResetChA,BPoff5752chA,
-                       NumberPins,RG5752chADiap);
-  AD5752_ChanShowB:=TAD5752_ChanelShow.Create(AD5752_chB,
-                       PAD5752chB,
+                       RG5752chADiap);
+
+  AD5752_ChanShowB:=TAD5752_ChanelShowNew.Create(AD5752_chB,
                        STOV5752chB,STOK5752chB,
                        LOV5752chB,LOK5752chB,LValueRange5752chB,LKodRange5752chB,
                        BOVset5752chB,BOKset5752chB,B5752ResetChB,BPoff5752chB,
-                       NumberPins,RG5752chBDiap);
-//  AD5752_ChanShowB:TAD5752_ChanelShow;
+                       RG5752chBDiap);
+
+
+//  AD5752_ChanShowA:=TAD5752_ChanelShow.Create(AD5752_chA,
+//                       PAD5752chA,
+//                       STOV5752chA,STOK5752chA,
+//                       LOV5752chA,LOK5752chA,LValueRange5752chA,LKodRange5752chA,
+//                       BOVset5752chA,BOKset5752chA,B5752ResetChA,BPoff5752chA,
+//                       NumberPins,RG5752chADiap);
+//  AD5752_ChanShowB:=TAD5752_ChanelShow.Create(AD5752_chB,
+//                       PAD5752chB,
+//                       STOV5752chB,STOK5752chB,
+//                       LOV5752chB,LOK5752chB,LValueRange5752chB,LKodRange5752chB,
+//                       BOVset5752chB,BOKset5752chB,B5752ResetChB,BPoff5752chB,
+//                       NumberPins,RG5752chBDiap);
+
 
 
  ShowArray.Add([DACR2RShow,D30_06Show,AD9833Show,
-          AD5752_ChanShowA,AD5752_ChanShowB]);
+                AD5752_ModulShow,
+                AD5752_ChanShowA,AD5752_ChanShowB]);
 end;
 
 procedure TIVchar.DACFree;
