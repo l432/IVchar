@@ -53,6 +53,12 @@ void ControlBlink() {
   delay(500);
 }
 
+void ShortDelay(){
+  delayMicroseconds(50);
+}
+
+
+
 byte PinToInterruptNumber(byte PinNumber) {
   if (PinNumber == 2) return 0;
   if (PinNumber == 3) return 1;
@@ -67,7 +73,7 @@ byte PinAndID::NumberByte = 0;
 byte PinAndID::PinControl = 0;
 byte PinAndID::DeviceId = 0;
 byte PinAndID::ActionId = 0;
-byte PinAndID::DataFromPC[PacketMaxLength] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ,0,0};
+byte PinAndID::DataFromPC[PacketMaxLength] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 , 0, 0};
 
 
 void PinAndID::CreateAndSendPacket(byte DDATA[], int n) {
@@ -80,14 +86,14 @@ void PinAndID::CreateAndSendPacket(byte DDATA[], int n) {
   byte data[n + 4 + ProblemByteNumber + 1];
   data[0] = sizeof(data);
   data[1] = ProblemByteNumber;
-  byte counter=2;
+  byte counter = 2;
   for (byte i = 0; i < n; i++)
   {
     if (DDATA[i] == PacketEnd) {
-    DDATA[i]--;
-    data[counter++]=i+4+ProblemByteNumber;
+      DDATA[i]--;
+      data[counter++] = i + 4 + ProblemByteNumber;
     }
-  }  
+  }
   data[counter++] = DeviceId;
   data[counter++] = ActionId;
   for (byte i = 0; i < n; i++)

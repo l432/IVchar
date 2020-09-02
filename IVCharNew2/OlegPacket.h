@@ -15,6 +15,8 @@ byte FCS (byte Data[], int n);
 bool SendParameters();
 void SendPacket(byte Data[], int n);
 void ControlBlink();
+void ShortDelay();
+
 byte PinToInterruptNumber(byte PinNumber);
 //void CreateAndSendPacket(byte DDATA[], int n);
 //void ShortDelay();

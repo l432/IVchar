@@ -23,7 +23,7 @@ const
 
 
 type
-  IArduinoSender = interface
+  IArduinoSender = interface (IName)
    ['{4E78ACBE-DD15-483D-8493-4B08E3E94454}']
     function GetisNeededComPort:boolean;
     procedure SetisNeededComPort(const Value:boolean);
@@ -1078,6 +1078,7 @@ end;
 
 procedure TArduinoDACbase.Reset;
 begin
+ fOutputValue:=0;
  DataToSendFromReset();
  isNeededComPortState();
 end;

@@ -68,7 +68,7 @@ type
                       PinVariant:TStringList);
  end;
 
-  TAD5752_ChanelNew=class(TNamedInterfacedObject,IDAC)
+  TAD5752_Chanel=class(TNamedInterfacedObject,IDAC)
     {базовий клас для ЦАП, що керується
     за допомогою Arduino    }
   private
@@ -104,42 +104,14 @@ type
    Procedure OutputInt(Kod:integer);
    procedure PowerOff();
    procedure PowerOn();
-   destructor Destroy; override;
+//   destructor Destroy; override;
   end;
 
 
- TAD5752_Chanel=class(TArduinoDACbase)
-  private
-   fChanNumber:T5752ChanNumber;
-   fDiapazon:T5752OutputRange;
-   fSettedDiapazon:T5752OutputRange;
-   fGain:double;
-   fPowerOn:boolean;
-   fDacByte:byte;
-   fRangeByte:byte;
-   fPowerOnByte:byte;
-   fPowerOffByte:byte;
-   procedure SetDiapazon(D:T5752OutputRange);
-  protected
-   procedure CreateHook;override;
-   procedure PinsCreate();override;
-   function NormedVoltage(Voltage:double):double;override;
-   function  VoltageToKod(Voltage:double):integer;override;
-   procedure PrepareAction(Voltage:double);override;
-   procedure DataToSendFromKod(Kod:Integer);override;
-   procedure DataToSendFromReset;override;
-  public
-   property Diapazon:T5752OutputRange read fDiapazon write SetDiapazon;
-   property Power:boolean read fPowerOn;
-   Constructor Create(ChanNumber:T5752ChanNumber);
-   procedure PowerOff();
-   procedure PowerOn();
-   destructor Destroy; override;
- end;
 
- TAD5752_ChanelShowNew=class(TDAC_Show)
+ TAD5752_ChanelShow=class(TDAC_Show)
    private
-    fChanel:TAD5752_ChanelNew;
+    fChanel:TAD5752_Chanel;
     fDiapazonRG:TRadioGroup;
     fValueDiapazonLabel:TLabel;
     fKodDiapazonLabel:TLabel;
@@ -148,7 +120,7 @@ type
     procedure PowerOffOn(Sender: TObject);
    protected
    public
-    Constructor Create(AD5752_Chanel:TAD5752_ChanelNew;
+    Constructor Create(AD5752_Chanel:TAD5752_Chanel;
                          VData,KData:TStaticText;
                          VL,KL,VDL,KDL:TLabel;
                          VSB,KSB,RB,OffB:TButton;
@@ -157,283 +129,20 @@ type
     Procedure WriteToIniFile(ConfigFile:TIniFile);override;
  end;
 
- TAD5752_ChanelShow=class(TArduinoDACShow)
-   private
-    fDiapazonRG:TRadioGroup;
-    fValueDiapazonLabel:TLabel;
-    fKodDiapazonLabel:TLabel;
-    fPowerOff:TButton;
-    procedure DiapazonChange(Sender: TObject);
-    procedure PowerOffOn(Sender: TObject);
-   protected
-    procedure CreatePinShow(PinLs: array of TPanel;
-                             PinVariant:TStringList);override;
-   public
-     Constructor Create(AD5752_Chanel:TAD5752_Chanel;
-                         CPL:TPanel;
-                         VData,KData:TStaticText;
-                         VL,KL,VDL,KDL:TLabel;
-                         VSB,KSB,RB,OffB:TButton;
-                         PinVariant:TStringList;
-                         DiapRG:TRadioGroup);
-    Procedure HookReadFromIniFile(ConfigFile:TIniFile);override;
-    Procedure WriteToIniFile(ConfigFile:TIniFile);override;
- end;
-
 
 
  var
     AD5752_Modul:TAD5752_Modul;
-    AD5752_chA,AD5752_chB:TAD5752_ChanelNew;
+    AD5752_chA,AD5752_chB:TAD5752_Chanel;
     AD5752_ModulShow:TAD5752_ModulShow;
-    AD5752_ChanShowA,AD5752_ChanShowB:TAD5752_ChanelShowNew;
+    AD5752_ChanShowA,AD5752_ChanShowB:TAD5752_ChanelShow;
 
-//    AD5752_chA,AD5752_chB:TAD5752_Chanel;
-//    AD5752_ChanShowA,AD5752_ChanShowB:TAD5752_ChanelShow;
 implementation
 
 uses
   PacketParameters, Math, Graphics, Windows, Dialogs,
-  SysUtils;
+  SysUtils, OlegFunction;
 
-{ TAD5752_Chanel }
-
-constructor TAD5752_Chanel.Create(ChanNumber: T5752ChanNumber);
-begin
- inherited Create(AD5752_ChanelNames[ChanNumber]);
- fChanNumber:=ChanNumber;
- case fChanNumber of
-   chA:begin
-        fDacByte:=$00;
-        fRangeByte:=$08;
-        fPowerOnByte:=$13;
-        fPowerOffByte:=$12;
-       end;
-   chB:begin
-        fDacByte:=$02;
-        fRangeByte:=$A;
-        fPowerOnByte:=$1C;
-        fPowerOffByte:=$18;
-       end;
- end;
-end;
-
-procedure TAD5752_Chanel.CreateHook;
-begin
-  inherited CreateHook;
-  fSetterKod:=AD5752Command;
-  fPowerOn:=False;
-  fSettedDiapazon:=NA;
-  SetLength(fData,2);
-  Diapazon:=p050;
-  fKodMaxValue:=AD5752_MaxKod;
-  fOutputValue:=0;
-end;
-
-procedure TAD5752_Chanel.DataToSendFromKod(Kod: Integer);
-begin
-  SetLength(fData, High(fData) + 4);
-  fData[High(fData) - 2] := fDacByte;
-  fData[High(fData)- 1] := ((Kod shr 8) and $FF);
-  fData[High(fData)]:=(Kod and $FF)
-end;
-
-procedure TAD5752_Chanel.DataToSendFromReset;
-begin
-//  SHOWmessage(inttostr(fData[1]));
-  SetLength(fData,5);
-  fData[2] := fDacByte;
-  fData[3] := $00;
-  fData[4] := $00;
-end;
-
-destructor TAD5752_Chanel.Destroy;
- var doSomething:boolean;
-begin
- doSomething:=False;
- SetLength(fData,2);
- if fOutputValue<>0 then
-   begin
-    SetLength(fData, High(fData) + 4);
-    fData[High(fData) - 2] := fDacByte;
-    fData[High(fData)- 1] := $00;
-    fData[High(fData)]:=$00;
-    fOutputValue:=0;
-    doSomething:=True;
-   end;
- if fPowerOn then
-   begin
-    SetLength(fData, High(fData) + 3);
-    fData[High(fData)- 1] := $10;
-    fData[High(fData)]:= fPowerOffByte;
-    fPowerOn:=False;
-    doSomething:=True;
-   end;
- if doSomething then
-  begin
-   isNeededComPortState();
-   sleep(50);
-  end;
- inherited;
-end;
-
-function TAD5752_Chanel.NormedVoltage(Voltage: double): double;
-begin
- case fDiapazon of
-   p050,p100,p108: Result :=  EnsureRange(Voltage,0,fVoltageMaxValue);
-   else Result :=  EnsureRange(Voltage,-fVoltageMaxValue,fVoltageMaxValue)
- end;
-end;
-
-procedure TAD5752_Chanel.PinsCreate;
-begin
-  Pins := TPins.Create(Name,1);
-//  Pins := TPins.Create(Name,['Control'],1);
-end;
-
-
-procedure TAD5752_Chanel.PowerOff;
-begin
- SetLength(fData,4);
- fData[2] := $10;
- fData[3]:= fPowerOffByte;
- fPowerOn:=false;
- isNeededComPortState();
-end;
-
-procedure TAD5752_Chanel.PowerOn;
-begin
- SetLength(fData,4);
- fData[2] := $10;
- fData[3]:= fPowerOnByte;
- fPowerOn:=True;
- isNeededComPortState();
-end;
-
-procedure TAD5752_Chanel.PrepareAction(Voltage: double);
-begin
- SetLength(fData,2);
- if fSettedDiapazon<>fDiapazon then
-   begin
-    SetLength(fData, High(fData) + 3);
-    fData[High(fData)- 1] := fRangeByte;
-    fData[High(fData)]:= AD5752_OutputRangeKod[fDiapazon];
-    fSettedDiapazon:=fDiapazon;
-   end;
- if not(fPowerOn) then
-   begin
-    SetLength(fData, High(fData) + 3);
-    fData[High(fData)- 1] := $10;
-    fData[High(fData)]:= fPowerOnByte;
-    fPowerOn:=True;
-   end;
-
-end;
-
-procedure TAD5752_Chanel.SetDiapazon(D: T5752OutputRange);
-begin
- fDiapazon:=D;
- case fDiapazon of
-   p050,p100,p108: fVoltageMaxValue:=AD5752_OutputRangeMaxVoltage[fDiapazon]*65535/65536;
-   pm050,pm100,pm108: fVoltageMaxValue:=AD5752_OutputRangeMaxVoltage[fDiapazon]*32767/32768;
-   NA: fVoltageMaxValue:=0;
- end;
- fGain:=AD5752_GainOutputRange[fDiapazon];
-end;
-
-function TAD5752_Chanel.VoltageToKod(Voltage: double): integer;
-begin
- Result:=round(Voltage/AD5752_REFIN/fGain*(fKodMaxValue+1));
- if Result<0 then Result:=(not(abs(Result)))and $FFFF;
-end;
-
-{ TAD5752_ChanelShow }
-
-constructor TAD5752_ChanelShow.Create(
-                   AD5752_Chanel: TAD5752_Chanel;
-                   CPL: TPanel;
-                   VData, KData: TStaticText;
-                   VL, KL, VDL, KDL: TLabel;
-                   VSB, KSB, RB, OffB: TButton;
-                   PinVariant: TStringList;
-                   DiapRG: TRadioGroup);
- var i:T5752OutputRange;
-begin
- inherited Create(AD5752_Chanel,[CPL],PinVariant,VData, KData, VL, KL, VSB, KSB, RB);
-
- fDiapazonRG:=DiapRG;
- fDiapazonRG.Columns:=2;
- fDiapazonRG.Items.Clear;
- for I :=p050 to pm108 do
-    fDiapazonRG.Items.Add(AD5752_OutputRangeLabels[i]);
- fDiapazonRG.OnClick:=DiapazonChange;
-
- fValueDiapazonLabel:=VDL;
- fValueDiapazonLabel.Font.Color:=clGreen;
- fKodDiapazonLabel:=KDL;
- fKodDiapazonLabel.Font.Color:=clGreen;
-
- fPowerOff:=OffB;
- fPowerOff.Caption:='To power on';
- fPowerOff.OnClick:=PowerOffOn;
-end;
-
-procedure TAD5752_ChanelShow.CreatePinShow(PinLs: array of TPanel;
-  PinVariant: TStringList);
-begin
-  PinShow:=TOnePinsShow.Create(fArduinoSetter.Pins,PinLs[0],PinVariant);
-end;
-
-procedure TAD5752_ChanelShow.DiapazonChange(Sender: TObject);
-begin
- (fArduinoSetter as TAD5752_Chanel).Diapazon:=T5752OutputRange(fDiapazonRG.ItemIndex);
- fValueDiapazonLabel.Caption:=AD5752_OutputRangeLabels[(fArduinoSetter as TAD5752_Chanel).Diapazon];
- case (fArduinoSetter as TAD5752_Chanel).Diapazon of
-   p050,p100,p108:fKodDiapazonLabel.Caption:=AD5752_OutputRangeKodLabels[0];
-   else fKodDiapazonLabel.Caption:=AD5752_OutputRangeKodLabels[1];
- end;
- if (fArduinoSetter as TAD5752_Chanel).Power
-  then
-    fPowerOff.Caption:='To power on'
-  else
-     fPowerOff.Caption:='To power off';
-end;
-
-procedure TAD5752_ChanelShow.HookReadFromIniFile(ConfigFile: TIniFile);
- var TempItemIndex:integer;
-begin
- inherited HookReadFromIniFile(ConfigFile);
- if PinShow.Pins.Name='' then Exit;
- TempItemIndex := ConfigFile.ReadInteger(PinShow.Pins.Name, 'Diap', -1);
- if (TempItemIndex > -1) and (TempItemIndex < fDiapazonRG.Items.Count) then
-  begin
-   fDiapazonRG.ItemIndex:=TempItemIndex;
-   DiapazonChange(nil);
-  end;
-end;
-
-procedure TAD5752_ChanelShow.PowerOffOn(Sender: TObject);
-begin
-  if (fArduinoSetter as TAD5752_Chanel).Power
-  then
-   begin
-    (fArduinoSetter as TAD5752_Chanel).PowerOff;
-    fPowerOff.Caption:='To power on';
-   end
-  else
-   begin
-    (fArduinoSetter as TAD5752_Chanel).PowerOn;
-     fPowerOff.Caption:='To power off';
-   end
-
-end;
-
-procedure TAD5752_ChanelShow.WriteToIniFile(ConfigFile: TIniFile);
-begin
- inherited WriteToIniFile(ConfigFile);
- if PinShow.Pins.Name='' then Exit;
- ConfigFile.WriteInteger(PinShow.Pins.Name, 'Diap', fDiapazonRG.ItemIndex);
-end;
 
 { TAD5752_Modul }
 
@@ -475,7 +184,7 @@ end;
 
 { TAD5752_ChanelNew }
 
-constructor TAD5752_ChanelNew.Create(Modul: TAD5752_Modul;
+constructor TAD5752_Chanel.Create(Modul: TAD5752_Modul;
   ChanNumber: T5752ChanNumber);
 begin
  inherited Create;
@@ -504,55 +213,56 @@ begin
   fOutputValue:=0;
 end;
 
-procedure TAD5752_ChanelNew.DataToSendFromKod(Kod: Integer);
+procedure TAD5752_Chanel.DataToSendFromKod(Kod: Integer);
 begin
   fModul.AddData([fDacByte,
                   ((Kod shr 8) and $FF),
                   (Kod and $FF)]);
 end;
 
-procedure TAD5752_ChanelNew.DataToSendFromReset;
+procedure TAD5752_Chanel.DataToSendFromReset;
 begin
+  fOutputValue:=0;
   fModul.ClearData;
   fModul.AddData([fDacByte,$00,$00]);
 end;
 
-destructor TAD5752_ChanelNew.Destroy;
- var doSomething:boolean;
-begin
- doSomething:=False;
- fModul.ClearData;
- if fOutputValue<>0 then
-   begin
-    fModul.AddData([fDacByte,$00,$00]);
-    fOutputValue:=0;
-    doSomething:=True;
-   end;
- if fPowerOn then
-   begin
-    fModul.AddData([$10,fPowerOffByte]);
-    fPowerOn:=False;
-    doSomething:=True;
-   end;
- if doSomething then
-  begin
-   fModul.isNeededComPortState();
-   sleep(50);
-  end;
- inherited;
-end;
+//destructor TAD5752_Chanel.Destroy;
+// var doSomething:boolean;
+//begin
+// doSomething:=False;
+// fModul.ClearData;
+// if fOutputValue<>0 then
+//   begin
+//    fModul.AddData([fDacByte,$00,$00]);
+//    fOutputValue:=0;
+//    doSomething:=True;
+//   end;
+// if fPowerOn then
+//   begin
+//    fModul.AddData([$10,fPowerOffByte]);
+//    fPowerOn:=False;
+//    doSomething:=True;
+//   end;
+// if doSomething then
+//  begin
+//   fModul.isNeededComPortState();
+//   sleep(50);
+//  end;
+// inherited;
+//end;
 
-function TAD5752_ChanelNew.GetOutputValue: double;
+function TAD5752_Chanel.GetOutputValue: double;
 begin
    Result:=fOutputValue;
 end;
 
-function TAD5752_ChanelNew.NormedKod(Kod: Integer): integer;
+function TAD5752_Chanel.NormedKod(Kod: Integer): integer;
 begin
  Result :=  EnsureRange(Kod,0,fKodMaxValue);
 end;
 
-function TAD5752_ChanelNew.NormedVoltage(Voltage: double): double;
+function TAD5752_Chanel.NormedVoltage(Voltage: double): double;
 begin
  case fDiapazon of
    p050,p100,p108: Result :=  EnsureRange(Voltage,0,fVoltageMaxValue);
@@ -560,7 +270,7 @@ begin
  end;
 end;
 
-procedure TAD5752_ChanelNew.Output(Voltage: double);
+procedure TAD5752_Chanel.Output(Voltage: double);
 begin
   if Voltage=ErResult then Exit;
  fOutputValue:=NormedVoltage(Voltage);
@@ -569,7 +279,7 @@ begin
  fModul.isNeededComPortState();
 end;
 
-procedure TAD5752_ChanelNew.OutputInt(Kod: integer);
+procedure TAD5752_Chanel.OutputInt(Kod: integer);
  var NKod:integer;
 begin
  Nkod:=NormedKod(Kod);
@@ -579,7 +289,7 @@ begin
  fModul.isNeededComPortState();
 end;
 
-procedure TAD5752_ChanelNew.PowerOff;
+procedure TAD5752_Chanel.PowerOff;
 begin
  fModul.ClearData;
  fModul.AddData([$10,fPowerOffByte]);
@@ -587,7 +297,7 @@ begin
  fModul.isNeededComPortState();
 end;
 
-procedure TAD5752_ChanelNew.PowerOn;
+procedure TAD5752_Chanel.PowerOn;
 begin
  fModul.ClearData;
  fModul.AddData([$10,fPowerOnByte]);
@@ -595,7 +305,7 @@ begin
  fModul.isNeededComPortState();
 end;
 
-procedure TAD5752_ChanelNew.PrepareAction(Voltage: double);
+procedure TAD5752_Chanel.PrepareAction(Voltage: double);
 begin
  fModul.ClearData;
  if fSettedDiapazon<>fDiapazon then
@@ -611,13 +321,13 @@ begin
    end;
 end;
 
-procedure TAD5752_ChanelNew.Reset;
+procedure TAD5752_Chanel.Reset;
 begin
  DataToSendFromReset();
  fModul.isNeededComPortState();
 end;
 
-procedure TAD5752_ChanelNew.SetDiapazon(D: T5752OutputRange);
+procedure TAD5752_Chanel.SetDiapazon(D: T5752OutputRange);
 begin
  fDiapazon:=D;
  case fDiapazon of
@@ -628,7 +338,7 @@ begin
  fGain:=AD5752_GainOutputRange[fDiapazon];
 end;
 
-function TAD5752_ChanelNew.VoltageToKod(Voltage: double): integer;
+function TAD5752_Chanel.VoltageToKod(Voltage: double): integer;
 begin
  Result:=round(Voltage/AD5752_REFIN/fGain*(fKodMaxValue+1));
  if Result<0 then Result:=(not(abs(Result)))and $FFFF;
@@ -650,8 +360,8 @@ end;
 
 { TAD5752_ChanelShowNew }
 
-constructor TAD5752_ChanelShowNew.Create(
-              AD5752_Chanel: TAD5752_ChanelNew;
+constructor TAD5752_ChanelShow.Create(
+              AD5752_Chanel: TAD5752_Chanel;
               VData, KData: TStaticText;
               VL, KL, VDL, KDL: TLabel;
               VSB, KSB, RB, OffB: TButton;
@@ -678,7 +388,7 @@ begin
 
 end;
 
-procedure TAD5752_ChanelShowNew.DiapazonChange(Sender: TObject);
+procedure TAD5752_ChanelShow.DiapazonChange(Sender: TObject);
 begin
  fChanel.Diapazon:=T5752OutputRange(fDiapazonRG.ItemIndex);
  fValueDiapazonLabel.Caption:=AD5752_OutputRangeLabels[fChanel.Diapazon];
@@ -692,7 +402,7 @@ begin
   else fPowerOff.Caption:='To power on';
 end;
 
-procedure TAD5752_ChanelShowNew.PowerOffOn(Sender: TObject);
+procedure TAD5752_ChanelShow.PowerOffOn(Sender: TObject);
 begin
   if fChanel.Power
   then
@@ -707,7 +417,7 @@ begin
    end
 end;
 
-procedure TAD5752_ChanelShowNew.ReadFromIniFile(ConfigFile: TIniFile);
+procedure TAD5752_ChanelShow.ReadFromIniFile(ConfigFile: TIniFile);
   var TempItemIndex:integer;
 begin
  inherited ReadFromIniFile(ConfigFile);
@@ -719,7 +429,7 @@ begin
   end;
 end;
 
-procedure TAD5752_ChanelShowNew.WriteToIniFile(ConfigFile: TIniFile);
+procedure TAD5752_ChanelShow.WriteToIniFile(ConfigFile: TIniFile);
 begin
  inherited WriteToIniFile(ConfigFile);
  if fChanel.Name='' then Exit;
@@ -728,11 +438,9 @@ end;
 
 initialization
    AD5752_Modul:=TAD5752_Modul.Create('AD5752');
-   AD5752_chA:=TAD5752_ChanelNew.Create(AD5752_Modul,chA);
-   AD5752_chB:=TAD5752_ChanelNew.Create(AD5752_Modul,chB);
+   AD5752_chA:=TAD5752_Chanel.Create(AD5752_Modul,chA);
+   AD5752_chB:=TAD5752_Chanel.Create(AD5752_Modul,chB);
 
-//   AD5752_chA:=TAD5752_Chanel.Create(chA);
-//   AD5752_chB:=TAD5752_Chanel.Create(chB);
 finalization
   AD5752_chA.Free;
   AD5752_chB.Free;

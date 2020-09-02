@@ -12,18 +12,16 @@
 class CustomDevice: public PinAndID
 {
   private:
-    void ShortDelay() {
-      delayMicroseconds(50);
-    }
+//    void ShortDelay() {
+//      delayMicroseconds(50);
+//    }
 
     void GateOpen() {
-//      digitalWrite(Data3, LOW);
       digitalWrite(DataFromPC[3], LOW);
       ShortDelay();
     }
 
     void GateClose() {
-//      digitalWrite(Data3, HIGH);
         digitalWrite(DataFromPC[3], HIGH);
        ShortDelay();
     }

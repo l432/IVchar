@@ -493,8 +493,8 @@ type
     BD30Reset: TButton;
     BOKsetD30: TButton;
     BOVsetD30: TButton;
-    PD30PinC: TPanel;
-    PD30PinG: TPanel;
+    PD30PinVol: TPanel;
+    PD30PinCur: TPanel;
     RGD30: TRadioGroup;
     LOVD30: TLabel;
     STOVD30: TStaticText;
@@ -713,7 +713,7 @@ type
     CBMeas5752chB: TComboBox;
     RG5752chBDiap: TRadioGroup;
     BPoff5752chB: TButton;
-    PAD5752chB: TPanel;
+    PD30PinGate: TPanel;
 
     procedure FormCreate(Sender: TObject);
     procedure BConnectClick(Sender: TObject);
@@ -773,9 +773,9 @@ type
     procedure VoltmetrsCreate;
     procedure ObjectsFree;
     procedure DACCreate;
-    procedure DACFree;
+//    procedure DACFree;
     procedure DACReadFromIniFileAndToForm;
-    procedure DACWriteToIniFile;
+//    procedure DACWriteToIniFile;
     procedure TestVarCreate;
     procedure TestVarFree;
     procedure DevicesCreate;
@@ -860,6 +860,7 @@ type
     procedure INA226Create;
     procedure GDS_Create;
     procedure SaveIVMeasurementResults(FileName: string; DataVector:TVector);
+    procedure DACReset;
   public
     TestVar2:TINA226_Channel;
 //     TestVar:TINA226_Module;
@@ -2322,6 +2323,21 @@ begin
   SaveCommentsFile(FileName);
 end;
 
+procedure TIVchar.DACReset;
+begin
+
+  if (ComPort1.Connected) and (DACR2R.OutputValue <> 0) then
+    DACR2R.Reset;
+  if (ComPort1.Connected) and (D30_06.OutputValue <> 0) then
+    D30_06.Reset;
+  if (ComPort1.Connected) and (AD5752_chB.OutputValue <> 0) then
+    AD5752_chB.Reset;
+  if (ComPort1.Connected) and (AD5752_chA.OutputValue <> 0) then
+    AD5752_chA.Reset;
+  if (ComPort1.Connected) and (AD9833.Mode <> ad9833_mode_off) then
+    AD9833.Reset;
+end;
+
 procedure TIVchar.BConnectClick(Sender: TObject);
 begin
  try
@@ -2741,11 +2757,8 @@ begin
 
 
  if (ComPort1.Connected)and(SettingDevice.ActiveInterface.Name=DACR2R.Name) then SettingDevice.Reset();
- if (ComPort1.Connected) then D30_06.Reset;
- if (ComPort1.Connected) then AD5752_chA.Reset;
- if (ComPort1.Connected) then AD5752_chB.Reset;
-// if (ComPort1.Connected) then AD9833.Reset;
 
+  if (ComPort1.Connected) then D30_06.Reset;
 
 end;
 
@@ -2757,9 +2770,7 @@ begin
 
  if assigned(DependTimer) then DependTimer.Free;
 
- DACWriteToIniFile();
-// DACFree();
-// ObjectsFree();
+ DACReset;
 
  ConfigFile.EraseSection(DoubleConstantSection);
  PinsWriteToIniFile;
@@ -2775,7 +2786,7 @@ begin
 
 
 
- DACFree();
+// DACFree();
  ObjectsFree();
              end;
   ConfigFile.Free;
@@ -3515,7 +3526,7 @@ begin
                                  BDACR2RReset, NumberPins);
 
 //  D30_06:=TD30_06.Create;
-  D30_06Show:=TD30_06Show.Create(D30_06,PD30PinC,PD30PinG,
+  D30_06Show:=TD30_06Show.Create(D30_06,PD30PinVol,PD30PinCur,PD30PinGate,
                                  LOVD30,LOKD30,LValueRangeD30,
                                  STOVD30,STOKD30,
                                  BOVsetD30, BOKsetD30,BD30Reset,
@@ -3533,13 +3544,13 @@ begin
   AD5752_ModulShow:=TAD5752_ModulShow.Create(AD5752_Modul,
                                      PAD5752Mod,NumberPins);
 
-  AD5752_ChanShowA:=TAD5752_ChanelShowNew.Create(AD5752_chA,
+  AD5752_ChanShowA:=TAD5752_ChanelShow.Create(AD5752_chA,
                        STOV5752chA,STOK5752chA,
                        LOV5752chA,LOK5752chA,LValueRange5752chA,LKodRange5752chA,
                        BOVset5752chA,BOKset5752chA,B5752ResetChA,BPoff5752chA,
                        RG5752chADiap);
 
-  AD5752_ChanShowB:=TAD5752_ChanelShowNew.Create(AD5752_chB,
+  AD5752_ChanShowB:=TAD5752_ChanelShow.Create(AD5752_chB,
                        STOV5752chB,STOK5752chB,
                        LOV5752chB,LOK5752chB,LValueRange5752chB,LKodRange5752chB,
                        BOVset5752chB,BOKset5752chB,B5752ResetChB,BPoff5752chB,
@@ -3566,42 +3577,42 @@ begin
                 AD5752_ChanShowA,AD5752_ChanShowB]);
 end;
 
-procedure TIVchar.DACFree;
-begin
-//  if assigned(DACR2R) then
-//    begin
-//    DACR2R.Reset;
-//    sleep(100);
-//    DACR2R.Free;
-//    end;
+//procedure TIVchar.DACFree;
+//begin
+////  if assigned(DACR2R) then
+////    begin
+////    DACR2R.Reset;
+////    sleep(100);
+////    DACR2R.Free;
+////    end;
+////
+////  DACR2RShow.Free;
 //
-//  DACR2RShow.Free;
-
-//  D30_06Show.Free;
-//  if assigned(D30_06) then
-//    begin
-//    D30_06.Reset;
-//    sleep(50);
-//    D30_06.Free;
-//    end;
-
-//  AD9833Show.Free;
-//  if assigned(AD9833) then
-//    begin
-//    AD9833.Reset;
-//    sleep(50);
-//    AD9833.Free;
-//    end;
-
-//  AD9833Shownew.Free;
-//  if assigned(AD9833nw) then
-//    begin
-////    AD9833nw.Reset;
+////  D30_06Show.Free;
+////  if assigned(D30_06) then
+////    begin
+////    D30_06.Reset;
 ////    sleep(50);
-//    AD9833nw.Free;
-//    end;
-
-end;
+////    D30_06.Free;
+////    end;
+//
+////  AD9833Show.Free;
+////  if assigned(AD9833) then
+////    begin
+////    AD9833.Reset;
+////    sleep(50);
+////    AD9833.Free;
+////    end;
+//
+////  AD9833Shownew.Free;
+////  if assigned(AD9833nw) then
+////    begin
+//////    AD9833nw.Reset;
+//////    sleep(50);
+////    AD9833nw.Free;
+////    end;
+//
+//end;
 
 procedure TIVchar.DACReadFromIniFileAndToForm;
 begin
@@ -3615,14 +3626,14 @@ begin
 
 end;
 
-procedure TIVchar.DACWriteToIniFile;
-begin
-//  DACR2RShow.WriteToIniFile(ConfigFile);
-//  D30_06Show.WriteToIniFile(ConfigFile);
-//  AD9833Show.WriteToIniFile(ConfigFile);
-//  AD9833ShowNew.WriteToIniFile(ConfigFile);
-
-end;
+//procedure TIVchar.DACWriteToIniFile;
+//begin
+////  DACR2RShow.WriteToIniFile(ConfigFile);
+////  D30_06Show.WriteToIniFile(ConfigFile);
+////  AD9833Show.WriteToIniFile(ConfigFile);
+////  AD9833ShowNew.WriteToIniFile(ConfigFile);
+//
+//end;
 
 procedure TIVchar.DevicesCreate;
 begin

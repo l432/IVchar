@@ -1,5 +1,5 @@
 
-byte Mode = 0;
+byte Mode = 2;
 const int MaxLow = 102;
 const int MaxHigh = 819;
 const int MinLow = 410;
@@ -26,19 +26,19 @@ void loop() {
 // delay(1000);
 // Mode=3;
 // SetMode();
-// delay(1000);
-
-  int Value=analogRead(A1);
-
-    showResult(Value);
-    PORTB = B00001011;
-    delay(500);
-    PORTB = B00001000;
-    delay(500);
-    PORTB = B00001011;
-    delay(500);
-    PORTB = B00001000;
-    delay(500);
+ delay(1000);
+//
+//  int Value=analogRead(A1);
+//
+//    showResult(Value);
+//    PORTB = B00001011;
+//    delay(500);
+//    PORTB = B00001000;
+//    delay(500);
+//    PORTB = B00001011;
+//    delay(500);
+//    PORTB = B00001000;
+//    delay(500);
 
 //
 //  if (((Value<MaxLow)||(Value>MaxHigh))&&(Mode>0)){

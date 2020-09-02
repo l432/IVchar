@@ -32,7 +32,7 @@ class SPIObject {
       return _pin;
     }
 
-    void TwoByteTransfer(byte Data1, byte Data2) {
+    virtual void TwoByteTransfer(byte Data1, byte Data2) {
       SPI.beginTransaction(SPISettings(_speedMaximum, _dataOrder, _dataMode));
       digitalWrite(_pin, LOW);
       SPI.transfer(Data1);

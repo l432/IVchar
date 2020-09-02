@@ -12,8 +12,8 @@ const D30_06_MaxVoltage=28.75;
 
       D30_06Command=$6;
 
-      PinNamesD30_06:array[0..1]of string=
-           ('Voltage','Current');
+      PinNamesD30_06:array[0..2]of string=
+           ('Voltage','Current', 'Gate');
 
 type
 
@@ -48,7 +48,8 @@ private
                              PinVariant:TStringList);override;
  public
  Constructor Create(DAC: TD30_06;
-                     CPL, GPL:TPanel;
+                     VolPL, CouPL, GatePL:TPanel;
+//                     CPL, GPL:TPanel;
                      VL, KL, VDL: TLabel;
                      VData,KData:TStaticText;
                      VSB, KSB, RB: TButton;
@@ -121,7 +122,7 @@ end;
 
 procedure TD30_06.PinsCreate;
 begin
-  Pins := TPins.Create(Name,PinNamesD30_06);
+  Pins := TPins.Create(Name,PinNamesD30_06,3);
 end;
 
 procedure TD30_06.PinsToDataArray;
@@ -129,12 +130,23 @@ begin
  if FisVoltage then
    begin
     fData[1] := Pins.PinControl;
-    fData[2] := Pins.PinGate;
+    fData[2] := Pins.fPins[2];
    end         else
    begin
-    fData[2] := Pins.PinControl;
     fData[1] := Pins.PinGate;
+    fData[2] := Pins.fPins[2];
    end;
+
+
+// if FisVoltage then
+//   begin
+//    fData[1] := Pins.PinControl;
+//    fData[2] := Pins.PinGate;
+//   end         else
+//   begin
+//    fData[2] := Pins.PinControl;
+//    fData[1] := Pins.PinGate;
+//   end;
 end;
 
 function TD30_06.VoltageToKod(Voltage: double): integer;
@@ -161,7 +173,8 @@ end;
 { TD30_06Show }
 
 constructor TD30_06Show.Create(DAC: TD30_06;
-                               CPL, GPL:TPanel;
+                              VolPL, CouPL, GatePL:TPanel;
+//                     CPL, GPL:TPanel;
                                VL, KL, VDL: TLabel;
                                VData,KData:TStaticText;
                                VSB, KSB, RB: TButton;
@@ -169,7 +182,7 @@ constructor TD30_06Show.Create(DAC: TD30_06;
                                VOCRG: TRadioGroup);
 
 begin
- inherited Create(DAC,[CPL, GPL], PinVariants, VData, KData, VL, KL, VSB, KSB, RB);
+ inherited Create(DAC,{[CPL, GPL]}[VolPL, CouPL, GatePL], PinVariants, VData, KData, VL, KL, VSB, KSB, RB);
  ValueDiapazonLabel:=VDL;
  VoltageOrCurrentRG:=VOCRG;
  VoltageOrCurrentRG.OnClick:=VoltageOrCurrentRGClick;
@@ -178,7 +191,11 @@ end;
 procedure TD30_06Show.CreatePinShow(PinLs: array of TPanel;
   PinVariant: TStringList);
 begin
-  PinShow:=TPinsShow.Create(fArduinoSetter.Pins,PinLs[0],PinLs[1],PinVariant);
+  PinShow:=TPinsShowUniversal.Create (fArduinoSetter.Pins,PinLs,
+         [PinVariant]);
+
+//  PinShow:=TPinsShow.Create(fArduinoSetter.Pins,PinLs[0],PinLs[1],
+//  PinVariant);
 end;
 
 procedure TD30_06Show.HookReadFromIniFile(ConfigFile: TIniFile);

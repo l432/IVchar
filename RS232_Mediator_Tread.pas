@@ -43,14 +43,15 @@ type
 implementation
 
 uses
-  Windows, Forms, RS232deviceNew;
+  Windows, Forms, RS232deviceNew, OlegFunction, SysUtils;
 
 
 { RS232_Mediator }
 
 //constructor TRS232_MediatorTread.Create(CP:TComPort;
 //                     ArrayDevice: array of IArduinoSender);
-constructor TRS232_MediatorTread.Create(CP:TComPort; ArrIAS:TArrIArduinoSender);
+constructor TRS232_MediatorTread.Create(CP:TComPort;
+                         ArrIAS:TArrIArduinoSender);
 // var i:byte;
 begin
   inherited Create;
@@ -65,6 +66,8 @@ end;
 
 destructor TRS232_MediatorTread.Destroy;
 begin
+ DoSomething;
+
  fArrIAS:=nil;
  fArduinoComPort.Free;
  inherited;
@@ -84,6 +87,7 @@ begin
   for I := 0 to fArrIAS.HighIndex do
     if fArrIAS.ArduinoSender[i].isNeededComPort then
       begin
+       HelpForMe(inttostr(MilliSecond)+fArrIAS.ArduinoSender[i].Name);
        fArrIAS.ArduinoSender[i].PacketCreateToSend();
        fArrIAS.ArduinoSender[i].Error:=not(fArduinoComPort.IsSend(fArrIAS.ArduinoSender[i].MessageError));
        fArrIAS.ArduinoSender[i].isNeededComPort:=False;
