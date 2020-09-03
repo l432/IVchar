@@ -2556,6 +2556,7 @@ end;
 procedure TIVchar.Button1Click(Sender: TObject);
 
 begin
+ showmessage(ForwSteps.XYtoString+RevSteps.XYtoString);
 //showmessage(inttostr(ShowTempDep.fToleranceCoef.Data));
 //showmessage(inttostr(IVcharOnTemperature.StartTemperature));
 
@@ -2747,7 +2748,7 @@ begin
                  D30_06,IscVocPinChanger,LEDOpenPinChanger,
                  MCP3424,AD9833,STS21,ADT74x0,MCP9808,
                  AD5752_Modul]);
-//                 AD5752_chA,AD5752_chB]);
+
  AnyObjectArray.Add(ArduinoSenders);
  RS232_MediatorTread:=TRS232_MediatorTread.Create(ComPort1,ArduinoSenders);
 

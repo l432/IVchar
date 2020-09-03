@@ -87,7 +87,7 @@ begin
   for I := 0 to fArrIAS.HighIndex do
     if fArrIAS.ArduinoSender[i].isNeededComPort then
       begin
-       HelpForMe(inttostr(MilliSecond)+fArrIAS.ArduinoSender[i].Name);
+//       HelpForMe(inttostr(MilliSecond)+fArrIAS.ArduinoSender[i].Name);
        fArrIAS.ArduinoSender[i].PacketCreateToSend();
        fArrIAS.ArduinoSender[i].Error:=not(fArduinoComPort.IsSend(fArrIAS.ArduinoSender[i].MessageError));
        fArrIAS.ArduinoSender[i].isNeededComPort:=False;

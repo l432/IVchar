@@ -127,17 +127,9 @@ TRS232MeterDevice=class(TRS232CustomDevice,IMeasurement,IRS232DataObserver)
    надходження даних, []=штук, за замовчуванням 130,
    тобто за замовчуванням інтервал очікуввання
    складає 0+10*130=1300 мс}
-//   fMeasureMode:Shortint;
-//   fDiapazon:Shortint;
-//   fMeasureModeAll:array of string;
-//   fDiapazonAll:array of array of string;
    fRS232MeasuringTread:TThread;
    fNewData:boolean;
    function GetNewData:boolean;
-//   Procedure MModeDetermination(); virtual;
-//   Procedure DiapazonDetermination(); virtual;
-//   Procedure ValueDetermination();virtual;
-//   Function MeasureModeLabelRead():string;virtual;
    Function Measurement():double;virtual;
    Function GetValue():double;virtual;
    procedure SetNewData(Value:boolean);
@@ -154,8 +146,6 @@ TRS232MeterDevice=class(TRS232CustomDevice,IMeasurement,IRS232DataObserver)
    property MinDelayTime:integer read  fMinDelayTime;
    property DelayTimeStep:integer read  fDelayTimeStep;
    property DelayTimeMax:integer read  fDelayTimeMax;
-//   property MeasureModeLabel:string read MeasureModeLabelRead;
-//   property Diapazon:Shortint read fDiapazon;
    Constructor Create(Nm:string);
    Procedure Request();virtual;abstract;
    function GetData():double;virtual;
@@ -270,8 +260,6 @@ begin
   fMinDelayTime:=0;
   fDelayTimeStep:=10;
   fDelayTimeMax:=130;
-//  fMeasureMode:=-1;
-//  fDiapazon:=-1;
   fValue:=ErResult;
   fNewData:=False;
   fError:=False;

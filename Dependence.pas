@@ -329,7 +329,7 @@ TFastIVDependence=class (TFastDependence)
    procedure DataSave();override;
    procedure EndMeasuring();override;
    procedure VocIscDetermine;
-    procedure PointSeriesFilling;
+   procedure PointSeriesFilling;
  public
   RangeFor:TLimitShow;
   RangeRev:TLimitShowRev;
@@ -358,6 +358,7 @@ TFastIVDependence=class (TFastDependence)
   procedure Measuring(SingleMeasurement:boolean=true;FilePrefix:string='');
   procedure SetVoltage();
   function DatFileNameToSave:string;
+  procedure CopyDecorationTo(Target:TFastIVDependence);
 end;
 
 
@@ -1205,6 +1206,18 @@ begin
 
 end;
 
+
+procedure TFastIVDependence.CopyDecorationTo(Target: TFastIVDependence);
+begin
+  Target.RangeFor:=Self.RangeFor;
+  Target.RangeRev:=Self.RangeRev;
+  Target.CBForw:=Self.CBForw;
+  Target.CBRev:=Self.CBRev;
+  Target.SettingDevice:=Self.SettingDevice;
+  Target.RGDiodOrientation:=Self.RGDiodOrientation;
+  Target.Voltage_MD:=Self.Voltage_MD;
+  Target.Current_MD:=Self.Current_MD;
+end;
 
 constructor TFastIVDependence.Create(BS: TButton;
 //                                        Res: TVector;

@@ -15,5 +15,6 @@
     <Transaction>2020.02.14 10:20:07.725.pas,C:\Programs\IVChar\D30_06.pas=C:\Programs\IVChar\D30_06u.pas</Transaction>
     <Transaction>2020.02.14 10:23:57.179.pas,C:\Programs\IVChar\ADT74x0.pas=C:\Programs\IVChar\ADT74x0u.pas</Transaction>
     <Transaction>2020.02.14 10:26:35.210.pas,C:\Programs\IVChar\AD9833.pas=C:\Programs\IVChar\AD9833u.pas</Transaction>
+    <Transaction>2020.09.03 15:30:20.234.pas,D:\oleg\IVchar\Unit1.pas=D:\oleg\IVchar\DependOnArduino.pas</Transaction>
   </Transactions>
 </BorlandProject>

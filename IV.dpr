@@ -33,7 +33,8 @@ uses
   GDS_806Su in 'GDS_806Su.pas',
   ArduinoDeviceNew in 'ArduinoDeviceNew.pas',
   ArduinoDeviceShow in 'ArduinoDeviceShow.pas',
-  AD9833u in 'AD9833u.pas';
+  AD9833u in 'AD9833u.pas',
+  DependOnArduino in 'DependOnArduino.pas';
 
 {$R *.res}
 

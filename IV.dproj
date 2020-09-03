@@ -42,6 +42,7 @@
     <DCCReference Include="D30_06u.pas" />
     <DCCReference Include="DACR2Ru.pas" />
     <DCCReference Include="Dependence.pas" />
+    <DCCReference Include="DependOnArduino.pas" />
     <DCCReference Include="ET1255.pas" />
     <DCCReference Include="GDS_806Su.pas" />
     <DCCReference Include="HighResolutionTimer.pas" />
