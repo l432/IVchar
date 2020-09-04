@@ -86,6 +86,7 @@ type
    fPowerOnByte:byte;
    fPowerOffByte:byte;
    function GetOutputValue:double;
+   function GetDeviceKod:byte;
   protected
    function  VoltageToKod(Voltage:double):integer;
    procedure PrepareAction(Voltage:double);
@@ -98,6 +99,7 @@ type
    property OutputValue:double read GetOutputValue;
    property Diapazon:T5752OutputRange read fDiapazon write SetDiapazon;
    property Power:boolean read fPowerOn;
+   property DeviceKod:byte read GetDeviceKod;
    Constructor Create(Modul:TAD5752_Modul;ChanNumber:T5752ChanNumber);
    Procedure Output(Voltage:double);
    Procedure Reset();
@@ -251,6 +253,11 @@ end;
 //  end;
 // inherited;
 //end;
+
+function TAD5752_Chanel.GetDeviceKod: byte;
+begin
+ Result:=fModul.DeviceKod;
+end;
 
 function TAD5752_Chanel.GetOutputValue: double;
 begin

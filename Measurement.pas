@@ -37,6 +37,7 @@ end;
 IDAC = interface (IName)
   ['{F729B2E9-AF49-4293-873B-83D53C258E0A}']
  function GetOutputValue:double;
+ function GetDeviceKod:byte;
  procedure Output(Value:double);
  {встановлює на виході напругу Value}
  procedure OutputInt(Kod:integer);
@@ -44,6 +45,7 @@ IDAC = interface (IName)
  Procedure Reset();
  {встановлює на виході 0}
  property OutputValue:double read GetOutputValue;
+ property DeviceKod:byte read GetDeviceKod;
 end;
 
 ICalibration = interface
@@ -72,11 +74,14 @@ private
  function GetNewData:boolean;
  function GetValue:double;
  function GetOutputValue:double;
+ function GetDeviceKod:byte;
  procedure SetNewData(Value:boolean);
 public
  property Value:double read GetValue;
  property NewData:boolean read GetNewData write SetNewData;
  property OutputValue:double read GetOutputValue;
+ property DeviceKod:byte read GetDeviceKod;
+
  Constructor Create(name:string);overload;
  Constructor Create();overload;
  function GetTemperature:double;
@@ -209,6 +214,11 @@ begin
  fNewData:=True;
  PostMessage(FindWindow ('TIVchar', 'IVchar'), WM_MyMeasure,WPARAM,0);
  SetEvent(EventEnd);
+end;
+
+function TSimulator.GetDeviceKod: byte;
+begin
+ result:=0;
 end;
 
 function TSimulator.GetTemperature: double;

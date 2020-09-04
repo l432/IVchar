@@ -266,6 +266,7 @@ end;
   fOutputValue:double;
   Procedure ShowError();
   function GetOutputValue:double;
+  function GetDeviceKod:byte;
  public
    property OutputValue:double read GetOutputValue;
    procedure Output(Value:double);//virtual;
@@ -302,6 +303,11 @@ end;
 procedure TET1255_DAC.Free;
 begin
   Reset();
+end;
+
+function TET1255_DAC.GetDeviceKod: byte;
+begin
+ Result:=0;
 end;
 
 function TET1255_DAC.GetOutputValue: double;

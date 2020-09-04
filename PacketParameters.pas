@@ -30,6 +30,7 @@ const
   ADT74x0Command=$11;
   MCP9808Command=$12;
   AD5752Command=$13;
+  ArduinoIVCommand=$14;
 
 var
   aPacket:array of byte;

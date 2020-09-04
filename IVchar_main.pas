@@ -33,7 +33,7 @@ uses
   GDS_806Su,
   UT70,
   RS232deviceNew,
-  ArduinoDeviceShow;
+  ArduinoDeviceShow, DependOnArduino;
 
 const
   MeasIV='IV characteristic';
@@ -802,8 +802,12 @@ type
     procedure IVcharOnTempHookSecondMeas;
     procedure DependenceHookEnd;
     procedure HookBegin;
+    procedure FastIVHookBeginBase(FastIVDep:TFastIVDependence);
     procedure FastIVHookBegin;
+    procedure FastArduinoIVHookBegin;
+    procedure FastIVHookEndBase(FastIVDep:TFastIVDependence);
     procedure FastIVHookEnd;
+    procedure FastArduinoIVHookEnd;
     procedure TimeDHookFirstMeas;
     procedure TimeTwoDHookFirstMeas;
     procedure IscVocOnTimeHookFirstMeas;
@@ -992,7 +996,8 @@ type
     Imax,Imin:double;
 
     IVMeasuring,CalibrMeasuring:TIVDependence;
-    FastIVMeasuring:TFastIVDependence;
+    CustomFastIVMeas,FastIVMeasuring:TFastIVDependence;
+    FastArduinoIV:TFastArduinoIVDependence;
     TimeDependence:TTimeDependenceTimer;
     ControlParameterTime,TemperatureOnTime:TTimeDependence;
     IVcharOnTemperature:TTemperatureDependence;
@@ -1009,7 +1014,7 @@ type
 
 const
   Undefined='NoData';
-//  Vmax=6.6;
+  Vmax=6.6;
   StepDefault=0.01;
   AtempNumbermax=3;
 
@@ -1174,6 +1179,7 @@ begin
                          IVResult,ForwLine,RevLine,ForwLg,RevLg);
 
   FastIVMeasuring:=TFastIVDependence.Create(BIVStop,ForwLine,RevLine,ForwLg,RevLg);
+  FastArduinoIV:=TFastArduinoIVDependence.Create(BIVStop,ForwLine,RevLine,ForwLg,RevLg);
 
   CalibrMeasuring:= TIVDependence.Create(CBForw,CBRev,PBIV,BIVStop,
                          IVResult,ForwLine,RevLine,ForwLg,RevLg);
@@ -1212,6 +1218,10 @@ begin
   FastIVMeasuring.RGDiodOrientation:=RGDO;
   FastIVMeasuring.Voltage_MD:=VoltageIV_MD;
   FastIVMeasuring.Current_MD:=Current_MD;
+
+  FastArduinoIV.HookBeginMeasuring:=FastArduinoIVHookBegin;
+  FastArduinoIV.HookEndMeasuring:=FastArduinoIVHookEnd;
+  FastIVMeasuring.CopyDecorationTo(FastArduinoIV);
 
   SetLength(Dependencies,8);
   Dependencies[0]:=IVMeasuring;
@@ -2247,16 +2257,28 @@ end;
 
 procedure TIVchar.ActionInSaveButtonFastIV(Sender: TObject);
 begin
-  SaveDialog.FileName:=FastIVMeasuring.DatFileNameToSave;
+  SaveDialog.FileName:=CustomFastIVMeas.DatFileNameToSave;
   SaveDialog.Title := 'Last file - ' +
-      LastDATFileName(FastIVMeasuring.PrefixToFileName) + '.dat';
+      LastDATFileName(CustomFastIVMeas.PrefixToFileName) + '.dat';
   SaveDialog.InitialDir := GetCurrentDir;
 
   if SaveDialog.Execute then
    begin
-     SaveIVMeasurementResults(SaveDialog.FileName,FastIVMeasuring.Results);
+     SaveIVMeasurementResults(SaveDialog.FileName,CustomFastIVMeas.Results);
      BIVSave.Font.Style:=BIVSave.Font.Style+[fsStrikeOut];
    end;
+
+
+//  SaveDialog.FileName:=FastIVMeasuring.DatFileNameToSave;
+//  SaveDialog.Title := 'Last file - ' +
+//      LastDATFileName(FastIVMeasuring.PrefixToFileName) + '.dat';
+//  SaveDialog.InitialDir := GetCurrentDir;
+//
+//  if SaveDialog.Execute then
+//   begin
+//     SaveIVMeasurementResults(SaveDialog.FileName,FastIVMeasuring.Results);
+//     BIVSave.Font.Style:=BIVSave.Font.Style+[fsStrikeOut];
+//   end;
 end;
 
 procedure TIVchar.ADS1115Create;
@@ -2556,7 +2578,11 @@ end;
 procedure TIVchar.Button1Click(Sender: TObject);
 
 begin
- showmessage(ForwSteps.XYtoString+RevSteps.XYtoString);
+FastArduinoIV.Measuring;
+//  showmessage(FloatTostr(FastIVMeasuring.RangeRev.HighValue));
+// showmessage('$'+inttohex(($7F and byte(round(abs(-1.2)*10)))or $80,2));
+
+// showmessage(ForwSteps.XYtoString+RevSteps.XYtoString);
 //showmessage(inttostr(ShowTempDep.fToleranceCoef.Data));
 //showmessage(inttostr(IVcharOnTemperature.StartTemperature));
 
@@ -2636,9 +2662,39 @@ begin
   end;
 end;
 
+procedure TIVchar.FastArduinoIVHookBegin;
+begin
+   FastIVHookBeginBase(FastArduinoIV);
+end;
+
+procedure TIVchar.FastArduinoIVHookEnd;
+begin
+  FastIVHookEndBase(FastArduinoIV);
+end;
+
 procedure TIVchar.FastIVHookBegin;
 begin
-  if FastIVMeasuring.SingleMeasurement then
+  FastIVHookBeginBase(FastIVMeasuring);
+
+//  if FastIVMeasuring.SingleMeasurement then
+//    begin
+//      CBMeasurements.Enabled:=False;
+//      BIVStart.Enabled := False;
+//      BConnect.Enabled := False;
+//      BIVSave.Enabled:=False;
+//      BParamReceive.Enabled := False;
+//    end;
+//
+// ThermoCuple.Measurement:=TermoCouple_MD.ActiveInterface;
+// FastIVMeasuring.Imax := MaxCurrentCS.Data;
+// FastIVMeasuring.Imin := MinCurrentCS.Data;
+// FastIVMeasuring.CurrentValueLimitEnable:=CBCurrentValue.Checked;
+// FastIVMeasuring.DragonBackTime:=Dragon_backTimeCS.Data;
+end;
+
+procedure TIVchar.FastIVHookBeginBase(FastIVDep: TFastIVDependence);
+begin
+  if FastIVDep.SingleMeasurement then
     begin
       CBMeasurements.Enabled:=False;
       BIVStart.Enabled := False;
@@ -2648,22 +2704,57 @@ begin
     end;
 
  ThermoCuple.Measurement:=TermoCouple_MD.ActiveInterface;
- FastIVMeasuring.Imax := MaxCurrentCS.Data;
- FastIVMeasuring.Imin := MinCurrentCS.Data;
- FastIVMeasuring.CurrentValueLimitEnable:=CBCurrentValue.Checked;
- FastIVMeasuring.DragonBackTime:=Dragon_backTimeCS.Data;
+ FastIVDep.Imax := MaxCurrentCS.Data;
+ FastIVDep.Imin := MinCurrentCS.Data;
+ FastIVDep.CurrentValueLimitEnable:=CBCurrentValue.Checked;
+ FastIVDep.DragonBackTime:=Dragon_backTimeCS.Data;
 end;
 
 procedure TIVchar.FastIVHookEnd;
 begin
+ FastIVHookEndBase(FastIVMeasuring);
+
+//  DecimalSeparator:='.';
+// if FastIVMeasuring.SingleMeasurement then
+//    begin
+//      CBMeasurements.Enabled:=True;
+//      BIVStart.Enabled := True;
+//      BConnect.Enabled := True;
+//      BParamReceive.Enabled := True;
+//      if FastIVMeasuring.Results.HighNumber > 0 then
+//      begin
+//        BIVSave.Enabled := True;
+//        BIVSave.Font.Style := BIVSave.Font.Style - [fsStrikeOut];
+//      end;
+//    end;
+//
+//  if (SBTAuto.Down)and
+//     (Temperature_MD.ActiveInterface.NewData) then
+//      begin
+//       Temperature:=Temperature_MD.ActiveInterface.Value;
+////       Temperature_MD.ActiveInterface.NewData:=False;
+//      end                                     else
+//       Temperature:=Temperature_MD.GetMeasurementResult();
+//  if Temperature=ErResult
+//    then  Temperature:=Temperature_MD.GetMeasurementResult();
+//
+//
+// if FastIVMeasuring.SingleMeasurement
+//    then BIVSave.OnClick:=ActionInSaveButtonFastIV
+//    else SaveIVMeasurementResults(FastIVMeasuring.DatFileNameToSave,FastIVMeasuring.Results)
+
+end;
+
+procedure TIVchar.FastIVHookEndBase(FastIVDep: TFastIVDependence);
+begin
   DecimalSeparator:='.';
- if FastIVMeasuring.SingleMeasurement then
+ if FastIVDep.SingleMeasurement then
     begin
       CBMeasurements.Enabled:=True;
       BIVStart.Enabled := True;
       BConnect.Enabled := True;
       BParamReceive.Enabled := True;
-      if FastIVMeasuring.Results.HighNumber > 0 then
+      if FastIVDep.Results.HighNumber > 0 then
       begin
         BIVSave.Enabled := True;
         BIVSave.Font.Style := BIVSave.Font.Style - [fsStrikeOut];
@@ -2674,16 +2765,15 @@ begin
      (Temperature_MD.ActiveInterface.NewData) then
       begin
        Temperature:=Temperature_MD.ActiveInterface.Value;
-//       Temperature_MD.ActiveInterface.NewData:=False;
       end                                     else
        Temperature:=Temperature_MD.GetMeasurementResult();
   if Temperature=ErResult
     then  Temperature:=Temperature_MD.GetMeasurementResult();
-      
 
- if FastIVMeasuring.SingleMeasurement
+ CustomFastIVMeas:=FastIVDep;
+ if FastIVDep.SingleMeasurement
     then BIVSave.OnClick:=ActionInSaveButtonFastIV
-    else SaveIVMeasurementResults(FastIVMeasuring.DatFileNameToSave,FastIVMeasuring.Results)
+    else SaveIVMeasurementResults(FastIVDep.DatFileNameToSave,FastIVDep.Results)
 
 end;
 
@@ -3028,20 +3118,9 @@ begin
     A.DeletePoint(A.HighNumber);
   while (A.Count > 0) and (A.X[0] < 0) do
     A.DeletePoint(A.HighNumber);
-  if (A.Count > 0) and (A.X[A.HighNumber] <> Vmax) then
-    begin
-     A.Add(Vmax,StepDefault);
-//     A^.SetLenVector(A^.n+1);
-//     A^.X[High(A^.X)] := Vmax;
-//     A^.Y[High(A^.X)] := StepDefault;
-    end;
-  if A.IsEmpty then
-      A.Add(Vmax,StepDefault);
-//    begin
-//      A.SetLenVector(1);
-//      A.X[0] := Vmax;
-//      A.Y[0] := StepDefault;
-//    end;
+  if (A.Count > 0) and not(IsEqual(A.X[A.HighNumber],Vmax))
+   then A.Add(Vmax,StepDefault);
+  if A.IsEmpty then  A.Add(Vmax,StepDefault);
 end;
 
 procedure TIVchar.StepsWriteToIniFile;
@@ -3513,7 +3592,7 @@ begin
   for I := 0 to High(Dependencies) do
     Dependencies[i].Free;
  FastIVMeasuring.Free;
-
+ FastArduinoIV.Free;
 end;
 
 procedure TIVchar.DACCreate;

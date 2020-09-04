@@ -8,6 +8,9 @@ uses
   OlegShowTypes, IniFiles, OlegVector;
 
 var EventToStopDependence:THandle;
+  fItIsForward:boolean;
+  fIVMeasuringToStop:boolean;
+
 //    EventFastIVDone: THandle;
 //    EventFastIVCurrentMeasDone: THandle;
 
@@ -292,16 +295,16 @@ TFastIVDependence=class (TFastDependence)
     FImin: double;
     FCurrentValueLimitEnable: boolean;
     fForwardBranch:boolean;
-    fAbsVoltageValue:double;
+//    fAbsVoltageValue:double;
     fVoltageFactor:double;
-    fDiodOrientationVoltageFactor:integer;
+//    fDiodOrientationVoltageFactor:integer;
     fVoltageMeasured,fCurrentMeasured:double;
-    fDragonBackTime:double;
-    fItIsBranchBegining:boolean;
+//    fDragonBackTime:double;
+//    fItIsBranchBegining:boolean;
     fItIsLightIV:boolean;
-    fSingleMeasurement:boolean;
-    fVoc:double;
-    fIsc:double;
+//    fSingleMeasurement:boolean;
+//    fVoc:double;
+//    fIsc:double;
 
     RevLine: TPointSeries;
     RevLg: TPointSeries;
@@ -315,8 +318,8 @@ TFastIVDependence=class (TFastDependence)
     procedure SetDragonBackTime(const Value: double);
 
    procedure SeriesClear();override;
-   procedure BeginMeasuring();override;
-   function StepFromVector(Vector:TVector):double;
+
+//   function StepFromVector(Vector:TVector):double;
    function VoltageStep:double;
    procedure VoltageChange;
    procedure ActionMeasurement();override;
@@ -327,9 +330,20 @@ TFastIVDependence=class (TFastDependence)
    function ValueMeasuring(MD:TMeasuringDevice):double;
    function CurrentGrowth():boolean;
    procedure DataSave();override;
-   procedure EndMeasuring();override;
+
    procedure VocIscDetermine;
    procedure PointSeriesFilling;
+ protected
+   fAbsVoltageValue:double;
+   fItIsBranchBegining:boolean;
+   fDragonBackTime:double;
+   fDiodOrientationVoltageFactor:integer;
+   fSingleMeasurement:boolean;
+   fVoc:double;
+   fIsc:double;
+   function StepFromVector(Vector:TVector):double;
+   procedure BeginMeasuring();override;
+   procedure EndMeasuring();override;
  public
   RangeFor:TLimitShow;
   RangeRev:TLimitShowRev;
@@ -355,7 +369,7 @@ TFastIVDependence=class (TFastDependence)
 //                     Res:TVector;
                      FLn,RLn,FLg,RLg:TPointSeries);
   procedure Cycle(ItIsForwardInput: Boolean);
-  procedure Measuring(SingleMeasurement:boolean=true;FilePrefix:string='');
+  procedure Measuring(SingleMeasurement:boolean=true;FilePrefix:string='');virtual;
   procedure SetVoltage();
   function DatFileNameToSave:string;
   procedure CopyDecorationTo(Target:TFastIVDependence);
@@ -425,6 +439,8 @@ TIVMeasurementResult=class(TSimpleFreeAndAiniObject)
 //  Constructor Create();
 end;
 
+
+
 implementation
 
 uses
@@ -433,8 +449,8 @@ uses
   OlegMath, Measurement;
 
 var
-  fItIsForward:boolean;
-  fIVMeasuringToStop:boolean;
+//  fItIsForward:boolean;
+//  fIVMeasuringToStop:boolean;
   fSecondMeasIsDone:boolean;
   fVoltageInput:double;
   fVoltageInputReal:double;
@@ -1211,6 +1227,8 @@ procedure TFastIVDependence.CopyDecorationTo(Target: TFastIVDependence);
 begin
   Target.RangeFor:=Self.RangeFor;
   Target.RangeRev:=Self.RangeRev;
+  Target.ForwardDelV:=Self.ForwardDelV;
+  Target.ReverseDelV:=Self.ForwardDelV;
   Target.CBForw:=Self.CBForw;
   Target.CBRev:=Self.CBRev;
   Target.SettingDevice:=Self.SettingDevice;
@@ -1275,7 +1293,7 @@ begin
    end          else
    begin
      fAbsVoltageValue:=RangeRev.LowValue;;
-     Finish:=RangeRev.HighValue;;
+     Finish:=RangeRev.HighValue;
      Condition:=CBRev.Checked;
   end;
 

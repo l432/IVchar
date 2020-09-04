@@ -166,10 +166,12 @@ type
    procedure PinsCreate();virtual;
    procedure CreateHook;virtual;
    function GetisNeededComPort:boolean;
+   function GetDeviceKod:byte;
    procedure SetisNeededComPort(const Value:boolean);
   public
    Pins:TPins;
    property isNeededComPort:boolean read GetisNeededComPort write SetisNeededComPort;
+   property DeviceKod:byte read GetDeviceKod;
    procedure PacketCreateToSend(); virtual;
    Constructor Create(Nm:string);//override;
 //   Procedure Free;//virtual;//override;
@@ -883,6 +885,11 @@ end;
 // Pins.Free;
 //// inherited Free;
 //end;
+
+function TArduinoSetter.GetDeviceKod: byte;
+begin
+ Result:=fSetterKod;
+end;
 
 function TArduinoSetter.GetisNeededComPort: boolean;
 begin
