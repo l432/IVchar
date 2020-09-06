@@ -3,8 +3,26 @@ unit DependOnArduino;
 interface
 
 uses
-  Dependence, ArduinoDeviceNew, PacketParameters, StdCtrls, Series;
+  Dependence, ArduinoDeviceNew, PacketParameters, StdCtrls, Series, AD5752R, 
+  ArduinoADC, INA226, ADS1115;
 
+const
+
+ VoltageSourceNumber=2;
+
+ VoltageSourceNames:array[1..VoltageSourceNumber]of string=
+ ('AD5752chA','AD5753chB');
+
+// VoltageSourceDevice:array[1..VoltageSourceNumber]of TAD5752_Chanel=
+// (AD5752_chA,AD5752_chB);
+
+
+ MeasurementDeviceNumber=9;
+
+ MeasurementDeviceNames:array[1..MeasurementDeviceNumber]of string=
+ ('INA226_Shunt','INA226_Bus',
+ 'ADS1115_Ch1','ADS1115_Ch2','ADS1115_Ch3',
+ 'MCP3424_Ch1','MCP3424_Ch2','MCP3424_Ch3','MCP3424_Ch4');
 
 type
 
@@ -12,24 +30,32 @@ type
   private
    fFArdIVD:TFastIVDependence;
    procedure ClearData;
-   procedure AddData(NewData:array of byte);overload;
-   procedure AddData(NewByte:byte);overload;
+//   procedure AddData(NewData:array of byte);overload;
+//   procedure AddData(NewByte:byte);overload;
+  protected
+   procedure  PrepareData;override;
   public
    Constructor Create(Nm:string;
                       FArdIVD:TFastIVDependence);
-   procedure PacketCreateToSend();override;
+//   procedure PacketCreateToSend();override;
    Procedure ConvertToValue();override;
  end;
 
  TFastArduinoIVDependence=class (TFastIVDependence)
   private
    fArduinoCommunication:TArdIVDepen;
+   fVoltageMD:TArduinoADC_Channel;
+   fCurrentMD:TArduinoADC_Channel;
+
    function DataToSendPrepare:boolean;
-   function VoltageValueToByte(Voltage:double; factor:byte=10):byte;
+   function BranchDataPrepare(IsForward:boolean):byte;
+   {повертає кількість піддіапазонів з різним кроком}
+   function VoltageValueToByte(Voltage:double; factor:byte=100):byte;
    {[Voltage]=вольт,
-   [результат]=100 mV якщо factor=10,
-                10 mV якщо factor=100;
-   перший біт вказує знак (1 - "-") }
+    старший біт результату - 1 якщо число від'ємне;
+    шостий 1 - [результат]=100 mV
+           0 - [результат]=10 mV}
+    function MDs_Determine:boolean;
   public
    Constructor Create(
                      BS: TButton;
@@ -40,33 +66,35 @@ type
  end;
 
 
-
-
+var
+ VoltageSourceDevice:array[1..VoltageSourceNumber]of TAD5752_Chanel;
+ MeasurementDevice:array[1..MeasurementDeviceNumber]of TArduinoADC_Channel;
 
 implementation
 
 uses
-  HighResolutionTimer, Dialogs, SysUtils;
+  HighResolutionTimer, Dialogs, SysUtils, MCP3424u;
 
 { TArdIVDepen }
 
-procedure TArdIVDepen.AddData(NewData: array of byte);
- var i,j:integer;
-begin
- j:=High(fData)+1;
- SetLength(fData,j+High(NewData)+1);
- for I := 0 to High(NewData) do
-  fData[i+j]:= NewData [i];
-end;
-
-procedure TArdIVDepen.AddData(NewByte: byte);
-begin
- AddData([NewByte]);
-end;
+//procedure TArdIVDepen.AddData(NewData: array of byte);
+// var i,j:integer;
+//begin
+// j:=High(fData)+1;
+// SetLength(fData,j+High(NewData)+1);
+// for I := 0 to High(NewData) do
+//  fData[i+j]:= NewData [i];
+//end;
+//
+//procedure TArdIVDepen.AddData(NewByte: byte);
+//begin
+// AddData([NewByte]);
+//end;
 
 procedure TArdIVDepen.ClearData;
 begin
-   SetLength(fData,1);
+ CopyToData([ArduinoIVCommand]);
+//   SetLength(fData,1);
 end;
 
 procedure TArdIVDepen.ConvertToValue;
@@ -82,57 +110,63 @@ begin
   fDelayTimeMax:=1300;
   fMetterKod:=ArduinoIVCommand;
   ClearData;
-  fData[0]:=ArduinoIVCommand;
+
 end;
 
-procedure TArdIVDepen.PacketCreateToSend;
+//procedure TArdIVDepen.PacketCreateToSend;
+//begin
+// PacketCreate(fData);
+//end;
+
+procedure TArdIVDepen.PrepareData;
 begin
- PacketCreate(fData);
 end;
 
 { TFastArduinoIVDependence }
 
-constructor TFastArduinoIVDependence.Create(BS: TButton;
-                         FLn, RLn, FLg, RLg: TPointSeries);
-begin
- inherited Create(BS,FLn, RLn, FLg, RLg);
- fArduinoCommunication:=TArdIVDepen.Create('FastArduinoIV',Self);
-end;
-
-function TFastArduinoIVDependence.DataToSendPrepare:boolean;
+function TFastArduinoIVDependence.BranchDataPrepare(IsForward: boolean):byte;
  var Finish,Step:double;
      StepByte,StepByteOld,CountStep:byte;
 begin
- Result:=False;
- fArduinoCommunication.ClearData;
- fArduinoCommunication.AddData([byte(round(fDragonBackTime))]);
- fArduinoCommunication.AddData(SettingDevice.ActiveInterface.DeviceKod);
-
- if fArduinoCommunication.fData[2]=0 then
-  begin
-   MessageDlg('Voltage Source is uncorrect',mtError, [mbOK], 0);
-   Exit;
-  end;
-
- 
-
- if CBForw.Checked then
-  begin
-    fAbsVoltageValue:=RangeFor.LowValue;
-    fArduinoCommunication.AddData(VoltageValueToByte(fAbsVoltageValue*fDiodOrientationVoltageFactor));
-    Finish:=RangeFor.HighValue;
-
-    fItIsBranchBegining:=true;
-    CountStep:=0;
-    StepByteOld:=0;
-    Step:=StepFromVector(ForwardDelV);
-    fAbsVoltageValue:=fAbsVoltageValue+Step;
-
-
-    while (round(fAbsVoltageValue*1000)<=round(Finish*1000)) do
+ Result:=0;
+ if IsForward then
      begin
-      StepByte:=VoltageValueToByte(Step*fDiodOrientationVoltageFactor,100);
-//      showmessage(inttostr(StepByte)+'  '+inttostr(StepByteOld));
+     if not(CBForw.Checked) then  Exit
+     end      else
+     begin
+     if not(CBRev.Checked) then  Exit
+     end;
+
+ CountStep:=0;
+ StepByteOld:=0;
+ if IsForward
+  then
+   begin
+   fVoltageFactor:=fDiodOrientationVoltageFactor;
+   fAbsVoltageValue:=RangeFor.LowValue;
+   Finish:=RangeFor.HighValue;
+   fArduinoCommunication.AddData(VoltageValueToByte(fAbsVoltageValue*fVoltageFactor));
+   Step:=StepFromVector(ForwardDelV);
+
+   end
+  else
+   begin
+   fVoltageFactor:=-fDiodOrientationVoltageFactor;
+   fAbsVoltageValue:=RangeRev.LowValue;
+   Finish:=RangeRev.HighValue;
+   Step:=StepFromVector(ReverseDelV);
+   if (fAbsVoltageValue<>0)
+      or(RangeFor.LowValue<>0)
+      or(not(CBForw.Checked))
+       then fArduinoCommunication.AddData(VoltageValueToByte(fAbsVoltageValue*fVoltageFactor))
+       else fArduinoCommunication.AddData(VoltageValueToByte((fAbsVoltageValue+Step)*fVoltageFactor));
+   end;
+
+   StepByte:=VoltageValueToByte(Step*fVoltageFactor,100);
+   fAbsVoltageValue:=fAbsVoltageValue+Step;
+
+   while (round(fAbsVoltageValue*1000)<=round(Finish*1000)) do
+     begin
       if StepByte<>StepByteOld then
         begin
 
@@ -142,25 +176,140 @@ begin
            fArduinoCommunication.AddData(StepByteOld);
            fArduinoCommunication.AddData(CountStep);
            CountStep:=0;
+           inc(Result);
           end;
-         StepByteOld:=StepByte; 
+         StepByteOld:=StepByte;
         end;
       inc(CountStep);
-      Step:=StepFromVector(ForwardDelV);
+      if IsForward then Step:=StepFromVector(ForwardDelV)
+                   else Step:=StepFromVector(ReverseDelV);
+      StepByte:=VoltageValueToByte(Step*fVoltageFactor,100);
       fAbsVoltageValue:=fAbsVoltageValue+Step;
      end;
-//       showmessage(floattostr(fAbsVoltageValue));
          if CountStep>0
           then
           begin
            fArduinoCommunication.AddData(StepByte);
            fArduinoCommunication.AddData(CountStep);
+           inc(Result);
           end;
+end;
 
+constructor TFastArduinoIVDependence.Create(BS: TButton;
+                         FLn, RLn, FLg, RLg: TPointSeries);
+begin
+ inherited Create(BS,FLn, RLn, FLg, RLg);
+ fArduinoCommunication:=TArdIVDepen.Create('FastArduinoIV',Self);
+
+ VoltageSourceDevice[1]:=AD5752_chA;
+ VoltageSourceDevice[2]:=AD5752_chB;
+
+ MeasurementDevice[1]:=INA226_Shunt;
+ MeasurementDevice[2]:=INA226_Bus;
+ MeasurementDevice[3]:=ADS11115_Channels[0];
+ MeasurementDevice[4]:=ADS11115_Channels[1];
+ MeasurementDevice[5]:=ADS11115_Channels[2];
+ MeasurementDevice[6]:=MCP3424_Channels[0];
+ MeasurementDevice[7]:=MCP3424_Channels[1];
+ MeasurementDevice[8]:=MCP3424_Channels[2];
+ MeasurementDevice[9]:=MCP3424_Channels[3];
+end;
+
+function TFastArduinoIVDependence.DataToSendPrepare:boolean;
+var
+  i: Integer;
+  BAr: TArrByte;
+begin
+ Result:=False;
+ fArduinoCommunication.ClearData;
+ fArduinoCommunication.AddData(byte(round(fDragonBackTime)));
+ fArduinoCommunication.AddData(SettingDevice.ActiveInterface.DACKod);
+
+ if fArduinoCommunication.fData[High(fArduinoCommunication.fData)]=0 then
+  begin
+   MessageDlg('Voltage Source is uncorrect',mtError, [mbOK], 0);
+   Exit;
   end;
 
-  Showmessage(ByteArrayToString(fArduinoCommunication.fData));
+ fArduinoCommunication.AddData(0);
+ fArduinoCommunication.fData[3]:=byte(BranchDataPrepare(True) shl 4)+
+                                 byte(BranchDataPrepare(False));
+
+
+ if not(MDs_Determine) then Exit;
+
+ fArduinoCommunication.AddData(
+   byte(byte(fVoltageMD.ParentModule.HighDataIndex+1) shl 4)+
+   byte(fCurrentMD.ParentModule.HighDataIndex+1)
+   );
+
+ for I := 0 to fVoltageMD.ParentModule.HighDataIndex do
+   fArduinoCommunication.AddData(fVoltageMD.ParentModule.Data[i]);
+ for I := 0 to fCurrentMD.ParentModule.HighDataIndex do
+   fArduinoCommunication.AddData(fCurrentMD.ParentModule.Data[i]);
+
+
+(INA226_Shunt.ParentModule as TINA226_Module).ValueToByteArray(-1e-3,BAr);
+
+  Showmessage(ByteArrayToString(BAr));
+
+  fCurrentMD.ParentModule.HighDataIndex:=High(BAr);
+  for I := 0 to High(BAr) do
+   fCurrentMD.ParentModule.Data[i]:=BAr[i];
+  fCurrentMD.ParentModule.ConvertToValue;
+  showmessage(floattostr(fCurrentMD.ParentModule.Value));
+
+//  Showmessage(ByteArrayToString(fArduinoCommunication.fData));
   Result:=true;
+
+
+
+end;
+
+function TFastArduinoIVDependence.MDs_Determine: boolean;
+ var i:byte;
+begin
+ Result:=False;
+
+ fVoltageMD:=nil;
+ for i := 1 to MeasurementDeviceNumber do
+  if Voltage_MD.ActiveInterface.Name=MeasurementDeviceNames[i]
+   then
+    begin
+      fVoltageMD:=MeasurementDevice[i];
+      Break;
+    end;
+
+ if not(Assigned(fVoltageMD)) then
+  begin
+   MessageDlg('Voltage Measure Device is uncorrect',mtError, [mbOK], 0);
+   Exit;
+  end;
+
+ fVoltageMD.SetModuleParameters;
+ fVoltageMD.ParentModule.PrepareData;
+
+
+ fCurrentMD:=nil;
+ for i := 1 to MeasurementDeviceNumber do
+  if Current_MD.ActiveInterface.Name=MeasurementDeviceNames[i]
+   then
+    begin
+      fCurrentMD:=MeasurementDevice[i];
+      Break;
+    end;
+
+  if not(Assigned(fCurrentMD)) then
+  begin
+   MessageDlg('Current Measure Device is uncorrect',mtError, [mbOK], 0);
+   Exit;
+  end;
+
+ fCurrentMD.SetModuleParameters;
+ fCurrentMD.ParentModule.PrepareData;
+
+ Result:=True;
+
 end;
 
 procedure TFastArduinoIVDependence.Measuring(SingleMeasurement: boolean;
@@ -186,9 +335,15 @@ begin
 //  EndMeasuring();
 end;
 
-function TFastArduinoIVDependence.VoltageValueToByte(Voltage:double; factor:byte=10): byte;
+function TFastArduinoIVDependence.VoltageValueToByte(Voltage:double; factor:byte=100): byte;
 begin
-  Result:=$7F and byte(round(abs(Voltage)*factor));
+  if abs(Voltage)>0.63
+    then
+     begin
+     Result:=$3F and byte(round(abs(Voltage)*10));
+     Result:=Result or $40;
+     end
+    else Result:=$3F and byte(round(abs(Voltage)*100));
   if Voltage<0 then Result:=Result or $80;
 end;
 

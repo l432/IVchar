@@ -4,7 +4,7 @@ interface
 
 uses
   CPort, Measurement, StdCtrls, MDevice, ExtCtrls,
-  OlegTypePart2, ArduinoDeviceNew;
+  OlegTypePart2, ArduinoDeviceNew, PacketParameters;
 
 
 type
@@ -12,7 +12,7 @@ type
 
   TArduinoADC_Module=class(TArduinoMeter)
   private
-
+   
   protected
     FActiveChannel: byte;
     fConfigByte:byte;
@@ -20,10 +20,15 @@ type
    procedure Intitiation();virtual;
    procedure FinalPacketCreateToSend();virtual;
    procedure PinsCreate();override;
+   function  GetNumberByteInResult:byte;virtual;abstract;
  public
-   procedure PacketCreateToSend(); override;
+//   procedure PacketCreateToSend(); override;
    property  ActiveChannel:byte read FActiveChannel write FActiveChannel;
+   property NumberByteInResult:byte read GetNumberByteInResult;
+   {кількість байтів, що мають надійти у результаті}
    constructor Create(Nm:string);//override;
+   procedure PrepareData;override;
+   function ValueToByteArray(Value:double;var ByteAr:TArrByte):boolean;virtual;abstract;
  end;
 
   TArdADC_Mod_2ConfigByte=class(TArduinoADC_Module)
@@ -42,7 +47,8 @@ type
   function GetValue:double;
   procedure SetNewData(Value:boolean);
   procedure PinsCreate();virtual;abstract;
-  procedure SetModuleParameters;virtual;
+
+  function GetDeviceKod:byte;
  public
   Pins:TPins;
   property Value:double read GetValue;
@@ -52,6 +58,7 @@ type
   function GetData:double;
   procedure GetDataThread(WPARAM: word; EventEnd:THandle);
   destructor Destroy; override;
+  procedure SetModuleParameters;virtual;
  end;
 
 Function TwosComplementToDouble(HiByte,LowByte:byte;LSB:double;
@@ -71,7 +78,7 @@ Digits - кількість цифр}
 implementation
 
 uses
-  PacketParameters, SysUtils, OlegMath;
+  SysUtils, OlegMath;
 
 
 { TArduinoADC_Module }
@@ -90,7 +97,8 @@ end;
 
 procedure TArduinoADC_Module.FinalPacketCreateToSend;
 begin
-  PacketCreate([fMetterKod, Pins.PinControl, fConfigByte]);
+  CopyToData([fMetterKod, Pins.PinControl, fConfigByte]);
+//  PacketCreate([fMetterKod, Pins.PinControl, fConfigByte]);
 end;
 
 procedure TArduinoADC_Module.Intitiation;
@@ -98,16 +106,22 @@ begin
   fDelayTimeMax:=20;
 end;
 
-procedure TArduinoADC_Module.PacketCreateToSend;
-begin
-  Configuration();
-  FinalPacketCreateToSend();
-end;
+//procedure TArduinoADC_Module.PacketCreateToSend;
+//begin
+//  Configuration();
+//  FinalPacketCreateToSend();
+//end;
 
 
 procedure TArduinoADC_Module.PinsCreate;
 begin
   Pins := TPins_I2C.Create(Name);
+end;
+
+procedure TArduinoADC_Module.PrepareData;
+begin
+  Configuration();
+  FinalPacketCreateToSend();
 end;
 
 { TArduinoADC_Channel }
@@ -146,6 +160,11 @@ begin
  fParentModule.GetDataThread(WPARAM,EventEnd);
 end;
 
+function TArduinoADC_Channel.GetDeviceKod: byte;
+begin
+ Result:=fParentModule.DeviceKod;
+end;
+
 function TArduinoADC_Channel.GetNewData: boolean;
 begin
    Result:=fParentModule.NewData;
@@ -172,7 +191,8 @@ end;
 
 procedure TArdADC_Mod_2ConfigByte.FinalPacketCreateToSend;
 begin
-  PacketCreate([fMetterKod, Pins.PinControl, fConfigByte, fConfigByteTwo]);
+  CopyToData([fMetterKod, Pins.PinControl, fConfigByte, fConfigByteTwo]);
+//  PacketCreate([fMetterKod, Pins.PinControl, fConfigByte, fConfigByteTwo]);
 end;
 
 Function TwosComplementToDouble(HiByte,LowByte:byte;LSB:double;

@@ -166,12 +166,12 @@ type
    procedure PinsCreate();virtual;
    procedure CreateHook;virtual;
    function GetisNeededComPort:boolean;
-   function GetDeviceKod:byte;
+   function GetDACKod:byte;
    procedure SetisNeededComPort(const Value:boolean);
   public
    Pins:TPins;
    property isNeededComPort:boolean read GetisNeededComPort write SetisNeededComPort;
-   property DeviceKod:byte read GetDeviceKod;
+   property DACKod:byte read GetDACKod;
    procedure PacketCreateToSend(); virtual;
    Constructor Create(Nm:string);//override;
 //   Procedure Free;//virtual;//override;
@@ -212,14 +212,15 @@ type
    function GetisNeededComPort:boolean;
    procedure SetisNeededComPort(const Value:boolean);
    procedure UpDate ();override;
-   function GetDeviceKod:byte;
+   function GetDeviceKod:byte;override;
    function GetSecondDeviceKod:byte;
+   procedure  PrepareData;virtual;
   public
    Pins:TPins;
    property isNeededComPort:boolean read GetisNeededComPort write SetisNeededComPort;
    property DeviceKod:byte read GetDeviceKod;
    property SecondDeviceKod:byte read GetSecondDeviceKod;
-   procedure   PacketCreateToSend(); virtual;
+   procedure   PacketCreateToSend(); //virtual;
    Constructor Create(Nm:string);//override;
 //   Procedure Free;//override;
    destructor Destroy;override;
@@ -886,7 +887,7 @@ end;
 //// inherited Free;
 //end;
 
-function TArduinoSetter.GetDeviceKod: byte;
+function TArduinoSetter.GetDACKod: byte;
 begin
  Result:=fSetterKod;
 end;
@@ -980,12 +981,19 @@ end;
 
 procedure TArduinoMeter.PacketCreateToSend;
 begin
-  PacketCreate([fMetterKod,Pins.PinControl]);
+ PrepareData;
+ PacketCreate(fData);
+// PacketCreate([fMetterKod,Pins.PinControl]);
 end;
 
 procedure TArduinoMeter.PinsCreate;
 begin
    Pins := TPins.Create(Name);
+end;
+
+procedure TArduinoMeter.PrepareData;
+begin
+ CopyToData([fMetterKod,Pins.PinControl]);
 end;
 
 procedure TArduinoMeter.Request;

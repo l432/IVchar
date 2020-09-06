@@ -27,6 +27,7 @@ type
      function GetValue:double;
      procedure SetNewData(value:boolean);
      function ValueCalculate(Voltage:double):double;virtual;
+     function GetDeviceKod:byte;
     public
      property ValueMeas:IMeasurement read GetValueMeas write SetValueMeas;
      property NewData:boolean read GetNewData  write SetNewData;
@@ -381,6 +382,11 @@ end;
 procedure TVoltage.GetDataThread(WPARAM: word; EventEnd: THandle);
 begin
 
+end;
+
+function TVoltage.GetDeviceKod: byte;
+begin
+ Result:=ValueMeas.DeviceKod;
 end;
 
 function TVoltage.GetNewData: boolean;

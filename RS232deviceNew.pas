@@ -100,11 +100,17 @@ TRS232CustomDevice=class(TNamedInterfacedObject)
    procedure SetMessageError(const Value:string);
    function GetData(Index: Integer): Byte;
    procedure SetData(Index: integer; Value: byte);
+   function  GetHighDataIndex:integer;
+   procedure SetHighDataIndex(Value:integer);
   public
    property Data[Index: Integer]:byte read GetData write SetData;
+   property HighDataIndex:integer read GetHighDataIndex write SetHighDataIndex;
    property Error:boolean read fError write SetError;
    property MessageError:string read GetMessageError write SetMessageError;
    Constructor Create(Nm:string);
+   procedure AddData(NewData:array of byte);overload;
+   procedure AddData(NewByte:byte);overload;
+   procedure CopyToData(NewData:array of byte);
   end;
 
 
@@ -130,6 +136,7 @@ TRS232MeterDevice=class(TRS232CustomDevice,IMeasurement,IRS232DataObserver)
    fRS232MeasuringTread:TThread;
    fNewData:boolean;
    function GetNewData:boolean;
+   function GetDeviceKod:byte;virtual;
    Function Measurement():double;virtual;
    Function GetValue():double;virtual;
    procedure SetNewData(Value:boolean);
@@ -146,6 +153,7 @@ TRS232MeterDevice=class(TRS232CustomDevice,IMeasurement,IRS232DataObserver)
    property MinDelayTime:integer read  fMinDelayTime;
    property DelayTimeStep:integer read  fDelayTimeStep;
    property DelayTimeMax:integer read  fDelayTimeMax;
+   property DeviceKod:byte read GetDeviceKod;
    Constructor Create(Nm:string);
    Procedure Request();virtual;abstract;
    function GetData():double;virtual;
@@ -285,6 +293,12 @@ procedure TRS232MeterDevice.GetDataThread(WPARAM: word;EventEnd:THandle);
 begin
  if RS232DataSubject.PortConnected then
    fRS232MeasuringTread:=TRS232MeasuringTread.Create(Self,WPARAM,EventEnd);
+end;
+
+
+function TRS232MeterDevice.GetDeviceKod: byte;
+begin
+ Result:=0;
 end;
 
 function TRS232MeterDevice.GetRS232DataSubject:IRS232DataSubject;
@@ -533,10 +547,32 @@ end;
 
 { TRS232CustomDevice }
 
+procedure TRS232CustomDevice.AddData(NewData: array of byte);
+ var i,j:integer;
+begin
+ j:=High(fData)+1;
+ SetLength(fData,j+High(NewData)+1);
+ for I := 0 to High(NewData) do
+  fData[i+j]:= NewData [i];
+end;
+
+procedure TRS232CustomDevice.AddData(NewByte: byte);
+begin
+ AddData([NewByte]);
+end;
+
 constructor TRS232CustomDevice.Create(Nm: string);
 begin
  fName:=Nm;
  fMessageError:=fName+ErrorMes;
+end;
+
+procedure TRS232CustomDevice.CopyToData(NewData: array of byte);
+ var i:integer;
+begin
+ SetLength(fData,High(NewData)+1);
+ for I := 0 to High(NewData) do
+  fData[i]:= NewData [i];
 end;
 
 function TRS232CustomDevice.GetData(Index: Integer): byte;
@@ -547,6 +583,11 @@ begin
     Result:=fData[Index];
 end;
 
+function TRS232CustomDevice.GetHighDataIndex: integer;
+begin
+ Result:=High(fData);
+end;
+
 function TRS232CustomDevice.GetMessageError: string;
 begin
  Result:=fMessageError;
@@ -554,7 +595,7 @@ end;
 
 procedure TRS232CustomDevice.SetData(Index: integer; Value:byte);
 begin
-  if Index>High(fData)
+  if Index<=High(fData)
    then  fData[Index]:=Value;
   
 end;
@@ -562,6 +603,11 @@ end;
 procedure TRS232CustomDevice.SetError(const Value: boolean);
 begin
  fError:=Value;
+end;
+
+procedure TRS232CustomDevice.SetHighDataIndex(Value: integer);
+begin
+ SetLength(fData,Value+1);
 end;
 
 procedure TRS232CustomDevice.SetMessageError(const Value: string);

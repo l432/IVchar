@@ -295,16 +295,8 @@ TFastIVDependence=class (TFastDependence)
     FImin: double;
     FCurrentValueLimitEnable: boolean;
     fForwardBranch:boolean;
-//    fAbsVoltageValue:double;
-    fVoltageFactor:double;
-//    fDiodOrientationVoltageFactor:integer;
     fVoltageMeasured,fCurrentMeasured:double;
-//    fDragonBackTime:double;
-//    fItIsBranchBegining:boolean;
     fItIsLightIV:boolean;
-//    fSingleMeasurement:boolean;
-//    fVoc:double;
-//    fIsc:double;
 
     RevLine: TPointSeries;
     RevLg: TPointSeries;
@@ -319,7 +311,6 @@ TFastIVDependence=class (TFastDependence)
 
    procedure SeriesClear();override;
 
-//   function StepFromVector(Vector:TVector):double;
    function VoltageStep:double;
    procedure VoltageChange;
    procedure ActionMeasurement();override;
@@ -334,6 +325,7 @@ TFastIVDependence=class (TFastDependence)
    procedure VocIscDetermine;
    procedure PointSeriesFilling;
  protected
+   fVoltageFactor:double;
    fAbsVoltageValue:double;
    fItIsBranchBegining:boolean;
    fDragonBackTime:double;
@@ -1228,7 +1220,7 @@ begin
   Target.RangeFor:=Self.RangeFor;
   Target.RangeRev:=Self.RangeRev;
   Target.ForwardDelV:=Self.ForwardDelV;
-  Target.ReverseDelV:=Self.ForwardDelV;
+  Target.ReverseDelV:=Self.ReverseDelV;
   Target.CBForw:=Self.CBForw;
   Target.CBRev:=Self.CBRev;
   Target.SettingDevice:=Self.SettingDevice;
@@ -1309,7 +1301,8 @@ begin
    VoltageFactorDetermination();
 
 
-   while (fAbsVoltageValue<=Finish) do
+//   while (fAbsVoltageValue<=Finish) do
+   while (round(fAbsVoltageValue*1000)<=round(Finish*1000)) do
      begin
       DuringMeasuring(ActionMeasurement);
       if fIVMeasuringToStop then Exit;

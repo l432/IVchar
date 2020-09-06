@@ -5,7 +5,7 @@ interface
 
 uses
   ArduinoADC, OlegShowTypes, ExtCtrls, StdCtrls, IniFiles, 
-  MDevice, ArduinoDeviceShow, ArduinoDeviceNew, Measurement;
+  MDevice, ArduinoDeviceShow, ArduinoDeviceNew, Measurement, PacketParameters;
 
 type
 
@@ -91,6 +91,7 @@ type
    procedure Intitiation(); override;
    procedure PinsCreate();override;
    procedure FinalPacketCreateToSend();override;
+   function  GetNumberByteInResult:byte;override;
   public
    property Averages:TINA226_Averages read GetAverages write SetAverages;
    property ShuntConversionTime:TINA226_ConversionTime read fShuntVoltageCT write fShuntVoltageCT;
@@ -101,6 +102,7 @@ type
    property Rsh:double read fRsh write SetRsh;
    property TimeFactor:byte read fTimeFactor write SetTimeF;
    procedure ConvertToValue();override;
+   function ValueToByteArray(Value:double;var ByteAr:TArrByte):boolean;override;
  end;
 
 
@@ -137,13 +139,14 @@ type
  private
   fMode: TINA226_Mode;
  protected
-  procedure SetModuleParameters;override;
+
   procedure PinsCreate;override;
  public
   Constructor Create(Mode:TINA226_Mode;
                       INA: TINA226_Module);
 //  procedure Free;//override;
   destructor Destroy; override;
+  procedure SetModuleParameters;override;
  end;
 
  TINA226_ChannelShow=class(TOnePinsShow)
@@ -173,7 +176,7 @@ var
 implementation
 
 uses
-  Math, OlegType, PacketParameters, SysUtils, Dialogs, OlegFunction;
+  Math, OlegType, SysUtils, Dialogs, OlegFunction;
 
 
 { TINA226_Module }
@@ -233,8 +236,10 @@ end;
 
 procedure TINA226_Module.FinalPacketCreateToSend;
 begin
- PacketCreate([fMetterKod, Pins.PinControl,
+ CopyToData([fMetterKod, Pins.PinControl,
       fConfigByte, fConfigByteTwo, fTimeFactor]);
+// PacketCreate([fMetterKod, Pins.PinControl,
+//      fConfigByte, fConfigByteTwo, fTimeFactor]);
 end;
 
 function TINA226_Module.GetAverages: TINA226_Averages;
@@ -245,6 +250,14 @@ end;
 function TINA226_Module.GetMode: TINA226_Mode;
 begin
  Result:=TINA226_Mode(FActiveChannel)
+end;
+
+function TINA226_Module.GetNumberByteInResult: byte;
+begin
+ case Mode of
+  ina_mShunt,ina_mBus: Result:=2;
+   else   Result:=4;
+ end;
 end;
 
 function TINA226_Module.IncorrectData: boolean;
@@ -303,6 +316,36 @@ end;
 procedure TINA226_Module.SetTimeF(const Value: byte);
 begin
  if Value>0 then fTimeFactor:=Value;
+end;
+
+function TINA226_Module.ValueToByteArray(Value: double;
+             var ByteAr: TArrByte): boolean;
+  var temp:integer;
+begin
+ SetLength(ByteAr,NumberByteInResult);
+ Result:=false;
+ case Mode of
+  ina_mShunt: begin
+                temp:=round((Value*fRsh/INA226_ShuntLSB
+                            -INA226_CalibrA[fShuntVoltageCT])
+                            /INA226_CalibrB[fShuntVoltageCT]);
+                if temp<0 then temp:=((not(abs(temp)))+1)and $FFFF;
+                ByteAr[0]:=(temp shr 8) and $FF;
+                ByteAr[1]:=temp and $FF;
+              end;
+  ina_mBus:   begin
+                temp:=round((Value/INA226_BusLSB
+                            -INA226_CalibrA[fBusVoltageCT])
+                            /INA226_CalibrB[fBusVoltageCT]);
+                if temp<0 then temp:=((not(abs(temp)))+1)and $FFFF;
+                ByteAr[0]:=(temp shr 8) and $FF;
+                ByteAr[1]:=temp and $FF;
+              end;
+  else Exit;
+ end;
+
+ Result:=True;
+
 end;
 
 { TPins_INA226_Module }

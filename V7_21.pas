@@ -52,9 +52,10 @@ type
    fTimeToMeasurement:word;
    procedure CreateDataConverter;virtual;abstract;
    function GetDiapazon:Shortint;
+   procedure  PrepareData;override;
   public
    property Diapazon:Shortint read GetDiapazon;
-   procedure   PacketCreateToSend(); override;
+//   procedure   PacketCreateToSend(); override;
    Procedure ConvertToValue();override;
    Function ResultProblem(Rez:double):boolean;//override;
    Constructor Create(Nm:string);//override;
@@ -202,9 +203,14 @@ begin
  Result:=fDataConverter.fDiapazon;
 end;
 
-procedure TVoltmetr.PacketCreateToSend;
+//procedure TVoltmetr.PacketCreateToSend;
+//begin
+//  PacketCreate([fMetterKod,Pins.PinControl,Pins.PinGate]);
+//end;
+
+procedure TVoltmetr.PrepareData;
 begin
-  PacketCreate([fMetterKod,Pins.PinControl,Pins.PinGate]);
+  CopyToData([fMetterKod,Pins.PinControl,Pins.PinGate]);
 end;
 
 function TVoltmetr.ResultProblem(Rez: double): boolean;

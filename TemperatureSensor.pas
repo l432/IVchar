@@ -37,9 +37,10 @@ type
   THTU21D=class(TTempSensor)
   {базовий клас для датчика HTU21D}
   protected
-    Function CRCCorrect():boolean;
+   Function CRCCorrect():boolean;
+   procedure  PrepareData;override;
   public
-   Procedure PacketCreateToSend();override;
+//   Procedure PacketCreateToSend();override;
    Constructor Create(Nm:string);//override;
    Procedure ConvertToValue();override;
   end;
@@ -61,6 +62,7 @@ type
      function GetNewData:boolean;
      function GetValue:double;
      procedure SetNewData(value:boolean);
+     function GetDeviceKod:byte;
     public
      property Measurement:IMeasurement read GetMeasurement write SetMeasurement;
      property NewData:boolean read GetNewData  write SetNewData;
@@ -140,6 +142,12 @@ end;
 procedure TThermoCuple.GetDataThread(WPARAM: word;EventEnd:THandle);
 begin
  Measurement.GetDataThread(WPARAM,EventEnd);
+end;
+
+
+function TThermoCuple.GetDeviceKod: byte;
+begin
+ Result:=0;
 end;
 
 function TThermoCuple.GetMeasurement:IMeasurement;
@@ -232,11 +240,16 @@ begin
   fDelayTimeStep:=2;
 end;
 
-procedure THTU21D.PacketCreateToSend;
-begin
-  PacketCreate([fMetterKod,fMetterKod]);
-end;
+//procedure THTU21D.PacketCreateToSend;
+//begin
+//  PacketCreate([fMetterKod,fMetterKod]);
+//end;
 
+
+procedure THTU21D.PrepareData;
+begin
+  CopyToData([fMetterKod,fMetterKod]);
+end;
 
 { TSTS21 }
 

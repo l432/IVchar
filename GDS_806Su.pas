@@ -290,6 +290,7 @@ TGDS_806S_Channel=class(TNamedInterfacedObject,IMeasurement)
   function GetValue:double;
   procedure SetNewData(Value:boolean);
   function GetMeasureModeLabel():string;
+  function GetDeviceKod:byte;
  public
  property NewData:boolean read GetNewData write SetNewData;
  property Value:double read GetValue;
@@ -1734,6 +1735,12 @@ end;
 procedure TGDS_806S_Channel.GetDataThread(WPARAM: word; EventEnd: THandle);
 begin
 // не зробив
+end;
+
+
+function TGDS_806S_Channel.GetDeviceKod: byte;
+begin
+ Result:=0;
 end;
 
 function TGDS_806S_Channel.GetMeasureModeLabel: string;

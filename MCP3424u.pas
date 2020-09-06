@@ -90,9 +90,11 @@ type
   private
     FGain: TMCP3424_Gain;
     FResolution: TMCP3424_Resolution;
+    
   protected
    procedure Configuration();override;
    procedure Intitiation; override;
+   function  GetNumberByteInResult:byte;override;
   public
    property Gain: TMCP3424_Gain read FGain write FGain;
    property Resolution: TMCP3424_Resolution read FResolution write FResolution;
@@ -111,10 +113,11 @@ TPins_MCP3424=class(TPinsForCustomValues)
  private
  protected
   procedure PinsCreate;override;
-  procedure SetModuleParameters;override;
+
  public
    Constructor Create(ChanelNumber: TMCP3424_ChanelNumber;
                       MCP3424_Module: TMCP3424_Module);//override;
+   procedure SetModuleParameters;override;                   
  end;
 
 
@@ -200,6 +203,14 @@ begin
                  CalibrateB[FActiveChannel,FResolution],
                  temp)
     *MCP3424_LSB[FResolution]/MCP3424_Gain_Data[FGain];
+end;
+
+function TMCP3424_Module.GetNumberByteInResult: byte;
+begin
+ case FResolution of
+   mcp_r18b: Result:=4;
+   else Result:=3;
+ end;
 end;
 
 procedure TMCP3424_Module.Intitiation;

@@ -28,16 +28,18 @@ IMeasurement = interface (IName)
  function GetNewData:boolean;
  function GetValue:double;
  function GetData:double;
+ function GetDeviceKod:byte;
  procedure SetNewData(Value:boolean);
  procedure GetDataThread(WPARAM: word; EventEnd:THandle);
  property NewData:boolean read GetNewData write SetNewData;
  property Value:double read GetValue;
+ property DeviceKod:byte read GetDeviceKod;
 end;
 
 IDAC = interface (IName)
   ['{F729B2E9-AF49-4293-873B-83D53C258E0A}']
  function GetOutputValue:double;
- function GetDeviceKod:byte;
+ function GetDACKod:byte;
  procedure Output(Value:double);
  {встановлює на виході напругу Value}
  procedure OutputInt(Kod:integer);
@@ -45,7 +47,7 @@ IDAC = interface (IName)
  Procedure Reset();
  {встановлює на виході 0}
  property OutputValue:double read GetOutputValue;
- property DeviceKod:byte read GetDeviceKod;
+ property DACKod:byte read GetDACKod;
 end;
 
 ICalibration = interface
@@ -75,12 +77,14 @@ private
  function GetValue:double;
  function GetOutputValue:double;
  function GetDeviceKod:byte;
+ function GetDACKod:byte;
  procedure SetNewData(Value:boolean);
 public
  property Value:double read GetValue;
  property NewData:boolean read GetNewData write SetNewData;
  property OutputValue:double read GetOutputValue;
  property DeviceKod:byte read GetDeviceKod;
+ property DACKod:byte read GetDACKod;
 
  Constructor Create(name:string);overload;
  Constructor Create();overload;
@@ -198,6 +202,11 @@ end;
 function TSimulator.GetOutputValue: double;
 begin
  Result:=fOutputValue;
+end;
+
+function TSimulator.GetDACKod: byte;
+begin
+ Result:=0;
 end;
 
 function TSimulator.GetData: double;

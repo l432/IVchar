@@ -170,6 +170,7 @@ TET1255_ADCChannel=class(TNamedInterfacedObject,IMeasurement)
   procedure SetSerialMeasurementNumber(const Value: byte);
   procedure AverageValueCalculation;
   function DataCalibration(DataMeasured:double):double;
+  function GetDeviceKod:byte;
  public
   DataVector:TVector;
   property NewData:boolean read GetNewData write SetNewData;
@@ -211,6 +212,7 @@ end;
    function GetValue:double;
    procedure SetNewData(Value:boolean);
    function GetName:string;
+   function GetDeviceKod:byte;
   public
    Channels:array[TET1255_ADC_ChanelNumber] of TET1255_ADCChannel;
    property NewData:boolean read GetNewData write SetNewData;
@@ -266,7 +268,7 @@ end;
   fOutputValue:double;
   Procedure ShowError();
   function GetOutputValue:double;
-  function GetDeviceKod:byte;
+  function GetDACKod:byte;
  public
    property OutputValue:double read GetOutputValue;
    procedure Output(Value:double);//virtual;
@@ -305,7 +307,7 @@ begin
   Reset();
 end;
 
-function TET1255_DAC.GetDeviceKod: byte;
+function TET1255_DAC.GetDACKod: byte;
 begin
  Result:=0;
 end;
@@ -633,6 +635,12 @@ begin
    TET1255_Chanel_MeasuringTread.Create(Self,WPARAM,EventEnd);
 end;
 
+
+function TET1255_ADCChannel.GetDeviceKod: byte;
+begin
+ Result:=0;
+end;
+
 function TET1255_ADCChannel.GetNewData: boolean;
 begin
   Result:=fNewData;
@@ -929,6 +937,11 @@ end;
 procedure TET1255_ModuleAndChan.GetDataThread(WPARAM: word; EventEnd: THandle);
 begin
  Channels[ActiveChannel].GetDataThread(WPARAM,EventEnd);
+end;
+
+function TET1255_ModuleAndChan.GetDeviceKod: byte;
+begin
+ Result:=0;
 end;
 
 function TET1255_ModuleAndChan.GetName: string;

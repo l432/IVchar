@@ -146,6 +146,7 @@ type
   protected
    procedure Configuration();override;
    procedure Intitiation(); override;
+   function  GetNumberByteInResult:byte;override;
   public
    property Gain: TADS1115_Gain read FGain write FGain;
    property DataRate: TADS1115_DataRate read FDataRate write FDataRate;
@@ -192,11 +193,12 @@ TPins_ADS1115_Chanel=class(TPinsForCustomValues)
  TADS1115_Channel=class(TArduinoADC_Channel)
  private
  protected
-  procedure SetModuleParameters;override;
+
   procedure PinsCreate;override;
  public
 //  Constructor Create(ChanelNumber: TADS1115_ChanelNumber;
 //                      ADS1115_Module: TADS1115_Module);//override;
+  procedure SetModuleParameters;override;
  end;
 
  TADS1115_ChannelShow=class(TPinsShowUniversal)
@@ -265,6 +267,11 @@ end;
 constructor TADS1115_Module.Create;
 begin
  inherited Create('ADS1115');
+end;
+
+function TADS1115_Module.GetNumberByteInResult: byte;
+begin
+ Result:=3;
 end;
 
 procedure TADS1115_Module.Intitiation;

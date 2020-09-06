@@ -27,8 +27,9 @@ type
    fNewGrCoef:Word;
   protected
    Function CRCCorrect():boolean;
+   procedure PrepareData;override;
   public
-   Procedure PacketCreateToSend();override;
+//   Procedure PacketCreateToSend();override;
    function GetTemperature():double;override;
    Constructor Create(Nm:string);
    Procedure ConvertToValue();override;
@@ -171,11 +172,20 @@ begin
                      else Result:=round(abs(Frac(NewCoef))*MLX90615_GrayCoefficientMax);
 end;
 
-procedure TMLX90615.PacketCreateToSend;
+//procedure TMLX90615.PacketCreateToSend;
+//begin
+// if fstate in [mlx_tObject,mlx_tAmbient,mlx_gcRead]
+//  then  PacketCreate([fMetterKod,Pins.PinControl,MLX90615_OperationCod[fstate]])
+//  else  PacketCreate([fMetterKod,Pins.PinControl,MLX90615_OperationCod[fstate],
+//              Lo(fNewGrCoef),Hi(fNewGrCoef),
+//              CRC8([$b6,$13,Lo(fNewGrCoef),Hi(fNewGrCoef)])]);
+//end;
+
+procedure TMLX90615.PrepareData;
 begin
  if fstate in [mlx_tObject,mlx_tAmbient,mlx_gcRead]
-  then  PacketCreate([fMetterKod,Pins.PinControl,MLX90615_OperationCod[fstate]])
-  else  PacketCreate([fMetterKod,Pins.PinControl,MLX90615_OperationCod[fstate],
+  then  CopyToData([fMetterKod,Pins.PinControl,MLX90615_OperationCod[fstate]])
+  else  CopyToData([fMetterKod,Pins.PinControl,MLX90615_OperationCod[fstate],
               Lo(fNewGrCoef),Hi(fNewGrCoef),
               CRC8([$b6,$13,Lo(fNewGrCoef),Hi(fNewGrCoef)])]);
 end;
