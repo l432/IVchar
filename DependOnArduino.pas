@@ -4,7 +4,7 @@ interface
 
 uses
   Dependence, ArduinoDeviceNew, PacketParameters, StdCtrls, Series, AD5752R, 
-  ArduinoADC, INA226, ADS1115;
+  ArduinoADC, INA226, ADS1115, MDevice;
 
 const
 
@@ -46,7 +46,7 @@ type
    fArduinoCommunication:TArdIVDepen;
    fVoltageMD:TArduinoADC_Channel;
    fCurrentMD:TArduinoADC_Channel;
-
+   fDAC:TAD5752_Chanel;
    function DataToSendPrepare:boolean;
    function BranchDataPrepare(IsForward:boolean):byte;
    {повертає кількість піддіапазонів з різним кроком}
@@ -56,6 +56,12 @@ type
     шостий 1 - [результат]=100 mV
            0 - [результат]=10 mV}
     function MDs_Determine:boolean;
+    function MD_Determine(var MD:TArduinoADC_Channel;
+                          TMD:TMeasuringDevice;
+                          DeviceType:string=' '):boolean;
+    function VS_Determine:boolean;
+    function VoltageValuesDetermine:boolean;
+    procedure LimitCurrentDetermine;
   public
    Constructor Create(
                      BS: TButton;
@@ -216,50 +222,36 @@ begin
 end;
 
 function TFastArduinoIVDependence.DataToSendPrepare:boolean;
-var
-  i: Integer;
-  BAr: TArrByte;
 begin
  Result:=False;
  fArduinoCommunication.ClearData;
  fArduinoCommunication.AddData(byte(round(fDragonBackTime)));
- fArduinoCommunication.AddData(SettingDevice.ActiveInterface.DACKod);
 
- if fArduinoCommunication.fData[High(fArduinoCommunication.fData)]=0 then
-  begin
-   MessageDlg('Voltage Source is uncorrect',mtError, [mbOK], 0);
-   Exit;
-  end;
+ if not(VS_Determine) then Exit;
 
- fArduinoCommunication.AddData(0);
- fArduinoCommunication.fData[3]:=byte(BranchDataPrepare(True) shl 4)+
-                                 byte(BranchDataPrepare(False));
 
+ if not(VoltageValuesDetermine) then Exit;
 
  if not(MDs_Determine) then Exit;
 
- fArduinoCommunication.AddData(
-   byte(byte(fVoltageMD.ParentModule.HighDataIndex+1) shl 4)+
-   byte(fCurrentMD.ParentModule.HighDataIndex+1)
-   );
-
- for I := 0 to fVoltageMD.ParentModule.HighDataIndex do
-   fArduinoCommunication.AddData(fVoltageMD.ParentModule.Data[i]);
- for I := 0 to fCurrentMD.ParentModule.HighDataIndex do
-   fArduinoCommunication.AddData(fCurrentMD.ParentModule.Data[i]);
+ LimitCurrentDetermine;
 
 
-(INA226_Shunt.ParentModule as TINA226_Module).ValueToByteArray(-1e-3,BAr);
 
-  Showmessage(ByteArrayToString(BAr));
 
-  fCurrentMD.ParentModule.HighDataIndex:=High(BAr);
-  for I := 0 to High(BAr) do
-   fCurrentMD.ParentModule.Data[i]:=BAr[i];
-  fCurrentMD.ParentModule.ConvertToValue;
-  showmessage(floattostr(fCurrentMD.ParentModule.Value));
+// fCurrentMD.ParentModule.ValueToByteArray(-1,BAr);
 
-//  Showmessage(ByteArrayToString(fArduinoCommunication.fData));
+//  Showmessage(ByteArrayToString(BAr));
+
+//  fCurrentMD.ParentModule.HighDataIndex:=High(BAr);
+//  for I := 0 to High(BAr) do
+//   fCurrentMD.ParentModule.Data[i]:=BAr[i];
+//  fCurrentMD.ParentModule.ConvertToValue;
+//  showmessage(floattostr(fCurrentMD.ParentModule.Value));
+
+  Showmessage(ByteArrayToString(fArduinoCommunication.fData));
+
+
   Result:=true;
 
 
@@ -267,49 +259,58 @@ begin
 end;
 
 function TFastArduinoIVDependence.MDs_Determine: boolean;
+ var i,j:integer;
+begin
+ Result:=False;
+
+ if not(MD_Determine(fVoltageMD,Voltage_MD,'Voltage ')) then Exit;
+
+ fArduinoCommunication.AddData(
+   byte(byte(fVoltageMD.ParentModule.HighDataIndex+1) shl 4)
+   );
+ j:=fArduinoCommunication.HighDataIndex;
+
+ for I := 0 to fVoltageMD.ParentModule.HighDataIndex do
+   fArduinoCommunication.AddData(fVoltageMD.ParentModule.Data[i]);
+
+
+ if not(MD_Determine(fCurrentMD,Current_MD,'Current ')) then Exit;
+ for I := 0 to fCurrentMD.ParentModule.HighDataIndex do
+   fArduinoCommunication.AddData(fCurrentMD.ParentModule.Data[i]);
+
+ fArduinoCommunication.Data[j]:=
+       fArduinoCommunication.Data[j]
+       +byte(fCurrentMD.ParentModule.HighDataIndex+1);
+
+ Result:=True;
+
+end;
+
+function TFastArduinoIVDependence.MD_Determine(var MD:TArduinoADC_Channel;
+                  TMD:TMeasuringDevice;
+                  DeviceType:string=' '): boolean;
  var i:byte;
 begin
  Result:=False;
 
- fVoltageMD:=nil;
+ MD:=nil;
  for i := 1 to MeasurementDeviceNumber do
-  if Voltage_MD.ActiveInterface.Name=MeasurementDeviceNames[i]
+  if TMD.ActiveInterface.Name=MeasurementDeviceNames[i]
    then
     begin
-      fVoltageMD:=MeasurementDevice[i];
+      MD:=MeasurementDevice[i];
       Break;
     end;
 
- if not(Assigned(fVoltageMD)) then
+ if not(Assigned(MD)) then
   begin
-   MessageDlg('Voltage Measure Device is uncorrect',mtError, [mbOK], 0);
+   MessageDlg(DeviceType+'Measure Device is uncorrect',mtError, [mbOK], 0);
    Exit;
   end;
 
- fVoltageMD.SetModuleParameters;
- fVoltageMD.ParentModule.PrepareData;
-
-
- fCurrentMD:=nil;
- for i := 1 to MeasurementDeviceNumber do
-  if Current_MD.ActiveInterface.Name=MeasurementDeviceNames[i]
-   then
-    begin
-      fCurrentMD:=MeasurementDevice[i];
-      Break;
-    end;
-
-  if not(Assigned(fCurrentMD)) then
-  begin
-   MessageDlg('Current Measure Device is uncorrect',mtError, [mbOK], 0);
-   Exit;
-  end;
-
- fCurrentMD.SetModuleParameters;
- fCurrentMD.ParentModule.PrepareData;
-
+ MD.SetModuleParameters;
+ MD.ParentModule.PrepareData;
  Result:=True;
-
 end;
 
 procedure TFastArduinoIVDependence.Measuring(SingleMeasurement: boolean;
@@ -335,6 +336,38 @@ begin
 //  EndMeasuring();
 end;
 
+procedure TFastArduinoIVDependence.LimitCurrentDetermine;
+var
+  BAr: TArrByte;
+begin
+  if CurrentValueLimitEnable then
+  begin
+    fArduinoCommunication.AddData(fCurrentMD.ParentModule.NumberByteInResult);
+    if CBForw.Checked then
+    begin
+      fCurrentMD.ParentModule.ValueToByteArray(abs(Imax) * fDiodOrientationVoltageFactor, BAr);
+      fArduinoCommunication.AddData(BAr);
+    end;
+    if CBRev.Checked then
+    begin
+      fCurrentMD.ParentModule.ValueToByteArray(-abs(Imax) * fDiodOrientationVoltageFactor, BAr);
+      fArduinoCommunication.AddData(BAr);
+    end;
+  end
+  else
+    fArduinoCommunication.AddData($0);
+end;
+
+function TFastArduinoIVDependence.VoltageValuesDetermine: boolean;
+ var i:byte;
+begin
+ fArduinoCommunication.AddData(0);
+ i:=fArduinoCommunication.HighDataIndex;
+ fArduinoCommunication.fData[i]:=byte(BranchDataPrepare(True) shl 4)+
+                                 byte(BranchDataPrepare(False));
+ Result:=fArduinoCommunication.fData[i]<>0;
+end;
+
 function TFastArduinoIVDependence.VoltageValueToByte(Voltage:double; factor:byte=100): byte;
 begin
   if abs(Voltage)>0.63
@@ -345,6 +378,33 @@ begin
      end
     else Result:=$3F and byte(round(abs(Voltage)*100));
   if Voltage<0 then Result:=Result or $80;
+end;
+
+function TFastArduinoIVDependence.VS_Determine: boolean;
+ var i:integer;
+begin
+ Result:=False;
+ fDAC:=nil;
+ for i := 1 to VoltageSourceNumber do
+  if SettingDevice.ActiveInterface.Name=VoltageSourceNames[i]
+   then
+    begin
+      fDAC:=VoltageSourceDevice[i];
+      Break;
+    end;
+
+ if not(Assigned(fDAC)) then
+  begin
+   MessageDlg('Voltage Source is uncorrect',mtError, [mbOK], 0);
+   Exit;
+  end;
+
+ fDAC.DataToSendFromReset;
+ fArduinoCommunication.AddData(fDAC.Modul.HighDataIndex+1);
+ for I := 0 to fDAC.Modul.HighDataIndex do
+     fArduinoCommunication.AddData(fDAC.Modul.Data[i]);
+
+ Result:=True;
 end;
 
 end.

@@ -323,6 +323,8 @@ function TINA226_Module.ValueToByteArray(Value: double;
   var temp:integer;
 begin
  SetLength(ByteAr,NumberByteInResult);
+
+
  Result:=false;
  case Mode of
   ina_mShunt: begin

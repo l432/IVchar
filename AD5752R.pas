@@ -52,7 +52,7 @@ type
    procedure PinsCreate();override;
   public
    procedure SetDataLength(Length:byte);
-   function HighNumberData:integer;
+//   function HighNumberData:integer;
    procedure ClearData;
    procedure AddData(NewData:array of byte);
  end;
@@ -89,13 +89,14 @@ type
    function GetDACKod:byte;
   protected
    function  VoltageToKod(Voltage:double):integer;
-   procedure PrepareAction(Voltage:double);
+   procedure PrepareAction;
    procedure DataToSendFromKod(Kod:Integer);
-   procedure DataToSendFromReset;
+
    function NormedKod(Kod: Integer):integer;
    function NormedVoltage(Voltage:double):double;virtual;
    procedure SetDiapazon(D:T5752OutputRange);
   public
+   property Modul:TAD5752_Modul read fModul;
    property OutputValue:double read GetOutputValue;
    property Diapazon:T5752OutputRange read fDiapazon write SetDiapazon;
    property Power:boolean read fPowerOn;
@@ -106,6 +107,7 @@ type
    Procedure OutputInt(Kod:integer);
    procedure PowerOff();
    procedure PowerOn();
+   procedure DataToSendFromReset;
 //   destructor Destroy; override;
   end;
 
@@ -169,10 +171,10 @@ begin
   SetLength(fData,2);
 end;
 
-function TAD5752_Modul.HighNumberData: integer;
-begin
- Result:=High(fData);
-end;
+//function TAD5752_Modul.HighNumberData: integer;
+//begin
+// Result:=High(fData);
+//end;
 
 procedure TAD5752_Modul.PinsCreate;
 begin
@@ -281,7 +283,7 @@ procedure TAD5752_Chanel.Output(Voltage: double);
 begin
   if Voltage=ErResult then Exit;
  fOutputValue:=NormedVoltage(Voltage);
- PrepareAction(fOutputValue);
+ PrepareAction;
  DataToSendFromKod(VoltageToKod(fOutputValue));
  fModul.isNeededComPortState();
 end;
@@ -291,7 +293,7 @@ procedure TAD5752_Chanel.OutputInt(Kod: integer);
 begin
  Nkod:=NormedKod(Kod);
  fOutputValue:=Nkod;
- PrepareAction(fOutputValue);
+ PrepareAction;
  DataToSendFromKod(abs(Nkod));
  fModul.isNeededComPortState();
 end;
@@ -308,11 +310,11 @@ procedure TAD5752_Chanel.PowerOn;
 begin
  fModul.ClearData;
  fModul.AddData([$10,fPowerOnByte]);
- fPowerOn:=false;
+ fPowerOn:=True;
  fModul.isNeededComPortState();
 end;
 
-procedure TAD5752_Chanel.PrepareAction(Voltage: double);
+procedure TAD5752_Chanel.PrepareAction;
 begin
  fModul.ClearData;
  if fSettedDiapazon<>fDiapazon then

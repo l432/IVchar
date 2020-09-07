@@ -4,7 +4,7 @@ interface
 
 uses
   StdCtrls, ExtCtrls, ArduinoADC, Classes, MDevice, 
-  ArduinoDeviceShow, ArduinoDeviceNew;
+  ArduinoDeviceShow, ArduinoDeviceNew, PacketParameters;
 
 type
 
@@ -152,6 +152,7 @@ type
    property DataRate: TADS1115_DataRate read FDataRate write FDataRate;
    procedure ConvertToValue();override;
    constructor Create();
+   function ValueToByteArray(Value:double;var ByteAr:TArrByte):boolean;override;
  end;
 
 //--------------------------------------------------
@@ -229,7 +230,7 @@ procedure  ADS11115_ChannelsFree;
 implementation
 
 uses
-  PacketParameters, SysUtils, OlegType, Math;
+  SysUtils, OlegType, Math;
 
 { ADS1115_Module }
 
@@ -285,6 +286,29 @@ begin
 end;
 
 
+
+function TADS1115_Module.ValueToByteArray(Value: double;
+               var ByteAr: TArrByte): boolean;
+  var temp:integer;
+begin
+ SetLength(ByteAr,NumberByteInResult);
+
+ temp:=round((Value/ADS1115_Gain_Data[FGain]/ADS1115_LSB
+                            -ADS1115_CalibrateA[FActiveChannel,FGain])
+                            /ADS1115_CalibrateB[FActiveChannel,FGain,FDataRate]);
+ if temp<0 then temp:=((not(abs(temp)))+1)and $FFFF;
+ ByteAr[0]:=(temp shr 8) and $FF;
+ ByteAr[1]:=temp and $FF;
+ case FGain of
+  ads_g2_3: ByteAr[2]:=$00;
+  ads_g1  : ByteAr[2]:=$02;
+  ads_g2  : ByteAr[2]:=$04;
+  ads_g4  : ByteAr[2]:=$06;
+  ads_g8  : ByteAr[2]:=$08;
+  ads_g16 : ByteAr[2]:=$0A;
+ end;
+ Result:=True;
+end;
 
 //procedure TADS1115_Module.PinsCreate;
 //begin

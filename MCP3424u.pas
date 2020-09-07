@@ -5,7 +5,7 @@ interface
 
 uses
   CPort, Measurement, StdCtrls, MDevice, ExtCtrls, ArduinoADC, 
-  IniFiles, ArduinoDeviceNew;
+  IniFiles, ArduinoDeviceNew, PacketParameters;
 
 type
 
@@ -99,6 +99,7 @@ type
    property Gain: TMCP3424_Gain read FGain write FGain;
    property Resolution: TMCP3424_Resolution read FResolution write FResolution;
    procedure ConvertToValue();override;
+   function ValueToByteArray(Value:double;var ByteAr:TArrByte):boolean;override;
  end;
 
 TPins_MCP3424=class(TPinsForCustomValues)
@@ -147,7 +148,7 @@ procedure  MCP3424_ChannelsFree;
 implementation
 
 uses
-  PacketParameters, SysUtils, OlegType, Math,
+  SysUtils, OlegType, Math,
   Dialogs, OlegFunction, OlegMath;
 
 { MCP3424_Module }
@@ -220,6 +221,57 @@ begin
   fMetterKod := MCP3424Command;
 end;
 
+
+function TMCP3424_Module.ValueToByteArray(Value: double;
+                         var ByteAr: TArrByte): boolean;
+  var temp:Int64;
+      IsNegative:boolean;
+begin
+ SetLength(ByteAr,NumberByteInResult);
+
+ Result:=false;
+
+ temp:=round((Value*MCP3424_Gain_Data[FGain]
+             /MCP3424_LSB[FResolution]
+             -CalibrateA[FActiveChannel,FResolution,FGain])
+             /CalibrateB[FActiveChannel,FResolution]);
+
+ IsNegative:= temp<0;
+
+ if IsNegative then
+  begin
+    ByteAr[0]:=$80;
+    case FResolution of
+     mcp_r12b: temp:=((not(abs(temp))+$01)and $7ff);
+     mcp_r14b: temp:=((not(abs(temp))+$1)and $1fff);
+     mcp_r16b: temp:=((not(abs(temp))+$1)and $7fff);
+     mcp_r18b: temp:=((not(abs(temp))+$1)and $1ffff);
+    end;
+  end;
+
+  ByteAr[High(ByteAr)]:=ord(FGain)and $03;
+  ByteAr[High(ByteAr)-1]:=byte(temp and $FF);
+
+  case FResolution of
+   mcp_r12b: ByteAr[High(ByteAr)-2]:= (temp shr 8)and $7;
+   mcp_r14b: ByteAr[High(ByteAr)-2]:= (temp shr 8)and $1F;
+   mcp_r16b: ByteAr[High(ByteAr)-2]:= (temp shr 8)and $7F;
+   mcp_r18b: begin
+              ByteAr[High(ByteAr)-2]:= (temp shr 8)and $FF;
+              ByteAr[0]:=(temp shr 16)and $1;
+             end;
+  end;
+
+  if IsNegative then
+   case FResolution of
+   mcp_r12b: ByteAr[0]:=ByteAr[0] or $F8;
+   mcp_r14b: ByteAr[0]:=ByteAr[0] or $E0;
+   mcp_r16b: ByteAr[0]:=ByteAr[0] or $80;
+   mcp_r18b: ByteAr[0]:=ByteAr[0] or $FE;
+  end;
+
+ Result:=true; 
+end;
 
 { MCP3424_Channel }
 
