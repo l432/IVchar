@@ -229,7 +229,7 @@ function TMCP3424_Module.ValueToByteArray(Value: double;
 begin
  SetLength(ByteAr,NumberByteInResult);
 
- Result:=false;
+// Result:=false;
 
  temp:=round((Value*MCP3424_Gain_Data[FGain]
              /MCP3424_LSB[FResolution]

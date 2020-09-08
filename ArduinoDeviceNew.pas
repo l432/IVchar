@@ -213,8 +213,9 @@ type
    procedure SetisNeededComPort(const Value:boolean);
    procedure UpDate ();override;
    function GetDeviceKod:byte;override;
-   function GetSecondDeviceKod:byte;
+   function GetSecondDeviceKod:byte;virtual;
    procedure  PrepareData;virtual;
+    procedure DataTransfer;
   public
    Pins:TPins;
    property isNeededComPort:boolean read GetisNeededComPort write SetisNeededComPort;
@@ -931,6 +932,15 @@ begin
  fRequestState:=fAddedRequestState;
 end;
 
+procedure TArduinoMeter.DataTransfer;
+var
+  i: Integer;
+begin
+  SetLength(fData, High(fArduinoDataSubject.ReceivedData) + 1);
+  for I := 0 to High(fData) do
+    fData[i] := fArduinoDataSubject.ReceivedData[i];
+end;
+
 
 constructor TArduinoMeter.Create(Nm: string);
 begin
@@ -1007,12 +1017,9 @@ begin
 end;
 
 procedure TArduinoMeter.UpDate;
- var i:integer;
 begin
   inherited UpDate;
-  SetLength(fData,High(fArduinoDataSubject.ReceivedData)+1);
-  for I := 0 to High(fData)
-     do  fData[i]:=fArduinoDataSubject.ReceivedData[i];
+  DataTransfer;
   ConvertToValue();
 end;
 

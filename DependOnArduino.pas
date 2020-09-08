@@ -29,12 +29,16 @@ type
  TArdIVDepen=class(TArduinoMeter)
   private
    fFArdIVD:TFastIVDependence;
+   FTotalByteNumberInResult: integer;
+
    procedure ClearData;
-//   procedure AddData(NewData:array of byte);overload;
-//   procedure AddData(NewByte:byte);overload;
+    procedure SetTotalByteNumberInResult(const Value: integer);
   protected
    procedure  PrepareData;override;
+   function GetSecondDeviceKod:byte;override;
+   procedure UpDate ();override;
   public
+   property TotalByteNumberInResult:integer read FTotalByteNumberInResult write SetTotalByteNumberInResult;
    Constructor Create(Nm:string;
                       FArdIVD:TFastIVDependence);
 //   procedure PacketCreateToSend();override;
@@ -44,8 +48,6 @@ type
  TFastArduinoIVDependence=class (TFastIVDependence)
   private
    fArduinoCommunication:TArdIVDepen;
-   fVoltageMD:TArduinoADC_Channel;
-   fCurrentMD:TArduinoADC_Channel;
    fDAC:TAD5752_Chanel;
    function DataToSendPrepare:boolean;
    function BranchDataPrepare(IsForward:boolean):byte;
@@ -63,6 +65,8 @@ type
     function VoltageValuesDetermine:boolean;
     procedure LimitCurrentDetermine;
   public
+   fVoltageMD:TArduinoADC_Channel;
+   fCurrentMD:TArduinoADC_Channel;
    Constructor Create(
                      BS: TButton;
                      FLn,RLn,FLg,RLg:TPointSeries);
@@ -83,28 +87,31 @@ uses
 
 { TArdIVDepen }
 
-//procedure TArdIVDepen.AddData(NewData: array of byte);
-// var i,j:integer;
-//begin
-// j:=High(fData)+1;
-// SetLength(fData,j+High(NewData)+1);
-// for I := 0 to High(NewData) do
-//  fData[i+j]:= NewData [i];
-//end;
-//
-//procedure TArdIVDepen.AddData(NewByte: byte);
-//begin
-// AddData([NewByte]);
-//end;
+
 
 procedure TArdIVDepen.ClearData;
 begin
  CopyToData([ArduinoIVCommand]);
-//   SetLength(fData,1);
 end;
 
 procedure TArdIVDepen.ConvertToValue;
+ var {NumberByteInResult,}i:integer;
 begin
+ i:=0;
+ (fFArdIVD as TFastArduinoIVDependence).fVoltageMD.SetModuleParameters;
+ (fFArdIVD as TFastArduinoIVDependence).fCurrentMD.SetModuleParameters;
+ while((HighDataIndex-i)>=TotalByteNumberInResult) do
+  begin
+
+  //  fCurrentMD.ParentModule.HighDataIndex:=High(BAr);
+//  for I := 0 to High(BAr) do
+//   fCurrentMD.ParentModule.Data[i]:=BAr[i];
+//  fCurrentMD.ParentModule.ConvertToValue;
+//  showmessage(floattostr(fCurrentMD.ParentModule.Value));
+
+  end;
+
+// NumberByteInResult:=
 
 end;
 
@@ -119,6 +126,11 @@ begin
 
 end;
 
+function TArdIVDepen.GetSecondDeviceKod: byte;
+begin
+ Result:=ArduinoIVCommand;
+end;
+
 //procedure TArdIVDepen.PacketCreateToSend;
 //begin
 // PacketCreate(fData);
@@ -126,6 +138,17 @@ end;
 
 procedure TArdIVDepen.PrepareData;
 begin
+end;
+
+procedure TArdIVDepen.SetTotalByteNumberInResult(const Value: integer);
+begin
+  FTotalByteNumberInResult := Value;
+end;
+
+procedure TArdIVDepen.UpDate;
+begin
+  DataTransfer;
+  ConvertToValue();
 end;
 
 { TFastArduinoIVDependence }
@@ -222,6 +245,56 @@ begin
 end;
 
 function TFastArduinoIVDependence.DataToSendPrepare:boolean;
+ {1 байт - ArduinoIVCommand
+ 2 - DragonBackTime []=ms
+ ------------------------------
+ блок, пов'язаний з ЦАП:
+ б.1 - кількість байт, що відправляються ЦАП при RESET
+ сам блок відправки,
+ для AD5752 це
+   AD5752Command, Pin, , байт де номер каналу зокрема,
+   2 байти величини напруги (для Reset $00 $00),
+   тобто  б.1 = 5
+ ------------------------------------
+ блок значень напруги які потрібно встановити
+ б.1 - кількості піддіапазонів з різним кроком
+    зміни напруги при вимірюванні прямої гілки
+    (старші чотири біти, тобто кількість піддіапазонів не
+    більше 7) та зворотної (молодші
+    чотири біти)
+
+  два тотожні блоки для кожної гілки, які складаються
+  бб.1 - початкове значення напруги (модуль сім біт,
+  найстарший - знак), []=10 mV,
+  для зворотньої гілки враховується, що якщо
+  для прямої були виміри при 0 V, то для зворотної не треба
+
+   далі групи з двох байт
+   перший - величина кроку (модуль сім біт,
+   найстарший - знак), []=10 mV)
+   другий - кількість кроків;
+
+ значення початкової напруги та кроку передаються
+ з врахуванням орієнтації діоду та типу гілки,
+ тобто в мікроконтроллері потрібно тільки всновлювати значення і
+ додаткових розрахунків не проводити
+---------------------------------------------------------
+  блок, пов'язаний з вимірювальними пристроями
+  - б.1 - кількості байтів з запиті на вимірювання у
+  Voltage Measure Device (старші чотири біти) та
+  Current Measure Device (молодші чотири біти)
+  - запит  Voltage Measure Device
+  - запит  Current Measure Device
+------------------------------------------
+ блок, пов'язаний з обмеженнями по струму (максимальному)
+ якщо обмежень нема - блок складаэться лише з $00
+ якщо є:
+   перший байт - кількість байт у відповіді Current Measure Device
+   далі - очікувані відповіді, якби   Current Measure Device
+   передавав вимір максимального струму при вимірюванні
+   прямої гілки та зворотньої; знову ж таки знаки струмів
+   враховують орієнтацію діоду
+ }
 begin
  Result:=False;
  fArduinoCommunication.ClearData;
@@ -270,9 +343,10 @@ begin
    );
  j:=fArduinoCommunication.HighDataIndex;
 
- for I := 0 to fVoltageMD.ParentModule.HighDataIndex do
+  for I := 0 to fVoltageMD.ParentModule.HighDataIndex do
    fArduinoCommunication.AddData(fVoltageMD.ParentModule.Data[i]);
 
+ fArduinoCommunication.TotalByteNumberInResult:=fVoltageMD.ParentModule.HighDataIndex+1;
 
  if not(MD_Determine(fCurrentMD,Current_MD,'Current ')) then Exit;
  for I := 0 to fCurrentMD.ParentModule.HighDataIndex do
@@ -281,6 +355,10 @@ begin
  fArduinoCommunication.Data[j]:=
        fArduinoCommunication.Data[j]
        +byte(fCurrentMD.ParentModule.HighDataIndex+1);
+
+ fArduinoCommunication.TotalByteNumberInResult:=
+     fArduinoCommunication.TotalByteNumberInResult
+     +fCurrentMD.ParentModule.HighDataIndex+1;
 
  Result:=True;
 
