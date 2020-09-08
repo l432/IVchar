@@ -11,6 +11,15 @@
 #include "OlegPacket.h"
 #include "OlegConstant.h"
 
+typedef enum  {
+  ad_p050,
+  ad_p100,
+  ad_p108,
+  ad_pm050,
+  ad_pm100,
+  ad_pm108
+} ad_OUTPUT_RANGE;
+
 class AD5752o: public SPIObject,
   public PinAndID
 {
@@ -21,6 +30,10 @@ class AD5752o: public SPIObject,
   private:
     bool  _SetupIsNotDone;
     byte _PowerByte;
+    ad_OUTPUT_RANGE _OR_chA;
+    ad_OUTPUT_RANGE _OR_chB;
+    bool _PowerOn_chA;
+    bool _PowerOn_chB;
 };
 
 

@@ -4,13 +4,17 @@ AD5752o::AD5752o()
 {
   _SetupIsNotDone = true;
   _PowerByte = B00010000;
+  _OR_chA = ad_p050;
+  _OR_chB = ad_p050;
+  _PowerOn_chA = false;
+  _PowerOn_chB = false;
 }
 
 
 bool AD5752o::Action() {
 
   if (DeviceId != AD5752Command) return false;
-//ControlBlink();
+  //ControlBlink();
   if (NumberByte < 6) return true;
 
   SetPin(PinControl);
@@ -68,12 +72,9 @@ void AD5752o::Setup() {
   ThreeByteTransfer(0x0C, 0x00, 0x00);
   //+5 V вихідний діапазон обох виходів
   delayMicroseconds(50);
-//ControlBlink();
+
   ThreeByteTransfer(0x10, 0x00, _PowerByte);
   //живлення на REF
   delayMicroseconds(50);
-//delay(2000);
-//ControlBlink();
-//ControlBlink();
   _SetupIsNotDone = false;
 }
