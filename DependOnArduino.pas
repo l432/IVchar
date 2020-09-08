@@ -29,27 +29,26 @@ type
  TArdIVDepen=class(TArduinoMeter)
   private
    fFArdIVD:TFastIVDependence;
-   FTotalByteNumberInResult: integer;
 
    procedure ClearData;
-    procedure SetTotalByteNumberInResult(const Value: integer);
   protected
    procedure  PrepareData;override;
    function GetSecondDeviceKod:byte;override;
    procedure UpDate ();override;
   public
-   property TotalByteNumberInResult:integer read FTotalByteNumberInResult write SetTotalByteNumberInResult;
    Constructor Create(Nm:string;
                       FArdIVD:TFastIVDependence);
-//   procedure PacketCreateToSend();override;
    Procedure ConvertToValue();override;
  end;
 
  TFastArduinoIVDependence=class (TFastIVDependence)
   private
+   fVoltageMD:TArduinoADC_Channel;
+   fCurrentMD:TArduinoADC_Channel;
    fArduinoCommunication:TArdIVDepen;
    fDAC:TAD5752_Chanel;
    function DataToSendPrepare:boolean;
+   procedure DataToSendToStop;
    function BranchDataPrepare(IsForward:boolean):byte;
    {повертаЇ к≥льк≥сть п≥дд≥апазон≥в з р≥зним кроком}
    function VoltageValueToByte(Voltage:double; factor:byte=100):byte;
@@ -64,13 +63,14 @@ type
     function VS_Determine:boolean;
     function VoltageValuesDetermine:boolean;
     procedure LimitCurrentDetermine;
+    procedure ConvertReceivedData(Data:TArrByte; var isError:boolean;
+                                                 var IsEnd:boolean);
   public
-   fVoltageMD:TArduinoADC_Channel;
-   fCurrentMD:TArduinoADC_Channel;
+   property ArduinoCommunication:TArdIVDepen read fArduinoCommunication;
    Constructor Create(
                      BS: TButton;
                      FLn,RLn,FLg,RLg:TPointSeries);
-   property ArduinoCommunication:TArdIVDepen read fArduinoCommunication;
+
    procedure Measuring(SingleMeasurement:boolean=true;FilePrefix:string='');override;
 
  end;
@@ -83,7 +83,7 @@ var
 implementation
 
 uses
-  HighResolutionTimer, Dialogs, SysUtils, MCP3424u;
+  HighResolutionTimer, Dialogs, SysUtils, MCP3424u, OlegType;
 
 { TArdIVDepen }
 
@@ -91,27 +91,14 @@ uses
 
 procedure TArdIVDepen.ClearData;
 begin
- CopyToData([ArduinoIVCommand]);
+ CopyToData([ArduinoIVCommand,ArduinoIVCommand]);
 end;
 
 procedure TArdIVDepen.ConvertToValue;
- var {NumberByteInResult,}i:integer;
-begin
- i:=0;
- (fFArdIVD as TFastArduinoIVDependence).fVoltageMD.SetModuleParameters;
- (fFArdIVD as TFastArduinoIVDependence).fCurrentMD.SetModuleParameters;
- while((HighDataIndex-i)>=TotalByteNumberInResult) do
-  begin
+ begin
+ (fFArdIVD as TFastArduinoIVDependence).ConvertReceivedData(fData,fError,fIsReceived);
 
-  //  fCurrentMD.ParentModule.HighDataIndex:=High(BAr);
-//  for I := 0 to High(BAr) do
-//   fCurrentMD.ParentModule.Data[i]:=BAr[i];
-//  fCurrentMD.ParentModule.ConvertToValue;
-//  showmessage(floattostr(fCurrentMD.ParentModule.Value));
-
-  end;
-
-// NumberByteInResult:=
+ if fIsReceived and not(fError) then  fValue:=0;
 
 end;
 
@@ -140,10 +127,10 @@ procedure TArdIVDepen.PrepareData;
 begin
 end;
 
-procedure TArdIVDepen.SetTotalByteNumberInResult(const Value: integer);
-begin
-  FTotalByteNumberInResult := Value;
-end;
+//procedure TArdIVDepen.SetTotalByteNumberInResult(const Value: integer);
+//begin
+//  FTotalByteNumberInResult := Value;
+//end;
 
 procedure TArdIVDepen.UpDate;
 begin
@@ -224,6 +211,83 @@ begin
           end;
 end;
 
+procedure TFastArduinoIVDependence.ConvertReceivedData(Data: TArrByte;
+                                 var isError, IsEnd: boolean);
+ var TotalNumberByteInResult,i,k:integer;
+begin
+  if fIVMeasuringToStop then
+   begin
+    isError:=True;
+    IsEnd:=True;
+    DataToSendToStop;
+    fArduinoCommunication.isNeededComPortState();
+    Exit;
+   end;
+
+
+  k:=0;
+  fVoltageMD.SetModuleParameters;
+  fCurrentMD.SetModuleParameters;
+  TotalNumberByteInResult:=fVoltageMD.ParentModule.NumberByteInResult
+                          +fCurrentMD.ParentModule.NumberByteInResult;
+ while((High(Data)-k)>=TotalNumberByteInResult) do
+  begin
+    fVoltageMD.ParentModule.HighDataIndex:=
+    fVoltageMD.ParentModule.NumberByteInResult-1;
+    for I := 0 to fVoltageMD.ParentModule.HighDataIndex do
+       begin
+        fVoltageMD.ParentModule.Data[i]:=Data[k];
+        inc(k);
+       end;
+    fVoltageMD.ParentModule.ConvertToValue;
+    fVoltageMeasured:=fVoltageMD.ParentModule.Value;
+
+    fCurrentMD.ParentModule.HighDataIndex:=
+        fCurrentMD.ParentModule.NumberByteInResult-1;
+    for I := 0 to fCurrentMD.ParentModule.HighDataIndex do
+       begin
+        fCurrentMD.ParentModule.Data[i]:=Data[k];
+        inc(k);
+       end;
+    fCurrentMD.ParentModule.ConvertToValue;
+    fCurrentMeasured:=fCurrentMD.ParentModule.Value;
+
+    if (fVoltageMeasured=ErResult)or(fCurrentMeasured=ErResult) then
+      begin
+       fIVMeasuringToStop:=true;
+       isError:=True;
+       IsEnd:=True;
+       Exit;
+      end;
+    fVoltageMeasured:=fVoltageMeasured * fDiodOrientationVoltageFactor;
+    fCurrentMeasured:=fCurrentMeasured * fDiodOrientationVoltageFactor;
+
+
+    if FCurrentValueLimitEnable and (abs(fCurrentMeasured)<Imin)
+        then  Continue;
+
+    if Results.IsEmpty and CBForw.Checked then
+         fItIsLightIV:=(fCurrentMeasured<-1e-5);
+
+
+    Results.Add(fVoltageMeasured, fCurrentMeasured);
+
+  end;
+
+  if Data[k]=$EE
+     then IsEnd:=True
+     else if Data[k]=$BB
+          then IsEnd:=False
+          else begin
+               IsEnd:=True;
+               IsError:=True;
+               end;
+  
+
+// NumberByteInResult:=
+
+end;
+
 constructor TFastArduinoIVDependence.Create(BS: TButton;
                          FLn, RLn, FLg, RLg: TPointSeries);
 begin
@@ -246,7 +310,8 @@ end;
 
 function TFastArduinoIVDependence.DataToSendPrepare:boolean;
  {1 байт - ArduinoIVCommand
- 2 - DragonBackTime []=ms
+  2 байт - ArduinoIVCommand
+ 3 - DragonBackTime []=ms
  ------------------------------
  блок, пов'€заний з ÷јѕ:
  б.1 - к≥льк≥сть байт, що в≥дправл€ютьс€ ÷јѕ при RESET
@@ -331,6 +396,12 @@ begin
 
 end;
 
+procedure TFastArduinoIVDependence.DataToSendToStop;
+begin
+ fArduinoCommunication.ClearData;
+ fArduinoCommunication.Data[1]:=$00;
+end;
+
 function TFastArduinoIVDependence.MDs_Determine: boolean;
  var i,j:integer;
 begin
@@ -346,7 +417,7 @@ begin
   for I := 0 to fVoltageMD.ParentModule.HighDataIndex do
    fArduinoCommunication.AddData(fVoltageMD.ParentModule.Data[i]);
 
- fArduinoCommunication.TotalByteNumberInResult:=fVoltageMD.ParentModule.HighDataIndex+1;
+// fArduinoCommunication.TotalByteNumberInResult:=fVoltageMD.ParentModule.HighDataIndex+1;
 
  if not(MD_Determine(fCurrentMD,Current_MD,'Current ')) then Exit;
  for I := 0 to fCurrentMD.ParentModule.HighDataIndex do
@@ -356,9 +427,9 @@ begin
        fArduinoCommunication.Data[j]
        +byte(fCurrentMD.ParentModule.HighDataIndex+1);
 
- fArduinoCommunication.TotalByteNumberInResult:=
-     fArduinoCommunication.TotalByteNumberInResult
-     +fCurrentMD.ParentModule.HighDataIndex+1;
+// fArduinoCommunication.TotalByteNumberInResult:=
+//     fArduinoCommunication.TotalByteNumberInResult
+//     +fCurrentMD.ParentModule.HighDataIndex+1;
 
  Result:=True;
 
@@ -407,6 +478,9 @@ begin
   BeginMeasuring();
 
   if not(DataToSendPrepare) then Exit;
+
+  if fArduinoCommunication.GetData=0 then EndMeasuring();
+
 
 //  Cycle(True);
 //  if fIVMeasuringToStop then Exit;

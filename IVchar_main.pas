@@ -45,7 +45,7 @@ const
   MeasTempOnTime='Temperature on time';
   MeasIscAndVocOnTime='Voc and Isc on time';
   MeasIVonTemper='IV char on temperature';
-
+  MeasFastIVArd='Fast IV by Arduino';
 
 
   IscVocTimeToWait=1000;
@@ -1429,6 +1429,8 @@ procedure TIVchar.HookBegin;
 
   if Key=MeasIV then  IVcharHookBegin;
   if Key=MeasFastIV then FastIVHookBegin;
+  if Key=MeasFastIVArd then FastArduinoIVHookBegin;
+  
   if Key=MeasTimeD then MeasurementTimeParameterDetermination(TimeDependence);
   if Key=MeasTwoTimeD then  MeasurementTimeParameterDetermination(TimeTwoDependenceTimer);
   if Key=MeasIscAndVocOnTime then
@@ -1721,11 +1723,12 @@ begin
  if (Key=MeasR2RCalib)
      or(Key=MeasIV)
      or(Key=MeasFastIV)
+     or(Key=MeasFastIVArd)
      then
       begin
        LADRange.Visible:=True;
        RangeShow(Sender);
-       if Key=MeasFastIV then
+       if (Key=MeasFastIV)or(Key=MeasFastIVArd) then
           MeasurementsLabelCaption(['Voltage', 'Current', ''])
                          else
           MeasurementsLabelCaptionDefault;
@@ -2482,6 +2485,7 @@ begin
  if Key=MeasR2RCalib then CalibrMeasuring.Measuring;
  if Key=MeasIV then IVMeasuring.Measuring;
  if Key=MeasFastIV then FastIVMeasuring.Measuring;
+ if Key=MeasFastIVArd then FastArduinoIV.Measuring;
  if Key=MeasTimeD then TimeDependence.BeginMeasuring;
  if Key=MeasTwoTimeD then TimeTwoDependenceTimer.BeginMeasuring;
  if Key=MeasIscAndVocOnTime then IscVocOnTime.BeginMeasuring;
@@ -4147,6 +4151,7 @@ begin
   CBMeasurements.Items.Add(MeasIscAndVocOnTime);
   CBMeasurements.Items.Add(MeasIVonTemper);
   CBMeasurements.Items.Add(MeasIV);
+  CBMeasurements.Items.Add(MeasFastIVArd);
   CBMeasurements.ItemIndex:=0;
   Key:=CBMeasurements.Items[CBMeasurements.ItemIndex];
 

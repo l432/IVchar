@@ -293,10 +293,10 @@ TFastIVDependence=class (TFastDependence)
   private
     FImax: double;
     FImin: double;
-    FCurrentValueLimitEnable: boolean;
+//    FCurrentValueLimitEnable: boolean;
     fForwardBranch:boolean;
-    fVoltageMeasured,fCurrentMeasured:double;
-    fItIsLightIV:boolean;
+//    fVoltageMeasured,fCurrentMeasured:double;
+//    fItIsLightIV:boolean;
 
     RevLine: TPointSeries;
     RevLg: TPointSeries;
@@ -325,9 +325,12 @@ TFastIVDependence=class (TFastDependence)
    procedure VocIscDetermine;
    procedure PointSeriesFilling;
  protected
+   fVoltageMeasured,fCurrentMeasured:double;
+   FCurrentValueLimitEnable: boolean;
    fVoltageFactor:double;
    fAbsVoltageValue:double;
    fItIsBranchBegining:boolean;
+   fItIsLightIV:boolean;
    fDragonBackTime:double;
    fDiodOrientationVoltageFactor:integer;
    fSingleMeasurement:boolean;
@@ -337,6 +340,7 @@ TFastIVDependence=class (TFastDependence)
    procedure BeginMeasuring();override;
    procedure EndMeasuring();override;
  public
+  
   RangeFor:TLimitShow;
   RangeRev:TLimitShowRev;
   ForwardDelV:TVector;

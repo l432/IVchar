@@ -20,7 +20,7 @@ bool ParameterReceive() {
       PinAndID::DataFromPC[i] = 0;
 
 
-    byte number = Serial.readBytesUntil(PacketEnd, PinAndID::DataFromPC, PacketMaxLength);
+    byte number  = Serial.readBytesUntil(PacketEnd, PinAndID::DataFromPC, PacketMaxLength);
 
 // for (byte i = 0; i < number; i++)
 //ControlBlink();
