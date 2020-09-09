@@ -53,7 +53,7 @@ void ControlBlink() {
   delay(500);
 }
 
-void ShortDelay(){
+void ShortDelay() {
   delayMicroseconds(50);
 }
 
@@ -73,7 +73,13 @@ byte PinAndID::NumberByte = 0;
 byte PinAndID::PinControl = 0;
 byte PinAndID::DeviceId = 0;
 byte PinAndID::ActionId = 0;
-byte PinAndID::DataFromPC[PacketMaxLength] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 , 0, 0};
+byte PinAndID::DataFromPC[PacketMaxLength] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                              0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                              0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                              0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                              0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                              0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+                                             };
 
 
 void PinAndID::CreateAndSendPacket(byte DDATA[], int n) {

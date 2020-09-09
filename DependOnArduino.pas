@@ -317,9 +317,9 @@ function TFastArduinoIVDependence.DataToSendPrepare:boolean;
  б.1 - кількість байт, що відправляються ЦАП при RESET
  сам блок відправки,
  для AD5752 це
-   AD5752Command, Pin, , байт де номер каналу зокрема,
-   2 байти величини напруги (для Reset $00 $00),
-   тобто  б.1 = 5
+   AD5752Command, Pin, номер каналу (0 чи 1),
+   fDiapozon, 2 байти величини напруги (для Reset $00 $00),
+   тобто  б.1 = 6
  ------------------------------------
  блок значень напруги які потрібно встановити
  б.1 - кількості піддіапазонів з різним кроком
@@ -352,7 +352,7 @@ function TFastArduinoIVDependence.DataToSendPrepare:boolean;
   - запит  Current Measure Device
 ------------------------------------------
  блок, пов'язаний з обмеженнями по струму (максимальному)
- якщо обмежень нема - блок складаэться лише з $00
+ якщо обмежень нема - блок складається лише з $00
  якщо є:
    перший байт - кількість байт у відповіді Current Measure Device
    далі - очікувані відповіді, якби   Current Measure Device
@@ -479,13 +479,9 @@ begin
 
   if not(DataToSendPrepare) then Exit;
 
-  if fArduinoCommunication.GetData=0 then EndMeasuring();
+//  if fArduinoCommunication.GetData=0 then EndMeasuring();
 
 
-//  Cycle(True);
-//  if fIVMeasuringToStop then Exit;
-//  Cycle(False);
-//  EndMeasuring();
 end;
 
 procedure TFastArduinoIVDependence.LimitCurrentDetermine;

@@ -7,13 +7,16 @@ uses
   OlegType, Classes, OlegTypePart2, ArduinoDeviceShow;
 
 type
-  T5752OutputRange=(p050,p100,p108,pm050,pm100,pm108,NA);
+  T5752OutputRange=(p050,p100,p108,pm050,pm100,pm108{,NA});
   T5752ChanNumber=(chA,chB);
 
 const
+   AD5752_PowerOnByte=$11;
+   AD5752_PowerOffByte=$00;
+
   AD5752_OutputRangeLabels:array[T5752OutputRange]of string=
   ('0..5','0..10','0..10.8',
-  '-5..5','-10..10','-10.8..10.8','Error');
+  '-5..5','-10..10','-10.8..10.8'{,'Error'});
 
   AD5752_ChanelNames:array[T5752ChanNumber]of string=
   ('AD5752chA','AD5753chB');
@@ -21,17 +24,17 @@ const
   AD5752_OutputRangeKodLabels:array[0..1] of string=
   ('0..65535','32768..65535,0..32767');
 
-  AD5752_OutputRangeKod:array[T5752OutputRange] of byte=
-  (0,1,2,3,4,5,6);
+//  AD5752_OutputRangeKod:array[T5752OutputRange] of byte=
+//  (0,1,2,3,4,5,6);
 
   AD5752_OutputRangeMaxVoltage:array[T5752OutputRange]of double=
-  (5,10,10.8,5,10,10.8,ErResult);
+  (5,10,10.8,5,10,10.8{,ErResult});
 
   AD5752_OutputRangeMinVoltage:array[T5752OutputRange]of double=
-  (0,0,0,-5,-10,-10.8,ErResult);
+  (0,0,0,-5,-10,-10.8{,ErResult});
 
   AD5752_GainOutputRange:array[T5752OutputRange]of double=
-  (2,4,4.32,4,8,8.64,1);
+  (2,4,4.32,4,8,8.64{,1});
 
 
 
@@ -78,13 +81,14 @@ type
    fKodMaxValue:integer;
    fChanNumber:T5752ChanNumber;
    fDiapazon:T5752OutputRange;
-   fSettedDiapazon:T5752OutputRange;
+//   fSettedDiapazon:T5752OutputRange;
    fGain:double;
    fPowerOn:boolean;
-   fDacByte:byte;
-   fRangeByte:byte;
-   fPowerOnByte:byte;
-   fPowerOffByte:byte;
+//   fChanByte:byte;
+//   fDacByte:byte;
+//   fRangeByte:byte;
+//   fPowerOnByte:byte;
+//   fPowerOffByte:byte;
    function GetOutputValue:double;
    function GetDACKod:byte;
   protected
@@ -195,23 +199,25 @@ begin
  fModul:=Modul;
  fChanNumber:=ChanNumber;
  fName:=AD5752_ChanelNames[ChanNumber];
- case fChanNumber of
-   chA:begin
-        fDacByte:=$00;
-        fRangeByte:=$08;
-        fPowerOnByte:=$13;
-        fPowerOffByte:=$12;
-       end;
-   chB:begin
-        fDacByte:=$02;
-        fRangeByte:=$A;
-        fPowerOnByte:=$1C;
-        fPowerOffByte:=$18;
-       end;
- end;
+// case fChanNumber of
+//   chA:begin
+//        fChanByte:=$00;
+//        fDacByte:=$00;
+//        fRangeByte:=$08;
+//        fPowerOnByte:=$13;
+//        fPowerOffByte:=$12;
+//       end;
+//   chB:begin
+//        fChanByte:=$01;
+//        fDacByte:=$02;
+//        fRangeByte:=$A;
+//        fPowerOnByte:=$1C;
+//        fPowerOffByte:=$18;
+//       end;
+// end;
 
   fPowerOn:=False;
-  fSettedDiapazon:=NA;
+//  fSettedDiapazon:=NA;
   Diapazon:=p050;
   fKodMaxValue:=AD5752_MaxKod;
   fOutputValue:=0;
@@ -219,7 +225,7 @@ end;
 
 procedure TAD5752_Chanel.DataToSendFromKod(Kod: Integer);
 begin
-  fModul.AddData([fDacByte,
+  fModul.AddData([{fDacByte,}
                   ((Kod shr 8) and $FF),
                   (Kod and $FF)]);
 end;
@@ -227,8 +233,9 @@ end;
 procedure TAD5752_Chanel.DataToSendFromReset;
 begin
   fOutputValue:=0;
-  fModul.ClearData;
-  fModul.AddData([fDacByte,$00,$00]);
+//  fModul.ClearData;
+  PrepareAction;
+  fModul.AddData([{fDacByte,}$00,$00]);
 end;
 
 //destructor TAD5752_Chanel.Destroy;
@@ -301,7 +308,8 @@ end;
 procedure TAD5752_Chanel.PowerOff;
 begin
  fModul.ClearData;
- fModul.AddData([$10,fPowerOffByte]);
+// fModul.AddData([$10,fPowerOffByte]);
+ fModul.AddData([ord(fChanNumber),$10,AD5752_PowerOffByte]);
  fPowerOn:=false;
  fModul.isNeededComPortState();
 end;
@@ -309,7 +317,8 @@ end;
 procedure TAD5752_Chanel.PowerOn;
 begin
  fModul.ClearData;
- fModul.AddData([$10,fPowerOnByte]);
+// fModul.AddData([$10,fPowerOnByte]);
+ fModul.AddData([ord(fChanNumber),$10,AD5752_PowerOnByte]);
  fPowerOn:=True;
  fModul.isNeededComPortState();
 end;
@@ -317,17 +326,20 @@ end;
 procedure TAD5752_Chanel.PrepareAction;
 begin
  fModul.ClearData;
- if fSettedDiapazon<>fDiapazon then
-   begin
-    fModul.AddData([fRangeByte,
-                    AD5752_OutputRangeKod[fDiapazon]]);
-    fSettedDiapazon:=fDiapazon;
-   end;
- if not(fPowerOn) then
-   begin
-    fModul.AddData([$10,fPowerOnByte]);
-    fPowerOn:=True;
-   end;
+ fModul.AddData([ord(fChanNumber),byte(fDiapazon)]);
+ fPowerOn:=True;
+
+// if fSettedDiapazon<>fDiapazon then
+//   begin
+//    fModul.AddData([fRangeByte,
+//                    AD5752_OutputRangeKod[fDiapazon]]);
+//    fSettedDiapazon:=fDiapazon;
+//   end;
+// if not(fPowerOn) then
+//   begin
+//    fModul.AddData([$10,fPowerOnByte]);
+//    fPowerOn:=True;
+//   end;
 end;
 
 procedure TAD5752_Chanel.Reset;
@@ -342,7 +354,7 @@ begin
  case fDiapazon of
    p050,p100,p108: fVoltageMaxValue:=AD5752_OutputRangeMaxVoltage[fDiapazon]*65535/65536;
    pm050,pm100,pm108: fVoltageMaxValue:=AD5752_OutputRangeMaxVoltage[fDiapazon]*32767/32768;
-   NA: fVoltageMaxValue:=0;
+//   NA: fVoltageMaxValue:=0;
  end;
  fGain:=AD5752_GainOutputRange[fDiapazon];
 end;

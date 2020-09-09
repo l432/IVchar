@@ -1,6 +1,5 @@
 #include "OlegMCP3424.h"
 
-//const unsigned long TimeInterval[] = {5000, 17000, 67000, 270000};
 const unsigned long TimeInterval[] = {5000, 17000, 67000, 270000};
 
 MCP3424o::MCP3424o()
@@ -15,8 +14,6 @@ bool MCP3424o::Begin() {
   if ((NumberByte < 4) || (!isReady())) return true;
 
   SetAdress(PinControl);
-//  Config(Data3);
-//  ByteTransfer(Data3);
   Config(DataFromPC[3]);
   ByteTransfer(DataFromPC[3]);
   Start();

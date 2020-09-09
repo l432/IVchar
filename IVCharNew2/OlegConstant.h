@@ -23,6 +23,7 @@ const byte STS21Command = 0x10;
 const byte ADT74x0Command = 0x11;
 const byte MCP9808Command = 0x12;
 const byte AD5752Command = 0x13;
+const byte ArduinoIVCommand = 0x14;
 
 //For MEGA
 const byte DrivePins[] = {25, 26, 27, 28, 29, 30, 31, 32, 34, 35, 41, 42, 43, 44, 45};

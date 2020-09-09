@@ -9,7 +9,7 @@
 
 const byte PacketStart = 10;
 const byte PacketEnd = 15;
-const byte PacketMaxLength = 20;
+const byte PacketMaxLength = 60;
 
 byte FCS (byte Data[], int n);
 bool SendParameters();
