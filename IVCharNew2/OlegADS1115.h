@@ -29,7 +29,7 @@ typedef enum  {
 } ads_DATA_RATE_t;
 
 
-class ADS1115o: public SmartDelay, public WireObject, public PinAndID
+class ADS1115o: public SmartDelay, public WireObject, public PinAndID, public FastIVData
 {
   public:
     ADS1115o();

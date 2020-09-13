@@ -5,8 +5,8 @@ ADS1115o::ADS1115o()
 {
   SetAdress(0x48);
   SetDataReceivedNumber(2);
-//  _SetupIsNotDone = true;
-//  _AlertPin = 0;
+  //  _SetupIsNotDone = true;
+  //  _AlertPin = 0;
   Config(0x80);
 }
 
@@ -17,14 +17,14 @@ bool ADS1115o::Begin() {
   if ((NumberByte < 6) || (!isReady()))   return true;
 
   SetAdress(PinControl);
-//  if (_SetupIsNotDone) Setup();
-//  _AlertPin = Data3;
-//  Config(Data5);
-//  ThreeByteTransfer(ADS1115_REG_POINTER_CONFIG, Data4, Data5);
-//  Config(Data4);
-//  ThreeByteTransfer(ADS1115_REG_POINTER_CONFIG, Data3, Data4);
+  //  if (_SetupIsNotDone) Setup();
+  //  _AlertPin = Data3;
+  //  Config(Data5);
+  //  ThreeByteTransfer(ADS1115_REG_POINTER_CONFIG, Data4, Data5);
+  //  Config(Data4);
+  //  ThreeByteTransfer(ADS1115_REG_POINTER_CONFIG, Data3, Data4);
   Config(DataFromPC[4]);
-  ThreeByteTransfer(ADS1115_REG_POINTER_CONFIG, DataFromPC[3], DataFromPC[4]);  
+  ThreeByteTransfer(ADS1115_REG_POINTER_CONFIG, DataFromPC[3], DataFromPC[4]);
   Start();
   return true;
 }
@@ -33,14 +33,26 @@ bool ADS1115o::Begin() {
 
 void ADS1115o::Process() {
   if (isConversionFinished()) {
-//        ByteTransfer(ADS1115_REG_POINTER_CONFIG);
-//        DataReceive();
-//        _DataReceived[GetDataReceivedNumber()] = _DataReceived[0];
+    //        ByteTransfer(ADS1115_REG_POINTER_CONFIG);
+    //        DataReceive();
+    //        _DataReceived[GetDataReceivedNumber()] = _DataReceived[0];
     ByteTransfer(ADS1115_REG_POINTER_CONVERT);
     DataReceive();
-    DeviceId = ADS1115Command;
-    ActionId = _address;
-    CreateAndSendPacket(_DataReceived, GetDataReceivedNumber() + 1);
+
+    byte temp = DeviceCheck(ADS1115Command);
+    if (temp == 0xFF) {
+      DeviceId = ADS1115Command;
+      ActionId = _address;
+      CreateAndSendPacket(_DataReceived, GetDataReceivedNumber() + 1);
+    } else {
+      AddData(temp, _DataReceived, GetDataReceivedNumber() + 1);
+      DeviceId = ArduinoIVCommand;
+      ToBackDoor = true;
+    };
+
+    //    DeviceId = ADS1115Command;
+    //    ActionId = _address;
+    //    CreateAndSendPacket(_DataReceived, GetDataReceivedNumber() + 1);
     Stop();
   } else {
     if (TimeFromStart() > 2 * GetInterval()) Stop();
@@ -55,7 +67,7 @@ void ADS1115o::Process() {
 //}
 
 void  ADS1115o::Config(byte ConfigByte) {
-    _dataRate = ads_DATA_RATE_t( ConfigByte & 0xE0);
+  _dataRate = ads_DATA_RATE_t( ConfigByte & 0xE0);
   SetInterval(DelayTime());
 }
 
@@ -64,7 +76,7 @@ bool ADS1115o::isConversionFinished() {
   DataReceive();
   _DataReceived[GetDataReceivedNumber()] = _DataReceived[0];
   return (_DataReceived[0] & 0x80);
-//    return (digitalRead(_AlertPin) == HIGH);
+  //    return (digitalRead(_AlertPin) == HIGH);
 }
 
 unsigned long  ADS1115o::DelayTime() {

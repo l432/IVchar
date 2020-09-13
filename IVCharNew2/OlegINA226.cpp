@@ -7,22 +7,22 @@ INA226o::INA226o()
   SetDataReceivedNumber(2);
   _config = 0x4127;
   _mode = INA_MODE_TRIGGERED_BOTH;
-  _timeFactor=0;
+  _timeFactor = 0;
 }
 
 
 bool INA226o::Begin() {
-// ControlBlink();
-// delay(1000);
+  // ControlBlink();
+  // delay(1000);
   if (DeviceId != INA226Command) return false;
 
-//ActionId = _address;
-//    CreateAndSendPacket(_DataReceived, GetDataReceivedNumber());
-//    return true;
-  
+  //ActionId = _address;
+  //    CreateAndSendPacket(_DataReceived, GetDataReceivedNumber());
+  //    return true;
+
   if ((NumberByte < 7) || (!isReady()))   return true;
   SetAdress(PinControl);
-  _timeFactor=DataFromPC[5];
+  _timeFactor = DataFromPC[5];
   _config = (DataFromPC[3] << 8) | DataFromPC[4];
   _mode = (uint8_t)(_config & INA_CONFIG_MODE_MASK);
   SetInterval(DelayTime());
@@ -50,10 +50,18 @@ void INA226o::Process() {
         ByteTransfer(INA_BUS_VOLTAGE_REGISTER);
         SetDataReceivedNumber(4);
     };
-    DeviceId = INA226Command;
-    ActionId = _address;
     DataReceive();
-    CreateAndSendPacket(_DataReceived, GetDataReceivedNumber());
+    byte temp = DeviceCheck(INA226Command);
+    if (temp == 0xFF) {
+      DeviceId = INA226Command;
+      ActionId = _address;
+      CreateAndSendPacket(_DataReceived, GetDataReceivedNumber());
+    } else {
+      AddData(temp, _DataReceived, GetDataReceivedNumber());
+      DeviceId = ArduinoIVCommand;
+      ToBackDoor = true;
+    };
+
     if (_mode == INA_MODE_TRIGGERED_BOTH) {
       SetDataReceivedNumber(2);
     };
@@ -83,21 +91,21 @@ void INA226o::ToSleepMode() {
 unsigned long  INA226o::DelayTime() {
   uint8_t  averages = (uint8_t)((_config & INA_CONFIG_AVG_MASK) >> 9);
   uint8_t shuntCT, busCT;
-  uint8_t koef=1;
+  uint8_t koef = 1;
   switch (_mode) {
     case INA_MODE_TRIGGERED_SHUNT:
       shuntCT = (uint8_t)((_config & INA_CONFIG_SHUNT_TIME_MASK) >> 3);
-      return (unsigned long)_timeFactor*(INA226_averages[averages] * INA226_ConvTime[shuntCT]);
+      return (unsigned long)_timeFactor * (INA226_averages[averages] * INA226_ConvTime[shuntCT]);
       break;
-    case  INA_MODE_TRIGGERED_BUS:     
+    case  INA_MODE_TRIGGERED_BUS:
       busCT = (uint8_t)((_config & INA_CONFIG_BUS_TIME_MASK) >> 6);
-      
-      return (unsigned long)_timeFactor*(INA226_averages[averages] * INA226_ConvTime[busCT]);
+
+      return (unsigned long)_timeFactor * (INA226_averages[averages] * INA226_ConvTime[busCT]);
       break;
-    default: 
+    default:
       shuntCT = (uint8_t)((_config & INA_CONFIG_SHUNT_TIME_MASK) >> 3);
       busCT = (uint8_t)((_config & INA_CONFIG_BUS_TIME_MASK) >> 6);
-      return (unsigned long)_timeFactor*(INA226_averages[averages] * (INA226_ConvTime[shuntCT] + INA226_ConvTime[busCT]));
+      return (unsigned long)_timeFactor * (INA226_averages[averages] * (INA226_ConvTime[shuntCT] + INA226_ConvTime[busCT]));
   };
 }
 

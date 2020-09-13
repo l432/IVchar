@@ -2580,9 +2580,21 @@ end;
 
 
 procedure TIVchar.Button1Click(Sender: TObject);
-
+  var ByteAr:TArrByte;
 begin
-FastArduinoIV.Measuring;
+
+   MCP3424.ValueToByteArray(0,ByteAr);
+   showmessage(ByteArrayToString(ByteAr));
+   MCP3424.ValueToByteArray(-0.5,ByteAr);
+   showmessage(ByteArrayToString(ByteAr));
+   MCP3424.ValueToByteArray(-1,ByteAr);
+   showmessage(ByteArrayToString(ByteAr));
+   MCP3424.ValueToByteArray(-2,ByteAr);
+   showmessage(ByteArrayToString(ByteAr));
+
+
+//FastArduinoIV.Measuring;
+
 //  showmessage(FloatTostr(FastIVMeasuring.RangeRev.HighValue));
 // showmessage('$'+inttohex(($7F and byte(round(abs(-1.2)*10)))or $80,2));
 

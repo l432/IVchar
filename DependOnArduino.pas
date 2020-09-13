@@ -346,10 +346,15 @@ function TFastArduinoIVDependence.DataToSendPrepare:boolean;
 ---------------------------------------------------------
   блок, пов'язаний з вимірювальними пристроями
   - б.1 - кількості байтів з запиті на вимірювання у
-  Voltage Measure Device (старші чотири біти) та
-  Current Measure Device (молодші чотири біти)
+    Voltage Measure Device (старші чотири біти) та
+    у відповіді з даними  (молодші чотири біти)
   - запит  Voltage Measure Device
+
+  - кількості байтів з запиті на вимірювання у
+   Current Measure Device (старші чотири біти) та
+    у відповіді з даними  (молодші чотири біти)
   - запит  Current Measure Device
+
 ------------------------------------------
  блок, пов'язаний з обмеженнями по струму (максимальному)
  якщо обмежень нема - блок складається лише з $00
@@ -399,11 +404,11 @@ end;
 procedure TFastArduinoIVDependence.DataToSendToStop;
 begin
  fArduinoCommunication.ClearData;
- fArduinoCommunication.Data[1]:=$00;
+ fArduinoCommunication.AddData([$00,$00]);
 end;
 
 function TFastArduinoIVDependence.MDs_Determine: boolean;
- var i,j:integer;
+ var i{,j}:integer;
 begin
  Result:=False;
 
@@ -411,21 +416,25 @@ begin
 
  fArduinoCommunication.AddData(
    byte(byte(fVoltageMD.ParentModule.HighDataIndex+1) shl 4)
-   );
- j:=fArduinoCommunication.HighDataIndex;
+   + byte(fVoltageMD.ParentModule.NumberByteInResult and $0F));
+// j:=fArduinoCommunication.HighDataIndex;
 
   for I := 0 to fVoltageMD.ParentModule.HighDataIndex do
    fArduinoCommunication.AddData(fVoltageMD.ParentModule.Data[i]);
 
 // fArduinoCommunication.TotalByteNumberInResult:=fVoltageMD.ParentModule.HighDataIndex+1;
 
+ fArduinoCommunication.AddData(
+   byte(byte(fCurrentMD.ParentModule.HighDataIndex+1) shl 4)
+   + byte(fCurrentMD.ParentModule.NumberByteInResult and $0F));
+
  if not(MD_Determine(fCurrentMD,Current_MD,'Current ')) then Exit;
  for I := 0 to fCurrentMD.ParentModule.HighDataIndex do
    fArduinoCommunication.AddData(fCurrentMD.ParentModule.Data[i]);
 
- fArduinoCommunication.Data[j]:=
-       fArduinoCommunication.Data[j]
-       +byte(fCurrentMD.ParentModule.HighDataIndex+1);
+// fArduinoCommunication.Data[j]:=
+//       fArduinoCommunication.Data[j]
+//       +byte(fCurrentMD.ParentModule.HighDataIndex+1);
 
 // fArduinoCommunication.TotalByteNumberInResult:=
 //     fArduinoCommunication.TotalByteNumberInResult

@@ -20,6 +20,7 @@
 #include "OlegSTS21.h"
 #include "OlegADT74x0.h"
 #include "OlegAD5752.h"
+#include "OlegIVChar.h"
 
 DS18B20o ds18b20;
 CustomDevice cd;
@@ -35,10 +36,11 @@ INA226o ina226;
 STS21o  sts21;
 ADT74o adt74x0;
 AD5752o ad5752;
+IVChar ivchar;
 
 void setup() {
-    Serial.begin(115200);
-//  Serial.begin(256000);
+  Serial.begin(115200);
+  //  Serial.begin(256000);
   Serial.setTimeout(50);
   SPI.begin();
   Wire.begin();
@@ -58,16 +60,18 @@ void setup() {
   d3006.Setup();
   mcp3424.Setup();
 
+  IVChar::ToBackDoor = false;
   //  wdt_enable(WDTO_4S);
 }
 
 void loop() {
-// ControlBlink();
-// delay(1000);
+  // ControlBlink();
+  // delay(1000);
   if (Serial.available() > 0) {
 
     if (ParameterReceive()) {
-
+backdoor:
+      ivchar.Begin();
       if (cd.V721()) goto start;
       if (SendParameters()) goto start;
       if (dacR2R.Action()) goto start;
@@ -84,7 +88,7 @@ void loop() {
       if (ina226.Begin()) goto start;
       if (adt74x0.Begin()) goto start;
       if (ad5752.Action()) goto start;
-
+      if (FastIVData::ToBackDoor) goto backdoor;
     }
   }
 start:
@@ -97,6 +101,7 @@ start:
   ads1115.End();
   ina226.End();
   adt74x0.End();
+  if (FastIVData::ToBackDoor) goto backdoor;
   //  wdt_reset();
 }
 

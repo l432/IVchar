@@ -30,7 +30,7 @@ const uint16_t INA226_averages[8] = {1, 4, 16, 64, 128, 256, 512, 1024};
 const uint16_t INA226_ConvTime[8] = {140, 204, 332, 588, 1100, 2116, 4156, 8244};
 
 
-class INA226o: public SmartDelay, public WireObject, public PinAndID
+class INA226o: public SmartDelay, public WireObject, public PinAndID, public FastIVData
 {
   public:
     INA226o();

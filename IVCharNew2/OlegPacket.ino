@@ -112,3 +112,42 @@ void PinAndID::CreateAndSendPacket(byte DDATA[], int n) {
   SendPacket(data, sizeof(data));
 }
 
+void PinAndID::NamedByteFill() {
+  NumberByte = DataFromPC[0];
+  DeviceId = DataFromPC[1];
+  PinControl = DataFromPC[2];
+}
+
+bool FastIVData::ToBackDoor = false;
+bool FastIVData::CurrentMeasured = false;
+bool FastIVData::VoltageMeasured = false;
+byte FastIVData::VoltageMDId = 0;
+byte FastIVData::CurrentMDId = 0;
+byte FastIVData::VoltageResultNumber = 0;
+byte FastIVData::CurrentResultNumber = 0;
+byte FastIVData::DataToPC[PacketMaxLength] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                              0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                              0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                              0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                              0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                              0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+                                             };
+
+void FastIVData::AddData(byte StartIndex, byte SourceData[], byte NumberToAdd) {
+  for (byte i = 0; i < NumberToAdd; i++) {
+    DataToPC[StartIndex + i] = SourceData[i];
+  }
+}
+
+byte FastIVData::DeviceCheck (byte Id){
+  if (Id == VoltageMDId){
+    VoltageMeasured = true;
+    return VoltageResultNumber;
+  };
+  if (Id == CurrentMDId){
+    CurrentMeasured = true;
+    return CurrentResultNumber;
+  };
+ return 0xFF; 
+}
+

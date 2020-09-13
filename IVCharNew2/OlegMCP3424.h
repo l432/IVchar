@@ -12,7 +12,7 @@
 #include "OlegPacket.h"
 #include "OlegConstant.h"
 
-class MCP3424o: public SmartDelay, public WireObject, public PinAndID
+class MCP3424o: public SmartDelay, public WireObject, public PinAndID, public FastIVData
 {
   public:
     MCP3424o();

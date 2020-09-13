@@ -10,27 +10,28 @@
 #include "OlegPacket.h"
 
 
+
 bool ParameterReceive() {
 
- 
+
   byte incomingByte = Serial.read();
   if (incomingByte = PacketStart)
   {
-     for (byte i = 0; i < PacketMaxLength; i++)
+    for (byte i = 0; i < PacketMaxLength; i++)
       PinAndID::DataFromPC[i] = 0;
 
 
     byte number  = Serial.readBytesUntil(PacketEnd, PinAndID::DataFromPC, PacketMaxLength);
 
-// for (byte i = 0; i < number; i++)
-//ControlBlink();
+    // for (byte i = 0; i < number; i++)
+    //ControlBlink();
 
- 
+
     if (number == PinAndID::DataFromPC[0] - 1)
     {
       PinAndID::DataFromPC[number] = PacketEnd;
       number += 1;
-//      ControlBlink();
+      //      ControlBlink();
     }
     if (number != PinAndID::DataFromPC[0] ) return false;
 
@@ -56,10 +57,10 @@ bool ParameterReceive() {
 
     if (PinAndID::DataFromPC[0] < 3) return false;
 
-
-    PinAndID::NumberByte = PinAndID::DataFromPC[0];
-    PinAndID::DeviceId = PinAndID::DataFromPC[1];
-    PinAndID::PinControl = PinAndID::DataFromPC[2];
+    PinAndID::NamedByteFill();
+    //    PinAndID::NumberByte = PinAndID::DataFromPC[0];
+    //    PinAndID::DeviceId = PinAndID::DataFromPC[1];
+    //    PinAndID::PinControl = PinAndID::DataFromPC[2];
 
 
     return true;

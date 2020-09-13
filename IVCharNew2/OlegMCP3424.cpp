@@ -23,9 +23,20 @@ bool MCP3424o::Begin() {
 
 void MCP3424o::Process() {
   if (isConversionFinished()) {
-    DeviceId = MCP3424Command;
-    ActionId = _address;
-    CreateAndSendPacket(_DataReceived, GetDataReceivedNumber());
+    byte temp = DeviceCheck(MCP3424Command);
+    if (temp == 0xFF) {
+      DeviceId = MCP3424Command;
+      ActionId = _address;
+      CreateAndSendPacket(_DataReceived, GetDataReceivedNumber());
+    } else {
+      AddData(temp, _DataReceived, GetDataReceivedNumber());
+      DeviceId = ArduinoIVCommand;
+      ToBackDoor = true;      
+    };
+
+    //    DeviceId = MCP3424Command;
+    //    ActionId = _address;
+    //    CreateAndSendPacket(_DataReceived, GetDataReceivedNumber());
     Stop();
   }
   else {

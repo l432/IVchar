@@ -11,6 +11,7 @@ const byte PacketStart = 10;
 const byte PacketEnd = 15;
 const byte PacketMaxLength = 60;
 
+
 byte FCS (byte Data[], int n);
 bool SendParameters();
 void SendPacket(byte Data[], int n);
@@ -34,9 +35,23 @@ class PinAndID {
 //    static byte Data5;//DAC_Data2
 //    static byte Data6;//DAC_Sign  
     static void CreateAndSendPacket(byte DDATA[], int n);
+    static void NamedByteFill();
     static byte DataFromPC[PacketMaxLength];
 };
 
+class FastIVData{
+ public:
+    static bool ToBackDoor;
+    static bool CurrentMeasured;
+    static bool VoltageMeasured;    
+    static byte VoltageMDId;
+    static byte CurrentMDId;
+    static byte VoltageResultNumber;
+    static byte CurrentResultNumber;
+    static byte DataToPC[PacketMaxLength]; 
+    static void AddData(byte StartIndex, byte SourceData[], byte NumberToAdd); 
+    static byte DeviceCheck (byte Id);
+};
 
 #endif
 
