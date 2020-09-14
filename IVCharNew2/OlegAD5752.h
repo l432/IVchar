@@ -34,7 +34,7 @@ class AD5752o: public SPIObject,
     AD5752o();
     bool Action();
     void Setup(); //TSD enable/Clamp Enable/0 V on Clear/SDO Disable + 5V diapazone + Power on Ref
-    static word VoltageToKod(float Voltage, ad_OUTPUT_RANGE Range);
+    static word VoltageToKod(float Voltage, byte Range);
   private:
     void PowerOn(byte Chanel);
     void PowerOff(byte Chanel);

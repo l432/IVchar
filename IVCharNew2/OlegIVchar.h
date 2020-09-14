@@ -13,6 +13,7 @@
 #include "OlegConstant.h"
 
 const float DragonBackOvershootHeight = 1.05;
+const byte MaxCurrentMeasuringAttemp = 2;
 
 //bool ToBackDoor = false;
 
@@ -21,7 +22,7 @@ typedef enum  {
   SetedVoltageFirst,
   SetedVoltageSecond,
   StartedCMD,
-  StartedCMDandVMD  
+  StartedCMDandVMD
 } IV_status;
 
 class IVChar: public SmartDelay, public WireObject, public PinAndID, public FastIVData
@@ -34,18 +35,24 @@ class IVChar: public SmartDelay, public WireObject, public PinAndID, public Fast
     byte RevMaxCurrent[5];
     byte VMD_InResult;
     byte CMD_InResult;
-//    static bool ToBackDoor;
+    //    static bool ToBackDoor;
 
   private:
     IV_status _status;
     float ConvertByteToVoltage(byte B);
-//    void SetVoltageFirst(float VoltageToSet);
+    //    void SetVoltageFirst(float VoltageToSet);
     void SetVoltage(float VoltageToSet);
     void MD_Start(byte Request[]);
-    void PrepareToMeasuring(byte StartPosition);    
+    void PrepareToMeasuring(byte StartPosition, bool DoNotCheckCurrent = false);
     bool SecondCurrentIsMore(byte FirstStartIndex, byte FirstArray[],
-                      byte SecondStartIndex, byte SecondArray[]);
-//    unsigned long _DragonBackTime; //[] microsec
+                             byte SecondStartIndex, byte SecondArray[]);
+    //    unsigned long _DragonBackTime; //[] microsec
+    bool CurrentCheck();
+    bool CurrentCheckLimit();
+    bool ChangeVoltage();  
+    void EndMeasuring();
+    void SendDataToPC(byte EndByte);
+    void StopMeasuring();
     byte _DACbytes[10];
     bool _ForwBranchEnable;
     bool _RevBranchEnable;
@@ -60,6 +67,11 @@ class IVChar: public SmartDelay, public WireObject, public PinAndID, public Fast
     byte _CMD_Request[8];
     bool _CurrentLimited;
     bool ReadInstruction();
+    bool _CurrentChecked;
+    byte _AtempNumber;
+    byte _StepData;
+    byte ForwStepNumber;
+    byte RevStepNumber;    
 };
 
 

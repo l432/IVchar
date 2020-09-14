@@ -1222,6 +1222,8 @@ begin
   FastArduinoIV.HookBeginMeasuring:=FastArduinoIVHookBegin;
   FastArduinoIV.HookEndMeasuring:=FastArduinoIVHookEnd;
   FastIVMeasuring.CopyDecorationTo(FastArduinoIV);
+  ArduinoMeters.Add(FastArduinoIV.ArduinoCommunication);
+
 
   SetLength(Dependencies,8);
   Dependencies[0]:=IVMeasuring;
@@ -2853,7 +2855,7 @@ begin
                  MLX90615,
                  D30_06,IscVocPinChanger,LEDOpenPinChanger,
                  MCP3424,AD9833,STS21,ADT74x0,MCP9808,
-                 AD5752_Modul]);
+                 AD5752_Modul,FastArduinoIV.ArduinoCommunication]);
 
  AnyObjectArray.Add(ArduinoSenders);
  RS232_MediatorTread:=TRS232_MediatorTread.Create(ComPort1,ArduinoSenders);

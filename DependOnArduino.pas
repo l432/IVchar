@@ -392,7 +392,7 @@ begin
 //  fCurrentMD.ParentModule.ConvertToValue;
 //  showmessage(floattostr(fCurrentMD.ParentModule.Value));
 
-  Showmessage(ByteArrayToString(fArduinoCommunication.fData));
+//  Showmessage(ByteArrayToString(fArduinoCommunication.fData));
 
 
   Result:=true;
@@ -424,11 +424,13 @@ begin
 
 // fArduinoCommunication.TotalByteNumberInResult:=fVoltageMD.ParentModule.HighDataIndex+1;
 
+ if not(MD_Determine(fCurrentMD,Current_MD,'Current ')) then Exit;
+
  fArduinoCommunication.AddData(
    byte(byte(fCurrentMD.ParentModule.HighDataIndex+1) shl 4)
    + byte(fCurrentMD.ParentModule.NumberByteInResult and $0F));
 
- if not(MD_Determine(fCurrentMD,Current_MD,'Current ')) then Exit;
+
  for I := 0 to fCurrentMD.ParentModule.HighDataIndex do
    fArduinoCommunication.AddData(fCurrentMD.ParentModule.Data[i]);
 
@@ -488,7 +490,7 @@ begin
 
   if not(DataToSendPrepare) then Exit;
 
-//  if fArduinoCommunication.GetData=0 then EndMeasuring();
+  if fArduinoCommunication.GetData=0 then EndMeasuring();
 
 
 end;

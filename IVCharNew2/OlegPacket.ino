@@ -143,10 +143,12 @@ byte FastIVData::DeviceCheck (byte Id){
   if (Id == VoltageMDId){
     VoltageMeasured = true;
     return VoltageResultNumber;
+    VoltageMDId = 0;
   };
   if (Id == CurrentMDId){
     CurrentMeasured = true;
     return CurrentResultNumber;
+    CurrentMDId = 0;
   };
  return 0xFF; 
 }

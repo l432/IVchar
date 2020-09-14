@@ -11,6 +11,13 @@ IVChar::IVChar()
 
 bool IVChar::Begin() {
   if (DeviceId != ArduinoIVCommand) return false;
+  if ((PinControl == ArduinoIVCommand) &
+      (DataFromPC[3] == 0x00) &
+      (DataFromPC[4] == 0x00)) {
+    StopMeasuring();
+    return true;
+  }
+
 
   switch (_status) {
     case Waiting:
@@ -37,7 +44,29 @@ bool IVChar::Begin() {
       ToBackDoor = false;
       break;
     case StartedCMDandVMD:
-
+      if (CurrentMeasured & ~(_CurrentChecked)) {
+        if (CurrentCheck()) {
+          _CurrentChecked = true;
+        } else {
+          CurrentMeasured = false;
+          MD_Start(_CMD_Request);
+          CurrentMDId = _CMD_Request[1];
+          _AtempNumber++;
+        }
+      };
+      if (_CurrentChecked & VoltageMeasured) {
+        if (CurrentCheckLimit()) {
+          PrepareToMeasuring(VoltageResultNumber + VMD_InResult + CMD_InResult);
+          if (VoltageResultNumber > PacketMaxLength - 9) {
+            SendDataToPC(0xBB);
+            PrepareToMeasuring(0, true);
+          }
+          if (ChangeVoltage()) {
+            SetVoltage(_VoltageToSet * DragonBackOvershootHeight);
+            _status = SetedVoltageFirst;
+          }
+        }
+      }
       ToBackDoor = false;
       break;
   }
@@ -96,6 +125,8 @@ void IVChar::MD_Start(byte Request[]) {
 
 
 bool IVChar::ReadInstruction() {
+  if (NumberByte < 15) return false;
+
   byte ByteUnderWork = 3;
 
   SetInterval(1000 * DataFromPC[ByteUnderWork]);
@@ -107,8 +138,8 @@ bool IVChar::ReadInstruction() {
   };
   ByteUnderWork += DataFromPC[ByteUnderWork] + 1;
 
-  byte ForwStepNumber = ((DataFromPC[ByteUnderWork] >> 4) & 0x0F);
-  byte RevStepNumber = (DataFromPC[ByteUnderWork] & 0x0F);
+  ForwStepNumber = ((DataFromPC[ByteUnderWork] >> 4) & 0x0F);
+  RevStepNumber = (DataFromPC[ByteUnderWork] & 0x0F);
   ByteUnderWork++;
 
   _ForwBranchEnable = (ForwStepNumber != 0);
@@ -151,6 +182,7 @@ bool IVChar::ReadInstruction() {
 
   if (!(_RevBranchEnable || _ForwBranchEnable)) return false;
 
+  _StepData = 0;
 
   _VMD_Request[0] = ((DataFromPC[ByteUnderWork] >> 4) & 0x0F);
   VMD_InResult = (DataFromPC[ByteUnderWork] & 0x0F);
@@ -170,7 +202,7 @@ bool IVChar::ReadInstruction() {
     ByteUnderWork++;
   };
 
-  PrepareToMeasuring(0);
+  PrepareToMeasuring(0, true);
   // VoltageResultNumber = 0;
   // CurrentResultNumber = VoltageResultNumber + VMD_InResult;
   // CurrentMeasured = false;
@@ -188,11 +220,13 @@ bool IVChar::ReadInstruction() {
   return true;
 }
 
-void IVChar::PrepareToMeasuring(byte StartPosition) {
+void IVChar::PrepareToMeasuring(byte StartPosition, bool DoNotCheckCurrent) {
   VoltageResultNumber = StartPosition;
   CurrentResultNumber = VoltageResultNumber + VMD_InResult;
   CurrentMeasured = false;
   VoltageMeasured = false;
+  _CurrentChecked = DoNotCheckCurrent;
+  _AtempNumber = 0;
 }
 
 bool IVChar::SecondCurrentIsMore(byte FirstStartIndex, byte FirstArray[],
@@ -210,13 +244,98 @@ bool IVChar::SecondCurrentIsMore(byte FirstStartIndex, byte FirstArray[],
       temp2 = temp2 << 8;
       temp2 += SecondArray[SecondStartIndex + i];
     };
-    if (FirstSign == 0) {
-      return (temp2 > temp1);
-    } else {
-      return (temp1 > temp2);
-    }
+    return (temp2 > temp1);
+    //    if (FirstSign == 0) {
+    //      return (temp2 > temp1);
+    //    } else {
+    //      return (temp1 > temp2);
+    //    }
   }
 }
 
+bool IVChar::CurrentCheck() {
+  if (_AtempNumber > MaxCurrentMeasuringAttemp) return true;
+  if (_IsForward) {
+    return SecondCurrentIsMore(CurrentResultNumber - VMD_InResult - CMD_InResult, DataToPC,
+                               CurrentResultNumber, DataToPC) ;
+  } else {
+    return !SecondCurrentIsMore(CurrentResultNumber - VMD_InResult - CMD_InResult, DataToPC,
+                                CurrentResultNumber, DataToPC);
+  }
+}
 
+bool IVChar::CurrentCheckLimit() {
+  if (!_CurrentLimited) return true;
+  if (_IsForward) {
+    return SecondCurrentIsMore(CurrentResultNumber, DataToPC,
+                               0, ForwMaxCurrent) ;
+  } else {
+    return !SecondCurrentIsMore(CurrentResultNumber, DataToPC,
+                                0, RevMaxCurrent);
+  }
+}
+
+bool IVChar::ChangeVoltage() {
+  if (_IsForward) {
+    if (_ForwStepNumber[_StepData] == 0) {
+      _StepData++;
+      if (_StepData >= ForwStepNumber) {
+        if (_RevBranchEnable) {
+          _VoltageToSet = _V0_rev;
+          _IsForward = false;
+          _CurrentChecked = true;
+          _StepData = 0;
+        } else {
+          EndMeasuring();
+          return false;
+        }
+      } else {
+        _VoltageToSet += _ForwStepValue[_StepData];
+        _ForwStepNumber[_StepData]--;
+      }
+    } else {
+      _VoltageToSet += _ForwStepValue[_StepData];
+      _ForwStepNumber[_StepData]--;
+    };
+  } else {
+    if (_RevStepNumber[_StepData] == 0) {
+      _StepData++;
+      if (_StepData >= RevStepNumber) {
+        EndMeasuring();
+        return false;
+      } else {
+        ;
+        _VoltageToSet += _RevStepValue[_StepData];
+        _RevStepNumber[_StepData]--;
+      }
+
+    } else {
+      _VoltageToSet += _RevStepValue[_StepData];
+      _RevStepNumber[_StepData]--;
+    }
+  };
+  return true;
+}
+
+void IVChar::EndMeasuring() {
+  SendDataToPC(0xEE);
+  StopMeasuring();
+  //  _status = Waiting;
+  //  VoltageMDId = 0;
+  //  CurrentMDId = 0;
+}
+
+void IVChar::SendDataToPC(byte EndByte) {
+  DataToPC[CurrentResultNumber + CMD_InResult] = EndByte;
+  DeviceId = ArduinoIVCommand;
+  ActionId = ArduinoIVCommand;
+  CreateAndSendPacket(DataToPC, CurrentResultNumber + CMD_InResult + 1);
+}
+
+void IVChar::StopMeasuring() {
+  _status = Waiting;
+  VoltageMDId = 0;
+  CurrentMDId = 0;
+  SetVoltage(0);
+}
 

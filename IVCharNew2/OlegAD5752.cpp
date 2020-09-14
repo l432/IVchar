@@ -104,7 +104,7 @@ void AD5752o::Setup() {
   _SetupIsNotDone = false;
 }
 
-word AD5752o::VoltageToKod(float Voltage, ad_OUTPUT_RANGE Range) {
+word AD5752o::VoltageToKod(float Voltage, byte Range) {
   long temp = round(Voltage / AD5752_REFIN / AD5752_GainOutputRange[Range] * (AD5752_MaxKod + 1));
   if (temp < 0) temp = (~(abs(temp))) & 0xFFFF;
   return (temp & 0xFFFF); 
