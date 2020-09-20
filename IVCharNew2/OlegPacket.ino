@@ -46,11 +46,13 @@ void SendPacket(byte Data[], int n) {
 }
 
 
-void ControlBlink() {
-  digitalWrite(LEDPin, HIGH);
-  delay(200);
-  digitalWrite(LEDPin, LOW);
-  delay(500);
+void ControlBlink(byte n = 1) {
+  for (byte i = 0; i < n; i++) {
+    digitalWrite(LEDPin, HIGH);
+    delay(200);
+    digitalWrite(LEDPin, LOW);
+    delay(500);
+  }
 }
 
 void ShortDelay() {
@@ -139,17 +141,17 @@ void FastIVData::AddData(byte StartIndex, byte SourceData[], byte NumberToAdd) {
   }
 }
 
-byte FastIVData::DeviceCheck (byte Id){
-  if (Id == VoltageMDId){
+byte FastIVData::DeviceCheck (byte Id) {
+  if (Id == VoltageMDId) {
     VoltageMeasured = true;
     return VoltageResultNumber;
     VoltageMDId = 0;
   };
-  if (Id == CurrentMDId){
+  if (Id == CurrentMDId) {
     CurrentMeasured = true;
     return CurrentResultNumber;
     CurrentMDId = 0;
   };
- return 0xFF; 
+  return 0xFF;
 }
 
