@@ -18,6 +18,7 @@ bool AD5752o::Action() {
   if (NumberByte < 7) return true;
   if (DataFromPC[3] > 1) return true;
 
+
   SetPin(PinControl);
   if (_SetupIsNotDone) Setup();
 

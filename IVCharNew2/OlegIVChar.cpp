@@ -10,6 +10,7 @@ IVChar::IVChar()
 
 
 bool IVChar::Begin() {
+//  ControlBlink();
   if (DeviceId != ArduinoIVCommand) return false;
   if ((PinControl == ArduinoIVCommand) &
       (DataFromPC[3] == 0x00) &
@@ -77,7 +78,6 @@ bool IVChar::Begin() {
 
 
 void IVChar::Process() {
-
   switch (_status) {
     case SetedVoltageFirst:
       DeviceId = ArduinoIVCommand;

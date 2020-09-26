@@ -65,12 +65,12 @@ void setup() {
 }
 
 void loop() {
-  // ControlBlink();
-  // delay(1000);
+//   ControlBlink();
+//   delay(1000);
   if (Serial.available() > 0) {
-
     if (ParameterReceive()) {
 backdoor:
+//      ControlBlink;
       ivchar.Begin();
       if (cd.V721()) goto start;
       if (SendParameters()) goto start;
@@ -92,6 +92,7 @@ backdoor:
     }
   }
 start:
+  ivchar.End();
   ds18b20.End();
   d3006.End();
   htu21.End();

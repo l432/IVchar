@@ -1048,6 +1048,8 @@ procedure TAddedRequestState.Request;
 begin
   fArduinoMeter.fArduinoDataSubject.RegisterObserver(fArduinoMeter);
   fArduinoMeter.fRequestState:=fArduinoMeter.fWorkRequestState;
+  fArduinoMeter.fRequestState.Request;
+//  fArduinoMeter.isNeededComPortState();
 end;
 
 { TArduinoDACbase }
