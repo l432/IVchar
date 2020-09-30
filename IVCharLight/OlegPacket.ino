@@ -46,7 +46,7 @@ void SendPacket(byte Data[], int n) {
 }
 
 
-void ControlBlink(byte n ) {
+void ControlBlink(byte n) {
   for (byte i = 0; i < n; i++) {
     digitalWrite(LEDPin, HIGH);
     delay(200);
@@ -76,10 +76,6 @@ byte PinAndID::PinControl = 0;
 byte PinAndID::DeviceId = 0;
 byte PinAndID::ActionId = 0;
 byte PinAndID::DataFromPC[PacketMaxLength] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                                              0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                                              0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                                              0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                                              0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                                               0, 0, 0, 0, 0, 0, 0, 0, 0, 0
                                              };
 
@@ -120,38 +116,4 @@ void PinAndID::NamedByteFill() {
   PinControl = DataFromPC[2];
 }
 
-bool FastIVData::ToBackDoor = false;
-bool FastIVData::CurrentMeasured = false;
-bool FastIVData::VoltageMeasured = false;
-byte FastIVData::VoltageMDId = 0;
-byte FastIVData::CurrentMDId = 0;
-byte FastIVData::VoltageResultNumber = 0;
-byte FastIVData::CurrentResultNumber = 0;
-byte FastIVData::DataToPC[PacketMaxLength] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                                              0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                                              0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                                              0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                                              0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                                              0, 0, 0, 0, 0, 0, 0, 0, 0, 0
-                                             };
-
-void FastIVData::AddData(byte StartIndex, byte SourceData[], byte NumberToAdd) {
-  for (byte i = 0; i < NumberToAdd; i++) {
-    DataToPC[StartIndex + i] = SourceData[i];
-  }
-}
-
-byte FastIVData::DeviceCheck (byte Id) {
-  if (Id == VoltageMDId) {
-    VoltageMeasured = true;
-    VoltageMDId = 0;
-    return VoltageResultNumber;
-  };
-  if (Id == CurrentMDId) {
-    CurrentMeasured = true;
-    CurrentMDId = 0;
-    return CurrentResultNumber;
-  };
-  return 0xFF;
-}
 
