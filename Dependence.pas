@@ -10,6 +10,7 @@ uses
 var EventToStopDependence:THandle;
   fItIsForward:boolean;
   fIVMeasuringToStop:boolean;
+  Info:string;
 
 //    EventFastIVDone: THandle;
 //    EventFastIVCurrentMeasDone: THandle;
@@ -22,6 +23,8 @@ const
 //   IVtiming=true;
    IVtiming=false;
 
+//   CollectInfo=true;
+   CollectInfo=false;
 
 
 type
@@ -1183,19 +1186,38 @@ end;
 procedure TFastIVDependence.ActionMeasurement;
 begin
 
-    SetVoltage();
+
+       SetVoltage();
+
+ if CollectInfo then secondmeter.Start();
+    
+
+     VoltageMeasuring();
+
+ 
+
+ if CollectInfo then
+  begin
+    secondmeter.Finish();
+    Info:=Info+' '+ floattostr(SecondMeter.Interval);
+//   helpforme(floattostr(SecondMeter.Interval),
+//          floattostr(fAbsVoltageValue));
+  end;
+  
+    CurrentMeasuring();
+       DataSave();
+
 
 //      secondmeter.Start();
 
-    VoltageMeasuring();
+
 
 //        secondmeter.Finish();
 //    helpforme('b'+floattostr(fAbsVoltageValue)+
 //     '_'+floattostr(SecondMeter.Interval));
 
 
-    CurrentMeasuring();
-    DataSave();
+
 
 
 //    if fTreadToMeasuring.IsTerminated then Exit;
@@ -1410,6 +1432,7 @@ begin
 // ResetEvent(EventFastIVDone);
 //  helpforme('meas_'+FilePrefix+inttostr(MilliSecond));
 
+ if CollectInfo then Info:='';
 
  if IVtiming then
   begin
@@ -1424,9 +1447,12 @@ begin
   BeginMeasuring();
 
   Cycle(True);
-  if fIVMeasuringToStop then Exit;
-  Cycle(False);
+  if not(fIVMeasuringToStop)
+     then Cycle(False);
   EndMeasuring();
+
+  if CollectInfo then helpforme(Info,'vv');
+
 //  WaitForSingleObject(EventFastIVDone,10000);
 end;
 

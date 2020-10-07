@@ -268,6 +268,7 @@ end;
 constructor TADS1115_Module.Create;
 begin
  inherited Create('ADS1115');
+ RepeatInErrorCase:=True;
 end;
 
 function TADS1115_Module.GetNumberByteInResult: byte;
