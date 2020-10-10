@@ -438,7 +438,7 @@ TIVMeasurementResult=class(TSimpleFreeAndAiniObject)
 //  Constructor Create();
 end;
 
-
+function IVisBad(VAX:TVector):boolean;
 
 implementation
 
@@ -1451,7 +1451,7 @@ begin
      then Cycle(False);
   EndMeasuring();
 
-  if CollectInfo then helpforme(Info,'vv');
+//  if CollectInfo then helpforme(Info,'vv');
 
 //  WaitForSingleObject(EventFastIVDone,10000);
 end;
@@ -1930,6 +1930,24 @@ begin
  fIsoInterval.WriteToIniFile(ConfigFile);
  fToleranceCoef.WriteToIniFile(ConfigFile);
 end;
+
+
+function IVisBad(VAX:TVector):boolean;
+ var i:integer;
+begin
+ Result:=True;
+ i:=1;
+ while (Result)and(i<VAX.Count) do
+  begin
+   Result:=Result and (Vax.Y[i]>Vax.Y[i-1]) and ((Vax.X[i]-Vax.X[i-1])>0.005);
+   inc(i);
+  end;
+
+  Result:=not(Result);
+// for I := 1 to VAX.HighNumber do
+//   Result:=Result and (Vax.Y[i]>Vax.Y[i-1]) and ((Vax.X[i]-Vax.X[i-1])>0.005);
+end;
+
 
 initialization
   EventToStopDependence := CreateEvent(nil,

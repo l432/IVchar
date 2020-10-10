@@ -1357,7 +1357,14 @@ begin
  if (CBLEDOpenAuto.Checked)or(CBLEDAuto.Checked)
      then
      begin
-     FastIVMeasuring.Measuring(False,'dark');
+     FastIVMeasuring.Measuring(False,'d');
+     if IVisBad(FastIVMeasuring.Results)
+       then
+       begin
+        sleep(200);
+        DeleteFile(LastDATFileName('d'));
+        FastIVMeasuring.Measuring(False,'d');
+       end;
 //     sleep(300);
 //     FastIVMeasuring.Measuring(False,'dark');
      end;
@@ -1376,6 +1383,13 @@ begin
     end;
 
    FastIVMeasuring.Measuring(False,'l');
+     if IVisBad(FastIVMeasuring.Results)
+       then
+       begin
+        sleep(200);
+        DeleteFile(LastDATFileName('l'));
+        FastIVMeasuring.Measuring(False,'l');
+       end;
 
   IVcharOnTemperature.SecondMeasurementTime:=FastIVMeasuring.Voc;
 
@@ -2582,17 +2596,22 @@ end;
 
 
 procedure TIVchar.Button1Click(Sender: TObject);
-  var ByteAr:TArrByte;
+//  var ByteAr:TArrByte;
+   var Vax:TVector;
 begin
+  Vax:=TVector.Create;
+  Vax.ReadFromFile('D:\Samples\DeepL\Project\SC116_A\2020_10_09\dark70.dat');
+  showmessage(booltostr(IVisBad(Vax))+' true='+booltostr(true));
+  Vax.Free;
 
-   MCP3424.ValueToByteArray(0,ByteAr);
-   showmessage(ByteArrayToString(ByteAr));
-   MCP3424.ValueToByteArray(-0.5,ByteAr);
-   showmessage(ByteArrayToString(ByteAr));
-   MCP3424.ValueToByteArray(-1,ByteAr);
-   showmessage(ByteArrayToString(ByteAr));
-   MCP3424.ValueToByteArray(-2,ByteAr);
-   showmessage(ByteArrayToString(ByteAr));
+//   MCP3424.ValueToByteArray(0,ByteAr);
+//   showmessage(ByteArrayToString(ByteAr));
+//   MCP3424.ValueToByteArray(-0.5,ByteAr);
+//   showmessage(ByteArrayToString(ByteAr));
+//   MCP3424.ValueToByteArray(-1,ByteAr);
+//   showmessage(ByteArrayToString(ByteAr));
+//   MCP3424.ValueToByteArray(-2,ByteAr);
+//   showmessage(ByteArrayToString(ByteAr));
 
 
 //FastArduinoIV.Measuring;
