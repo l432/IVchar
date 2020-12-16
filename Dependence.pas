@@ -323,6 +323,7 @@ TFastIVDependence=class (TFastDependence)
    procedure CurrentMeasuring();
    function ValueMeasuring(MD:TMeasuringDevice):double;
    function CurrentGrowth():boolean;
+   function VoltageGrowth():boolean;
    procedure DataSave();override;
 
    procedure VocIscDetermine;
@@ -330,6 +331,7 @@ TFastIVDependence=class (TFastDependence)
  protected
    fVoltageMeasured,fCurrentMeasured:double;
    FCurrentValueLimitEnable: boolean;
+   fToUseDragonBackTime:boolean;
    fVoltageFactor:double;
    fAbsVoltageValue:double;
    fItIsBranchBegining:boolean;
@@ -358,6 +360,7 @@ TFastIVDependence=class (TFastDependence)
   property Imin:double read FImin write SetImin;
   property CurrentValueLimitEnable:boolean read FCurrentValueLimitEnable write FCurrentValueLimitEnable;
   property ForwardBranch:boolean read fForwardBranch;
+  property ToUseDragonBackTime:boolean read fToUseDragonBackTime write fToUseDragonBackTime;
   property DragonBackTime:double read fDragonBackTime write SetDragonBackTime;
   property SingleMeasurement:boolean read fSingleMeasurement write fSingleMeasurement;
   property Voc:double read FVoc;
@@ -1266,7 +1269,7 @@ begin
  PrefixToFileName:='';
  fVoc:=0;
  fIsc:=0;
-
+ fToUseDragonBackTime:=True;
 end;
 
 function TFastIVDependence.CurrentGrowth: boolean;
@@ -1486,9 +1489,12 @@ end;
 
 procedure TFastIVDependence.SetVoltage;
 begin
-  SettingDevice.SetValue(DragonBackOvershootHeight*fVoltageFactor * fAbsVoltageValue);
-  HRDelay(fDragonBackTime);
-//  sleep(fDragonBackTime);
+ if ToUseDragonBackTime then
+  begin
+   SettingDevice.SetValue(DragonBackOvershootHeight*fVoltageFactor * fAbsVoltageValue);
+   HRDelay(fDragonBackTime);
+//   sleep(fDragonBackTime);
+  end;
   SettingDevice.SetValue(fVoltageFactor * fAbsVoltageValue);
   HRDelay(fDragonBackTime);
 //  sleep(fDragonBackTime);
@@ -1502,9 +1508,28 @@ begin
 end;
 
 
-procedure TFastIVDependence.VoltageMeasuring;
+function TFastIVDependence.VoltageGrowth: boolean;
 begin
-  fVoltageMeasured :=ValueMeasuring(Voltage_MD);
+ Result:=(abs(fVoltageMeasured)
+       -abs(Results.X[Results.HighNumber])-VoltageStep)<0.1*VoltageStep;
+end;
+
+procedure TFastIVDependence.VoltageMeasuring;
+//begin
+//  fVoltageMeasured :=ValueMeasuring(Voltage_MD);
+ var
+  AtempNumber:byte;
+begin
+  AtempNumber := 0;
+  repeat
+   fVoltageMeasured:= ValueMeasuring(Voltage_MD);
+//   if fVoltageMeasured=ErResult then Exit;
+   if (Results.IsEmpty) then Break;
+   if fItIsBranchBegining then Break;
+   if VoltageGrowth() then Break;
+   inc(AtempNumber);
+  until (AtempNumber>MaxCurrentMeasuringAttemp);
+
 end;
 
 function TFastIVDependence.StepFromVector(Vector: TVector): double;

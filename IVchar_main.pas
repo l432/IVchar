@@ -714,6 +714,7 @@ type
     RG5752chBDiap: TRadioGroup;
     BPoff5752chB: TButton;
     PD30PinGate: TPanel;
+    CBuseDBT: TCheckBox;
 
     procedure FormCreate(Sender: TObject);
     procedure BConnectClick(Sender: TObject);
@@ -988,7 +989,7 @@ type
     ,MaxDifCoeficient
        :double;
     VoltageLimit:boolean;
-    LEDVoltageCS,Dragon_backTimeCS,
+    LEDCurrentCS,Dragon_backTimeCS,
     RevVoltagePrecisionCS,ForVoltagePrecisionCS,
     MinCurrentCS,MaxCurrentCS,ParasiticResistanceCS:TDoubleParameterShow;
     ControlIntervalCS,MeasurementDurationCS,
@@ -1071,10 +1072,10 @@ begin
 
   Dragon_backTimeCS:=TDoubleParameterShow.Create(STDBtime,LDBtime,
         'Dragon-back time (ms)',1,3);
-  LEDVoltageCS:=TDoubleParameterShow.Create(STLED_onValue,LLED_onValue,
-        'LED voltage (V)',0.79,5);
+  LEDCurrentCS:=TDoubleParameterShow.Create(STLED_onValue,LLED_onValue,
+        'LED current (mA)',50);
 
-  ShowArray.Add([LEDVoltageCS,Dragon_backTimeCS,ControlIntervalCS,
+  ShowArray.Add([LEDCurrentCS,Dragon_backTimeCS,ControlIntervalCS,
                 MeasurementDurationCS,MeasurementIntervalCS,
 //                TemperatureMeasIntervalCS,
                 RevVoltagePrecisionCS,ForVoltagePrecisionCS,MinCurrentCS,
@@ -1378,7 +1379,8 @@ begin
 
    if (CBLEDAuto.Checked) then
     begin
-      SettingDeviceLED.ActiveInterface.Output(LEDVoltageCS.Data);
+//      SettingDeviceLED.ActiveInterface.Output(LEDVoltageCS.Data);
+      SettingDeviceLED.ActiveInterface.Output(IledToVdac(LEDCurrentCS.Data));
       sleep(50)
     end;
 
@@ -1509,24 +1511,42 @@ if IscVocOnTimeModeIsFastIV then
    if (CBLEDOpenAuto.Checked)or(CBLEDAuto.Checked)
      then
      begin
-     FastIVMeasuring.Measuring(False,'dark');
+//     FastIVMeasuring.Measuring(False,'dark');
+     FastIVMeasuring.Measuring(False,'d');
+     if IVisBad(FastIVMeasuring.Results)
+       then
+       begin
+        sleep(200);
+        DeleteFile(LastDATFileName('d'));
+        FastIVMeasuring.Measuring(False,'d');
+       end;
      end;
-
-   if (CBLEDOpenAuto.Checked)or(TFastDependence.PointNumber=1)
-     then
-      begin
-      LEDOpenPinChanger.PinChangeToLow;
-      LEDWasOpened:=true;
-      sleep(500);
-      end;
+//відкриття заслонки
+//   if (CBLEDOpenAuto.Checked)or(TFastDependence.PointNumber=1)
+//     then
+//      begin
+//      LEDOpenPinChanger.PinChangeToLow;
+//      LEDWasOpened:=true;
+//      sleep(500);
+//      end;
 
    if (CBLEDAuto.Checked)or(TFastDependence.PointNumber=1) then
     begin
-    SettingDeviceLED.ActiveInterface.Output(LEDVoltageCS.Data);
+    SettingDeviceLED.ActiveInterface.Output(IledToVdac(LEDCurrentCS.Data));
+//    SettingDeviceLED.ActiveInterface.Output(LEDCurrentCS.Data);
     sleep(50)
+//    sleep(500)
     end;
 
    FastIVMeasuring.Measuring(False,'l');
+     if IVisBad(FastIVMeasuring.Results)
+       then
+       begin
+        sleep(200);
+        DeleteFile(LastDATFileName('l'));
+        FastIVMeasuring.Measuring(False,'l');
+       end;
+
    TDependence.tempIChange(FastIVMeasuring.Voc);
 
    IscVocOnTime.SecondMeasurementTime:=TFastDependence.tempV+1e-6;
@@ -1565,7 +1585,8 @@ if IscVocOnTimeModeIsFastIV then
    if CBLEDOpenAuto.Checked then  LEDOpenPinChanger.PinChangeToLow;
 
    if CBLEDAuto.Checked then
-    SettingDeviceLED.ActiveInterface.Output(LEDVoltageCS.Data);
+    SettingDeviceLED.ActiveInterface.Output(IledToVdac(LEDCurrentCS.Data));
+//    SettingDeviceLED.ActiveInterface.Output(LEDCurrentCS.Data);
 
    if (CBLEDOpenAuto.Checked)or(CBLEDAuto.Checked)
     then    sleep(2000);
@@ -2597,12 +2618,14 @@ end;
 
 procedure TIVchar.Button1Click(Sender: TObject);
 //  var ByteAr:TArrByte;
-   var Vax:TVector;
+//   var Vax:TVector;
 begin
-  Vax:=TVector.Create;
-  Vax.ReadFromFile('D:\Samples\DeepL\Project\SC116_A\2020_10_09\dark70.dat');
-  showmessage(booltostr(IVisBad(Vax))+' true='+booltostr(true));
-  Vax.Free;
+showmessage(floattostr(IledToVdac(LEDCurrentCS.Data)));
+
+//  Vax:=TVector.Create;
+//  Vax.ReadFromFile('D:\Samples\DeepL\Project\SC116_A\2020_10_09\dark70.dat');
+//  showmessage(booltostr(IVisBad(Vax))+' true='+booltostr(true));
+//  Vax.Free;
 
 //   MCP3424.ValueToByteArray(0,ByteAr);
 //   showmessage(ByteArrayToString(ByteAr));
@@ -2745,6 +2768,7 @@ begin
  FastIVDep.Imin := MinCurrentCS.Data;
  FastIVDep.CurrentValueLimitEnable:=CBCurrentValue.Checked;
  FastIVDep.DragonBackTime:=Dragon_backTimeCS.Data;
+ FastIVDep.ToUseDragonBackTime:=CBuseDBT.Checked;
 end;
 
 procedure TIVchar.FastIVHookEnd;

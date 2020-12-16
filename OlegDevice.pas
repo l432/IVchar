@@ -132,6 +132,9 @@ type
       destructor Destroy;override;
   end;
 
+ function IledToVdac(Iled:double):Double;
+ {взаємозв'язок струму через LED (мА)
+ та не необхідної напруги на ЦАП (В)}
 
  var OlegCurrent:TCurrent;
      OlegVoltage:TVoltage;
@@ -418,7 +421,13 @@ function TVoltage.ValueCalculate(Voltage: double): double;
 begin
   if Voltage=ErResult
    then Result:=ErResult
-   else Result:=-11.36084+4.52483*Voltage;
+   else
+    begin
+    Result:=-11.36084+4.52483*Voltage;
+    Result:=0.006297+1.008421*Result;
+//    Result:=0.01515+1.00839*Result;
+    {остання калібровка по V7-21(2)}
+    end;
 end;
 
 { TVoltageResultShow }
@@ -488,6 +497,14 @@ begin
   inherited WriteToIniFile(ConfigFile);
   fValueMeasuring.WriteToIniFile(ConfigFile);
 end;
+
+function IledToVdac(Iled:double):Double;
+ {взаємозв'язок струму через LED (мА)
+ та не необхідної напруги на ЦАП (В)}
+begin
+  Result:=(Iled+1.25)/253.9;
+end;
+
 
 initialization
   OlegCurrent:=TCurrent.Create;

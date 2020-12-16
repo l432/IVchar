@@ -144,7 +144,9 @@ begin
 
   RepeatInErrorCase:=True;
   fMetterKod:=V7_21Command;
-  fTimeToMeasurement:=80;
+//  fTimeToMeasurement:=80;
+  fTimeToMeasurement:=40;
+
 end;
 
 destructor TVoltmetr.Destroy;
@@ -157,7 +159,7 @@ function TVoltmetr.GetData(): double;
  function AditionMeasurement(a,b:double):double;
   var c:double;
   begin
-    if (abs(a-b)<1e-5*Max(abs(a),abs(b)))and(not(ResultProblem(a)))
+    if (abs(a-b)<1e-4*Max(abs(a),abs(b)))and(not(ResultProblem(a)))
      then
       Result:=(a+b)/2
      else
@@ -179,6 +181,7 @@ begin
  sleep(fTimeToMeasurement);
  b:=Measurement();
  Result:=AditionMeasurement(a,b);
+// Result:=Measurement();
 
  if ResultProblem(Result) then
    begin
@@ -232,7 +235,8 @@ end;
 constructor TV721.Create(Nm:string);
 begin
   inherited Create(Nm);
-  fTimeToMeasurement:=60;
+//  fTimeToMeasurement:=60;
+    fTimeToMeasurement:=40;
 end;
 
 Constructor TVoltmetrShow.Create(V:TVoltmetr;
