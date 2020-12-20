@@ -209,6 +209,9 @@ private
                      Tim:TTimer);
   procedure BeginMeasuring();override;
   procedure EndMeasuring();override;
+  procedure PauseMeasuring();
+  procedure ResumeMeasuring();
+  procedure SpBattonClick(Sender: TObject);
 end;
 
 
@@ -448,7 +451,7 @@ implementation
 uses
   SysUtils, Forms, Windows, Math, DateUtils,
   Dialogs, OlegGraph, OlegFunction, 
-  OlegMath, Measurement;
+  OlegMath, Measurement, Buttons;
 
 var
 //  fItIsForward:boolean;
@@ -744,6 +747,17 @@ begin
                else Result:=10;
 end;
 
+procedure TTimeDependenceTimer.PauseMeasuring;
+begin
+ Timer.Enabled:=False;
+end;
+
+procedure TTimeDependenceTimer.ResumeMeasuring;
+begin
+  TimerOnTime(Timer);
+  Timer.Enabled:=True;
+end;
+
 procedure TTimeDependenceTimer.SetDuration(const Value: int64);
 begin
   FDuration := abs(Value);
@@ -753,6 +767,23 @@ procedure TTimeDependenceTimer.SetInterval(const Value: integer);
 begin
   if Value>=1 then FInterval := Value
              else FInterval := 15;
+end;
+
+procedure TTimeDependenceTimer.SpBattonClick(Sender: TObject);
+begin
+ if (Sender is TSpeedButton) then
+  begin
+    if (Sender as TSpeedButton).Down then
+    begin
+     (Sender as TSpeedButton).Caption:='Resume';
+     PauseMeasuring;
+    end            else
+    begin
+     (Sender as TSpeedButton).Caption:='Pause';
+     ResumeMeasuring;
+    end;
+  end;
+
 end;
 
 procedure TTimeDependenceTimer.TimerOnTime(Sender: TObject);

@@ -715,6 +715,9 @@ type
     BPoff5752chB: TButton;
     PD30PinGate: TPanel;
     CBuseDBT: TCheckBox;
+    SBLEDTurn: TSpeedButton;
+    BTermostatLoad: TButton;
+    SBIVPause: TSpeedButton;
 
     procedure FormCreate(Sender: TObject);
     procedure BConnectClick(Sender: TObject);
@@ -750,6 +753,7 @@ type
     procedure BET1255_show_saveClick(Sender: TObject);
     procedure Button1Click(Sender: TObject);
     procedure RGIscVocModeClick(Sender: TObject);
+    procedure SBLEDTurnClick(Sender: TObject);
   private
     procedure ComponentView;
     {початкове налаштування різних компонентів}
@@ -1163,6 +1167,13 @@ begin
 
   if Key=MeasIVonTemper then  IVcharOnTempHookEnd;
 
+
+  if (Key=MeasIscAndVocOnTime)or
+      (Key=MeasTimeD)or(Key=MeasTwoTimeD) then
+        begin
+        SBIVPause.Enabled:=False;
+        SBIVPause.OnClick:=nil;
+        end;
 
   if Key=MeasIscAndVocOnTime then
    begin
@@ -2988,7 +2999,8 @@ begin
            STTermostatOVmax,STTermostatOVmin,
            LTermostatKp,LTermostatKi,LTermostatKd,
            LTermostatNT,LTermostatTolerance,
-           LTermostatOVmax,LTermostatOVmin);
+           LTermostatOVmax,LTermostatOVmin,
+           BTermostatLoad);
 
   PID_Control_ParametersShow:=
    TPID_ParametersShow.Create('PIDControl',
@@ -3064,6 +3076,8 @@ procedure TIVchar.MeasurementTimeParameterDetermination(Dependence:TTimeDependen
 begin
   Dependence.Duration := MeasurementDurationCS.Data;
   Dependence.Interval := MeasurementIntervalCS.Data;
+  SBIVPause.Enabled:=True;
+  SBIVPause.OnClick:=Dependence.SpBattonClick;
 end;
 
 procedure TIVchar.ComPortsBegining;
@@ -3349,6 +3363,21 @@ begin
 end;
 
 
+
+procedure TIVchar.SBLEDTurnClick(Sender: TObject);
+begin
+ if SBLEDTurn.Down then
+    begin
+      SettingDeviceLED.ActiveInterface.Output(IledToVdac(LEDCurrentCS.Data));
+      SBLEDTurn.Caption:='LED off';
+    end            else
+    begin
+      SettingDeviceLED.ActiveInterface.Reset;
+      SBLEDTurn.Caption:='LED on';
+    end;
+ 
+end;
+
 procedure TIVchar.SBTAutoClick(Sender: TObject);
 begin
  if SBTAuto.Down then
@@ -3574,6 +3603,7 @@ end;
 
 procedure TIVchar.WMMyMeasure(var Mes: TMessage);
 begin
+
   if Mes.WParam=TemperMessage then
     begin
       LTRValue.Caption:=FloatToStrF(Temperature_MD.ActiveInterface.Value,ffFixed, 5, 2);
@@ -3591,6 +3621,7 @@ begin
               PID_Termostat:=TPID.Create(PID_Termostat_ParametersShow,
                                          TemperatureMeasIntervalCS.Data
                                          );
+              PID_Termostat.FileSave:='ts';
               IsPID_Termostat_Created:=True;
               TermostatWatchDog.Interval:=TemperatureMeasIntervalCS.Data*2000;
               TermostatWatchDog.Enabled:=True;

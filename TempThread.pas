@@ -73,7 +73,7 @@ type
 implementation
 
 uses
-  Windows, OlegFunction, SysUtils;
+  Windows, OlegFunction, SysUtils, Dialogs;
 
 { TTemperatureMeasuringThread }
 

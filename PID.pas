@@ -14,6 +14,7 @@ TPID_ParamArr=array[TPID_Parameters]of Double;
 TPID_ParametersShow=class(TNamedInterfacedObject)
  private
   fParameterShow:array[TPID_Parameters]of TDoubleParameterShow;
+//  fButLoad:TButton;
   function GetParameter(Index:TPID_Parameters):double;
   function GetParameters:TPID_ParamArr;
   procedure SetNeededValue(Index:TPID_Parameters;const Value: double);
@@ -21,12 +22,14 @@ TPID_ParametersShow=class(TNamedInterfacedObject)
 //  property Kp:double Index ppKp read GetParameter;
 //  property Ki:double Index ppKi read GetParameter;
 //  property Kd:double Index ppKd read GetParameter;
+  fButLoad:TButton;
   property NeededValue:double Index ppNV {read GetParameter }write SetNeededValue;
   property Tolerance:double Index ppTol read GetParameter;
   property Parameters:TPID_ParamArr read GetParameters;
   Constructor Create(Name:string;
                      STKp,STKi,STKd,STNV,STTol,STOVmax,STOVmin:TStaticText;
-                     LKp,LKi,LKd,LNV,LTol,LOVmax,LOVmin:TLabel);
+                     LKp,LKi,LKd,LNV,LTol,LOVmax,LOVmin:TLabel;
+                     ButLoad:TButton=nil);
   procedure WriteToIniFile(ConfigFile:TIniFile);override;
   procedure ReadFromIniFile(ConfigFile:TIniFile);override;
   destructor Destroy;override;
@@ -34,6 +37,7 @@ end;
 
 TPID=class
   private
+    fFileSave:string;
     fParameters:TPID_ParamArr;
 //    FKi: double;
 //    FKd: double;
@@ -52,7 +56,9 @@ TPID=class
     procedure SetPeriod(const Value: double);
 //    procedure SetNeeded(const Value: double);
 //    procedure SetTolerance(const Value: double);
+    procedure SetFileSave(const Value:string);
     procedure DeviationCalculation(CurrentValue:double);
+    procedure Initiation;
 //    procedure SetKd(const Value: double);
 //    procedure SetKi(const Value: double);
 //    procedure SetKp(const Value: double);
@@ -62,7 +68,9 @@ TPID=class
 //    procedure SetTolerance(const Value: double);
 //    procedure SetOutputValueMax(const Value: double);
 //    procedure SetOutputValueMin(const Value: double);
-
+    procedure SetEps(EpsSumValue:double=0;Epsi0Value:double=0;Epsi1Value:double=0);
+    procedure SaveEps;
+    procedure ButLoadClik(Sender: TObject);
  public
 //   property Kp:double read FKp write SetKp;
 //   property Ki:double read FKi write SetKi;
@@ -73,12 +81,14 @@ TPID=class
 //   property OutputValueMax:double read FOutputValueMax write SetOutputValueMax;
 //   property OutputValueMin:double read FOutputValueMin write SetOutputValueMin;
    property OutputValue:double read fOutputValue;
+   property FileSave:string read fFileSave write SetFileSave;
    Constructor Create(const PID_ParamArr:TPID_ParamArr;const Interval:double);overload;
    Constructor Create(PID_PShow:TPID_ParametersShow;Interval:double);overload;
    function ControlingSignal(CurrentValue:double):double;
    procedure SetParametr(const PID_ParamArr:TPID_ParamArr;const IInterval:double);overload;
 //   procedure SetParametr(Kpp,Kii,Kdd,NeededValue,Tol,IInterval:double);overload;
    procedure SetParametr(PID_PShow:TPID_ParametersShow;T:double);overload;
+   procedure LoadEps;
 end;
 
 
@@ -87,9 +97,14 @@ end;
 implementation
 
 uses
-  OlegType, SysUtils, Math;
+  OlegType, SysUtils, Math, Dialogs, OlegFunction;
 
 { TPID }
+
+procedure TPID.ButLoadClik(Sender: TObject);
+begin
+ LoadEps;
+end;
 
 function TPID.ControlingSignal(CurrentValue: double): double;
 begin
@@ -109,6 +124,7 @@ begin
 //     fOutputValue:=Kp*(Epsi[1]+Ki*Period*EpsSum+Kd/Period*(Epsi[1]-Epsi[0]));
 //     if FOutputValueMax>FOutputValueMin then
 //      fOutputValue:=EnsureRange(fOutputValue,FOutputValueMin,FOutputValueMax);
+    SaveEps();
     end;
  Result:=fOutputValue;
 end;
@@ -118,19 +134,19 @@ constructor TPID.Create(const PID_ParamArr:TPID_ParamArr;const Interval:double);
 begin
   inherited Create;
   SetParametr(PID_ParamArr,Interval);
-//  SetParametr(Kpp, Kii, Kdd, NeededValue, Tol,Interval);
-  EpsSum:=0;
-  Epsi[0]:=0;
-  Epsi[1]:=0;
+  Initiation;
 end;
 
 constructor TPID.Create(PID_PShow: TPID_ParametersShow; Interval: double);
 begin
  inherited Create;
  SetParametr(PID_PShow,Interval);
- EpsSum:=0;
- Epsi[0]:=0;
- Epsi[1]:=0;
+ Initiation;
+ if assigned(PID_PShow.fButLoad) then
+   begin
+//   Helpforme(FileSave);
+   PID_PShow.fButLoad.OnClick:=ButLoadClik;
+   end;
 // Create(PID_PShow.Kp,PID_PShow.Ki,PID_PShow.Kd,PID_PShow.NeededValue,PID_PShow.Tolerance,Interval);
 end;
 
@@ -186,10 +202,56 @@ end;
 //  Tolerance:=Tol;
 //end;
 
+procedure TPID.SaveEps;
+ var f:TextFile;
+begin
+  AssignFile(f,fFileSave);
+  Rewrite(f);
+  writeln(f,floattostr(EpsSum));
+  writeln(f,floattostr(Epsi[0]));
+  writeln(f,floattostr(Epsi[1]));
+  CloseFile(f);
+end;
+
+procedure TPID.SetEps(EpsSumValue, Epsi0Value, Epsi1Value: double);
+begin
+ EpsSum:=EpsSumValue;
+ Epsi[0]:=Epsi0Value;
+ Epsi[1]:=Epsi1Value;
+end;
+
+procedure TPID.SetFileSave(const Value: string);
+begin
+ fFileSave:=Value+'.pd';
+end;
+
 procedure TPID.SetParametr(PID_PShow: TPID_ParametersShow; T: double);
 begin
  SetParametr(PID_PShow.Parameters,T);
 // SetParametr(PID_PShow.Kp,PID_PShow.Ki,PID_PShow.Kd,PID_PShow.NeededValue,PID_PShow.Tolerance,T);
+end;
+
+procedure TPID.Initiation;
+begin
+  SetEps();
+//  EpsSum := 0;
+//  Epsi[0] := 0;
+//  Epsi[1] := 0;
+  fFileSave:='pid.pd';
+end;
+
+procedure TPID.LoadEps;
+ var f:TextFile;
+begin
+  AssignFile(f,fFileSave);
+  try
+   Reset(f);
+   readln(f, EpsSum);
+   readln(f, Epsi[0]);
+   readln(f, Epsi[1]);
+  finally
+   CloseFile(f);
+  end;
 end;
 
 procedure TPID.SetParametr(const PID_ParamArr: TPID_ParamArr;
@@ -217,10 +279,11 @@ end;
 
 constructor TPID_ParametersShow.Create(Name: string;
                                       STKp,STKi,STKd,STNV,STTol,STOVmax,STOVmin:TStaticText;
-                                      LKp,LKi,LKd,LNV,LTol,LOVmax,LOVmin:TLabel);
+                                      LKp,LKi,LKd,LNV,LTol,LOVmax,LOVmin:TLabel;
+                                      ButLoad:TButton);
  var i:TPID_Parameters;
 begin
-   inherited Create;
+  inherited Create;
   FName:=Name;
   fParameterShow[ppKp]:=TDoubleParameterShow.Create(STKp,LKp,'Kp','Proportional term',1);
   fParameterShow[ppKi]:=TDoubleParameterShow.Create(STKi,LKi,'Ki','Integral term',0);
@@ -234,6 +297,12 @@ begin
 
   for I := Low(TPID_Parameters) to High(TPID_Parameters) do
    fParameterShow[i].SetName(FName);
+
+  if assigned(ButLoad) then
+   begin
+    fButLoad:=ButLoad;
+    fButLoad.Caption:='Load';
+   end;
 end;
 
 destructor TPID_ParametersShow.Destroy;
