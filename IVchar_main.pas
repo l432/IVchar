@@ -1519,19 +1519,21 @@ if IscVocOnTimeModeIsFastIV then
            TemperatureMeasuringThread.Terminate;
 //--------------------------
 
-   if (CBLEDOpenAuto.Checked)or(CBLEDAuto.Checked)
-     then
-     begin
-//     FastIVMeasuring.Measuring(False,'dark');
-     FastIVMeasuring.Measuring(False,'d');
-     if IVisBad(FastIVMeasuring.Results)
-       then
-       begin
-        sleep(200);
-        DeleteFile(LastDATFileName('d'));
-        FastIVMeasuring.Measuring(False,'d');
-       end;
-     end;
+//   if (CBLEDOpenAuto.Checked)or(CBLEDAuto.Checked)
+//     then
+//     begin
+//     FastIVMeasuring.Measuring(False,'d');
+//     if IVisBad(FastIVMeasuring.Results)
+//       then
+//       begin
+//        sleep(200);
+//        DeleteFile(LastDATFileName('d')+'.dat');
+//        FastIVMeasuring.Measuring(False,'d');
+//       end;
+//     end;
+
+
+
 //відкриття заслонки
 //   if (CBLEDOpenAuto.Checked)or(TFastDependence.PointNumber=1)
 //     then
@@ -1545,7 +1547,7 @@ if IscVocOnTimeModeIsFastIV then
     begin
     SettingDeviceLED.ActiveInterface.Output(IledToVdac(LEDCurrentCS.Data));
 //    SettingDeviceLED.ActiveInterface.Output(LEDCurrentCS.Data);
-    sleep(50)
+    sleep(200)
 //    sleep(500)
     end;
 
@@ -1554,7 +1556,8 @@ if IscVocOnTimeModeIsFastIV then
        then
        begin
         sleep(200);
-        DeleteFile(LastDATFileName('l'));
+//        Helpforme('oo'+LastDATFileName('l'));
+        DeleteFile(LastDATFileName('l')+'.dat');
         FastIVMeasuring.Measuring(False,'l');
        end;
 
@@ -1577,6 +1580,22 @@ if IscVocOnTimeModeIsFastIV then
    LADInputVoltageValue.Caption:=FloatToStrF(TTimeTwoDependenceTimer.SecondValue,ffExponent, 4, 3);
    LADVoltageValue.Caption:=FloatToStrF(TDependence.tempI,ffExponent, 4, 3);
    LADCurrentValue.Caption:=FloatToStrF(TDependence.tempV,ffExponent, 4, 3);
+
+
+   if (CBLEDOpenAuto.Checked)or(CBLEDAuto.Checked)
+     then
+     begin
+     sleep(200);
+     FastIVMeasuring.Measuring(False,'d');
+     if IVisBad(FastIVMeasuring.Results)
+       then
+       begin
+        sleep(200);
+        DeleteFile(LastDATFileName('d')+'.dat');
+        FastIVMeasuring.Measuring(False,'d');
+       end;
+     end;
+
 
 
    if LEDWasOpened then

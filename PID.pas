@@ -48,6 +48,7 @@ TPID=class
     EpsSum:double;
     Epsi:array[0..1]of double;
     fOutputValue:double;
+    fCount:byte;
 //    FOutputValueMax: double;
 //    FOutputValueMin: double;
 //    procedure SetKd(const Value: double);
@@ -124,7 +125,12 @@ begin
 //     fOutputValue:=Kp*(Epsi[1]+Ki*Period*EpsSum+Kd/Period*(Epsi[1]-Epsi[0]));
 //     if FOutputValueMax>FOutputValueMin then
 //      fOutputValue:=EnsureRange(fOutputValue,FOutputValueMin,FOutputValueMax);
-    SaveEps();
+    inc(fCount);
+    if fCount>20 then
+     begin
+      SaveEps();
+      fCount:=0;
+     end;
     end;
  Result:=fOutputValue;
 end;
@@ -140,6 +146,7 @@ end;
 constructor TPID.Create(PID_PShow: TPID_ParametersShow; Interval: double);
 begin
  inherited Create;
+// showmessage('kkk');
  SetParametr(PID_PShow,Interval);
  Initiation;
  if assigned(PID_PShow.fButLoad) then
@@ -238,11 +245,13 @@ begin
 //  Epsi[0] := 0;
 //  Epsi[1] := 0;
   fFileSave:='pid.pd';
+  fCount:=0;
 end;
 
 procedure TPID.LoadEps;
  var f:TextFile;
 begin
+//  showmessage(fFileSave);
   AssignFile(f,fFileSave);
   try
    Reset(f);

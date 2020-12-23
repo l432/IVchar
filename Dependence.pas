@@ -1339,6 +1339,7 @@ begin
 
  if fForwardBranch then
    begin
+//     helpforme('k'+floattostr(RangeFor.LowValue));
      fAbsVoltageValue:=RangeFor.LowValue;
      Finish:=RangeFor.HighValue;
      Condition:=CBForw.Checked;
@@ -1520,6 +1521,7 @@ end;
 
 procedure TFastIVDependence.SetVoltage;
 begin
+// helpforme('k'+floattostr(fAbsVoltageValue));
  if ToUseDragonBackTime then
   begin
    SettingDevice.SetValue(DragonBackOvershootHeight*fVoltageFactor * fAbsVoltageValue);
@@ -1540,9 +1542,13 @@ end;
 
 
 function TFastIVDependence.VoltageGrowth: boolean;
+ var RealStep:double;
 begin
- Result:=(abs(fVoltageMeasured)
-       -abs(Results.X[Results.HighNumber])-VoltageStep)<0.1*VoltageStep;
+ RealStep:=abs(fVoltageMeasured)
+       -abs(Results.X[Results.HighNumber]);
+ Result:=(RealStep>0.9*VoltageStep)and(RealStep<1.1*VoltageStep);
+// Result:=(abs(fVoltageMeasured)
+//       -abs(Results.X[Results.HighNumber])-VoltageStep)<0.1*VoltageStep;
 end;
 
 procedure TFastIVDependence.VoltageMeasuring;
@@ -1558,6 +1564,7 @@ begin
    if (Results.IsEmpty) then Break;
    if fItIsBranchBegining then Break;
    if VoltageGrowth() then Break;
+//                      else HelpForMe(floattostr(fVoltageMeasured)) ;
    inc(AtempNumber);
   until (AtempNumber>MaxCurrentMeasuringAttemp);
 
@@ -1990,6 +1997,7 @@ end;
 
 function IVisBad(VAX:TVector):boolean;
  var i:integer;
+
 begin
  Result:=True;
  i:=1;
