@@ -5,7 +5,7 @@ interface
 uses
   StdCtrls, ComCtrls, OlegType, Series, ShowTypes,
   ExtCtrls, Classes, OlegTypePart2, MDevice, HighResolutionTimer, 
-  OlegShowTypes, IniFiles, OlegVector;
+  OlegShowTypes, IniFiles, OlegVector, OlegVectorManipulation;
 
 var EventToStopDependence:THandle;
   fItIsForward:boolean;
@@ -310,7 +310,9 @@ TFastIVDependence=class (TFastDependence)
 //    fTreadToStop:TThread;
 //    fTreadToMeasuring:TThreadTermin;
 
-
+    fTempResults:TVectorTransform;
+    fVoltageStepPrivate:double;
+    fPreviousPointMeasurementNeeded:boolean;
     procedure SetImax(const Value: double);
     procedure SetImin(const Value: double);
     procedure SetDragonBackTime(const Value: double);
@@ -326,7 +328,8 @@ TFastIVDependence=class (TFastDependence)
    procedure CurrentMeasuring();
    function ValueMeasuring(MD:TMeasuringDevice):double;
    function CurrentGrowth():boolean;
-   function VoltageGrowth():boolean;
+   function DerivateGrowth():boolean;
+   function VoltageIntervalCorrect():boolean;
    procedure DataSave();override;
 
    procedure VocIscDetermine;
@@ -338,6 +341,7 @@ TFastIVDependence=class (TFastDependence)
    fVoltageFactor:double;
    fAbsVoltageValue:double;
    fItIsBranchBegining:boolean;
+   fBranchBeginingIndex:integer;
    fItIsLightIV:boolean;
    fDragonBackTime:double;
    fDiodOrientationVoltageFactor:integer;
@@ -1237,8 +1241,19 @@ begin
 //   helpforme(floattostr(SecondMeter.Interval),
 //          floattostr(fAbsVoltageValue));
   end;
-  
+
     CurrentMeasuring();
+
+    if fPreviousPointMeasurementNeeded then
+       begin
+        fAbsVoltageValue:=fAbsVoltageValue-fVoltageStepPrivate;
+        fPointNumber:=fPointNumber-1;
+        Results.DeletePoint(Results.HighNumber);
+        SetVoltage();
+        VoltageMeasuring();
+        CurrentMeasuring();
+       end;
+
        DataSave();
 
 
@@ -1268,6 +1283,7 @@ begin
   DiodOrientationVoltageFactorDetermination();
   fItIsLightIV:=False;
 
+  fTempResults:=TVectorTransform.Create;
 //  fTreadToMeasuring:=TFastIVDependenceAction.Create(self);
 //  fTreadToStop:=TFastIVDependenceStop.Create(self,fTreadToMeasuring);
 //  fTreadToMeasuring.Resume;
@@ -1315,18 +1331,30 @@ procedure TFastIVDependence.CurrentMeasuring;
  var
   AtempNumber:byte;
 begin
+  fPreviousPointMeasurementNeeded:=false;
   AtempNumber := 0;
   repeat
    fCurrentMeasured:= ValueMeasuring(Current_MD);
    if fCurrentMeasured=ErResult then Exit;
    if (Results.IsEmpty) then Break;
    if fItIsBranchBegining then Break;
-   if CurrentGrowth() then Break;
+//   if CurrentGrowth() then Break;
+   if CurrentGrowth()and DerivateGrowth() then Break;
+
+
    inc(AtempNumber);
   until (AtempNumber>MaxCurrentMeasuringAttemp);
 
-  if (FCurrentValueLimitEnable and (abs(fCurrentMeasured)>=Imax)) then
-    fAbsVoltageValue:=50;
+  if (FCurrentValueLimitEnable and (abs(fCurrentMeasured)>=Imax))
+    then
+     begin
+     fAbsVoltageValue:=50;
+     Exit;
+     end;
+
+  if (AtempNumber>MaxCurrentMeasuringAttemp)
+      then fPreviousPointMeasurementNeeded:=true;
+
 end;
 
 procedure TFastIVDependence.Cycle(ItIsForwardInput: Boolean);
@@ -1351,6 +1379,7 @@ begin
   end;
 
  fItIsBranchBegining:=true;
+ fBranchBeginingIndex:=Results.Count;
 
  if Condition then
   begin
@@ -1398,6 +1427,19 @@ begin
   if Result='1.dat' then Result:=PrefixToFileName+Result;
 end;
 
+function TFastIVDependence.DerivateGrowth: boolean;
+begin
+ Result:=True;
+ if abs(Results.X[Results.HighNumber])>0.5 then Exit;
+ Results.CopyTo(fTempResults);
+ fTempResults.DeleteNfirst(fBranchBeginingIndex);
+ fTempResults.Add(fVoltageMeasured, fCurrentMeasured);
+ if fTempResults.Count<3 then Exit;
+ fTempResults.Itself(fTempResults.Derivate);
+ if fTempResults.Y[fTempResults.HighNumber]<fTempResults.Y[fTempResults.HighNumber-1]
+   then Result:=False;
+end;
+
 procedure TFastIVDependence.PointSeriesFilling;
 var
   i: Integer;
@@ -1437,13 +1479,21 @@ end;
 
 procedure TFastIVDependence.EndMeasuring;
 begin
+  fTempResults.Free;
   if fSingleMeasurement then
    begin
     PointSeriesFilling;
     ButtonStop.Enabled := False;
    end;
   SettingDevice.ActiveInterface.Reset();
+  Results.Sorting;
+  Results.DeleteDuplicate;
+
+//  DataVector.Sorting;
+//  DataVector.DeleteDuplicate;
+
   VocIscDetermine();
+
 
 
  HookEndMeasuring();
@@ -1541,7 +1591,7 @@ begin
 end;
 
 
-function TFastIVDependence.VoltageGrowth: boolean;
+function TFastIVDependence.VoltageIntervalCorrect: boolean;
  var RealStep:double;
 begin
  RealStep:=abs(fVoltageMeasured)
@@ -1563,7 +1613,8 @@ begin
 //   if fVoltageMeasured=ErResult then Exit;
    if (Results.IsEmpty) then Break;
    if fItIsBranchBegining then Break;
-   if VoltageGrowth() then Break;
+   if VoltageIntervalCorrect() then Break;
+
 //                      else HelpForMe(floattostr(fVoltageMeasured)) ;
    inc(AtempNumber);
   until (AtempNumber>MaxCurrentMeasuringAttemp);
@@ -1608,8 +1659,8 @@ end;
 
 procedure TFastIVDependence.VocIscDetermine;
 begin
-  Results.Sorting;
-  Results.DeleteDuplicate;
+//  Results.Sorting;
+//  Results.DeleteDuplicate;
 
  if fItIsLightIV and CBForw.Checked then
    begin
@@ -1636,7 +1687,9 @@ end;
 
 procedure TFastIVDependence.VoltageChange;
 begin
- fAbsVoltageValue:=fAbsVoltageValue+VoltageStep;
+ fVoltageStepPrivate:=VoltageStep;
+ fAbsVoltageValue:=fAbsVoltageValue+fVoltageStepPrivate;
+// fAbsVoltageValue:=fAbsVoltageValue+VoltageStep;
 end;
 
 function TFastIVDependence.VoltageStep: double;
@@ -2003,7 +2056,7 @@ begin
  i:=1;
  while (Result)and(i<VAX.Count) do
   begin
-   Result:=Result and (Vax.Y[i]>Vax.Y[i-1]) and ((Vax.X[i]-Vax.X[i-1])>0.005);
+   Result:=Result and (Vax.Y[i]>Vax.Y[i-1]){ and ((Vax.X[i]-Vax.X[i-1])>0.005)};
    inc(i);
   end;
 

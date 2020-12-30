@@ -870,6 +870,7 @@ type
     procedure GDS_Create;
     procedure SaveIVMeasurementResults(FileName: string; DataVector:TVector);
     procedure DACReset;
+    procedure FastIVMeasuringComplex(const FilePrefix: string);
   public
     TestVar2:TINA226_Channel;
 //     TestVar:TINA226_Module;
@@ -1369,16 +1370,31 @@ begin
  if (CBLEDOpenAuto.Checked)or(CBLEDAuto.Checked)
      then
      begin
+       FastIVMeasuringComplex('d');
+
+//      FastIVMeasuring.Measuring(False,'d');
+//     if IVisBad(FastIVMeasuring.Results)
+//       then
+//       begin
+//        sleep(200);
+//        DeleteFile(LastDATFileName('d'));
+//        FastIVMeasuring.Measuring(False,'d');
+//       end;
+     end;
+
+
+    if (CBLEDOpenAuto.Checked)or(CBLEDAuto.Checked)
+     then
+     begin
+     sleep(200);
      FastIVMeasuring.Measuring(False,'d');
      if IVisBad(FastIVMeasuring.Results)
        then
        begin
         sleep(200);
-        DeleteFile(LastDATFileName('d'));
+        DeleteFile(LastDATFileName('d')+'.dat');
         FastIVMeasuring.Measuring(False,'d');
        end;
-//     sleep(300);
-//     FastIVMeasuring.Measuring(False,'dark');
      end;
 
  if (CBLEDOpenAuto.Checked) then
@@ -1395,14 +1411,17 @@ begin
       sleep(50)
     end;
 
-   FastIVMeasuring.Measuring(False,'l');
-     if IVisBad(FastIVMeasuring.Results)
-       then
-       begin
-        sleep(200);
-        DeleteFile(LastDATFileName('l'));
-        FastIVMeasuring.Measuring(False,'l');
-       end;
+   FastIVMeasuringComplex('l');
+//   FastIVMeasuring.Measuring(False,'l');
+//     if IVisBad(FastIVMeasuring.Results)
+//       then
+//       begin
+//        sleep(200);
+//        DeleteFile(LastDATFileName('l'));
+//        FastIVMeasuring.Measuring(False,'l');
+//       end;
+
+
 
   IVcharOnTemperature.SecondMeasurementTime:=FastIVMeasuring.Voc;
 
@@ -1547,22 +1566,12 @@ if IscVocOnTimeModeIsFastIV then
     begin
     SettingDeviceLED.ActiveInterface.Output(IledToVdac(LEDCurrentCS.Data));
 //    SettingDeviceLED.ActiveInterface.Output(LEDCurrentCS.Data);
-    sleep(200)
+    sleep(400)
 //    sleep(500)
     end;
-
-   FastIVMeasuring.Measuring(False,'l');
-     if IVisBad(FastIVMeasuring.Results)
-       then
-       begin
-        sleep(200);
-//        Helpforme('oo'+LastDATFileName('l'));
-        DeleteFile(LastDATFileName('l')+'.dat');
-        FastIVMeasuring.Measuring(False,'l');
-       end;
+   FastIVMeasuringComplex('l');
 
    TDependence.tempIChange(FastIVMeasuring.Voc);
-
    IscVocOnTime.SecondMeasurementTime:=TFastDependence.tempV+1e-6;
 
 
@@ -1586,14 +1595,7 @@ if IscVocOnTimeModeIsFastIV then
      then
      begin
      sleep(200);
-     FastIVMeasuring.Measuring(False,'d');
-     if IVisBad(FastIVMeasuring.Results)
-       then
-       begin
-        sleep(200);
-        DeleteFile(LastDATFileName('d')+'.dat');
-        FastIVMeasuring.Measuring(False,'d');
-       end;
+     FastIVMeasuringComplex('d');
      end;
 
 
@@ -2407,8 +2409,8 @@ end;
 
 procedure TIVchar.SaveIVMeasurementResults(FileName: string; DataVector:TVector);
 begin
-  DataVector.Sorting;
-  DataVector.DeleteDuplicate;
+//  DataVector.Sorting;
+//  DataVector.DeleteDuplicate;
   DataVector.WriteToFile(FileName,5);
   //       ToFileFromTwoVector(SaveDialog.FileName,IVResult,VolCorrectionNew);
   LTLastValue.Caption := FloatToStrF(Temperature, ffFixed, 5, 2);
@@ -2428,6 +2430,17 @@ begin
     AD5752_chA.Reset;
   if (ComPort1.Connected) and (AD9833.Mode <> ad9833_mode_off) then
     AD9833.Reset;
+end;
+
+procedure TIVchar.FastIVMeasuringComplex(const FilePrefix: string);
+begin
+  FastIVMeasuring.Measuring(False, FilePrefix);
+  if IVisBad(FastIVMeasuring.Results) then
+  begin
+    sleep(400);
+    DeleteFile(LastDATFileName(FilePrefix) + '.dat');
+    FastIVMeasuring.Measuring(False, FilePrefix);
+  end;
 end;
 
 procedure TIVchar.BConnectClick(Sender: TObject);
