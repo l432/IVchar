@@ -48,7 +48,7 @@ const
   MeasFastIVArd='Fast IV by Arduino';
 
 
-  IscVocTimeToWait=1000;
+  IscVocTimeToWait=500;
 
   FreeTest=False;
 //  FreeTest=True;
@@ -718,6 +718,13 @@ type
     SBLEDTurn: TSpeedButton;
     BTermostatLoad: TButton;
     SBIVPause: TSpeedButton;
+    BWriteTM: TButton;
+    CBtempIVdark: TCheckBox;
+    CBtempIVillum: TCheckBox;
+    LtempRepNum: TLabel;
+    STtempRepNum: TStaticText;
+    CBtimeDarkIV: TCheckBox;
+    BComReload: TButton;
 
     procedure FormCreate(Sender: TObject);
     procedure BConnectClick(Sender: TObject);
@@ -754,6 +761,8 @@ type
     procedure Button1Click(Sender: TObject);
     procedure RGIscVocModeClick(Sender: TObject);
     procedure SBLEDTurnClick(Sender: TObject);
+    procedure BWriteTMClick(Sender: TObject);
+    procedure BComReloadClick(Sender: TObject);
   private
     procedure ComponentView;
     {початкове налаштування різних компонентів}
@@ -871,6 +880,13 @@ type
     procedure SaveIVMeasurementResults(FileName: string; DataVector:TVector);
     procedure DACReset;
     procedure FastIVMeasuringComplex(const FilePrefix: string);
+    procedure LED_OpenIfCondition;
+    procedure LEDCloseIfCondition;
+    procedure LED_OnIfCondition(OrCondition:boolean=False);
+    procedure LED_OffIfCondition(OrCondition:boolean=False);
+    procedure IscVocPin_toVoc;
+    procedure IscVocPin_toIsc;
+    procedure ComPort1Reload;
   public
     TestVar2:TINA226_Channel;
 //     TestVar:TINA226_Module;
@@ -998,7 +1014,8 @@ type
     RevVoltagePrecisionCS,ForVoltagePrecisionCS,
     MinCurrentCS,MaxCurrentCS,ParasiticResistanceCS:TDoubleParameterShow;
     ControlIntervalCS,MeasurementDurationCS,
-    MeasurementIntervalCS, TemperatureMeasIntervalCS:TIntegerParameterShow;
+    MeasurementIntervalCS, TemperatureMeasIntervalCS,
+    TemperatureRepetitionNumber:TIntegerParameterShow;
     Imax,Imin:double;
 
     IVMeasuring,CalibrMeasuring:TIVDependence;
@@ -1070,6 +1087,11 @@ begin
         'Full measurement duration',0);
   MeasurementDurationCS.IsPositive:=True;
 
+ TemperatureRepetitionNumber:=TIntegerParameterShow.Create(STtempRepNum,LtempRepNum,
+        'number of repetitions',
+        'Number of repetitions at each temperature',1);
+  TemperatureRepetitionNumber.IsPositive:=True;
+
   ControlIntervalCS:=TIntegerParameterShow.Create(STControlInterval,LControlInterval,
         'Controling interval (s)',
         'Controling measurement interval',15);
@@ -1083,6 +1105,7 @@ begin
   ShowArray.Add([LEDCurrentCS,Dragon_backTimeCS,ControlIntervalCS,
                 MeasurementDurationCS,MeasurementIntervalCS,
 //                TemperatureMeasIntervalCS,
+                TemperatureRepetitionNumber,
                 RevVoltagePrecisionCS,ForVoltagePrecisionCS,MinCurrentCS,
                 MaxCurrentCS,ParasiticResistanceCS]);
 end;
@@ -1180,6 +1203,7 @@ begin
    begin
     RGIscVocMode.Enabled:=True;
     IscVocOnTimeIsRun:=False;
+    LED_OffIfCondition(True);
    end;
 
  BIVSave.OnClick:=ActionInSaveButton;
@@ -1327,6 +1351,10 @@ end;
 
 procedure TIVchar.IVcharOnTempHookBegin;
 begin
+// if IscVocOnTimeModeIsFastIV then
+//  begin
+   IVcharOnTemperature.Results.WriteToFile('zapas.dat',6);
+//  end;
  PID_Termostat_ParametersShow.NeededValue:=IVcharOnTemperature.ExpectedTemperature;
  IVcharOnTemperature.Tolerance:=IVcharOnTemperature.ToleranceCoficient*PID_Termostat_ParametersShow.Tolerance;
  if SBTermostat.Down then BTermostatResetClick(nil)
@@ -1361,86 +1389,81 @@ begin
 end;
 
 procedure TIVchar.IVcharOnTempHookSecondMeas;
- var LEDWasOpened:bool;
+ var //LEDWasOpened:bool;
+     RepetNumber:integer;
+     PauseBegin:integer;
 begin
- LEDWasOpened:=false;
- if assigned(TemperatureMeasuringThread) then
-           TemperatureMeasuringThread.Terminate;
-
- if (CBLEDOpenAuto.Checked)or(CBLEDAuto.Checked)
-     then
+// LEDWasOpened:=false;
+ RepetNumber:=TemperatureRepetitionNumber.Data;
+repeat
+    if IscVocOnTimeModeIsFastIV then
      begin
-       FastIVMeasuringComplex('d');
 
-//      FastIVMeasuring.Measuring(False,'d');
-//     if IVisBad(FastIVMeasuring.Results)
-//       then
-//       begin
-//        sleep(200);
-//        DeleteFile(LastDATFileName('d'));
-//        FastIVMeasuring.Measuring(False,'d');
-//       end;
+       if assigned(TemperatureMeasuringThread) then
+                 TemperatureMeasuringThread.Terminate;
+
+
+       if CBtempIVdark.Checked
+           then FastIVMeasuringComplex('d');
+
+       if CBtempIVillum.Checked then
+         begin
+           LED_OpenIfCondition();
+           LED_OnIfCondition();
+
+             FastIVMeasuringComplex('l');
+             IVcharOnTemperature.SecondMeasurementTime:=FastIVMeasuring.Voc;
+
+           LED_OffIfCondition();
+           LEDCloseIfCondition();
+         end;
+
+      //______________________________________
+         if not(assigned(TemperatureMeasuringThread)) then
+               TemperatureThreadCreate();
+      //----------------------------------------
+     end    else
+     begin
+       LED_OpenIfCondition();
+       LED_OnIfCondition;
+
+       if Voc_MD.ActiveInterface.Name<>'Simulation' then
+         begin
+          IscVocPin_toVoc();
+          TemperData.Add(Temperature_MD.ActiveInterface.Value,
+                         Voc_MD.ActiveInterface.GetData);
+          IscVocPin_toIsc();
+         end;
+       VolCorrectionNew.Add(Temperature_MD.ActiveInterface.Value,
+                            abs(Isc_MD.ActiveInterface.GetData));
+
+      if Voc_MD.ActiveInterface.Name='Simulation'
+        then IVcharOnTemperature.SecondMeasurementTime:=abs(Isc_MD.ActiveInterface.Value)
+        else IVcharOnTemperature.SecondMeasurementTime:=Voc_MD.ActiveInterface.Value;
+
+       LED_OffIfCondition();
+       LEDCloseIfCondition();
      end;
 
+ LADCurrentValue.Caption:=FloatToStrF(TDependence.tempI,ffExponent, 4, 3);
+ LADVoltageValue.Caption:=FloatToStrF(IVcharOnTemperature.SecondMeasurementTime,ffExponent, 4, 3);
 
-    if (CBLEDOpenAuto.Checked)or(CBLEDAuto.Checked)
-     then
-     begin
-     sleep(200);
-     FastIVMeasuring.Measuring(False,'d');
-     if IVisBad(FastIVMeasuring.Results)
-       then
-       begin
-        sleep(200);
-        DeleteFile(LastDATFileName('d')+'.dat');
-        FastIVMeasuring.Measuring(False,'d');
-       end;
-     end;
-
- if (CBLEDOpenAuto.Checked) then
+ RepetNumber:=RepetNumber-1;
+// helpforme(inttostr(RepetNumber));
+ if RepetNumber<1
+   then Break
+   else
    begin
-     LEDOpenPinChanger.PinChangeToLow;
-     LEDWasOpened:=true;
-     sleep(500);
+     PauseBegin:=SecondFromDayBegining(Now());
+     repeat
+       sleep(1000);
+       Application.ProcessMessages;
+     until (SecondFromDayBegining(Now())-PauseBegin)>MeasurementIntervalCS.Data;
    end;
-
-   if (CBLEDAuto.Checked) then
-    begin
-//      SettingDeviceLED.ActiveInterface.Output(LEDVoltageCS.Data);
-      SettingDeviceLED.ActiveInterface.Output(IledToVdac(LEDCurrentCS.Data));
-      sleep(50)
-    end;
-
-   FastIVMeasuringComplex('l');
-//   FastIVMeasuring.Measuring(False,'l');
-//     if IVisBad(FastIVMeasuring.Results)
-//       then
-//       begin
-//        sleep(200);
-//        DeleteFile(LastDATFileName('l'));
-//        FastIVMeasuring.Measuring(False,'l');
-//       end;
-
-
-
-  IVcharOnTemperature.SecondMeasurementTime:=FastIVMeasuring.Voc;
-
-   if (CBLEDAuto.Checked)
-      then  SettingDeviceLED.ActiveInterface.Reset;
-
-   LADCurrentValue.Caption:=FloatToStrF(TDependence.tempI,ffExponent, 4, 3);
-   LADVoltageValue.Caption:=FloatToStrF(IVcharOnTemperature.SecondMeasurementTime,ffExponent, 4, 3);
-
-
-   if LEDWasOpened then
-      begin
-      LEDOpenPinChanger.PinChangeToHigh;
-      end;
-//______________________________________
-   if not(assigned(TemperatureMeasuringThread)) then
-         TemperatureThreadCreate();
-//----------------------------------------
-
+//    sleep(MeasurementIntervalCS.Data*1000)
+until False;
+ if not(IscVocOnTimeModeIsFastIV) then
+   ToFileFromTwoVector('VocIsconT.dat',TemperData,VolCorrectionNew,6);
 end;
 
 procedure TIVchar.CalibrationHookStep;
@@ -1489,7 +1512,12 @@ procedure TIVchar.HookBegin;
    IscVocOnTime.FastIVisUsed:=IscVocOnTimeModeIsFastIV;
    IscVocOnTimeIsRun:=True;
    end;
-  if Key=MeasIVonTemper then IVcharOnTempHookBegin;
+  if Key=MeasIVonTemper then
+    begin
+     TemperData.Clear;
+     VolCorrectionNew.Clear;
+     IVcharOnTempHookBegin;
+    end;
 
 end;
 
@@ -1527,9 +1555,12 @@ begin
 end;
 
 procedure TIVchar.IscVocOnTimeHookFirstMeas;
- var LEDWasOpened:bool;
 begin
- LEDWasOpened:=false;
+//відкриття заслонки
+   LED_OpenIfCondition();
+//запалювання діоду
+   LED_OnIfCondition(ForwLine.Count=0);
+
 if IscVocOnTimeModeIsFastIV then
   begin
 
@@ -1538,133 +1569,146 @@ if IscVocOnTimeModeIsFastIV then
            TemperatureMeasuringThread.Terminate;
 //--------------------------
 
-//   if (CBLEDOpenAuto.Checked)or(CBLEDAuto.Checked)
-//     then
-//     begin
-//     FastIVMeasuring.Measuring(False,'d');
-//     if IVisBad(FastIVMeasuring.Results)
-//       then
-//       begin
-//        sleep(200);
-//        DeleteFile(LastDATFileName('d')+'.dat');
-//        FastIVMeasuring.Measuring(False,'d');
-//       end;
-//     end;
 
 
+//   if (CBLEDAuto.Checked)or(TFastDependence.PointNumber=1) then
+//    begin
+//    SettingDeviceLED.ActiveInterface.Output(IledToVdac(LEDCurrentCS.Data));
+//    sleep(400)
+//    end;
 
-//відкриття заслонки
-//   if (CBLEDOpenAuto.Checked)or(TFastDependence.PointNumber=1)
-//     then
-//      begin
-//      LEDOpenPinChanger.PinChangeToLow;
-//      LEDWasOpened:=true;
-//      sleep(500);
-//      end;
-
-   if (CBLEDAuto.Checked)or(TFastDependence.PointNumber=1) then
-    begin
-    SettingDeviceLED.ActiveInterface.Output(IledToVdac(LEDCurrentCS.Data));
-//    SettingDeviceLED.ActiveInterface.Output(LEDCurrentCS.Data);
-    sleep(400)
-//    sleep(500)
-    end;
    FastIVMeasuringComplex('l');
 
    TDependence.tempIChange(FastIVMeasuring.Voc);
-   IscVocOnTime.SecondMeasurementTime:=TFastDependence.tempV+1e-6;
+
+   //визначення часу
+//   TFastDependence.tempVChange(SecondFromDayBegining(Now()));
+//   IscVocOnTime.SecondMeasurementTime:=TFastDependence.tempV{+1e-6};
 
 
    TTimeTwoDependenceTimer.SecondValueChange(FastIVMeasuring.Isc);
 
 
-   VolCorrectionNew.Add(Temperature_MD.ActiveInterface.Value,
-                         FastIVMeasuring.Voc);
+//   VolCorrectionNew.Add(Temperature_MD.ActiveInterface.Value,
+//                         FastIVMeasuring.Voc);
 
-   MeasurementTimeParameterDetermination(IscVocOnTime);
+//   MeasurementTimeParameterDetermination(IscVocOnTime);
 
-   if (CBLEDAuto.Checked)
-      then  SettingDeviceLED.ActiveInterface.Reset;
+   LED_OffIfCondition();
 
-   LADInputVoltageValue.Caption:=FloatToStrF(TTimeTwoDependenceTimer.SecondValue,ffExponent, 4, 3);
-   LADVoltageValue.Caption:=FloatToStrF(TDependence.tempI,ffExponent, 4, 3);
-   LADCurrentValue.Caption:=FloatToStrF(TDependence.tempV,ffExponent, 4, 3);
+//   LADInputVoltageValue.Caption:=FloatToStrF(TTimeTwoDependenceTimer.SecondValue,ffExponent, 4, 3);
+//   LADVoltageValue.Caption:=FloatToStrF(TDependence.tempI,ffExponent, 4, 3);
+//   LADCurrentValue.Caption:=FloatToStrF(TDependence.tempV,ffExponent, 4, 3);
+
+//
+//   if (CBLEDOpenAuto.Checked)or(CBLEDAuto.Checked)
+//     then
+//     begin
+//     sleep(200);
+//     FastIVMeasuringComplex('d');
+//     end;
 
 
-   if (CBLEDOpenAuto.Checked)or(CBLEDAuto.Checked)
+//
+//   if LEDWasOpened then
+//      begin
+//      LEDOpenPinChanger.PinChangeToHigh;
+//      sleep(500);
+//      LEDOpenPinChanger.PinChangeToHigh;
+//      end;
+
+
+//______________________________________
+//   if not(assigned(TemperatureMeasuringThread)) then
+//         TemperatureThreadCreate();
+//----------------------------------------
+
+
+  end                        else    //  if IscVocOnTimeModeIsFastIV then
+  begin
+
+   if Voc_MD.ActiveInterface.Name<>'Simulation'
+      then
+        begin
+         IscVocPin_toVoc();
+
+         TDependence.tempIChange(Voc_MD.ActiveInterface.GetData);
+          if ForwLine.Count>0 then
+            if abs(TDependence.tempI- ForwLine.YValue[ForwLine.Count-1])>abs(0.1*ForwLine.YValue[ForwLine.Count-1])
+           then  TDependence.tempIChange(Voc_MD.ActiveInterface.GetData);
+
+//          TFastDependence.tempVChange(SecondFromDayBegining(Now()));
+        end;
+
+//   LADVoltageValue.Caption:=FloatToStrF(TDependence.tempI,ffExponent, 4, 3);
+  end;
+
+  TFastDependence.tempVChange(SecondFromDayBegining(Now()));
+  LADCurrentValue.Caption:=FloatToStrF(TDependence.tempV,ffExponent, 4, 3);
+
+  LADVoltageValue.Caption:=FloatToStrF(TDependence.tempI,ffExponent, 4, 3);
+
+  VolCorrectionNew.Add(Temperature_MD.ActiveInterface.Value,
+                         TDependence.tempI);
+
+end;
+
+procedure TIVchar.IscVocOnTimeHookSecondMeas;
+begin
+
+ if not(IscVocOnTimeModeIsFastIV) then
+  begin
+   if Voc_MD.ActiveInterface.Name<>'Simulation'
+     then IscVocPin_toIsc();
+
+     TTimeTwoDependenceTimer.SecondValueChange(abs(Isc_MD.ActiveInterface.GetData));
+      if ForwLg.Count>0 then
+        if abs(TTimeTwoDependenceTimer.SecondValue - ForwLg.YValue[ForwLg.Count-1])>abs(0.1*ForwLg.YValue[ForwLg.Count-1])
+       then  TTimeTwoDependenceTimer.SecondValueChange(abs(Isc_MD.ActiveInterface.GetData));
+
+//     LADInputVoltageValue.Caption:=FloatToStrF(TTimeTwoDependenceTimer.SecondValue,ffExponent, 4, 3);
+
+    if Voc_MD.ActiveInterface.Name='Simulation'
+        then TDependence.tempIChange(Temperature_MD.ActiveInterface.Value);
+//        else VolCorrectionNew.Add(Temperature_MD.ActiveInterface.Value,
+//                                  Voc_MD.ActiveInterface.Value);
+
+
+
+
+     IscVocOnTime.SecondMeasurementTime:=SecondFromDayBegining(Now());
+
+
+
+//     TimeDHookSecondMeas;
+//     MeasurementTimeParameterDetermination(IscVocOnTime);
+
+
+  end;
+
+ LADInputVoltageValue.Caption:=FloatToStrF(TTimeTwoDependenceTimer.SecondValue,ffExponent, 4, 3);
+ MeasurementTimeParameterDetermination(IscVocOnTime);
+//гасимо діод
+ LED_OffIfCondition();
+//закриваємо заслонку
+ LEDCloseIfCondition();
+
+
+ if IscVocOnTimeModeIsFastIV then //Exit;
+  begin
+   IscVocOnTime.SecondMeasurementTime:=TFastDependence.tempV;
+
+   if (CBtimeDarkIV.Checked)and((CBLEDOpenAuto.Checked)or(CBLEDAuto.Checked))
      then
      begin
      sleep(200);
      FastIVMeasuringComplex('d');
      end;
 
-
-
-   if LEDWasOpened then
-      begin
-      LEDOpenPinChanger.PinChangeToHigh;
-      sleep(500);
-      LEDOpenPinChanger.PinChangeToHigh;
-      end;
-//______________________________________
    if not(assigned(TemperatureMeasuringThread)) then
          TemperatureThreadCreate();
-//----------------------------------------
-
-
-  end                        else
-  begin
-   if CBLEDOpenAuto.Checked then  LEDOpenPinChanger.PinChangeToLow;
-
-   if CBLEDAuto.Checked then
-    SettingDeviceLED.ActiveInterface.Output(IledToVdac(LEDCurrentCS.Data));
-//    SettingDeviceLED.ActiveInterface.Output(LEDCurrentCS.Data);
-
-   if (CBLEDOpenAuto.Checked)or(CBLEDAuto.Checked)
-    then    sleep(2000);
-
-   IscVocPinChanger.PinChangeToLow;
-   sleep(IscVocTimeToWait);
-   TDependence.tempIChange(Voc_MD.ActiveInterface.GetData);
-    if ForwLine.Count>0 then
-      if abs(TDependence.tempI- ForwLine.YValue[ForwLine.Count-1])>abs(0.1*ForwLine.YValue[ForwLine.Count-1])
-     then  TDependence.tempIChange(Voc_MD.ActiveInterface.GetData);
-
-   LADVoltageValue.Caption:=FloatToStrF(TDependence.tempI,ffExponent, 4, 3);
   end;
 
-
-end;
-
-procedure TIVchar.IscVocOnTimeHookSecondMeas;
-begin
-  if IscVocOnTimeModeIsFastIV then Exit;
-
-   sleep(IscVocTimeToWait);
-   IscVocPinChanger.PinChangeToHigh;
-   sleep(IscVocTimeToWait);
-   TTimeTwoDependenceTimer.SecondValueChange(abs(Isc_MD.ActiveInterface.GetData));
-    if ForwLg.Count>0 then
-      if abs(TTimeTwoDependenceTimer.SecondValue - ForwLg.YValue[ForwLg.Count-1])>abs(0.1*ForwLg.YValue[ForwLg.Count-1])
-     then  TTimeTwoDependenceTimer.SecondValueChange(abs(Isc_MD.ActiveInterface.GetData));
-
-
-   LADInputVoltageValue.Caption:=FloatToStrF(TTimeTwoDependenceTimer.SecondValue,ffExponent, 4, 3);
-   VolCorrectionNew.Add(Temperature_MD.ActiveInterface.Value,
-                         Voc_MD.ActiveInterface.GetData);
-
-   if CBLEDOpenAuto.Checked then LEDOpenPinChanger.PinChangeToHigh;
-   if CBLEDAuto.Checked then  SettingDeviceLED.ActiveInterface.Reset;
-
-   TimeDHookSecondMeas;
-   MeasurementTimeParameterDetermination(IscVocOnTime);
-
-    if CBLEDOpenAuto.Checked then
-       begin
-         sleep(500);
-         LEDOpenPinChanger.PinChangeToHigh;
-
-       end;
 end;
 
 procedure TIVchar.IVCharCurrentMeasHook;
@@ -2441,6 +2485,68 @@ begin
     DeleteFile(LastDATFileName(FilePrefix) + '.dat');
     FastIVMeasuring.Measuring(False, FilePrefix);
   end;
+   if (FastIVMeasuring.Results.Count=0)or
+      ((FastIVMeasuring.Results.MaxX<IVCharRangeFor.HighValue)
+       and(FastIVMeasuring.Results.MaxY<MaxCurrentCS.Data))
+    then  ComPort1Reload();
+//   HelpForMe(floattostr(FastIVMeasuring.Results.Count));
+//   HelpForMe(floattostr(FastIVMeasuring.Results.MaxX));
+//   HelpForMe(floattostr(IVCharRangeFor.HighValue));
+//   HelpForMe(floattostr(FastIVMeasuring.Results.MaxY));
+//   HelpForMe(floattostr(MaxCurrentCS.Data));
+
+end;
+
+procedure TIVchar.LED_OpenIfCondition;
+begin
+  if CBLEDOpenAuto.Checked then
+  begin
+    LEDOpenPinChanger.PinChangeToLow;
+    sleep(500);
+  end;
+end;
+
+procedure TIVchar.LEDCloseIfCondition;
+begin
+  //закриваємо заслінку
+  if CBLEDOpenAuto.Checked then
+  begin
+    LEDOpenPinChanger.PinChangeToHigh;
+    sleep(500);
+    LEDOpenPinChanger.PinChangeToHigh;
+  end;
+end;
+
+procedure TIVchar.LED_OnIfCondition(OrCondition:boolean=False);
+begin
+  if CBLEDAuto.Checked or OrCondition then
+  begin
+    SettingDeviceLED.ActiveInterface.Output(IledToVdac(LEDCurrentCS.Data));
+    sleep(300);
+  end;
+end;
+
+procedure TIVchar.LED_OffIfCondition(OrCondition:boolean=False);
+begin
+  if CBLEDAuto.Checked or OrCondition then
+    SettingDeviceLED.ActiveInterface.Reset;
+end;
+
+procedure TIVchar.IscVocPin_toVoc;
+begin
+  IscVocPinChanger.PinChangeToLow;
+  sleep(IscVocTimeToWait);
+end;
+
+procedure TIVchar.IscVocPin_toIsc;
+begin
+  IscVocPinChanger.PinChangeToHigh;
+  sleep(IscVocTimeToWait);
+end;
+
+procedure TIVchar.BComReloadClick(Sender: TObject);
+begin
+  ComPort1Reload()
 end;
 
 procedure TIVchar.BConnectClick(Sender: TObject);
@@ -2454,7 +2560,6 @@ begin
    end;
  finally
  PortBeginAction(ComPort1,LConnected,BConnect);
-
  end;
 end;
 
@@ -2663,7 +2768,7 @@ procedure TIVchar.Button1Click(Sender: TObject);
 //  var ByteAr:TArrByte;
 //   var Vax:TVector;
 begin
-showmessage(floattostr(IledToVdac(LEDCurrentCS.Data)));
+showmessage(inttostr(ForwLine.Count));
 
 //  Vax:=TVector.Create;
 //  Vax.ReadFromFile('D:\Samples\DeepL\Project\SC116_A\2020_10_09\dark70.dat');
@@ -2696,6 +2801,18 @@ end;
 
 
 
+procedure TIVchar.BWriteTMClick(Sender: TObject);
+ var SR : TSearchRec;
+     FF:TextFile;
+begin
+    AssignFile(FF,'comments.dat');
+    if FindFirst('comments.dat',faAnyFile,SR)=0 then Append(FF) else ReWrite(FF);
+    write(FF,'Time mark : ',inttostr(SecondFromDayBegining(Now())));
+    writeln(FF);
+    writeln(FF);
+    CloseFile(FF);
+end;
+
 procedure TIVchar.BControlResetClick(Sender: TObject);
 begin
  if SBControlBegin.Down then
@@ -2727,6 +2844,7 @@ begin
   if SaveDialog.Execute then
     Write_File_Series(SaveDialog.FileName,PointET1255,6);
 end;
+
 
 procedure TIVchar.ComDPacketPacket(Sender: TObject; const Str: string);
  var Data:TArrByte;
@@ -2947,6 +3065,7 @@ begin
  RS232_MediatorTread:=TRS232_MediatorTread.Create(ComPort1,ArduinoSenders);
 
   ArduinoDataSubject:=TArduinoDataSubject.Create(ComPort1);
+
   for I := 0 to ArduinoMeters.HighIndex do
     (ArduinoMeters[i] as TArduinoMeter).AddDataSubject(ArduinoDataSubject);
 
@@ -3110,6 +3229,35 @@ begin
   Dependence.Interval := MeasurementIntervalCS.Data;
   SBIVPause.Enabled:=True;
   SBIVPause.OnClick:=Dependence.SpBattonClick;
+end;
+
+procedure TIVchar.ComPort1Reload;
+ var i:integer;
+begin
+// DACReset;
+ ComPortsWriteSettings([ComPort1]);
+ FreeAndNil(ArduinoDataSubject);
+ if RS232_MediatorTread <> nil
+   then RS232_MediatorTread.Terminate;
+ ComPortsEnding([ComPort1]);
+ FreeAndNil(ComPort1);
+
+ ComPort1:=TComPort.Create(IVchar);
+ ComPort1.Name:='ComPort1';
+ ComPortsLoadSettings([ComPort1]);
+ ComCBBR.ComPort:=ComPort1;
+ ComCBPort.ComPort:=ComPort1;
+ ComCBBR.UpdateSettings;
+ ComCBPort.UpdateSettings;
+ ComDPacket.ComPort := ComPort1;
+ PortBeginAction(ComPort1, LConnected, BConnect);
+ RS232_MediatorTread:=TRS232_MediatorTread.Create(ComPort1,ArduinoSenders);
+ ArduinoDataSubject:=TArduinoDataSubject.Create(ComPort1);
+  for I := 0 to ArduinoMeters.HighIndex do
+    (ArduinoMeters[i] as TArduinoMeter).AddDataSubject(ArduinoDataSubject);
+
+ if (ComPort1.Connected)and(SettingDevice.ActiveInterface.Name=DACR2R.Name) then SettingDevice.Reset();
+
 end;
 
 procedure TIVchar.ComPortsBegining;
@@ -3711,7 +3859,7 @@ end;
 procedure TIVchar.ObjectsFree;
  var i:integer;
 begin
-
+ FreeAndNil(ArduinoDataSubject);
  AnyObjectArray.ObjectFree;
   for I := 0 to High(Dependencies) do
     Dependencies[i].Free;

@@ -127,21 +127,22 @@ TTemperatureDependence=class(TTimeDependence)
  private
   fStartTemperature:word;
   fFinishTemperature:word;
-  fStep:integer;
+  fStep:double;
   fIsotermalInterval:word;
-  fExpectedTemperature:word;
+  fExpectedTemperature:double;
   fTolerance:double;
   fToleranceCoficient:word;
   fIsotermalBegan:boolean;
   fIsotermalBeginTime:TDateTime;
   fIsMeasured:boolean;
+  fNewStepEnable:boolean;
   procedure SetStartTemperature(const Value: word);
   procedure SetFinishTemperature(const Value: word);
-  procedure SetStep(const Value: integer);
+  procedure SetStep(const Value: double);
   procedure SetIsotermalInterval(const Value: word);
   function MeasurementNumberDetermine(): integer;override;
   procedure SeriesClear();override;
-  procedure SetCurrentTemperature(const Value: word);
+  procedure SetCurrentTemperature(const Value: double);
   procedure StepDetermination;
   function ItIsFinal:boolean;
   procedure SetTolerance(const Value: double);
@@ -151,9 +152,9 @@ TTemperatureDependence=class(TTimeDependence)
  public
   property StartTemperature:word read FStartTemperature write SetStartTemperature;
   property FinishTemperature:word read FFinishTemperature write SetFinishTemperature;
-  property Step:integer read FStep write SetStep;
+  property Step:double read FStep write SetStep;
   property IsotermalInterval:word read FIsotermalInterval write SetIsotermalInterval;
-  property ExpectedTemperature:word read fExpectedTemperature write SetCurrentTemperature;
+  property ExpectedTemperature:double read fExpectedTemperature write SetCurrentTemperature;
   property Tolerance:double read FTolerance write SetTolerance;
   property ToleranceCoficient:word read FToleranceCoficient write SetToleranceCoficient;
   property IsotermalBegan:boolean read fIsotermalBegan write fIsotermalBegan;
@@ -168,7 +169,7 @@ TShowTemperatureDependence=class(TNamedInterfacedObject)
  private
    fStartTemp: TIntegerParameterShow;
    fFinishTemp: TIntegerParameterShow;
-   fStepTemp: TIntegerParameterShow;
+   fStepTemp: TDoubleParameterShow;
 //   fToleranceCoef: TIntegerParameterShow;
    fIsoInterval: TIntegerParameterShow;
    fTempDepend:TTemperatureDependence;
@@ -313,6 +314,7 @@ TFastIVDependence=class (TFastDependence)
     fTempResults:TVectorTransform;
     fVoltageStepPrivate:double;
     fPreviousPointMeasurementNeeded:boolean;
+    fPreviousPointMeasurementNeededIndex:integer;
     procedure SetImax(const Value: double);
     procedure SetImin(const Value: double);
     procedure SetDragonBackTime(const Value: double);
@@ -713,7 +715,7 @@ end;
 procedure TTimeDependenceTimer.ActionMeasurement;
 begin
   inherited ActionMeasurement;
-  if (FDuration>0)and(ftempV>FDuration) then SetEvent(EventToStopDependence);
+  if (FDuration>0)and(TimeFromBegin()>FDuration) then SetEvent(EventToStopDependence);
 end;
 
 procedure TTimeDependenceTimer.BeginMeasuring;
@@ -889,6 +891,7 @@ begin
   ForwLine.AddXY(ftempV, ftempI);
   if abs(ftempI) > 1E-11 then
      ForwLg.AddXY(ftempV, abs(ftempI));
+
 end;
 
 procedure TDependence.EndMeasuring;
@@ -1008,7 +1011,11 @@ begin
     ForwLine.AddXY(fSecondValue, ftempI);
     if abs(ftempI) > 1E-11 then
       ForwLg.AddXY(fSecondValue, abs(ftempI));
-   end
+   end;
+
+   if (Results.Count  mod 10) = 0 then
+     ToFileFromTwoSeries('zapas.dat',ForwLine,ForwLg,6);
+
 end;
 
 class function TTimeTwoDependenceTimer.SecondValue: double;
@@ -1173,6 +1180,10 @@ begin
   HookDataSave();
 
   Results.Add(ftempV, ftempI);
+
+  if (Results.Count  mod 10) = 0 then
+     Results.WriteToFile('zapas.dat',6);
+
 end;
 
 procedure TFastDependence.DuringMeasuring(Action: TSimpleEvent);
@@ -1246,6 +1257,7 @@ begin
 
     if fPreviousPointMeasurementNeeded then
        begin
+//        showmessage(floattostr(fVoltageMeasured)+' '+floattostr(fCurrentMeasured));
         fAbsVoltageValue:=fAbsVoltageValue-fVoltageStepPrivate;
         fPointNumber:=fPointNumber-1;
         Results.DeletePoint(Results.HighNumber);
@@ -1284,6 +1296,8 @@ begin
   fItIsLightIV:=False;
 
   fTempResults:=TVectorTransform.Create;
+
+  fPreviousPointMeasurementNeededIndex:=-1;
 //  fTreadToMeasuring:=TFastIVDependenceAction.Create(self);
 //  fTreadToStop:=TFastIVDependenceStop.Create(self,fTreadToMeasuring);
 //  fTreadToMeasuring.Resume;
@@ -1322,9 +1336,13 @@ end;
 function TFastIVDependence.CurrentGrowth: boolean;
 begin
  if fForwardBranch then
-     Result:=fCurrentMeasured>Results.Y[Results.HighNumber]
+     Result:=fCurrentMeasured>=Results.Y[Results.HighNumber]
                                else
-     Result:=fCurrentMeasured<Results.Y[Results.HighNumber]
+     Result:=fCurrentMeasured<=Results.Y[Results.HighNumber];
+
+// if not(Result) then
+//  HelpForMe(inttostr(MilliSecond)+'_T'+floattostr(Results.Y[Results.HighNumber])+
+//     '_'+floattostr(fCurrentMeasured)) ;
 end;
 
 procedure TFastIVDependence.CurrentMeasuring;
@@ -1353,7 +1371,12 @@ begin
      end;
 
   if (AtempNumber>MaxCurrentMeasuringAttemp)
-      then fPreviousPointMeasurementNeeded:=true;
+     and(fPreviousPointMeasurementNeededIndex<>Results.Count)
+      then
+       begin
+        fPreviousPointMeasurementNeeded:=true;
+        fPreviousPointMeasurementNeededIndex:=Results.Count;
+       end;
 
 end;
 
@@ -1431,6 +1454,8 @@ function TFastIVDependence.DerivateGrowth: boolean;
 begin
  Result:=True;
  if abs(Results.X[Results.HighNumber])>0.5 then Exit;
+ if Results.Y[Results.HighNumber]=fCurrentMeasured then Exit;
+
  Results.CopyTo(fTempResults);
  fTempResults.DeleteNfirst(fBranchBeginingIndex);
  fTempResults.Add(fVoltageMeasured, fCurrentMeasured);
@@ -1438,6 +1463,10 @@ begin
  fTempResults.Itself(fTempResults.Derivate);
  if fTempResults.Y[fTempResults.HighNumber]<fTempResults.Y[fTempResults.HighNumber-1]
    then Result:=False;
+
+// if not(Result) then
+//  HelpForMe(inttostr(MilliSecond)+'_T'+floattostr(Results.Y[Results.HighNumber])+
+//     '_'+floattostr(fCurrentMeasured)) ;
 end;
 
 procedure TFastIVDependence.PointSeriesFilling;
@@ -1594,10 +1623,16 @@ end;
 function TFastIVDependence.VoltageIntervalCorrect: boolean;
  var RealStep:double;
 begin
- RealStep:=abs(fVoltageMeasured)
-       -abs(Results.X[Results.HighNumber]);
+ RealStep:=abs((fVoltageMeasured)
+       -Results.X[Results.HighNumber]);
  Result:=(RealStep>0.9*VoltageStep)and(RealStep<1.1*VoltageStep);
-// Result:=(abs(fVoltageMeasured)
+// if not(Result) then
+//  HelpForMe(inttostr(MilliSecond)+'_T'+floattostr(VoltageStep)+
+//      '_R'+floattostr(RealStep)+
+//     '_'+floattostr(fVoltageMeasured)) ;
+
+
+ // Result:=(abs(fVoltageMeasured)
 //       -abs(Results.X[Results.HighNumber])-VoltageStep)<0.1*VoltageStep;
 end;
 
@@ -1614,8 +1649,7 @@ begin
    if (Results.IsEmpty) then Break;
    if fItIsBranchBegining then Break;
    if VoltageIntervalCorrect() then Break;
-
-//                      else HelpForMe(floattostr(fVoltageMeasured)) ;
+//         else HelpForMe(inttostr(AtempNumber)+'_'+floattostr(fVoltageMeasured)) ;
    inc(AtempNumber);
   until (AtempNumber>MaxCurrentMeasuringAttemp);
 
@@ -1850,7 +1884,9 @@ begin
          if TimeFromIsotermalBegin>fIsotermalInterval then
           begin
             fIsotermalBegan:=false;
+            fNewStepEnable:=False;
             HookSecondMeas();
+            fNewStepEnable:=True;
             if (SecondMeasurementTime=ErResult) then
               begin
                 SetEvent(EventToStopDependence);
@@ -1863,7 +1899,8 @@ begin
 
        end              else
        begin
-         fIsotermalBegan:=true;
+         if fNewStepEnable then
+                     fIsotermalBegan:=true;
          fIsotermalBeginTime:=Now();
        end;
    end                                           else
@@ -1879,7 +1916,8 @@ begin
  fIsotermalBegan:=false;
  fIsMeasured:=false;
  fExpectedTemperature:=fStartTemperature;
- fIsotermalBeginTime:=Now(); 
+ fIsotermalBeginTime:=Now();
+ fNewStepEnable:=True;
  inherited BeginMeasuring;
 end;
 
@@ -1945,7 +1983,7 @@ begin
   ForwLg.ParentChart.Axes.Left.Logarithmic:=False;
 end;
 
-procedure TTemperatureDependence.SetCurrentTemperature(const Value: word);
+procedure TTemperatureDependence.SetCurrentTemperature(const Value: double);
 begin
   fExpectedTemperature := Value;
 end;
@@ -1965,10 +2003,10 @@ begin
   FStartTemperature := Value;
 end;
 
-procedure TTemperatureDependence.SetStep(const Value: integer);
+procedure TTemperatureDependence.SetStep(const Value: double);
 begin
  if Value=0 then FStep := 1
-            else FStep := Value;
+             else FStep := Value;
 end;
 
 procedure TTemperatureDependence.SetTolerance(const Value: double);
@@ -1999,7 +2037,8 @@ begin
  fFinishTemp:=TIntegerParameterShow. Create(STFinishTemp,LFinishTemp,'Finish (K)',350);
  fFinishTemp.IsPositive:=True;
  fFinishTemp.HookParameterClick:=UpDate;
- fStepTemp:=TIntegerParameterShow. Create(STStepTemp,LStepTemp,'Step (K)',5);
+// fStepTemp:=TIntegerParameterShow. Create(STStepTemp,LStepTemp,'Step (K)',5);
+ fStepTemp:=TDoubleParameterShow. Create(STStepTemp,LStepTemp,'Step (K)',5,1);
  fStepTemp.HookParameterClick:=UpDate;
  fToleranceCoef:=TIntegerParameterShow. Create(STTolCoef,LTolCoef,'Tolerance coefficient',2);
  fToleranceCoef.IsPositive:=True;
@@ -2056,7 +2095,7 @@ begin
  i:=1;
  while (Result)and(i<VAX.Count) do
   begin
-   Result:=Result and (Vax.Y[i]>Vax.Y[i-1]){ and ((Vax.X[i]-Vax.X[i-1])>0.005)};
+   Result:=Result and (Vax.Y[i]>=Vax.Y[i-1]){ and ((Vax.X[i]-Vax.X[i-1])>0.005)};
    inc(i);
   end;
 
