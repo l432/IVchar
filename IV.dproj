@@ -47,6 +47,7 @@
     <DCCReference Include="GDS_806Su.pas" />
     <DCCReference Include="HighResolutionTimer.pas" />
     <DCCReference Include="INA226.pas" />
+    <DCCReference Include="IT6332B.pas" />
     <DCCReference Include="IVchar_main.pas">
       <Form>IVchar</Form>
     </DCCReference>
@@ -61,6 +62,7 @@
     <DCCReference Include="RS232deviceNew.pas" />
     <DCCReference Include="RS232_Meas_Tread.pas" />
     <DCCReference Include="RS232_Mediator_Tread.pas" />
+    <DCCReference Include="SCPI.pas" />
     <DCCReference Include="ShowTypes.pas" />
     <DCCReference Include="TemperatureSensor.pas" />
     <DCCReference Include="TempThread.pas" />

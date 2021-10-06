@@ -1431,7 +1431,9 @@ begin
  if fIVMeasuringToStop then Exit;
 // if fTreadToMeasuring.IsTerminated then Exit;
 
- if FCurrentValueLimitEnable and (abs(fCurrentMeasured)<Imin)
+ if FCurrentValueLimitEnable
+    and (abs(fCurrentMeasured)<Imin)
+    and (Results.Count<2)
       then  Exit;
 
  if (fItIsBranchBegining) and (fForwardBranch) then

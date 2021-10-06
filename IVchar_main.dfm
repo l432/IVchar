@@ -35,7 +35,7 @@ object IVchar: TIVchar
     Top = 0
     Width = 786
     Height = 530
-    ActivePage = TS_Setting
+    ActivePage = TS_IT6332B
     Align = alTop
     Font.Charset = RUSSIAN_CHARSET
     Font.Color = clWindowText
@@ -7819,7 +7819,7 @@ object IVchar: TIVchar
       ImageIndex = 13
       object GB_GDS_Com: TGroupBox
         Left = 575
-        Top = 0
+        Top = -2
         Width = 206
         Height = 147
         Caption = 'COM parameters'
@@ -7963,7 +7963,7 @@ object IVchar: TIVchar
         end
         object B_GDS_Test: TButton
           Left = 10
-          Top = 115
+          Top = 117
           Width = 185
           Height = 25
           Caption = 'B_GDS_SetSet'
@@ -8178,6 +8178,24 @@ object IVchar: TIVchar
         Title.Text.Strings = (
           '')
         BottomAxis.AxisValuesFormat = '00e-0'
+        DepthAxis.Automatic = False
+        DepthAxis.AutomaticMaximum = False
+        DepthAxis.AutomaticMinimum = False
+        DepthAxis.Maximum = 0.590000000000000100
+        DepthAxis.Minimum = -0.410000000000000100
+        DepthTopAxis.Automatic = False
+        DepthTopAxis.AutomaticMaximum = False
+        DepthTopAxis.AutomaticMinimum = False
+        DepthTopAxis.Maximum = 0.590000000000000100
+        DepthTopAxis.Minimum = -0.410000000000000100
+        LeftAxis.Automatic = False
+        LeftAxis.AutomaticMaximum = False
+        LeftAxis.AutomaticMinimum = False
+        LeftAxis.Maximum = 1073.015000000000000000
+        LeftAxis.Minimum = 789.514999999998500000
+        RightAxis.Automatic = False
+        RightAxis.AutomaticMaximum = False
+        RightAxis.AutomaticMinimum = False
         View3D = False
         View3DOptions.Orthogonal = False
         Align = alCustom
@@ -9117,6 +9135,137 @@ object IVchar: TIVchar
         end
       end
     end
+    object TS_IT6332B: TTabSheet
+      Caption = 'IT6332B'
+      ImageIndex = 15
+      object GB_IT6363B_Com: TGroupBox
+        Left = 572
+        Top = 0
+        Width = 206
+        Height = 147
+        Caption = 'COM parameters'
+        Font.Charset = RUSSIAN_CHARSET
+        Font.Color = clNavy
+        Font.Height = -13
+        Font.Name = 'Courier'
+        Font.Style = [fsBold]
+        ParentFont = False
+        TabOrder = 0
+        object LIT6332Port: TLabel
+          Left = 10
+          Top = 12
+          Width = 40
+          Height = 18
+          Caption = 'Port '
+          Font.Charset = RUSSIAN_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -15
+          Font.Name = 'Verdana'
+          Font.Style = [fsBold]
+          ParentFont = False
+        end
+        object ComCBIT6332B_Port: TComComboBox
+          Left = 8
+          Top = 31
+          Width = 74
+          Height = 26
+          ComPort = ComPortIT6363B
+          ComProperty = cpPort
+          AutoApply = True
+          Style = csDropDownList
+          Font.Charset = RUSSIAN_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -15
+          Font.Name = 'Arial'
+          Font.Style = [fsBold]
+          ItemHeight = 18
+          ItemIndex = -1
+          ParentFont = False
+          TabOrder = 0
+        end
+        object ComCBIT6332_Baud: TComComboBox
+          Left = 10
+          Top = 83
+          Width = 74
+          Height = 26
+          ComPort = ComPortIT6363B
+          ComProperty = cpBaudRate
+          AutoApply = True
+          Style = csDropDownList
+          Font.Charset = RUSSIAN_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -15
+          Font.Name = 'Arial'
+          Font.Style = [fsBold]
+          ItemHeight = 18
+          ItemIndex = -1
+          ParentFont = False
+          TabOrder = 1
+        end
+        object ST_IT6332B_Rate: TStaticText
+          Left = 10
+          Top = 61
+          Width = 89
+          Height = 22
+          Caption = 'Baud Rate'
+          Font.Charset = RUSSIAN_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -15
+          Font.Name = 'Verdana'
+          Font.Style = [fsBold]
+          ParentFont = False
+          TabOrder = 2
+        end
+        object ST_IT6332_Parity: TStaticText
+          Left = 124
+          Top = 61
+          Width = 53
+          Height = 22
+          Caption = 'Parity'
+          Font.Charset = RUSSIAN_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -15
+          Font.Name = 'Verdana'
+          Font.Style = [fsBold]
+          ParentFont = False
+          TabOrder = 3
+        end
+        object ComCBIT6332_Parity: TComComboBox
+          Left = 124
+          Top = 83
+          Width = 74
+          Height = 26
+          ComPort = ComPortIT6363B
+          ComProperty = cpParity
+          AutoApply = True
+          Style = csDropDownList
+          Font.Charset = RUSSIAN_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -15
+          Font.Name = 'Arial'
+          Font.Style = [fsBold]
+          ItemHeight = 18
+          ItemIndex = -1
+          ParentFont = False
+          TabOrder = 4
+        end
+        object B_IT6332_Test: TButton
+          Left = 10
+          Top = 115
+          Width = 185
+          Height = 25
+          Caption = 'B_GDS_SetSet'
+          Font.Charset = RUSSIAN_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -15
+          Font.Name = 'Arial'
+          Font.Style = [fsBold]
+          ParentFont = False
+          TabOrder = 5
+          OnClick = B_IT6332_TestClick
+        end
+      end
+    end
   end
   object BBClose: TBitBtn
     Left = 584
@@ -9268,5 +9417,23 @@ object IVchar: TIVchar
     TriggersOnRxChar = True
     Left = 780
     Top = 648
+  end
+  object ComPortIT6363B: TComPort
+    BaudRate = br9600
+    Port = 'COM1'
+    Parity.Bits = prNone
+    StopBits = sbOneStopBit
+    DataBits = dbEight
+    Events = [evRxChar, evTxEmpty, evRxFlag, evRing, evBreak, evCTS, evDSR, evError, evRLSD, evRx80Full]
+    FlowControl.OutCTSFlow = False
+    FlowControl.OutDSRFlow = False
+    FlowControl.ControlDTR = dtrDisable
+    FlowControl.ControlRTS = rtsDisable
+    FlowControl.XonXoffOut = False
+    FlowControl.XonXoffIn = False
+    StoredProps = [spBasic]
+    TriggersOnRxChar = True
+    Left = 650
+    Top = 496
   end
 end

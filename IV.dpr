@@ -34,7 +34,9 @@ uses
   ArduinoDeviceNew in 'ArduinoDeviceNew.pas',
   ArduinoDeviceShow in 'ArduinoDeviceShow.pas',
   AD9833u in 'AD9833u.pas',
-  DependOnArduino in 'DependOnArduino.pas';
+  DependOnArduino in 'DependOnArduino.pas',
+  IT6332B in 'IT6332B.pas',
+  SCPI in 'SCPI.pas';
 
 {$R *.res}
 

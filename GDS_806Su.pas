@@ -6,7 +6,7 @@ uses
   CPort, ShowTypes, StdCtrls, Classes, IniFiles, OlegType,
   Measurement, Buttons, ExtCtrls, Series,
   PacketParameters, OlegTypePart2,
-  OlegShowTypes, OlegVector, RS232deviceNew;
+  OlegShowTypes, OlegVector, RS232deviceNew, SCPI;
 
 type
 
@@ -64,10 +64,10 @@ type
 
 
 const
-  TestShow=False;
+//  TestShow=False;
 
-  GDS_806S_PacketBeginChar='';
-  GDS_806S_PacketEndChar=#10;
+//  GDS_806S_PacketBeginChar='';
+//  GDS_806S_PacketEndChar=#10;
 
   GDS_806S_Test='GW,GDS-806S,EF211754,V1.10';
 
@@ -158,7 +158,8 @@ const
 
 type
 
-  TRS232_GDS=class(TRS232)
+//  TRS232_GDS=class(TRS232)
+  TRS232_GDS=class(TRS232_SCPI)
     protected
     public
      Constructor Create(CP:TComPort);
@@ -169,15 +170,15 @@ type
     procedure ComPortCreare(CP:TComPort);override;
   end;
 
-  TDataRequest_GDS=class(TCDDataRequest)
-    protected
-     function IsNoSuccessSend:Boolean;override;
-    public
-     procedure Request;override;
-  end;
+//  TDataRequest_GDS=class(TCDDataRequest)
+//    protected
+//     function IsNoSuccessSend:Boolean;override;
+//    public
+//     procedure Request;override;
+//  end;
 
-
-  TGDS_806S=class(TRS232MeterDeviceSingle)
+  TGDS_806S=class(TSCPI)
+//  TGDS_806S=class(TRS232MeterDeviceSingle)
    private
      fSettings:array[TGDS_Settings]of byte;
      fActiveChannel:TGDS_Channel;
@@ -211,7 +212,7 @@ type
      procedure PrepareString;
      procedure UpDate();override;
      procedure CreateDataSubject(CP:TComPort);override;
-     procedure CreateDataRequest;override;
+//     procedure CreateDataRequest;override;
    public
     DataVectors:array[TGDS_Channel]of TVector;
     property ActiveChannel:TGDS_Channel read FActiveChannel write FActiveChannel;
@@ -402,7 +403,7 @@ end;
  end;
 
 var
-  StringToSend:string;
+//  StringToSend:string;
   GDS_806S:TGDS_806S;
   GDS_806S_Channel:array[TGDS_Channel]of TGDS_806S_Channel;
   GDS_806S_Show:TGDS_806S_Show;
@@ -434,7 +435,7 @@ end;
 
 constructor TGDS_806S.Create(CP: TComPort);
 begin
- Create(CP,'GDS-806'); 
+ Create(CP,'GDS-806');
 end;
 
 //procedure TGDS_806Snew.CreateDataConverter;
@@ -442,11 +443,12 @@ end;
 //
 //end;
 
-procedure TGDS_806S.CreateDataRequest;
-begin
- fDataRequest:=TDataRequest_GDS.Create(Self.fDataSubject.RS232,Self);
-// fRS232DataRequest:=fDataRequest;
-end;
+//procedure TGDS_806S.CreateDataRequest;
+//begin
+// fDataRequest:=TDataRequest_SCPI.Create(Self.fDataSubject.RS232,Self);
+//// fDataRequest:=TDataRequest_GDS.Create(Self.fDataSubject.RS232,Self);
+//// fRS232DataRequest:=fDataRequest;
+//end;
 
 procedure TGDS_806S.CreateDataSubject(CP: TComPort);
 begin
@@ -696,7 +698,8 @@ begin
    fLSB:=StrtoFloat(GDS_VoltageScaleData[fSettings[gds_ch2_scale]])/25;
  QuireOperation(4,3,0);
  fMinDelayTime:=0;
- fDataSubject.RS232.ComPacket.StopString := GDS_806S_PacketEndChar;
+// fDataSubject.RS232.ComPacket.StopString := GDS_806S_PacketEndChar;
+ fDataSubject.RS232.ComPacket.StopString := SCPI_PacketEndChar;
 end;
 
 function TGDS_806S.GetMode:boolean;
@@ -1797,9 +1800,10 @@ end;
 
 constructor TRS232_GDS.Create(CP: TComPort);
 begin
- inherited Create(CP,GDS_806S_PacketBeginChar,GDS_806S_PacketEndChar);
- fComPacket.MaxBufferSize:=250052;
- fComPort.Buffer.InputSize:=250052;
+// inherited Create(CP,GDS_806S_PacketBeginChar,GDS_806S_PacketEndChar);
+// fComPacket.MaxBufferSize:=250052;
+// fComPort.Buffer.InputSize:=250052;
+ inherited Create(CP,250052,250052);
 end;
 
 { TDataSubject_GDS }
@@ -1811,15 +1815,15 @@ end;
 
 { TDataRequest_GDS }
 
-function TDataRequest_GDS.IsNoSuccessSend: Boolean;
-begin
- Result:=(fRS232.ComPort.WriteStr(StringToSend+GDS_806S_PacketEndChar)<>(Length(StringToSend)+1));
-end;
-
-procedure TDataRequest_GDS.Request;
-begin
- if TestShow then showmessage('send:  '+StringToSend);
- inherited Request;
-end;
+//function TDataRequest_GDS.IsNoSuccessSend: Boolean;
+//begin
+// Result:=(fRS232.ComPort.WriteStr(StringToSend+GDS_806S_PacketEndChar)<>(Length(StringToSend)+1));
+//end;
+//
+//procedure TDataRequest_GDS.Request;
+//begin
+// if TestShow then showmessage('send:  '+StringToSend);
+// inherited Request;
+//end;
 
 end.

@@ -725,6 +725,16 @@ type
     STtempRepNum: TStaticText;
     CBtimeDarkIV: TCheckBox;
     BComReload: TButton;
+    TS_IT6332B: TTabSheet;
+    GB_IT6363B_Com: TGroupBox;
+    LIT6332Port: TLabel;
+    ComCBIT6332B_Port: TComComboBox;
+    ComCBIT6332_Baud: TComComboBox;
+    ST_IT6332B_Rate: TStaticText;
+    ST_IT6332_Parity: TStaticText;
+    ComCBIT6332_Parity: TComComboBox;
+    B_IT6332_Test: TButton;
+    ComPortIT6363B: TComPort;
 
     procedure FormCreate(Sender: TObject);
     procedure BConnectClick(Sender: TObject);
@@ -763,6 +773,7 @@ type
     procedure SBLEDTurnClick(Sender: TObject);
     procedure BWriteTMClick(Sender: TObject);
     procedure BComReloadClick(Sender: TObject);
+    procedure B_IT6332_TestClick(Sender: TObject);
   private
     procedure ComponentView;
     {початкове налаштування різних компонентів}
@@ -877,6 +888,7 @@ type
     procedure ADS1115Create;
     procedure INA226Create;
     procedure GDS_Create;
+    procedure IB6332_Create;
     procedure SaveIVMeasurementResults(FileName: string; DataVector:TVector);
     procedure DACReset;
     procedure FastIVMeasuringComplex(const FilePrefix: string);
@@ -1047,7 +1059,7 @@ var
 implementation
 
 uses
-  ArduinoADC, OlegFunction, AD5752R;
+  ArduinoADC, OlegFunction, AD5752R, IT6332B;
 
 {$R *.dfm}
 
@@ -1536,6 +1548,39 @@ begin
 
 end;
 
+procedure TIVchar.IB6332_Create;
+begin
+  IT_6332 := TIT_6332.Create(ComPortIT6363B);
+//  for I := Low(TGDS_Channel) to High(TGDS_Channel) do
+//      GDS_806S_Channel[i]:=TGDS_806S_Channel.Create(i,GDS_806S);
+
+//  GDS_806S_Show := TGDS_806S_Show.Create(GDS_806S,
+//                      GDS_806S_Channel,
+//                     [STGDS_Mode, STGDS_RLength, STGDS_AveNum, STGDS_ScaleGoriz,
+//                     STGDS_CoupleCh1, STGDS_ProbCh1, STGDS_MeasCh1, STGDS_ScaleCh1,
+//                     STGDS_CoupleCh2, STGDS_ProbCh2, STGDS_MeasCh2, STGDS_ScaleCh2,
+//                     STGDS_OffsetCh1, STGDS_OffsetCh2],
+//                     [LGDS_Mode, LGDS_RLength, LGDS_AveNum,
+//                     LGDS_OffsetCh1, LGDS_OffsetCh2],
+//                     [B_GDS_SetSet, B_GDS_SetGet, B_GDS_Test,
+//                     B_GDS_SetSav, B_GDS_SetLoad, B_GDS_SetAuto,
+//                     B_GDS_SetDef, B_GDS_Refresh, B_GDS_Run,
+//                     B_GDS_Stop, B_GDS_Unlock],
+//                     [CBGDS_InvertCh1, CBGDS_InvertCh2],
+//                     [CBGDS_DisplayCh1, CBGDS_DisplayCh2],
+//                     [LGDS_Ch1,LGDSU_Ch1,LGDS_Ch2,LGDSU_Ch2],
+//                     [B_GDS_MeasCh1,B_GDS_MeasCh2,B_GDS_MeasShow],
+//                     [SB_GDS_AutoCh1,SB_GDS_AutoCh2,SB_GDS_AutoShow],
+//                     [GDS_SeriesCh1,GDS_SeriesCh2],
+//                     PGGDS_Show);
+
+//  ShowArray.Add([GDS_806S_Show]);
+  AnyObjectArray.Add([IT_6332{,GDS_806S_Channel[1],
+                      GDS_806S_Channel[2]}]);
+
+
+end;
+
 procedure TIVchar.INA226Create;
 begin
 //  INA226_Module:=TINA226_Module.Create('INA226');
@@ -1669,7 +1714,13 @@ begin
 //     LADInputVoltageValue.Caption:=FloatToStrF(TTimeTwoDependenceTimer.SecondValue,ffExponent, 4, 3);
 
     if Voc_MD.ActiveInterface.Name='Simulation'
-        then TDependence.tempIChange(Temperature_MD.ActiveInterface.Value);
+        then
+        begin
+//         TDependence.tempIChange(Temperature_MD.ActiveInterface.Value);
+         if Temperature_MD.ActiveInterface.Value<>ErResult
+            then TDependence.tempIChange(Temperature_MD.ActiveInterface.Value)
+            else TDependence.tempIChange(TDependence.tempI)
+        end;
 //        else VolCorrectionNew.Add(Temperature_MD.ActiveInterface.Value,
 //                                  Voc_MD.ActiveInterface.Value);
 
@@ -2813,6 +2864,12 @@ begin
     CloseFile(FF);
 end;
 
+procedure TIVchar.B_IT6332_TestClick(Sender: TObject);
+// var StringToSend:string;
+begin
+ IT_6332.Test();
+end;
+
 procedure TIVchar.BControlResetClick(Sender: TObject);
 begin
  if SBControlBegin.Down then
@@ -3262,7 +3319,8 @@ end;
 
 procedure TIVchar.ComPortsBegining;
 begin
-  ComPortsLoadSettings([ComPortUT70C,ComPortUT70B,ComPort1,ComPortGDS]);
+  ComPortsLoadSettings([ComPortUT70C,ComPortUT70B,
+          ComPort1,ComPortGDS,ComPortIT6363B]);
   ComCBUT70CPort.UpdateSettings;
   ComCBUT70BPort.UpdateSettings;
   ComCBBR.UpdateSettings;
@@ -3271,6 +3329,10 @@ begin
   ComCBGDS_Baud.UpdateSettings;
   ComCBGDS_Stop.UpdateSettings;
   ComCBGDS_Parity.UpdateSettings;
+
+  ComCBIT6332B_Port.UpdateSettings;
+  ComCBIT6332_Baud.UpdateSettings;
+  ComCBIT6332_Parity.UpdateSettings;
 
   ComDPacket.StartString := PacketBeginChar;
   ComDPacket.StopString := PacketEndChar;
@@ -3283,8 +3345,9 @@ begin
   PortBeginAction(ComPortUT70C, LUT70CPort, nil);
   end;
 //---------------
+  PortBeginAction(ComPortIT6363B, LIT6332Port, nil); 
+//  PortBeginAction(ComPortGDS, LGDSPort, nil);
 
-  PortBeginAction(ComPortGDS, LGDSPort, nil);
 
   PortBeginAction(ComPort1, LConnected, BConnect);
 end;
@@ -3599,7 +3662,8 @@ begin
   StepsWriteToIniFile;
   DelayTimeWriteToIniFile;
   BoxToIniFile;
-  ComPortsWriteSettings([ComPortUT70C,ComPortUT70B,ComPort1,ComPortGDS]);
+  ComPortsWriteSettings([ComPortUT70C,ComPortUT70B,
+              ComPort1,ComPortGDS,ComPortIT6363B]);
 end;
 
 procedure TIVchar.TemperatureOnTimeFirstMeas;
@@ -3649,6 +3713,7 @@ begin
     LADCurrentValue.Caption:=FloatToStrF(TTimeTwoDependenceTimer.SecondValue,ffExponent, 4, 3);
 
 end;
+
 
 procedure TIVchar.TermostatWatchDogTimer(Sender: TObject);
 begin
@@ -3778,6 +3843,7 @@ begin
   AnyObjectArray.Add([UT70B,UT70C]);
 
   GDS_Create();
+  IB6332_Create();
 
 end;
 

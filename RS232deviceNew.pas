@@ -252,7 +252,7 @@ Procedure PortEndAction(Port:TComPort);
 implementation
 
 uses
-  OlegType, Dialogs, RS232_Meas_Tread, Windows, Forms, Graphics;
+  OlegType, Dialogs, RS232_Meas_Tread, Windows, Forms, Graphics, SysUtils;
 
 //procedure TRS232MeterDevice.DiapazonDetermination();
 //begin
@@ -277,6 +277,7 @@ end;
 function TRS232MeterDevice.GetData: double;
 begin
   Result:=ErResult;
+
   if RS232DataSubject.PortConnected then
    begin
     Result:=Measurement();
@@ -784,6 +785,7 @@ begin
     begin
      PreparePort;
      fRS232CustomDevice.Error:=IsNoSuccessSend;
+//     showmessage('False='+booltostr(False)+' :'+booltostr(fRS232CustomDevice.Error));
     end
                         else
      fRS232CustomDevice.Error:=True;
@@ -812,6 +814,7 @@ end;
 procedure TRS232DataSubjectBase.PacketReceiving(Sender: TObject;
                                             const Str: string);
 begin
+//  showmessage('Receiving');
   fReceivedString:=Str;
   NotifyObservers();
 end;
