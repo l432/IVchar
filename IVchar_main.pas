@@ -33,6 +33,7 @@ uses
   GDS_806Su,
   UT70,
   RS232deviceNew,
+  Keithley2450,
   ArduinoDeviceShow, DependOnArduino;
 
 const
@@ -726,7 +727,7 @@ type
     CBtimeDarkIV: TCheckBox;
     BComReload: TButton;
     TS_IT6332B: TTabSheet;
-    GB_IT6363B_Com: TGroupBox;
+    GB_IT6332B_Com: TGroupBox;
     LIT6332Port: TLabel;
     ComCBIT6332B_Port: TComComboBox;
     ComCBIT6332_Baud: TComComboBox;
@@ -734,7 +735,18 @@ type
     ST_IT6332_Parity: TStaticText;
     ComCBIT6332_Parity: TComComboBox;
     B_IT6332_Test: TButton;
-    ComPortIT6363B: TComPort;
+    ComPortIT6332B: TComPort;
+    TS_Kt2450: TTabSheet;
+    GB_K2450IP: TGroupBox;
+    E_Kt2450Ip1: TEdit;
+    UD_Kt2450Ip1: TUpDown;
+    E_Kt2450Ip2: TEdit;
+    UD_Kt2450Ip2: TUpDown;
+    E_Kt2450Ip3: TEdit;
+    UD_Kt2450Ip3: TUpDown;
+    E_Kt2450Ip4: TEdit;
+    UD_Kt2450Ip4: TUpDown;
+    Button2: TButton;
 
     procedure FormCreate(Sender: TObject);
     procedure BConnectClick(Sender: TObject);
@@ -774,6 +786,8 @@ type
     procedure BWriteTMClick(Sender: TObject);
     procedure BComReloadClick(Sender: TObject);
     procedure B_IT6332_TestClick(Sender: TObject);
+    procedure FormPaint(Sender: TObject);
+    procedure Button2Click(Sender: TObject);
   private
     procedure ComponentView;
     {початкове налаштування різних компонентів}
@@ -889,6 +903,7 @@ type
     procedure INA226Create;
     procedure GDS_Create;
     procedure IB6332_Create;
+    procedure Kt2450_Create;
     procedure SaveIVMeasurementResults(FileName: string; DataVector:TVector);
     procedure DACReset;
     procedure FastIVMeasuringComplex(const FilePrefix: string);
@@ -1045,6 +1060,8 @@ type
     IscVocOnTimeIsRun:boolean;
     IVMeasResult,IVMRFirst,IVMRSecond:TIVMeasurementResult;
     Key:string;
+    Kt2450_IPAdressShow:TIPAdressShow;
+
   end;
 
 const
@@ -1550,7 +1567,7 @@ end;
 
 procedure TIVchar.IB6332_Create;
 begin
-  IT_6332 := TIT_6332.Create(ComPortIT6363B);
+  IT_6332 := TIT_6332.Create(ComPortIT6332B);
 //  for I := Low(TGDS_Channel) to High(TGDS_Channel) do
 //      GDS_806S_Channel[i]:=TGDS_806S_Channel.Create(i,GDS_806S);
 
@@ -1982,6 +1999,7 @@ begin
 
 
 end;
+
 
 
 function TIVchar.IVCharVoltageMaxDif: double;
@@ -2852,6 +2870,11 @@ end;
 
 
 
+procedure TIVchar.Button2Click(Sender: TObject);
+begin
+ showmessage(Kt2450_IPAdressShow.Host)
+end;
+
 procedure TIVchar.BWriteTMClick(Sender: TObject);
  var SR : TSearchRec;
      FF:TextFile;
@@ -3179,6 +3202,14 @@ begin
 end;
 
 
+procedure TIVchar.FormPaint(Sender: TObject);
+begin
+ TMyGroupBox(GB_K2450IP).Canvas.Brush.Color:=clBlack;
+ TMyGroupBox(GB_K2450IP).Canvas.Ellipse(67,45,72,50);
+ TMyGroupBox(GB_K2450IP).Canvas.Ellipse(129,45,134,50);
+ TMyGroupBox(GB_K2450IP).Canvas.Ellipse(191,45,196,50); 
+end;
+
 procedure TIVchar.PCChange(Sender: TObject);
  var i:integer;
 begin
@@ -3320,7 +3351,7 @@ end;
 procedure TIVchar.ComPortsBegining;
 begin
   ComPortsLoadSettings([ComPortUT70C,ComPortUT70B,
-          ComPort1,ComPortGDS,ComPortIT6363B]);
+          ComPort1,ComPortGDS,ComPortIT6332B]);
   ComCBUT70CPort.UpdateSettings;
   ComCBUT70BPort.UpdateSettings;
   ComCBBR.UpdateSettings;
@@ -3345,8 +3376,8 @@ begin
   PortBeginAction(ComPortUT70C, LUT70CPort, nil);
   end;
 //---------------
-  PortBeginAction(ComPortIT6363B, LIT6332Port, nil); 
-//  PortBeginAction(ComPortGDS, LGDSPort, nil);
+//  PortBeginAction(ComPortIT6332B, LIT6332Port, nil);
+  PortBeginAction(ComPortGDS, LGDSPort, nil);
 
 
   PortBeginAction(ComPort1, LConnected, BConnect);
@@ -3663,7 +3694,7 @@ begin
   DelayTimeWriteToIniFile;
   BoxToIniFile;
   ComPortsWriteSettings([ComPortUT70C,ComPortUT70B,
-              ComPort1,ComPortGDS,ComPortIT6363B]);
+              ComPort1,ComPortGDS,ComPortIT6332B]);
 end;
 
 procedure TIVchar.TemperatureOnTimeFirstMeas;
@@ -3844,6 +3875,7 @@ begin
 
   GDS_Create();
   IB6332_Create();
+  Kt2450_Create();
 
 end;
 
@@ -4356,6 +4388,21 @@ begin
     VoltageInputSign := TIVParameters.VoltageInput
   else
     VoltageInputSign := -TIVParameters.VoltageInput;
+end;
+
+procedure TIVchar.Kt2450_Create;
+begin
+ Kt2450_IPAdressShow:=TIPAdressShow.Create('KT2450IP',
+                              UD_Kt2450Ip1,UD_Kt2450Ip2,
+                              UD_Kt2450Ip3,UD_Kt2450Ip4,
+                              E_Kt2450Ip1, E_Kt2450Ip2,
+                              E_Kt2450Ip3,E_Kt2450Ip4);
+
+ ShowArray.Add([Kt2450_IPAdressShow]);
+
+// TMyGroupBox(GB_K2450IP).Canvas.Brush.Color:=clBlack;
+// TMyGroupBox(GB_K2450IP).Canvas.Brush.Style:=bsClear;
+ TMyGroupBox(GB_K2450IP).Canvas.Rectangle(0,0,100,100);
 end;
 
 procedure TIVchar.IVMR_Refresh;

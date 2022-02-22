@@ -6,7 +6,8 @@ uses
   RS232deviceNew, CPort;
 
 const
-  TestShow=True;
+//  TestShow=True;
+  TestShow=False;
 
   SCPI_PacketBeginChar='';
   SCPI_PacketEndChar=#10;

@@ -36,7 +36,8 @@ uses
   AD9833u in 'AD9833u.pas',
   DependOnArduino in 'DependOnArduino.pas',
   IT6332B in 'IT6332B.pas',
-  SCPI in 'SCPI.pas';
+  SCPI in 'SCPI.pas',
+  Keithley2450 in 'Keithley2450.pas';
 
 {$R *.res}
 

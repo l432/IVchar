@@ -10,6 +10,38 @@ uses
 
 type
 
+TIPbyteShow=class(TNamedInterfacedObject)
+private
+ fUpDown:TUpDown;
+ fEdit:TEdit;
+ function GetValue():byte;
+ procedure SetValue(Value:byte);
+ function GetValueString():string;
+protected
+ procedure KeyPressDigitOnly(Sender: TObject; var Key: Char);
+ procedure ValueLimit(Sender: TObject; var Key: Word;
+  Shift: TShiftState);
+public
+ property Value:byte read GetValue write SetValue;
+ property ValueText:string read GetValueString;
+ Constructor Create(Nm: string;
+                    UD: TUpDown;
+                    Edit:TEdit);
+end;
+
+TIPAdressShow=class(TNamedInterfacedObject)
+private
+ fIPadressShow:array[1..4] of TIPbyteShow;
+ function GetHost():string;
+public
+ property Host:string read GetHost;
+ Constructor Create(Nm: string;
+                    UD1,UD2,UD3,UD4: TUpDown;
+                    Edit1,Edit2,Edit3,Edit4:TEdit);
+ procedure ReadFromIniFile(ConfigFile: TIniFile);override;
+ procedure WriteToIniFile(ConfigFile: TIniFile);override;
+ destructor Destroy;override;
+end;
 
 TLimitShow=class(TNamedInterfacedObject)
 private
@@ -111,7 +143,6 @@ function NextDATFileName(LastDatFileName:string):string;
 Procedure MelodyShot();
 
 Procedure MelodyLong();
-
 
 
 implementation
@@ -446,6 +477,99 @@ procedure TArduinoDACShow.WriteToIniFile(ConfigFile: TIniFile);
 begin
   inherited WriteToIniFile(ConfigFile);
   fDAC_Show.WriteToIniFile(ConfigFile);
+end;
+
+{ TIPbyteShow }
+
+constructor TIPbyteShow.Create(Nm: string; UD: TUpDown; Edit: TEdit);
+begin
+ inherited Create;
+ fUpDown:=UD;
+ fEdit:=Edit;
+ fEdit.onKeyPress:=KeyPressDigitOnly;
+ fEdit.OnKeyUp:=ValueLimit;
+ fName:=Nm;
+ fUpDown.Associate:=fEdit;
+ fUpDown.Min:=0;
+ fUpDown.Max:=255;
+ fUpDown.Position:=192;
+end;
+
+function TIPbyteShow.GetValue: byte;
+begin
+ Result:=fUpDown.Position;
+end;
+
+function TIPbyteShow.GetValueString: string;
+begin
+ Result:=fEdit.Text;
+end;
+
+procedure TIPbyteShow.KeyPressDigitOnly(Sender: TObject; var Key: Char);
+begin
+ (Sender as TEdit).Tag :=strtoint((Sender as TEdit).Text);
+if not ((Key in['0' .. '9'])or(ord(Key) in [8,13,37,39,46])) then
+ Key:=#0;
+end;
+
+procedure TIPbyteShow.SetValue(Value: byte);
+begin
+ fUpDown.Position:=Value;
+end;
+
+procedure TIPbyteShow.ValueLimit(Sender: TObject; var Key: Word;
+  Shift: TShiftState);
+begin
+ if strtoint((Sender as TEdit).Text)>255 then
+   (Sender as TEdit).Text:=inttostr((Sender as TEdit).Tag);
+end;
+
+
+{ TIPAdressShow }
+
+constructor TIPAdressShow.Create(Nm: string; UD1, UD2, UD3, UD4: TUpDown; Edit1,
+  Edit2, Edit3, Edit4: TEdit);
+begin
+  inherited Create;
+  fName:=Nm;
+  fIPadressShow[1]:=TIPbyteShow.Create(fName+'b1',UD1,Edit1);
+  fIPadressShow[2]:=TIPbyteShow.Create(fName+'b2',UD2,Edit2);
+  fIPadressShow[3]:=TIPbyteShow.Create(fName+'b3',UD3,Edit3);
+  fIPadressShow[4]:=TIPbyteShow.Create(fName+'b4',UD4,Edit4);
+
+end;
+
+destructor TIPAdressShow.Destroy;
+ var i:byte;
+begin
+ for I := 1 to 4 do fIPadressShow[i].Free;
+ inherited;
+end;
+
+function TIPAdressShow.GetHost: string;
+ var i:byte;
+begin
+ Result:='';
+ for i := 1 to 4 do
+  begin
+    Result:=Result+ fIPadressShow[i].ValueText;
+    if i<>4 then Result:=Result+'.';
+  end;
+end;
+
+procedure TIPAdressShow.ReadFromIniFile(ConfigFile: TIniFile);
+ var i:byte;
+begin
+for i := 1 to 4 do
+  fIPadressShow[i].Value:=ConfigFile.ReadInteger(fName,fIPadressShow[i].Name,192);
+end;
+
+procedure TIPAdressShow.WriteToIniFile(ConfigFile: TIniFile);
+ var i:byte;
+begin
+ ConfigFile.EraseSection(fName);
+ for i := 1 to 4 do
+   WriteIniDef(ConfigFile,fName,fIPadressShow[i].Name,fIPadressShow[i].Value,192);
 end;
 
 end.

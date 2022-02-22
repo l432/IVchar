@@ -67,7 +67,9 @@ end;
 function TIT_6332.Test: boolean;
 begin
 // SetFlags(RootNode, FirstLevelNode, LeafNode, True);
- StringToSend:='*idn?';
+// StringToSend:='SYST:REM';
+//  GetData;
+ StringToSend:='*IDN?';
 // PrepareString();
  GetData;
 // Result:=(Value=314);
