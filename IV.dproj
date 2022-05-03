@@ -65,6 +65,7 @@
     <DCCReference Include="RS232_Mediator_Tread.pas" />
     <DCCReference Include="SCPI.pas" />
     <DCCReference Include="ShowTypes.pas" />
+    <DCCReference Include="TelnetDevice.pas" />
     <DCCReference Include="TemperatureSensor.pas" />
     <DCCReference Include="TempThread.pas" />
     <DCCReference Include="TMP102u.pas" />

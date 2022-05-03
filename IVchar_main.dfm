@@ -9286,7 +9286,7 @@ object IVchar: TIVchar
         Left = 11
         Top = 9
         Width = 268
-        Height = 70
+        Height = 92
         Caption = 'IP adress'
         Font.Charset = RUSSIAN_CHARSET
         Font.Color = clMaroon
@@ -9378,6 +9378,14 @@ object IVchar: TIVchar
           Width = 16
           Height = 24
           TabOrder = 7
+        end
+        object B_Kt2450UpDate: TButton
+          Left = 14
+          Top = 58
+          Width = 75
+          Height = 25
+          Caption = 'UpDate'
+          TabOrder = 8
         end
       end
       object Button2: TButton
@@ -9559,5 +9567,10 @@ object IVchar: TIVchar
     TriggersOnRxChar = True
     Left = 650
     Top = 496
+  end
+  object TelnetKt2450: TIdTelnet
+    Terminal = 'dumb'
+    Left = 632
+    Top = 354
   end
 end

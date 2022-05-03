@@ -5,7 +5,7 @@ interface
 uses
   StdCtrls, IniFiles, Windows, ComCtrls,  OlegType,
   Measurement, ExtCtrls, Classes, OlegTypePart2, OlegShowTypes,
-  ArduinoDeviceShow, ArduinoDeviceNew;
+  ArduinoDeviceShow, ArduinoDeviceNew, IdTelnet;
 
 
 type
@@ -31,15 +31,22 @@ end;
 
 TIPAdressShow=class(TNamedInterfacedObject)
 private
+ fIdTelnet:TIdTelnet;
  fIPadressShow:array[1..4] of TIPbyteShow;
+ fbuttonUpDate:TButton;
  function GetHost():string;
+ procedure SetIdTelnet(IdTelnet:TIdTelnet);
+ procedure ButtonUpDateOnClick(Sender: TObject);
 public
  property Host:string read GetHost;
+ property IdTelnet:TIdTelnet write SetIdTelnet;
  Constructor Create(Nm: string;
                     UD1,UD2,UD3,UD4: TUpDown;
-                    Edit1,Edit2,Edit3,Edit4:TEdit);
+                    Edit1,Edit2,Edit3,Edit4:TEdit;
+                    BUpDate:TButton);
  procedure ReadFromIniFile(ConfigFile: TIniFile);override;
  procedure WriteToIniFile(ConfigFile: TIniFile);override;
+ procedure IPUpDate;
  destructor Destroy;override;
 end;
 
@@ -148,7 +155,7 @@ Procedure MelodyLong();
 implementation
 
 uses
-  SysUtils, Math;
+  SysUtils, Math, Dialogs;
 
 
 function LastFileName(Mask:string):string;
@@ -527,8 +534,13 @@ end;
 
 { TIPAdressShow }
 
+procedure TIPAdressShow.ButtonUpDateOnClick(Sender: TObject);
+begin
+ IPUpDate;
+end;
+
 constructor TIPAdressShow.Create(Nm: string; UD1, UD2, UD3, UD4: TUpDown; Edit1,
-  Edit2, Edit3, Edit4: TEdit);
+  Edit2, Edit3, Edit4: TEdit; BUpDate:TButton);
 begin
   inherited Create;
   fName:=Nm;
@@ -536,7 +548,9 @@ begin
   fIPadressShow[2]:=TIPbyteShow.Create(fName+'b2',UD2,Edit2);
   fIPadressShow[3]:=TIPbyteShow.Create(fName+'b3',UD3,Edit3);
   fIPadressShow[4]:=TIPbyteShow.Create(fName+'b4',UD4,Edit4);
-
+  fbuttonUpDate:=BUpDate;
+  fbuttonUpDate.Name:='UpDate';
+  fbuttonUpDate.OnClick:=ButtonUpDateOnClick;
 end;
 
 destructor TIPAdressShow.Destroy;
@@ -557,11 +571,25 @@ begin
   end;
 end;
 
+procedure TIPAdressShow.IPUpDate;
+begin
+// if fIdTelnet<>nil then showmessage('Yes')
+//                   else showmessage('No');
+ if fIdTelnet<>nil then
+   fIdTelnet.Host:=Self.Host;
+end;
+
 procedure TIPAdressShow.ReadFromIniFile(ConfigFile: TIniFile);
  var i:byte;
 begin
-for i := 1 to 4 do
-  fIPadressShow[i].Value:=ConfigFile.ReadInteger(fName,fIPadressShow[i].Name,192);
+ for i := 1 to 4 do
+   fIPadressShow[i].Value:=ConfigFile.ReadInteger(fName,fIPadressShow[i].Name,192);
+ IPUpDate();
+end;
+
+procedure TIPAdressShow.SetIdTelnet(IdTelnet: TIdTelnet);
+begin
+ fIdTelnet:=IdTelnet;
 end;
 
 procedure TIPAdressShow.WriteToIniFile(ConfigFile: TIniFile);

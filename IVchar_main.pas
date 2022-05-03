@@ -34,7 +34,8 @@ uses
   UT70,
   RS232deviceNew,
   Keithley2450,
-  ArduinoDeviceShow, DependOnArduino;
+  ArduinoDeviceShow, DependOnArduino, IdBaseComponent, IdComponent,
+  IdTCPConnection, IdTCPClient, IdTelnet;
 
 const
   MeasIV='IV characteristic';
@@ -747,6 +748,8 @@ type
     E_Kt2450Ip4: TEdit;
     UD_Kt2450Ip4: TUpDown;
     Button2: TButton;
+    B_Kt2450UpDate: TButton;
+    TelnetKt2450: TIdTelnet;
 
     procedure FormCreate(Sender: TObject);
     procedure BConnectClick(Sender: TObject);
@@ -2872,7 +2875,11 @@ end;
 
 procedure TIVchar.Button2Click(Sender: TObject);
 begin
- showmessage(Kt2450_IPAdressShow.Host)
+ Kt2450_IPAdressShow.IPUpDate;
+ Kt2450_IPAdressShow.IdTelnet:=TelnetKt2450;
+ Kt2450_IPAdressShow.IPUpDate;
+
+// showmessage(Kt2450_IPAdressShow.Host)
 end;
 
 procedure TIVchar.BWriteTMClick(Sender: TObject);
@@ -4396,7 +4403,8 @@ begin
                               UD_Kt2450Ip1,UD_Kt2450Ip2,
                               UD_Kt2450Ip3,UD_Kt2450Ip4,
                               E_Kt2450Ip1, E_Kt2450Ip2,
-                              E_Kt2450Ip3,E_Kt2450Ip4);
+                              E_Kt2450Ip3,E_Kt2450Ip4,
+                              B_Kt2450UpDate);
 
  ShowArray.Add([Kt2450_IPAdressShow]);
 

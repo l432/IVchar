@@ -37,7 +37,8 @@ uses
   DependOnArduino in 'DependOnArduino.pas',
   IT6332B in 'IT6332B.pas',
   SCPI in 'SCPI.pas',
-  Keithley2450 in 'Keithley2450.pas';
+  Keithley2450 in 'Keithley2450.pas',
+  TelnetDevice in 'TelnetDevice.pas';
 
 {$R *.res}
 
