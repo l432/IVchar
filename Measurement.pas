@@ -23,6 +23,19 @@ Const
 
 type
 
+//IMeasurement = interface (IName)
+//['{B5C5EED8-FB2A-4FDA-96F4-59CE09C9E5F0}']
+// function GetNewData:boolean;
+// function GetValue:double;
+// function GetData:double;
+//// function GetDeviceKod:byte;
+// procedure SetNewData(Value:boolean);
+// procedure GetDataThread(WPARAM: word; EventEnd:THandle);
+// property NewData:boolean read GetNewData write SetNewData;
+// property Value:double read GetValue;
+//// property DeviceKod:byte read GetDeviceKod;
+//end;
+
 IMeasurement = interface (IName)
   ['{7A6DCE4C-9A04-444A-B7FD-39B800BDE6A7}']
  function GetNewData:boolean;

@@ -216,8 +216,8 @@ type
    public
     DataVectors:array[TGDS_Channel]of TVector;
     property ActiveChannel:TGDS_Channel read FActiveChannel write FActiveChannel;
-    Constructor Create(CP:TComPort;Nm:string);overload;
-    Constructor Create(CP:TComPort);overload;
+    Constructor Create(CP:TComPort;Nm:string='GDS-806');//overload;
+//    Constructor Create(CP:TComPort);overload;
 //    procedure Free;//override;
     destructor Destroy; override;
 
@@ -433,10 +433,10 @@ begin
  SetFlags(0,0,0,true);
 end;
 
-constructor TGDS_806S.Create(CP: TComPort);
-begin
- Create(CP,'GDS-806');
-end;
+//constructor TGDS_806S.Create(CP: TComPort);
+//begin
+// Create(CP,'GDS-806');
+//end;
 
 //procedure TGDS_806Snew.CreateDataConverter;
 //begin

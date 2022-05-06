@@ -24,21 +24,15 @@ type
 
   TRS232MeasuringTread = class(TMeasuringTread)
   private
-   fRS232Meter:TRS232MeterDevice;
+   fRS232Meter:TMeterDevice;
    procedure FalseStatement();
 //   procedure ConvertToValue();
   protected
    procedure ExuteBegin;override;
   public
-   constructor Create(RS_Meter:TRS232MeterDevice;WPARAM: word; EventEnd: THandle);
+   constructor Create(RS_Meter:TMeterDevice;WPARAM: word; EventEnd: THandle);
   end;
 
-
-//  TV721_MeasuringTread = class(TRS232MeasuringTread)
-//  private
-//  protected
-//   procedure ExuteBegin;override;
-//  end;
 
   TV721_MeasuringTread = class(TRS232MeasuringTread)
   private
@@ -142,7 +136,7 @@ uses
 { TRS232MeasuringTreadNew }
 
 
-constructor TRS232MeasuringTread.Create(RS_Meter: TRS232MeterDevice;
+constructor TRS232MeasuringTread.Create(RS_Meter: TMeterDevice;
   WPARAM: word; EventEnd: THandle);
 begin
   inherited Create(RS_Meter,WPARAM,EventEnd);

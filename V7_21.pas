@@ -175,7 +175,7 @@ function TVoltmetr.GetData(): double;
 
 begin
   Result:=ErResult;
-  if not(RS232DataSubject.PortConnected) then Exit;
+  if not(DataSubject.PortConnected) then Exit;
 
  a:=Measurement();
  sleep(fTimeToMeasurement);
@@ -197,7 +197,7 @@ end;
 
 procedure TVoltmetr.GetDataThread(WPARAM: word;EventEnd:THandle);
 begin
-  if RS232DataSubject.PortConnected then
+  if DataSubject.PortConnected then
    fRS232MeasuringTread:=TV721_MeasuringTread.Create(Self,WPARAM,EventEnd);
 end;
 

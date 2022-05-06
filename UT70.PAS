@@ -993,10 +993,10 @@ begin
      PreparePort;
      fRS232.ComPort.SetDTR(True);
      PacketToSend[0]:=ByteToSend;
-     fRS232CustomDevice.Error:=IsNoSuccessSend;
+     fCustomDevice.Error:=IsNoSuccessSend;
     end
                         else
-     fRS232CustomDevice.Error:=True;
+     fCustomDevice.Error:=True;
 end;
 
 procedure TDataRequest_UT70C.Request;

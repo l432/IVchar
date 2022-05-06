@@ -36,7 +36,7 @@ type
   end;
 
 
-  IArduinoDevice = interface (IRS232DataObserver)
+  IArduinoDevice = interface (IDataObserver)
     ['{2FE4C890-9B48-4605-8593-EA54EF1A5742}']
     function GetDeviceKod:byte;
     function GetSecondDeviceKod:byte;
@@ -58,7 +58,7 @@ type
      Constructor Create(CP:TComPort);
     end;
 
-  TArduinoDataSubject=class(TRS232DataSubjectBase,IArduinoDataSubject,IRS232DataSubject)
+  TArduinoDataSubject=class(TRS232DataSubjectBase,IArduinoDataSubject,IDataSubject)
    private
     fObservers:array of Pointer;
     function ObserverIsRegistered(o:IArduinoDevice):boolean;
@@ -157,7 +157,7 @@ type
    procedure VariantsShowAndSelect(Sender: TObject);
   end;
 
-  TArduinoSetter=class(TRS232CustomDevice,IArduinoSender)
+  TArduinoSetter=class(TCustomDevice,IArduinoSender)
     {базовий клас для джерел сигналів, що керуються
     за допомогою Arduino    }
   protected
@@ -197,7 +197,7 @@ type
   procedure Request;virtual;abstract;
  end;
 
-  TArduinoMeter=class(TRS232MeterDevice,IArduinoSender,IArduinoDevice)
+  TArduinoMeter=class(TMeterDevice,IArduinoSender,IArduinoDevice)
   {базовий клас для вимірювальних об'єктів,
   які використовують обмін даних з Arduino}
   protected
@@ -928,7 +928,7 @@ end;
 procedure TArduinoMeter.AddDataSubject(DataSubject: TArduinoDataSubject);
 begin
  fArduinoDataSubject:=DataSubject;
- RS232DataSubject:=fArduinoDataSubject;
+ Self.DataSubject:=fArduinoDataSubject;
  fRequestState:=fAddedRequestState;
 end;
 

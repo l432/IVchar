@@ -14,7 +14,7 @@ const
  ID_Label='=I';
  UA_Label='~U';
  UD_Label='=U';
- ErrorMes=' connection with ComPort is unsuccessful';
+ ErrorMes=' connection is unsuccessful';
 
 var
     EventComPortFree: THandle;
@@ -24,22 +24,22 @@ type
 
 //  http://www.sql.ru/forum/681753/delegirovanie-realizacii-metodov-interfeysa-drugomu-klassu
 
-IRS232DataObserver = interface
+IDataObserver = interface
   ['{0DC1F3EC-1356-45CE-96F7-7287DB006F1B}']
   procedure UpDate ();
 end;
 
 
-IRS232DataSubject = interface
+IDataSubject = interface
   ['{0C822EBE-BD63-4E40-8D8D-A20615DC2FE6}']
   procedure NotifyObservers;
   function PortConnected():boolean;
 end;
 
-IRS232DataSubjectSingle = interface //(IRS232DataSubject)
+IDataSubjectSingle = interface //(IRS232DataSubject)
   ['{0C822EBE-BD63-4E40-8D8D-A20615DC2FE6}']
-  procedure RegisterObserver(o:IRS232DataObserver);
-  procedure RemoveObserver(o:IRS232DataObserver);
+  procedure RegisterObserver(o:IDataObserver);
+  procedure RemoveObserver(o:IDataObserver);
 end;
 
 
@@ -58,39 +58,57 @@ TRS232=class
   end;
 
 
-TRS232DataSubjectBase=class(TNamedInterfacedObject)
+TDataSubjectBase=class(TNamedInterfacedObject)
  protected
   fReceivedString:string;
-  fRS232:TRS232;
-  procedure ComPortCreare(CP:TComPort);virtual;abstract;
-  Procedure PacketReceiving(Sender: TObject; const Str: string);
-  function PortConnected():boolean;
+  function PortConnected():boolean;virtual;abstract;
  public
   property ReceivedString:string read fReceivedString;
-  property RS232:TRS232 read fRS232;
-  Constructor Create(CP:TComPort);
-//  Procedure Free;
-  destructor Destroy;override;
   procedure NotifyObservers;virtual;abstract;
 end;
 
 
-TRS232DataSubjectSingle=class(TRS232DataSubjectBase,IRS232DataSubjectSingle,IRS232DataSubject)
+TDataSubjectSingle=class(TDataSubjectBase,IDataSubjectSingle,IDataSubject)
  protected
-//  fObserver:IRS232DataObserver;
   fObserver:pointer;
-  function GetObserver:IRS232DataObserver;
+  function GetObserver:IDataObserver;
  public
-  property Observer:IRS232DataObserver read GetObserver;
-  Constructor Create(CP:TComPort);
-  procedure RegisterObserver(o:IRS232DataObserver);
-  procedure RemoveObserver(o:IRS232DataObserver);
+  property Observer:IDataObserver read GetObserver;
+  procedure RegisterObserver(o:IDataObserver);
+  procedure RemoveObserver(o:IDataObserver);
   procedure NotifyObservers;override;
 end;
 
-TRS232CustomDevice=class(TNamedInterfacedObject)
-//  {базовий клас для пристроїв, які керуються
-//  за допомогою COM-порту}
+
+TRS232DataSubjectBase=class(TDataSubjectBase)
+ protected
+  fRS232:TRS232;
+  procedure ComPortCreare(CP:TComPort);virtual;abstract;
+  Procedure PacketReceiving(Sender: TObject; const Str: string);
+  function PortConnected():boolean;override;
+ public
+  property RS232:TRS232 read fRS232;
+  Constructor Create(CP:TComPort);
+  destructor Destroy;override;
+end;
+
+
+
+TRS232DataSubjectSingle=class(TRS232DataSubjectBase,IDataSubjectSingle,IDataSubject)
+ protected
+  fObserver:pointer;
+  function GetObserver:IDataObserver;
+ public
+  property Observer:IDataObserver read GetObserver;
+  Constructor Create(CP:TComPort);
+  procedure RegisterObserver(o:IDataObserver);
+  procedure RemoveObserver(o:IDataObserver);
+  procedure NotifyObservers;override;
+end;
+
+TCustomDevice=class(TNamedInterfacedObject)
+  {базовий клас для пристроїв, які керуються
+  віддалено}
   protected
    fError:boolean;
    fMessageError:string;
@@ -98,12 +116,12 @@ TRS232CustomDevice=class(TNamedInterfacedObject)
    function GetMessageError:string;
    procedure SetError(const Value:boolean);
    procedure SetMessageError(const Value:string);
-   function GetData(Index: Integer): Byte;
+   function GetDataI(Index: Integer): Byte;
    procedure SetData(Index: integer; Value: byte);
    function  GetHighDataIndex:integer;
    procedure SetHighDataIndex(Value:integer);
   public
-   property Data[Index: Integer]:byte read GetData write SetData;
+   property Data[Index: Integer]:byte read GetDataI write SetData;
    property HighDataIndex:integer read GetHighDataIndex write SetHighDataIndex;
    property Error:boolean read fError write SetError;
    property MessageError:string read GetMessageError write SetMessageError;
@@ -113,13 +131,11 @@ TRS232CustomDevice=class(TNamedInterfacedObject)
    procedure CopyToData(NewData:array of byte);
   end;
 
-
-TRS232MeterDevice=class(TRS232CustomDevice,IMeasurement,IRS232DataObserver)
-//  {базовий клас для вимірювальних об'єктів,
-//  які використовують обмін даних з COM-портом}
+TMeterDevice=class(TCustomDevice,IMeasurement,IDataObserver)
+//  {базовий клас для вимірювальних об'єктів, які керуються
+//  віддалено}
   protected
-//   fIRS232DataSubject:IRS232DataSubject;
-   fIRS232DataSubject:pointer;
+   fIDataSubject:pointer;
    fValue:double;
    fIsReceived:boolean;
    fMinDelayTime:integer;
@@ -141,12 +157,12 @@ TRS232MeterDevice=class(TRS232CustomDevice,IMeasurement,IRS232DataObserver)
    Function GetValue():double;virtual;
    procedure SetNewData(Value:boolean);
    procedure UpDate ();virtual;
-   function GetRS232DataSubject:IRS232DataSubject;
-   procedure SetRS232DataSubject(Value:IRS232DataSubject);
+   function GetDataSubject:IDataSubject;
+   procedure SetDataSubject(const Value: IDataSubject);
   public
    RepeatInErrorCase:boolean;
-   property RS232DataSubject:IRS232DataSubject read GetRS232DataSubject
-                                                write SetRS232DataSubject;
+   property DataSubject:IDataSubject read GetDataSubject
+                                                write SetDataSubject;
    property NewData:boolean read GetNewData write SetNewData;
    property Value:double read GetValue write fValue;
    property isReceived:boolean read fIsReceived write fIsReceived;
@@ -161,19 +177,78 @@ TRS232MeterDevice=class(TRS232CustomDevice,IMeasurement,IRS232DataObserver)
    procedure GetDataThread(WPARAM: word;EventEnd:THandle);virtual;
   end;
 
+//TRS232MeterDevice=class(TMeterDevice,IMeasurement,IDataObserver)
+////  {базовий клас для вимірювальних об'єктів,
+////  які використовують обмін даних з COM-портом}
+//  protected
+////   fIDataSubject:pointer;
+////   fValue:double;
+////   fIsReceived:boolean;
+////   fMinDelayTime:integer;
+////  {інтервал очікування перед початком перевірки
+////  вхідного буфера, []=мс, за замовчуванням 0}
+////   fDelayTimeStep:integer;
+////   {проміжок часу, через який перевіряється
+////   надходження даних, []=мс, за замовчуванням 10}
+////   fDelayTimeMax:integer;
+////   {максимальна кількість перевірок
+////   надходження даних, []=штук, за замовчуванням 130,
+////   тобто за замовчуванням інтервал очікуввання
+////   складає 0+10*130=1300 мс}
+////   fRS232MeasuringTread:TThread;
+////   fNewData:boolean;
+////   function GetNewData:boolean;
+////   function GetDeviceKod:byte;virtual;
+////   Function Measurement():double;virtual;
+////   Function GetValue():double;virtual;
+////   procedure SetNewData(Value:boolean);
+////   procedure UpDate ();virtual;
+////   function GetDataSubject:IDataSubject;
+////   procedure SetDataSubject(Value:IDataSubject);
+//  public
+////   RepeatInErrorCase:boolean;
+////   property DataSubject:IDataSubject read GetDataSubject
+////                                                write SetDataSubject;
+////   property NewData:boolean read GetNewData write SetNewData;
+////   property Value:double read GetValue write fValue;
+////   property isReceived:boolean read fIsReceived write fIsReceived;
+////   property MinDelayTime:integer read  fMinDelayTime;
+////   property DelayTimeStep:integer read  fDelayTimeStep;
+////   property DelayTimeMax:integer read  fDelayTimeMax;
+//   property DeviceKod:byte read GetDeviceKod;
+////   Constructor Create(Nm:string);
+////   Procedure Request();virtual;abstract;
+////   function GetData():double;virtual;
+////   procedure MeasurementBegin;
+////   procedure GetDataThread(WPARAM: word;EventEnd:THandle);virtual;
+//  end;
 
-TCDDataRequest=class(TInterfacedObject{,IRS232DataRequest})
+
+TDataRequestNew=class(TInterfacedObject)
   protected
-   fRS232:TRS232;
-   fRS232CustomDevice:TRS232CustomDevice;
-   procedure PreparePort;
+   fCustomDevice:TCustomDevice;
+   procedure PreparePort;virtual;
    function IsNoSuccessSend:Boolean;virtual;
+   function Connected:boolean;virtual;abstract;
   public
-   Constructor Create(ComPort:TRS232;CustomDevice:TRS232CustomDevice);
+   Constructor Create(CustomDevice:TCustomDevice);
    procedure Request;virtual;
 end;
 
-TRS232MeterDeviceSingle=class(TRS232MeterDevice)
+//TCDDataRequest=class(TInterfacedObject{,IRS232DataRequest})
+TCDDataRequest=class(TDataRequestNew{,IRS232DataRequest})
+  protected
+   fRS232:TRS232;
+//   fCustomDevice:TCustomDevice;
+   procedure PreparePort;override;
+//   function IsNoSuccessSend:Boolean;virtual;
+   function Connected:boolean;override;
+  public
+   Constructor Create(ComPort:TRS232;CustomDevice:TCustomDevice);
+//   procedure Request;virtual;
+end;
+
+TRS232MeterDeviceSingle=class(TMeterDevice)
 {вимірювальний пристрій єдиний для СОМ-порту}
  protected
   fDataSubject:TRS232DataSubjectSingle;
@@ -189,7 +264,7 @@ end;
 
 TComplexDeviceDataConverter=class(TInterfacedObject)
   protected
-   fMD:TRS232MeterDevice;
+   fMD:TMeterDevice;
    fMeasureMode:Shortint;
    fDiapazon:Shortint;
    fMeasureModeAll:array of string;
@@ -202,7 +277,7 @@ TComplexDeviceDataConverter=class(TInterfacedObject)
    property MeasureModeLabel:string read MeasureModeLabelRead;
 //   property Diapazon:Shortint read fDiapazon;
    procedure DataConvert();
-   Constructor Create(MD:TRS232MeterDevice);
+   Constructor Create(MD:TMeterDevice);
 end;
 
 
@@ -217,14 +292,14 @@ TAdapterRadioGroupClick=class
 
 TRS232MetterShow=class(TMeasurementShow)
   protected
-   RS232Meter:TRS232MeterDevice;
+   RS232Meter:TMeterDevice;
    DeviceDataConverter:TComplexDeviceDataConverter;
    AdapterMeasureMode,AdapterRange:TAdapterRadioGroupClick;
    procedure DiapazonFill();
    procedure MeasureModeFill();
    function UnitModeLabel():string;override;
   public
-   Constructor Create(Meter:TRS232MeterDevice;
+   Constructor Create(Meter:TMeterDevice;
                       DDataConverter:TComplexDeviceDataConverter;
                       MM,R:TRadioGroup;
                       DL,UL:TLabel;
@@ -260,109 +335,109 @@ uses
 //end;
 
 
-constructor TRS232MeterDevice.Create(Nm: string);
-begin
- inherited Create(Nm);
+//constructor TRS232MeterDevice.Create(Nm: string);
+//begin
+// inherited Create(Nm);
+//
+//  fIsReceived:=False;
+//  fMinDelayTime:=0;
+//  fDelayTimeStep:=10;
+//  fDelayTimeMax:=130;
+//  fValue:=ErResult;
+//  fNewData:=False;
+//  fError:=False;
+//  RepeatInErrorCase:=False;
+//end;
 
-  fIsReceived:=False;
-  fMinDelayTime:=0;
-  fDelayTimeStep:=10;
-  fDelayTimeMax:=130;
-  fValue:=ErResult;
-  fNewData:=False;
-  fError:=False;
-  RepeatInErrorCase:=False;
-end;
+//function TRS232MeterDevice.GetData: double;
+//begin
+//  Result:=ErResult;
+//
+//  if DataSubject.PortConnected then
+//   begin
+//    Result:=Measurement();
+//    fNewData:=True;
+//   end
+//                                      else
+//   begin
+//     fError:=True;
+//     showmessage(fMessageError);
+//   end;
+//end;
 
-function TRS232MeterDevice.GetData: double;
-begin
-  Result:=ErResult;
-
-  if RS232DataSubject.PortConnected then
-   begin
-    Result:=Measurement();
-    fNewData:=True;
-   end
-                                      else
-   begin
-     fError:=True;
-     showmessage(fMessageError);
-   end;
-end;
-
-procedure TRS232MeterDevice.GetDataThread(WPARAM: word;EventEnd:THandle);
-begin
- if RS232DataSubject.PortConnected then
-   fRS232MeasuringTread:=TRS232MeasuringTread.Create(Self,WPARAM,EventEnd);
-end;
-
-
-function TRS232MeterDevice.GetDeviceKod: byte;
-begin
- Result:=0;
-end;
-
-function TRS232MeterDevice.GetRS232DataSubject:IRS232DataSubject;
-begin
- Result:=IRS232DataSubject(fIRS232DataSubject);
-end;
-
-procedure TRS232MeterDevice.MeasurementBegin;
-begin
-  fIsReceived:=False;
-  fError:=False;
-end;
+//procedure TRS232MeterDevice.GetDataThread(WPARAM: word;EventEnd:THandle);
+//begin
+// if DataSubject.PortConnected then
+//   fRS232MeasuringTread:=TRS232MeasuringTread.Create(Self,WPARAM,EventEnd);
+//end;
 
 
-function TRS232MeterDevice.GetNewData: boolean;
-begin
- Result:=fNewData;
-end;
+//function TRS232MeterDevice.GetDeviceKod: byte;
+//begin
+// Result:=0;
+//end;
 
-function TRS232MeterDevice.GetValue: double;
-begin
- Result:=fValue;
-end;
+//function TRS232MeterDevice.GetDataSubject:IDataSubject;
+//begin
+// Result:=IDataSubject(fIDataSubject);
+//end;
 
-function TRS232MeterDevice.Measurement: double;
-label start;
-var i:integer;
-    isFirst:boolean;
-begin
- fValue:=ErResult;
- isFirst:=True;
-start:
-  MeasurementBegin;
-  Request();
+//procedure TRS232MeterDevice.MeasurementBegin;
+//begin
+//  fIsReceived:=False;
+//  fError:=False;
+//end;
 
 
- sleep(fMinDelayTime);
- i:=0;
-while  not(((i>fDelayTimeMax)or(fIsReceived)or(fError))) do
-begin
-   sleep(fDelayTimeStep);
-   inc(i);
- Application.ProcessMessages;
-end;
-// repeat
+//function TRS232MeterDevice.GetNewData: boolean;
+//begin
+// Result:=fNewData;
+//end;
+
+//function TRS232MeterDevice.GetValue: double;
+//begin
+// Result:=fValue;
+//end;
+
+//function TRS232MeterDevice.Measurement: double;
+//label start;
+//var i:integer;
+//    isFirst:boolean;
+//begin
+// fValue:=ErResult;
+// isFirst:=True;
+//start:
+//  MeasurementBegin;
+//  Request();
+//
+//
+// sleep(fMinDelayTime);
+// i:=0;
+//while  not(((i>fDelayTimeMax)or(fIsReceived)or(fError))) do
+//begin
 //   sleep(fDelayTimeStep);
 //   inc(i);
 // Application.ProcessMessages;
-// until ((i>fDelayTimeMax)or(fIsReceived)or(fError));
-
-// showmessage(inttostr((GetTickCount-i0)));
-
-//ShowData(fData);
-
-
- Result:=fValue;
-
- if (RepeatInErrorCase) and (Result=ErResult)and(isFirst) then
-    begin
-      isFirst:=false;
-      goto start;
-    end;
-end;
+//end;
+//// repeat
+////   sleep(fDelayTimeStep);
+////   inc(i);
+//// Application.ProcessMessages;
+//// until ((i>fDelayTimeMax)or(fIsReceived)or(fError));
+//
+//// showmessage(inttostr((GetTickCount-i0)));
+//
+////ShowData(fData);
+//
+//
+// Result:=fValue;
+//
+// if (RepeatInErrorCase) and (Result=ErResult)and(isFirst) then
+//    begin
+//      isFirst:=false;
+//      goto start;
+//    end;
+//end;
 
 //function TRS232MeterDevice.MeasureModeLabelRead: string;
 //begin
@@ -376,21 +451,21 @@ end;
 //end;
 
 
-procedure TRS232MeterDevice.SetRS232DataSubject(Value: IRS232DataSubject);
-begin
-  fIRS232DataSubject:=pointer(Value);
-end;
+//procedure TRS232MeterDevice.SetDataSubject(Value: IDataSubject);
+//begin
+//  fIDataSubject:=pointer(Value);
+//end;
 
-procedure TRS232MeterDevice.SetNewData(Value: boolean);
-begin
- fNewData:=Value;
-end;
+//procedure TRS232MeterDevice.SetNewData(Value: boolean);
+//begin
+// fNewData:=Value;
+//end;
 
-
-procedure TRS232MeterDevice.UpDate();
-begin
- fIsReceived:=True;
-end;
+//
+//procedure TRS232MeterDevice.UpDate();
+//begin
+// fIsReceived:=True;
+//end;
 
 //procedure TRS232MeterDevice.ValueDetermination();
 //begin
@@ -523,10 +598,10 @@ begin
 end;
 
 
-function TRS232DataSubjectSingle.GetObserver: IRS232DataObserver;
+function TRS232DataSubjectSingle.GetObserver: IDataObserver;
 begin
  if fObserver=nil then Result:=nil
-                  else Result:=IRS232DataObserver(fObserver);
+                  else Result:=IDataObserver(fObserver);
 end;
 
 procedure TRS232DataSubjectSingle.NotifyObservers;
@@ -535,20 +610,20 @@ begin
   if  Observer<>nil then Observer.UpDate();
 end;
 
-procedure TRS232DataSubjectSingle.RegisterObserver(o: IRS232DataObserver);
+procedure TRS232DataSubjectSingle.RegisterObserver(o: IDataObserver);
 begin
   fObserver:=pointer(o);
 //  fObserver:=o;
 end;
 
-procedure TRS232DataSubjectSingle.RemoveObserver(o: IRS232DataObserver);
+procedure TRS232DataSubjectSingle.RemoveObserver(o: IDataObserver);
 begin
  fObserver:=nil;
 end;
 
 { TRS232CustomDevice }
 
-procedure TRS232CustomDevice.AddData(NewData: array of byte);
+procedure TCustomDevice.AddData(NewData: array of byte);
  var i,j:integer;
 begin
  j:=High(fData)+1;
@@ -557,18 +632,18 @@ begin
   fData[i+j]:= NewData [i];
 end;
 
-procedure TRS232CustomDevice.AddData(NewByte: byte);
+procedure TCustomDevice.AddData(NewByte: byte);
 begin
  AddData([NewByte]);
 end;
 
-constructor TRS232CustomDevice.Create(Nm: string);
+constructor TCustomDevice.Create(Nm: string);
 begin
  fName:=Nm;
  fMessageError:=fName+ErrorMes;
 end;
 
-procedure TRS232CustomDevice.CopyToData(NewData: array of byte);
+procedure TCustomDevice.CopyToData(NewData: array of byte);
  var i:integer;
 begin
  SetLength(fData,High(NewData)+1);
@@ -576,42 +651,38 @@ begin
   fData[i]:= NewData [i];
 end;
 
-function TRS232CustomDevice.GetData(Index: Integer): byte;
+function TCustomDevice.GetDataI(Index: Integer): byte;
 begin
-//  if Index>High(fData)
-//    then Result:=ErResult
-//    else
-    Result:=fData[Index];
+  Result:=fData[Index];
 end;
 
-function TRS232CustomDevice.GetHighDataIndex: integer;
+function TCustomDevice.GetHighDataIndex: integer;
 begin
  Result:=High(fData);
 end;
 
-function TRS232CustomDevice.GetMessageError: string;
+function TCustomDevice.GetMessageError: string;
 begin
  Result:=fMessageError;
 end;
 
-procedure TRS232CustomDevice.SetData(Index: integer; Value:byte);
+procedure TCustomDevice.SetData(Index: integer; Value:byte);
 begin
   if Index<=High(fData)
    then  fData[Index]:=Value;
-  
 end;
 
-procedure TRS232CustomDevice.SetError(const Value: boolean);
+procedure TCustomDevice.SetError(const Value: boolean);
 begin
  fError:=Value;
 end;
 
-procedure TRS232CustomDevice.SetHighDataIndex(Value: integer);
+procedure TCustomDevice.SetHighDataIndex(Value: integer);
 begin
  SetLength(fData,Value+1);
 end;
 
-procedure TRS232CustomDevice.SetMessageError(const Value: string);
+procedure TCustomDevice.SetMessageError(const Value: string);
 begin
  fMessageError:=Value;
 end;
@@ -622,7 +693,7 @@ constructor TRS232MeterDeviceSingle.Create(CP: TComPort; Nm: string);
 begin
   CreateDataSubject(CP);
   inherited Create(Nm);
-  RS232DataSubject:=fDataSubject;
+  Self.DataSubject:=fDataSubject;
   fDataSubject.RegisterObserver(Self);
   CreateDataRequest;
 end;
@@ -649,7 +720,7 @@ end;
 
 { TComplexDeviceDataConverter }
 
-constructor TComplexDeviceDataConverter.Create(MD: TRS232MeterDevice);
+constructor TComplexDeviceDataConverter.Create(MD: TMeterDevice);
 begin
   fMD:=MD;
   fMeasureMode:=-1;
@@ -675,7 +746,7 @@ end;
 
 { TRS232MetterShowNew }
 
-constructor TRS232MetterShow.Create(Meter: TRS232MeterDevice;
+constructor TRS232MetterShow.Create(Meter: TMeterDevice;
                                     DDataConverter:TComplexDeviceDataConverter;
                                        MM, R: TRadioGroup;
                                        DL, UL: TLabel;
@@ -761,17 +832,23 @@ end;
 
 { TCDDataRequest }
 
-constructor TCDDataRequest.Create(ComPort: TRS232;
-                                CustomDevice: TRS232CustomDevice);
+function TCDDataRequest.Connected: boolean;
 begin
- fRS232:=ComPort;
- fRS232CustomDevice:=CustomDevice;
+ Result:=fRS232.ComPort.Connected;
 end;
 
-function TCDDataRequest.IsNoSuccessSend: Boolean;
+constructor TCDDataRequest.Create(ComPort: TRS232;
+                                CustomDevice: TCustomDevice);
 begin
- Result:=False;
+ inherited Create(CustomDevice);
+ fRS232:=ComPort;
+// fCustomDevice:=CustomDevice;
 end;
+
+//function TCDDataRequest.IsNoSuccessSend: Boolean;
+//begin
+// Result:=False;
+//end;
 
 procedure TCDDataRequest.PreparePort;
 begin
@@ -779,17 +856,17 @@ begin
   fRS232.ComPort.ClearBuffer(True, True);
 end;
 
-procedure TCDDataRequest.Request;
-begin
-  if fRS232.ComPort.Connected then
-    begin
-     PreparePort;
-     fRS232CustomDevice.Error:=IsNoSuccessSend;
-//     showmessage('False='+booltostr(False)+' :'+booltostr(fRS232CustomDevice.Error));
-    end
-                        else
-     fRS232CustomDevice.Error:=True;
-end;
+//procedure TCDDataRequest.Request;
+//begin
+//  if fRS232.ComPort.Connected then
+//    begin
+//     PreparePort;
+//     fCustomDevice.Error:=IsNoSuccessSend;
+////     showmessage('False='+booltostr(False)+' :'+booltostr(fRS232CustomDevice.Error));
+//    end
+//                        else
+//     fCustomDevice.Error:=True;
+//end;
 
 { TRS232DataSubjectBase }
 
@@ -826,6 +903,173 @@ begin
  except
    Result:=False;
  end;
+end;
+
+{ TDataSubjectSingle }
+
+function TDataSubjectSingle.GetObserver: IDataObserver;
+begin
+ if fObserver=nil then Result:=nil
+                  else Result:=IDataObserver(fObserver);
+end;
+
+procedure TDataSubjectSingle.NotifyObservers;
+begin
+  if  Observer<>nil then Observer.UpDate();
+end;
+
+procedure TDataSubjectSingle.RegisterObserver(o: IDataObserver);
+begin
+  fObserver:=pointer(o);
+end;
+
+procedure TDataSubjectSingle.RemoveObserver(o: IDataObserver);
+begin
+ fObserver:=nil;
+end;
+
+{ TMeterDevice }
+
+constructor TMeterDevice.Create(Nm: string);
+begin
+ inherited Create(Nm);
+
+  fIsReceived:=False;
+  fMinDelayTime:=0;
+  fDelayTimeStep:=10;
+  fDelayTimeMax:=130;
+  fValue:=ErResult;
+  fNewData:=False;
+  fError:=False;
+  RepeatInErrorCase:=False;
+end;
+
+function TMeterDevice.GetData: double;
+begin
+  Result:=ErResult;
+
+  if DataSubject.PortConnected then
+   begin
+    Result:=Measurement();
+    fNewData:=True;
+   end
+                                      else
+   begin
+     fError:=True;
+     showmessage(fMessageError);
+   end;
+end;
+
+function TMeterDevice.GetDataSubject: IDataSubject;
+begin
+ Result:=IDataSubject(fIDataSubject);
+end;
+
+procedure TMeterDevice.GetDataThread(WPARAM: word; EventEnd: THandle);
+begin
+ if DataSubject.PortConnected then
+   fRS232MeasuringTread:=TRS232MeasuringTread.Create(Self,WPARAM,EventEnd);
+end;
+
+function TMeterDevice.GetDeviceKod: byte;
+begin
+ Result:=0;
+end;
+
+function TMeterDevice.GetNewData: boolean;
+begin
+ Result:=fNewData;
+end;
+
+function TMeterDevice.GetValue: double;
+begin
+ Result:=fValue;
+end;
+
+function TMeterDevice.Measurement: double;
+label start;
+var i:integer;
+    isFirst:boolean;
+begin
+ fValue:=ErResult;
+ isFirst:=True;
+start:
+  MeasurementBegin();
+  Request();
+
+
+ sleep(fMinDelayTime);
+ i:=0;
+while  not(((i>fDelayTimeMax)or(fIsReceived)or(fError))) do
+begin
+   sleep(fDelayTimeStep);
+   inc(i);
+ Application.ProcessMessages;
+end;
+
+
+// showmessage(inttostr((GetTickCount-i0)));
+
+//ShowData(fData);
+
+
+ Result:=fValue;
+
+ if (RepeatInErrorCase) and (Result=ErResult)and(isFirst) then
+    begin
+      isFirst:=false;
+      goto start;
+    end;
+
+end;
+
+procedure TMeterDevice.MeasurementBegin;
+begin
+  fIsReceived:=False;
+  fError:=False;
+end;
+
+procedure TMeterDevice.SetDataSubject(const Value: IDataSubject);
+begin
+
+end;
+
+procedure TMeterDevice.SetNewData(Value: boolean);
+begin
+  fIDataSubject:=pointer(Value);
+end;
+
+procedure TMeterDevice.UpDate;
+begin
+ fIsReceived:=True;
+end;
+
+{ TDataRequestNew }
+
+constructor TDataRequestNew.Create(CustomDevice: TCustomDevice);
+begin
+ fCustomDevice:=CustomDevice;
+end;
+
+function TDataRequestNew.IsNoSuccessSend: Boolean;
+begin
+ Result:=False;
+end;
+
+procedure TDataRequestNew.PreparePort;
+begin
+end;
+
+procedure TDataRequestNew.Request;
+begin
+  if Connected() then
+    begin
+     PreparePort;
+     fCustomDevice.Error:=IsNoSuccessSend();
+//     showmessage('False='+booltostr(False)+' :'+booltostr(fRS232CustomDevice.Error));
+    end
+                        else
+     fCustomDevice.Error:=True;
 end;
 
 initialization
