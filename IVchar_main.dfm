@@ -16,6 +16,7 @@ object IVchar: TIVchar
   OnCreate = FormCreate
   OnDestroy = FormDestroy
   OnPaint = FormPaint
+  OnShow = FormShow
   PixelsPerInch = 96
   TextHeight = 13
   object LConnected: TLabel
@@ -9281,10 +9282,25 @@ object IVchar: TIVchar
     object TS_Kt2450: TTabSheet
       Caption = 'Kt2450'
       ImageIndex = 16
+      object SB_Kt2450_OutPut: TSpeedButton
+        Left = 458
+        Top = 16
+        Width = 79
+        Height = 29
+        AllowAllUp = True
+        GroupIndex = 2
+        Caption = 'Output'
+        Font.Charset = RUSSIAN_CHARSET
+        Font.Color = clDefault
+        Font.Height = -15
+        Font.Name = 'Arial'
+        Font.Style = [fsBold]
+        ParentFont = False
+      end
       object GB_K2450IP: TGroupBox
         Tag = 110
-        Left = 11
-        Top = 9
+        Left = 7
+        Top = 0
         Width = 268
         Height = 92
         Caption = 'IP adress'
@@ -9382,20 +9398,41 @@ object IVchar: TIVchar
         object B_Kt2450UpDate: TButton
           Left = 14
           Top = 58
-          Width = 75
+          Width = 67
           Height = 25
           Caption = 'UpDate'
           TabOrder = 8
         end
+        object BKt2450Test: TButton
+          Left = 96
+          Top = 58
+          Width = 161
+          Height = 25
+          Caption = 'Kt2450Test'
+          TabOrder = 9
+        end
       end
-      object Button2: TButton
-        Left = 110
-        Top = 130
+      object B_MyTrain: TButton
+        Left = 72
+        Top = 136
         Width = 75
         Height = 25
-        Caption = 'Button2'
+        Caption = 'B_MyTrain'
         TabOrder = 1
-        OnClick = Button2Click
+      end
+      object B_Kt2450_Reset: TButton
+        Left = 304
+        Top = 16
+        Width = 75
+        Height = 25
+        Caption = 'B_Kt2450_SetSet'
+        Font.Charset = RUSSIAN_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -15
+        Font.Name = 'Arial'
+        Font.Style = [fsBold]
+        ParentFont = False
+        TabOrder = 2
       end
     end
   end

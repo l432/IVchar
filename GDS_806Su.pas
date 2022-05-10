@@ -64,7 +64,8 @@ type
 
 
 const
-//  TestShow=False;
+  TestShow=False;
+//  TestShow=True;
 
 //  GDS_806S_PacketBeginChar='';
 //  GDS_806S_PacketEndChar=#10;

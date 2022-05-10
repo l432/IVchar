@@ -54,20 +54,23 @@ TTelnetMeterDeviceSingle=class(TMeterDevice)
  protected
   fDataSubject:TTelnetDataSubjectSingle;
   fDataRequest:TDataRequestTelnet;
-//  procedure CreateDataSubject(Telnet:TIdTelnet);virtual;abstract;
+  procedure CreateDataSubject(Telnet:TIdTelnet;IPAdressShow: TIPAdressShow);virtual;
   procedure CreateDataRequest;
   function GetIPAdressShow:TIPAdressShow;
+  function GetMessageError:string;override;
  public
   property IPAdressShow:TIPAdressShow read GetIPAdressShow;
   Constructor Create(Telnet:TIdTelnet;IPAdressShow: TIPAdressShow;Nm:string);
   destructor Destroy;override;
   Procedure Request();override;
+  Procedure SetStringToSend(StringToSend:string);
+  function GetData():double;override;
 end;
 
 implementation
 
 uses
-  Dialogs, SCPI, SysUtils;
+  Dialogs, SCPI, SysUtils, OlegType;
 
 { TTelnet }
 
@@ -98,12 +101,12 @@ function TTelnet.SendString: boolean;
  var i:integer;
 begin
   Result:=False;
-  try
-   if fIdTelnet.Connected then fIdTelnet.Disconnect();
-   fIdTelnet.Connect;
-  except
-
-  end;
+//  try
+//   if fIdTelnet.Connected then fIdTelnet.Disconnect();
+//   fIdTelnet.Connect;
+//  except
+//
+//  end;
   if fIdTelnet.Connected
    then
     begin
@@ -138,8 +141,15 @@ end;
 
 function TTelnetDataSubjectSingle.PortConnected: boolean;
 begin
+//showmessage(fTelnet.fIdTelnet.Host);
  try
-   Result:=fTelnet.fIdTelnet.Connected;
+//  if fTelnet.fIdTelnet.Connected then fTelnet.fIdTelnet.Disconnect();
+//  fTelnet.fIdTelnet.Connect;
+  if not(fTelnet.fIdTelnet.Connected)
+   then fTelnet.fIdTelnet.Connect;
+
+
+  Result:=fTelnet.fIdTelnet.Connected;
  except
    Result:=False;
  end;
@@ -161,7 +171,7 @@ end;
 
 function TDataRequestTelnet.IsNoSuccessSend: Boolean;
 begin
- Result:=fTelnet.SendString();
+ Result:=not(fTelnet.SendString());
 end;
 
 procedure TDataRequestTelnet.Request;
@@ -175,17 +185,25 @@ end;
 constructor TTelnetMeterDeviceSingle.Create(Telnet: TIdTelnet;
              IPAdressShow: TIPAdressShow; Nm: string);
 begin
-  fDataSubject:=TTelnetDataSubjectSingle.Create(Telnet,IPAdressShow);
-//  CreateDataSubject(Telnet);
+
+//  fDataSubject:=TTelnetDataSubjectSingle.Create(Telnet,IPAdressShow);
+  CreateDataSubject(Telnet,IPAdressShow);
   inherited Create(Nm);
-  Self.DataSubject:=fDataSubject;
+  fIDataSubject:=fDataSubject;
   fDataSubject.RegisterObserver(Self);
   CreateDataRequest;
+//  fMessageError:=fName+' on '+fDataSubject.fTelnet.Telnet.Host+ErrorMes;
 end;
 
 procedure TTelnetMeterDeviceSingle.CreateDataRequest;
 begin
  fDataRequest:=TDataRequestTelnet.Create(Self.fDataSubject.Telnet,Self);
+end;
+
+procedure TTelnetMeterDeviceSingle.CreateDataSubject(Telnet: TIdTelnet;
+                        IPAdressShow: TIPAdressShow);
+begin
+ fDataSubject:=TTelnetDataSubjectSingle.Create(Telnet,IPAdressShow);
 end;
 
 destructor TTelnetMeterDeviceSingle.Destroy;
@@ -195,14 +213,42 @@ begin
   inherited;
 end;
 
+function TTelnetMeterDeviceSingle.GetData: double;
+begin
+  Result:=ErResult;
+
+//  if DataSubject.PortConnected then
+  if fDataSubject.PortConnected then
+   begin
+    Result:=Measurement();
+//    showmessage('Meas='+floattostr(Result));
+    fNewData:=True;
+   end
+                                      else
+   begin
+     fError:=True;
+     showmessage(MessageError);
+   end;
+end;
+
 function TTelnetMeterDeviceSingle.GetIPAdressShow: TIPAdressShow;
 begin
  Result:=fDataSubject.Telnet.IPAdressShow;
 end;
 
+function TTelnetMeterDeviceSingle.GetMessageError: string;
+begin
+ Result:=fName+' on '+fDataSubject.fTelnet.Telnet.Host+ErrorMes;
+end;
+
 procedure TTelnetMeterDeviceSingle.Request;
 begin
  fDataRequest.Request;
+end;
+
+procedure TTelnetMeterDeviceSingle.SetStringToSend(StringToSend: string);
+begin
+ fDataRequest.fTelnet.fStringToSend:=StringToSend;
 end;
 
 end.

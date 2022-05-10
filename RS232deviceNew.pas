@@ -113,7 +113,7 @@ TCustomDevice=class(TNamedInterfacedObject)
    fError:boolean;
    fMessageError:string;
    fData:TArrByte;
-   function GetMessageError:string;
+   function GetMessageError:string;virtual;
    procedure SetError(const Value:boolean);
    procedure SetMessageError(const Value:string);
    function GetDataI(Index: Integer): Byte;
@@ -956,7 +956,7 @@ begin
                                       else
    begin
      fError:=True;
-     showmessage(fMessageError);
+     showmessage(MessageError);
    end;
 end;
 
@@ -997,7 +997,7 @@ start:
   MeasurementBegin();
   Request();
 
-
+//   showmessage(booltostr(fError,true));
  sleep(fMinDelayTime);
  i:=0;
 while  not(((i>fDelayTimeMax)or(fIsReceived)or(fError))) do
@@ -1007,7 +1007,8 @@ begin
  Application.ProcessMessages;
 end;
 
-
+//   showmessage(inttostr(i));
+//  showmessage(booltostr(fError,true));
 // showmessage(inttostr((GetTickCount-i0)));
 
 //ShowData(fData);
@@ -1031,12 +1032,12 @@ end;
 
 procedure TMeterDevice.SetDataSubject(const Value: IDataSubject);
 begin
-
+  fIDataSubject:=pointer(Value);
 end;
 
 procedure TMeterDevice.SetNewData(Value: boolean);
 begin
-  fIDataSubject:=pointer(Value);
+  fNewData:=Value;
 end;
 
 procedure TMeterDevice.UpDate;

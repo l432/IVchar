@@ -575,6 +575,7 @@ procedure TIPAdressShow.IPUpDate;
 begin
 // if fIdTelnet<>nil then showmessage('Yes')
 //                   else showmessage('No');
+// showmessage(Self.Host);
  if fIdTelnet<>nil then
    fIdTelnet.Host:=Self.Host;
 end;

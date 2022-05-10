@@ -747,9 +747,12 @@ type
     UD_Kt2450Ip3: TUpDown;
     E_Kt2450Ip4: TEdit;
     UD_Kt2450Ip4: TUpDown;
-    Button2: TButton;
+    B_MyTrain: TButton;
     B_Kt2450UpDate: TButton;
     TelnetKt2450: TIdTelnet;
+    BKt2450Test: TButton;
+    B_Kt2450_Reset: TButton;
+    SB_Kt2450_OutPut: TSpeedButton;
 
     procedure FormCreate(Sender: TObject);
     procedure BConnectClick(Sender: TObject);
@@ -790,7 +793,7 @@ type
     procedure BComReloadClick(Sender: TObject);
     procedure B_IT6332_TestClick(Sender: TObject);
     procedure FormPaint(Sender: TObject);
-    procedure Button2Click(Sender: TObject);
+    procedure FormShow(Sender: TObject);
   private
     procedure ComponentView;
     {початкове налаштування різних компонентів}
@@ -2873,14 +2876,6 @@ end;
 
 
 
-procedure TIVchar.Button2Click(Sender: TObject);
-begin
- Kt2450_IPAdressShow.IPUpDate;
- Kt2450_IPAdressShow.IdTelnet:=TelnetKt2450;
- Kt2450_IPAdressShow.IPUpDate;
-
-// showmessage(Kt2450_IPAdressShow.Host)
-end;
 
 procedure TIVchar.BWriteTMClick(Sender: TObject);
  var SR : TSearchRec;
@@ -3160,7 +3155,7 @@ begin
  if (ComPort1.Connected)and(SettingDevice.ActiveInterface.Name=DACR2R.Name) then SettingDevice.Reset();
 
   if (ComPort1.Connected) then D30_06.Reset;
-
+// Kt2450_IPAdressShow.IPUpDate;
 end;
 
 procedure TIVchar.FormDestroy(Sender: TObject);
@@ -3215,6 +3210,11 @@ begin
  TMyGroupBox(GB_K2450IP).Canvas.Ellipse(67,45,72,50);
  TMyGroupBox(GB_K2450IP).Canvas.Ellipse(129,45,134,50);
  TMyGroupBox(GB_K2450IP).Canvas.Ellipse(191,45,196,50); 
+end;
+
+procedure TIVchar.FormShow(Sender: TObject);
+begin
+ Kt2450_IPAdressShow.IPUpDate;
 end;
 
 procedure TIVchar.PCChange(Sender: TObject);
@@ -3297,6 +3297,7 @@ begin
      SGRBStep.Canvas.TextOut(Rect.Left+2,Rect.Top+2,SGRBStep.Cells[Acol,Arow]);
   end
 end;
+
 
 procedure TIVchar.NameToLabel(LabelName: string; Name, NameValue: TLabel);
 begin
@@ -4406,11 +4407,21 @@ begin
                               E_Kt2450Ip3,E_Kt2450Ip4,
                               B_Kt2450UpDate);
 
- ShowArray.Add([Kt2450_IPAdressShow]);
+
 
 // TMyGroupBox(GB_K2450IP).Canvas.Brush.Color:=clBlack;
 // TMyGroupBox(GB_K2450IP).Canvas.Brush.Style:=bsClear;
  TMyGroupBox(GB_K2450IP).Canvas.Rectangle(0,0,100,100);
+ Kt_2450 := TKt_2450.Create(TelnetKt2450,Kt2450_IPAdressShow);
+
+ Kt_2450_Show := TKt_2450_Show.Create(Kt_2450,
+                                     [BKt2450Test,B_Kt2450_Reset,
+                                     B_MyTrain],
+                                     SB_Kt2450_OutPut);
+
+ AnyObjectArray.Add([Kt_2450]);
+ ShowArray.Add([Kt2450_IPAdressShow,Kt_2450_Show]);
+
 end;
 
 procedure TIVchar.IVMR_Refresh;
