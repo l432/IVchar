@@ -10,12 +10,23 @@ const
   Kt_2450_Test='KEITHLEY INSTRUMENTS,MODEL 2450';
 
   RootNoodKt_2450:array[0..12]of string=
-  ('*idn?','*rcl','*rst','*sav',':acq',':outp:stat',':chan',':meas',':refr',
+  ('*idn?','*rcl ','*rst','*sav ',':acq',':outp:stat','disp:',':meas',':refr',
 //   0       1      2      3      4            5       6       7      8
   ':run',':stop','syst:unl',':tim:scal');
 //  9       10     11           12
 
   SuffixKt_2450:array[0..1]of string=(' on',' off');
+
+  FirstNodeKt_2450_6:array[0..3]of string=
+  ('scr','user1:text','user2:text','cle');
+//   0       1             2         3
+
+
+//  Self.SetStringToSend('DISP:SCR SWIPE_USER');
+//  Request();
+////  Self.SetStringToSend('DISP:USER1:TEXT "Test in process"');
+////  Request();
+//  Self.SetStringToSend('DISP:USER1:TEXT "Oleg Olikh"');
 
  ButtonNumberKt_2450 = 2;
 type
@@ -31,6 +42,7 @@ type
    fFirstLevelNode:byte;
    fLeafNode:byte;
    fIsSuffix:boolean;
+   fAdditionalString:string;
    procedure DefaultSettings;
    procedure QuireOperation(RootNode:byte;FirstLevelNode:byte=0;LeafNode:byte=0);
    procedure SetupOperation(RootNode:byte;FirstLevelNode:byte=0;LeafNode:byte=0;
@@ -40,6 +52,7 @@ type
   protected
    procedure PrepareString;
    procedure UpDate();override;
+
   public
    Constructor Create(Telnet:TIdTelnet;IPAdressShow: TIPAdressShow;
                Nm:string='Keitley2450');
@@ -47,6 +60,10 @@ type
    procedure ResetSetting();
    procedure MyTraining();
    procedure OutPutChange(toOn:boolean);
+   procedure ClearUserScreen();
+   procedure TextToUserScreen(top_text:string='';bottom_text:string='');
+   procedure SaveSetup(SlotNumber:byte);
+   procedure LoadSetup(SlotNumber:byte);
  end;
 
  TKt_2450_Show=class(TSimpleFreeAndAiniObject)
@@ -77,6 +94,11 @@ uses
 
 { TKt_2450 }
 
+procedure TKt_2450.ClearUserScreen;
+begin
+ SetupOperation(6,3);
+end;
+
 constructor TKt_2450.Create(Telnet: TIdTelnet; IPAdressShow: TIPAdressShow;
   Nm: string);
 begin
@@ -99,10 +121,19 @@ begin
 
 end;
 
+procedure TKt_2450.LoadSetup(SlotNumber: byte);
+begin
+ if SlotNumber>4 then Exit;
+ fAdditionalString:=inttostr(SlotNumber);
+ SetupOperation(1);
+end;
+
 procedure TKt_2450.MyTraining;
 begin
-  Self.SetStringToSend(':outp:stat on');
-  Request();
+
+ LoadSetup(1);
+//  Self.SetStringToSend('DISP:USER1:TEXT "Oleg Olikh"');
+//  Request();
 //  GetData;
 end;
 
@@ -120,6 +151,12 @@ begin
      if fIsSuffix then StringToSend:=StringToSend+SuffixKt_2450[0]
                   else StringToSend:=StringToSend+SuffixKt_2450[1];
      end;
+  6:begin
+     StringToSend:=StringToSend+FirstNodeKt_2450_6[fFirstLevelNode];
+     if fFirstLevelNode in [0..2]
+        then  StringToSend:=StringToSend+fAdditionalString;
+    end;
+   3,1:StringToSend:=StringToSend+fAdditionalString;
   end;
  Self.SetStringToSend(StringToSend);
 end;
@@ -129,6 +166,13 @@ begin
  SetFlags(RootNode, FirstLevelNode, LeafNode);
  PrepareString();
  GetData;
+end;
+
+procedure TKt_2450.SaveSetup(SlotNumber: byte);
+begin
+ if SlotNumber>4 then Exit;
+ fAdditionalString:=inttostr(SlotNumber);
+ SetupOperation(3);
 end;
 
 procedure TKt_2450.SetFlags(RootNode, FirstLevelNode, LeafNode: byte;
@@ -152,6 +196,26 @@ function TKt_2450.Test: boolean;
 begin
  QuireOperation(0);
  Result:=(Value=314);
+end;
+
+procedure TKt_2450.TextToUserScreen(top_text, bottom_text: string);
+begin
+ fAdditionalString:=' SWIPE_USER';
+ SetupOperation(6,0);
+ if top_text<>'' then
+   begin
+     if Length(top_text)>20 then SetLength(top_text,20);
+     fAdditionalString:=' "'+ top_text+'"';
+     SetupOperation(6,1);
+   end;
+ if bottom_text<>'' then
+   begin
+     if Length(bottom_text)>32 then SetLength(bottom_text,32);
+     fAdditionalString:=' "'+ bottom_text+'"';
+     SetupOperation(6,2);
+   end;
+
+
 end;
 
 procedure TKt_2450.UpDate;

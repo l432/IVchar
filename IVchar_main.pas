@@ -2895,6 +2895,7 @@ begin
  IT_6332.Test();
 end;
 
+
 procedure TIVchar.BControlResetClick(Sender: TObject);
 begin
  if SBControlBegin.Down then
