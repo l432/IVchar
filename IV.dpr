@@ -38,7 +38,8 @@ uses
   IT6332B in 'IT6332B.pas',
   SCPI in 'SCPI.pas',
   Keithley2450 in 'Keithley2450.pas',
-  TelnetDevice in 'TelnetDevice.pas';
+  TelnetDevice in 'TelnetDevice.pas',
+  Keithley2450Show in 'Keithley2450Show.pas';
 
 {$R *.res}
 

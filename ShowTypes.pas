@@ -10,6 +10,11 @@ uses
 
 type
 
+  TMyGroupBox = class(TGroupBox)
+    public
+      property Canvas;
+  end;
+
 TIPbyteShow=class(TNamedInterfacedObject)
 private
  fUpDown:TUpDown;

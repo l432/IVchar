@@ -20,5 +20,6 @@
     <Transaction>2021.10.06 13:23:27.812.pas,D:\Oleg\Shottky_Program\IVChar\Unit1.pas=D:\Oleg\Shottky_Program\IVchar\SCPI.pas</Transaction>
     <Transaction>2022.02.22 15:35:26.906.pas,D:\Oleg\Shottky_Program\IVChar\Unit1.pas=D:\Oleg\Shottky_Program\IVchar\Keithley2450.pas</Transaction>
     <Transaction>2022.05.03 11:46:36.421.pas,D:\Oleg\Shottky_Program\IVChar\Unit1.pas=D:\Oleg\Shottky_Program\IVchar\TelnetDevice.pas</Transaction>
+    <Transaction>2022.05.13 09:27:50.314.pas,D:\Oleg\Shottky_Program\IVChar\Unit1.pas=D:\Oleg\Shottky_Program\IVchar\Keithley2450Show.pas</Transaction>
   </Transactions>
 </BorlandProject>

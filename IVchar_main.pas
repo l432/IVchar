@@ -753,6 +753,8 @@ type
     BKt2450Test: TButton;
     B_Kt2450_Reset: TButton;
     SB_Kt2450_OutPut: TSpeedButton;
+    PKt2450SaveSetup: TPanel;
+    PKt2450LoadSetup: TPanel;
 
     procedure FormCreate(Sender: TObject);
     procedure BConnectClick(Sender: TObject);
@@ -1082,7 +1084,7 @@ var
 implementation
 
 uses
-  ArduinoADC, OlegFunction, AD5752R, IT6332B;
+  ArduinoADC, OlegFunction, AD5752R, IT6332B, Keithley2450Show;
 
 {$R *.dfm}
 
@@ -4418,7 +4420,8 @@ begin
  Kt_2450_Show := TKt_2450_Show.Create(Kt_2450,
                                      [BKt2450Test,B_Kt2450_Reset,
                                      B_MyTrain],
-                                     SB_Kt2450_OutPut);
+                                     SB_Kt2450_OutPut,
+                                     [PKt2450SaveSetup,PKt2450LoadSetup]);
 
  AnyObjectArray.Add([Kt_2450]);
  ShowArray.Add([Kt2450_IPAdressShow,Kt_2450_Show]);

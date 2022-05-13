@@ -37,7 +37,7 @@ object IVchar: TIVchar
     Top = 0
     Width = 786
     Height = 530
-    ActivePage = TS_ADC
+    ActivePage = TS_Kt2450
     Align = alTop
     Font.Charset = RUSSIAN_CHARSET
     Font.Color = clWindowText
@@ -9422,6 +9422,42 @@ object IVchar: TIVchar
         Font.Style = [fsBold]
         ParentFont = False
         TabOrder = 2
+      end
+      object PKt2450SaveSetup: TPanel
+        Left = 676
+        Top = 22
+        Width = 85
+        Height = 23
+        Cursor = crHandPoint
+        BevelOuter = bvLowered
+        Caption = 'Save Setup'
+        Color = clSilver
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clHotLight
+        Font.Height = -11
+        Font.Name = 'Tahoma'
+        Font.Style = [fsBold]
+        ParentBackground = False
+        ParentFont = False
+        TabOrder = 3
+      end
+      object PKt2450LoadSetup: TPanel
+        Left = 676
+        Top = 54
+        Width = 85
+        Height = 23
+        Cursor = crHandPoint
+        BevelOuter = bvLowered
+        Caption = 'Load Setup'
+        Color = clSilver
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clHotLight
+        Font.Height = -11
+        Font.Name = 'Tahoma'
+        Font.Style = [fsBold]
+        ParentBackground = False
+        ParentFont = False
+        TabOrder = 4
       end
     end
   end

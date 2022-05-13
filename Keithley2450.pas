@@ -3,38 +3,34 @@ unit Keithley2450;
 interface
 
 uses
-  StdCtrls, TelnetDevice, IdTelnet, ShowTypes, OlegTypePart2, Buttons;
+  TelnetDevice, IdTelnet, ShowTypes;
 
 const
 
   Kt_2450_Test='KEITHLEY INSTRUMENTS,MODEL 2450';
 
   RootNoodKt_2450:array[0..12]of string=
-  ('*idn?','*rcl ','*rst','*sav ',':acq',':outp:stat','disp:',':meas',':refr',
-//   0       1      2      3      4            5       6       7      8
-  ':run',':stop','syst:unl',':tim:scal');
+  ('*idn?','*rcl ','*rst','*sav ',':acq',':outp:stat','disp:',':syst','scr',
+//   0       1      2      3      4            5       6        7       8
+  ':run',':stop',':meas:syst',':tim:scal');
 //  9       10     11           12
 
-  SuffixKt_2450:array[0..1]of string=(' on',' off');
+  SuffixKt_2450:array[0..2]of string=(' on',' off', ' rst');
 
   FirstNodeKt_2450_6:array[0..3]of string=
   ('scr','user1:text','user2:text','cle');
 //   0       1             2         3
 
+  FirstNodeKt_2450_7:array[0..1]of string=
+  (':pos','???');
 
-//  Self.SetStringToSend('DISP:SCR SWIPE_USER');
-//  Request();
-////  Self.SetStringToSend('DISP:USER1:TEXT "Test in process"');
-////  Request();
-//  Self.SetStringToSend('DISP:USER1:TEXT "Oleg Olikh"');
+  FirstNodeKt_2450_8:array[0..1]of string=
+  (':run','???');
 
- ButtonNumberKt_2450 = 2;
+
+
 type
-
-  TMyGroupBox = class(TGroupBox)
-    public
-      property Canvas;
-  end;
+ TKt2450_SetupMemorySlot=0..4;
 
  TKt_2450=class(TTelnetMeterDeviceSingle)
   private
@@ -62,35 +58,21 @@ type
    procedure OutPutChange(toOn:boolean);
    procedure ClearUserScreen();
    procedure TextToUserScreen(top_text:string='';bottom_text:string='');
-   procedure SaveSetup(SlotNumber:byte);
-   procedure LoadSetup(SlotNumber:byte);
+   procedure SaveSetup(SlotNumber:TKt2450_SetupMemorySlot);
+   procedure LoadSetup(SlotNumber:TKt2450_SetupMemorySlot);
+   procedure LoadSetupPowerOn(SlotNumber:TKt2450_SetupMemorySlot);
+   procedure SetupFromPowerOn();
+   procedure RunningMacroScript(ScriptName:string);
  end;
 
- TKt_2450_Show=class(TSimpleFreeAndAiniObject)
-  private
-   fKt_2450:TKt_2450;
-   BTest:TButton;
-   fOutPutOnOff:TSpeedButton;
-   procedure TestButtonClick(Sender:TObject);
-   procedure ResetButtonClick(Sender:TObject);
-   procedure MyTrainButtonClick(Sender:TObject);
-   procedure ButtonsTune(Buttons: array of TButton);
-   procedure OutPutOnOffSpeedButtonClick(Sender: TObject);
-  public
-   Constructor Create(Kt_2450:TKt_2450;
-                      Buttons:Array of TButton;
-                      OutPutOnOff:TSpeedButton
-                      );
- end;
 
 var
   Kt_2450:TKt_2450;
-  Kt_2450_Show:TKt_2450_Show;
 
 implementation
 
 uses
-  Dialogs, Graphics, Classes, SysUtils, Forms;
+  Dialogs, SysUtils;
 
 { TKt_2450 }
 
@@ -116,22 +98,32 @@ begin
   SetupOperation(2);
 end;
 
+procedure TKt_2450.RunningMacroScript(ScriptName: string);
+begin
+  fAdditionalString:=' "'+ScriptName+'"';
+  SetupOperation(8,1);
+end;
+
 procedure TKt_2450.DefaultSettings;
 begin
 
 end;
 
-procedure TKt_2450.LoadSetup(SlotNumber: byte);
+procedure TKt_2450.LoadSetup(SlotNumber: TKt2450_SetupMemorySlot);
 begin
- if SlotNumber>4 then Exit;
  fAdditionalString:=inttostr(SlotNumber);
  SetupOperation(1);
 end;
 
+procedure TKt_2450.LoadSetupPowerOn(SlotNumber: TKt2450_SetupMemorySlot);
+begin
+  fAdditionalString:=' sav'+inttostr(SlotNumber);
+  SetupOperation(7,0);
+end;
+
 procedure TKt_2450.MyTraining;
 begin
-
- LoadSetup(1);
+ SetupFromPowerOn();
 //  Self.SetStringToSend('DISP:USER1:TEXT "Oleg Olikh"');
 //  Request();
 //  GetData;
@@ -156,6 +148,14 @@ begin
      if fFirstLevelNode in [0..2]
         then  StringToSend:=StringToSend+fAdditionalString;
     end;
+   7:begin
+      StringToSend:=StringToSend+FirstNodeKt_2450_7[fFirstLevelNode];
+      StringToSend:=StringToSend+fAdditionalString;
+     end;
+   8:begin
+      StringToSend:=StringToSend+FirstNodeKt_2450_8[fFirstLevelNode];
+      StringToSend:=StringToSend+fAdditionalString;
+     end;
    3,1:StringToSend:=StringToSend+fAdditionalString;
   end;
  Self.SetStringToSend(StringToSend);
@@ -168,9 +168,8 @@ begin
  GetData;
 end;
 
-procedure TKt_2450.SaveSetup(SlotNumber: byte);
+procedure TKt_2450.SaveSetup(SlotNumber: TKt2450_SetupMemorySlot);
 begin
- if SlotNumber>4 then Exit;
  fAdditionalString:=inttostr(SlotNumber);
  SetupOperation(3);
 end;
@@ -182,6 +181,12 @@ begin
  fFirstLevelNode:=FirstLevelNode;
  fLeafNode:=LeafNode;
  fIsSuffix:=IsSuffix;
+end;
+
+procedure TKt_2450.SetupFromPowerOn;
+begin
+  fAdditionalString:=SuffixKt_2450[2];
+  SetupOperation(7,0);
 end;
 
 procedure TKt_2450.SetupOperation(RootNode, FirstLevelNode, LeafNode: byte;
@@ -231,81 +236,81 @@ begin
 // showmessage(floattostr(fValue))
 end;
 
-{ TKt_2450_Show }
-
-procedure TKt_2450_Show.ButtonsTune(Buttons: array of TButton);
-const
-  ButtonCaption: array[0..ButtonNumberKt_2450] of string =
-  ('Connection Test ?','Reset','MyTrain');
-var
-  ButtonAction: array[0..ButtonNumberKt_2450] of TNotifyEvent;
-  i: Integer;
-begin
-  ButtonAction[0] := TestButtonClick;
-  ButtonAction[1] := ResetButtonClick;
-//  ButtonAction[3] := SaveButtonClick;
-//  ButtonAction[4] := LoadButtonClick;
-//  ButtonAction[5] := AutoButtonClick;
-//  ButtonAction[6] := DefaultButtonClick;
-//  ButtonAction[7] := RefreshButtonClick;
-//  ButtonAction[8] := RunButtonClick;
-//  ButtonAction[9] := StopButtonClick;
-//  ButtonAction[10] := UnlockButtonClick;
-   ButtonAction[ButtonNumberKt_2450] := MyTrainButtonClick;
-  for I := 0 to ButtonNumberKt_2450 do
-  begin
-    Buttons[i].Caption := ButtonCaption[i];
-    Buttons[i].OnClick := ButtonAction[i];
-  end;
-  BTest := Buttons[0];
-
-end;
-
-constructor TKt_2450_Show.Create(Kt_2450: TKt_2450;
-                                Buttons:Array of TButton;
-                                OutPutOnOff:TSpeedButton
-                                );
-begin
-  if (High(Buttons)<>ButtonNumberKt_2450)
-   then
-    begin
-      showmessage('Kt_2450_Show is not created!');
-      Exit;
-    end;
-  fKt_2450:=Kt_2450;
-  ButtonsTune(Buttons);
-
-  fOutPutOnOff:=OutPutOnOff;
-  fOutPutOnOff.OnClick:=OutPutOnOffSpeedButtonClick;
-  fOutPutOnOff.Caption:='Output';
-end;
-
-procedure TKt_2450_Show.MyTrainButtonClick(Sender: TObject);
-begin
- fKt_2450.MyTraining();
-end;
-
-procedure TKt_2450_Show.OutPutOnOffSpeedButtonClick(Sender: TObject);
-begin
- fKt_2450.OutPutChange(fOutPutOnOff.Down);
-end;
-
-procedure TKt_2450_Show.ResetButtonClick(Sender: TObject);
-begin
- fKt_2450.ResetSetting();
-end;
-
-procedure TKt_2450_Show.TestButtonClick(Sender: TObject);
-begin
-   if fKt_2450.Test then
-        begin
-          BTest.Caption:='Connection Test - Ok';
-          BTest.Font.Color:=clBlue;
-        end        else
-        begin
-          BTest.Caption:='Connection Test - Failed';
-          BTest.Font.Color:=clRed;
-        end;
-end;
+//{ TKt_2450_Show }
+//
+//procedure TKt_2450_Show.ButtonsTune(Buttons: array of TButton);
+//const
+//  ButtonCaption: array[0..ButtonNumberKt_2450] of string =
+//  ('Connection Test ?','Reset','MyTrain');
+//var
+//  ButtonAction: array[0..ButtonNumberKt_2450] of TNotifyEvent;
+//  i: Integer;
+//begin
+//  ButtonAction[0] := TestButtonClick;
+//  ButtonAction[1] := ResetButtonClick;
+////  ButtonAction[3] := SaveButtonClick;
+////  ButtonAction[4] := LoadButtonClick;
+////  ButtonAction[5] := AutoButtonClick;
+////  ButtonAction[6] := DefaultButtonClick;
+////  ButtonAction[7] := RefreshButtonClick;
+////  ButtonAction[8] := RunButtonClick;
+////  ButtonAction[9] := StopButtonClick;
+////  ButtonAction[10] := UnlockButtonClick;
+//   ButtonAction[ButtonNumberKt_2450] := MyTrainButtonClick;
+//  for I := 0 to ButtonNumberKt_2450 do
+//  begin
+//    Buttons[i].Caption := ButtonCaption[i];
+//    Buttons[i].OnClick := ButtonAction[i];
+//  end;
+//  BTest := Buttons[0];
+//
+//end;
+//
+//constructor TKt_2450_Show.Create(Kt_2450: TKt_2450;
+//                                Buttons:Array of TButton;
+//                                OutPutOnOff:TSpeedButton
+//                                );
+//begin
+//  if (High(Buttons)<>ButtonNumberKt_2450)
+//   then
+//    begin
+//      showmessage('Kt_2450_Show is not created!');
+//      Exit;
+//    end;
+//  fKt_2450:=Kt_2450;
+//  ButtonsTune(Buttons);
+//
+//  fOutPutOnOff:=OutPutOnOff;
+//  fOutPutOnOff.OnClick:=OutPutOnOffSpeedButtonClick;
+//  fOutPutOnOff.Caption:='Output';
+//end;
+//
+//procedure TKt_2450_Show.MyTrainButtonClick(Sender: TObject);
+//begin
+// fKt_2450.MyTraining();
+//end;
+//
+//procedure TKt_2450_Show.OutPutOnOffSpeedButtonClick(Sender: TObject);
+//begin
+// fKt_2450.OutPutChange(fOutPutOnOff.Down);
+//end;
+//
+//procedure TKt_2450_Show.ResetButtonClick(Sender: TObject);
+//begin
+// fKt_2450.ResetSetting();
+//end;
+//
+//procedure TKt_2450_Show.TestButtonClick(Sender: TObject);
+//begin
+//   if fKt_2450.Test then
+//        begin
+//          BTest.Caption:='Connection Test - Ok';
+//          BTest.Font.Color:=clBlue;
+//        end        else
+//        begin
+//          BTest.Caption:='Connection Test - Failed';
+//          BTest.Font.Color:=clRed;
+//        end;
+//end;
 
 end.

@@ -151,7 +151,7 @@ type
                       PinVarSingle: TStringList);overload;
    procedure ReadFromIniFile(ConfigFile:TIniFile);override;//virtual;
    procedure WriteToIniFile(ConfigFile:TIniFile);override;//virtual;
-   procedure NumberPinShow();virtual;
+   procedure NumberPinShow(PinActiveNumber:integer=-1;ChooseNumber:integer=-1);virtual;
 //   procedure Free();//override;//virtual;
    destructor Destroy; override;
    procedure VariantsShowAndSelect(Sender: TObject);
@@ -695,7 +695,8 @@ end;
 //end;
 
 
-procedure TPinsShowUniversal.NumberPinShow;
+procedure TPinsShowUniversal.NumberPinShow(PinActiveNumber:integer;
+                          ChooseNumber:integer);
  var i:byte;
 begin
   for I := 0 to High(PinLabels) do
@@ -746,7 +747,7 @@ i:=SelectFromVariants(fPinVariants[PinNumber],index,
 if i>-1 then
   begin
     Pins.SetStrToPinValue(fPinVariants[PinNumber].Strings[i],PinNumber);
-    NumberPinShow();
+    NumberPinShow(PinNumber,i);
   end;
 
 end;
