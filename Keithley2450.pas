@@ -10,12 +10,12 @@ const
   Kt_2450_Test='KEITHLEY INSTRUMENTS,MODEL 2450';
 
   RootNoodKt_2450:array[0..12]of string=
-  ('*idn?','*rcl ','*rst','*sav ',':acq',':outp:stat','disp:',':syst','scr',
+  ('*idn?','*rcl ','*rst','*sav',':acq',':outp:stat','disp:',':syst','scr',
 //   0       1      2      3      4            5       6        7       8
   ':run',':stop',':meas:syst',':tim:scal');
 //  9       10     11           12
 
-  SuffixKt_2450:array[0..2]of string=(' on',' off', ' rst');
+  SuffixKt_2450:array[0..2]of string=('on','off', 'rst');
 
   FirstNodeKt_2450_6:array[0..3]of string=
   ('scr','user1:text','user2:text','cle');
@@ -40,11 +40,14 @@ type
    fIsSuffix:boolean;
    fAdditionalString:string;
    procedure DefaultSettings;
-   procedure QuireOperation(RootNode:byte;FirstLevelNode:byte=0;LeafNode:byte=0);
+   procedure QuireOperation(RootNode:byte;FirstLevelNode:byte=0;LeafNode:byte=0;
+                            isSyffix:boolean=True);
    procedure SetupOperation(RootNode:byte;FirstLevelNode:byte=0;LeafNode:byte=0;
-                            isSyffix:boolean=False);
+                            isSyffix:boolean=True);
    procedure SetFlags(RootNode,FirstLevelNode,LeafNode:byte;
-                  IsSuffix:boolean=False);
+                  IsSuffix:boolean=True);
+   procedure JoinAddString();
+   function StringToInvertedCommas(str:string):string;
   protected
    procedure PrepareString;
    procedure UpDate();override;
@@ -61,7 +64,7 @@ type
    procedure SaveSetup(SlotNumber:TKt2450_SetupMemorySlot);
    procedure LoadSetup(SlotNumber:TKt2450_SetupMemorySlot);
    procedure LoadSetupPowerOn(SlotNumber:TKt2450_SetupMemorySlot);
-   procedure SetupFromPowerOn();
+   procedure UnloadSetupPowerOn();
    procedure RunningMacroScript(ScriptName:string);
  end;
 
@@ -78,7 +81,7 @@ uses
 
 procedure TKt_2450.ClearUserScreen;
 begin
- SetupOperation(6,3);
+ SetupOperation(6,3,0,false);
 end;
 
 constructor TKt_2450.Create(Telnet: TIdTelnet; IPAdressShow: TIPAdressShow;
@@ -95,18 +98,23 @@ end;
 
 procedure TKt_2450.ResetSetting;
 begin
-  SetupOperation(2);
+  SetupOperation(2,0,0,False);
 end;
 
 procedure TKt_2450.RunningMacroScript(ScriptName: string);
 begin
-  fAdditionalString:=' "'+ScriptName+'"';
+  fAdditionalString:=StringToInvertedCommas(ScriptName);
   SetupOperation(8,1);
 end;
 
 procedure TKt_2450.DefaultSettings;
 begin
 
+end;
+
+procedure TKt_2450.JoinAddString;
+begin
+ Self.JoinToStringToSend(' '+fAdditionalString);
 end;
 
 procedure TKt_2450.LoadSetup(SlotNumber: TKt2450_SetupMemorySlot);
@@ -117,13 +125,13 @@ end;
 
 procedure TKt_2450.LoadSetupPowerOn(SlotNumber: TKt2450_SetupMemorySlot);
 begin
-  fAdditionalString:=' sav'+inttostr(SlotNumber);
+  fAdditionalString:='sav'+inttostr(SlotNumber);
   SetupOperation(7,0);
 end;
 
 procedure TKt_2450.MyTraining;
 begin
- SetupFromPowerOn();
+ UnloadSetupPowerOn();
 //  Self.SetStringToSend('DISP:USER1:TEXT "Oleg Olikh"');
 //  Request();
 //  GetData;
@@ -131,39 +139,44 @@ end;
 
 procedure TKt_2450.OutPutChange(toOn: boolean);
 begin
- SetupOperation(5,0,0,toOn);
+ if toOn then fAdditionalString:=SuffixKt_2450[0]
+         else fAdditionalString:=SuffixKt_2450[1];
+ SetupOperation(5);
 end;
 
 procedure TKt_2450.PrepareString;
- var StringToSend:string;
 begin
- StringToSend:=RootNoodKt_2450[fRootNode];
+ Self.ClearStringToSend;
+ Self.SetStringToSend(RootNoodKt_2450[fRootNode]);
  case fRootNode of
-  5:begin
-     if fIsSuffix then StringToSend:=StringToSend+SuffixKt_2450[0]
-                  else StringToSend:=StringToSend+SuffixKt_2450[1];
-     end;
+//  5:begin
+//     JoinAddString;
+//     if fIsSuffix then JoinToStringToSend(SuffixKt_2450[0])
+//                  else JoinToStringToSend(SuffixKt_2450[1]);
+//     end;
   6:begin
-     StringToSend:=StringToSend+FirstNodeKt_2450_6[fFirstLevelNode];
-     if fFirstLevelNode in [0..2]
-        then  StringToSend:=StringToSend+fAdditionalString;
+     JoinToStringToSend(FirstNodeKt_2450_6[fFirstLevelNode]);
+//     if fFirstLevelNode in [0..2]
+//        then  JoinAddString;
     end;
    7:begin
-      StringToSend:=StringToSend+FirstNodeKt_2450_7[fFirstLevelNode];
-      StringToSend:=StringToSend+fAdditionalString;
+      JoinToStringToSend(FirstNodeKt_2450_7[fFirstLevelNode]);
+//      JoinAddString;
      end;
    8:begin
-      StringToSend:=StringToSend+FirstNodeKt_2450_8[fFirstLevelNode];
-      StringToSend:=StringToSend+fAdditionalString;
+      JoinToStringToSend(FirstNodeKt_2450_8[fFirstLevelNode]);
+//      JoinAddString;
      end;
-   3,1:StringToSend:=StringToSend+fAdditionalString;
+//   3,1:JoinAddString;
   end;
- Self.SetStringToSend(StringToSend);
+ if fIsSuffix then JoinAddString;
+
 end;
 
-procedure TKt_2450.QuireOperation(RootNode, FirstLevelNode, LeafNode: byte);
+procedure TKt_2450.QuireOperation(RootNode, FirstLevelNode, LeafNode: byte;
+                                 isSyffix:boolean);
 begin
- SetFlags(RootNode, FirstLevelNode, LeafNode);
+ SetFlags(RootNode, FirstLevelNode, LeafNode,isSyffix);
  PrepareString();
  GetData;
 end;
@@ -183,7 +196,7 @@ begin
  fIsSuffix:=IsSuffix;
 end;
 
-procedure TKt_2450.SetupFromPowerOn;
+procedure TKt_2450.UnloadSetupPowerOn;
 begin
   fAdditionalString:=SuffixKt_2450[2];
   SetupOperation(7,0);
@@ -197,26 +210,31 @@ begin
  Request();
 end;
 
+function TKt_2450.StringToInvertedCommas(str: string): string;
+begin
+ Result:='"'+str+'"';
+end;
+
 function TKt_2450.Test: boolean;
 begin
- QuireOperation(0);
+ QuireOperation(0,0,0,False);
  Result:=(Value=314);
 end;
 
 procedure TKt_2450.TextToUserScreen(top_text, bottom_text: string);
 begin
- fAdditionalString:=' SWIPE_USER';
+ fAdditionalString:='SWIPE_USER';
  SetupOperation(6,0);
  if top_text<>'' then
    begin
      if Length(top_text)>20 then SetLength(top_text,20);
-     fAdditionalString:=' "'+ top_text+'"';
+     fAdditionalString:=StringToInvertedCommas(top_text);
      SetupOperation(6,1);
    end;
  if bottom_text<>'' then
    begin
      if Length(bottom_text)>32 then SetLength(bottom_text,32);
-     fAdditionalString:=' "'+ bottom_text+'"';
+     fAdditionalString:=StringToInvertedCommas(bottom_text);
      SetupOperation(6,2);
    end;
 

@@ -64,6 +64,8 @@ TTelnetMeterDeviceSingle=class(TMeterDevice)
   destructor Destroy;override;
   Procedure Request();override;
   Procedure SetStringToSend(StringToSend:string);
+  procedure ClearStringToSend;
+  procedure JoinToStringToSend(AdditionalString:string);
   function GetData():double;override;
 end;
 
@@ -182,6 +184,11 @@ end;
 
 { TTelnetMeterDeviceSingle }
 
+procedure TTelnetMeterDeviceSingle.ClearStringToSend;
+begin
+ fDataRequest.fTelnet.fStringToSend:='';
+end;
+
 constructor TTelnetMeterDeviceSingle.Create(Telnet: TIdTelnet;
              IPAdressShow: TIPAdressShow; Nm: string);
 begin
@@ -239,6 +246,11 @@ end;
 function TTelnetMeterDeviceSingle.GetMessageError: string;
 begin
  Result:=fName+' on '+fDataSubject.fTelnet.Telnet.Host+ErrorMes;
+end;
+
+procedure TTelnetMeterDeviceSingle.JoinToStringToSend(AdditionalString: string);
+begin
+ fDataRequest.fTelnet.fStringToSend:=fDataRequest.fTelnet.fStringToSend+AdditionalString;
 end;
 
 procedure TTelnetMeterDeviceSingle.Request;
