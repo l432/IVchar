@@ -10,12 +10,18 @@ const
   Kt_2450_Test='KEITHLEY INSTRUMENTS,MODEL 2450';
 
   RootNoodKt_2450:array[0..12]of string=
-  ('*idn?','*rcl ','*rst','*sav',':acq',':outp:stat','disp:',':syst','scr',
-//   0       1      2      3      4            5       6        7       8
-  ':run',':stop',':meas:syst',':tim:scal');
+  ('*idn?','*rcl ','*rst','*sav',':acq',':outp','disp:',':syst','scr',
+//   0       1      2      3      4        5       6        7       8
+  'rout',':sens',':meas:syst',':tim:scal');
 //  9       10     11           12
 
-  SuffixKt_2450:array[0..2]of string=('on','off', 'rst');
+//:OUTPut:SMODe NORMal
+
+  SuffixKt_2450:array[0..3]of string=('on','off', 'rst', '?');
+
+  FirstNodeKt_2450_5:array[0..2]of string=
+  (':stat',':int:stat',':smod');
+//   0       1             2         3
 
   FirstNodeKt_2450_6:array[0..3]of string=
   ('scr','user1:text','user2:text','cle');
@@ -27,10 +33,40 @@ const
   FirstNodeKt_2450_8:array[0..1]of string=
   (':run','???');
 
+  FirstNodeKt_2450_9:array[0..1]of string=
+  (':term','???');
+
+  FirstNodeKt_2450_10_3:array[0..1]of string=
+  (':rsen','???');
+
 
 
 type
  TKt2450_SetupMemorySlot=0..4;
+ TKt2450_OutputTerminals=(kt_otFront, kt_otRear);
+ TKt2450_Measure=(kt_mCurrent,kt_mVoltage,kt_mResistancet,kt_mPower);
+ TKt2450_Sense=(kt_s4wire,kt_s2wire);
+ TKt2450_Settings=(kt_curr_sense,kt_volt_sense,kt_res_sense,
+                   kt_outputoff);
+ TKt_2450_OutputOffState=(kt_oos_norm,kt_oos_zero,kt_oos_himp,kt_oos_guard);
+
+const
+ Kt2450_TerminalsName:array [TKt2450_OutputTerminals] of string=('fron', 'rear');
+ Kt2450_MeasureName:array [TKt2450_Measure] of string=
+           (':curr', ':volt', ':res', ':pow??');
+ Kt_2450_OutputOffStateName:array[TKt_2450_OutputOffState]of string=
+          ('norm','zero', 'himp', 'guard');
+
+  OperationKod:array [TKt2450_Settings] of array[0..2] of byte=
+//                  RootNood  FirstNode  LeafNode
+{kt_curr_sense}   ((  10,         0,           0),
+{kt_volt_sense}    (  10,         1,           0),
+{kt_res_sense}     (  10,         2,           0),
+                   (   5,         2,           0)
+                  );
+
+type
+
 
  TKt_2450=class(TTelnetMeterDeviceSingle)
   private
@@ -38,16 +74,19 @@ type
    fFirstLevelNode:byte;
    fLeafNode:byte;
    fIsSuffix:boolean;
+   fIsQuery:boolean;
    fAdditionalString:string;
    procedure DefaultSettings;
    procedure QuireOperation(RootNode:byte;FirstLevelNode:byte=0;LeafNode:byte=0;
-                            isSyffix:boolean=True);
+                            isSyffix:boolean=True;isQuery:boolean=False);
    procedure SetupOperation(RootNode:byte;FirstLevelNode:byte=0;LeafNode:byte=0;
-                            isSyffix:boolean=True);
+                            isSyffix:boolean=True;isQuery:boolean=False);
    procedure SetFlags(RootNode,FirstLevelNode,LeafNode:byte;
-                  IsSuffix:boolean=True);
+                  IsSuffix:boolean=True;isQuery:boolean=False);
    procedure JoinAddString();
+//   procedure JoinQuery();
    function StringToInvertedCommas(str:string):string;
+   procedure OnOffFromBool(toOn:boolean);
   protected
    procedure PrepareString;
    procedure UpDate();override;
@@ -66,6 +105,11 @@ type
    procedure LoadSetupPowerOn(SlotNumber:TKt2450_SetupMemorySlot);
    procedure UnloadSetupPowerOn();
    procedure RunningMacroScript(ScriptName:string);
+   procedure SetInterlockStatus(toOn:boolean);
+   function GetInterlockStatus():boolean;
+   procedure SetTerminals(Terminal:TKt2450_OutputTerminals);
+   procedure SetSense(MeasureType:TKt2450_Measure;Sense:TKt2450_Sense);
+   procedure SetOutputOffState(OutputOffState:TKt_2450_OutputOffState);
  end;
 
 
@@ -112,10 +156,22 @@ begin
 
 end;
 
+function TKt_2450.GetInterlockStatus: boolean;
+begin
+ QuireOperation(5,1,0,True,True);
+ Result:=(Value=1);
+end;
+
 procedure TKt_2450.JoinAddString;
 begin
- Self.JoinToStringToSend(' '+fAdditionalString);
+ if fIsQuery then Self.JoinToStringToSend(SuffixKt_2450[3])
+             else Self.JoinToStringToSend(' '+fAdditionalString);
 end;
+
+//procedure TKt_2450.JoinQuery;
+//begin
+// Self.JoinToStringToSend(SuffixKt_2450[3]);
+//end;
 
 procedure TKt_2450.LoadSetup(SlotNumber: TKt2450_SetupMemorySlot);
 begin
@@ -131,17 +187,29 @@ end;
 
 procedure TKt_2450.MyTraining;
 begin
- UnloadSetupPowerOn();
-//  Self.SetStringToSend('DISP:USER1:TEXT "Oleg Olikh"');
+ SetOutputOffState(kt_oos_norm);
+
+// SetInterlockStatus(false);
+// showmessage(booltostr(GetInterlockStatus,True));
+
+// TextToUserScreen('Hi, Oleg!','I am glad to see you');
+//  Self.SetStringToSend(':OUTP:INT:STAT?');
 //  Request();
 //  GetData;
 end;
 
-procedure TKt_2450.OutPutChange(toOn: boolean);
+procedure TKt_2450.OnOffFromBool(toOn: boolean);
 begin
  if toOn then fAdditionalString:=SuffixKt_2450[0]
          else fAdditionalString:=SuffixKt_2450[1];
- SetupOperation(5);
+end;
+
+procedure TKt_2450.OutPutChange(toOn: boolean);
+begin
+ OnOffFromBool(toOn);
+// if toOn then fAdditionalString:=SuffixKt_2450[0]
+//         else fAdditionalString:=SuffixKt_2450[1];
+ SetupOperation(5,0);
 end;
 
 procedure TKt_2450.PrepareString;
@@ -149,11 +217,12 @@ begin
  Self.ClearStringToSend;
  Self.SetStringToSend(RootNoodKt_2450[fRootNode]);
  case fRootNode of
-//  5:begin
+  5:begin
+    JoinToStringToSend(FirstNodeKt_2450_5[fFirstLevelNode]);
 //     JoinAddString;
 //     if fIsSuffix then JoinToStringToSend(SuffixKt_2450[0])
 //                  else JoinToStringToSend(SuffixKt_2450[1]);
-//     end;
+     end;
   6:begin
      JoinToStringToSend(FirstNodeKt_2450_6[fFirstLevelNode]);
 //     if fFirstLevelNode in [0..2]
@@ -167,16 +236,24 @@ begin
       JoinToStringToSend(FirstNodeKt_2450_8[fFirstLevelNode]);
 //      JoinAddString;
      end;
-//   3,1:JoinAddString;
+   9:begin
+      JoinToStringToSend(FirstNodeKt_2450_9[fFirstLevelNode]);
+     end;
+   10:begin
+      JoinToStringToSend(Kt2450_MeasureName[TKt2450_Measure(fFirstLevelNode)]);
+      JoinToStringToSend(FirstNodeKt_2450_10_3[fLeafNode]);
+     end;
+
+
   end;
  if fIsSuffix then JoinAddString;
 
 end;
 
 procedure TKt_2450.QuireOperation(RootNode, FirstLevelNode, LeafNode: byte;
-                                 isSyffix:boolean);
+                                 isSyffix:boolean;isQuery:boolean);
 begin
- SetFlags(RootNode, FirstLevelNode, LeafNode,isSyffix);
+ SetFlags(RootNode, FirstLevelNode, LeafNode,isSyffix,isQuery);
  PrepareString();
  GetData;
 end;
@@ -188,12 +265,37 @@ begin
 end;
 
 procedure TKt_2450.SetFlags(RootNode, FirstLevelNode, LeafNode: byte;
-                  IsSuffix:boolean);
+                  IsSuffix:boolean; isQuery:boolean);
 begin
  fRootNode:=RootNode;
  fFirstLevelNode:=FirstLevelNode;
  fLeafNode:=LeafNode;
  fIsSuffix:=IsSuffix;
+ fIsQuery:=isQuery;
+end;
+
+procedure TKt_2450.SetInterlockStatus(toOn: boolean);
+begin
+ OnOffFromBool(toOn);
+ SetupOperation(5,1);
+end;
+
+procedure TKt_2450.SetOutputOffState(OutputOffState: TKt_2450_OutputOffState);
+begin
+ fAdditionalString:=Kt_2450_OutputOffStateName[OutputOffState];
+ SetupOperation(5,2);
+end;
+
+procedure TKt_2450.SetSense(MeasureType: TKt2450_Measure; Sense: TKt2450_Sense);
+begin
+ fAdditionalString:=SuffixKt_2450[ord(Sense)];
+ SetupOperation(10,ord(MeasureType),0);
+end;
+
+procedure TKt_2450.SetTerminals(Terminal: TKt2450_OutputTerminals);
+begin
+ fAdditionalString:=Kt2450_TerminalsName[Terminal];
+ SetupOperation(9,0);
 end;
 
 procedure TKt_2450.UnloadSetupPowerOn;
@@ -203,9 +305,9 @@ begin
 end;
 
 procedure TKt_2450.SetupOperation(RootNode, FirstLevelNode, LeafNode: byte;
-                                 isSyffix:boolean);
+                                 isSyffix:boolean;isQuery:boolean);
 begin
- SetFlags(RootNode, FirstLevelNode, LeafNode,isSyffix);
+ SetFlags(RootNode, FirstLevelNode, LeafNode,isSyffix,isQuery);
  PrepareString();
  Request();
 end;
@@ -244,10 +346,13 @@ end;
 procedure TKt_2450.UpDate;
  var STR:string;
 begin
- Str:=fDataSubject.ReceivedString;
+ Str:=Trim(fDataSubject.ReceivedString);
 // showmessage(STR+Kt_2450_Test);
  case fRootNode of
   0:if pos(Kt_2450_Test,Str)<>0 then fValue:=314;
+  5:begin
+    fValue:=StrToInt(Str);
+    end;
  end;
  fIsReceived:=True;
  if TestShowEthernet then showmessage('recived:  '+STR);

@@ -9277,7 +9277,7 @@ object IVchar: TIVchar
         Width = 79
         Height = 29
         AllowAllUp = True
-        GroupIndex = 2
+        GroupIndex = 3
         Caption = 'Output'
         Font.Charset = RUSSIAN_CHARSET
         Font.Color = clDefault
@@ -9423,41 +9423,200 @@ object IVchar: TIVchar
         ParentFont = False
         TabOrder = 2
       end
-      object PKt2450SaveSetup: TPanel
-        Left = 676
-        Top = 22
-        Width = 85
-        Height = 23
-        Cursor = crHandPoint
-        BevelOuter = bvLowered
-        Caption = 'Save Setup'
-        Color = clSilver
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = clHotLight
-        Font.Height = -11
-        Font.Name = 'Tahoma'
+      object GB_FT2450Setup: TGroupBox
+        Tag = 110
+        Left = 667
+        Top = 352
+        Width = 108
+        Height = 92
+        Caption = 'Setup'
+        Font.Charset = RUSSIAN_CHARSET
+        Font.Color = clMaroon
+        Font.Height = -13
+        Font.Name = 'Arial'
         Font.Style = [fsBold]
-        ParentBackground = False
         ParentFont = False
         TabOrder = 3
+        object PKt2450LoadSetup: TPanel
+          Left = 13
+          Top = 49
+          Width = 85
+          Height = 23
+          Cursor = crHandPoint
+          BevelOuter = bvLowered
+          Caption = 'Load Setup'
+          Color = clSilver
+          Font.Charset = DEFAULT_CHARSET
+          Font.Color = clHotLight
+          Font.Height = -11
+          Font.Name = 'Tahoma'
+          Font.Style = [fsBold]
+          ParentBackground = False
+          ParentFont = False
+          TabOrder = 0
+        end
+        object PKt2450SaveSetup: TPanel
+          Left = 11
+          Top = 20
+          Width = 85
+          Height = 23
+          Cursor = crHandPoint
+          BevelOuter = bvLowered
+          Caption = 'Save Setup'
+          Color = clSilver
+          Font.Charset = DEFAULT_CHARSET
+          Font.Color = clHotLight
+          Font.Height = -11
+          Font.Name = 'Tahoma'
+          Font.Style = [fsBold]
+          ParentBackground = False
+          ParentFont = False
+          TabOrder = 1
+        end
       end
-      object PKt2450LoadSetup: TPanel
-        Left = 676
-        Top = 54
-        Width = 85
-        Height = 23
-        Cursor = crHandPoint
-        BevelOuter = bvLowered
-        Caption = 'Load Setup'
-        Color = clSilver
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = clHotLight
-        Font.Height = -11
-        Font.Name = 'Tahoma'
+      object GB_Kt2450_Cur: TGroupBox
+        Left = 291
+        Top = 62
+        Width = 132
+        Height = 123
+        Caption = 'Current'
+        Font.Charset = RUSSIAN_CHARSET
+        Font.Color = clNavy
+        Font.Height = -13
+        Font.Name = 'Arial'
         Font.Style = [fsBold]
-        ParentBackground = False
         ParentFont = False
         TabOrder = 4
+        object ST_KT2450_CurSense: TStaticText
+          Left = 10
+          Top = 18
+          Width = 71
+          Height = 24
+          Caption = '500mV'
+          Font.Charset = RUSSIAN_CHARSET
+          Font.Color = clRed
+          Font.Height = -17
+          Font.Name = 'Verdana'
+          Font.Style = [fsBold]
+          ParentFont = False
+          ShowAccelChar = False
+          TabOrder = 0
+        end
+      end
+      object GB_Kt2450_Volt: TGroupBox
+        Left = 441
+        Top = 62
+        Width = 132
+        Height = 123
+        Caption = 'Vottage'
+        Font.Charset = RUSSIAN_CHARSET
+        Font.Color = clNavy
+        Font.Height = -13
+        Font.Name = 'Arial'
+        Font.Style = [fsBold]
+        ParentFont = False
+        TabOrder = 5
+        object ST_KT2450_VoltSense: TStaticText
+          Left = 10
+          Top = 18
+          Width = 71
+          Height = 24
+          Caption = '500mV'
+          Font.Charset = RUSSIAN_CHARSET
+          Font.Color = clRed
+          Font.Height = -17
+          Font.Name = 'Verdana'
+          Font.Style = [fsBold]
+          ParentFont = False
+          ShowAccelChar = False
+          TabOrder = 0
+        end
+      end
+      object GB_Kt2450_Res: TGroupBox
+        Left = 601
+        Top = 62
+        Width = 132
+        Height = 123
+        Caption = 'Resistance'
+        Font.Charset = RUSSIAN_CHARSET
+        Font.Color = clNavy
+        Font.Height = -13
+        Font.Name = 'Arial'
+        Font.Style = [fsBold]
+        ParentFont = False
+        TabOrder = 6
+        object ST_KT2450_ResSense: TStaticText
+          Left = 10
+          Top = 18
+          Width = 71
+          Height = 24
+          Caption = '500mV'
+          Font.Charset = RUSSIAN_CHARSET
+          Font.Color = clRed
+          Font.Height = -17
+          Font.Name = 'Verdana'
+          Font.Style = [fsBold]
+          ParentFont = False
+          ShowAccelChar = False
+          TabOrder = 0
+        end
+      end
+      object GB_Kt2450_Source: TGroupBox
+        Left = 295
+        Top = 196
+        Width = 168
+        Height = 123
+        Caption = 'Source'
+        Font.Charset = RUSSIAN_CHARSET
+        Font.Color = clMaroon
+        Font.Height = -13
+        Font.Name = 'Arial'
+        Font.Style = [fsBold]
+        ParentFont = False
+        TabOrder = 7
+        object SB_Kt2450_Termin: TSpeedButton
+          Left = 7
+          Top = 22
+          Width = 121
+          Height = 29
+          AllowAllUp = True
+          GroupIndex = 3
+          Caption = 'Terminals'
+          Font.Charset = RUSSIAN_CHARSET
+          Font.Color = clDefault
+          Font.Height = -15
+          Font.Name = 'Arial'
+          Font.Style = [fsBold]
+          ParentFont = False
+        end
+        object L_Kt2450_OutPut: TLabel
+          Left = 12
+          Top = 73
+          Width = 62
+          Height = 16
+          Caption = 'Output off'
+          Font.Charset = RUSSIAN_CHARSET
+          Font.Color = clTeal
+          Font.Height = -13
+          Font.Name = 'Arial'
+          Font.Style = [fsBold]
+          ParentFont = False
+        end
+        object ST_Kt2450_OutPut: TStaticText
+          Left = 12
+          Top = 92
+          Width = 71
+          Height = 24
+          Caption = '500mV'
+          Font.Charset = RUSSIAN_CHARSET
+          Font.Color = clTeal
+          Font.Height = -17
+          Font.Name = 'Verdana'
+          Font.Style = [fsBold]
+          ParentFont = False
+          ShowAccelChar = False
+          TabOrder = 0
+        end
       end
     end
   end
@@ -9496,7 +9655,7 @@ object IVchar: TIVchar
   end
   object ComPort1: TComPort
     BaudRate = br115200
-    Port = 'COM3'
+    Port = 'COM4'
     Parity.Bits = prNone
     StopBits = sbOneStopBit
     DataBits = dbEight
@@ -9627,12 +9786,12 @@ object IVchar: TIVchar
     FlowControl.XonXoffIn = False
     StoredProps = [spBasic]
     TriggersOnRxChar = True
-    Left = 650
-    Top = 496
+    Left = 664
+    Top = 530
   end
   object TelnetKt2450: TIdTelnet
     Terminal = 'dumb'
-    Left = 632
-    Top = 354
+    Left = 526
+    Top = 530
   end
 end
