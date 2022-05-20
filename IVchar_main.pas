@@ -766,6 +766,11 @@ type
     GB_Kt2450_Source: TGroupBox;
     ST_Kt2450_OutPut: TStaticText;
     L_Kt2450_OutPut: TLabel;
+    LKT2450_ResComp: TLabel;
+    STKT2450_ResComp: TStaticText;
+    ST_KT2450VolProt: TStaticText;
+    L_KT2450VolProt: TLabel;
+    B_KT2450GetSetting: TButton;
 
     procedure FormCreate(Sender: TObject);
     procedure BConnectClick(Sender: TObject);
@@ -4430,12 +4435,15 @@ begin
 
  Kt_2450_Show := TKt_2450_Show.Create(Kt_2450,
                                      [BKt2450Test,B_Kt2450_Reset,
+                                      B_KT2450GetSetting,
                                      B_MyTrain],
                                      [SB_Kt2450_OutPut,SB_Kt2450_Termin],
                                      [PKt2450SaveSetup,PKt2450LoadSetup],
                                      [ST_KT2450_CurSense,ST_KT2450_VoltSense,
-                                     ST_KT2450_ResSense,ST_Kt2450_OutPut],
-                                     [L_Kt2450_OutPut]);
+                                     ST_KT2450_ResSense,ST_Kt2450_OutPut,
+                                     STKT2450_ResComp,ST_KT2450VolProt],
+                                     [L_Kt2450_OutPut,LKT2450_ResComp,
+                                     L_KT2450VolProt]);
 
  AnyObjectArray.Add([Kt_2450]);
  ShowArray.Add([Kt2450_IPAdressShow,Kt_2450_Show]);

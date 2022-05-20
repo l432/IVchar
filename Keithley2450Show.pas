@@ -7,7 +7,7 @@ uses
   ArduinoDeviceNew, ExtCtrls, IniFiles, OlegShowTypes, Classes;
 
 const
-  ButtonNumberKt2450 = 2;
+  ButtonNumberKt2450 = 3;
   SpeedButtonNumberKt2450 = 1;
   PanelNumberKt2450 = 1;
 
@@ -55,6 +55,7 @@ type
 //   fSetupMemoryPins:TKT2450_SetupMemoryPins;
    procedure TestButtonClick(Sender:TObject);
    procedure ResetButtonClick(Sender:TObject);
+   procedure GetSettingButtonClick(Sender:TObject);
    procedure MyTrainButtonClick(Sender:TObject);
    procedure ButtonsTune(Buttons: array of TButton);
    procedure SpeedButtonsTune(SpeedButtons: array of TSpeedButton);
@@ -69,6 +70,8 @@ type
    procedure SenseVoltOkClick();
    procedure SenseResOkClick();
    procedure OutputOffOkClick();
+   procedure ResCompOkClick();
+   procedure VoltageProtectionOkClick();
   public
    Constructor Create(Kt_2450:TKt_2450;
                       Buttons:Array of TButton;
@@ -99,13 +102,14 @@ uses
 procedure TKt_2450_Show.ButtonsTune(Buttons: array of TButton);
 const
   ButtonCaption: array[0..ButtonNumberKt2450] of string =
-  ('Connection Test ?','Reset','MyTrain');
+  ('Connection Test ?','Reset','Get','MyTrain');
 var
   ButtonAction: array[0..ButtonNumberKt2450] of TNotifyEvent;
   i: Integer;
 begin
   ButtonAction[0] := TestButtonClick;
   ButtonAction[1] := ResetButtonClick;
+  ButtonAction[2] := GetSettingButtonClick;
 //  ButtonAction[3] := SaveButtonClick;
 //  ButtonAction[4] := LoadButtonClick;
 //  ButtonAction[5] := AutoButtonClick;
@@ -161,6 +165,13 @@ begin
   inherited;
 end;
 
+procedure TKt_2450_Show.GetSettingButtonClick(Sender: TObject);
+begin
+ if fKt_2450.GetVoltageProtection then
+   fSettingsShow[kt_voltprot].Data:=ord(fKt_2450.VoltageProtection);
+
+end;
+
 procedure TKt_2450_Show.MyTrainButtonClick(Sender: TObject);
 begin
  fKt_2450.MyTraining();
@@ -190,7 +201,14 @@ begin
     fSettingsShow[TKt2450_Settings(i)].ReadFromIniFile(ConfigFile);
 
   fSetupMemoryShow.ReadFromIniFile(ConfigFile);
-  SettingToObject();
+//  SettingToObject();
+end;
+
+procedure TKt_2450_Show.ResCompOkClick;
+begin
+ if fSettingsShow[kt_rescomp].Data=0
+    then fKt_2450.SetResistanceCompencate(True)
+    else fKt_2450.SetResistanceCompencate(False)
 end;
 
 procedure TKt_2450_Show.ResetButtonClick(Sender: TObject);
@@ -219,7 +237,7 @@ procedure TKt_2450_Show.SettingsShowCreate(STexts: array of TStaticText;
  const
       SettingsCaption:array[TKt2450_Settings]of string=
       ('CurrentSense','VoltageSense','Resistance',
-      'OutputOff State');
+      'OutputOff State','ResistComp','Overvoltage Protection');
  var i:TKt2450_Settings;
 begin
 
@@ -238,12 +256,18 @@ begin
 
  for I := kt_outputoff to High(TKt2450_Settings) do
    begin
+//   showmessage(fSettingsShowSL[i].Text);
    fSettingsShow[i]:=TStringParameterShow.Create(STexts[ord(i)],
                         Labels[ord(i)-ord(kt_outputoff)], SettingsCaption[i], fSettingsShowSL[i]);
    fSettingsShow[i].ForUseInShowObject(fKt_2450,False,False);
    end;
   fSettingsShow[kt_outputoff].HookParameterClick:=OutputOffOkClick;
   fSettingsShow[kt_outputoff].SetName(fKt_2450.Name+'OutputOff');
+  fSettingsShow[kt_rescomp].HookParameterClick:=ResCompOkClick;
+  fSettingsShow[kt_rescomp].SetName(fKt_2450.Name+'ResComp');
+  fSettingsShow[kt_voltprot].HookParameterClick:=VoltageProtectionOkClick;
+  fSettingsShow[kt_voltprot].SetName(fKt_2450.Name+'VoltProt');
+
 end;
 
 procedure TKt_2450_Show.SettingsShowFree;
@@ -276,6 +300,10 @@ begin
 
  for I := 0 to ord(High(TKt_2450_OutputOffState)) do
   fSettingsShowSL[kt_outputoff].Add(KT2450_OutputOffStateLabels[TKt_2450_OutputOffState(i)]);
+ for I := 0 to 1 do
+  fSettingsShowSL[kt_rescomp].Add(SuffixKt_2450[i]);
+ for I := 0 to ord(High(TKt_2450_VoltageProtection)) do
+  fSettingsShowSL[kt_voltprot].Add(Kt_2450_VoltageProtectionLabel[TKt_2450_VoltageProtection(i)]);
 end;
 
 procedure TKt_2450_Show.SettingsShowSLFree;
@@ -330,6 +358,12 @@ begin
         end;
 end;
 
+
+procedure TKt_2450_Show.VoltageProtectionOkClick;
+begin
+ fKt_2450.SetVoltageProtection(TKt_2450_VoltageProtection
+                          (fSettingsShow[kt_voltprot].Data));
+end;
 
 procedure TKt_2450_Show.WriteToIniFile(ConfigFile: TIniFile);
  var i:integer;

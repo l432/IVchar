@@ -12,12 +12,12 @@ const
   RootNoodKt_2450:array[0..12]of string=
   ('*idn?','*rcl ','*rst','*sav',':acq',':outp','disp:',':syst','scr',
 //   0       1      2      3      4        5       6        7       8
-  'rout',':sens',':meas:syst',':tim:scal');
-//  9       10     11           12
+  'rout',':sens',':sour',':tim:scal');
+//  9       10     11         12
 
-//:OUTPut:SMODe NORMal
+//:SOURce[1]:VOLTage:PROTection[:LEVel] <n>
 
-  SuffixKt_2450:array[0..3]of string=('on','off', 'rst', '?');
+  SuffixKt_2450:array[0..4]of string=('on','off', 'rst', '?','prot');
 
   FirstNodeKt_2450_5:array[0..2]of string=
   (':stat',':int:stat',':smod');
@@ -37,8 +37,10 @@ const
   (':term','???');
 
   FirstNodeKt_2450_10_3:array[0..1]of string=
-  (':rsen','???');
+  (':rsen',':ocom');
 
+  FirstNodeKt_2450_11_3:array[0..1]of string=
+  (':prot',':ocom');
 
 
 type
@@ -47,8 +49,12 @@ type
  TKt2450_Measure=(kt_mCurrent,kt_mVoltage,kt_mResistancet,kt_mPower);
  TKt2450_Sense=(kt_s4wire,kt_s2wire);
  TKt2450_Settings=(kt_curr_sense,kt_volt_sense,kt_res_sense,
-                   kt_outputoff);
+                   kt_outputoff,kt_rescomp,kt_voltprot);
  TKt_2450_OutputOffState=(kt_oos_norm,kt_oos_zero,kt_oos_himp,kt_oos_guard);
+ TKt_2450_VoltageProtection=(kt_vp2,kt_vp5,kt_vp10,kt_vp20,kt_vp40,kt_vp60,
+                            kt_vp80,kt_vp100,kt_vp120,kt_vp140,kt_vp160,
+                            kt_vp180,kt_vpnone);
+
 
 const
  Kt2450_TerminalsName:array [TKt2450_OutputTerminals] of string=('fron', 'rear');
@@ -56,14 +62,20 @@ const
            (':curr', ':volt', ':res', ':pow??');
  Kt_2450_OutputOffStateName:array[TKt_2450_OutputOffState]of string=
           ('norm','zero', 'himp', 'guard');
+ Kt_2450_VoltageProtectionLabel:array[TKt_2450_VoltageProtection]of string=
+          ('2V','5V','10V','20V','40V','60V','80V','100V','120V',
+           '140V','160V','180V','none');
 
   OperationKod:array [TKt2450_Settings] of array[0..2] of byte=
 //                  RootNood  FirstNode  LeafNode
 {kt_curr_sense}   ((  10,         0,           0),
 {kt_volt_sense}    (  10,         1,           0),
 {kt_res_sense}     (  10,         2,           0),
-                   (   5,         2,           0)
-                  );
+{kt_outputoff}     (   5,         2,           0),
+{kt_rescomp}       (  10,         2,           1),
+{kt_voltprot}      (  11,         1,           0)
+
+    );
 
 type
 
@@ -76,6 +88,7 @@ type
    fIsSuffix:boolean;
    fIsQuery:boolean;
    fAdditionalString:string;
+   fVoltageProtection:TKt_2450_VoltageProtection;
    procedure DefaultSettings;
    procedure QuireOperation(RootNode:byte;FirstLevelNode:byte=0;LeafNode:byte=0;
                             isSyffix:boolean=True;isQuery:boolean=False);
@@ -87,11 +100,13 @@ type
 //   procedure JoinQuery();
    function StringToInvertedCommas(str:string):string;
    procedure OnOffFromBool(toOn:boolean);
+   function StringToVoltageProtection(Str:string;var vp:TKt_2450_VoltageProtection):boolean;
   protected
    procedure PrepareString;
    procedure UpDate();override;
 
   public
+   property VoltageProtection:TKt_2450_VoltageProtection read fVoltageProtection;
    Constructor Create(Telnet:TIdTelnet;IPAdressShow: TIPAdressShow;
                Nm:string='Keitley2450');
    function Test():boolean;
@@ -108,10 +123,20 @@ type
    procedure SetInterlockStatus(toOn:boolean);
    function GetInterlockStatus():boolean;
    procedure SetTerminals(Terminal:TKt2450_OutputTerminals);
+   {вихід на передню чи задню панель}
    procedure SetSense(MeasureType:TKt2450_Measure;Sense:TKt2450_Sense);
+   {2-зондовий чи 4-зондовий спосіб вимірювання}
    procedure SetOutputOffState(OutputOffState:TKt_2450_OutputOffState);
+   {перемикання типу входу: нормальний, високоімпедансний тощо}
+   procedure SetResistanceCompencate(toOn:boolean);
+   {ввімкнення/вимкнення компенсації опору}
+   procedure SetVoltageProtection(Level:TKt_2450_VoltageProtection);
+   {встановлення значення захисту від перенапруги}
+   function  GetVoltageProtection():boolean;
+   {повертає номер режиму в TKt_2450_VoltageProtection}
  end;
 
+Procedure DeleteSubstring(var Source:string; Substring: string);
 
 var
   Kt_2450:TKt_2450;
@@ -119,7 +144,7 @@ var
 implementation
 
 uses
-  Dialogs, SysUtils;
+  Dialogs, SysUtils, OlegType;
 
 { TKt_2450 }
 
@@ -153,13 +178,19 @@ end;
 
 procedure TKt_2450.DefaultSettings;
 begin
-
+ fVoltageProtection:=kt_vpnone;
 end;
 
 function TKt_2450.GetInterlockStatus: boolean;
 begin
  QuireOperation(5,1,0,True,True);
  Result:=(Value=1);
+end;
+
+function TKt_2450.GetVoltageProtection: boolean;
+begin
+ QuireOperation(11,1,0,True,True);
+ Result:=(Value<>ErResult);
 end;
 
 procedure TKt_2450.JoinAddString;
@@ -186,8 +217,19 @@ begin
 end;
 
 procedure TKt_2450.MyTraining;
+// var str:string;
 begin
- SetOutputOffState(kt_oos_norm);
+// TKt_2450_VoltageProtection=(kt_vp2,kt_vp5,kt_vp10,kt_vp20,kt_vp40,kt_vp60,
+//                            kt_vp80,kt_vp100,kt_vp120,kt_vp140,kt_vp160,
+//                            kt_vp180,kt_vpnone);
+//   showmessage(inttostr(GetVoltageProtection()));
+//   SetVoltageProtection(kt_vp100);
+
+ if  GetVoltageProtection() then showmessage('Ok!');
+//   SetVoltageProtection(kt_vpnone);
+
+// SetResistanceCompencate(True);
+// SetResistanceCompencate(False);
 
 // SetInterlockStatus(false);
 // showmessage(booltostr(GetInterlockStatus,True));
@@ -243,8 +285,10 @@ begin
       JoinToStringToSend(Kt2450_MeasureName[TKt2450_Measure(fFirstLevelNode)]);
       JoinToStringToSend(FirstNodeKt_2450_10_3[fLeafNode]);
      end;
-
-
+   11:begin
+      JoinToStringToSend(Kt2450_MeasureName[TKt2450_Measure(fFirstLevelNode)]);
+      JoinToStringToSend(FirstNodeKt_2450_11_3[fLeafNode]);
+     end;
   end;
  if fIsSuffix then JoinAddString;
 
@@ -286,6 +330,12 @@ begin
  SetupOperation(5,2);
 end;
 
+procedure TKt_2450.SetResistanceCompencate(toOn: boolean);
+begin
+ OnOffFromBool(toOn);
+ SetupOperation(10,ord(kt_mResistancet),1);
+end;
+
 procedure TKt_2450.SetSense(MeasureType: TKt2450_Measure; Sense: TKt2450_Sense);
 begin
  fAdditionalString:=SuffixKt_2450[ord(Sense)];
@@ -312,9 +362,38 @@ begin
  Request();
 end;
 
+procedure TKt_2450.SetVoltageProtection(Level: TKt_2450_VoltageProtection);
+begin
+ if Level in [kt_vp2..kt_vp180] then
+   fAdditionalString:=SuffixKt_2450[4]
+//   Copy(FirstNodeKt_2450_11_3[0],2,Length(FirstNodeKt_2450_11_3[0]))
+                     +Copy(Kt_2450_VoltageProtectionLabel[Level],1,
+                           Length(Kt_2450_VoltageProtectionLabel[Level])-1)
+                                else
+   fAdditionalString:=Kt_2450_VoltageProtectionLabel[Level];
+ SetupOperation(11,1,0);
+end;
+
 function TKt_2450.StringToInvertedCommas(str: string): string;
 begin
  Result:='"'+str+'"';
+end;
+
+function TKt_2450.StringToVoltageProtection(Str: string;
+    var vp: TKt_2450_VoltageProtection): boolean;
+  var i:TKt_2450_VoltageProtection;
+begin
+ Result:=False;
+ DeleteSubstring(Str,SuffixKt_2450[4]);
+ if pos(Str,Kt_2450_VoltageProtectionLabel[kt_vpnone])=0 then
+     Str:=Str+'V';
+ for I := Low(TKt_2450_VoltageProtection) to (High(TKt_2450_VoltageProtection)) do
+   if Str=Kt_2450_VoltageProtectionLabel[i] then
+     begin
+       vp:=i;
+       Result:=True;
+       Break;
+     end;
 end;
 
 function TKt_2450.Test: boolean;
@@ -345,14 +424,22 @@ end;
 
 procedure TKt_2450.UpDate;
  var STR:string;
+//     tempSTR:string;
+//     i:integer;
 begin
  Str:=Trim(fDataSubject.ReceivedString);
+ Str := AnsiLowerCase(Str);
 // showmessage(STR+Kt_2450_Test);
  case fRootNode of
-  0:if pos(Kt_2450_Test,Str)<>0 then fValue:=314;
+  0:if pos(AnsiLowerCase(Kt_2450_Test),Str)<>0 then fValue:=314;
   5:begin
     fValue:=StrToInt(Str);
     end;
+  11:begin
+//   QuireOperation(11,1,0,True,True);
+     if StringToVoltageProtection(Str,fVoltageProtection)
+          then fValue:=ord(fVoltageProtection);
+     end;
  end;
  fIsReceived:=True;
  if TestShowEthernet then showmessage('recived:  '+STR);
@@ -435,5 +522,11 @@ end;
 //          BTest.Font.Color:=clRed;
 //        end;
 //end;
+
+Procedure DeleteSubstring(var Source:string; Substring: string);
+begin
+ if pos(Substring,Source)<>0 then
+     Delete(Source,pos(Substring,Source),Length(Substring));
+end;
 
 end.
