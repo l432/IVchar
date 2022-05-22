@@ -175,6 +175,7 @@ TMeterDevice=class(TCustomDevice,IMeasurement,IDataObserver)
    function GetData():double;virtual;
    procedure MeasurementBegin;
    procedure GetDataThread(WPARAM: word;EventEnd:THandle);virtual;
+   procedure JoinToStringToSend(AdditionalString:string);virtual;
   end;
 
 //TRS232MeterDevice=class(TMeterDevice,IMeasurement,IDataObserver)
@@ -984,6 +985,10 @@ end;
 function TMeterDevice.GetValue: double;
 begin
  Result:=fValue;
+end;
+
+procedure TMeterDevice.JoinToStringToSend(AdditionalString: string);
+begin
 end;
 
 function TMeterDevice.Measurement: double;

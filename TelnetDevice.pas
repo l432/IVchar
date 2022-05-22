@@ -8,6 +8,8 @@ uses
 const
 //  TestShowEthernet=False;
   TestShowEthernet=True;
+//  DeviceEthernetisAbsent=False;
+  DeviceEthernetisAbsent=True;
 
 type
 
@@ -65,7 +67,7 @@ TTelnetMeterDeviceSingle=class(TMeterDevice)
   Procedure Request();override;
   Procedure SetStringToSend(StringToSend:string);
   procedure ClearStringToSend;
-  procedure JoinToStringToSend(AdditionalString:string);
+  procedure JoinToStringToSend(AdditionalString:string);override;
   function GetData():double;override;
 end;
 
@@ -179,7 +181,9 @@ end;
 procedure TDataRequestTelnet.Request;
 begin
  if TestShowEthernet then showmessage('send:  '+fTelnet.fStringToSend);
- inherited Request;
+ if DeviceEthernetisAbsent
+    then showmessage('Virtual send:  '+fTelnet.fStringToSend)
+    else inherited Request;
 end;
 
 { TTelnetMeterDeviceSingle }
@@ -224,11 +228,16 @@ function TTelnetMeterDeviceSingle.GetData: double;
 begin
   Result:=ErResult;
 
-//  if DataSubject.PortConnected then
-  if fDataSubject.PortConnected then
+// if DeviceEthernetisAbsent
+//    then
+//     begin
+//     showmessage('Virtual send:  '+fDataRequest.fTelnet.fStringToSend);
+//     Exit;
+//     end;
+
+  if DeviceEthernetisAbsent or fDataSubject.PortConnected then
    begin
     Result:=Measurement();
-//    showmessage('Meas='+floattostr(Result));
     fNewData:=True;
    end
                                       else

@@ -39,7 +39,8 @@ uses
   SCPI in 'SCPI.pas',
   Keithley2450 in 'Keithley2450.pas',
   TelnetDevice in 'TelnetDevice.pas',
-  Keithley2450Show in 'Keithley2450Show.pas';
+  Keithley2450Show in 'Keithley2450Show.pas',
+  Keitley2450Const in 'Keitley2450Const.pas';
 
 {$R *.res}
 

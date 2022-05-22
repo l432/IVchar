@@ -4,7 +4,8 @@ interface
 
 uses
   OlegTypePart2, Keithley2450, StdCtrls, Buttons,
-  ArduinoDeviceNew, ExtCtrls, IniFiles, OlegShowTypes, Classes;
+  ArduinoDeviceNew, ExtCtrls, IniFiles, OlegShowTypes, Classes, 
+  Keitley2450Const;
 
 const
   ButtonNumberKt2450 = 3;

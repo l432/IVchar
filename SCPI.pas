@@ -3,7 +3,7 @@ unit SCPI;
 interface
 
 uses
-  RS232deviceNew, CPort;
+  RS232deviceNew, CPort, OlegTypePart2;
 
 const
 //  TestShow=True;
@@ -13,6 +13,34 @@ const
   SCPI_PacketEndChar=#10;
 
 type
+  TSCPInew=class(TNamedInterfacedObject)
+   private
+    procedure SetFlags(RootNode,FirstLevelNode,LeafNode:byte;
+                  IsSuffix:boolean=True;isQuery:boolean=False);
+   protected
+    fDevice:TMeterDevice;
+    fRootNode:byte;
+    fFirstLevelNode:byte;
+    fLeafNode:byte;
+    fIsSuffix:boolean;
+    fIsQuery:boolean;
+    fAdditionalString:string;
+    procedure QuireOperation(RootNode:byte;FirstLevelNode:byte=0;LeafNode:byte=0;
+                            isSyffix:boolean=True{;isQuery:boolean=False});
+    procedure SetupOperation(RootNode:byte;FirstLevelNode:byte=0;LeafNode:byte=0;
+                            isSyffix:boolean=True;isQuery:boolean=False);
+    procedure DeviceCreate(Nm:string='Device');virtual;abstract;
+    procedure PrepareString;virtual;abstract;
+    procedure JoinAddString();
+    function StringToInvertedCommas(str:string):string;
+    procedure DefaultSettings;virtual;
+    function SCPI_StringToValue(Str:string):double;
+   public
+    Constructor Create(Nm:string);
+    destructor Destroy;override;
+    procedure ProcessingString(Str:string);virtual;abstract;
+    function Test():boolean;virtual;abstract;
+  end;
 
   TRS232_SCPI=class(TRS232)
     protected
@@ -39,7 +67,7 @@ var
 implementation
 
 uses
-  Dialogs, SysUtils;
+  Dialogs, SysUtils, OlegType;
 
 { TRS232_SCPI }
 
@@ -71,6 +99,86 @@ end;
 procedure TSCPI.CreateDataRequest;
 begin
  fDataRequest:=TDataRequest_SCPI.Create(Self.fDataSubject.RS232,Self);
+end;
+
+{ TSCPInew }
+
+constructor TSCPInew.Create(Nm:string);
+begin
+ inherited Create;
+ fName:=Nm;
+ DeviceCreate(Nm);
+ DefaultSettings();
+ SetFlags(0,0,0);
+end;
+
+procedure TSCPInew.DefaultSettings;
+begin
+end;
+
+destructor TSCPInew.Destroy;
+begin
+  FreeAndNil(fDevice);
+  inherited;
+end;
+
+procedure TSCPInew.JoinAddString;
+begin
+ if fIsQuery then fDevice.JoinToStringToSend('?')
+             else fDevice.JoinToStringToSend(' '+fAdditionalString);
+end;
+
+procedure TSCPInew.QuireOperation(RootNode, FirstLevelNode, LeafNode: byte;
+  isSyffix{, isQuery}: boolean);
+begin
+ SetFlags(RootNode, FirstLevelNode, LeafNode,isSyffix,True);
+ PrepareString();
+ fDevice.GetData;
+end;
+
+function TSCPInew.SCPI_StringToValue(Str: string): double;
+  function MultiplierIsPresent(MultiplierMark:char;Multiplier:double;var Value:double):boolean;
+   begin
+     result:=AnsiPos(MultiplierMark,Str)>0;
+     if Result then Value:=Multiplier*StrToFloat(Copy(Str,1,AnsiPos(MultiplierMark, Str)-1));
+   end;
+begin
+  try
+    if MultiplierIsPresent('n',1e-9,Result) then Exit;
+    if MultiplierIsPresent('m',1e-3,Result) then Exit;
+    if MultiplierIsPresent('u',1e-6,Result) then Exit;
+    if MultiplierIsPresent('k',1e3,Result) then Exit;
+    if MultiplierIsPresent('M',1e6,Result) then Exit;
+    if MultiplierIsPresent('V',1,Result) then Exit;
+    Result:=StrToFloat(Str);
+//    if AnsiPos('.', Str)>1 then  Result:=StrToFloat(Copy(Str,1,5))
+//                          else  Result:=StrToFloat(Copy(Str,1,4));
+  except
+   Result:=ErResult;
+  end;
+end;
+
+procedure TSCPInew.SetFlags(RootNode, FirstLevelNode, LeafNode: byte; IsSuffix,
+  isQuery: boolean);
+begin
+ fRootNode:=RootNode;
+ fFirstLevelNode:=FirstLevelNode;
+ fLeafNode:=LeafNode;
+ fIsSuffix:=IsSuffix;
+ fIsQuery:=isQuery;
+end;
+
+procedure TSCPInew.SetupOperation(RootNode, FirstLevelNode, LeafNode: byte;
+  isSyffix, isQuery: boolean);
+begin
+ SetFlags(RootNode, FirstLevelNode, LeafNode,isSyffix,isQuery);
+ PrepareString();
+ fDevice.Request();
+end;
+
+function TSCPInew.StringToInvertedCommas(str: string): string;
+begin
+ Result:='"'+str+'"';
 end;
 
 end.
