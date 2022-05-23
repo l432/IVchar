@@ -225,7 +225,7 @@ end;
 
 procedure TKt_2450_Show.SenseResOkClick;
 begin
- fKt_2450.SetSense(kt_mResistancet,TKt2450_Sense(fSettingsShow[kt_res_sense].Data));
+ fKt_2450.SetSense(kt_mResistance,TKt2450_Sense(fSettingsShow[kt_res_sense].Data));
 end;
 
 procedure TKt_2450_Show.SenseVoltOkClick;

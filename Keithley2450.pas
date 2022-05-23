@@ -30,6 +30,9 @@ type
 //   fIsSuffix:boolean;
 //   fIsQuery:boolean;
 //   fAdditionalString:string;
+   fIsTripped:boolean;
+   fSourceType:TKt2450_Source;
+   fMeasureFunction:TKt2450_Measure;
    fVoltageProtection:TKt_2450_VoltageProtection;
    fVoltageLimit:double;
    fCurrentLimit:double;
@@ -43,12 +46,18 @@ type
 //   function StringToInvertedCommas(str:string):string;
    procedure OnOffFromBool(toOn:boolean);
    function StringToVoltageProtection(Str:string;var vp:TKt_2450_VoltageProtection):boolean;
+   function StringToSourceType(Str:string):boolean;
+   function StringToMeasureFunction(Str:string):boolean;
+   function IsLimitExcided(FirstLevelNode,LeafNode:byte):boolean;
+   {типова функція для запиту, чи ввімкнув прилад певні захисти}
   protected
    procedure PrepareString;override;
 //   procedure UpDate();override;
    procedure DeviceCreate(Nm:string);override;
    procedure DefaultSettings;override;
   public
+   property SourceType:TKt2450_Source read fSourceType;
+   property MeasureFunction:TKt2450_Measure read fMeasureFunction;
    property VoltageProtection:TKt_2450_VoltageProtection read fVoltageProtection;
    property VoltageLimit:double read fVoltageLimit;
    property CurrentLimit:double read fCurrentLimit;
@@ -58,16 +67,22 @@ type
    procedure ProcessingString(Str:string);override;
    procedure ResetSetting();
    procedure MyTraining();
+
    procedure OutPutChange(toOn:boolean);
+   {вмикає/вимикає вихід приладу}
+   procedure SetInterlockStatus(toOn:boolean);
+   function IsInterlockOn():boolean;
+
    procedure ClearUserScreen();
    procedure TextToUserScreen(top_text:string='';bottom_text:string='');
+
    procedure SaveSetup(SlotNumber:TKt2450_SetupMemorySlot);
    procedure LoadSetup(SlotNumber:TKt2450_SetupMemorySlot);
    procedure LoadSetupPowerOn(SlotNumber:TKt2450_SetupMemorySlot);
    procedure UnloadSetupPowerOn();
    procedure RunningMacroScript(ScriptName:string);
-   procedure SetInterlockStatus(toOn:boolean);
-   function GetInterlockStatus():boolean;
+
+
    procedure SetTerminals(Terminal:TKt2450_OutputTerminals);
    {вихід на передню чи задню панель}
    procedure SetSense(MeasureType:TKt2450_Measure;Sense:TKt2450_Sense);
@@ -76,18 +91,39 @@ type
    {перемикання типу входу: нормальний, високоімпедансний тощо}
    procedure SetResistanceCompencate(toOn:boolean);
    {ввімкнення/вимкнення компенсації опору}
+
    procedure SetVoltageProtection(Level:TKt_2450_VoltageProtection);
    {встановлення значення захисту від перенапруги}
    function  GetVoltageProtection():boolean;
-   {повертає номер режиму в TKt_2450_VoltageProtection}
+   {запит номеру режиму в TKt_2450_VoltageProtection}
+   function IsVoltageProtectionActive():boolean;
+   {перевірка, чи вімкнувся захист від перенапруги}
+
    procedure SetVoltageLimit(Value:double=0);
    {встановлення граничної напруги джерела}
    procedure SetCurrentLimit(Value:double=0);
    {встановлення граничного струму джерела}
+   function  GetVoltageLimit():boolean;
+   {запит величини граничної напруги джерела}
+   function  GetCurrentLimit():boolean;
+   {запит величини граничної напруги джерела}
+   function IsVoltageLimitExceeded():boolean;
+   {перевірка, чи була спроба перевищення напруги}
+   function IsCurrentLimitExceeded():boolean;
+   {перевірка, чи була спроба перевищення напруги}
 
+   procedure SetSourceType(SourseType:TKt2450_Source=kt_sVolt);
+   {прилад як джерело напруги чи струму}
+   function GetSourceType():boolean;
+
+   procedure SetMeasureFunction(MeasureFunction:TKt2450_Measure=kt_mCurrent);
+   {прилад як джерело напруги чи струму}
+   function GetMeasureFunction():boolean;
+
+   Procedure GetParametersFromDevice;
  end;
 
-Procedure DeleteSubstring(var Source:string; Substring: string);
+//Function DeleteSubstring(Source,Substring: string):string;
 
 Function FloatToStrLimited(Value:double;LimitValues:TLimitValues):string;
 
@@ -103,6 +139,7 @@ uses
 
 procedure TKt_2450.ClearUserScreen;
 begin
+// :DISP:CLE
  SetupOperation(6,3,0,false);
 end;
 
@@ -119,22 +156,26 @@ begin
  fTelnet:=Telnet;
  fIPAdressShow:=IPAdressShow;
  inherited Create(Nm);
-
 end;
 
 procedure TKt_2450.ResetSetting;
 begin
+//  *RST
   SetupOperation(2,0,0,False);
 end;
 
 procedure TKt_2450.RunningMacroScript(ScriptName: string);
 begin
+//  SCR:RUN "ScriptName"
   fAdditionalString:=StringToInvertedCommas(ScriptName);
-  SetupOperation(8,1);
+  SetupOperation(8);
 end;
 
 procedure TKt_2450.DefaultSettings;
 begin
+ fIsTripped:=False;
+ fSourceType:=kt_sVolt;
+ fMeasureFunction:=kt_mCurrent;
  fVoltageProtection:=kt_vpnone;
  fVoltageLimit:=Kt_2450_VoltageLimDef;
  fCurrentLimit:=Kt_2450_CurrentLimDef;
@@ -145,11 +186,49 @@ begin
  fDevice:=TKt_2450Device.Create(Self,fTelnet,fIPAdressShow,Nm);
 end;
 
-function TKt_2450.GetInterlockStatus: boolean;
+function TKt_2450.GetCurrentLimit: boolean;
 begin
- QuireOperation(5,1,0,True);
+ QuireOperation(11,1,3);
+ Result:=(fDevice.Value<>ErResult);
+ if Result then fCurrentLimit:=fDevice.Value;
+end;
+
+function TKt_2450.IsInterlockOn: boolean;
+begin
+//:OUTP:INT:STAT?
+// QuireOperation(5,1,0,True);
+// QuireOperation(5,1);
+ QuireOperation(5,5);
 // Result:=(Value=1);
  Result:=(fDevice.Value=1);
+end;
+
+function TKt_2450.GetMeasureFunction: boolean;
+begin
+ QuireOperation(10,11,2);
+ Result:=(fDevice.Value<>ErResult);
+end;
+
+procedure TKt_2450.GetParametersFromDevice;
+begin
+ GetVoltageProtection();
+ GetVoltageLimit();
+ GetCurrentLimit();
+ GetSourceType();
+ GetMeasureFunction();
+end;
+
+function TKt_2450.GetSourceType: boolean;
+begin
+ QuireOperation(11,11,2);
+ Result:=(fDevice.Value<>ErResult);
+end;
+
+function TKt_2450.GetVoltageLimit: boolean;
+begin
+ QuireOperation(11,0,2);
+ Result:=(fDevice.Value<>ErResult);
+ if Result then fVoltageLimit:=fDevice.Value; 
 end;
 
 function TKt_2450.GetVoltageProtection: boolean;
@@ -157,6 +236,41 @@ begin
  QuireOperation(11,1,0,True);
 // Result:=(Value<>ErResult);
  Result:=(fDevice.Value<>ErResult);
+end;
+
+function TKt_2450.IsCurrentLimitExceeded: boolean;
+begin
+ Result:=IsLimitExcided(1,3);
+// fIsTripped:=True;
+// QuireOperation(11,1,3);
+// Result:=(fDevice.Value<>1);
+// fIsTripped:=False;
+end;
+
+function TKt_2450.IsLimitExcided(FirstLevelNode, LeafNode: byte): boolean;
+begin
+ fIsTripped:=True;
+ QuireOperation(11,FirstLevelNode,LeafNode);
+ Result:=(fDevice.Value<>1);
+ fIsTripped:=False;
+end;
+
+function TKt_2450.IsVoltageLimitExceeded: boolean;
+begin
+ Result:=IsLimitExcided(0,2);
+// fIsTripped:=True;
+// QuireOperation(11,0,2);
+// Result:=(fDevice.Value<>1);
+// fIsTripped:=False;
+end;
+
+function TKt_2450.IsVoltageProtectionActive: boolean;
+begin
+ Result:=IsLimitExcided(1,0);
+// fIsTripped:=True;
+// QuireOperation(11,1,0);
+// Result:=(fDevice.Value<>1);
+// fIsTripped:=False;
 end;
 
 //procedure TKt_2450.JoinAddString;
@@ -168,14 +282,17 @@ end;
 
 procedure TKt_2450.LoadSetup(SlotNumber: TKt2450_SetupMemorySlot);
 begin
+// *RCL <n>
  fAdditionalString:=inttostr(SlotNumber);
  SetupOperation(1);
 end;
 
 procedure TKt_2450.LoadSetupPowerOn(SlotNumber: TKt2450_SetupMemorySlot);
 begin
+//  SYST:POS SAV1
   fAdditionalString:='sav'+inttostr(SlotNumber);
-  SetupOperation(7,0);
+//  SetupOperation(7,0);
+  SetupOperation(7,4);
 end;
 
 procedure TKt_2450.MyTraining;
@@ -185,10 +302,23 @@ begin
 // SetVoltageLimit(-1);
 // SetVoltageLimit(0.02354);
 
- SetCurrentLimit();
- SetCurrentLimit(2);
- SetCurrentLimit(1.578968e-6);
+// SetCurrentLimit();
+// SetCurrentLimit(2);
+// SetCurrentLimit(1.578968e-6);
 
+// GetVoltageLimit();
+// GetCurrentLimit();
+
+//IsVoltageLimitExceeded();
+//IsCurrentLimitExceeded();
+//IsVoltageProtectionActive();
+
+SetSourceType();
+SetSourceType(kt_sCurr);
+GetSourceType();
+SetMeasureFunction();
+SetMeasureFunction(kt_mResistance);
+GetMeasureFunction();
 
 // if  GetVoltageProtection() then showmessage('Ok!');
 //   SetVoltageProtection(kt_vpnone);
@@ -213,10 +343,12 @@ end;
 
 procedure TKt_2450.OutPutChange(toOn: boolean);
 begin
+// :OUTP ON|Off
  OnOffFromBool(toOn);
 // if toOn then fAdditionalString:=SuffixKt_2450[0]
 //         else fAdditionalString:=SuffixKt_2450[1];
- SetupOperation(5,0);
+// SetupOperation(5,0);
+ SetupOperation(5);
 end;
 
 procedure TKt_2450.PrepareString;
@@ -227,29 +359,60 @@ begin
  (fDevice as TKt_2450Device).SetStringToSend(RootNoodKt_2450[fRootNode]);
  case fRootNode of
   5:begin
-//     JoinToStringToSend(FirstNodeKt_2450_5[fFirstLevelNode]);
-     fDevice.JoinToStringToSend(FirstNodeKt_2450_5[fFirstLevelNode]);
+////     JoinToStringToSend(FirstNodeKt_2450_5[fFirstLevelNode]);
+    if fFirstLevelNode=5
+      then fDevice.JoinToStringToSend(FirstNodeKt_2450[fFirstLevelNode]);
+
+//     fDevice.JoinToStringToSend(FirstNodeKt_2450_5[fFirstLevelNode]);
      end;
   6:begin
 //     JoinToStringToSend(FirstNodeKt_2450_6[fFirstLevelNode]);
-     fDevice.JoinToStringToSend(FirstNodeKt_2450_6[fFirstLevelNode]);
+//     fDevice.JoinToStringToSend(FirstNodeKt_2450_6[fFirstLevelNode]);
+//      SetupOperation(6,3,0,false);
+//        SetupOperation(6,0);
+//        SetupOperation(6,1);
+//        SetupOperation(6,2);
+     fDevice.JoinToStringToSend(FirstNodeKt_2450[fFirstLevelNode]);
     end;
    7:begin
-      fDevice.JoinToStringToSend(FirstNodeKt_2450_7[fFirstLevelNode]);
+//        SetupOperation(7,0);
+//      fDevice.JoinToStringToSend(FirstNodeKt_2450_7[fFirstLevelNode]);
+//        SetupOperation(7,4);
+      fDevice.JoinToStringToSend(FirstNodeKt_2450[fFirstLevelNode]);
      end;
-   8:begin
-      fDevice.JoinToStringToSend(FirstNodeKt_2450_8[fFirstLevelNode]);
-     end;
+//   8:begin
+//      fDevice.JoinToStringToSend(FirstNodeKt_2450_8[fFirstLevelNode]);
+//     end;
    9:begin
       fDevice.JoinToStringToSend(FirstNodeKt_2450_9[fFirstLevelNode]);
      end;
    10:begin
-      fDevice.JoinToStringToSend(Kt2450_MeasureName[TKt2450_Measure(fFirstLevelNode)]);
-      fDevice.JoinToStringToSend(FirstNodeKt_2450_10_3[fLeafNode]);
+      case fFirstLevelNode of
+//         SetupOperation(10,11,2);
+        11:fDevice.JoinToStringToSend(FirstNodeKt_2450_10_3[fLeafNode]);
+        0..3:
+          begin
+//      SetupOperation(10,ord(MeasureType),0);
+          fDevice.JoinToStringToSend(Kt2450_MeasureName[TKt2450_Measure(fFirstLevelNode)]);
+          fDevice.JoinToStringToSend(FirstNodeKt_2450_10_3[fLeafNode]);
+          end;
+      end;
      end;
    11:begin
-      fDevice.JoinToStringToSend(Kt2450_MeasureName[TKt2450_Measure(fFirstLevelNode)]);
-      fDevice.JoinToStringToSend(FirstNodeKt_2450_11_3[fLeafNode]);
+
+      case fFirstLevelNode of
+//       SetupOperation(11,11,2);
+       11:fDevice.JoinToStringToSend(FirstNodeKt_2450_10_3[fLeafNode]);
+       0..1:begin
+//       SetupOperation(11,1,0);
+// SetupOperation(11,1,3);
+// SetupOperation(11,0,2);
+            fDevice.JoinToStringToSend(Kt2450_MeasureName[TKt2450_Measure(fFirstLevelNode)]);
+            fDevice.JoinToStringToSend(FirstNodeKt_2450_11_3[fLeafNode]);
+            if fIsTripped then fDevice.JoinToStringToSend(FirstNodeKt_2450_11_3[4]);
+            end;
+      end;
+
      end;
   end;
  if fIsSuffix then JoinAddString;
@@ -259,19 +422,25 @@ end;
 procedure TKt_2450.ProcessingString(Str: string);
 begin
  Str:=Trim(Str);
- Str := AnsiLowerCase(Str);
+// Str := AnsiLowerCase(Str);
  case fRootNode of
 //  0:if pos(AnsiLowerCase(Kt_2450_Test),Str)<>0 then fValue:=314;
-  0:if pos(AnsiLowerCase(Kt_2450_Test),Str)<>0 then fDevice.Value:=314;
+  0:if pos(Kt_2450_Test,Str)<>0 then fDevice.Value:=314;
   5:begin
     fDevice.Value:=StrToInt(Str);
     end;
+  10:begin
+//      QuireOperation(10,11,2);
+      if StringToMeasureFunction(AnsiLowerCase(Str)) then fDevice.Value:=ord(fMeasureFunction);
+     end;
   11:begin
 //   QuireOperation(11,1,0,True,True);
      case fLeafNode of
-      0:if StringToVoltageProtection(Str,fVoltageProtection)
+      0:if StringToVoltageProtection(AnsiLowerCase(Str),fVoltageProtection)
           then fDevice.Value:=ord(fVoltageProtection);
-      2..3:;    
+      2..3:fDevice.Value:=SCPI_StringToValue(Str);
+//         QuireOperation(11,11,2);
+      11:if StringToSourceType(AnsiLowerCase(Str)) then fDevice.Value:=ord(fSourceType);
      end;
 
      end;
@@ -290,6 +459,7 @@ end;
 
 procedure TKt_2450.SaveSetup(SlotNumber: TKt2450_SetupMemorySlot);
 begin
+// *SAV <n>
  fAdditionalString:=inttostr(SlotNumber);
  SetupOperation(3);
 end;
@@ -322,8 +492,19 @@ end;
 
 procedure TKt_2450.SetInterlockStatus(toOn: boolean);
 begin
+// :OUTP:INT:STAT on|off
  OnOffFromBool(toOn);
- SetupOperation(5,1);
+// SetupOperation(5,1);
+ SetupOperation(5,5);
+end;
+
+procedure TKt_2450.SetMeasureFunction(MeasureFunction: TKt2450_Measure);
+begin
+// if MeasureFunction=kt_mPower then Exit;
+// fAdditionalString:=Kt2450_MeasureName[MeasureFunction];
+ fAdditionalString:=StringToInvertedCommas(DeleteSubstring(Kt2450_MeasureName[MeasureFunction],':'));
+ SetupOperation(10,11,2);
+ fMeasureFunction:=MeasureFunction;
 end;
 
 procedure TKt_2450.SetOutputOffState(OutputOffState: TKt_2450_OutputOffState);
@@ -335,13 +516,20 @@ end;
 procedure TKt_2450.SetResistanceCompencate(toOn: boolean);
 begin
  OnOffFromBool(toOn);
- SetupOperation(10,ord(kt_mResistancet),1);
+ SetupOperation(10,ord(kt_mResistance),1);
 end;
 
 procedure TKt_2450.SetSense(MeasureType: TKt2450_Measure; Sense: TKt2450_Sense);
 begin
  fAdditionalString:=SuffixKt_2450[ord(Sense)];
  SetupOperation(10,ord(MeasureType),0);
+end;
+
+procedure TKt_2450.SetSourceType(SourseType: TKt2450_Source);
+begin
+ fAdditionalString:=Kt2450_SourceName[SourseType];
+ SetupOperation(11,11,2);
+ fSourceType:=SourseType;
 end;
 
 procedure TKt_2450.SetTerminals(Terminal: TKt2450_OutputTerminals);
@@ -352,8 +540,11 @@ end;
 
 procedure TKt_2450.UnloadSetupPowerOn;
 begin
-  fAdditionalString:=SuffixKt_2450[2];
-  SetupOperation(7,0);
+//SYST:POS RST
+//  fAdditionalString:=SuffixKt_2450[2];
+//  SetupOperation(7,0);
+  fAdditionalString:=DeleteSubstring(RootNoodKt_2450[2]);
+  SetupOperation(7,4);
 end;
 
 //procedure TKt_2450.SetupOperation(RootNode, FirstLevelNode, LeafNode: byte;
@@ -398,13 +589,39 @@ end;
 // Result:='"'+str+'"';
 //end;
 
+function TKt_2450.StringToMeasureFunction(Str: string): boolean;
+  var i:TKt2450_Measure;
+begin
+ Result:=False;
+ for I := Low(TKt2450_Measure) to kt_mResistance do
+   if Str=DeleteSubstring(Kt2450_MeasureName[i],':') then
+     begin
+       fMeasureFunction:=i;
+       Result:=True;
+       Break;
+     end;
+end;
+
+function TKt_2450.StringToSourceType(Str: string): boolean;
+  var i:TKt2450_Source;
+begin
+ Result:=False;
+ for I := Low(TKt2450_Source) to (High(TKt2450_Source)) do
+   if Str=Kt2450_SourceName[i] then
+     begin
+       fSourceType:=i;
+       Result:=True;
+       Break;
+     end;
+end;
+
 function TKt_2450.StringToVoltageProtection(Str: string;
     var vp: TKt_2450_VoltageProtection): boolean;
   var i:TKt_2450_VoltageProtection;
 begin
  Result:=False;
 // DeleteSubstring(Str,SuffixKt_2450[4]);
- DeleteSubstring(Str,SuffixKt_2450[3]);
+ Str:=DeleteSubstring(Str,SuffixKt_2450[3]);
  if pos(Str,Kt_2450_VoltageProtectionLabel[kt_vpnone])=0 then
      Str:=Str+'V';
  for I := Low(TKt_2450_VoltageProtection) to (High(TKt_2450_VoltageProtection)) do
@@ -418,6 +635,7 @@ end;
 
 function TKt_2450.Test: boolean;
 begin
+// *IDN?
  QuireOperation(0,0,0,False);
 // Result:=(Value=314);
  Result:=(fDevice.Value=314);
@@ -425,6 +643,9 @@ end;
 
 procedure TKt_2450.TextToUserScreen(top_text, bottom_text: string);
 begin
+//DISP:SCR SWIPE_USER
+//DISP:USER1:TEXT "top_text"
+//DISP:USER2:TEXT "Tbottom_text"
  fAdditionalString:='SWIPE_USER';
  SetupOperation(6,0);
  if top_text<>'' then
@@ -439,8 +660,6 @@ begin
      fAdditionalString:=StringToInvertedCommas(bottom_text);
      SetupOperation(6,2);
    end;
-
-
 end;
 
 //procedure TKt_2450.UpDate;
@@ -540,11 +759,12 @@ end;
 //        end;
 //end;
 
-Procedure DeleteSubstring(var Source:string; Substring: string);
-begin
- if pos(Substring,Source)<>0 then
-     Delete(Source,pos(Substring,Source),Length(Substring));
-end;
+//Function DeleteSubstring(Source,Substring: string):string;
+//begin
+// Result:=Source;
+// if pos(Substring,Source)<>0 then
+//     Delete(Result,pos(Substring,Source),Length(Substring));
+//end;
 
 Function FloatToStrLimited(Value:double;LimitValues:TLimitValues):string;
 begin

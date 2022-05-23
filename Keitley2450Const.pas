@@ -5,13 +5,12 @@ const
 
   Kt_2450_Test='KEITHLEY INSTRUMENTS,MODEL 2450';
 
-  RootNoodKt_2450:array[0..12]of string=
-  ('*idn?','*rcl ','*rst','*sav',':acq',':outp','disp:',':syst','scr',
-//   0       1      2      3      4        5       6        7       8
-  'rout',':sens',':sour',':tim:scal');
-//  9       10     11         12
+  RootNoodKt_2450:array[0..14]of string=
+  ('*idn?','*rcl ','*rst','*sav',':acq',':outp','disp:',':syst','scr:run',
+//   0       1      2      3      4        5       6        7      8
+  'rout',':sens',':sour',':curr', ':volt', ':res');
+//  9       10     11        12      13      14
 
-//:SOURce[1]:CURRent:VLIMit[:LEVel] <value>
 
   SuffixKt_2450:array[0..4]of string=('on','off', 'rst', {'?',}'prot','def');
 
@@ -19,25 +18,31 @@ const
   (':stat',':int:stat',':smod');
 //   0       1             2         3
 
-  FirstNodeKt_2450_6:array[0..3]of string=
-  ('scr','user1:text','user2:text','cle');
-//   0       1             2         3
+  FirstNodeKt_2450:array[0..5]of string=
+  ('scr','user1:text','user2:text','cle',':pos',':int:stat');
+//   0       1             2         3      4        5
 
-  FirstNodeKt_2450_7:array[0..1]of string=
-  (':pos','???');
+//  FirstNodeKt_2450_6:array[0..3]of string=
+//  ('scr','user1:text','user2:text','cle');
+////   0       1             2         3
+//
+//  FirstNodeKt_2450_7:array[0..1]of string=
+//  (':pos','???');
 
-  FirstNodeKt_2450_8:array[0..1]of string=
-  (':run','???');
+//  FirstNodeKt_2450_8:array[0..1]of string=
+//  (':run','???');
 
   FirstNodeKt_2450_9:array[0..1]of string=
   (':term','???');
 
-  FirstNodeKt_2450_10_3:array[0..1]of string=
-  (':rsen',':ocom');
+  FirstNodeKt_2450_10_3:array[0..2]of string=
+  (':rsen',':ocom',':func');
 
-  FirstNodeKt_2450_11_3:array[0..3]of string=
-  (':prot',':ocom',':vlim',':ilim');
+  FirstNodeKt_2450_11_3:array[0..4]of string=
+  (':prot',':ocom',':vlim',':ilim',':trip');
 
+//:SOURce[1]:FUNCtion[:MODE] <function>
+//[:SENSe[1]]:FUNCtion[:ON] "<function>"
 
 type
  TLimits=(lvMin,lvMax);
@@ -45,7 +50,8 @@ type
 
  TKt2450_SetupMemorySlot=0..4;
  TKt2450_OutputTerminals=(kt_otFront, kt_otRear);
- TKt2450_Measure=(kt_mCurrent,kt_mVoltage,kt_mResistancet,kt_mPower);
+ TKt2450_Source=(kt_sVolt, kt_sCurr);
+ TKt2450_Measure=(kt_mCurrent,kt_mVoltage,kt_mResistance{,kt_mPower});
  TKt2450_Sense=(kt_s4wire,kt_s2wire);
  TKt2450_Settings=(kt_curr_sense,kt_volt_sense,kt_res_sense,
                    kt_outputoff,kt_rescomp,kt_voltprot);
@@ -57,8 +63,10 @@ type
 
 const
  Kt2450_TerminalsName:array [TKt2450_OutputTerminals] of string=('fron', 'rear');
+ Kt2450_SourceName:array [TKt2450_Source] of string=
+           ('volt', 'curr');
  Kt2450_MeasureName:array [TKt2450_Measure] of string=
-           (':curr', ':volt', ':res', ':pow??');
+           (':curr', ':volt', ':res'{, ':pow??'});
  Kt_2450_OutputOffStateName:array[TKt_2450_OutputOffState]of string=
           ('norm','zero', 'himp', 'guard');
  Kt_2450_VoltageProtectionLabel:array[TKt_2450_VoltageProtection]of string=

@@ -180,10 +180,13 @@ end;
 
 procedure TDataRequestTelnet.Request;
 begin
- if TestShowEthernet then showmessage('send:  '+fTelnet.fStringToSend);
  if DeviceEthernetisAbsent
     then showmessage('Virtual send:  '+fTelnet.fStringToSend)
-    else inherited Request;
+    else
+      begin
+      if TestShowEthernet then showmessage('send:  '+fTelnet.fStringToSend);
+      inherited Request;
+      end;
 end;
 
 { TTelnetMeterDeviceSingle }

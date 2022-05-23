@@ -35,6 +35,7 @@ type
     function StringToInvertedCommas(str:string):string;
     procedure DefaultSettings;virtual;
     function SCPI_StringToValue(Str:string):double;
+    Function DeleteSubstring(Source:string;Substring: string=':'):string;
    public
     Constructor Create(Nm:string);
     destructor Destroy;override;
@@ -114,6 +115,13 @@ end;
 
 procedure TSCPInew.DefaultSettings;
 begin
+end;
+
+function TSCPInew.DeleteSubstring(Source, Substring: string): string;
+begin
+ Result:=Source;
+ if pos(Substring,Source)<>0 then
+     Delete(Result,pos(Substring,Source),Length(Substring));
 end;
 
 destructor TSCPInew.Destroy;
