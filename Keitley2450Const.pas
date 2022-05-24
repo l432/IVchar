@@ -8,15 +8,15 @@ const
 
   Kt_2450_Test='KEITHLEY INSTRUMENTS,MODEL 2450';
 
-  RootNoodKt_2450:array[0..14]of string=
+  RootNoodKt_2450:array[0..15]of string=
   ('*idn?','*rcl ','*rst','*sav',':acq',':outp','disp:',':syst','scr:run',
 //   0       1      2      3      4        5       6        7      8
-  'rout',':sens',':sour',':curr', ':volt', ':res');
-//  9       10     11        12      13      14
+  'rout',':sens',':sour',':curr', ':volt', ':res',':func');
+//  9       10     11        12      13      14      15
 
 
-  SuffixKt_2450:array[0..4]of string=('on','off', 'rst',
-                                    {'?',}'prot','def');
+  SuffixKt_2450:array[0..3]of string=('on','off', 'rst',
+                                    {'?','prot',}'def');
 
 //  FirstNodeKt_2450_5:array[0..2]of string=
 //  (':stat',':int:stat',':smod');
@@ -25,8 +25,8 @@ const
   FirstNodeKt_2450:array[0..13]of string=
   ('scr','user1:text','user2:text','cle',':pos',':int:stat',':term',
 //     0       1             2         3      4        5         6
-   ':rsen',':smod',':ocom',':prot',':trip',':vlim',':ilim');
-//    7       8       9       10      11      12      13
+   ':rsen',':smod',':ocom',':prot',':trip',':vlim',':ilim'{,':func'});
+//    7       8       9       10      11      12      13      14
 
 //  FirstNodeKt_2450_6:array[0..3]of string=
 //  ('scr','user1:text','user2:text','cle');
@@ -38,14 +38,14 @@ const
 //  FirstNodeKt_2450_8:array[0..1]of string=
 //  (':run','???');
 
-  FirstNodeKt_2450_9:array[0..1]of string=
-  (':term','???');
+//  FirstNodeKt_2450_9:array[0..1]of string=
+//  (':term','???');
 
-  FirstNodeKt_2450_10_3:array[0..2]of string=
-  (':rsen',':ocom',':func');
-
-  FirstNodeKt_2450_11_3:array[0..4]of string=
-  (':prot',':ocom',':vlim',':ilim',':trip');
+//  FirstNodeKt_2450_10_3:array[0..2]of string=
+//  (':rsen',':ocom',':func');
+//
+//  FirstNodeKt_2450_11_3:array[0..4]of string=
+//  (':prot',':ocom',':vlim',':ilim',':trip');
 
 
 
@@ -76,8 +76,8 @@ const
 
  Kt2450_SourceName:array [TKt2450_Source] of string=
            ('volt', 'curr');
- Kt2450_MeasureName:array [TKt2450_Measure] of string=
-           (':curr', ':volt', ':res'{, ':pow??'});
+// Kt2450_MeasureName:array [TKt2450_Measure] of string=
+//           (':curr', ':volt', ':res'{, ':pow??'});
  Kt_2450_OutputOffStateName:array[TKt_2450_OutputOffState]of string=
           ('norm','zero', 'himp', 'guar');
  Kt_2450_VoltageProtectionLabel:array[TKt_2450_VoltageProtection]of string=

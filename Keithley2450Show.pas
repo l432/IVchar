@@ -12,10 +12,6 @@ const
   SpeedButtonNumberKt2450 = 1;
   PanelNumberKt2450 = 1;
 
-// KT2450_SenseLabels:array[TKt2450_Sense]of string=
-// ('4-Wire','2-Wire');
-// KT2450_OutputOffStateLabels:array[TKt_2450_OutputOffState]of string=
-// ('Normal','Zero','H-Impedance','Guard');
 
 type
 
@@ -113,14 +109,6 @@ begin
   ButtonAction[0] := TestButtonClick;
   ButtonAction[1] := ResetButtonClick;
   ButtonAction[2] := GetSettingButtonClick;
-//  ButtonAction[3] := SaveButtonClick;
-//  ButtonAction[4] := LoadButtonClick;
-//  ButtonAction[5] := AutoButtonClick;
-//  ButtonAction[6] := DefaultButtonClick;
-//  ButtonAction[7] := RefreshButtonClick;
-//  ButtonAction[8] := RunButtonClick;
-//  ButtonAction[9] := StopButtonClick;
-//  ButtonAction[10] := UnlockButtonClick;
    ButtonAction[ButtonNumberKt2450] := MyTrainButtonClick;
   for I := 0 to ButtonNumberKt2450 do
   begin
@@ -243,7 +231,6 @@ end;
 procedure TKt_2450_Show.SenseCurOkClick;
 begin
  fKt_2450.SetSense(kt_mCurrent,TKt2450_Sense(fSettingsShow[kt_curr_sense].Data));
-// fSettingsShow[kt_curr_sense].Data:=fGDS_806S.fSettings[gds_ch1_scale];
 end;
 
 procedure TKt_2450_Show.SenseResOkClick;

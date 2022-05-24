@@ -8,8 +8,8 @@ uses
 const
 //  TestShowEthernet=False;
   TestShowEthernet=True;
-  DeviceEthernetisAbsent=False;
-//  DeviceEthernetisAbsent=True;
+//  DeviceEthernetisAbsent=False;
+  DeviceEthernetisAbsent=True;
 
 type
 
