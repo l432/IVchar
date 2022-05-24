@@ -12,10 +12,10 @@ const
   SpeedButtonNumberKt2450 = 1;
   PanelNumberKt2450 = 1;
 
- KT2450_SenseLabels:array[TKt2450_Sense]of string=
- ('4-Wire','2-Wire');
- KT2450_OutputOffStateLabels:array[TKt_2450_OutputOffState]of string=
- ('Normal','Zero','H-Impedance','Guard');
+// KT2450_SenseLabels:array[TKt2450_Sense]of string=
+// ('4-Wire','2-Wire');
+// KT2450_OutputOffStateLabels:array[TKt_2450_OutputOffState]of string=
+// ('Normal','Zero','H-Impedance','Guard');
 
 type
 
@@ -66,7 +66,9 @@ type
                           Labels:array of TLabel);
    procedure SettingsShowFree;
    procedure OutPutOnOffSpeedButtonClick(Sender: TObject);
+   procedure OutPutOnFromDevice();
    procedure TerminalsFrReSpeedButtonClick(Sender: TObject);
+   procedure TerminalsFromDevice();
    procedure SenseCurOkClick();
    procedure SenseVoltOkClick();
    procedure SenseResOkClick();
@@ -154,8 +156,8 @@ begin
   SettingsShowSLCreate();
   SettingsShowCreate(STexts,Labels);
 
-
   fSetupMemoryShow:=TKT2450_SetupMemoryShow.Create(Self,Panels[0],Panels[1]);
+  ObjectToSetting();
 end;
 
 destructor TKt_2450_Show.Destroy;
@@ -168,8 +170,18 @@ end;
 
 procedure TKt_2450_Show.GetSettingButtonClick(Sender: TObject);
 begin
- if fKt_2450.GetVoltageProtection then
-   fSettingsShow[kt_voltprot].Data:=ord(fKt_2450.VoltageProtection);
+  fKt_2450.GetTerminal();
+  fKt_2450.IsOutPutOn();
+//  fKt_2450.GetSenses(); toDo ObjectToSetting
+// fKt_2450.GetOutputOffStates;
+
+// fKt_2450.GetMeasureFunction();
+// fKt_2450.IsResistanceCompencateOn();//має бути після GetMeasureFunction
+   fKt_2450.GetVoltageProtection;
+
+  ObjectToSetting();
+// if fKt_2450.GetVoltageProtection then
+//   fSettingsShow[kt_voltprot].Data:=ord(fKt_2450.VoltageProtection);
 
 end;
 
@@ -180,19 +192,30 @@ end;
 
 procedure TKt_2450_Show.ObjectToSetting;
 begin
-
+ TerminalsFromDevice();
+ OutPutOnFromDevice();
+ fSettingsShow[kt_voltprot].Data:=ord(fKt_2450.VoltageProtection);
 end;
 
 procedure TKt_2450_Show.OutputOffOkClick;
 begin
- fKt_2450.SetOutputOffState(TKt_2450_OutputOffState(fSettingsShow[kt_outputoff].Data));
+// fKt_2450.SetOutputOffState(TKt_2450_OutputOffState(fSettingsShow[kt_outputoff].Data));
+end;
+
+procedure TKt_2450_Show.OutPutOnFromDevice;
+begin
+  fOutPutOnOff.OnClick:=nil;
+  fOutPutOnOff.Caption:=Kt2450_OutPutOnOffButtonName[fKt_2450.OutPutOn];
+  fOutPutOnOff.Down:=fKt_2450.OutPutOn;
+  fOutPutOnOff.OnClick:=OutPutOnOffSpeedButtonClick;
 end;
 
 procedure TKt_2450_Show.OutPutOnOffSpeedButtonClick(Sender: TObject);
 begin
  fKt_2450.OutPutChange(fOutPutOnOff.Down);
- if fOutPutOnOff.Down then fOutPutOnOff.Caption:='OutPut on'
-                      else fOutPutOnOff.Caption:='OutPut off'
+ fOutPutOnOff.Caption:=Kt2450_OutPutOnOffButtonName[fOutPutOnOff.Down];
+// if fOutPutOnOff.Down then fOutPutOnOff.Caption:='OutPut on'
+//                      else fOutPutOnOff.Caption:='OutPut off'
 end;
 
 procedure TKt_2450_Show.ReadFromIniFile(ConfigFile: TIniFile);
@@ -328,21 +351,29 @@ begin
   fOutPutOnOff.OnClick:=OutPutOnOffSpeedButtonClick;
   fOutPutOnOff.Caption:='Output';
   fTerminalsFrRe:=SpeedButtons[1];
-  fTerminalsFrRe.OnClick:=TerminalsFrReSpeedButtonClick;
-  fTerminalsFrRe.Caption:='Terminals';
+//  fTerminalsFrRe.OnClick:=TerminalsFrReSpeedButtonClick;
+//  fTerminalsFrRe.Caption:='Terminals';
 
+end;
+
+procedure TKt_2450_Show.TerminalsFromDevice;
+begin
+  fTerminalsFrRe.OnClick:=nil;
+  fTerminalsFrRe.Caption:=Kt2450_TerminalsButtonName[fKt_2450.Terminal];
+  fTerminalsFrRe.Down:=(fKt_2450.Terminal=kt_otRear);
+  fTerminalsFrRe.OnClick:=TerminalsFrReSpeedButtonClick;
 end;
 
 procedure TKt_2450_Show.TerminalsFrReSpeedButtonClick(Sender: TObject);
 begin
  if fTerminalsFrRe.Down then
       begin
-       fKt_2450.SetTerminals(kt_otRear);
-       fTerminalsFrRe.Caption:='Rear Terminals';
+       fKt_2450.SetTerminal(kt_otRear);
+       fTerminalsFrRe.Caption:=Kt2450_TerminalsButtonName[kt_otRear];
       end             else
       begin
-       fKt_2450.SetTerminals(kt_otFront);
-       fTerminalsFrRe.Caption:='Front Terminals';
+       fKt_2450.SetTerminal(kt_otFront);
+       fTerminalsFrRe.Caption:=Kt2450_TerminalsButtonName[kt_otFront];
       end;
 end;
 

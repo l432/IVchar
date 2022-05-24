@@ -13,6 +13,9 @@ const
   SCPI_PacketEndChar=#10;
 
 type
+ TLimits=(lvMin,lvMax);
+ TLimitValues=array[TLimits] of double;
+
   TSCPInew=class(TNamedInterfacedObject)
    private
     procedure SetFlags(RootNode,FirstLevelNode,LeafNode:byte;
@@ -36,6 +39,7 @@ type
     procedure DefaultSettings;virtual;
     function SCPI_StringToValue(Str:string):double;
     Function DeleteSubstring(Source:string;Substring: string=':'):string;
+    Function FloatToStrLimited(Value:double;LimitValues:TLimitValues):string;
    public
     Constructor Create(Nm:string);
     destructor Destroy;override;
@@ -68,7 +72,7 @@ var
 implementation
 
 uses
-  Dialogs, SysUtils, OlegType;
+  Dialogs, SysUtils, OlegType, Math;
 
 { TRS232_SCPI }
 
@@ -128,6 +132,14 @@ destructor TSCPInew.Destroy;
 begin
   FreeAndNil(fDevice);
   inherited;
+end;
+
+function TSCPInew.FloatToStrLimited(Value: double;
+  LimitValues: TLimitValues): string;
+begin
+  Value:=min(Value,LimitValues[lvMax]);
+  Value:=max(Value,LimitValues[lvMin]);
+  Result:=FloatToStrF(Value,ffExponent,4,0);
 end;
 
 procedure TSCPInew.JoinAddString;
