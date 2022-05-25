@@ -773,6 +773,8 @@ type
     B_KT2450GetSetting: TButton;
     L_KT2450Mode: TLabel;
     ST_KT2450Mode: TStaticText;
+    L_KT2450LimitSource: TLabel;
+    ST_KT2450LimitSource: TStaticText;
 
     procedure FormCreate(Sender: TObject);
     procedure BConnectClick(Sender: TObject);
@@ -4442,11 +4444,13 @@ begin
                                      [SB_Kt2450_OutPut,SB_Kt2450_Termin],
                                      [PKt2450SaveSetup,PKt2450LoadSetup],
                                      [ST_KT2450_CurSense,ST_KT2450_VoltSense,
-                                     ST_KT2450_ResSense,ST_Kt2450_OutPut,
+                                     ST_KT2450_ResSense,{ST_Kt2450_OutPut,}
                                      STKT2450_ResComp,ST_KT2450VolProt,
-                                     ST_KT2450Mode],
-                                     [L_Kt2450_OutPut,LKT2450_ResComp,
-                                     L_KT2450VolProt,L_KT2450Mode]);
+                                     ST_KT2450Mode, ST_Kt2450_OutPut,
+                                     ST_KT2450LimitSource],
+                                     [{L_Kt2450_OutPut,}LKT2450_ResComp,
+                                     L_KT2450VolProt,L_KT2450Mode,
+                                     L_Kt2450_OutPut,L_KT2450LimitSource]);
 
  AnyObjectArray.Add([Kt_2450]);
  ShowArray.Add([Kt2450_IPAdressShow,Kt_2450_Show]);

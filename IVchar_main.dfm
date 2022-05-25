@@ -9271,8 +9271,6 @@ object IVchar: TIVchar
     object TS_Kt2450: TTabSheet
       Caption = 'Kt2450'
       ImageIndex = 16
-      ExplicitLeft = 6
-      ExplicitTop = 89
       object SB_Kt2450_OutPut: TSpeedButton
         Left = 402
         Top = 16
@@ -9418,8 +9416,8 @@ object IVchar: TIVchar
         end
       end
       object B_MyTrain: TButton
-        Left = 189
-        Top = 240
+        Left = 210
+        Top = 160
         Width = 75
         Height = 25
         Caption = 'B_MyTrain'
@@ -9616,7 +9614,7 @@ object IVchar: TIVchar
       object GB_Kt2450_Source: TGroupBox
         Left = 7
         Top = 194
-        Width = 162
+        Width = 202
         Height = 227
         Caption = 'Source'
         Font.Charset = RUSSIAN_CHARSET
@@ -9642,21 +9640,22 @@ object IVchar: TIVchar
           ParentFont = False
         end
         object L_Kt2450_OutPut: TLabel
-          Left = 7
-          Top = 181
-          Width = 62
-          Height = 16
-          Caption = 'Output off'
+          Left = 3
+          Top = 109
+          Width = 59
+          Height = 36
+          Caption = 'Output Type'
           Font.Charset = RUSSIAN_CHARSET
           Font.Color = clTeal
           Font.Height = -13
           Font.Name = 'Arial'
           Font.Style = [fsBold]
           ParentFont = False
+          WordWrap = True
         end
         object L_KT2450VolProt: TLabel
-          Left = 7
-          Top = 143
+          Left = 3
+          Top = 162
           Width = 77
           Height = 32
           Caption = 'Overvoltage Protection'
@@ -9668,9 +9667,23 @@ object IVchar: TIVchar
           ParentFont = False
           WordWrap = True
         end
+        object L_KT2450LimitSource: TLabel
+          Left = 96
+          Top = 162
+          Width = 91
+          Height = 32
+          Caption = 'Limit Value'
+          Font.Charset = RUSSIAN_CHARSET
+          Font.Color = clOlive
+          Font.Height = -13
+          Font.Name = 'Arial'
+          Font.Style = [fsBold]
+          ParentFont = False
+          WordWrap = True
+        end
         object ST_Kt2450_OutPut: TStaticText
-          Left = 7
-          Top = 200
+          Left = 68
+          Top = 115
           Width = 73
           Height = 24
           Caption = 'Normal'
@@ -9684,8 +9697,8 @@ object IVchar: TIVchar
           TabOrder = 0
         end
         object ST_KT2450VolProt: TStaticText
-          Left = 96
-          Top = 151
+          Left = 12
+          Top = 200
           Width = 53
           Height = 24
           Caption = 'None'
@@ -9698,12 +9711,27 @@ object IVchar: TIVchar
           ShowAccelChar = False
           TabOrder = 1
         end
+        object ST_KT2450LimitSource: TStaticText
+          Left = 108
+          Top = 200
+          Width = 40
+          Height = 24
+          Caption = '210'
+          Font.Charset = RUSSIAN_CHARSET
+          Font.Color = clOlive
+          Font.Height = -17
+          Font.Name = 'Verdana'
+          Font.Style = [fsBold]
+          ParentFont = False
+          ShowAccelChar = False
+          TabOrder = 2
+        end
       end
       object ST_KT2450Mode: TStaticText
         Left = 73
         Top = 117
-        Width = 182
-        Height = 26
+        Width = 176
+        Height = 24
         Caption = 'sourceV measR(I)'
         Font.Charset = RUSSIAN_CHARSET
         Font.Color = clGreen
