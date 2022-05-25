@@ -39,6 +39,32 @@ type
     procedure NumberPinShow(PinActiveNumber:integer=-1;ChooseNumber:integer=-1);override;
  end;
 
+TKt_2450_AbstractElementShow=class(TSimpleFreeAndAiniObject)
+ private
+  fKt_2450:TKt_2450;
+  procedure SettingsShowSLCreate();virtual;abstract;
+  procedure SettingsShowSLFree();virtual;abstract;
+  procedure SettingsShowCreate(STexts:array of TStaticText;
+                          Labels:array of TLabel);virtual;abstract;
+  procedure SettingsShowFree;virtual;abstract;
+  procedure CreateFooter();virtual;abstract;
+ public
+  Constructor Create(Kt_2450:TKt_2450;
+                      STexts:array of TStaticText;
+                      Labels:array of TLabel
+                      );
+  destructor Destroy;override;
+  procedure ObjectToSetting;virtual;abstract;
+ end;
+
+
+TKt_2450_SourceShow=class(TKt_2450_AbstractElementShow)
+ private
+  fSettingsShow:array[TKt2450_SourceSettings]of TStringParameterShow;
+  fSettingsShowSL:array[TKt2450_SourceSettings]of TStringList;
+ public
+//  procedure ObjectToSetting;override;
+ end;
 
  TKt_2450_Show=class(TSimpleFreeAndAiniObject)
   private
@@ -71,6 +97,7 @@ type
    procedure OutputOffOkClick();
    procedure ResCompOkClick();
    procedure VoltageProtectionOkClick();
+   procedure ModeOkClick();
   public
    Constructor Create(Kt_2450:TKt_2450;
                       Buttons:Array of TButton;
@@ -94,7 +121,7 @@ var
 implementation
 
 uses
-  Dialogs, Graphics, SysUtils;
+  Dialogs, Graphics, SysUtils, TelnetDevice;
 
 { TKt_2450_Show }
 
@@ -145,6 +172,7 @@ begin
   SettingsShowCreate(STexts,Labels);
 
   fSetupMemoryShow:=TKT2450_SetupMemoryShow.Create(Self,Panels[0],Panels[1]);
+
   ObjectToSetting();
 end;
 
@@ -158,6 +186,8 @@ end;
 
 procedure TKt_2450_Show.GetSettingButtonClick(Sender: TObject);
 begin
+  if not(DeviceEthernetisAbsent) then
+    begin
   fKt_2450.GetTerminal();
   fKt_2450.IsOutPutOn();
 //  fKt_2450.GetSenses(); toDo ObjectToSetting
@@ -166,11 +196,17 @@ begin
 // fKt_2450.GetMeasureFunction();
 // fKt_2450.IsResistanceCompencateOn();//має бути після GetMeasureFunction
    fKt_2450.GetVoltageProtection;
+    end;
 
   ObjectToSetting();
 // if fKt_2450.GetVoltageProtection then
 //   fSettingsShow[kt_voltprot].Data:=ord(fKt_2450.VoltageProtection);
 
+end;
+
+procedure TKt_2450_Show.ModeOkClick;
+begin
+ fKt_2450.SetMode(TKt_2450_Mode(fSettingsShow[kt_mode].Data));
 end;
 
 procedure TKt_2450_Show.MyTrainButtonClick(Sender: TObject);
@@ -183,6 +219,8 @@ begin
  TerminalsFromDevice();
  OutPutOnFromDevice();
  fSettingsShow[kt_voltprot].Data:=ord(fKt_2450.VoltageProtection);
+ fSettingsShow[kt_mode].Data:=ord(fKt_2450.Mode);
+
 end;
 
 procedure TKt_2450_Show.OutputOffOkClick;
@@ -207,10 +245,10 @@ begin
 end;
 
 procedure TKt_2450_Show.ReadFromIniFile(ConfigFile: TIniFile);
- var i:integer;
+// var i:integer;
 begin
-   for I := 0 to ord(High(TKt2450_Settings)) do
-    fSettingsShow[TKt2450_Settings(i)].ReadFromIniFile(ConfigFile);
+//   for I := 0 to ord(High(TKt2450_Settings)) do
+//    fSettingsShow[TKt2450_Settings(i)].ReadFromIniFile(ConfigFile);
 
   fSetupMemoryShow.ReadFromIniFile(ConfigFile);
 //  SettingToObject();
@@ -248,7 +286,7 @@ procedure TKt_2450_Show.SettingsShowCreate(STexts: array of TStaticText;
  const
       SettingsCaption:array[TKt2450_Settings]of string=
       ('CurrentSense','VoltageSense','Resistance',
-      'OutputOff State','ResistComp','Overvoltage Protection');
+      'OutputOff State','ResistComp','Overvoltage Protection','Device Mode');
  var i:TKt2450_Settings;
 begin
 
@@ -268,10 +306,14 @@ begin
  for I := kt_outputoff to High(TKt2450_Settings) do
    begin
 //   showmessage(fSettingsShowSL[i].Text);
+//   if i= kt_mode then STexts[ord(i)].AutoSize:=False;
    fSettingsShow[i]:=TStringParameterShow.Create(STexts[ord(i)],
                         Labels[ord(i)-ord(kt_outputoff)], SettingsCaption[i], fSettingsShowSL[i]);
    fSettingsShow[i].ForUseInShowObject(fKt_2450,False,False);
+
+   
    end;
+
   fSettingsShow[kt_outputoff].HookParameterClick:=OutputOffOkClick;
   fSettingsShow[kt_outputoff].SetName(fKt_2450.Name+'OutputOff');
   fSettingsShow[kt_rescomp].HookParameterClick:=ResCompOkClick;
@@ -279,6 +321,9 @@ begin
   fSettingsShow[kt_voltprot].HookParameterClick:=VoltageProtectionOkClick;
   fSettingsShow[kt_voltprot].SetName(fKt_2450.Name+'VoltProt');
 
+  fSettingsShow[kt_mode].HookParameterClick:=ModeOkClick;
+  fSettingsShow[kt_mode].SetName(fKt_2450.Name+'Mode');
+//  fSettingsShow[kt_mode].
 end;
 
 procedure TKt_2450_Show.SettingsShowFree;
@@ -315,6 +360,9 @@ begin
   fSettingsShowSL[kt_rescomp].Add(SuffixKt_2450[i]);
  for I := 0 to ord(High(TKt_2450_VoltageProtection)) do
   fSettingsShowSL[kt_voltprot].Add(Kt_2450_VoltageProtectionLabel[TKt_2450_VoltageProtection(i)]);
+
+ for I := 0 to ord(High(TKt_2450_Mode)) do
+  fSettingsShowSL[kt_mode].Add(KT2450_ModeLabels[TKt_2450_Mode(i)]);
 end;
 
 procedure TKt_2450_Show.SettingsShowSLFree;
@@ -385,10 +433,10 @@ begin
 end;
 
 procedure TKt_2450_Show.WriteToIniFile(ConfigFile: TIniFile);
- var i:integer;
+// var i:integer;
 begin
- for I := 0 to ord(High(TKt2450_Settings)) do
-  fSettingsShow[TKt2450_Settings(i)].WriteToIniFile(ConfigFile);
+// for I := 0 to ord(High(TKt2450_Settings)) do
+//  fSettingsShow[TKt2450_Settings(i)].WriteToIniFile(ConfigFile);
  fSetupMemoryShow.WriteToIniFile(ConfigFile);
 end;
 
@@ -450,6 +498,25 @@ begin
   0:Result:='Save Setup';
   else Result:='Load Setup';
  end;
+end;
+
+{ TKt_2450_AbstractElementShow }
+
+constructor TKt_2450_AbstractElementShow.Create(Kt_2450: TKt_2450;
+             STexts: array of TStaticText; Labels: array of TLabel);
+begin
+  fKt_2450:=Kt_2450;
+  SettingsShowSLCreate();
+  SettingsShowCreate(STexts,Labels);
+  CreateFooter();
+  ObjectToSetting();
+end;
+
+destructor TKt_2450_AbstractElementShow.Destroy;
+begin
+  SettingsShowFree;
+  SettingsShowSLFree;
+  inherited;
 end;
 
 end.

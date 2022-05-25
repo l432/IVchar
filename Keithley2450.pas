@@ -28,20 +28,24 @@ type
    fOutPutOn:boolean;
    fResistanceCompencateOn:boolean;
    fSences:TKt2450_Senses;
+   fMeasureUnits:TKt_2450_MeasureUnits;
    fOutputOffState:TKt_2450_OutputOffStates;
    fSourceType:TKt2450_Source;
    fMeasureFunction:TKt2450_Measure;
    fVoltageProtection:TKt_2450_VoltageProtection;
    fVoltageLimit:double;
    fCurrentLimit:double;
+   fMode:TKt_2450_Mode;
    procedure OnOffFromBool(toOn:boolean);
    function StringToVoltageProtection(Str:string;var vp:TKt_2450_VoltageProtection):boolean;
    function StringToSourceType(Str:string):boolean;
    function StringToMeasureFunction(Str:string):boolean;
    function StringToTerminals(Str:string):boolean;
    function StringToOutPutState(Str:string):boolean;
+   function StringToMeasureUnit(Str:string):boolean;
    function IsLimitExcided(FirstLevelNode,LeafNode:byte):boolean;
    {типова функція для запиту, чи ввімкнув прилад певні захисти}
+   function ModeDetermination:TKt_2450_Mode;
   protected
    procedure PrepareString;override;
    procedure DeviceCreate(Nm:string);override;
@@ -56,7 +60,9 @@ type
    property OutPutOn:boolean read fOutPutOn;
    property ResistanceCompencateOn:boolean read fResistanceCompencateOn;
    property Sences:TKt2450_Senses read fSences;
+   property MeasureUnits:TKt_2450_MeasureUnits read fMeasureUnits;
    property OutputOffState:TKt_2450_OutputOffStates read fOutputOffState;
+   property Mode:TKt_2450_Mode read fMode;
    Constructor Create(Telnet:TIdTelnet;IPAdressShow: TIPAdressShow;
                Nm:string='Keitley2450');
 
@@ -127,8 +133,16 @@ type
    function GetSourceType():boolean;
 
    procedure SetMeasureFunction(MeasureFunction:TKt2450_Measure=kt_mCurrent);
-   {прилад як джерело напруги чи струму}
+   {прилад вимірює напругу чи струм}
    function GetMeasureFunction():boolean;
+
+   procedure SetMeasureUnit(Measure:TKt2450_Measure; MeasureUnit:TKt_2450_MeasureUnit);
+   {що буде вимірювати (розраховувати) при реальних вимірах Measure}
+   function GetMeasureUnit(Measure:TKt2450_Measure):boolean;
+   function GetMeasureUnits():boolean;
+
+   procedure SetMode(Mode:TKt_2450_Mode);
+   function GetDeviceMode():boolean;
 
    Procedure GetParametersFromDevice;
  end;
@@ -184,11 +198,14 @@ begin
  fOutPutOn:=False;
  fResistanceCompencateOn:=False;
  for I := ord(Low(TKt2450_Measure)) to ord(High(TKt2450_Measure)) do
+   begin
    fSences[TKt2450_Measure(i)]:=kt_s2wire;
+   fMeasureUnits[TKt2450_Measure(i)]:=kt_mu_amp;
+   end;
  for I := ord(Low(TKt2450_Source)) to ord(High(TKt2450_Source)) do
    fOutputOffState[TKt2450_Source(i)]:=kt_oos_norm;
-
-
+ fMode:=ModeDetermination();
+// fMode:=kt_md_sVmP;
 end;
 
 procedure TKt_2450.DeviceCreate(Nm: string);
@@ -203,6 +220,15 @@ begin
  if Result then fCurrentLimit:=fDevice.Value;
 end;
 
+function TKt_2450.GetDeviceMode: boolean;
+begin
+ Result:=True;
+ Result:=Result and GetMeasureFunction();
+ Result:=Result and GetMeasureUnit(fMeasureFunction);
+ Result:=Result and GetSourceType();
+ if Result then fMode:=ModeDetermination;
+end;
+
 function TKt_2450.IsInterlockOn: boolean;
 begin
 //:OUTP:INT:STAT?
@@ -214,6 +240,22 @@ function TKt_2450.GetMeasureFunction: boolean;
 begin
  QuireOperation(15);
  Result:=(fDevice.Value<>ErResult);
+end;
+
+function TKt_2450.GetMeasureUnit(Measure: TKt2450_Measure): boolean;
+begin
+ Result:=False;
+ if Measure>kt_mVoltage then Exit;
+ QuireOperation(ord(Measure)+12,14);
+ Result:=(fDevice.Value<>ErResult);
+end;
+
+function TKt_2450.GetMeasureUnits: boolean;
+ var i:TKt2450_Measure;
+begin
+ Result:=True;
+ for I := kt_mCurrent to kt_mVoltage do
+   Result:=Result and GetMeasureUnit(i);
 end;
 
 function TKt_2450.GetOutputOffState(Source: TKt2450_Source): boolean;
@@ -233,17 +275,19 @@ end;
 
 procedure TKt_2450.GetParametersFromDevice;
 begin
- GetVoltageProtection();
- GetVoltageLimit();
- GetCurrentLimit();
- GetSourceType();
- GetMeasureFunction();
- IsResistanceCompencateOn();//має бути після GetMeasureFunction
+ if not(GetVoltageProtection()) then Exit;
+ if not(GetVoltageLimit()) then Exit;
+ if not(GetCurrentLimit()) then Exit;
+ if not(GetSourceType()) then Exit;
+ if not(GetMeasureFunction()) then Exit;
+ if not(IsResistanceCompencateOn()) then Exit;  //має бути після GetMeasureFunction
 
- GetTerminal();
- IsOutPutOn();
- GetSenses();
- GetOutputOffStates();
+ if not(GetTerminal()) then Exit;
+ if not(IsOutPutOn()) then Exit;
+ if not(GetSenses()) then Exit;
+ if not(GetOutputOffStates()) then Exit;
+ if not(GetMeasureUnits()) then Exit;
+ fMode:=ModeDetermination();
 end;
 
 function TKt_2450.GetSense(MeasureType: TKt2450_Measure): boolean;
@@ -340,6 +384,26 @@ begin
   SetupOperation(7,4);
 end;
 
+function TKt_2450.ModeDetermination: TKt_2450_Mode;
+begin
+ Result:=kt_md_sVmC;
+// case fSourceType of
+//   kt_sVolt: case fMeasureFunction of
+//             kt_mCurrent:Result:=TKt_2450_Mode(ord(fMeasureUnits[kt_mCurrent]));
+//             kt_mVoltage:Result:=TKt_2450_Mode(ord(fMeasureUnits[kt_mVoltage]));
+//             end;
+//   kt_sCurr:case fMeasureFunction of
+//             kt_mCurrent:Result:=TKt_2450_Mode(3+ord(fMeasureUnits[kt_mCurrent]));
+//             kt_mVoltage:Result:=TKt_2450_Mode(3+ord(fMeasureUnits[kt_mCurrent]));
+//             end;
+// end;
+ case fSourceType of
+   kt_sVolt:Result:=TKt_2450_Mode(ord(fMeasureUnits[fMeasureFunction]));
+   kt_sCurr:Result:=TKt_2450_Mode(3+ord(fMeasureUnits[fMeasureFunction]));
+ end;
+
+end;
+
 procedure TKt_2450.MyTraining;
 // var str:string;
 begin
@@ -347,6 +411,22 @@ begin
 //  fDevice.Request();
 //  fDevice.GetData;
 
+SetMode(kt_md_sVmR);
+
+//if GetMeasureUnit(kt_mCurrent) then
+//  showmessage(SuffixKt_2450[ord(fMeasureUnits[kt_mCurrent])+4]);
+//SetMeasureUnit(kt_mCurrent,kt_mu_ohm);
+//if GetMeasureUnit(kt_mCurrent) then
+//  showmessage(SuffixKt_2450[ord(fMeasureUnits[kt_mCurrent])+4]);
+//SetMeasureUnit(kt_mVoltage,kt_mu_watt);
+//if GetMeasureUnit(kt_mVoltage) then
+//  showmessage(SuffixKt_2450[ord(fMeasureUnits[kt_mVoltage])+4]);
+
+//SetMeasureUnit(kt_mCurrent,kt_mu_amp);
+//SetMeasureUnit(kt_mCurrent,kt_mu_volt);
+//SetMeasureUnit(kt_mCurrent,kt_mu_ohm);
+//SetMeasureUnit(kt_mCurrent,kt_mu_watt);
+//SetMeasureUnit(kt_mVoltage,kt_mu_ohm);
 
 
 // if GetMeasureFunction() then showmessage(RootNoodKt_2450[ord(fMeasureFunction)+12]);
@@ -536,6 +616,7 @@ begin
      12..14:
        begin
 //          SetupOperation(12+ord(MeasureType),7);
+//          SetupOperation(ord(Measure)+12,14);
             fDevice.JoinToStringToSend(FirstNodeKt_2450[fFirstLevelNode]);
        end;
 
@@ -580,9 +661,15 @@ begin
      end;
      end;
    12..14:begin
+            case fFirstLevelNode of
 //          QuireOperation(12+ord(MeasureType),7);
 //          QuireOperation(12|13,9);
-          fDevice.Value:=StrToInt(Str);
+             7,9: fDevice.Value:=StrToInt(Str);
+ //          QuireOperation(12|13,14);
+             14: if StringToMeasureUnit(AnsiLowerCase(Str))
+                    then fDevice.Value:=ord(fMeasureUnits[TKt2450_Measure(fFirstLevelNode-12)]);
+            end;
+
          end;
    15:if StringToMeasureFunction(AnsiLowerCase(Str)) then fDevice.Value:=ord(fMeasureFunction);
  end;
@@ -630,6 +717,41 @@ begin
 
  SetupOperation(15);
  fMeasureFunction:=MeasureFunction;
+end;
+
+procedure TKt_2450.SetMeasureUnit(Measure: TKt2450_Measure;
+     MeasureUnit: TKt_2450_MeasureUnit);
+begin
+// :VOLT|CURR:UNIT VOLT|AMP|OHM|WATT
+  if Measure>kt_mVoltage then Exit;
+  if (Measure=kt_mVoltage)and(MeasureUnit=kt_mu_amp)
+                  then Exit;
+  if (Measure=kt_mCurrent)and(MeasureUnit=kt_mu_volt)
+                 then Exit;
+  fAdditionalString:=SuffixKt_2450[ord(MeasureUnit)+4];
+ SetupOperation(ord(Measure)+12,14);
+ fMeasureUnits[Measure]:=MeasureUnit;
+end;
+
+procedure TKt_2450.SetMode(Mode: TKt_2450_Mode);
+begin
+ if Mode in [kt_md_sVmC,kt_md_sVmR,kt_md_sVmP,kt_md_sImC]
+     then SetMeasureFunction()
+     else SetMeasureFunction(kt_mVoltage);
+ case Mode of
+  kt_md_sVmC:SetMeasureUnit(kt_mCurrent,kt_mu_amp);
+  kt_md_sVmV:SetMeasureUnit(kt_mVoltage,kt_mu_volt);
+  kt_md_sVmR:SetMeasureUnit(kt_mCurrent,kt_mu_ohm);
+  kt_md_sVmP:SetMeasureUnit(kt_mCurrent,kt_mu_watt);
+  kt_md_sImC:SetMeasureUnit(kt_mCurrent,kt_mu_amp);
+  kt_md_sImV:SetMeasureUnit(kt_mVoltage,kt_mu_volt);
+  kt_md_sImR:SetMeasureUnit(kt_mVoltage,kt_mu_ohm);
+  kt_md_sImP:SetMeasureUnit(kt_mVoltage,kt_mu_watt);
+ end;
+ if Mode in [kt_md_sVmC..kt_md_sVmP]
+     then SetSourceType(kt_sVolt)
+     else SetSourceType(kt_sCurr);
+  fMode:=Mode;
 end;
 
 procedure TKt_2450.SetOutputOffState(Source:TKt2450_Source;
@@ -722,6 +844,19 @@ begin
    if Str=DeleteSubstring(RootNoodKt_2450[ord(i)+12]) then
      begin
        fMeasureFunction:=i;
+       Result:=True;
+       Break;
+     end;
+end;
+
+function TKt_2450.StringToMeasureUnit(Str: string): boolean;
+  var i:TKt_2450_MeasureUnit;
+begin
+ Result:=False;
+ for I := Low(TKt_2450_MeasureUnit) to High(TKt_2450_MeasureUnit) do
+   if Str=SuffixKt_2450[ord(i)+4] then
+     begin
+       fMeasureUnits[TKt2450_Measure(fFirstLevelNode-12)]:=i;
        Result:=True;
        Break;
      end;

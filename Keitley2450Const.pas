@@ -15,37 +15,16 @@ const
 //  9       10     11        12      13      14      15
 
 
-  SuffixKt_2450:array[0..3]of string=('on','off', 'rst',
-                                    {'?','prot',}'def');
+  SuffixKt_2450:array[0..7]of string=('on','off', 'rst',{'?','prot',}'def',
+//                                      0    1      2                  3
+ 'amp','volt','ohm','watt' );
+//   4     5    6      7
 
-//  FirstNodeKt_2450_5:array[0..2]of string=
-//  (':stat',':int:stat',':smod');
-//   0       1             2         3
-
-  FirstNodeKt_2450:array[0..13]of string=
+  FirstNodeKt_2450:array[0..14]of string=
   ('scr','user1:text','user2:text','cle',':pos',':int:stat',':term',
 //     0       1             2         3      4        5         6
-   ':rsen',':smod',':ocom',':prot',':trip',':vlim',':ilim'{,':func'});
+   ':rsen',':smod',':ocom',':prot',':trip',':vlim',':ilim',':unit');
 //    7       8       9       10      11      12      13      14
-
-//  FirstNodeKt_2450_6:array[0..3]of string=
-//  ('scr','user1:text','user2:text','cle');
-////   0       1             2         3
-//
-//  FirstNodeKt_2450_7:array[0..1]of string=
-//  (':pos','???');
-
-//  FirstNodeKt_2450_8:array[0..1]of string=
-//  (':run','???');
-
-//  FirstNodeKt_2450_9:array[0..1]of string=
-//  (':term','???');
-
-//  FirstNodeKt_2450_10_3:array[0..2]of string=
-//  (':rsen',':ocom',':func');
-//
-//  FirstNodeKt_2450_11_3:array[0..4]of string=
-//  (':prot',':ocom',':vlim',':ilim',':trip');
 
 
 
@@ -58,13 +37,21 @@ type
  TKt2450_Sense=(kt_s4wire,kt_s2wire);
  TKt2450_Senses=array[TKt2450_Measure]of TKt2450_Sense;
  TKt2450_Settings=(kt_curr_sense,kt_volt_sense,kt_res_sense,
-                   kt_outputoff,kt_rescomp,kt_voltprot);
+                   kt_outputoff,kt_rescomp,kt_voltprot,kt_mode);
+
  TKt_2450_OutputOffState=(kt_oos_norm,kt_oos_zero,kt_oos_himp,kt_oos_guard);
  TKt_2450_OutputOffStates=array[TKt2450_Source]of TKt_2450_OutputOffState;
+
  TKt_2450_VoltageProtection=(kt_vp2,kt_vp5,kt_vp10,kt_vp20,kt_vp40,kt_vp60,
                             kt_vp80,kt_vp100,kt_vp120,kt_vp140,kt_vp160,
                             kt_vp180,kt_vpnone);
+ TKt_2450_MeasureUnit=(kt_mu_amp,kt_mu_volt, kt_mu_ohm, kt_mu_watt);
+ TKt_2450_MeasureUnits=array[TKt2450_Measure]of TKt_2450_MeasureUnit;
 
+ TKt_2450_Mode=(kt_md_sVmC,kt_md_sVmV,kt_md_sVmR,kt_md_sVmP,
+                kt_md_sImC,kt_md_sImV,kt_md_sImR,kt_md_sImP);
+
+ TKt2450_SourceSettings=(kt_ss_outputoff,kt_ss_limit);
 
 const
  Kt2450_TerminalsName:array [TKt2450_OutputTerminals]
@@ -92,6 +79,9 @@ const
  ('4-Wire','2-Wire');
  KT2450_OutputOffStateLabels:array[TKt_2450_OutputOffState]of string=
  ('Normal','Zero','H-Impedance','Guard');
+ KT2450_ModeLabels:array[TKt_2450_Mode]of string=
+ ('sourceV measI','sourceV measV','sourceV measR(I)','sourceV measP(I)',
+  'sourceI measI','sourceI measV','sourceI measR(I)','sourceI measP(I)');
 
 //  OperationKod:array [TKt2450_Settings] of array[0..2] of byte=
 ////                  RootNood  FirstNode  LeafNode
