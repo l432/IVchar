@@ -9496,35 +9496,6 @@ object IVchar: TIVchar
           TabOrder = 2
         end
       end
-      object GB_Kt2450_Volt: TGroupBox
-        Left = 441
-        Top = 62
-        Width = 132
-        Height = 123
-        Caption = 'Vottage'
-        Font.Charset = RUSSIAN_CHARSET
-        Font.Color = clNavy
-        Font.Height = -13
-        Font.Name = 'Arial'
-        Font.Style = [fsBold]
-        ParentFont = False
-        TabOrder = 4
-        object ST_KT2450_VoltSense: TStaticText
-          Left = 10
-          Top = 18
-          Width = 68
-          Height = 24
-          Caption = '2-Wire'
-          Font.Charset = RUSSIAN_CHARSET
-          Font.Color = clRed
-          Font.Height = -17
-          Font.Name = 'Verdana'
-          Font.Style = [fsBold]
-          ParentFont = False
-          ShowAccelChar = False
-          TabOrder = 0
-        end
-      end
       object GB_Kt2450_Mes: TGroupBox
         Left = 601
         Top = 62
@@ -9537,7 +9508,7 @@ object IVchar: TIVchar
         Font.Name = 'Arial'
         Font.Style = [fsBold]
         ParentFont = False
-        TabOrder = 5
+        TabOrder = 4
         object LKT2450_ResComp: TLabel
           Left = 8
           Top = 137
@@ -9585,7 +9556,7 @@ object IVchar: TIVchar
       object GB_Kt2450_Source: TGroupBox
         Left = 7
         Top = 194
-        Width = 202
+        Width = 290
         Height = 227
         Caption = 'Source'
         Font.Charset = RUSSIAN_CHARSET
@@ -9594,7 +9565,7 @@ object IVchar: TIVchar
         Font.Name = 'Arial'
         Font.Style = [fsBold]
         ParentFont = False
-        TabOrder = 6
+        TabOrder = 5
         object SB_Kt2450_Termin: TSpeedButton
           Left = 7
           Top = 22
@@ -9683,7 +9654,7 @@ object IVchar: TIVchar
           TabOrder = 1
         end
         object ST_KT2450LimitSource: TStaticText
-          Left = 108
+          Left = 95
           Top = 200
           Width = 40
           Height = 24
@@ -9696,6 +9667,35 @@ object IVchar: TIVchar
           ParentFont = False
           ShowAccelChar = False
           TabOrder = 2
+        end
+        object CB_KT2450ReadBack: TCheckBox
+          Left = 194
+          Top = 202
+          Width = 92
+          Height = 17
+          Caption = 'Read Back'
+          Font.Charset = RUSSIAN_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -13
+          Font.Name = 'Verdana'
+          Font.Style = [fsBold]
+          ParentFont = False
+          TabOrder = 3
+        end
+        object ST_KT2450SouceRange: TStaticText
+          Left = 215
+          Top = 172
+          Width = 49
+          Height = 24
+          Caption = 'Auto'
+          Font.Charset = RUSSIAN_CHARSET
+          Font.Color = clTeal
+          Font.Height = -17
+          Font.Name = 'Verdana'
+          Font.Style = [fsBold]
+          ParentFont = False
+          ShowAccelChar = False
+          TabOrder = 4
         end
       end
       object ST_KT2450Mode: TStaticText
@@ -9711,7 +9711,7 @@ object IVchar: TIVchar
         Font.Style = [fsBold]
         ParentFont = False
         ShowAccelChar = False
-        TabOrder = 7
+        TabOrder = 6
       end
     end
   end

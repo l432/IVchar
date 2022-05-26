@@ -757,8 +757,6 @@ type
     PKt2450LoadSetup: TPanel;
     GB_FT2450Setup: TGroupBox;
     SB_Kt2450_Termin: TSpeedButton;
-    GB_Kt2450_Volt: TGroupBox;
-    ST_KT2450_VoltSense: TStaticText;
     GB_Kt2450_Mes: TGroupBox;
     ST_KT2450_Sense: TStaticText;
     GB_Kt2450_Source: TGroupBox;
@@ -773,6 +771,8 @@ type
     ST_KT2450Mode: TStaticText;
     L_KT2450LimitSource: TLabel;
     ST_KT2450LimitSource: TStaticText;
+    CB_KT2450ReadBack: TCheckBox;
+    ST_KT2450SouceRange: TStaticText;
 
     procedure FormCreate(Sender: TObject);
     procedure BConnectClick(Sender: TObject);
@@ -3467,6 +3467,7 @@ begin
   VolCorrection.Sorting;
 end;
 
+
 function TIVchar.StepDetermine(Voltage: Double;
                               ItForward: Boolean): double;
 var
@@ -4445,12 +4446,13 @@ begin
                                      ST_KT2450_ResSense,}{ST_Kt2450_OutPut,}
                                      {STKT2450_ResComp,}ST_KT2450VolProt,
                                      ST_KT2450Mode, ST_Kt2450_OutPut,
-                                     ST_KT2450LimitSource,ST_KT2450_Sense,
-                                     STKT2450_ResComp],
+                                     ST_KT2450LimitSource,STKT2450_ResComp,
+                                     ST_KT2450_Sense],
                                      [{L_Kt2450_OutPut,}{LKT2450_ResComp,}
                                      L_KT2450VolProt,L_KT2450Mode,
                                      L_Kt2450_OutPut,L_KT2450LimitSource,
                                      LKT2450_ResComp],
+                                     [CB_KT2450ReadBack],
                                      GB_Kt2450_Mes);
 
  AnyObjectArray.Add([Kt_2450]);

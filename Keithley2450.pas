@@ -26,7 +26,8 @@ type
 
    fTerminal:TKt2450_OutputTerminals;
    fOutPutOn:boolean;
-   fResistanceCompencateOn:boolean;
+   fResistanceCompencateOn:TKt2450_MeasureBool;
+   fReadBack:TKt2450_SourceBool;
    fSences:TKt2450_Senses;
    fMeasureUnits:TKt_2450_MeasureUnits;
    fOutputOffState:TKt_2450_OutputOffStates;
@@ -36,6 +37,8 @@ type
    fVoltageLimit:double;
    fCurrentLimit:double;
    fMode:TKt_2450_Mode;
+   fSourceVoltageRange:TKt2450VoltageRange;
+   fSourceCurrentRange:TKt2450CurrentRange;
    procedure OnOffFromBool(toOn:boolean);
    function StringToVoltageProtection(Str:string;var vp:TKt_2450_VoltageProtection):boolean;
    function StringToSourceType(Str:string):boolean;
@@ -58,11 +61,14 @@ type
    property CurrentLimit:double read fCurrentLimit;
    property Terminal:TKt2450_OutputTerminals read fTerminal;
    property OutPutOn:boolean read fOutPutOn;
-   property ResistanceCompencateOn:boolean read fResistanceCompencateOn;
+   property ResistanceCompencateOn:TKt2450_MeasureBool read fResistanceCompencateOn;
+   property ReadBack:TKt2450_SourceBool read fReadBack;
    property Sences:TKt2450_Senses read fSences;
    property MeasureUnits:TKt_2450_MeasureUnits read fMeasureUnits;
    property OutputOffState:TKt_2450_OutputOffStates read fOutputOffState;
    property Mode:TKt_2450_Mode read fMode;
+   property SourceVoltageRange:TKt2450VoltageRange read fSourceVoltageRange;
+   property SourceCurrentRange:TKt2450CurrentRange read fSourceCurrentRange;
    Constructor Create(Telnet:TIdTelnet;IPAdressShow: TIPAdressShow;
                Nm:string='Keitley2450');
 
@@ -104,6 +110,16 @@ type
    function GetOutputOffState(Source:TKt2450_Source):boolean;
    function GetOutputOffStates():boolean;
 
+   procedure SetReadBackState(Source:TKt2450_Source;
+                              toOn:boolean);overload;
+   {чи вимірюється те значення, що подається з приладу;
+   якщо ні - то буде використовуватися (в розрахунках, тощо)
+   значення, яке заплановано}
+   procedure SetReadBackState(toOn:boolean);overload;
+   function IsReadBackOn(Source:TKt2450_Source):boolean;overload;
+   function IsReadBackOn():boolean;overload;
+   function GetReadBacks():boolean;
+
    procedure SetResistanceCompencate(toOn:boolean);
    {ввімкнення/вимкнення компенсації опору}
    function IsResistanceCompencateOn():boolean;
@@ -144,6 +160,9 @@ type
    procedure SetMode(Mode:TKt_2450_Mode);
    function GetDeviceMode():boolean;
 
+   procedure SetSourceVoltageRange(Range:TKt2450VoltageRange=kt_vrAuto);
+   procedure SetSourceCurrentRange(Range:TKt2450CurrentRange=kt_crAuto);
+
    Procedure GetParametersFromDevice;
  end;
 
@@ -154,7 +173,7 @@ var
 implementation
 
 uses
-  Dialogs, SysUtils, OlegType;
+  Dialogs, SysUtils, OlegType, Math;
 
 { TKt_2450 }
 
@@ -196,16 +215,23 @@ begin
  fCurrentLimit:=Kt_2450_CurrentLimDef;
  fTerminal:=kt_otFront;
  fOutPutOn:=False;
- fResistanceCompencateOn:=False;
+// fResistanceCompencateOn:=False;
  for I := ord(Low(TKt2450_Measure)) to ord(High(TKt2450_Measure)) do
    begin
    fSences[TKt2450_Measure(i)]:=kt_s2wire;
    fMeasureUnits[TKt2450_Measure(i)]:=kt_mu_amp;
+   fResistanceCompencateOn[TKt2450_Measure(i)]:=False;
+   end;
+ for I := ord(Low(TKt2450_Source)) to ord(High(TKt2450_Source)) do
+   begin
+   fReadBack[TKt2450_Source(i)]:=True;
    end;
  for I := ord(Low(TKt2450_Source)) to ord(High(TKt2450_Source)) do
    fOutputOffState[TKt2450_Source(i)]:=kt_oos_norm;
  fMode:=ModeDetermination();
 // fMode:=kt_md_sVmP;
+ fSourceVoltageRange:=kt_vrAuto;
+ fSourceCurrentRange:=kt_crAuto;
 end;
 
 procedure TKt_2450.DeviceCreate(Nm: string);
@@ -288,6 +314,22 @@ begin
  if not(GetOutputOffStates()) then Exit;
  if not(GetMeasureUnits()) then Exit;
  fMode:=ModeDetermination();
+ if not(GetReadBacks()) then Exit;
+end;
+
+function TKt_2450.IsReadBackOn(Source: TKt2450_Source): boolean;
+begin
+ QuireOperation(11,1-ord(Source)+12,17);
+ Result:=(fDevice.Value=1);
+ fReadBack[Source]:=Result;
+end;
+
+function TKt_2450.GetReadBacks: boolean;
+ var i:TKt2450_Source;
+begin
+ Result:=True;
+ for I := Low(TKt2450_Source) to High(TKt2450_Source) do
+   Result:=Result and IsReadBackOn(i);
 end;
 
 function TKt_2450.GetSense(MeasureType: TKt2450_Measure): boolean;
@@ -350,6 +392,11 @@ begin
  fOutPutOn:=Result;
 end;
 
+function TKt_2450.IsReadBackOn: boolean;
+begin
+ Result:=IsReadBackOn(fSourceType);
+end;
+
 function TKt_2450.IsResistanceCompencateOn: boolean;
 begin
  case fMeasureFunction of
@@ -357,7 +404,7 @@ begin
    kt_mVoltage: QuireOperation(13,9);
  end;
  Result:=(fDevice.Value=1);
- fResistanceCompencateOn:=Result;
+ fResistanceCompencateOn[fMeasureFunction]:=Result;
 end;
 
 function TKt_2450.IsVoltageLimitExceeded: boolean;
@@ -411,7 +458,24 @@ begin
 //  fDevice.Request();
 //  fDevice.GetData;
 
-SetMode(kt_md_sVmR);
+
+SetSourceVoltageRange();
+SetSourceVoltageRange(kt_vr200mV);
+SetSourceVoltageRange(kt_vr20V);
+
+SetSourceCurrentRange();
+SetSourceCurrentRange(kt_vr10nA);
+SetSourceCurrentRange(kt_vr100mA);
+
+// showmessage(booltostr(IsReadBackOn(),True));
+// SetReadBackState(False);
+// showmessage(booltostr(IsReadBackOn(),True));
+
+//SetReadBackState(kt_sVolt,False);
+//SetReadBackState(kt_sVolt,True);
+//SetReadBackState(True);
+
+//SetMode(kt_md_sVmR);
 
 //if GetMeasureUnit(kt_mCurrent) then
 //  showmessage(SuffixKt_2450[ord(fMeasureUnits[kt_mCurrent])+4]);
@@ -604,6 +668,8 @@ begin
 //    SetupOperation(11,13,10)замість SetupOperation(11,1,0);
 //    SetupOperation(11,12,12)замість SetupOperation(11,0,2);
 //    SetupOperation(11,13,13);
+//    SetupOperation(11,12|13,17);
+//    SetupOperation(11,13,16);
            fDevice.JoinToStringToSend(RootNoodKt_2450[fFirstLevelNode]);
            fDevice.JoinToStringToSend(FirstNodeKt_2450[fLeafNode]);
            if fIsTripped then fDevice.JoinToStringToSend(FirstNodeKt_2450[11]);
@@ -651,6 +717,7 @@ begin
 //      QuireOperation(11,13,10);
 
 // QuireOperation(11,12,12);
+
      case fLeafNode of
       10:if StringToVoltageProtection(AnsiLowerCase(Str),fVoltageProtection)
           then fDevice.Value:=ord(fVoltageProtection);
@@ -658,6 +725,8 @@ begin
 //      2..3:fDevice.Value:=SCPI_StringToValue(Str);
 //          QuireOperation(11,55,14);
       55:if StringToSourceType(AnsiLowerCase(Str)) then fDevice.Value:=ord(fSourceType);
+// QuireOperation(11,1-ord(Source),17);
+      17:fDevice.Value:=StrToInt(Str);
      end;
      end;
    12..14:begin
@@ -763,6 +832,19 @@ begin
  fOutputOffState[Source]:=OutputOffState;
 end;
 
+procedure TKt_2450.SetReadBackState(Source: TKt2450_Source; toOn: boolean);
+begin
+//SOUR:VOLT|CURR:READ:BACK ON|OFF
+ OnOffFromBool(toOn);
+ SetupOperation(11,1-ord(Source)+12,17);
+ fReadBack[Source]:=toOn;
+end;
+
+procedure TKt_2450.SetReadBackState(toOn: boolean);
+begin
+  SetReadBackState(fSourceType,toOn);
+end;
+
 procedure TKt_2450.SetResistanceCompencate(toOn: boolean);
 begin
 // RES:OCOM ON|OFF
@@ -771,7 +853,7 @@ begin
    kt_mCurrent: SetupOperation(12,9);
    kt_mVoltage: SetupOperation(13,9);
  end;
- fResistanceCompencateOn:=toOn;
+ fResistanceCompencateOn[fMeasureFunction]:=toOn;
 end;
 
 procedure TKt_2450.SetSense(MeasureType: TKt2450_Measure; Sense: TKt2450_Sense);
@@ -782,12 +864,44 @@ begin
  fSences[MeasureType]:=Sense;
 end;
 
+procedure TKt_2450.SetSourceCurrentRange(Range: TKt2450CurrentRange);
+begin
+//:SOUR:CURR:RANG  <value>
+//:SOUR:CURR:RANG:AUTO ON
+ if Range=kt_crAuto then
+       begin
+        OnOffFromBool(True);
+        SetupOperation(11,12,16);
+       end         else
+       begin
+         fAdditionalString:=floattostr(1e-8*Power(10,ord(Range)-1));
+         SetupOperation(11,12,15);
+       end;
+ fSourceCurrentRange:=Range;
+end;
+
 procedure TKt_2450.SetSourceType(SourseType: TKt2450_Source);
 begin
 // SOUR:FUNC CURR|VOLT
  fAdditionalString:=Kt2450_SourceName[SourseType];
  SetupOperation(11,55);
  fSourceType:=SourseType;
+end;
+
+procedure TKt_2450.SetSourceVoltageRange(Range: TKt2450VoltageRange);
+begin
+//:SOUR:VOLT:RANG  <value>
+//:SOUR:VOLT:RANG:AUTO ON
+if Range=kt_vrAuto then
+       begin
+        OnOffFromBool(True);
+        SetupOperation(11,13,16);
+       end         else
+       begin
+         fAdditionalString:=floattostr(2e-2*Power(10,ord(Range)-1));
+         SetupOperation(11,13,15);
+       end;
+fSourceVoltageRange:=Range;
 end;
 
 procedure TKt_2450.SetTerminal(Terminal: TKt2450_OutputTerminals);

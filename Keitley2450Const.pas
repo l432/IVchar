@@ -20,11 +20,13 @@ const
  'amp','volt','ohm','watt' );
 //   4     5    6      7
 
-  FirstNodeKt_2450:array[0..14]of string=
+  FirstNodeKt_2450:array[0..17]of string=
   ('scr','user1:text','user2:text','cle',':pos',':int:stat',':term',
 //     0       1             2         3      4        5         6
-   ':rsen',':smod',':ocom',':prot',':trip',':vlim',':ilim',':unit');
+   ':rsen',':smod',':ocom',':prot',':trip',':vlim',':ilim',':unit',
 //    7       8       9       10      11      12      13      14
+   ':rang',':rang:auto',':read:back');
+//   15         16            17
 
 
 
@@ -36,6 +38,8 @@ type
  TKt2450_Measure=(kt_mCurrent,kt_mVoltage,kt_mResistance{,kt_mPower});
  TKt2450_Sense=(kt_s4wire,kt_s2wire);
  TKt2450_Senses=array[TKt2450_Measure]of TKt2450_Sense;
+ TKt2450_MeasureBool=array[TKt2450_Measure]of boolean;
+ TKt2450_SourceBool=array[TKt2450_Source]of boolean;
 
  TKt_2450_OutputOffState=(kt_oos_norm,kt_oos_zero,kt_oos_himp,kt_oos_guard);
  TKt_2450_OutputOffStates=array[TKt2450_Source]of TKt_2450_OutputOffState;
@@ -55,6 +59,15 @@ type
 
  TKt2450_MeasureSettings=(kt_ms_rescomp,kt_ms_sense);
  TKt2450_MeasureShowType=(kt_mst_cur,kt_mst_volt,kt_mst_res,kt_mst_pow);
+
+ TKt2450VoltageRange=(kt_vrAuto,kt_vr20mV,kt_vr200mV,kt_vr2V,
+                      kt_vr20V,kt_vr200V);
+
+ TKt2450CurrentRange=(kt_crAuto,kt_vr10nA,kt_vr100nA,kt_vr1uA,
+                      kt_vr10uA,kt_vr100uA,kt_vr1mA,kt_vr10mA,
+                      kt_vr100mA,kt_vr1A);
+
+
 
 const
  Kt2450_TerminalsName:array [TKt2450_OutputTerminals]
@@ -85,6 +98,14 @@ const
  KT2450_ModeLabels:array[TKt_2450_Mode]of string=
  ('sourceV measI','sourceV measV','sourceV measR(I)','sourceV measP(I)',
   'sourceI measI','sourceI measV','sourceI measR(I)','sourceI measP(I)');
+
+ KT2450_VoltageRangeLabels:array[TKt2450VoltageRange]of string=
+         ('Auto','20 mV', '200 mV', '2 V', '20 V', '200 V');
+// KT2450_VoltageRangeData:array[TKt2450VoltageRange]of string=
+//         ('def','2e-2', '0.2', '2', '20', '200');
+ KT2450_CurrentRangeLabels:array[TKt2450CurrentRange]of string=
+         ('Auto','10 nA', '100 nA', '1 µA', '10 µA', '100 µA',
+          '1 mA', '10 mA', '100 mA', '1 A');
 
 //  OperationKod:array [TKt2450_Settings] of array[0..2] of byte=
 ////                  RootNood  FirstNode  LeafNode
