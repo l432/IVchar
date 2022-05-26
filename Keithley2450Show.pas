@@ -133,6 +133,8 @@ end;
    procedure SourceShowCreate();
    procedure SourceShowFree();
 
+   procedure MeasureShowCreate();
+   procedure MeasureShowFree();
 
    procedure TestButtonClick(Sender:TObject);
    procedure ResetButtonClick(Sender:TObject);
@@ -162,8 +164,8 @@ end;
                       SpeedButtons:Array of TSpeedButton;
                       Panels:Array of TPanel;
                       STexts:array of TStaticText;
-                      Labels:array of TLabel
-                      );
+                      Labels:array of TLabel;
+                      GroupBox:TGroupBox);
   destructor Destroy;override;
   procedure ReadFromIniFile(ConfigFile:TIniFile);override;
   procedure WriteToIniFile(ConfigFile:TIniFile);override;
@@ -209,15 +211,19 @@ constructor TKt_2450_Show.Create(Kt_2450: TKt_2450;
                                 SpeedButtons:Array of TSpeedButton;
                                 Panels:Array of TPanel;
                                 STexts:array of TStaticText;
-                                Labels:array of TLabel
+                                Labels:array of TLabel;
+                                GroupBox:TGroupBox
                                 );
  var i:integer;
 begin
   if (High(Buttons)<>ButtonNumberKt2450)
      or(High(SpeedButtons)<>SpeedButtonNumberKt2450)
      or(High(Panels)<>PanelNumberKt2450)
-     or(High(STexts)<>((ord(High(TKt2450_Settings))+ord(High(TKt2450_SourceSettings))+1)))
-     or(High(Labels)<>(ord(High(TKt2450_Settings))+ord(High(TKt2450_SourceSettings))+1))
+     or(High(STexts)<>((ord(High(TKt2450_Settings))+ord(High(TKt2450_SourceSettings))+1
+                        +ord(High(TKt2450_MeasureSettings))+1)))
+     or(High(Labels)<>(ord(High(TKt2450_Settings))
+                       +ord(High(TKt2450_SourceSettings))+1
+                       +ord(kt_ms_rescomp)-ord(kt_ms_rescomp)+1))
    then
     begin
       showmessage('Kt_2450_Show is not created!');
@@ -239,6 +245,17 @@ begin
     end;
   SourceShowCreate();
 
+  fMeasurementShowState:=5;
+  for i:=0 to ord(High(TKt2450_MeasureSettings)) do
+     fMeasurementShowStaticText[TKt2450_MeasureSettings(i)]:=STexts[ord(High(TKt2450_Settings))+1
+                                                           +ord(High(TKt2450_SourceSettings))+1+i];
+   for i:=ord(kt_ms_rescomp) to ord(kt_ms_rescomp) do
+       fMeasurementShowLabels[TKt2450_MeasureSettings(ord(kt_ms_rescomp)+i)]:=
+                            Labels[ord(High(TKt2450_Settings))+1
+                                   +ord(High(TKt2450_SourceSettings))+1+i];
+  fMeasurementShowGB:=GroupBox;
+  MeasureShowCreate();
+
   fSetupMemoryShow:=TKT2450_SetupMemoryShow.Create(Self,Panels[0],Panels[1]);
 
   ObjectToSetting();
@@ -247,6 +264,7 @@ end;
 destructor TKt_2450_Show.Destroy;
 begin
   FreeAndNil(fSetupMemoryShow);
+  MeasureShowFree();
   SourceShowFree();
   SettingsShowFree;
   SettingsShowSLFree;
@@ -273,10 +291,41 @@ begin
 
 end;
 
+procedure TKt_2450_Show.MeasureShowCreate;
+ var MeasureShowType:TKt2450_MeasureShowType;
+begin
+  case fKt_2450.Mode of
+    kt_md_sVmC,
+    kt_md_sImC:MeasureShowType:=kt_mst_cur;
+    kt_md_sVmV,
+    kt_md_sImV:MeasureShowType:=kt_mst_volt;
+    kt_md_sVmR,
+    kt_md_sImR:MeasureShowType:=kt_mst_res;
+    else MeasureShowType:=kt_mst_pow;
+  end;
+
+ if fMeasurementShowState=ord(MeasureShowType) then Exit;
+ MeasureShowFree();
+ fMeasurementShow:=TKt_2450_MeasurementShow.Create(fKt_2450,
+                 [fMeasurementShowStaticText[kt_ms_rescomp],
+                  fMeasurementShowStaticText[kt_ms_sense]],
+                 [fMeasurementShowLabels[kt_ms_rescomp]],
+                  fMeasurementShowGB,
+                  MeasureShowType
+                  );
+// fMeasurementShow.ObjectToSetting;
+end;
+
+procedure TKt_2450_Show.MeasureShowFree;
+begin
+ if fMeasurementShowState<>5 then FreeAndNil(fMeasurementShow);
+end;
+
 procedure TKt_2450_Show.ModeOkClick;
 begin
  fKt_2450.SetMode(TKt_2450_Mode(fSettingsShow[kt_mode].Data));
  SourceShowCreate();
+ MeasureShowCreate();
 end;
 
 procedure TKt_2450_Show.MyTrainButtonClick(Sender: TObject);
@@ -291,6 +340,7 @@ begin
  fSettingsShow[kt_voltprot].Data:=ord(fKt_2450.VoltageProtection);
  fSettingsShow[kt_mode].Data:=ord(fKt_2450.Mode);
  SourceShowCreate();
+ MeasureShowCreate();
 end;
 
 //procedure TKt_2450_Show.OutputOffOkClick;
@@ -459,7 +509,7 @@ begin
                  [SourceShowLabels[kt_ss_outputoff],
                   SourceShowLabels[kt_ss_limit]],
                  fKt_2450.SourceType);
- fSourceShow.ObjectToSetting;
+// fSourceShow.ObjectToSetting;
 end;
 
 procedure TKt_2450_Show.SourceShowFree;
