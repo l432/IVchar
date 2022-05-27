@@ -53,11 +53,10 @@ type
  TKt_2450_Mode=(kt_md_sVmC,kt_md_sVmV,kt_md_sVmR,kt_md_sVmP,
                 kt_md_sImC,kt_md_sImV,kt_md_sImR,kt_md_sImP);
 
- TKt2450_Settings=({kt_curr_sense,kt_volt_sense,kt_res_sense,}
-                   {kt_outputoff,kt_rescomp,}kt_voltprot,kt_mode);
+ TKt2450_Settings=(kt_voltprot,kt_mode);
  TKt2450_SourceSettings=(kt_ss_outputoff,kt_ss_limit,kt_ss_range);
 
- TKt2450_MeasureSettings=(kt_ms_rescomp,kt_ms_sense);
+ TKt2450_MeasureSettings=(kt_ms_rescomp,kt_ms_sense,kt_ms_range);
  TKt2450_MeasureShowType=(kt_mst_cur,kt_mst_volt,kt_mst_res,kt_mst_pow);
 
  TKt2450VoltageRange=(kt_vrAuto,kt_vr20mV,kt_vr200mV,kt_vr2V,

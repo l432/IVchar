@@ -773,6 +773,7 @@ type
     ST_KT2450LimitSource: TStaticText;
     CB_KT2450ReadBack: TCheckBox;
     ST_KT2450SouceRange: TStaticText;
+    ST_KT2450MeasureRange: TStaticText;
 
     procedure FormCreate(Sender: TObject);
     procedure BConnectClick(Sender: TObject);
@@ -4447,7 +4448,8 @@ begin
                                      {STKT2450_ResComp,}ST_KT2450VolProt,
                                      ST_KT2450Mode, ST_Kt2450_OutPut,
                                      ST_KT2450LimitSource,ST_KT2450SouceRange,
-                                     STKT2450_ResComp,ST_KT2450_Sense],
+                                     STKT2450_ResComp,ST_KT2450_Sense,
+                                     ST_KT2450MeasureRange],
                                      [{L_Kt2450_OutPut,}{LKT2450_ResComp,}
                                      L_KT2450VolProt,L_KT2450Mode,
                                      L_Kt2450_OutPut,L_KT2450LimitSource,

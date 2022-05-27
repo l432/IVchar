@@ -9552,6 +9552,21 @@ object IVchar: TIVchar
           ShowAccelChar = False
           TabOrder = 1
         end
+        object ST_KT2450MeasureRange: TStaticText
+          Left = 11
+          Top = 107
+          Width = 49
+          Height = 24
+          Caption = 'Auto'
+          Font.Charset = RUSSIAN_CHARSET
+          Font.Color = clMaroon
+          Font.Height = -17
+          Font.Name = 'Verdana'
+          Font.Style = [fsBold]
+          ParentFont = False
+          ShowAccelChar = False
+          TabOrder = 2
+        end
       end
       object GB_Kt2450_Source: TGroupBox
         Left = 7
