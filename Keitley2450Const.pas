@@ -55,7 +55,7 @@ type
 
  TKt2450_Settings=({kt_curr_sense,kt_volt_sense,kt_res_sense,}
                    {kt_outputoff,kt_rescomp,}kt_voltprot,kt_mode);
- TKt2450_SourceSettings=(kt_ss_outputoff,kt_ss_limit);
+ TKt2450_SourceSettings=(kt_ss_outputoff,kt_ss_limit,kt_ss_range);
 
  TKt2450_MeasureSettings=(kt_ms_rescomp,kt_ms_sense);
  TKt2450_MeasureShowType=(kt_mst_cur,kt_mst_volt,kt_mst_res,kt_mst_pow);
@@ -106,6 +106,7 @@ const
  KT2450_CurrentRangeLabels:array[TKt2450CurrentRange]of string=
          ('Auto','10 nA', '100 nA', '1 µA', '10 µA', '100 µA',
           '1 mA', '10 mA', '100 mA', '1 A');
+//          Low Limit äî 100 mA  | äî 20 Â
 
 //  OperationKod:array [TKt2450_Settings] of array[0..2] of byte=
 ////                  RootNood  FirstNode  LeafNode

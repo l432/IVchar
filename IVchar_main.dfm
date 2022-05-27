@@ -9556,7 +9556,7 @@ object IVchar: TIVchar
       object GB_Kt2450_Source: TGroupBox
         Left = 7
         Top = 194
-        Width = 290
+        Width = 300
         Height = 227
         Caption = 'Source'
         Font.Charset = RUSSIAN_CHARSET
@@ -9671,7 +9671,7 @@ object IVchar: TIVchar
         object CB_KT2450ReadBack: TCheckBox
           Left = 194
           Top = 202
-          Width = 92
+          Width = 99
           Height = 17
           Caption = 'Read Back'
           Font.Charset = RUSSIAN_CHARSET
@@ -9683,13 +9683,13 @@ object IVchar: TIVchar
           TabOrder = 3
         end
         object ST_KT2450SouceRange: TStaticText
-          Left = 215
+          Left = 205
           Top = 172
           Width = 49
           Height = 24
           Caption = 'Auto'
           Font.Charset = RUSSIAN_CHARSET
-          Font.Color = clTeal
+          Font.Color = clMaroon
           Font.Height = -17
           Font.Name = 'Verdana'
           Font.Style = [fsBold]

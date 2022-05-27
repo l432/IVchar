@@ -4446,8 +4446,8 @@ begin
                                      ST_KT2450_ResSense,}{ST_Kt2450_OutPut,}
                                      {STKT2450_ResComp,}ST_KT2450VolProt,
                                      ST_KT2450Mode, ST_Kt2450_OutPut,
-                                     ST_KT2450LimitSource,STKT2450_ResComp,
-                                     ST_KT2450_Sense],
+                                     ST_KT2450LimitSource,ST_KT2450SouceRange,
+                                     STKT2450_ResComp,ST_KT2450_Sense],
                                      [{L_Kt2450_OutPut,}{LKT2450_ResComp,}
                                      L_KT2450VolProt,L_KT2450Mode,
                                      L_Kt2450_OutPut,L_KT2450LimitSource,
