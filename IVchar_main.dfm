@@ -9416,8 +9416,8 @@ object IVchar: TIVchar
         end
       end
       object B_MyTrain: TButton
-        Left = 210
-        Top = 160
+        Left = 330
+        Top = 75
         Width = 75
         Height = 25
         Caption = 'B_MyTrain'
@@ -9620,10 +9620,10 @@ object IVchar: TIVchar
         end
       end
       object GB_Kt2450_Source: TGroupBox
-        Left = 7
-        Top = 194
+        Left = 3
+        Top = 147
         Width = 300
-        Height = 227
+        Height = 274
         Caption = 'Source'
         Font.Charset = RUSSIAN_CHARSET
         Font.Color = clMaroon
@@ -9683,6 +9683,20 @@ object IVchar: TIVchar
           Caption = 'Limit Value'
           Font.Charset = RUSSIAN_CHARSET
           Font.Color = clOlive
+          Font.Height = -13
+          Font.Name = 'Arial'
+          Font.Style = [fsBold]
+          ParentFont = False
+          WordWrap = True
+        end
+        object L_KT2450DelaySource: TLabel
+          Left = 3
+          Top = 230
+          Width = 169
+          Height = 23
+          Caption = 'Delay after source set, s'
+          Font.Charset = RUSSIAN_CHARSET
+          Font.Color = clNavy
           Font.Height = -13
           Font.Name = 'Arial'
           Font.Style = [fsBold]
@@ -9762,6 +9776,35 @@ object IVchar: TIVchar
           ParentFont = False
           ShowAccelChar = False
           TabOrder = 4
+        end
+        object CB_KT2450DelaySource: TCheckBox
+          Left = 7
+          Top = 250
+          Width = 54
+          Height = 17
+          Caption = 'Auto'
+          Font.Charset = RUSSIAN_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -13
+          Font.Name = 'Verdana'
+          Font.Style = [fsBold]
+          ParentFont = False
+          TabOrder = 5
+        end
+        object ST_KT2450DelaySource: TStaticText
+          Left = 73
+          Top = 247
+          Width = 58
+          Height = 24
+          Caption = '0.055'
+          Font.Charset = RUSSIAN_CHARSET
+          Font.Color = clOlive
+          Font.Height = -17
+          Font.Name = 'Verdana'
+          Font.Style = [fsBold]
+          ParentFont = False
+          ShowAccelChar = False
+          TabOrder = 6
         end
       end
       object ST_KT2450Mode: TStaticText

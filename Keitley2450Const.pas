@@ -20,13 +20,15 @@ const
  'amp','volt','ohm','watt' );
 //   4     5    6      7
 
-  FirstNodeKt_2450:array[0..20]of string=
+  FirstNodeKt_2450:array[0..22]of string=
   ('scr','user1:text','user2:text','cle',':pos',':int:stat',':term',
 //     0       1             2         3      4        5         6
    ':rsen',':smod',':ocom',':prot',':trip',':vlim',':ilim',':unit',
 //    7       8       9       10      11      12      13      14
-   ':rang',':rang:auto',':read:back',':llim',':ulim',':azer');
-//   15         16            17        18     19      20
+   ':rang',':rang:auto',':read:back',':llim',':ulim',':azer',':del',
+//   15         16            17        18     19      20       21
+   ':del:auto');
+//      22
 
 
 
@@ -35,11 +37,12 @@ type
  TKt2450_SetupMemorySlot=0..4;
  TKt2450_OutputTerminals=(kt_otFront, kt_otRear);
  TKt2450_Source=(kt_sVolt, kt_sCurr);
+ TKt2450_SourceBool=array[TKt2450_Source]of boolean;
+ TKt2450_SourceDouble=array[TKt2450_Source]of double;
  TKt2450_Measure=(kt_mCurrent,kt_mVoltage,kt_mResistance{,kt_mPower});
  TKt2450_Sense=(kt_s4wire,kt_s2wire);
  TKt2450_Senses=array[TKt2450_Measure]of TKt2450_Sense;
  TKt2450_MeasureBool=array[TKt2450_Measure]of boolean;
- TKt2450_SourceBool=array[TKt2450_Source]of boolean;
 
  TKt_2450_OutputOffState=(kt_oos_norm,kt_oos_zero,kt_oos_himp,kt_oos_guard);
  TKt_2450_OutputOffStates=array[TKt2450_Source]of TKt_2450_OutputOffState;
@@ -54,7 +57,7 @@ type
                 kt_md_sImC,kt_md_sImV,kt_md_sImR,kt_md_sImP);
 
  TKt2450_Settings=(kt_voltprot,kt_mode);
- TKt2450_SourceSettings=(kt_ss_outputoff,kt_ss_limit,kt_ss_range);
+ TKt2450_SourceSettings=(kt_ss_outputoff,kt_ss_delay,kt_ss_limit,kt_ss_range);
 
  TKt2450_MeasureSettings=(kt_ms_rescomp,kt_ms_sense,kt_ms_range,
                           kt_ms_lrange);
@@ -93,7 +96,7 @@ const
 
  Kt_2450_RangesLimits:array[TKt2450_Measure] of TLimitValues=
   ((1e-8,1),(0.02,200),(2,2e8));
-
+ Kt_2450_SourceDelayLimits:TLimitValues=(0,1e3);
 
  KT2450_SenseLabels:array[TKt2450_Sense]of string=
  ('4-Wire','2-Wire');
@@ -110,7 +113,6 @@ const
  KT2450_CurrentRangeLabels:array[TKt2450CurrentRange]of string=
          ('Auto','10 nA', '100 nA', '1 µA', '10 µA', '100 µA',
           '1 mA', '10 mA', '100 mA', '1 A');
-//          Low Limit äî 100 mA  | äî 20 Â
 
 //  OperationKod:array [TKt2450_Settings] of array[0..2] of byte=
 ////                  RootNood  FirstNode  LeafNode

@@ -778,6 +778,9 @@ type
     ST_KT2450MeasureLowRange: TStaticText;
     CB_KT2450Azero: TCheckBox;
     B_KT2450Azero: TButton;
+    L_KT2450DelaySource: TLabel;
+    CB_KT2450DelaySource: TCheckBox;
+    ST_KT2450DelaySource: TStaticText;
 
     procedure FormCreate(Sender: TObject);
     procedure BConnectClick(Sender: TObject);
@@ -4447,18 +4450,18 @@ begin
                                      B_MyTrain],
                                      [SB_Kt2450_OutPut,SB_Kt2450_Termin],
                                      [PKt2450SaveSetup,PKt2450LoadSetup],
-                                     [{ST_KT2450_CurSense,ST_KT2450_VoltSense,
-                                     ST_KT2450_ResSense,}{ST_Kt2450_OutPut,}
-                                     {STKT2450_ResComp,}ST_KT2450VolProt,
+                                     [ST_KT2450VolProt,
                                      ST_KT2450Mode, ST_Kt2450_OutPut,
-                                     ST_KT2450LimitSource,ST_KT2450SouceRange,
+                                     ST_KT2450DelaySource,ST_KT2450LimitSource,
+                                     ST_KT2450SouceRange,
                                      STKT2450_ResComp,ST_KT2450_Sense,
                                      ST_KT2450MeasureRange,ST_KT2450MeasureLowRange],
-                                     [{L_Kt2450_OutPut,}{LKT2450_ResComp,}
-                                     L_KT2450VolProt,L_KT2450Mode,
-                                     L_Kt2450_OutPut,L_KT2450LimitSource,
+                                     [L_KT2450VolProt,L_KT2450Mode,
+                                     L_Kt2450_OutPut,L_KT2450DelaySource,
+                                     L_KT2450LimitSource,
                                      LKT2450_ResComp,L_KT2450MeasureLowRange],
-                                     [CB_KT2450ReadBack,CB_KT2450Azero],
+                                     [CB_KT2450ReadBack,CB_KT2450DelaySource,
+                                      CB_KT2450Azero],
                                      GB_Kt2450_Mes);
 
  AnyObjectArray.Add([Kt_2450]);

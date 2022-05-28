@@ -43,7 +43,10 @@ type
    fMeasureVoltageRange:TKt2450VoltageRange;
    fMeasureCurrentRange:TKt2450CurrentRange;
    fMeasureVoltageLowRange:TKt2450VoltageRange;
-   fMeasureCurrentLowRange:TKt2450CurrentRange;   procedure OnOffFromBool(toOn:boolean);
+   fMeasureCurrentLowRange:TKt2450CurrentRange;
+   fSourceDelay:TKt2450_SourceDouble;
+   fSourceDelayAuto:TKt2450_SourceBool;
+   procedure OnOffFromBool(toOn:boolean);
    function StringToVoltageProtection(Str:string;var vp:TKt_2450_VoltageProtection):boolean;
    function StringToSourceType(Str:string):boolean;
    function StringToMeasureFunction(Str:string):boolean;
@@ -82,6 +85,9 @@ type
    property MeasureVoltageLowRange:TKt2450VoltageRange read fMeasureVoltageLowRange;
    property MeasureCurrentLowRange:TKt2450CurrentRange read fMeasureCurrentLowRange;
    property AzeroState:TKt2450_MeasureBool read fAzeroState;
+   property SourceDelay:TKt2450_SourceDouble read fSourceDelay;
+   property SourceDelayAuto:TKt2450_SourceBool read fSourceDelayAuto;
+
    Constructor Create(Telnet:TIdTelnet;IPAdressShow: TIPAdressShow;
                Nm:string='Keitley2450');
 
@@ -210,6 +216,23 @@ type
    для вимірювань при автоматичному  режимі встановленого зараз способу вимірювання;
    не робив детальних як для попереднього, бо не виносив на керування}
 
+   procedure SetSourceDelay(Source:TKt2450_Source;
+                            value:double);overload;
+   {час затримки між встановленням значення джерела
+   та початком вимірювання}
+   procedure SetSourceDelay(value:double);overload;
+   function GetSourceDelay(Source:TKt2450_Source):boolean;overload;
+   function GetSourceDelay():boolean;overload;
+   function GetSourceDelays():boolean;
+   procedure SetSourceDelayAuto(Source:TKt2450_Source;
+                            toOn:boolean);overload;
+   {час затримки між встановленням значення джерела
+   та початком вимірювання}
+   procedure SetSourceDelayAuto(toOn:boolean);overload;
+   function IsSourceDelayAutoOn(Source:TKt2450_Source):boolean;overload;
+   function IsSourceDelayAutoOn():boolean;overload;
+   function GetSourceDelayAutoOns():boolean;
+
    Procedure GetParametersFromDevice;
  end;
 
@@ -284,6 +307,8 @@ begin
  for I := ord(Low(TKt2450_Source)) to ord(High(TKt2450_Source)) do
    begin
    fReadBack[TKt2450_Source(i)]:=True;
+   fSourceDelay[TKt2450_Source(i)]:=0;
+   fSourceDelayAuto[TKt2450_Source(i)]:=True;
    end;
  for I := ord(Low(TKt2450_Source)) to ord(High(TKt2450_Source)) do
    fOutputOffState[TKt2450_Source(i)]:=kt_oos_norm;
@@ -462,7 +487,8 @@ begin
  if not(GetMeasureRanges()) then Exit;
  if not(GetMeasureLowRanges()) then Exit;
  if not(GetAzeroStates()) then Exit;
-
+ if not(GetSourceDelays()) then Exit;
+  if not(GetSourceDelayAutoOns()) then Exit;
 end;
 
 function TKt_2450.IsReadBackOn(Source: TKt2450_Source): boolean;
@@ -511,6 +537,28 @@ begin
     Result:=false
     end;
    end;
+end;
+
+function TKt_2450.GetSourceDelay(Source: TKt2450_Source): boolean;
+begin
+ QuireOperation(11,1-ord(Source)+12,21);
+ Result:=(fDevice.Value<>ErResult);
+ if Result then fSourceDelay[Source]:=fDevice.Value;
+end;
+
+function TKt_2450.GetSourceDelay: boolean;
+begin
+ Result:=GetSourceDelay(fSourceType);
+end;
+
+function TKt_2450.GetSourceDelayAutoOns: boolean;
+begin
+ Result:=IsSourceDelayAutoOn(kt_sVolt)and IsSourceDelayAutoOn(kt_sCurr);
+end;
+
+function TKt_2450.GetSourceDelays: boolean;
+begin
+ Result:=GetSourceDelay(kt_sVolt) and GetSourceDelay(kt_sCurr);
 end;
 
 function TKt_2450.GetSourceRanges: boolean;
@@ -609,6 +657,18 @@ begin
  fResistanceCompencateOn[fMeasureFunction]:=Result;
 end;
 
+function TKt_2450.IsSourceDelayAutoOn(Source: TKt2450_Source): boolean;
+begin
+ QuireOperation(11,1-ord(Source)+12,22);
+ Result:=(fDevice.Value=1);
+ fSourceDelayAuto[Source]:=Result;
+end;
+
+function TKt_2450.IsSourceDelayAutoOn: boolean;
+begin
+ result:=IsSourceDelayAutoOn(fSourceType);
+end;
+
 function TKt_2450.IsVoltageLimitExceeded: boolean;
 begin
  Result:=IsLimitExcided(12,12);
@@ -664,8 +724,24 @@ begin
 //  fDevice.Request();
 //  fDevice.GetData;
 
+// if IsSourceDelayAutoOn(kt_sCurr) then
+//     showmessage(booltostr(fSourceDelayAuto[kt_sCurr],True));
+// SetSourceDelayAuto(kt_sVolt,False);
+// if IsSourceDelayAutoOn then
+//     showmessage(booltostr(fSourceDelayAuto[kt_sVolt],True));
 
-  AzeroOnce();
+// SetSourceDelayAuto(kt_sVolt,False);
+// SetSourceDelayAuto(True);
+
+//if GetSourceDelay(kt_sVolt) then
+//  showmessage('ura! '+floattostr(fSourceDelay[kt_sVolt]));
+//if GetSourceDelay(kt_sCurr) then
+//  showmessage('ura! '+floattostr(fSourceDelay[kt_sCurr]));
+
+//SetSourceDelay(kt_sVolt,0.256);
+//SetSourceDelay(kt_sCurr,1.25e-10);
+
+//  AzeroOnce();
 
 // showmessage(booltostr(IsAzeroStateOn(),True));
 // SetAzeroState(False);
@@ -922,6 +998,7 @@ begin
 //    SetupOperation(11,13,13);
 //    SetupOperation(11,12|13,17);
 //    SetupOperation(11,13,16);
+//    SetupOperation(11,1-ord(Source)+12,21|22);
            fDevice.JoinToStringToSend(RootNoodKt_2450[fFirstLevelNode]);
            fDevice.JoinToStringToSend(FirstNodeKt_2450[fLeafNode]);
            if fIsTripped then fDevice.JoinToStringToSend(FirstNodeKt_2450[11]);
@@ -980,13 +1057,15 @@ begin
       10:if StringToVoltageProtection(AnsiLowerCase(Str),fVoltageProtection)
           then fDevice.Value:=ord(fVoltageProtection);
 //      QuireOperation(11,13,15);
-      12..13,15:fDevice.Value:=SCPI_StringToValue(Str);
+// QuireOperation(11,1-ord(Source)+12,21);
+      12..13,15,21:fDevice.Value:=SCPI_StringToValue(Str);
 //      2..3:fDevice.Value:=SCPI_StringToValue(Str);
 //          QuireOperation(11,55,14);
       55:if StringToSourceType(AnsiLowerCase(Str)) then fDevice.Value:=ord(fSourceType);
 // QuireOperation(11,1-ord(Source),17);
 //QuireOperation(11,13,16);
-      16,17:fDevice.Value:=StrToInt(Str);
+//QuireOperation(11,12|13,22);
+      16,17,22:fDevice.Value:=StrToInt(Str);
 //      QuireOperation(11,13,15);
 //      15:;
      end;
@@ -1214,6 +1293,32 @@ begin
          SetupOperation(11,12,15);
        end;
  fSourceCurrentRange:=Range;
+end;
+
+procedure TKt_2450.SetSourceDelay(Source: TKt2450_Source; value: double);
+begin
+//SOUR:VOLT|CURR:DEL <value>
+ fAdditionalString:=FloatToStrLimited(Value,Kt_2450_SourceDelayLimits);
+ SetupOperation(11,1-ord(Source)+12,21);
+ fSourceDelay[Source]:=strtofloat(fAdditionalString);
+end;
+
+procedure TKt_2450.SetSourceDelay(value: double);
+begin
+ SetSourceDelay(fSourceType,value);
+end;
+
+procedure TKt_2450.SetSourceDelayAuto(Source: TKt2450_Source; toOn: boolean);
+begin
+//SOUR:VOLT|CURR:DEL:AUTO ON|OFF
+ OnOffFromBool(toOn);
+ SetupOperation(11,1-ord(Source)+12,22);
+ fSourceDelayAuto[Source]:=toOn;
+end;
+
+procedure TKt_2450.SetSourceDelayAuto(toOn: boolean);
+begin
+  SetSourceDelayAuto(fSourceType,toOn);
 end;
 
 procedure TKt_2450.SetSourceType(SourseType: TKt2450_Source);
