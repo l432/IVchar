@@ -774,6 +774,10 @@ type
     CB_KT2450ReadBack: TCheckBox;
     ST_KT2450SouceRange: TStaticText;
     ST_KT2450MeasureRange: TStaticText;
+    L_KT2450MeasureLowRange: TLabel;
+    ST_KT2450MeasureLowRange: TStaticText;
+    CB_KT2450Azero: TCheckBox;
+    B_KT2450Azero: TButton;
 
     procedure FormCreate(Sender: TObject);
     procedure BConnectClick(Sender: TObject);
@@ -4439,7 +4443,7 @@ begin
 
  Kt_2450_Show := TKt_2450_Show.Create(Kt_2450,
                                      [BKt2450Test,B_Kt2450_Reset,
-                                      B_KT2450GetSetting,
+                                      B_KT2450GetSetting,B_KT2450Azero,
                                      B_MyTrain],
                                      [SB_Kt2450_OutPut,SB_Kt2450_Termin],
                                      [PKt2450SaveSetup,PKt2450LoadSetup],
@@ -4449,12 +4453,12 @@ begin
                                      ST_KT2450Mode, ST_Kt2450_OutPut,
                                      ST_KT2450LimitSource,ST_KT2450SouceRange,
                                      STKT2450_ResComp,ST_KT2450_Sense,
-                                     ST_KT2450MeasureRange],
+                                     ST_KT2450MeasureRange,ST_KT2450MeasureLowRange],
                                      [{L_Kt2450_OutPut,}{LKT2450_ResComp,}
                                      L_KT2450VolProt,L_KT2450Mode,
                                      L_Kt2450_OutPut,L_KT2450LimitSource,
-                                     LKT2450_ResComp],
-                                     [CB_KT2450ReadBack],
+                                     LKT2450_ResComp,L_KT2450MeasureLowRange],
+                                     [CB_KT2450ReadBack,CB_KT2450Azero],
                                      GB_Kt2450_Mes);
 
  AnyObjectArray.Add([Kt_2450]);

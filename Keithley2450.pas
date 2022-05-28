@@ -27,6 +27,7 @@ type
    fTerminal:TKt2450_OutputTerminals;
    fOutPutOn:boolean;
    fResistanceCompencateOn:TKt2450_MeasureBool;
+   fAzeroState:TKt2450_MeasureBool;
    fReadBack:TKt2450_SourceBool;
    fSences:TKt2450_Senses;
    fMeasureUnits:TKt_2450_MeasureUnits;
@@ -41,7 +42,8 @@ type
    fSourceCurrentRange:TKt2450CurrentRange;
    fMeasureVoltageRange:TKt2450VoltageRange;
    fMeasureCurrentRange:TKt2450CurrentRange;
-   procedure OnOffFromBool(toOn:boolean);
+   fMeasureVoltageLowRange:TKt2450VoltageRange;
+   fMeasureCurrentLowRange:TKt2450CurrentRange;   procedure OnOffFromBool(toOn:boolean);
    function StringToVoltageProtection(Str:string;var vp:TKt_2450_VoltageProtection):boolean;
    function StringToSourceType(Str:string):boolean;
    function StringToMeasureFunction(Str:string):boolean;
@@ -77,6 +79,9 @@ type
    property SourceCurrentRange:TKt2450CurrentRange read fSourceCurrentRange;
    property MeasureVoltageRange:TKt2450VoltageRange read fMeasureVoltageRange;
    property MeasureCurrentRange:TKt2450CurrentRange read fMeasureCurrentRange;
+   property MeasureVoltageLowRange:TKt2450VoltageRange read fMeasureVoltageLowRange;
+   property MeasureCurrentLowRange:TKt2450CurrentRange read fMeasureCurrentLowRange;
+   property AzeroState:TKt2450_MeasureBool read fAzeroState;
    Constructor Create(Telnet:TIdTelnet;IPAdressShow: TIPAdressShow;
                Nm:string='Keitley2450');
 
@@ -127,6 +132,16 @@ type
    function IsReadBackOn(Source:TKt2450_Source):boolean;overload;
    function IsReadBackOn():boolean;overload;
    function GetReadBacks():boolean;
+
+   procedure SetAzeroState(Measure:TKt2450_Measure;
+                              toOn:boolean);overload;
+   {чи перевіряються опорні значення перед кожним виміром}
+   procedure SetAzeroState(toOn:boolean);overload;
+   function IsAzeroStateOn(Measure:TKt2450_Measure):boolean;overload;
+   function IsAzeroStateOn():boolean;overload;
+   function GetAzeroStates():boolean;
+   procedure AzeroOnce();
+   {примусова перевірка опорного значення}
 
    procedure SetResistanceCompencate(toOn:boolean);
    {ввімкнення/вимкнення компенсації опору}
@@ -181,6 +196,20 @@ type
    function GetMeasureCurrentRange():boolean;
    function GetMeasureRanges():boolean;
 
+   procedure SetMeasureVoltageLowRange(Range:TKt2450VoltageRange=kt_vr20mV);
+   {якщо встановлено автоматичний пошук діапазону для вимірювань,
+   можна встановити найнижчий діапазон, з якого починатиметься
+   пошук потрібного}
+   function GetMeasureVoltageLowRange():boolean;
+   procedure SetMeasureCurrentLowRange(Range:TKt2450CurrentRange=kt_cr10nA);
+   function GetMeasureCurrentLowRange():boolean;
+   function GetMeasureLowRanges():boolean;
+
+   procedure SetMeasureHighRange(Value:double);
+   {встановлює максимальний діапазон (прив'язаний до Value)
+   для вимірювань при автоматичному  режимі встановленого зараз способу вимірювання;
+   не робив детальних як для попереднього, бо не виносив на керування}
+
    Procedure GetParametersFromDevice;
  end;
 
@@ -194,6 +223,12 @@ uses
   Dialogs, SysUtils, OlegType, Math;
 
 { TKt_2450 }
+
+procedure TKt_2450.AzeroOnce;
+begin
+//:AZERo:ONCE
+ SetupOperation(16,0,0,False);
+end;
 
 procedure TKt_2450.ClearUserScreen;
 begin
@@ -244,6 +279,7 @@ begin
    fSences[TKt2450_Measure(i)]:=kt_s2wire;
    fMeasureUnits[TKt2450_Measure(i)]:=kt_mu_amp;
    fResistanceCompencateOn[TKt2450_Measure(i)]:=False;
+   fAzeroState[TKt2450_Measure(i)]:=True;
    end;
  for I := ord(Low(TKt2450_Source)) to ord(High(TKt2450_Source)) do
    begin
@@ -257,12 +293,21 @@ begin
  fSourceCurrentRange:=kt_crAuto;
  fMeasureVoltageRange:=kt_vrAuto;
  fMeasureCurrentRange:=kt_crAuto;
-
+ fMeasureVoltageLowRange:=kt_vr20mV;
+ fMeasureCurrentLowRange:=kt_cr10nA;
 end;
 
 procedure TKt_2450.DeviceCreate(Nm: string);
 begin
  fDevice:=TKt_2450Device.Create(Self,fTelnet,fIPAdressShow,Nm);
+end;
+
+function TKt_2450.GetAzeroStates: boolean;
+ var i:TKt2450_Measure;
+begin
+ Result:=True;
+ for I := Low(TKt2450_Measure) to High(TKt2450_Measure) do
+   Result:=Result and IsAzeroStateOn(i);
 end;
 
 function TKt_2450.GetCurrentLimit: boolean;
@@ -286,6 +331,17 @@ begin
 //:OUTP:INT:STAT?
  QuireOperation(5,5);
  Result:=(fDevice.Value=1);
+end;
+
+function TKt_2450.GetMeasureCurrentLowRange: boolean;
+begin
+  try
+  QuireOperation(12,15,18);
+  fMeasureCurrentRange:=ValueToCurrentRange(fDevice.Value);
+  Result:=(fDevice.Value<>ErResult);
+  except
+  Result:=false
+  end;
 end;
 
 function TKt_2450.GetMeasureCurrentRange: boolean;
@@ -313,6 +369,11 @@ begin
 // showmessage('measure '+inttostr(ord(fMeasureFunction)))
 end;
 
+function TKt_2450.GetMeasureLowRanges: boolean;
+begin
+ Result:=GetMeasureVoltageLowRange() and GetMeasureCurrentLowRange();
+end;
+
 function TKt_2450.GetMeasureRanges: boolean;
 begin
  Result:=GetMeasureVoltageRange() and GetMeasureCurrentRange();
@@ -335,6 +396,17 @@ begin
  Result:=True;
  for I := kt_mCurrent to kt_mVoltage do
    Result:=Result and GetMeasureUnit(i);
+end;
+
+function TKt_2450.GetMeasureVoltageLowRange: boolean;
+begin
+  try
+  QuireOperation(13,15,18);
+  fMeasureVoltageRange:=ValueToVoltageRange(fDevice.Value);
+  Result:=(fDevice.Value<>ErResult);
+  except
+  result:=false
+  end;
 end;
 
 function TKt_2450.GetMeasureVoltageRange: boolean;
@@ -388,6 +460,8 @@ begin
  if not(GetReadBacks()) then Exit;
  if not(GetSourceRanges()) then Exit;
  if not(GetMeasureRanges()) then Exit;
+ if not(GetMeasureLowRanges()) then Exit;
+ if not(GetAzeroStates()) then Exit;
 
 end;
 
@@ -488,6 +562,18 @@ begin
  Result:=(fDevice.Value<>ErResult);
 end;
 
+function TKt_2450.IsAzeroStateOn(Measure: TKt2450_Measure): boolean;
+begin
+ QuireOperation(ord(Measure)+12,20);
+ Result:=(fDevice.Value=1);
+ fAzeroState[Measure]:=Result;
+end;
+
+function TKt_2450.IsAzeroStateOn: boolean;
+begin
+ Result:=IsAzeroStateOn(fMeasureFunction);
+end;
+
 function TKt_2450.IsCurrentLimitExceeded: boolean;
 begin
  Result:=IsLimitExcided(13,13);
@@ -579,6 +665,31 @@ begin
 //  fDevice.GetData;
 
 
+  AzeroOnce();
+
+// showmessage(booltostr(IsAzeroStateOn(),True));
+// SetAzeroState(False);
+// showmessage(booltostr(IsAzeroStateOn(),True));
+
+//SetAzeroState(False);
+//SetAzeroState(True);
+//SetAzeroState(kt_mCurrent,False);
+//SetAzeroState(kt_mVoltage,True);
+
+//SetMeasureHighRange(0.526);
+
+//if GetMeasureVoltageLowRange() then
+//  showmessage('ura! '+KT2450_VoltageRangeLabels[fMeasureVoltageLowRange]);
+//if GetMeasureCurrentLowRange() then
+//  showmessage('ura! '+KT2450_CurrentRangeLabels[fMeasureCurrentLowRange]);
+
+//SetMeasureCurrentLowRange();
+//SetMeasureCurrentLowRange(kt_cr10nA);
+//SetMeasureCurrentLowRange(kt_cr100mA);
+
+//SetMeasureVoltageLowRange();
+//SetMeasureVoltageLowRange(kt_vr200mV);
+//SetMeasureVoltageLowRange(kt_vr20V);
 
 //if GetMeasureVoltageRange() then
 //  showmessage('ura! '+KT2450_VoltageRangeLabels[fMeasureVoltageRange]);
@@ -586,8 +697,8 @@ begin
 //  showmessage('ura! '+KT2450_CurrentRangeLabels[fMeasureCurrentRange]);
 
 //SetMeasureCurrentRange();
-//SetMeasureCurrentRange(kt_vr10nA);
-//SetMeasureCurrentRange(kt_vr100mA);
+//SetMeasureCurrentRange(kt_cr10nA);
+//SetMeasureCurrentRange(kt_cr100mA);
 
 //SetMeasureVoltageRange();
 //SetMeasureVoltageRange(kt_vr200mV);
@@ -824,8 +935,13 @@ begin
        begin
 //          SetupOperation(12+ord(MeasureType),7);
 //          SetupOperation(ord(Measure)+12,14);
-//        SetupOperation(13,16|15);
+//        SetupOperation(12|13,16|15);
+//        SetupOperation(12|13|14,20);
             fDevice.JoinToStringToSend(FirstNodeKt_2450[fFirstLevelNode]);
+//             SetupOperation(12|13,15|16,18|19);
+         case fLeafNode of
+          18,19:fDevice.JoinToStringToSend(FirstNodeKt_2450[fLeafNode]);
+         end;
        end;
 
      end;
@@ -880,11 +996,13 @@ begin
 //          QuireOperation(12+ord(MeasureType),7);
 //          QuireOperation(12|13,9);
 //          QuireOperation(12|13,16);
-             7,9,16: fDevice.Value:=StrToInt(Str);
+//          QuireOperation(ord(12|13|14,20);
+             7,9,16,20: fDevice.Value:=StrToInt(Str);
  //          QuireOperation(12|13,14);
              14: if StringToMeasureUnit(AnsiLowerCase(Str))
                     then fDevice.Value:=ord(fMeasureUnits[TKt2450_Measure(fFirstLevelNode-12)]);
 //    QuireOperation(12|13,15);
+//  QuireOperation(12|13,15,18);
              15:fDevice.Value:=SCPI_StringToValue(Str);
             end;
 
@@ -899,6 +1017,19 @@ begin
 // *SAV <n>
  fAdditionalString:=inttostr(SlotNumber);
  SetupOperation(3);
+end;
+
+procedure TKt_2450.SetAzeroState(Measure: TKt2450_Measure; toOn: boolean);
+begin
+//CURR|VOLT|RES:AZER OFF ON|OFF
+ OnOffFromBool(toOn);
+ SetupOperation(ord(Measure)+12,20);
+ fAzeroState[Measure]:=toOn;
+end;
+
+procedure TKt_2450.SetAzeroState(toOn: boolean);
+begin
+  SetAzeroState(fMeasureFunction,toOn);
 end;
 
 procedure TKt_2450.SetCurrentLimit(Value: double);
@@ -922,6 +1053,14 @@ begin
 // :OUTP:INT:STAT on|off
  OnOffFromBool(toOn);
  SetupOperation(5,5);
+end;
+
+procedure TKt_2450.SetMeasureCurrentLowRange(Range: TKt2450CurrentRange);
+begin
+//:CURR:RANG:LLIM  <value>
+ fAdditionalString:=CurrentRangeToString(Range);;
+ SetupOperation(12,15,18);
+ fMeasureCurrentLowRange:=Range;
 end;
 
 procedure TKt_2450.SetMeasureCurrentRange(Range: TKt2450CurrentRange);
@@ -953,6 +1092,13 @@ begin
  fMeasureFunction:=MeasureFunction;
 end;
 
+procedure TKt_2450.SetMeasureHighRange(Value: double);
+begin
+//:VOLT|CURR|RES:RANG:AUTO:ULIM <value>
+ fAdditionalString:=FloatToStrLimited(Value, Kt_2450_RangesLimits[fMeasureFunction]);
+ SetupOperation(ord(fMeasureFunction)+12,16,19);
+end;
+
 procedure TKt_2450.SetMeasureUnit(Measure: TKt2450_Measure;
      MeasureUnit: TKt_2450_MeasureUnit);
 begin
@@ -965,6 +1111,15 @@ begin
   fAdditionalString:=SuffixKt_2450[ord(MeasureUnit)+4];
  SetupOperation(ord(Measure)+12,14);
  fMeasureUnits[Measure]:=MeasureUnit;
+end;
+
+procedure TKt_2450.SetMeasureVoltageLowRange(Range: TKt2450VoltageRange);
+begin
+//:VOLT:RANG:AUTO:LLIM  <value>
+
+ fAdditionalString:=VoltageRangeToString(Range);
+ SetupOperation(13,15,18);
+ fMeasureVoltageLowRange:=Range;
 end;
 
 procedure TKt_2450.SetMeasureVoltageRange(Range: TKt2450VoltageRange);
@@ -1104,7 +1259,7 @@ end;
 
 function TKt_2450.ValueToCurrentRange(Value: double): TKt2450CurrentRange;
 begin
- showmessage(floattostr(Value));
+// showmessage(floattostr(Value));
  Result:=TKt2450CurrentRange(round(Log10(Value/1e-8))+1);
 end;
 

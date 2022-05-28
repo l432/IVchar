@@ -8,11 +8,11 @@ const
 
   Kt_2450_Test='KEITHLEY INSTRUMENTS,MODEL 2450';
 
-  RootNoodKt_2450:array[0..15]of string=
+  RootNoodKt_2450:array[0..16]of string=
   ('*idn?','*rcl ','*rst','*sav',':acq',':outp','disp:',':syst','scr:run',
 //   0       1      2      3      4        5       6        7      8
-  'rout',':sens',':sour',':curr', ':volt', ':res',':func');
-//  9       10     11        12      13      14      15
+  'rout',':sens',':sour',':curr', ':volt', ':res',':func',':azer:once');
+//  9       10     11        12      13      14      15         16
 
 
   SuffixKt_2450:array[0..7]of string=('on','off', 'rst',{'?','prot',}'def',
@@ -20,13 +20,13 @@ const
  'amp','volt','ohm','watt' );
 //   4     5    6      7
 
-  FirstNodeKt_2450:array[0..17]of string=
+  FirstNodeKt_2450:array[0..20]of string=
   ('scr','user1:text','user2:text','cle',':pos',':int:stat',':term',
 //     0       1             2         3      4        5         6
    ':rsen',':smod',':ocom',':prot',':trip',':vlim',':ilim',':unit',
 //    7       8       9       10      11      12      13      14
-   ':rang',':rang:auto',':read:back');
-//   15         16            17
+   ':rang',':rang:auto',':read:back',':llim',':ulim',':azer');
+//   15         16            17        18     19      20
 
 
 
@@ -56,15 +56,16 @@ type
  TKt2450_Settings=(kt_voltprot,kt_mode);
  TKt2450_SourceSettings=(kt_ss_outputoff,kt_ss_limit,kt_ss_range);
 
- TKt2450_MeasureSettings=(kt_ms_rescomp,kt_ms_sense,kt_ms_range);
+ TKt2450_MeasureSettings=(kt_ms_rescomp,kt_ms_sense,kt_ms_range,
+                          kt_ms_lrange);
  TKt2450_MeasureShowType=(kt_mst_cur,kt_mst_volt,kt_mst_res,kt_mst_pow);
 
  TKt2450VoltageRange=(kt_vrAuto,kt_vr20mV,kt_vr200mV,kt_vr2V,
                       kt_vr20V,kt_vr200V);
 
- TKt2450CurrentRange=(kt_crAuto,kt_vr10nA,kt_vr100nA,kt_vr1uA,
-                      kt_vr10uA,kt_vr100uA,kt_vr1mA,kt_vr10mA,
-                      kt_vr100mA,kt_vr1A);
+ TKt2450CurrentRange=(kt_crAuto,kt_cr10nA,kt_cr100nA,kt_cr1uA,
+                      kt_cr10uA,kt_cr100uA,kt_cr1mA,kt_cr10mA,
+                      kt_cr100mA,kt_cr1A);
 
 
 
@@ -90,13 +91,17 @@ const
  Kt_2450_CurrentLimLimits:TLimitValues=(1e-9,1.05);
  Kt_2450_CurrentLimDef=1.05e-4;
 
+ Kt_2450_RangesLimits:array[TKt2450_Measure] of TLimitValues=
+  ((1e-8,1),(0.02,200),(2,2e8));
+
+
  KT2450_SenseLabels:array[TKt2450_Sense]of string=
  ('4-Wire','2-Wire');
  KT2450_OutputOffStateLabels:array[TKt_2450_OutputOffState]of string=
  ('Normal','Zero','H-Impedance','Guard');
  KT2450_ModeLabels:array[TKt_2450_Mode]of string=
  ('sourceV measI','sourceV measV','sourceV measR(I)','sourceV measP(I)',
-  'sourceI measI','sourceI measV','sourceI measR(I)','sourceI measP(I)');
+  'sourceI measI','sourceI measV','sourceI measR(V)','sourceI measP(V)');
 
  KT2450_VoltageRangeLabels:array[TKt2450VoltageRange]of string=
          ('Auto','20 mV', '200 mV', '2 V', '20 V', '200 V');

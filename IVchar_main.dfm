@@ -9497,10 +9497,10 @@ object IVchar: TIVchar
         end
       end
       object GB_Kt2450_Mes: TGroupBox
-        Left = 601
-        Top = 62
-        Width = 132
-        Height = 159
+        Left = 528
+        Top = 58
+        Width = 235
+        Height = 223
         Caption = 'Resistance'
         Font.Charset = RUSSIAN_CHARSET
         Font.Color = clNavy
@@ -9510,8 +9510,8 @@ object IVchar: TIVchar
         ParentFont = False
         TabOrder = 4
         object LKT2450_ResComp: TLabel
-          Left = 8
-          Top = 137
+          Left = 12
+          Top = 199
           Width = 79
           Height = 16
           Caption = 'Compensate'
@@ -9521,6 +9521,20 @@ object IVchar: TIVchar
           Font.Name = 'Arial'
           Font.Style = [fsBold]
           ParentFont = False
+        end
+        object L_KT2450MeasureLowRange: TLabel
+          Left = 88
+          Top = 58
+          Width = 60
+          Height = 32
+          Caption = 'Low Auto Limit'
+          Font.Charset = RUSSIAN_CHARSET
+          Font.Color = clOlive
+          Font.Height = -13
+          Font.Name = 'Arial'
+          Font.Style = [fsBold]
+          ParentFont = False
+          WordWrap = True
         end
         object ST_KT2450_Sense: TStaticText
           Left = 10
@@ -9539,7 +9553,7 @@ object IVchar: TIVchar
         end
         object STKT2450_ResComp: TStaticText
           Left = 97
-          Top = 132
+          Top = 196
           Width = 32
           Height = 24
           Caption = 'Off'
@@ -9554,7 +9568,7 @@ object IVchar: TIVchar
         end
         object ST_KT2450MeasureRange: TStaticText
           Left = 11
-          Top = 107
+          Top = 71
           Width = 49
           Height = 24
           Caption = 'Auto'
@@ -9566,6 +9580,43 @@ object IVchar: TIVchar
           ParentFont = False
           ShowAccelChar = False
           TabOrder = 2
+        end
+        object ST_KT2450MeasureLowRange: TStaticText
+          Left = 154
+          Top = 66
+          Width = 59
+          Height = 24
+          Caption = '10 nA'
+          Font.Charset = RUSSIAN_CHARSET
+          Font.Color = clMaroon
+          Font.Height = -17
+          Font.Name = 'Verdana'
+          Font.Style = [fsBold]
+          ParentFont = False
+          ShowAccelChar = False
+          TabOrder = 3
+        end
+        object CB_KT2450Azero: TCheckBox
+          Left = 16
+          Top = 167
+          Width = 97
+          Height = 17
+          Caption = 'Auto Zero'
+          Font.Charset = RUSSIAN_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -13
+          Font.Name = 'Verdana'
+          Font.Style = [fsBold]
+          ParentFont = False
+          TabOrder = 4
+        end
+        object B_KT2450Azero: TButton
+          Left = 119
+          Top = 160
+          Width = 98
+          Height = 25
+          Caption = 'Manual Zero'
+          TabOrder = 5
         end
       end
       object GB_Kt2450_Source: TGroupBox
