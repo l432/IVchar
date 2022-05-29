@@ -50,6 +50,9 @@ type
     destructor Destroy;override;
     procedure ProcessingString(Str:string);virtual;abstract;
     function Test():boolean;virtual;abstract;
+    class Function NumberMap(Value:double;LimitValues:TLimitValues):double;overload;
+    {повертається число. яке знаходиться в межах LimitValues}
+    class Function NumberMap(Value:integer;LimitValues:TLimitValues):integer;overload;
   end;
 
   TRS232_SCPI=class(TRS232)
@@ -142,9 +145,9 @@ end;
 function TSCPInew.NumberToStrLimited(Value: double;
   LimitValues: TLimitValues): string;
 begin
-  Value:=min(Value,LimitValues[lvMax]);
-  Value:=max(Value,LimitValues[lvMin]);
-  Result:=FloatToStrF(Value,ffExponent,4,0);
+//  Value:=min(Value,LimitValues[lvMax]);
+//  Value:=max(Value,LimitValues[lvMin]);
+  Result:=FloatToStrF(NumberMap(Value,LimitValues),ffExponent,4,0);
 end;
 
 procedure TSCPInew.JoinAddString;
@@ -164,6 +167,16 @@ begin
  Delete(Result, Length(Result)-1, 2);
 end;
 
+class function TSCPInew.NumberMap(Value: double; LimitValues: TLimitValues): double;
+begin
+  Result:=max(min(Value,LimitValues[lvMax]),LimitValues[lvMin]);
+end;
+
+class function TSCPInew.NumberMap(Value: integer; LimitValues: TLimitValues): integer;
+begin
+  Result:=Ceil(max(Floor(min(Value,LimitValues[lvMax])),LimitValues[lvMin]));
+end;
+
 function TSCPInew.NumbersArrayToStrLimited(Values: TArrInteger;
   LimitValues: TLimitValues): string;
  var i:integer;
@@ -178,9 +191,9 @@ end;
 function TSCPInew.NumberToStrLimited(Value: integer;
   LimitValues: TLimitValues): string;
 begin
-  Value:=Floor(min(Value,LimitValues[lvMax]));
-  Value:=Ceil(max(Value,LimitValues[lvMin]));
-  Result:=IntToStr(Value);
+//  Value:=Floor(min(Value,LimitValues[lvMax]));
+//  Value:=Ceil(max(Value,LimitValues[lvMin]));
+  Result:=IntToStr(NumberMap(Value,LimitValues));
 end;
 
 procedure TSCPInew.QuireOperation(RootNode, FirstLevelNode, LeafNode: byte;

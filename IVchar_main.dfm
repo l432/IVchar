@@ -9498,7 +9498,7 @@ object IVchar: TIVchar
       end
       object GB_Kt2450_Mes: TGroupBox
         Left = 528
-        Top = 58
+        Top = 3
         Width = 235
         Height = 223
         Caption = 'Resistance'
@@ -9692,8 +9692,8 @@ object IVchar: TIVchar
         object L_KT2450DelaySource: TLabel
           Left = 3
           Top = 230
-          Width = 169
-          Height = 23
+          Width = 151
+          Height = 16
           Caption = 'Delay after source set, s'
           Font.Charset = RUSSIAN_CHARSET
           Font.Color = clNavy

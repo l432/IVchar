@@ -4,7 +4,7 @@ interface
 
 uses
   TelnetDevice, IdTelnet, ShowTypes, Keitley2450Const, SCPI, OlegType, 
-  OlegVector;
+  OlegVector, OlegTypePart2;
 
 
 type
@@ -18,6 +18,65 @@ type
    Constructor Create(SCPInew:TSCPInew;Telnet:TIdTelnet;IPAdressShow: TIPAdressShow;
                Nm:string);
  end;
+
+//TKt_2450=class;
+
+TKt_2450_SweepParameters=class(TSimpleFreeAndAiniObject)
+ private
+  fSource:TKt2450_Source;
+  fStart:double;
+  fStop:double;
+  fPoints:integer;//кількість точок у розгортці
+  fStep:double;//крок при лінійній розгортці, має бути більше 0
+  fDelay:double;{додаткова затримка перед вимірюванням;
+            -1 - autodelay
+            0 - нема затримки, інші можливі значення від 5е-5 до 1е3 с}
+  fCount:integer;//кількість повторів розгортки
+  fRangeType:TKt2450_SweepRangeType;
+  {Auto для кожного значення джерела підбирається найкращий діапазон,
+   але найповільніше;
+   BEST - постійний діапазон, вибирається автоматично;
+   FIXed - постійний, той що встановлений перед розгорткою}
+  fFailAbort:boolean;
+   {при True розгортка переривається при досягненні
+    граничних значень для джерела}
+  fDual:boolean;
+   {при True розгортка буде не лише від Start до Stop, але й потім
+   від Stop до Start}
+  fStartIndex:word;
+   {номер, з якого починаються зчитуватися записи при створенні
+   розгортки за допомогою LIST}
+  procedure SetStart(Value:double);
+  procedure SetStop(Value:double);
+  procedure SetStep(Value:double);
+  procedure SetDelay(Value:double);
+  procedure SetPoints(Value:integer);
+  procedure SetCount(Value:integer);
+  procedure SetStartIndex(Value:Word);
+  function ParameterString(itIsStepType:boolean=False):string;
+  function GetLin():string;
+  function GetLinStep():string;
+  function GetLog():string;
+  function GetList():string;
+ public
+  property Start:double read fStart write SetStart;
+  property Stop:double read fStop write SetStop;
+  property Step:double read fStep write SetStep;
+  property Points:integer read fPoints write SetPoints;
+  property Delay:double read fDelay write SetDelay;
+  property Count:integer read fCount write SetCount;
+  property RangeType:TKt2450_SweepRangeType read fRangeType write fRangeType;
+  property FailAbort:boolean read fFailAbort write fFailAbort;
+  property Lin:string read GetLin;
+  property LinStep:string read GetLinStep;
+  property Log:string read GetLog;
+  property List:string read GetList;
+  property Dual:boolean read fDual write fDual;
+  property StartIndex:word read fStartIndex write SetStartIndex;
+  constructor Create(Source:TKt2450_Source);
+  class function BoolToOnOffString(bool:boolean):string;
+end;
+
 
  TKt_2450=class(TSCPInew)
   private
@@ -68,6 +127,7 @@ type
    procedure DeviceCreate(Nm:string);override;
    procedure DefaultSettings;override;
   public
+   SweepParameters:array[TKt2450_Source]of TKt_2450_SweepParameters;
    property DataVector:TVector read fDataVector;
    property SourceType:TKt2450_Source read fSourceType;
    property MeasureFunction:TKt2450_Measure read fMeasureFunction;
@@ -250,6 +310,11 @@ type
    послідовності вимірювань}
    procedure SourceListAppend(ListValues:TArrSingle);overload;
 
+   procedure SwepLinearPointCreate();
+   procedure SwepLinearStepCreate();
+   procedure SwepListCreate(StartIndex:word=1);
+   procedure SwepLogStepCreate();
+
    Procedure GetParametersFromDevice;
  end;
 
@@ -326,6 +391,7 @@ begin
    fReadBack[TKt2450_Source(i)]:=True;
    fSourceDelay[TKt2450_Source(i)]:=0;
    fSourceDelayAuto[TKt2450_Source(i)]:=True;
+   SweepParameters[TKt2450_Source(i)]:=TKt_2450_SweepParameters.Create(TKt2450_Source(i));
    end;
  for I := ord(Low(TKt2450_Source)) to ord(High(TKt2450_Source)) do
    fOutputOffState[TKt2450_Source(i)]:=kt_oos_norm;
@@ -339,10 +405,14 @@ begin
  fMeasureCurrentLowRange:=kt_cr10nA;
 
  fDataVector:=TVector.Create;
+
 end;
 
 destructor TKt_2450.Destroy;
+ var i:TKt2450_Source;
 begin
+  for I := Low(TKt2450_Source) to High(TKt2450_Source) do
+   FreeAndNil(SweepParameters[i]);
   FreeAndNil(fDataVector);
   inherited;
 end;
@@ -763,19 +833,21 @@ begin
 
 
 
+SwepLinearPointCreate();
+SwepLinearStepCreate();
+SwepListCreate();
+SwepLogStepCreate();
 
-//StrToNumberArray(ArrDouble,'4, 5.234, 7.25');
-//showmessage(NumbersArrayToStrLimited(ArrDouble,Kt_2450_SourceDelayLimits));
 
-SetLength(ArrDouble,3);
-ArrDouble[0]:=1;
-ArrDouble[1]:=0.5;
-ArrDouble[2]:=0.75;
-SourceListCreate(kt_sVolt,ArrDouble);
-SourceListCreate(kt_sCurr,ArrDouble);
-if GetSourceList(kt_sCurr) then
-   showmessage(fDataVector.XYtoString);
-SourceListAppend(kt_sCurr,ArrDouble);
+//SetLength(ArrDouble,3);
+//ArrDouble[0]:=1;
+//ArrDouble[1]:=0.5;
+//ArrDouble[2]:=0.75;
+//SourceListCreate(kt_sVolt,ArrDouble);
+//SourceListCreate(kt_sCurr,ArrDouble);
+//if GetSourceList(kt_sCurr) then
+//   showmessage(fDataVector.XYtoString);
+//SourceListAppend(kt_sCurr,ArrDouble);
 //if GetSourceList(kt_sCurr) then
 //   showmessage(fDataVector.XYtoString);
 
@@ -1002,8 +1074,9 @@ end;
 
 procedure TKt_2450.OnOffFromBool(toOn: boolean);
 begin
- if toOn then fAdditionalString:=SuffixKt_2450[0]
-         else fAdditionalString:=SuffixKt_2450[1];
+ fAdditionalString:=TKt_2450_SweepParameters.BoolToOnOffString(toOn);
+// if toOn then fAdditionalString:=SuffixKt_2450[0]
+//         else fAdditionalString:=SuffixKt_2450[1];
 end;
 
 procedure TKt_2450.OutPutChange(toOn: boolean);
@@ -1078,6 +1151,16 @@ begin
                  end;
            end;
           end;
+        25:begin
+            fDevice.JoinToStringToSend(FirstNodeKt_2450[fFirstLevelNode]);
+//            SetupOperation(11,25,1,False);
+            case fLeafNode of
+              1:fDevice.JoinToStringToSend(SweepParameters[fSourceType].Lin);
+              2:fDevice.JoinToStringToSend(SweepParameters[fSourceType].LinStep);
+              3:fDevice.JoinToStringToSend(SweepParameters[fSourceType].List);
+              4:fDevice.JoinToStringToSend(SweepParameters[fSourceType].Log);
+            end;
+           end;
 //       fDevice.JoinToStringToSend(FirstNodeKt_2450[fLeafNode]);
       end;
       end;
@@ -1620,6 +1703,27 @@ begin
      end;
 end;
 
+procedure TKt_2450.SwepLinearPointCreate;
+begin
+ SetupOperation(11,25,1,False);
+end;
+
+procedure TKt_2450.SwepLinearStepCreate;
+begin
+  SetupOperation(11,25,2,False);
+end;
+
+procedure TKt_2450.SwepListCreate(StartIndex: word);
+begin
+  SweepParameters[fSourceType].StartIndex:=StartIndex;
+  SetupOperation(11,25,3,False);
+end;
+
+procedure TKt_2450.SwepLogStepCreate;
+begin
+  SetupOperation(11,25,4,False);
+end;
+
 function TKt_2450.Test: boolean;
 begin
 // *IDN?
@@ -1665,6 +1769,113 @@ begin
  fSCPI.ProcessingString(fDataSubject.ReceivedString);
  fIsReceived:=True;
  if TestShowEthernet then showmessage('recived:  '+fDataSubject.ReceivedString);
+end;
+
+{ TKt_2450_SweepParameters }
+
+class function TKt_2450_SweepParameters.BoolToOnOffString(
+  bool: boolean): string;
+begin
+  if bool then Result:=SuffixKt_2450[0]
+          else Result:=SuffixKt_2450[1];
+end;
+
+constructor TKt_2450_SweepParameters.Create(Source:TKt2450_Source);
+begin
+ fSource:=Source;
+ fStart:=0;
+ fStop:=0.1;
+ fPoints:=2;
+ fStep:=0.05;
+ fDelay:=0;
+ fCount:=1;
+ fRangeType:=kt_srt_Best;
+ fDual:=False;
+ fFailAbort:=True;
+end;
+
+function TKt_2450_SweepParameters.GetLin: string;
+begin
+ Result:=RootNoodKt_2450[1-ord(fSource)+12]+':lin '
+         +ParameterString();
+end;
+
+function TKt_2450_SweepParameters.GetLinStep: string;
+begin
+ Result:=RootNoodKt_2450[1-ord(fSource)+12]+':lin:step '
+         +ParameterString(True);
+end;
+
+function TKt_2450_SweepParameters.GetList: string;
+begin
+//LIST <startIndex>, <delay>, <count>, <failAbort>
+ Result:=RootNoodKt_2450[1-ord(fSource)+12]+FirstNodeKt_2450[23]+' '
+         +Inttostr(fStartIndex)+PartDelimiter
+         +FloatToStrF(fDelay,ffExponent,4,0)+PartDelimiter
+         +IntToStr(fCount)+PartDelimiter
+         +BoolToOnOffString(fFailAbort);
+end;
+
+function TKt_2450_SweepParameters.GetLog: string;
+begin
+ Result:=RootNoodKt_2450[1-ord(fSource)+12]+':log '
+         +ParameterString();
+end;
+
+
+function TKt_2450_SweepParameters.ParameterString(
+  itIsStepType: boolean): string;
+begin
+//<start>, <stop>, <points>, <delay>, <count>,
+//<rangeType>, <failAbort>, <dual>
+ Result:=FloatToStrF(fStart,ffExponent,4,0)+PartDelimiter
+         +FloatToStrF(fStop,ffExponent,4,0)+PartDelimiter;
+ if itIsStepType
+   then Result:=Result+FloatToStrF(fStep,ffExponent,4,0)+PartDelimiter
+   else Result:=Result+IntToStr(fPoints)+PartDelimiter;
+ Result:=Result+FloatToStrF(fDelay,ffExponent,4,0)+PartDelimiter
+         +IntToStr(fCount)+PartDelimiter
+         +KT2450_SweepRangeNames[fRangeType]+PartDelimiter
+         +BoolToOnOffString(fFailAbort)+PartDelimiter
+         +BoolToOnOffString(fDual);
+end;
+
+procedure TKt_2450_SweepParameters.SetCount(Value: integer);
+begin
+ fCount:=TSCPInew.NumberMap(Value,Kt_2450_SweepCountLimits);
+end;
+
+procedure TKt_2450_SweepParameters.SetDelay(Value: double);
+begin
+ if (Value=-1)or(Value=0)
+    then fDelay:=Value
+    else fDelay:=TSCPInew.NumberMap(Value,Kt_2450_SweepDelayLimits);
+end;
+
+procedure TKt_2450_SweepParameters.SetPoints(Value: integer);
+begin
+ fPoints:=TSCPInew.NumberMap(Value,Kt_2450_SweepPointsLimits);
+end;
+
+procedure TKt_2450_SweepParameters.SetStart(Value: double);
+begin
+ fStart:=TSCPInew.NumberMap(Value,Kt_2450_SourceSweepLimits[fSource]);
+end;
+
+procedure TKt_2450_SweepParameters.SetStartIndex(Value: Word);
+begin
+ fStartIndex:=max(1,Value);
+end;
+
+procedure TKt_2450_SweepParameters.SetStep(Value: double);
+begin
+ if Value=0 then Exit;
+ fStep:=abs(Value);
+end;
+
+procedure TKt_2450_SweepParameters.SetStop(Value: double);
+begin
+ fStop:=TSCPInew.NumberMap(Value,Kt_2450_SourceSweepLimits[fSource]);
 end;
 
 end.

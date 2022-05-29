@@ -28,9 +28,9 @@ const
    ':rang',':rang:auto',':read:back',':llim',':ulim',':azer',':del',
 //   15         16            17        18     19      20       21
    ':del:auto',':list',':app',':swe');
-//      22        23      24    25
+//      22        23      24     25
 
-
+   PartDelimiter=', ';
 
 type
 
@@ -70,6 +70,7 @@ type
                       kt_cr10uA,kt_cr100uA,kt_cr1mA,kt_cr10mA,
                       kt_cr100mA,kt_cr1A);
 
+ TKt2450_SweepRangeType=(kt_srt_Auto,kt_srt_Best,kt_srt_Fixed);
 
 
 const
@@ -97,9 +98,12 @@ const
  Kt_2450_RangesLimits:array[TKt2450_Measure] of TLimitValues=
   ((1e-8,1),(0.02,200),(2,2e8));
  Kt_2450_SourceDelayLimits:TLimitValues=(0,1e3);
+ Kt_2450_SweepDelayLimits:TLimitValues=(5e-5,1e3);
 
  Kt_2450_SourceSweepLimits:array[TKt2450_Source] of TLimitValues=
  ((-210,210),(-1.05,1.05));
+ Kt_2450_SweepPointsLimits:TLimitValues=(2,1e6);
+ Kt_2450_SweepCountLimits:TLimitValues=(1,268435455);
 
 
  KT2450_SenseLabels:array[TKt2450_Sense]of string=
@@ -112,11 +116,13 @@ const
 
  KT2450_VoltageRangeLabels:array[TKt2450VoltageRange]of string=
          ('Auto','20 mV', '200 mV', '2 V', '20 V', '200 V');
-// KT2450_VoltageRangeData:array[TKt2450VoltageRange]of string=
-//         ('def','2e-2', '0.2', '2', '20', '200');
  KT2450_CurrentRangeLabels:array[TKt2450CurrentRange]of string=
          ('Auto','10 nA', '100 nA', '1 µA', '10 µA', '100 µA',
           '1 mA', '10 mA', '100 mA', '1 A');
+ KT2450_SweepRangeNames:array[TKt2450_SweepRangeType]of string=
+         ('auto','best', 'fix');
+
+
 
 //  OperationKod:array [TKt2450_Settings] of array[0..2] of byte=
 ////                  RootNood  FirstNode  LeafNode
