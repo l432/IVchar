@@ -3,7 +3,8 @@ unit Keithley2450;
 interface
 
 uses
-  TelnetDevice, IdTelnet, ShowTypes, Keitley2450Const, SCPI;
+  TelnetDevice, IdTelnet, ShowTypes, Keitley2450Const, SCPI, OlegType, 
+  OlegVector;
 
 
 type
@@ -46,6 +47,7 @@ type
    fMeasureCurrentLowRange:TKt2450CurrentRange;
    fSourceDelay:TKt2450_SourceDouble;
    fSourceDelayAuto:TKt2450_SourceBool;
+   fDataVector:TVector;
    procedure OnOffFromBool(toOn:boolean);
    function StringToVoltageProtection(Str:string;var vp:TKt_2450_VoltageProtection):boolean;
    function StringToSourceType(Str:string):boolean;
@@ -53,6 +55,7 @@ type
    function StringToTerminals(Str:string):boolean;
    function StringToOutPutState(Str:string):boolean;
    function StringToMeasureUnit(Str:string):boolean;
+   procedure StringToArray(Str:string);
    function IsLimitExcided(FirstLevelNode,LeafNode:byte):boolean;
    {типова функція для запиту, чи ввімкнув прилад певні захисти}
    function ModeDetermination:TKt_2450_Mode;
@@ -65,6 +68,7 @@ type
    procedure DeviceCreate(Nm:string);override;
    procedure DefaultSettings;override;
   public
+   property DataVector:TVector read fDataVector;
    property SourceType:TKt2450_Source read fSourceType;
    property MeasureFunction:TKt2450_Measure read fMeasureFunction;
    property VoltageProtection:TKt_2450_VoltageProtection read fVoltageProtection;
@@ -90,6 +94,7 @@ type
 
    Constructor Create(Telnet:TIdTelnet;IPAdressShow: TIPAdressShow;
                Nm:string='Keitley2450');
+   destructor Destroy; override;
 
    function Test():boolean;override;
    procedure ProcessingString(Str:string);override;
@@ -233,6 +238,18 @@ type
    function IsSourceDelayAutoOn():boolean;overload;
    function GetSourceDelayAutoOns():boolean;
 
+   procedure SourceListCreate(Source:TKt2450_Source;ListValues:TArrSingle);overload;
+   {створення списку значень джерела, які будуть використовуватися під час
+   послідовності вимірювань}
+   procedure SourceListCreate(ListValues:TArrSingle);overload;
+   function GetSourceList(Source:TKt2450_Source):boolean;overload;
+   {отримані значення розташовуються в DataVector.X та DataVector.Y}
+   function GetSourceList():boolean;overload;
+   procedure SourceListAppend(Source:TKt2450_Source;ListValues:TArrSingle);overload;
+   {значення додаються до списку значень джерела, які будуть використовуватися під час
+   послідовності вимірювань}
+   procedure SourceListAppend(ListValues:TArrSingle);overload;
+
    Procedure GetParametersFromDevice;
  end;
 
@@ -243,7 +260,7 @@ var
 implementation
 
 uses
-  Dialogs, SysUtils, OlegType, Math;
+  Dialogs, SysUtils, Math;
 
 { TKt_2450 }
 
@@ -320,6 +337,14 @@ begin
  fMeasureCurrentRange:=kt_crAuto;
  fMeasureVoltageLowRange:=kt_vr20mV;
  fMeasureCurrentLowRange:=kt_cr10nA;
+
+ fDataVector:=TVector.Create;
+end;
+
+destructor TKt_2450.Destroy;
+begin
+  FreeAndNil(fDataVector);
+  inherited;
 end;
 
 procedure TKt_2450.DeviceCreate(Nm: string);
@@ -561,6 +586,17 @@ begin
  Result:=GetSourceDelay(kt_sVolt) and GetSourceDelay(kt_sCurr);
 end;
 
+function TKt_2450.GetSourceList: boolean;
+begin
+ Result:=GetSourceList(fSourceType);
+end;
+
+function TKt_2450.GetSourceList(Source: TKt2450_Source): boolean;
+begin
+ QuireOperation(11,23,1-ord(Source)+12);
+ Result:=(fDevice.Value=1);
+end;
+
 function TKt_2450.GetSourceRanges: boolean;
 begin
  Result:=GetSourceVoltageRange() and GetSourceCurrentRange();
@@ -718,11 +754,31 @@ end;
 
 procedure TKt_2450.MyTraining;
 // var str:string;
+  var ArrDouble: TArrSingle;
 begin
 //  (fDevice as TTelnetMeterDeviceSingle).SetStringToSend(':FORMat:ASCii:PRECision?');
 //  (fDevice as TTelnetMeterDeviceSingle).SetStringToSend(':SOUR:VOLT:RANG:Auto?');
 //  fDevice.Request();
 //  fDevice.GetData;
+
+
+
+
+//StrToNumberArray(ArrDouble,'4, 5.234, 7.25');
+//showmessage(NumbersArrayToStrLimited(ArrDouble,Kt_2450_SourceDelayLimits));
+
+SetLength(ArrDouble,3);
+ArrDouble[0]:=1;
+ArrDouble[1]:=0.5;
+ArrDouble[2]:=0.75;
+SourceListCreate(kt_sVolt,ArrDouble);
+SourceListCreate(kt_sCurr,ArrDouble);
+if GetSourceList(kt_sCurr) then
+   showmessage(fDataVector.XYtoString);
+SourceListAppend(kt_sCurr,ArrDouble);
+//if GetSourceList(kt_sCurr) then
+//   showmessage(fDataVector.XYtoString);
+
 
 // if IsSourceDelayAutoOn(kt_sCurr) then
 //     showmessage(booltostr(fSourceDelayAuto[kt_sCurr],True));
@@ -1005,6 +1061,23 @@ begin
           end;
 //        SetupOperation(11,55,14);
        55:fDevice.JoinToStringToSend(RootNoodKt_2450[15]);
+//    SetupOperation(11,23,1-ord(Source)+12);
+//    SetupOperation(11,23,24);
+       23:begin
+           case fLeafNode of
+             79,80:begin
+//                  SetupOperation(11,23,55+24+1-ord(Source));//79,80
+                   fDevice.JoinToStringToSend(FirstNodeKt_2450[fFirstLevelNode]);
+                   fDevice.JoinToStringToSend(RootNoodKt_2450[fLeafNode-79+12]);
+                   fDevice.JoinToStringToSend(FirstNodeKt_2450[24]);
+                   end;
+             else
+                 begin
+                 fDevice.JoinToStringToSend(FirstNodeKt_2450[fFirstLevelNode]);
+                 fDevice.JoinToStringToSend(RootNoodKt_2450[fLeafNode]);
+                 end;
+           end;
+          end;
 //       fDevice.JoinToStringToSend(FirstNodeKt_2450[fLeafNode]);
       end;
       end;
@@ -1053,22 +1126,32 @@ begin
 
 // QuireOperation(11,12,12);
 
-     case fLeafNode of
-      10:if StringToVoltageProtection(AnsiLowerCase(Str),fVoltageProtection)
-          then fDevice.Value:=ord(fVoltageProtection);
-//      QuireOperation(11,13,15);
-// QuireOperation(11,1-ord(Source)+12,21);
-      12..13,15,21:fDevice.Value:=SCPI_StringToValue(Str);
-//      2..3:fDevice.Value:=SCPI_StringToValue(Str);
-//          QuireOperation(11,55,14);
-      55:if StringToSourceType(AnsiLowerCase(Str)) then fDevice.Value:=ord(fSourceType);
-// QuireOperation(11,1-ord(Source),17);
-//QuireOperation(11,13,16);
-//QuireOperation(11,12|13,22);
-      16,17,22:fDevice.Value:=StrToInt(Str);
-//      QuireOperation(11,13,15);
-//      15:;
-     end;
+// QuireOperation(11,23,1-ord(Source)+12);
+      case fFirstLevelNode of
+        23:begin
+           StringToArray(Str);
+           if fDataVector.Count>0 then fDevice.Value:=1;
+           end;
+        else
+           begin
+           case fLeafNode of
+            10:if StringToVoltageProtection(AnsiLowerCase(Str),fVoltageProtection)
+                then fDevice.Value:=ord(fVoltageProtection);
+        //      QuireOperation(11,13,15);
+        // QuireOperation(11,1-ord(Source)+12,21);
+            12..13,15,21:fDevice.Value:=SCPI_StringToValue(Str);
+        //      2..3:fDevice.Value:=SCPI_StringToValue(Str);
+        //          QuireOperation(11,55,55);
+            55:if StringToSourceType(AnsiLowerCase(Str)) then fDevice.Value:=ord(fSourceType);
+        // QuireOperation(11,1-ord(Source),17);
+        //QuireOperation(11,13,16);
+        //QuireOperation(11,12|13,22);
+            16,17,22:fDevice.Value:=StrToInt(Str);
+        //      QuireOperation(11,13,15);
+        //      15:;
+           end;
+           end;
+      end;
      end;
    12..14:begin
             case fFirstLevelNode of
@@ -1121,7 +1204,7 @@ if Value=0 then
      end
            else
      begin
-      fAdditionalString:=FloatToStrLimited(Value,Kt_2450_CurrentLimLimits);
+      fAdditionalString:=NumberToStrLimited(Value,Kt_2450_CurrentLimLimits);
       fCurrentLimit:=strtofloat(fAdditionalString);
      end;
  SetupOperation(11,13,13);
@@ -1174,7 +1257,7 @@ end;
 procedure TKt_2450.SetMeasureHighRange(Value: double);
 begin
 //:VOLT|CURR|RES:RANG:AUTO:ULIM <value>
- fAdditionalString:=FloatToStrLimited(Value, Kt_2450_RangesLimits[fMeasureFunction]);
+ fAdditionalString:=NumberToStrLimited(Value, Kt_2450_RangesLimits[fMeasureFunction]);
  SetupOperation(ord(fMeasureFunction)+12,16,19);
 end;
 
@@ -1298,7 +1381,7 @@ end;
 procedure TKt_2450.SetSourceDelay(Source: TKt2450_Source; value: double);
 begin
 //SOUR:VOLT|CURR:DEL <value>
- fAdditionalString:=FloatToStrLimited(Value,Kt_2450_SourceDelayLimits);
+ fAdditionalString:=NumberToStrLimited(Value,Kt_2450_SourceDelayLimits);
  SetupOperation(11,1-ord(Source)+12,21);
  fSourceDelay[Source]:=strtofloat(fAdditionalString);
 end;
@@ -1388,7 +1471,7 @@ begin
      end
            else
      begin
-      fAdditionalString:=FloatToStrLimited(Value,Kt_2450_VoltageLimLimits);
+      fAdditionalString:=NumberToStrLimited(Value,Kt_2450_VoltageLimLimits);
       fVoltageLimit:=strtofloat(fAdditionalString);
      end;
  SetupOperation(11,12,12);
@@ -1406,6 +1489,43 @@ begin
    fAdditionalString:=Kt_2450_VoltageProtectionLabel[Level];
  fVoltageProtection:=Level;
  SetupOperation(11,13,10);
+end;
+
+procedure TKt_2450.SourceListAppend(Source: TKt2450_Source;
+  ListValues: TArrSingle);
+begin
+//   :SOUR:LIST:CURR|VOLT:APP <list>
+ fAdditionalString:=NumbersArrayToStrLimited(ListValues,
+                         Kt_2450_SourceSweepLimits[Source]);
+ SetupOperation(11,23,55+24+1-ord(Source));//79,80
+end;
+
+procedure TKt_2450.SourceListAppend(ListValues: TArrSingle);
+begin
+ SourceListAppend(fSourceType,ListValues);
+end;
+
+procedure TKt_2450.SourceListCreate(ListValues: TArrSingle);
+begin
+ SourceListCreate(fSourceType,ListValues);
+end;
+
+procedure TKt_2450.SourceListCreate(Source: TKt2450_Source;
+  ListValues: TArrSingle);
+begin
+//   :SOUR:LIST:CURR|VOLT <list>
+ fAdditionalString:=NumbersArrayToStrLimited(ListValues,
+                         Kt_2450_SourceSweepLimits[Source]);
+ SetupOperation(11,23,1-ord(Source)+12);
+end;
+
+procedure TKt_2450.StringToArray(Str: string);
+ var tempArray:TArrSingle;
+begin
+ fDataVector.Clear;
+ StrToNumberArray(tempArray,Str);
+ fDataVector.CopyFromXYArrays(tempArray,tempArray);
+ fDataVector.DeleteErResult;
 end;
 
 function TKt_2450.StringToMeasureFunction(Str: string): boolean;

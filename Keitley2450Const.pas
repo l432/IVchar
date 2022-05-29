@@ -20,15 +20,15 @@ const
  'amp','volt','ohm','watt' );
 //   4     5    6      7
 
-  FirstNodeKt_2450:array[0..22]of string=
+  FirstNodeKt_2450:array[0..25]of string=
   ('scr','user1:text','user2:text','cle',':pos',':int:stat',':term',
 //     0       1             2         3      4        5         6
    ':rsen',':smod',':ocom',':prot',':trip',':vlim',':ilim',':unit',
 //    7       8       9       10      11      12      13      14
    ':rang',':rang:auto',':read:back',':llim',':ulim',':azer',':del',
 //   15         16            17        18     19      20       21
-   ':del:auto');
-//      22
+   ':del:auto',':list',':app',':swe');
+//      22        23      24    25
 
 
 
@@ -97,6 +97,10 @@ const
  Kt_2450_RangesLimits:array[TKt2450_Measure] of TLimitValues=
   ((1e-8,1),(0.02,200),(2,2e8));
  Kt_2450_SourceDelayLimits:TLimitValues=(0,1e3);
+
+ Kt_2450_SourceSweepLimits:array[TKt2450_Source] of TLimitValues=
+ ((-210,210),(-1.05,1.05));
+
 
  KT2450_SenseLabels:array[TKt2450_Sense]of string=
  ('4-Wire','2-Wire');

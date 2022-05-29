@@ -3,7 +3,7 @@ unit SCPI;
 interface
 
 uses
-  RS232deviceNew, CPort, OlegTypePart2;
+  RS232deviceNew, CPort, OlegTypePart2, OlegType, StrUtils;
 
 const
 //  TestShow=True;
@@ -39,7 +39,12 @@ type
     procedure DefaultSettings;virtual;
     function SCPI_StringToValue(Str:string):double;
     Function DeleteSubstring(Source:string;Substring: string=':'):string;
-    Function FloatToStrLimited(Value:double;LimitValues:TLimitValues):string;
+    Function NumberToStrLimited(Value:double;LimitValues:TLimitValues):string;overload;
+    Function NumberToStrLimited(Value:integer;LimitValues:TLimitValues):string;overload;
+    Function NumbersArrayToStrLimited(Values:TArrSingle;LimitValues:TLimitValues):string;overload;
+    Function NumbersArrayToStrLimited(Values:TArrInteger;LimitValues:TLimitValues):string;overload;
+    procedure StrToNumberArray(var Values:TArrSingle; Str:string; Decimator:string=',');
+    {розміщує в Values числа, розташовані в рядку Str і розділені між собою Decimator}
    public
     Constructor Create(Nm:string);
     destructor Destroy;override;
@@ -72,7 +77,7 @@ var
 implementation
 
 uses
-  Dialogs, SysUtils, OlegType, Math;
+  Dialogs, SysUtils, Math, OlegFunction;
 
 { TRS232_SCPI }
 
@@ -134,7 +139,7 @@ begin
   inherited;
 end;
 
-function TSCPInew.FloatToStrLimited(Value: double;
+function TSCPInew.NumberToStrLimited(Value: double;
   LimitValues: TLimitValues): string;
 begin
   Value:=min(Value,LimitValues[lvMax]);
@@ -146,6 +151,36 @@ procedure TSCPInew.JoinAddString;
 begin
  if fIsQuery then fDevice.JoinToStringToSend('?')
              else fDevice.JoinToStringToSend(' '+fAdditionalString);
+end;
+
+function TSCPInew.NumbersArrayToStrLimited(Values: TArrSingle;
+  LimitValues: TLimitValues): string;
+ var i:integer;
+begin
+ Result:='';
+ if High(Values)<0 then Exit;
+ for I := Low(Values) to High(Values) do
+   Result:=Result+NumberToStrLimited(Values[i],LimitValues)+', ';
+ Delete(Result, Length(Result)-1, 2);
+end;
+
+function TSCPInew.NumbersArrayToStrLimited(Values: TArrInteger;
+  LimitValues: TLimitValues): string;
+ var i:integer;
+begin
+ Result:='';
+ if High(Values)<0 then Exit;
+ for I := Low(Values) to High(Values) do
+   Result:=Result+NumberToStrLimited(Values[i],LimitValues)+' ';
+ Delete(Result, Length(Result)-1, 2);
+end;
+
+function TSCPInew.NumberToStrLimited(Value: integer;
+  LimitValues: TLimitValues): string;
+begin
+  Value:=Floor(min(Value,LimitValues[lvMax]));
+  Value:=Ceil(max(Value,LimitValues[lvMin]));
+  Result:=IntToStr(Value);
 end;
 
 procedure TSCPInew.QuireOperation(RootNode, FirstLevelNode, LeafNode: byte;
@@ -199,6 +234,17 @@ end;
 function TSCPInew.StringToInvertedCommas(str: string): string;
 begin
  Result:='"'+str+'"';
+end;
+
+procedure TSCPInew.StrToNumberArray(var Values: TArrSingle; Str,
+  Decimator: string);
+  var i:integer;
+begin
+  Str:=AnsiReplaceStr(Str,Decimator,' ');
+  Str:=SomeSpaceToOne(Str);
+  SetLength(Values,NumberOfSubstringInRow(Str));
+  for I := 0 to High(Values) do
+   Values[i]:=FloatDataFromRow(Str,i+1);
 end;
 
 end.

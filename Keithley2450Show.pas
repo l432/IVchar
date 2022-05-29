@@ -245,7 +245,7 @@ var
 implementation
 
 uses
-  Dialogs, Graphics, SysUtils, TelnetDevice;
+  Dialogs, Graphics, SysUtils, TelnetDevice, OlegFunction;
 
 { TKt_2450_Show }
 
@@ -259,9 +259,10 @@ procedure TKt_2450_Show.AZeroFromDevice;
 begin
  if fAutoZeroCB.Checked<>fKt_2450.AzeroState[fKt_2450.MeasureFunction] then
   begin
-    fAutoZeroCB.OnClick:=nil;
-    fAutoZeroCB.Checked:=not(fAutoZeroCB.Checked);
-    fAutoZeroCB.OnClick:=AutoZeroClick;
+    AccurateCheckBoxCheckedChange(fAutoZeroCB,fKt_2450.AzeroState[fKt_2450.MeasureFunction]);
+//    fAutoZeroCB.OnClick:=nil;
+//    fAutoZeroCB.Checked:=not(fAutoZeroCB.Checked);
+//    fAutoZeroCB.OnClick:=AutoZeroClick;
     fZeroManualB.Enabled:=not(fAutoZeroCB.Checked);
   end;
 end;
@@ -352,6 +353,7 @@ begin
 
   fAutoZeroCB:=CheckBoxs[CBnumber];
 //  inc(CBnumber);
+  fAutoZeroCB.OnClick:=AutoZeroClick;
 
   fSetupMemoryShow:=TKT2450_SetupMemoryShow.Create(Self,Panels[0],Panels[1]);
 
@@ -757,21 +759,23 @@ begin
    kt_sCurr: (fSettingsShow[kt_ss_limit] as TDoubleParameterShow).Data:=fKt_2450.VoltageLimit;
  end;
  (fSettingsShow[kt_ss_delay] as TDoubleParameterShow).Data:=fKt_2450.SourceDelay[fKt_2450.SourceType];
-// if fKt_2450.ReadBack[fSourceType]<>fCBReadBack.Checked then
+
  if fKt_2450.ReadBack[fKt_2450.SourceType]<>fCBReadBack.Checked then
-  begin
-   fCBReadBack.OnClick:=nil;
-//   fCBReadBack.Checked:=fKt_2450.ReadBack[fSourceType];
-   fCBReadBack.Checked:=fKt_2450.ReadBack[fKt_2450.SourceType];
-   fCBReadBack.OnClick:=ReadBackClick;
-  end;
+  AccurateCheckBoxCheckedChange(fCBReadBack,fKt_2450.ReadBack[fKt_2450.SourceType]);
+//  begin
+//   fCBReadBack.OnClick:=nil;
+////   fCBReadBack.Checked:=fKt_2450.ReadBack[fSourceType];
+//   fCBReadBack.Checked:=fKt_2450.ReadBack[fKt_2450.SourceType];
+//   fCBReadBack.OnClick:=ReadBackClick;
+//  end;
 
  if fKt_2450.SourceDelayAuto[fKt_2450.SourceType]<>fCBDelay.Checked then
-  begin
-   fCBDelay.OnClick:=nil;
-   fCBDelay.Checked:=fKt_2450.SourceDelayAuto[fKt_2450.SourceType];
-   fCBDelay.OnClick:=ReadBackClick;
-  end;
+  AccurateCheckBoxCheckedChange(fCBDelay,fKt_2450.SourceDelayAuto[fKt_2450.SourceType]);
+//  begin
+//   fCBDelay.OnClick:=nil;
+//   fCBDelay.Checked:=fKt_2450.SourceDelayAuto[fKt_2450.SourceType];
+//   fCBDelay.OnClick:=ReadBackClick;
+//  end;
  STDelay.Enabled:=not(fCBDelay.Checked);
 
  fRangeShow.ObjectToSetting;
