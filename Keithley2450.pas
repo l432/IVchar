@@ -316,6 +316,9 @@ end;
    procedure SwepLogStepCreate();
 
    Procedure GetParametersFromDevice;
+
+   Procedure Init;
+   Procedure Abort;
  end;
 
 
@@ -328,6 +331,12 @@ uses
   Dialogs, SysUtils, Math;
 
 { TKt_2450 }
+
+procedure TKt_2450.Abort;
+begin
+//:ABOR
+ SetupOperation(18,0,0,False);
+end;
 
 procedure TKt_2450.AzeroOnce;
 begin
@@ -723,6 +732,12 @@ begin
  fAzeroState[Measure]:=Result;
 end;
 
+procedure TKt_2450.Init;
+begin
+// INIT
+ SetupOperation(17,0,0,False);
+end;
+
 function TKt_2450.IsAzeroStateOn: boolean;
 begin
  Result:=IsAzeroStateOn(fMeasureFunction);
@@ -832,11 +847,13 @@ begin
 //  fDevice.GetData;
 
 
+//Init();
+//Abort();
 
-SwepLinearPointCreate();
-SwepLinearStepCreate();
-SwepListCreate();
-SwepLogStepCreate();
+//SwepLinearPointCreate();
+//SwepLinearStepCreate();
+//SwepListCreate();
+//SwepLogStepCreate();
 
 
 //SetLength(ArrDouble,3);

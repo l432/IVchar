@@ -9497,8 +9497,8 @@ object IVchar: TIVchar
         end
       end
       object GB_Kt2450_Mes: TGroupBox
-        Left = 528
-        Top = 3
+        Left = 330
+        Top = 195
         Width = 235
         Height = 223
         Caption = 'Resistance'
@@ -9821,6 +9821,260 @@ object IVchar: TIVchar
         ParentFont = False
         ShowAccelChar = False
         TabOrder = 6
+      end
+      object GB_KT2450Sweep: TGroupBox
+        Left = 512
+        Top = 5
+        Width = 263
+        Height = 193
+        Caption = 'Sweep'
+        Font.Charset = RUSSIAN_CHARSET
+        Font.Color = clNavy
+        Font.Height = -13
+        Font.Name = 'Arial'
+        Font.Style = [fsBold]
+        ParentFont = False
+        TabOrder = 7
+        object L_KT2450SweepStart: TLabel
+          Left = 127
+          Top = 56
+          Width = 50
+          Height = 16
+          Caption = 'From, V'
+          Font.Charset = RUSSIAN_CHARSET
+          Font.Color = clNavy
+          Font.Height = -13
+          Font.Name = 'Arial'
+          Font.Style = [fsBold]
+          ParentFont = False
+        end
+        object L_KT2450SweepStop: TLabel
+          Left = 127
+          Top = 83
+          Width = 33
+          Height = 16
+          Caption = 'To, V'
+          Font.Charset = RUSSIAN_CHARSET
+          Font.Color = clBackground
+          Font.Height = -13
+          Font.Name = 'Arial'
+          Font.Style = [fsBold]
+          ParentFont = False
+        end
+        object L_KT2450SweepStepPoint: TLabel
+          Left = 127
+          Top = 110
+          Width = 46
+          Height = 16
+          Caption = 'Step, V'
+          Font.Charset = RUSSIAN_CHARSET
+          Font.Color = clNavy
+          Font.Height = -13
+          Font.Name = 'Arial'
+          Font.Style = [fsBold]
+          ParentFont = False
+        end
+        object L_KT2450SweepDelay: TLabel
+          Left = 15
+          Top = 156
+          Width = 50
+          Height = 16
+          Caption = 'Delay, s'
+          Font.Charset = RUSSIAN_CHARSET
+          Font.Color = clGreen
+          Font.Height = -13
+          Font.Name = 'Arial'
+          Font.Style = [fsBold]
+          ParentFont = False
+        end
+        object L_KT2450SweepCount: TLabel
+          Left = 82
+          Top = 156
+          Width = 79
+          Height = 16
+          Caption = 'Times to run'
+          Font.Charset = RUSSIAN_CHARSET
+          Font.Color = clTeal
+          Font.Height = -13
+          Font.Name = 'Arial'
+          Font.Style = [fsBold]
+          ParentFont = False
+        end
+        object L_KT2450SweepRange: TLabel
+          Left = 178
+          Top = 156
+          Width = 72
+          Height = 16
+          Caption = 'Used range'
+          Font.Charset = RUSSIAN_CHARSET
+          Font.Color = clOlive
+          Font.Height = -13
+          Font.Name = 'Arial'
+          Font.Style = [fsBold]
+          ParentFont = False
+        end
+        object B_KT2450SweepCreate: TButton
+          Left = 13
+          Top = 20
+          Width = 68
+          Height = 25
+          Caption = 'Create'
+          TabOrder = 0
+        end
+        object B_KT2450SweepInit: TButton
+          Left = 87
+          Top = 20
+          Width = 68
+          Height = 25
+          Caption = 'Init'
+          TabOrder = 1
+        end
+        object B_KT2450SweepStop: TButton
+          Left = 161
+          Top = 20
+          Width = 68
+          Height = 25
+          Caption = 'Abort'
+          TabOrder = 2
+        end
+        object RG_KT2450SweepMode: TRadioGroup
+          Left = 10
+          Top = 51
+          Width = 111
+          Height = 78
+          Caption = 'Mode'
+          Font.Charset = RUSSIAN_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -13
+          Font.Name = 'Arial'
+          Font.Style = [fsBold]
+          ItemIndex = 0
+          Items.Strings = (
+            'Linear Step'
+            'Linear Point'
+            'Log')
+          ParentFont = False
+          TabOrder = 3
+          OnClick = RGIscVocModeClick
+        end
+        object ST_KT2450SweepStart: TStaticText
+          Left = 183
+          Top = 53
+          Width = 40
+          Height = 24
+          Caption = '210'
+          Font.Charset = RUSSIAN_CHARSET
+          Font.Color = clNavy
+          Font.Height = -17
+          Font.Name = 'Verdana'
+          Font.Style = [fsBold]
+          ParentFont = False
+          ShowAccelChar = False
+          TabOrder = 4
+        end
+        object ST_KT2450SweepStop: TStaticText
+          Left = 183
+          Top = 80
+          Width = 40
+          Height = 24
+          Caption = '210'
+          Font.Charset = RUSSIAN_CHARSET
+          Font.Color = clBackground
+          Font.Height = -17
+          Font.Name = 'Verdana'
+          Font.Style = [fsBold]
+          ParentFont = False
+          ShowAccelChar = False
+          TabOrder = 5
+        end
+        object ST_KT2450SweepStepPoint: TStaticText
+          Left = 183
+          Top = 107
+          Width = 40
+          Height = 24
+          Caption = '210'
+          Font.Charset = RUSSIAN_CHARSET
+          Font.Color = clNavy
+          Font.Height = -17
+          Font.Name = 'Verdana'
+          Font.Style = [fsBold]
+          ParentFont = False
+          ShowAccelChar = False
+          TabOrder = 6
+        end
+        object ST_KT2450SweepDelay: TStaticText
+          Left = 15
+          Top = 169
+          Width = 40
+          Height = 24
+          Caption = '210'
+          Font.Charset = RUSSIAN_CHARSET
+          Font.Color = clGreen
+          Font.Height = -17
+          Font.Name = 'Verdana'
+          Font.Style = [fsBold]
+          ParentFont = False
+          ShowAccelChar = False
+          TabOrder = 7
+        end
+        object ST_KT2450SweepCount: TStaticText
+          Left = 111
+          Top = 169
+          Width = 16
+          Height = 24
+          Caption = '1'
+          Font.Charset = RUSSIAN_CHARSET
+          Font.Color = clTeal
+          Font.Height = -17
+          Font.Name = 'Verdana'
+          Font.Style = [fsBold]
+          ParentFont = False
+          ShowAccelChar = False
+          TabOrder = 8
+        end
+        object ST_KT2450SweepRange: TStaticText
+          Left = 191
+          Top = 169
+          Width = 53
+          Height = 24
+          Caption = 'BEST'
+          Font.Charset = RUSSIAN_CHARSET
+          Font.Color = clOlive
+          Font.Height = -17
+          Font.Name = 'Verdana'
+          Font.Style = [fsBold]
+          ParentFont = False
+          ShowAccelChar = False
+          TabOrder = 9
+        end
+        object CB_KT2450SweepDual: TCheckBox
+          Left = 16
+          Top = 135
+          Width = 60
+          Height = 17
+          Caption = 'Dual'
+          Font.Charset = RUSSIAN_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -13
+          Font.Name = 'Verdana'
+          Font.Style = [fsBold]
+          ParentFont = False
+          TabOrder = 10
+        end
+        object CB_KT2450SweepAbortLim: TCheckBox
+          Left = 107
+          Top = 133
+          Width = 126
+          Height = 17
+          Caption = 'Abort on Limit'
+          Font.Charset = RUSSIAN_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -13
+          Font.Name = 'Verdana'
+          Font.Style = [fsBold]
+          ParentFont = False
+          TabOrder = 11
+        end
       end
     end
   end

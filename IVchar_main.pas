@@ -781,6 +781,25 @@ type
     L_KT2450DelaySource: TLabel;
     CB_KT2450DelaySource: TCheckBox;
     ST_KT2450DelaySource: TStaticText;
+    GB_KT2450Sweep: TGroupBox;
+    B_KT2450SweepCreate: TButton;
+    B_KT2450SweepInit: TButton;
+    B_KT2450SweepStop: TButton;
+    RG_KT2450SweepMode: TRadioGroup;
+    L_KT2450SweepStart: TLabel;
+    ST_KT2450SweepStart: TStaticText;
+    L_KT2450SweepStop: TLabel;
+    ST_KT2450SweepStop: TStaticText;
+    L_KT2450SweepStepPoint: TLabel;
+    ST_KT2450SweepStepPoint: TStaticText;
+    L_KT2450SweepDelay: TLabel;
+    ST_KT2450SweepDelay: TStaticText;
+    L_KT2450SweepCount: TLabel;
+    ST_KT2450SweepCount: TStaticText;
+    L_KT2450SweepRange: TLabel;
+    ST_KT2450SweepRange: TStaticText;
+    CB_KT2450SweepDual: TCheckBox;
+    CB_KT2450SweepAbortLim: TCheckBox;
 
     procedure FormCreate(Sender: TObject);
     procedure BConnectClick(Sender: TObject);

@@ -3,17 +3,18 @@ unit Keitley2450Const;
 interface
 
 uses
-  SCPI;
+  SCPI, StdCtrls;
 const
 
   Kt_2450_Test='KEITHLEY INSTRUMENTS,MODEL 2450';
 
-  RootNoodKt_2450:array[0..16]of string=
+  RootNoodKt_2450:array[0..18]of string=
   ('*idn?','*rcl ','*rst','*sav',':acq',':outp','disp:',':syst','scr:run',
-//   0       1      2      3      4        5       6        7      8
-  'rout',':sens',':sour',':curr', ':volt', ':res',':func',':azer:once');
-//  9       10     11        12      13      14      15         16
-
+//   0       1       2      3      4        5       6        7      8
+  'rout',':sens',':sour',':curr', ':volt', ':res',':func',':azer:once','init',
+//  9       10     11        12      13      14      15         16       17
+  ':abor');
+//   18
 
   SuffixKt_2450:array[0..7]of string=('on','off', 'rst',{'?','prot',}'def',
 //                                      0    1      2                  3
@@ -72,6 +73,15 @@ type
 
  TKt2450_SweepRangeType=(kt_srt_Auto,kt_srt_Best,kt_srt_Fixed);
 
+ TKt2450_SweepSettings=(kt_sws_start,kt_sws_stop,kt_sws_delay,
+                        kt_sws_stpo,kt_sws_count,kt_sws_ranget);
+
+ TKt2450_SweepButtons=(kt_swb_create,kt_swb_init,kt_swb_stop);
+
+ TKt2450_SweepButtonArray=array[TKt2450_SweepButtons] of TButton;
+
+//  ConfigFile:=TIniFile.Create(ExtractFilePath(Application.ExeName)+'IVChar.ini');
+//ConfigFile:TIniFile;
 
 const
  Kt2450_TerminalsName:array [TKt2450_OutputTerminals]
@@ -121,7 +131,10 @@ const
           '1 mA', '10 mA', '100 mA', '1 A');
  KT2450_SweepRangeNames:array[TKt2450_SweepRangeType]of string=
          ('auto','best', 'fix');
-
+ KT2450_SweepRangeLabels:array[TKt2450_SweepRangeType]of string=
+         ('Auto','Best', 'Fixed');
+ Kt2450_SweepButtonNames:array[TKt2450_SweepButtons] of string=
+        ('Create','Init','Abort');
 
 
 //  OperationKod:array [TKt2450_Settings] of array[0..2] of byte=
