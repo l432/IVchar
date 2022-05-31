@@ -44,6 +44,9 @@
     <DCCReference Include="Dependence.pas" />
     <DCCReference Include="DependOnArduino.pas" />
     <DCCReference Include="ET1255.pas" />
+    <DCCReference Include="FormKT2450.pas">
+      <Form>KT2450Form</Form>
+    </DCCReference>
     <DCCReference Include="GDS_806Su.pas" />
     <DCCReference Include="HighResolutionTimer.pas" />
     <DCCReference Include="INA226.pas" />

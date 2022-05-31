@@ -2681,6 +2681,7 @@ object IVchar: TIVchar
           ComPort = ComPort1
           ComProperty = cpPort
           AutoApply = True
+          Text = 'COM4'
           Style = csDropDownList
           Font.Charset = RUSSIAN_CHARSET
           Font.Color = clWindowText
@@ -2688,7 +2689,7 @@ object IVchar: TIVchar
           Font.Name = 'Arial'
           Font.Style = [fsBold]
           ItemHeight = 18
-          ItemIndex = -1
+          ItemIndex = 1
           ParentFont = False
           TabOrder = 0
         end
@@ -2700,6 +2701,7 @@ object IVchar: TIVchar
           ComPort = ComPort1
           ComProperty = cpBaudRate
           AutoApply = True
+          Text = '115200'
           Style = csDropDownList
           Font.Charset = RUSSIAN_CHARSET
           Font.Color = clWindowText
@@ -2707,7 +2709,7 @@ object IVchar: TIVchar
           Font.Name = 'Arial'
           Font.Style = [fsBold]
           ItemHeight = 18
-          ItemIndex = -1
+          ItemIndex = 13
           ParentFont = False
           TabOrder = 1
         end
@@ -4074,6 +4076,7 @@ object IVchar: TIVchar
           ComPort = ComPortUT70B
           ComProperty = cpPort
           AutoApply = True
+          Text = 'COM1'
           Style = csDropDownList
           Font.Charset = RUSSIAN_CHARSET
           Font.Color = clWindowText
@@ -4081,7 +4084,7 @@ object IVchar: TIVchar
           Font.Name = 'Arial'
           Font.Style = [fsBold]
           ItemHeight = 18
-          ItemIndex = -1
+          ItemIndex = 0
           ParentFont = False
           TabOrder = 5
         end
@@ -4288,6 +4291,7 @@ object IVchar: TIVchar
           ComPort = ComPortUT70C
           ComProperty = cpPort
           AutoApply = True
+          Text = 'COM1'
           Style = csDropDownList
           Font.Charset = RUSSIAN_CHARSET
           Font.Color = clWindowText
@@ -4295,7 +4299,7 @@ object IVchar: TIVchar
           Font.Name = 'Arial'
           Font.Style = [fsBold]
           ItemHeight = 18
-          ItemIndex = -1
+          ItemIndex = 0
           ParentFont = False
           TabOrder = 5
         end
@@ -7853,6 +7857,7 @@ object IVchar: TIVchar
           ComPort = ComPortGDS
           ComProperty = cpPort
           AutoApply = True
+          Text = 'COM1'
           Style = csDropDownList
           Font.Charset = RUSSIAN_CHARSET
           Font.Color = clWindowText
@@ -7860,7 +7865,7 @@ object IVchar: TIVchar
           Font.Name = 'Arial'
           Font.Style = [fsBold]
           ItemHeight = 18
-          ItemIndex = -1
+          ItemIndex = 0
           ParentFont = False
           TabOrder = 0
         end
@@ -7872,6 +7877,7 @@ object IVchar: TIVchar
           ComPort = ComPortGDS
           ComProperty = cpBaudRate
           AutoApply = True
+          Text = '9600'
           Style = csDropDownList
           Font.Charset = RUSSIAN_CHARSET
           Font.Color = clWindowText
@@ -7879,7 +7885,7 @@ object IVchar: TIVchar
           Font.Name = 'Arial'
           Font.Style = [fsBold]
           ItemHeight = 18
-          ItemIndex = -1
+          ItemIndex = 7
           ParentFont = False
           TabOrder = 1
         end
@@ -7919,6 +7925,7 @@ object IVchar: TIVchar
           ComPort = ComPortGDS
           ComProperty = cpStopBits
           AutoApply = True
+          Text = '1'
           Style = csDropDownList
           Font.Charset = RUSSIAN_CHARSET
           Font.Color = clWindowText
@@ -7926,7 +7933,7 @@ object IVchar: TIVchar
           Font.Name = 'Arial'
           Font.Style = [fsBold]
           ItemHeight = 18
-          ItemIndex = -1
+          ItemIndex = 0
           ParentFont = False
           TabOrder = 4
         end
@@ -7952,6 +7959,7 @@ object IVchar: TIVchar
           ComPort = ComPortGDS
           ComProperty = cpParity
           AutoApply = True
+          Text = 'None'
           Style = csDropDownList
           Font.Charset = RUSSIAN_CHARSET
           Font.Color = clWindowText
@@ -7959,7 +7967,7 @@ object IVchar: TIVchar
           Font.Name = 'Arial'
           Font.Style = [fsBold]
           ItemHeight = 18
-          ItemIndex = -1
+          ItemIndex = 0
           ParentFont = False
           TabOrder = 6
         end
@@ -9174,6 +9182,7 @@ object IVchar: TIVchar
           ComPort = ComPortIT6332B
           ComProperty = cpPort
           AutoApply = True
+          Text = 'COM1'
           Style = csDropDownList
           Font.Charset = RUSSIAN_CHARSET
           Font.Color = clWindowText
@@ -9181,7 +9190,7 @@ object IVchar: TIVchar
           Font.Name = 'Arial'
           Font.Style = [fsBold]
           ItemHeight = 18
-          ItemIndex = -1
+          ItemIndex = 0
           ParentFont = False
           TabOrder = 0
         end
@@ -9193,6 +9202,7 @@ object IVchar: TIVchar
           ComPort = ComPortIT6332B
           ComProperty = cpBaudRate
           AutoApply = True
+          Text = '9600'
           Style = csDropDownList
           Font.Charset = RUSSIAN_CHARSET
           Font.Color = clWindowText
@@ -9200,7 +9210,7 @@ object IVchar: TIVchar
           Font.Name = 'Arial'
           Font.Style = [fsBold]
           ItemHeight = 18
-          ItemIndex = -1
+          ItemIndex = 7
           ParentFont = False
           TabOrder = 1
         end
@@ -9240,6 +9250,7 @@ object IVchar: TIVchar
           ComPort = ComPortIT6332B
           ComProperty = cpParity
           AutoApply = True
+          Text = 'None'
           Style = csDropDownList
           Font.Charset = RUSSIAN_CHARSET
           Font.Color = clWindowText
@@ -9247,7 +9258,7 @@ object IVchar: TIVchar
           Font.Name = 'Arial'
           Font.Style = [fsBold]
           ItemHeight = 18
-          ItemIndex = -1
+          ItemIndex = 0
           ParentFont = False
           TabOrder = 4
         end
@@ -9524,7 +9535,7 @@ object IVchar: TIVchar
         end
         object L_KT2450MeasureLowRange: TLabel
           Left = 88
-          Top = 58
+          Top = 60
           Width = 60
           Height = 32
           Caption = 'Low Auto Limit'
@@ -9583,7 +9594,7 @@ object IVchar: TIVchar
         end
         object ST_KT2450MeasureLowRange: TStaticText
           Left = 154
-          Top = 66
+          Top = 71
           Width = 59
           Height = 24
           Caption = '10 nA'
@@ -9824,9 +9835,9 @@ object IVchar: TIVchar
       end
       object GB_KT2450Sweep: TGroupBox
         Left = 512
-        Top = 5
+        Top = -2
         Width = 263
-        Height = 193
+        Height = 200
         Caption = 'Sweep'
         Font.Charset = RUSSIAN_CHARSET
         Font.Color = clNavy
@@ -9972,6 +9983,34 @@ object IVchar: TIVchar
           ShowAccelChar = False
           TabOrder = 4
         end
+        object CB_KT2450SweepDual: TCheckBox
+          Left = 16
+          Top = 135
+          Width = 60
+          Height = 17
+          Caption = 'Dual'
+          Font.Charset = RUSSIAN_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -13
+          Font.Name = 'Verdana'
+          Font.Style = [fsBold]
+          ParentFont = False
+          TabOrder = 5
+        end
+        object CB_KT2450SweepAbortLim: TCheckBox
+          Left = 107
+          Top = 133
+          Width = 126
+          Height = 17
+          Caption = 'Abort on Limit'
+          Font.Charset = RUSSIAN_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -13
+          Font.Name = 'Verdana'
+          Font.Style = [fsBold]
+          ParentFont = False
+          TabOrder = 6
+        end
         object ST_KT2450SweepStop: TStaticText
           Left = 183
           Top = 80
@@ -9985,7 +10024,7 @@ object IVchar: TIVchar
           Font.Style = [fsBold]
           ParentFont = False
           ShowAccelChar = False
-          TabOrder = 5
+          TabOrder = 7
         end
         object ST_KT2450SweepStepPoint: TStaticText
           Left = 183
@@ -10000,80 +10039,7 @@ object IVchar: TIVchar
           Font.Style = [fsBold]
           ParentFont = False
           ShowAccelChar = False
-          TabOrder = 6
-        end
-        object ST_KT2450SweepDelay: TStaticText
-          Left = 15
-          Top = 169
-          Width = 40
-          Height = 24
-          Caption = '210'
-          Font.Charset = RUSSIAN_CHARSET
-          Font.Color = clGreen
-          Font.Height = -17
-          Font.Name = 'Verdana'
-          Font.Style = [fsBold]
-          ParentFont = False
-          ShowAccelChar = False
-          TabOrder = 7
-        end
-        object ST_KT2450SweepCount: TStaticText
-          Left = 111
-          Top = 169
-          Width = 16
-          Height = 24
-          Caption = '1'
-          Font.Charset = RUSSIAN_CHARSET
-          Font.Color = clTeal
-          Font.Height = -17
-          Font.Name = 'Verdana'
-          Font.Style = [fsBold]
-          ParentFont = False
-          ShowAccelChar = False
           TabOrder = 8
-        end
-        object ST_KT2450SweepRange: TStaticText
-          Left = 191
-          Top = 169
-          Width = 53
-          Height = 24
-          Caption = 'BEST'
-          Font.Charset = RUSSIAN_CHARSET
-          Font.Color = clOlive
-          Font.Height = -17
-          Font.Name = 'Verdana'
-          Font.Style = [fsBold]
-          ParentFont = False
-          ShowAccelChar = False
-          TabOrder = 9
-        end
-        object CB_KT2450SweepDual: TCheckBox
-          Left = 16
-          Top = 135
-          Width = 60
-          Height = 17
-          Caption = 'Dual'
-          Font.Charset = RUSSIAN_CHARSET
-          Font.Color = clWindowText
-          Font.Height = -13
-          Font.Name = 'Verdana'
-          Font.Style = [fsBold]
-          ParentFont = False
-          TabOrder = 10
-        end
-        object CB_KT2450SweepAbortLim: TCheckBox
-          Left = 107
-          Top = 133
-          Width = 126
-          Height = 17
-          Caption = 'Abort on Limit'
-          Font.Charset = RUSSIAN_CHARSET
-          Font.Color = clWindowText
-          Font.Height = -13
-          Font.Name = 'Verdana'
-          Font.Style = [fsBold]
-          ParentFont = False
-          TabOrder = 11
         end
       end
     end

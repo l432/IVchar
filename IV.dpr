@@ -40,7 +40,8 @@ uses
   Keithley2450 in 'Keithley2450.pas',
   TelnetDevice in 'TelnetDevice.pas',
   Keithley2450Show in 'Keithley2450Show.pas',
-  Keitley2450Const in 'Keitley2450Const.pas';
+  Keitley2450Const in 'Keitley2450Const.pas',
+  FormKT2450 in 'FormKT2450.pas' {KT2450Form};
 
 {$R *.res}
 
@@ -48,5 +49,7 @@ begin
   Application.Initialize;
   Application.MainFormOnTaskbar := True;
   Application.CreateForm(TIVchar, IVchar);
+  Application.CreateForm(TKT2450Form, KT2450Form);
+  KT2450Form.Hide;
   Application.Run;
 end.

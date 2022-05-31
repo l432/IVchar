@@ -22,5 +22,7 @@
     <Transaction>2022.05.03 11:46:36.421.pas,D:\Oleg\Shottky_Program\IVChar\Unit1.pas=D:\Oleg\Shottky_Program\IVchar\TelnetDevice.pas</Transaction>
     <Transaction>2022.05.13 09:27:50.314.pas,D:\Oleg\Shottky_Program\IVChar\Unit1.pas=D:\Oleg\Shottky_Program\IVchar\Keithley2450Show.pas</Transaction>
     <Transaction>2022.05.22 16:18:57.616.pas,\\vmware-host\Shared Folders\oleg\IVchar\Unit1.pas=\\vmware-host\Shared Folders\oleg\IVchar\Keitley2450Const.pas</Transaction>
+    <Transaction>2022.05.31 11:50:39.703.pas,D:\Oleg\Shottky_Program\IVchar\Unit1.pas=D:\Oleg\Shottky_Program\IVchar\FormKT2450.pas</Transaction>
+    <Transaction>2022.05.31 11:50:39.703.dfm,D:\Oleg\Shottky_Program\IVchar\Unit1.dfm=D:\Oleg\Shottky_Program\IVchar\FormKT2450.dfm</Transaction>
   </Transactions>
 </BorlandProject>

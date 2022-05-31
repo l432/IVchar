@@ -427,11 +427,11 @@ begin
     fKt_2450.GetSenses();
     fKt_2450.GetOutputOffStates;
     fKt_2450.GetSourceRanges();
-//    fKt_2450.GetMeasureRange();
-//      fKt_2450.GetMeasureLowRange();
-//      fKt_2450.IsAzeroStateOn();
-//   fKt_2450.GetSourceDelay();
-//     fKt_2450.IsSourceDelayAutoOn();
+    fKt_2450.GetMeasureRanges();
+    fKt_2450.GetMeasureLowRanges();
+    fKt_2450.IsAzeroStateOn();
+    fKt_2450.IsSourceDelayAutoOn();
+    fKt_2450.GetSourceDelay();
     end;
 
   ObjectToSetting();
@@ -450,7 +450,11 @@ begin
     else MeasureShowType:=kt_mst_pow;
   end;
 
- if fMeasurementShowState=ord(MeasureShowType) then Exit;
+ if fMeasurementShowState=ord(MeasureShowType) then
+  begin
+  fMeasurementShow.ObjectToSetting();
+  Exit;
+  end;
  MeasureShowFree();
  fMeasurementShow:=TKt_2450_MeasurementShow.Create(fKt_2450,
                  [fMeasurementShowStaticText[kt_ms_rescomp],
@@ -592,7 +596,11 @@ end;
 
 procedure TKt_2450_Show.SourceShowCreate;
 begin
- if fSourceShowState=ord(fKt_2450.SourceType) then Exit;
+ if fSourceShowState=ord(fKt_2450.SourceType) then
+  begin
+  fSourceShow.ObjectToSetting();
+  Exit;
+  end;
  SourceShowFree();
  fSourceShow:=TKt_2450_SourceShow.Create(fKt_2450,
                  [SourceShowStaticText[kt_ss_outputoff],
@@ -966,6 +974,7 @@ if fKt_2450.ResistanceCompencateOn[fKt_2450.MeasureFunction]
   end;
 
   fRangeShow.ObjectToSetting;
+  fRangeLimitedShow.ObjectToSetting;
 // case fKt_2450.SourceType of
 //   kt_sVolt: fRangeShow.Data:=ord(fKt_2450.MeasureVoltageRange);
 //   kt_sCurr: fRangeShow.Data:=ord(fKt_2450.MeasureCurrentRange);

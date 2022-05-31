@@ -789,17 +789,14 @@ type
     L_KT2450SweepStart: TLabel;
     ST_KT2450SweepStart: TStaticText;
     L_KT2450SweepStop: TLabel;
-    ST_KT2450SweepStop: TStaticText;
     L_KT2450SweepStepPoint: TLabel;
-    ST_KT2450SweepStepPoint: TStaticText;
     L_KT2450SweepDelay: TLabel;
-    ST_KT2450SweepDelay: TStaticText;
     L_KT2450SweepCount: TLabel;
-    ST_KT2450SweepCount: TStaticText;
     L_KT2450SweepRange: TLabel;
-    ST_KT2450SweepRange: TStaticText;
     CB_KT2450SweepDual: TCheckBox;
     CB_KT2450SweepAbortLim: TCheckBox;
+    ST_KT2450SweepStop: TStaticText;
+    ST_KT2450SweepStepPoint: TStaticText;
 
     procedure FormCreate(Sender: TObject);
     procedure BConnectClick(Sender: TObject);
@@ -956,7 +953,7 @@ type
     procedure INA226Create;
     procedure GDS_Create;
     procedure IB6332_Create;
-    procedure Kt2450_Create;
+
     procedure SaveIVMeasurementResults(FileName: string; DataVector:TVector);
     procedure DACReset;
     procedure FastIVMeasuringComplex(const FilePrefix: string);
@@ -1114,7 +1111,7 @@ type
     IVMeasResult,IVMRFirst,IVMRSecond:TIVMeasurementResult;
     Key:string;
     Kt2450_IPAdressShow:TIPAdressShow;
-
+    procedure Kt2450_Create;
   end;
 
 const
@@ -1129,7 +1126,7 @@ var
 implementation
 
 uses
-  ArduinoADC, OlegFunction, AD5752R, IT6332B, Keithley2450Show;
+  ArduinoADC, OlegFunction, AD5752R, IT6332B, Keithley2450Show, FormKT2450;
 
 {$R *.dfm}
 
@@ -3203,7 +3200,6 @@ begin
  if (ComPort1.Connected)and(SettingDevice.ActiveInterface.Name=DACR2R.Name) then SettingDevice.Reset();
 
   if (ComPort1.Connected) then D30_06.Reset;
-// Kt2450_IPAdressShow.IPUpDate;
 end;
 
 procedure TIVchar.FormDestroy(Sender: TObject);
@@ -3257,11 +3253,85 @@ begin
  TMyGroupBox(GB_K2450IP).Canvas.Brush.Color:=clBlack;
  TMyGroupBox(GB_K2450IP).Canvas.Ellipse(67,45,72,50);
  TMyGroupBox(GB_K2450IP).Canvas.Ellipse(129,45,134,50);
- TMyGroupBox(GB_K2450IP).Canvas.Ellipse(191,45,196,50); 
+ TMyGroupBox(GB_K2450IP).Canvas.Ellipse(191,45,196,50);
 end;
 
 procedure TIVchar.FormShow(Sender: TObject);
+//  var I: Integer;
 begin
+// DecimalSeparator:='.';
+// ComponentView();
+//
+// ConfigFile:=TIniFile.Create(ExtractFilePath(Application.ExeName)+'IVChar.ini');
+// ShowArray:=TObjectArray.Create;
+// AnyObjectArray:=TObjectArray.Create;
+// ArduinoMeters:=TObjectArray.Create;
+// NumberPins:=TStringList.Create;
+// NumberPinsOneWire:=TStringList.Create;
+// NumberPinsInput:=TStringList.Create;
+// PinsFromIniFile();
+//
+// VoltmetrsCreate();
+// ET1255Create();
+// VectorsCreate();
+//
+// ConstantShowCreate();
+//
+// PIDShowCreateAndFromIniFile();
+// BoxFromIniFile();
+//
+//
+// RangesCreate();
+// StepsReadFromIniFile();
+// ForwStepShow();
+// RevStepShow();
+//
+// DelayTimeReadFromIniFile();
+//
+// DACCreate();
+// DACReadFromIniFileAndToForm;
+//
+// DevicesCreate();
+// DependenceMeasuringCreate();
+// ShowArray.ReadFromIniFile(ConfigFile);
+// TemperatureMeasIntervalCS.ReadFromIniFile(ConfigFile);
+//
+// if FreeTest then TestVarCreate;
+//
+//
+// ComPortsBegining;
+//
+//
+//// RS232_MediatorTread:=TRS232_MediatorTread.Create(ComPort1,
+////                 [INA226_Module,ADS11115module,HTU21D,
+////                 DACR2R,V721A,V721_I,V721_II,DS18B20,
+////                 TMP102,
+////                 MLX90615,
+////                 D30_06,IscVocPinChanger,LEDOpenPinChanger,
+////                 MCP3424,AD9833,STS21,ADT74x0,MCP9808]);
+// ArduinoSenders:=TArrIArduinoSender.Create([INA226_Module,ADS11115module,HTU21D,
+//                 DACR2R,V721A,V721_I,V721_II,DS18B20,
+//                 TMP102,
+//                 MLX90615,
+//                 D30_06,IscVocPinChanger,LEDOpenPinChanger,
+//                 MCP3424,AD9833,STS21,ADT74x0,MCP9808,
+//                 AD5752_Modul,FastArduinoIV.ArduinoCommunication]);
+//
+// AnyObjectArray.Add(ArduinoSenders);
+// RS232_MediatorTread:=TRS232_MediatorTread.Create(ComPort1,ArduinoSenders);
+//
+//  ArduinoDataSubject:=TArduinoDataSubject.Create(ComPort1);
+//
+//  for I := 0 to ArduinoMeters.HighIndex do
+//    (ArduinoMeters[i] as TArduinoMeter).AddDataSubject(ArduinoDataSubject);
+//
+//
+// if (ComPort1.Connected)and(SettingDevice.ActiveInterface.Name=DACR2R.Name) then SettingDevice.Reset();
+//
+//  if (ComPort1.Connected) then D30_06.Reset;
+//// Kt2450_IPAdressShow.IPUpDate;
+
+
  Kt2450_IPAdressShow.IPUpDate;
 end;
 
@@ -4456,12 +4526,24 @@ begin
                               E_Kt2450Ip3,E_Kt2450Ip4,
                               B_Kt2450UpDate);
 
+//showmessage( KT2450Form.Caption);
+//  KT2450Form:=TKT2450Form.Create(Application);
+//  KT2450Form.Hide;
+
+// with KT2450Form do
+// begin
+// Kt2450_IPAdressShow:=TIPAdressShow.Create('KT2450IP',
+//                              UD_Kt2450Ip1,UD_Kt2450Ip2,
+//                              UD_Kt2450Ip3,UD_Kt2450Ip4,
+//                              E_Kt2450Ip1, E_Kt2450Ip2,
+//                              E_Kt2450Ip3,E_Kt2450Ip4,
+//                              B_Kt2450UpDate);
+// end;
 
 
-// TMyGroupBox(GB_K2450IP).Canvas.Brush.Color:=clBlack;
-// TMyGroupBox(GB_K2450IP).Canvas.Brush.Style:=bsClear;
  TMyGroupBox(GB_K2450IP).Canvas.Rectangle(0,0,100,100);
  Kt_2450 := TKt_2450.Create(TelnetKt2450,Kt2450_IPAdressShow);
+
 
  Kt_2450_Show := TKt_2450_Show.Create(Kt_2450,
                                      [BKt2450Test,B_Kt2450_Reset,
