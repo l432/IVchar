@@ -15,6 +15,7 @@ object KT2450Form: TKT2450Form
   OldCreateOrder = False
   Position = poDesktopCenter
   Visible = True
+  OnPaint = FormPaint
   PixelsPerInch = 96
   TextHeight = 13
   object SB_Kt2450_OutPut: TSpeedButton

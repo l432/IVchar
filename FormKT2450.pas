@@ -71,6 +71,7 @@ type
     PKt2450SaveSetup: TPanel;
     B_KT2450GetSetting: TButton;
     procedure BCloseClick(Sender: TObject);
+    procedure FormPaint(Sender: TObject);
   private
     { Private declarations }
   public
@@ -82,11 +83,22 @@ var
 
 implementation
 
+uses
+  ShowTypes;
+
 {$R *.dfm}
 
 procedure TKT2450Form.BCloseClick(Sender: TObject);
 begin
   KT2450Form.Hide;
+end;
+
+procedure TKT2450Form.FormPaint(Sender: TObject);
+begin
+ TMyGroupBox(GB_K2450IP).Canvas.Brush.Color:=clBlack;
+ TMyGroupBox(GB_K2450IP).Canvas.Ellipse(67,45,72,50);
+ TMyGroupBox(GB_K2450IP).Canvas.Ellipse(129,45,134,50);
+ TMyGroupBox(GB_K2450IP).Canvas.Ellipse(191,45,196,50);
 end;
 
 end.

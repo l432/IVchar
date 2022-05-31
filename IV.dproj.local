@@ -24,5 +24,7 @@
     <Transaction>2022.05.22 16:18:57.616.pas,\\vmware-host\Shared Folders\oleg\IVchar\Unit1.pas=\\vmware-host\Shared Folders\oleg\IVchar\Keitley2450Const.pas</Transaction>
     <Transaction>2022.05.31 11:50:39.703.pas,D:\Oleg\Shottky_Program\IVchar\Unit1.pas=D:\Oleg\Shottky_Program\IVchar\FormKT2450.pas</Transaction>
     <Transaction>2022.05.31 11:50:39.703.dfm,D:\Oleg\Shottky_Program\IVchar\Unit1.dfm=D:\Oleg\Shottky_Program\IVchar\FormKT2450.dfm</Transaction>
+    <Transaction>2022.05.31 17:48:24.203.pas,\\vmware-host\Shared Folders\oleg\IVchar\Unit1.pas=\\vmware-host\Shared Folders\oleg\IVchar\PsevdoMainForm.pas</Transaction>
+    <Transaction>2022.05.31 17:48:24.203.dfm,\\vmware-host\Shared Folders\oleg\IVchar\Unit1.dfm=\\vmware-host\Shared Folders\oleg\IVchar\PsevdoMainForm.dfm</Transaction>
   </Transactions>
 </BorlandProject>

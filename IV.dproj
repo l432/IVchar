@@ -65,6 +65,9 @@
     <DCCReference Include="OlegDevice.pas" />
     <DCCReference Include="PacketParameters.pas" />
     <DCCReference Include="PID.pas" />
+    <DCCReference Include="PsevdoMainForm.pas">
+      <Form>Main</Form>
+    </DCCReference>
     <DCCReference Include="RS232deviceNew.pas" />
     <DCCReference Include="RS232_Meas_Tread.pas" />
     <DCCReference Include="RS232_Mediator_Tread.pas" />

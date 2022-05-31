@@ -41,15 +41,19 @@ uses
   TelnetDevice in 'TelnetDevice.pas',
   Keithley2450Show in 'Keithley2450Show.pas',
   Keitley2450Const in 'Keitley2450Const.pas',
-  FormKT2450 in 'FormKT2450.pas' {KT2450Form};
+  FormKT2450 in 'FormKT2450.pas' {KT2450Form},
+  PsevdoMainForm in 'PsevdoMainForm.pas' {Main};
 
 {$R *.res}
 
 begin
   Application.Initialize;
   Application.MainFormOnTaskbar := True;
-  Application.CreateForm(TIVchar, IVchar);
+  Application.CreateForm(TMain, Main);
   Application.CreateForm(TKT2450Form, KT2450Form);
-  KT2450Form.Hide;
+  Application.CreateForm(TIVchar, IVchar);
+//  KT2450Form.Hide;
+  IVchar.Show;
+  Application.ShowMainForm:=False;
   Application.Run;
 end.

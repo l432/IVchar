@@ -1,10 +1,11 @@
 object IVchar: TIVchar
   Left = 0
   Top = 0
-  BorderIcons = [biSystemMenu, biMinimize]
+  BorderIcons = [biMinimize]
+  BorderStyle = bsSingle
   Caption = 'IVchar'
-  ClientHeight = 573
-  ClientWidth = 786
+  ClientHeight = 575
+  ClientWidth = 788
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -15,7 +16,6 @@ object IVchar: TIVchar
   Position = poDesktopCenter
   OnCreate = FormCreate
   OnDestroy = FormDestroy
-  OnPaint = FormPaint
   OnShow = FormShow
   PixelsPerInch = 96
   TextHeight = 13
@@ -35,9 +35,9 @@ object IVchar: TIVchar
   object PC: TPageControl
     Left = 0
     Top = 0
-    Width = 786
+    Width = 788
     Height = 530
-    ActivePage = TS_Kt2450
+    ActivePage = TS_IT6332B
     Align = alTop
     Font.Charset = RUSSIAN_CHARSET
     Font.Color = clWindowText
@@ -49,8 +49,10 @@ object IVchar: TIVchar
     TabOrder = 0
     OnChange = PCChange
     OnChanging = PCChanging
+    ExplicitWidth = 786
     object TS_Main: TTabSheet
       Caption = 'Main'
+      ExplicitWidth = 778
       object ChLine: TChart
         Left = 0
         Top = 0
@@ -452,6 +454,7 @@ object IVchar: TIVchar
     object TS_B7_21A: TTabSheet
       Caption = 'B7_21A'
       ImageIndex = 1
+      ExplicitWidth = 778
       object LV721A: TLabel
         Left = 269
         Top = 19
@@ -581,14 +584,16 @@ object IVchar: TIVchar
     object TS_B7_21: TTabSheet
       Caption = 'B7_21'
       ImageIndex = 2
+      ExplicitWidth = 778
       object PanelV721_I: TPanel
         Left = 0
         Top = 0
-        Width = 778
+        Width = 780
         Height = 201
         Align = alTop
         ParentBackground = False
         TabOrder = 0
+        ExplicitWidth = 778
         object LV721I: TLabel
           Left = 263
           Top = 0
@@ -718,10 +723,11 @@ object IVchar: TIVchar
       object PanelV721_II: TPanel
         Left = 0
         Top = 244
-        Width = 778
+        Width = 780
         Height = 201
         Align = alBottom
         TabOrder = 1
+        ExplicitWidth = 778
         object LV721II: TLabel
           Left = 0
           Top = 0
@@ -862,6 +868,7 @@ object IVchar: TIVchar
       Caption = 'DAC'
       ImageIndex = 3
       TabVisible = False
+      ExplicitWidth = 778
       object LDACPinC: TLabel
         Left = 544
         Top = 44
@@ -1500,6 +1507,7 @@ object IVchar: TIVchar
     object TS_DACR2R: TTabSheet
       Caption = 'DACR-2R/D30_06'
       ImageIndex = 5
+      ExplicitWidth = 778
       object GBCalibrR2R: TGroupBox
         Left = 229
         Top = 55
@@ -2191,6 +2199,7 @@ object IVchar: TIVchar
     object TS_Setting: TTabSheet
       Caption = 'Setting'
       ImageIndex = 4
+      ExplicitWidth = 778
       object LPR: TLabel
         Left = 17
         Top = 340
@@ -2681,7 +2690,6 @@ object IVchar: TIVchar
           ComPort = ComPort1
           ComProperty = cpPort
           AutoApply = True
-          Text = 'COM4'
           Style = csDropDownList
           Font.Charset = RUSSIAN_CHARSET
           Font.Color = clWindowText
@@ -2689,7 +2697,7 @@ object IVchar: TIVchar
           Font.Name = 'Arial'
           Font.Style = [fsBold]
           ItemHeight = 18
-          ItemIndex = 1
+          ItemIndex = -1
           ParentFont = False
           TabOrder = 0
         end
@@ -2701,7 +2709,6 @@ object IVchar: TIVchar
           ComPort = ComPort1
           ComProperty = cpBaudRate
           AutoApply = True
-          Text = '115200'
           Style = csDropDownList
           Font.Charset = RUSSIAN_CHARSET
           Font.Color = clWindowText
@@ -2709,7 +2716,7 @@ object IVchar: TIVchar
           Font.Name = 'Arial'
           Font.Style = [fsBold]
           ItemHeight = 18
-          ItemIndex = 13
+          ItemIndex = -1
           ParentFont = False
           TabOrder = 1
         end
@@ -2977,6 +2984,7 @@ object IVchar: TIVchar
     object TS_Temper: TTabSheet
       Caption = 'Temperature'
       ImageIndex = 6
+      ExplicitWidth = 778
       object LTMI: TLabel
         Left = 14
         Top = 119
@@ -3926,13 +3934,15 @@ object IVchar: TIVchar
     object TS_UT70: TTabSheet
       Caption = 'UT70'
       ImageIndex = 7
+      ExplicitWidth = 778
       object PanelUT70B: TPanel
         Left = 0
         Top = 0
-        Width = 778
+        Width = 780
         Height = 201
         Align = alTop
         TabOrder = 0
+        ExplicitWidth = 778
         object LUT70B: TLabel
           Left = 212
           Top = 0
@@ -4076,7 +4086,6 @@ object IVchar: TIVchar
           ComPort = ComPortUT70B
           ComProperty = cpPort
           AutoApply = True
-          Text = 'COM1'
           Style = csDropDownList
           Font.Charset = RUSSIAN_CHARSET
           Font.Color = clWindowText
@@ -4084,7 +4093,7 @@ object IVchar: TIVchar
           Font.Name = 'Arial'
           Font.Style = [fsBold]
           ItemHeight = 18
-          ItemIndex = 0
+          ItemIndex = -1
           ParentFont = False
           TabOrder = 5
         end
@@ -4092,10 +4101,11 @@ object IVchar: TIVchar
       object PanelUT70C: TPanel
         Left = 0
         Top = 201
-        Width = 778
+        Width = 780
         Height = 201
         Align = alTop
         TabOrder = 1
+        ExplicitWidth = 778
         object LUT70C: TLabel
           Left = 212
           Top = 0
@@ -4291,7 +4301,6 @@ object IVchar: TIVchar
           ComPort = ComPortUT70C
           ComProperty = cpPort
           AutoApply = True
-          Text = 'COM1'
           Style = csDropDownList
           Font.Charset = RUSSIAN_CHARSET
           Font.Color = clWindowText
@@ -4299,7 +4308,7 @@ object IVchar: TIVchar
           Font.Name = 'Arial'
           Font.Style = [fsBold]
           ItemHeight = 18
-          ItemIndex = 0
+          ItemIndex = -1
           ParentFont = False
           TabOrder = 5
         end
@@ -4308,6 +4317,7 @@ object IVchar: TIVchar
     object TS_ET1255: TTabSheet
       Caption = 'ET1255_DAC'
       ImageIndex = 8
+      ExplicitWidth = 778
       object PET1255DAC: TPanel
         Left = 3
         Top = 3
@@ -5012,6 +5022,7 @@ object IVchar: TIVchar
     object TS_ET1255ADC: TTabSheet
       Caption = 'ET1255_ADC'
       ImageIndex = 11
+      ExplicitWidth = 778
       object LET1255I: TLabel
         Left = 4
         Top = 289
@@ -5261,6 +5272,7 @@ object IVchar: TIVchar
     object TS_Time_Dependence: TTabSheet
       Caption = 'Time'
       ImageIndex = 9
+      ExplicitWidth = 778
       object LTimeInterval: TLabel
         Left = 10
         Top = 65
@@ -6130,6 +6142,7 @@ object IVchar: TIVchar
     object TS_D30_06: TTabSheet
       Caption = 'AD9833/5752'
       ImageIndex = 10
+      ExplicitWidth = 778
       object GBad9833: TGroupBox
         Left = 3
         Top = 2
@@ -6876,6 +6889,7 @@ object IVchar: TIVchar
     object TS_ADC: TTabSheet
       Caption = 'ADC'
       ImageIndex = 12
+      ExplicitWidth = 778
       object Button1: TButton
         Left = 525
         Top = 190
@@ -7823,6 +7837,7 @@ object IVchar: TIVchar
     object TS_GDS: TTabSheet
       Caption = 'GDS-806S'
       ImageIndex = 13
+      ExplicitWidth = 778
       object GB_GDS_Com: TGroupBox
         Left = 575
         Top = -2
@@ -7857,7 +7872,6 @@ object IVchar: TIVchar
           ComPort = ComPortGDS
           ComProperty = cpPort
           AutoApply = True
-          Text = 'COM1'
           Style = csDropDownList
           Font.Charset = RUSSIAN_CHARSET
           Font.Color = clWindowText
@@ -7865,7 +7879,7 @@ object IVchar: TIVchar
           Font.Name = 'Arial'
           Font.Style = [fsBold]
           ItemHeight = 18
-          ItemIndex = 0
+          ItemIndex = -1
           ParentFont = False
           TabOrder = 0
         end
@@ -7877,7 +7891,6 @@ object IVchar: TIVchar
           ComPort = ComPortGDS
           ComProperty = cpBaudRate
           AutoApply = True
-          Text = '9600'
           Style = csDropDownList
           Font.Charset = RUSSIAN_CHARSET
           Font.Color = clWindowText
@@ -7885,7 +7898,7 @@ object IVchar: TIVchar
           Font.Name = 'Arial'
           Font.Style = [fsBold]
           ItemHeight = 18
-          ItemIndex = 7
+          ItemIndex = -1
           ParentFont = False
           TabOrder = 1
         end
@@ -7925,7 +7938,6 @@ object IVchar: TIVchar
           ComPort = ComPortGDS
           ComProperty = cpStopBits
           AutoApply = True
-          Text = '1'
           Style = csDropDownList
           Font.Charset = RUSSIAN_CHARSET
           Font.Color = clWindowText
@@ -7933,7 +7945,7 @@ object IVchar: TIVchar
           Font.Name = 'Arial'
           Font.Style = [fsBold]
           ItemHeight = 18
-          ItemIndex = 0
+          ItemIndex = -1
           ParentFont = False
           TabOrder = 4
         end
@@ -7959,7 +7971,6 @@ object IVchar: TIVchar
           ComPort = ComPortGDS
           ComProperty = cpParity
           AutoApply = True
-          Text = 'None'
           Style = csDropDownList
           Font.Charset = RUSSIAN_CHARSET
           Font.Color = clWindowText
@@ -7967,7 +7978,7 @@ object IVchar: TIVchar
           Font.Name = 'Arial'
           Font.Style = [fsBold]
           ItemHeight = 18
-          ItemIndex = 0
+          ItemIndex = -1
           ParentFont = False
           TabOrder = 6
         end
@@ -8769,6 +8780,7 @@ object IVchar: TIVchar
     object TS_HandMade: TTabSheet
       Caption = 'HandMade'
       ImageIndex = 14
+      ExplicitWidth = 778
       object GB_oCur: TGroupBox
         Left = 2
         Top = 2
@@ -9148,6 +9160,8 @@ object IVchar: TIVchar
     object TS_IT6332B: TTabSheet
       Caption = 'IT6332B'
       ImageIndex = 15
+      ExplicitLeft = 6
+      ExplicitTop = 89
       object GB_IT6332B_Com: TGroupBox
         Left = 572
         Top = 0
@@ -9182,7 +9196,6 @@ object IVchar: TIVchar
           ComPort = ComPortIT6332B
           ComProperty = cpPort
           AutoApply = True
-          Text = 'COM1'
           Style = csDropDownList
           Font.Charset = RUSSIAN_CHARSET
           Font.Color = clWindowText
@@ -9190,7 +9203,7 @@ object IVchar: TIVchar
           Font.Name = 'Arial'
           Font.Style = [fsBold]
           ItemHeight = 18
-          ItemIndex = 0
+          ItemIndex = -1
           ParentFont = False
           TabOrder = 0
         end
@@ -9202,7 +9215,6 @@ object IVchar: TIVchar
           ComPort = ComPortIT6332B
           ComProperty = cpBaudRate
           AutoApply = True
-          Text = '9600'
           Style = csDropDownList
           Font.Charset = RUSSIAN_CHARSET
           Font.Color = clWindowText
@@ -9210,7 +9222,7 @@ object IVchar: TIVchar
           Font.Name = 'Arial'
           Font.Style = [fsBold]
           ItemHeight = 18
-          ItemIndex = 7
+          ItemIndex = -1
           ParentFont = False
           TabOrder = 1
         end
@@ -9250,7 +9262,6 @@ object IVchar: TIVchar
           ComPort = ComPortIT6332B
           ComProperty = cpParity
           AutoApply = True
-          Text = 'None'
           Style = csDropDownList
           Font.Charset = RUSSIAN_CHARSET
           Font.Color = clWindowText
@@ -9258,7 +9269,7 @@ object IVchar: TIVchar
           Font.Name = 'Arial'
           Font.Style = [fsBold]
           ItemHeight = 18
-          ItemIndex = 0
+          ItemIndex = -1
           ParentFont = False
           TabOrder = 4
         end
@@ -9278,770 +9289,26 @@ object IVchar: TIVchar
           OnClick = B_IT6332_TestClick
         end
       end
+      object Button2: TButton
+        Left = 16
+        Top = 12
+        Width = 169
+        Height = 33
+        Caption = 'Kt2450 drive'
+        Font.Charset = RUSSIAN_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -21
+        Font.Name = 'Arial'
+        Font.Style = [fsBold]
+        ParentFont = False
+        TabOrder = 1
+        OnClick = Button2Click
+      end
     end
     object TS_Kt2450: TTabSheet
       Caption = 'Kt2450'
       ImageIndex = 16
-      object SB_Kt2450_OutPut: TSpeedButton
-        Left = 402
-        Top = 16
-        Width = 79
-        Height = 25
-        AllowAllUp = True
-        GroupIndex = 3
-        Caption = 'Output'
-        Font.Charset = RUSSIAN_CHARSET
-        Font.Color = clDefault
-        Font.Height = -15
-        Font.Name = 'Arial'
-        Font.Style = [fsBold]
-        ParentFont = False
-      end
-      object L_KT2450Mode: TLabel
-        Left = 11
-        Top = 111
-        Width = 43
-        Height = 32
-        Caption = 'Device Mode'
-        Font.Charset = RUSSIAN_CHARSET
-        Font.Color = clGreen
-        Font.Height = -13
-        Font.Name = 'Arial'
-        Font.Style = [fsBold]
-        ParentFont = False
-        WordWrap = True
-      end
-      object GB_K2450IP: TGroupBox
-        Tag = 110
-        Left = 7
-        Top = 0
-        Width = 268
-        Height = 92
-        Caption = 'IP adress'
-        Font.Charset = RUSSIAN_CHARSET
-        Font.Color = clMaroon
-        Font.Height = -13
-        Font.Name = 'Arial'
-        Font.Style = [fsBold]
-        ParentFont = False
-        TabOrder = 0
-        object E_Kt2450Ip1: TEdit
-          Left = 14
-          Top = 28
-          Width = 33
-          Height = 24
-          Font.Charset = RUSSIAN_CHARSET
-          Font.Color = clBlack
-          Font.Height = -13
-          Font.Name = 'Arial'
-          Font.Style = [fsBold]
-          ParentFont = False
-          TabOrder = 0
-          Text = '5'
-        end
-        object UD_Kt2450Ip1: TUpDown
-          Left = 46
-          Top = 28
-          Width = 16
-          Height = 24
-          TabOrder = 1
-        end
-        object E_Kt2450Ip2: TEdit
-          Left = 76
-          Top = 28
-          Width = 33
-          Height = 24
-          Font.Charset = RUSSIAN_CHARSET
-          Font.Color = clBlack
-          Font.Height = -13
-          Font.Name = 'Arial'
-          Font.Style = [fsBold]
-          ParentFont = False
-          TabOrder = 2
-          Text = '5'
-        end
-        object UD_Kt2450Ip2: TUpDown
-          Left = 108
-          Top = 28
-          Width = 16
-          Height = 24
-          TabOrder = 3
-        end
-        object E_Kt2450Ip3: TEdit
-          Left = 139
-          Top = 28
-          Width = 33
-          Height = 24
-          Font.Charset = RUSSIAN_CHARSET
-          Font.Color = clBlack
-          Font.Height = -13
-          Font.Name = 'Arial'
-          Font.Style = [fsBold]
-          ParentFont = False
-          TabOrder = 4
-          Text = '5'
-        end
-        object UD_Kt2450Ip3: TUpDown
-          Left = 171
-          Top = 28
-          Width = 16
-          Height = 24
-          TabOrder = 5
-        end
-        object E_Kt2450Ip4: TEdit
-          Left = 200
-          Top = 28
-          Width = 33
-          Height = 24
-          Font.Charset = RUSSIAN_CHARSET
-          Font.Color = clBlack
-          Font.Height = -13
-          Font.Name = 'Arial'
-          Font.Style = [fsBold]
-          ParentFont = False
-          TabOrder = 6
-          Text = '5'
-        end
-        object UD_Kt2450Ip4: TUpDown
-          Left = 232
-          Top = 28
-          Width = 16
-          Height = 24
-          TabOrder = 7
-        end
-        object B_Kt2450UpDate: TButton
-          Left = 14
-          Top = 58
-          Width = 67
-          Height = 25
-          Caption = 'UpDate'
-          TabOrder = 8
-        end
-        object BKt2450Test: TButton
-          Left = 96
-          Top = 58
-          Width = 161
-          Height = 25
-          Caption = 'Kt2450Test'
-          TabOrder = 9
-        end
-      end
-      object B_MyTrain: TButton
-        Left = 330
-        Top = 75
-        Width = 75
-        Height = 25
-        Caption = 'B_MyTrain'
-        TabOrder = 1
-      end
-      object B_Kt2450_Reset: TButton
-        Left = 304
-        Top = 16
-        Width = 75
-        Height = 25
-        Caption = 'B_Kt2450_SetSet'
-        Font.Charset = RUSSIAN_CHARSET
-        Font.Color = clWindowText
-        Font.Height = -15
-        Font.Name = 'Arial'
-        Font.Style = [fsBold]
-        ParentFont = False
-        TabOrder = 2
-      end
-      object GB_FT2450Setup: TGroupBox
-        Tag = 110
-        Left = 667
-        Top = 322
-        Width = 108
-        Height = 122
-        Caption = 'Settings'
-        Font.Charset = RUSSIAN_CHARSET
-        Font.Color = clMaroon
-        Font.Height = -13
-        Font.Name = 'Arial'
-        Font.Style = [fsBold]
-        ParentFont = False
-        TabOrder = 3
-        object PKt2450LoadSetup: TPanel
-          Left = 11
-          Top = 49
-          Width = 85
-          Height = 23
-          Cursor = crHandPoint
-          BevelOuter = bvLowered
-          Caption = 'Load Setup'
-          Color = clSilver
-          Font.Charset = DEFAULT_CHARSET
-          Font.Color = clHotLight
-          Font.Height = -11
-          Font.Name = 'Tahoma'
-          Font.Style = [fsBold]
-          ParentBackground = False
-          ParentFont = False
-          TabOrder = 0
-        end
-        object PKt2450SaveSetup: TPanel
-          Left = 11
-          Top = 20
-          Width = 85
-          Height = 23
-          Cursor = crHandPoint
-          BevelOuter = bvLowered
-          Caption = 'Save Setup'
-          Color = clSilver
-          Font.Charset = DEFAULT_CHARSET
-          Font.Color = clHotLight
-          Font.Height = -11
-          Font.Name = 'Tahoma'
-          Font.Style = [fsBold]
-          ParentBackground = False
-          ParentFont = False
-          TabOrder = 1
-        end
-        object B_KT2450GetSetting: TButton
-          Left = 13
-          Top = 78
-          Width = 84
-          Height = 25
-          Caption = 'Get'
-          TabOrder = 2
-        end
-      end
-      object GB_Kt2450_Mes: TGroupBox
-        Left = 330
-        Top = 195
-        Width = 235
-        Height = 223
-        Caption = 'Resistance'
-        Font.Charset = RUSSIAN_CHARSET
-        Font.Color = clNavy
-        Font.Height = -13
-        Font.Name = 'Arial'
-        Font.Style = [fsBold]
-        ParentFont = False
-        TabOrder = 4
-        object LKT2450_ResComp: TLabel
-          Left = 12
-          Top = 199
-          Width = 79
-          Height = 16
-          Caption = 'Compensate'
-          Font.Charset = RUSSIAN_CHARSET
-          Font.Color = clTeal
-          Font.Height = -13
-          Font.Name = 'Arial'
-          Font.Style = [fsBold]
-          ParentFont = False
-        end
-        object L_KT2450MeasureLowRange: TLabel
-          Left = 88
-          Top = 60
-          Width = 60
-          Height = 32
-          Caption = 'Low Auto Limit'
-          Font.Charset = RUSSIAN_CHARSET
-          Font.Color = clOlive
-          Font.Height = -13
-          Font.Name = 'Arial'
-          Font.Style = [fsBold]
-          ParentFont = False
-          WordWrap = True
-        end
-        object ST_KT2450_Sense: TStaticText
-          Left = 10
-          Top = 18
-          Width = 68
-          Height = 24
-          Caption = '2-Wire'
-          Font.Charset = RUSSIAN_CHARSET
-          Font.Color = clRed
-          Font.Height = -17
-          Font.Name = 'Verdana'
-          Font.Style = [fsBold]
-          ParentFont = False
-          ShowAccelChar = False
-          TabOrder = 0
-        end
-        object STKT2450_ResComp: TStaticText
-          Left = 97
-          Top = 196
-          Width = 32
-          Height = 24
-          Caption = 'Off'
-          Font.Charset = RUSSIAN_CHARSET
-          Font.Color = clTeal
-          Font.Height = -17
-          Font.Name = 'Verdana'
-          Font.Style = [fsBold]
-          ParentFont = False
-          ShowAccelChar = False
-          TabOrder = 1
-        end
-        object ST_KT2450MeasureRange: TStaticText
-          Left = 11
-          Top = 71
-          Width = 49
-          Height = 24
-          Caption = 'Auto'
-          Font.Charset = RUSSIAN_CHARSET
-          Font.Color = clMaroon
-          Font.Height = -17
-          Font.Name = 'Verdana'
-          Font.Style = [fsBold]
-          ParentFont = False
-          ShowAccelChar = False
-          TabOrder = 2
-        end
-        object ST_KT2450MeasureLowRange: TStaticText
-          Left = 154
-          Top = 71
-          Width = 59
-          Height = 24
-          Caption = '10 nA'
-          Font.Charset = RUSSIAN_CHARSET
-          Font.Color = clMaroon
-          Font.Height = -17
-          Font.Name = 'Verdana'
-          Font.Style = [fsBold]
-          ParentFont = False
-          ShowAccelChar = False
-          TabOrder = 3
-        end
-        object CB_KT2450Azero: TCheckBox
-          Left = 16
-          Top = 167
-          Width = 97
-          Height = 17
-          Caption = 'Auto Zero'
-          Font.Charset = RUSSIAN_CHARSET
-          Font.Color = clWindowText
-          Font.Height = -13
-          Font.Name = 'Verdana'
-          Font.Style = [fsBold]
-          ParentFont = False
-          TabOrder = 4
-        end
-        object B_KT2450Azero: TButton
-          Left = 119
-          Top = 160
-          Width = 98
-          Height = 25
-          Caption = 'Manual Zero'
-          TabOrder = 5
-        end
-      end
-      object GB_Kt2450_Source: TGroupBox
-        Left = 3
-        Top = 147
-        Width = 300
-        Height = 274
-        Caption = 'Source'
-        Font.Charset = RUSSIAN_CHARSET
-        Font.Color = clMaroon
-        Font.Height = -13
-        Font.Name = 'Arial'
-        Font.Style = [fsBold]
-        ParentFont = False
-        TabOrder = 5
-        object SB_Kt2450_Termin: TSpeedButton
-          Left = 7
-          Top = 22
-          Width = 121
-          Height = 29
-          AllowAllUp = True
-          GroupIndex = 3
-          Caption = 'Terminals'
-          Font.Charset = RUSSIAN_CHARSET
-          Font.Color = clDefault
-          Font.Height = -15
-          Font.Name = 'Arial'
-          Font.Style = [fsBold]
-          ParentFont = False
-        end
-        object L_Kt2450_OutPut: TLabel
-          Left = 3
-          Top = 109
-          Width = 46
-          Height = 32
-          Caption = 'Output Type'
-          Font.Charset = RUSSIAN_CHARSET
-          Font.Color = clTeal
-          Font.Height = -13
-          Font.Name = 'Arial'
-          Font.Style = [fsBold]
-          ParentFont = False
-          WordWrap = True
-        end
-        object L_KT2450VolProt: TLabel
-          Left = 3
-          Top = 162
-          Width = 77
-          Height = 32
-          Caption = 'Overvoltage Protection'
-          Font.Charset = RUSSIAN_CHARSET
-          Font.Color = clNavy
-          Font.Height = -13
-          Font.Name = 'Arial'
-          Font.Style = [fsBold]
-          ParentFont = False
-          WordWrap = True
-        end
-        object L_KT2450LimitSource: TLabel
-          Left = 96
-          Top = 162
-          Width = 73
-          Height = 16
-          Caption = 'Limit Value'
-          Font.Charset = RUSSIAN_CHARSET
-          Font.Color = clOlive
-          Font.Height = -13
-          Font.Name = 'Arial'
-          Font.Style = [fsBold]
-          ParentFont = False
-          WordWrap = True
-        end
-        object L_KT2450DelaySource: TLabel
-          Left = 3
-          Top = 230
-          Width = 151
-          Height = 16
-          Caption = 'Delay after source set, s'
-          Font.Charset = RUSSIAN_CHARSET
-          Font.Color = clNavy
-          Font.Height = -13
-          Font.Name = 'Arial'
-          Font.Style = [fsBold]
-          ParentFont = False
-          WordWrap = True
-        end
-        object ST_Kt2450_OutPut: TStaticText
-          Left = 68
-          Top = 115
-          Width = 73
-          Height = 24
-          Caption = 'Normal'
-          Font.Charset = RUSSIAN_CHARSET
-          Font.Color = clTeal
-          Font.Height = -17
-          Font.Name = 'Verdana'
-          Font.Style = [fsBold]
-          ParentFont = False
-          ShowAccelChar = False
-          TabOrder = 0
-        end
-        object ST_KT2450VolProt: TStaticText
-          Left = 12
-          Top = 200
-          Width = 53
-          Height = 24
-          Caption = 'None'
-          Font.Charset = RUSSIAN_CHARSET
-          Font.Color = clNavy
-          Font.Height = -17
-          Font.Name = 'Verdana'
-          Font.Style = [fsBold]
-          ParentFont = False
-          ShowAccelChar = False
-          TabOrder = 1
-        end
-        object ST_KT2450LimitSource: TStaticText
-          Left = 95
-          Top = 200
-          Width = 40
-          Height = 24
-          Caption = '210'
-          Font.Charset = RUSSIAN_CHARSET
-          Font.Color = clOlive
-          Font.Height = -17
-          Font.Name = 'Verdana'
-          Font.Style = [fsBold]
-          ParentFont = False
-          ShowAccelChar = False
-          TabOrder = 2
-        end
-        object CB_KT2450ReadBack: TCheckBox
-          Left = 194
-          Top = 202
-          Width = 99
-          Height = 17
-          Caption = 'Read Back'
-          Font.Charset = RUSSIAN_CHARSET
-          Font.Color = clWindowText
-          Font.Height = -13
-          Font.Name = 'Verdana'
-          Font.Style = [fsBold]
-          ParentFont = False
-          TabOrder = 3
-        end
-        object ST_KT2450SouceRange: TStaticText
-          Left = 205
-          Top = 172
-          Width = 49
-          Height = 24
-          Caption = 'Auto'
-          Font.Charset = RUSSIAN_CHARSET
-          Font.Color = clMaroon
-          Font.Height = -17
-          Font.Name = 'Verdana'
-          Font.Style = [fsBold]
-          ParentFont = False
-          ShowAccelChar = False
-          TabOrder = 4
-        end
-        object CB_KT2450DelaySource: TCheckBox
-          Left = 7
-          Top = 250
-          Width = 54
-          Height = 17
-          Caption = 'Auto'
-          Font.Charset = RUSSIAN_CHARSET
-          Font.Color = clWindowText
-          Font.Height = -13
-          Font.Name = 'Verdana'
-          Font.Style = [fsBold]
-          ParentFont = False
-          TabOrder = 5
-        end
-        object ST_KT2450DelaySource: TStaticText
-          Left = 73
-          Top = 247
-          Width = 58
-          Height = 24
-          Caption = '0.055'
-          Font.Charset = RUSSIAN_CHARSET
-          Font.Color = clOlive
-          Font.Height = -17
-          Font.Name = 'Verdana'
-          Font.Style = [fsBold]
-          ParentFont = False
-          ShowAccelChar = False
-          TabOrder = 6
-        end
-      end
-      object ST_KT2450Mode: TStaticText
-        Left = 73
-        Top = 117
-        Width = 176
-        Height = 24
-        Caption = 'sourceV measR(I)'
-        Font.Charset = RUSSIAN_CHARSET
-        Font.Color = clGreen
-        Font.Height = -17
-        Font.Name = 'Verdana'
-        Font.Style = [fsBold]
-        ParentFont = False
-        ShowAccelChar = False
-        TabOrder = 6
-      end
-      object GB_KT2450Sweep: TGroupBox
-        Left = 512
-        Top = -2
-        Width = 263
-        Height = 200
-        Caption = 'Sweep'
-        Font.Charset = RUSSIAN_CHARSET
-        Font.Color = clNavy
-        Font.Height = -13
-        Font.Name = 'Arial'
-        Font.Style = [fsBold]
-        ParentFont = False
-        TabOrder = 7
-        object L_KT2450SweepStart: TLabel
-          Left = 127
-          Top = 56
-          Width = 50
-          Height = 16
-          Caption = 'From, V'
-          Font.Charset = RUSSIAN_CHARSET
-          Font.Color = clNavy
-          Font.Height = -13
-          Font.Name = 'Arial'
-          Font.Style = [fsBold]
-          ParentFont = False
-        end
-        object L_KT2450SweepStop: TLabel
-          Left = 127
-          Top = 83
-          Width = 33
-          Height = 16
-          Caption = 'To, V'
-          Font.Charset = RUSSIAN_CHARSET
-          Font.Color = clBackground
-          Font.Height = -13
-          Font.Name = 'Arial'
-          Font.Style = [fsBold]
-          ParentFont = False
-        end
-        object L_KT2450SweepStepPoint: TLabel
-          Left = 127
-          Top = 110
-          Width = 46
-          Height = 16
-          Caption = 'Step, V'
-          Font.Charset = RUSSIAN_CHARSET
-          Font.Color = clNavy
-          Font.Height = -13
-          Font.Name = 'Arial'
-          Font.Style = [fsBold]
-          ParentFont = False
-        end
-        object L_KT2450SweepDelay: TLabel
-          Left = 15
-          Top = 156
-          Width = 50
-          Height = 16
-          Caption = 'Delay, s'
-          Font.Charset = RUSSIAN_CHARSET
-          Font.Color = clGreen
-          Font.Height = -13
-          Font.Name = 'Arial'
-          Font.Style = [fsBold]
-          ParentFont = False
-        end
-        object L_KT2450SweepCount: TLabel
-          Left = 82
-          Top = 156
-          Width = 79
-          Height = 16
-          Caption = 'Times to run'
-          Font.Charset = RUSSIAN_CHARSET
-          Font.Color = clTeal
-          Font.Height = -13
-          Font.Name = 'Arial'
-          Font.Style = [fsBold]
-          ParentFont = False
-        end
-        object L_KT2450SweepRange: TLabel
-          Left = 178
-          Top = 156
-          Width = 72
-          Height = 16
-          Caption = 'Used range'
-          Font.Charset = RUSSIAN_CHARSET
-          Font.Color = clOlive
-          Font.Height = -13
-          Font.Name = 'Arial'
-          Font.Style = [fsBold]
-          ParentFont = False
-        end
-        object B_KT2450SweepCreate: TButton
-          Left = 13
-          Top = 20
-          Width = 68
-          Height = 25
-          Caption = 'Create'
-          TabOrder = 0
-        end
-        object B_KT2450SweepInit: TButton
-          Left = 87
-          Top = 20
-          Width = 68
-          Height = 25
-          Caption = 'Init'
-          TabOrder = 1
-        end
-        object B_KT2450SweepStop: TButton
-          Left = 161
-          Top = 20
-          Width = 68
-          Height = 25
-          Caption = 'Abort'
-          TabOrder = 2
-        end
-        object RG_KT2450SweepMode: TRadioGroup
-          Left = 10
-          Top = 51
-          Width = 111
-          Height = 78
-          Caption = 'Mode'
-          Font.Charset = RUSSIAN_CHARSET
-          Font.Color = clWindowText
-          Font.Height = -13
-          Font.Name = 'Arial'
-          Font.Style = [fsBold]
-          ItemIndex = 0
-          Items.Strings = (
-            'Linear Step'
-            'Linear Point'
-            'Log')
-          ParentFont = False
-          TabOrder = 3
-          OnClick = RGIscVocModeClick
-        end
-        object ST_KT2450SweepStart: TStaticText
-          Left = 183
-          Top = 53
-          Width = 40
-          Height = 24
-          Caption = '210'
-          Font.Charset = RUSSIAN_CHARSET
-          Font.Color = clNavy
-          Font.Height = -17
-          Font.Name = 'Verdana'
-          Font.Style = [fsBold]
-          ParentFont = False
-          ShowAccelChar = False
-          TabOrder = 4
-        end
-        object CB_KT2450SweepDual: TCheckBox
-          Left = 16
-          Top = 135
-          Width = 60
-          Height = 17
-          Caption = 'Dual'
-          Font.Charset = RUSSIAN_CHARSET
-          Font.Color = clWindowText
-          Font.Height = -13
-          Font.Name = 'Verdana'
-          Font.Style = [fsBold]
-          ParentFont = False
-          TabOrder = 5
-        end
-        object CB_KT2450SweepAbortLim: TCheckBox
-          Left = 107
-          Top = 133
-          Width = 126
-          Height = 17
-          Caption = 'Abort on Limit'
-          Font.Charset = RUSSIAN_CHARSET
-          Font.Color = clWindowText
-          Font.Height = -13
-          Font.Name = 'Verdana'
-          Font.Style = [fsBold]
-          ParentFont = False
-          TabOrder = 6
-        end
-        object ST_KT2450SweepStop: TStaticText
-          Left = 183
-          Top = 80
-          Width = 40
-          Height = 24
-          Caption = '210'
-          Font.Charset = RUSSIAN_CHARSET
-          Font.Color = clBackground
-          Font.Height = -17
-          Font.Name = 'Verdana'
-          Font.Style = [fsBold]
-          ParentFont = False
-          ShowAccelChar = False
-          TabOrder = 7
-        end
-        object ST_KT2450SweepStepPoint: TStaticText
-          Left = 183
-          Top = 107
-          Width = 40
-          Height = 24
-          Caption = '210'
-          Font.Charset = RUSSIAN_CHARSET
-          Font.Color = clNavy
-          Font.Height = -17
-          Font.Name = 'Verdana'
-          Font.Style = [fsBold]
-          ParentFont = False
-          ShowAccelChar = False
-          TabOrder = 8
-        end
-      end
+      ExplicitWidth = 778
     end
   end
   object BBClose: TBitBtn
@@ -10049,8 +9316,27 @@ object IVchar: TIVchar
     Top = 540
     Width = 75
     Height = 25
+    Caption = '&Close'
     TabOrder = 1
-    Kind = bkClose
+    OnClick = BBCloseClick
+    Glyph.Data = {
+      DE010000424DDE01000000000000760000002800000024000000120000000100
+      0400000000006801000000000000000000001000000000000000000000000000
+      80000080000000808000800000008000800080800000C0C0C000808080000000
+      FF0000FF000000FFFF00FF000000FF00FF00FFFF0000FFFFFF00388888888877
+      F7F787F8888888888333333F00004444400888FFF444448888888888F333FF8F
+      000033334D5007FFF4333388888888883338888F0000333345D50FFFF4333333
+      338F888F3338F33F000033334D5D0FFFF43333333388788F3338F33F00003333
+      45D50FEFE4333333338F878F3338F33F000033334D5D0FFFF43333333388788F
+      3338F33F0000333345D50FEFE4333333338F878F3338F33F000033334D5D0FFF
+      F43333333388788F3338F33F0000333345D50FEFE4333333338F878F3338F33F
+      000033334D5D0EFEF43333333388788F3338F33F0000333345D50FEFE4333333
+      338F878F3338F33F000033334D5D0EFEF43333333388788F3338F33F00003333
+      4444444444333333338F8F8FFFF8F33F00003333333333333333333333888888
+      8888333F00003333330000003333333333333FFFFFF3333F00003333330AAAA0
+      333333333333888888F3333F00003333330000003333333333338FFFF8F3333F
+      0000}
+    NumGlyphs = 2
   end
   object BConnect: TButton
     Left = 154

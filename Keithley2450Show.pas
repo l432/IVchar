@@ -235,12 +235,22 @@ end;
    fZeroManualB:TButton;
 
    fSweetShow:TKt_2450_SweetShow;
+   fSweetST:array of TStaticText;
+   fSweetLab:array of TLabel;
+   fSweetButtons:TKt2450_SweepButtonArray;
+   fSweetDualCB,fSweetAbortLimitCB:TCheckBox;
+   fSweetMode:TRadioGroup;
+   fSweetShowState:0..2;
+   {2 - не створювався, 0 - створено під kt_sVolt; 1 - kt_sCurr}
 
    procedure SourceShowCreate();
    procedure SourceShowFree();
 
    procedure MeasureShowCreate();
    procedure MeasureShowFree();
+
+   procedure SweetShowCreate();
+   procedure SweetShowFree();
 
    procedure TestButtonClick(Sender:TObject);
    procedure ResetButtonClick(Sender:TObject);
@@ -271,7 +281,13 @@ end;
                       STexts:array of TStaticText;
                       Labels:array of TLabel;
                       CheckBoxs:array of TCheckBox;
-                      GroupBox:TGroupBox);
+                      GroupBox:TGroupBox;
+                      SweetST:array of TStaticText;
+                      SweetLab:array of TLabel;
+                      SweetButtons:Array of TButton;
+                      SweetDualCB,SweetAbortLimitCB:TCheckBox;
+                      SweetMode:TRadioGroup);
+
   destructor Destroy;override;
   procedure ReadFromIniFile(ConfigFile:TIniFile);override;
   procedure WriteToIniFile(ConfigFile:TIniFile);override;
@@ -339,8 +355,12 @@ constructor TKt_2450_Show.Create(Kt_2450: TKt_2450;
                                 STexts:array of TStaticText;
                                 Labels:array of TLabel;
                                 CheckBoxs:array of TCheckBox;
-                                GroupBox:TGroupBox
-                                );
+                                GroupBox:TGroupBox;
+                                SweetST:array of TStaticText;
+                                SweetLab:array of TLabel;
+                                SweetButtons:Array of TButton;
+                                SweetDualCB,SweetAbortLimitCB:TCheckBox;
+                                SweetMode:TRadioGroup);
  var i,CBnumber:integer;
 
 begin
@@ -353,6 +373,9 @@ begin
                        +ord(kt_ss_limit)-ord(kt_ss_outputoff)+1
                        +ord(kt_ms_rescomp)-ord(kt_ms_rescomp)+1+1))
      or(High(CheckBoxs)<>CheckBoxNumberKt2450)
+     or(High(SweetST)<>ord(High(TKt2450_SweepSettings)))
+     or(High(SweetLab)<>ord(High(TKt2450_SweepSettings)))
+     or(High(SweetButtons)<>ord(High(TKt2450_SweepButtons)))
    then
     begin
       showmessage('Kt_2450_Show is not created!');
@@ -397,6 +420,23 @@ begin
 //  inc(CBnumber);
   fAutoZeroCB.OnClick:=AutoZeroClick;
 
+
+  fSweetShowState:=2;
+  SetLength(fSweetST,ord(High(TKt2450_SweepSettings))+1);
+  SetLength(fSweetLab,ord(High(TKt2450_SweepSettings))+1);
+  for I := 0 to ord(High(TKt2450_SweepSettings)) do
+   begin
+    fSweetST[i]:=SweetST[i];
+    fSweetLab[i]:=SweetLab[i];
+   end;
+  for I := 0 to ord(High(TKt2450_SweepButtons)) do
+    fSweetButtons[TKt2450_SweepButtons(i)]:=SweetButtons[i];
+  fSweetDualCB:=SweetDualCB;
+  fSweetAbortLimitCB:=SweetAbortLimitCB;
+  fSweetMode:=SweetMode;
+  SweetShowCreate();
+
+
   fSetupMemoryShow:=TKT2450_SetupMemoryShow.Create(Self,Panels[0],Panels[1]);
 
   ObjectToSetting();
@@ -405,6 +445,7 @@ end;
 destructor TKt_2450_Show.Destroy;
 begin
   FreeAndNil(fSetupMemoryShow);
+  SweetShowFree();
   MeasureShowFree();
   SourceShowFree();
   SettingsShowFree;
@@ -529,7 +570,7 @@ end;
 
 procedure TKt_2450_Show.ReadFromIniFile(ConfigFile: TIniFile);
 begin
-//  fSweetShow.ReadFromIniFile(ConfigFile);
+  fSweetShow.ReadFromIniFile(ConfigFile);
   fSetupMemoryShow.ReadFromIniFile(ConfigFile);
 end;
 
@@ -629,6 +670,26 @@ begin
   fTerminalsFrRe:=SpeedButtons[1];
 end;
 
+procedure TKt_2450_Show.SweetShowCreate;
+begin
+ if fSweetShowState=ord(fKt_2450.SourceType) then
+  begin
+  fSWeetShow.ObjectToSetting();
+  Exit;
+  end;
+ SweetShowFree();
+ fSweetShow:=TKt_2450_SweetShow.Create(fKt_2450,
+                     fSweetST,fSweetLab,fSweetButtons,
+                     fSweetDualCB,fSweetAbortLimitCB,
+                     fSweetMode);
+  fSweetShowState:=ord(fKt_2450.SourceType);
+end;
+
+procedure TKt_2450_Show.SweetShowFree;
+begin
+ if fSweetShowState<>2 then FreeAndNil(fSweetShow);
+end;
+
 procedure TKt_2450_Show.TerminalsFromDevice;
 begin
   fTerminalsFrRe.OnClick:=nil;
@@ -672,7 +733,7 @@ end;
 
 procedure TKt_2450_Show.WriteToIniFile(ConfigFile: TIniFile);
 begin
-// fSweetShow.WriteToIniFile(ConfigFile);
+ fSweetShow.WriteToIniFile(ConfigFile);
  fSetupMemoryShow.WriteToIniFile(ConfigFile);
 end;
 
@@ -1416,7 +1477,7 @@ begin
                         Kt_2450_SweepCountLimits[lvMax]);
 
  fSettingsShow[kt_sws_ranget]:=TStringParameterShow.Create(
-                                    STexts[4],Labels[4],'SW_RangeT',
+                                    STexts[5],Labels[5],'SW_RangeT',
                                     fRangeTypeSettingsShow);
 
 
@@ -1469,6 +1530,7 @@ begin
    0:fKt_2450_SweepParameters.Step:=(fSettingsShow[kt_sws_stpo] as TDoubleParameterShow).Data;
    else fKt_2450_SweepParameters.Points:=(fSettingsShow[kt_sws_stpo] as TIntegerParameterShow).Data;
  end;
+// showmessage(inttostr((fSettingsShow[kt_sws_count] as TIntegerParameterShow).Data));
  fKt_2450_SweepParameters.Delay:=(fSettingsShow[kt_sws_delay] as TDoubleParameterShow).Data;
  fKt_2450_SweepParameters.Count:=(fSettingsShow[kt_sws_count] as TIntegerParameterShow).Data;
  fKt_2450_SweepParameters.RangeType:=TKt2450_SweepRangeType((fSettingsShow[kt_sws_ranget] as TStringParameterShow).Data);

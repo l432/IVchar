@@ -738,65 +738,8 @@ type
     B_IT6332_Test: TButton;
     ComPortIT6332B: TComPort;
     TS_Kt2450: TTabSheet;
-    GB_K2450IP: TGroupBox;
-    E_Kt2450Ip1: TEdit;
-    UD_Kt2450Ip1: TUpDown;
-    E_Kt2450Ip2: TEdit;
-    UD_Kt2450Ip2: TUpDown;
-    E_Kt2450Ip3: TEdit;
-    UD_Kt2450Ip3: TUpDown;
-    E_Kt2450Ip4: TEdit;
-    UD_Kt2450Ip4: TUpDown;
-    B_MyTrain: TButton;
-    B_Kt2450UpDate: TButton;
     TelnetKt2450: TIdTelnet;
-    BKt2450Test: TButton;
-    B_Kt2450_Reset: TButton;
-    SB_Kt2450_OutPut: TSpeedButton;
-    PKt2450SaveSetup: TPanel;
-    PKt2450LoadSetup: TPanel;
-    GB_FT2450Setup: TGroupBox;
-    SB_Kt2450_Termin: TSpeedButton;
-    GB_Kt2450_Mes: TGroupBox;
-    ST_KT2450_Sense: TStaticText;
-    GB_Kt2450_Source: TGroupBox;
-    ST_Kt2450_OutPut: TStaticText;
-    L_Kt2450_OutPut: TLabel;
-    LKT2450_ResComp: TLabel;
-    STKT2450_ResComp: TStaticText;
-    ST_KT2450VolProt: TStaticText;
-    L_KT2450VolProt: TLabel;
-    B_KT2450GetSetting: TButton;
-    L_KT2450Mode: TLabel;
-    ST_KT2450Mode: TStaticText;
-    L_KT2450LimitSource: TLabel;
-    ST_KT2450LimitSource: TStaticText;
-    CB_KT2450ReadBack: TCheckBox;
-    ST_KT2450SouceRange: TStaticText;
-    ST_KT2450MeasureRange: TStaticText;
-    L_KT2450MeasureLowRange: TLabel;
-    ST_KT2450MeasureLowRange: TStaticText;
-    CB_KT2450Azero: TCheckBox;
-    B_KT2450Azero: TButton;
-    L_KT2450DelaySource: TLabel;
-    CB_KT2450DelaySource: TCheckBox;
-    ST_KT2450DelaySource: TStaticText;
-    GB_KT2450Sweep: TGroupBox;
-    B_KT2450SweepCreate: TButton;
-    B_KT2450SweepInit: TButton;
-    B_KT2450SweepStop: TButton;
-    RG_KT2450SweepMode: TRadioGroup;
-    L_KT2450SweepStart: TLabel;
-    ST_KT2450SweepStart: TStaticText;
-    L_KT2450SweepStop: TLabel;
-    L_KT2450SweepStepPoint: TLabel;
-    L_KT2450SweepDelay: TLabel;
-    L_KT2450SweepCount: TLabel;
-    L_KT2450SweepRange: TLabel;
-    CB_KT2450SweepDual: TCheckBox;
-    CB_KT2450SweepAbortLim: TCheckBox;
-    ST_KT2450SweepStop: TStaticText;
-    ST_KT2450SweepStepPoint: TStaticText;
+    Button2: TButton;
 
     procedure FormCreate(Sender: TObject);
     procedure BConnectClick(Sender: TObject);
@@ -836,8 +779,10 @@ type
     procedure BWriteTMClick(Sender: TObject);
     procedure BComReloadClick(Sender: TObject);
     procedure B_IT6332_TestClick(Sender: TObject);
-    procedure FormPaint(Sender: TObject);
+//    procedure FormPaint(Sender: TObject);
     procedure FormShow(Sender: TObject);
+    procedure BBCloseClick(Sender: TObject);
+    procedure Button2Click(Sender: TObject);
   private
     procedure ComponentView;
     {початкове налаштування різних компонентів}
@@ -1126,7 +1071,8 @@ var
 implementation
 
 uses
-  ArduinoADC, OlegFunction, AD5752R, IT6332B, Keithley2450Show, FormKT2450;
+  ArduinoADC, OlegFunction, AD5752R, IT6332B, Keithley2450Show, FormKT2450, 
+  PsevdoMainForm;
 
 {$R *.dfm}
 
@@ -2663,6 +2609,11 @@ begin
   sleep(IscVocTimeToWait);
 end;
 
+procedure TIVchar.BBCloseClick(Sender: TObject);
+begin
+ Main.Close;
+end;
+
 procedure TIVchar.BComReloadClick(Sender: TObject);
 begin
   ComPort1Reload()
@@ -2920,6 +2871,11 @@ end;
 
 
 
+
+procedure TIVchar.Button2Click(Sender: TObject);
+begin
+  KT2450Form.Show;
+end;
 
 procedure TIVchar.BWriteTMClick(Sender: TObject);
  var SR : TSearchRec;
@@ -3248,13 +3204,13 @@ begin
 end;
 
 
-procedure TIVchar.FormPaint(Sender: TObject);
-begin
- TMyGroupBox(GB_K2450IP).Canvas.Brush.Color:=clBlack;
- TMyGroupBox(GB_K2450IP).Canvas.Ellipse(67,45,72,50);
- TMyGroupBox(GB_K2450IP).Canvas.Ellipse(129,45,134,50);
- TMyGroupBox(GB_K2450IP).Canvas.Ellipse(191,45,196,50);
-end;
+//procedure TIVchar.FormPaint(Sender: TObject);
+//begin
+// TMyGroupBox(GB_K2450IP).Canvas.Brush.Color:=clBlack;
+// TMyGroupBox(GB_K2450IP).Canvas.Ellipse(67,45,72,50);
+// TMyGroupBox(GB_K2450IP).Canvas.Ellipse(129,45,134,50);
+// TMyGroupBox(GB_K2450IP).Canvas.Ellipse(191,45,196,50);
+//end;
 
 procedure TIVchar.FormShow(Sender: TObject);
 //  var I: Integer;
@@ -4519,6 +4475,19 @@ end;
 
 procedure TIVchar.Kt2450_Create;
 begin
+// Kt2450_IPAdressShow:=TIPAdressShow.Create('KT2450IP',
+//                              UD_Kt2450Ip1,UD_Kt2450Ip2,
+//                              UD_Kt2450Ip3,UD_Kt2450Ip4,
+//                              E_Kt2450Ip1, E_Kt2450Ip2,
+//                              E_Kt2450Ip3,E_Kt2450Ip4,
+//                              B_Kt2450UpDate);
+
+//showmessage( KT2450Form.Caption);
+//  KT2450Form:=TKT2450Form.Create(Application);
+//  KT2450Form.Hide;
+
+ with KT2450Form do
+ begin
  Kt2450_IPAdressShow:=TIPAdressShow.Create('KT2450IP',
                               UD_Kt2450Ip1,UD_Kt2450Ip2,
                               UD_Kt2450Ip3,UD_Kt2450Ip4,
@@ -4526,25 +4495,15 @@ begin
                               E_Kt2450Ip3,E_Kt2450Ip4,
                               B_Kt2450UpDate);
 
-//showmessage( KT2450Form.Caption);
-//  KT2450Form:=TKT2450Form.Create(Application);
-//  KT2450Form.Hide;
-
-// with KT2450Form do
-// begin
-// Kt2450_IPAdressShow:=TIPAdressShow.Create('KT2450IP',
-//                              UD_Kt2450Ip1,UD_Kt2450Ip2,
-//                              UD_Kt2450Ip3,UD_Kt2450Ip4,
-//                              E_Kt2450Ip1, E_Kt2450Ip2,
-//                              E_Kt2450Ip3,E_Kt2450Ip4,
-//                              B_Kt2450UpDate);
-// end;
-
-
  TMyGroupBox(GB_K2450IP).Canvas.Rectangle(0,0,100,100);
+ end;
+
+
+// TMyGroupBox(GB_K2450IP).Canvas.Rectangle(0,0,100,100);
  Kt_2450 := TKt_2450.Create(TelnetKt2450,Kt2450_IPAdressShow);
 
-
+ with KT2450Form do
+ begin
  Kt_2450_Show := TKt_2450_Show.Create(Kt_2450,
                                      [BKt2450Test,B_Kt2450_Reset,
                                       B_KT2450GetSetting,B_KT2450Azero,
@@ -4563,7 +4522,43 @@ begin
                                      LKT2450_ResComp,L_KT2450MeasureLowRange],
                                      [CB_KT2450ReadBack,CB_KT2450DelaySource,
                                       CB_KT2450Azero],
-                                     GB_Kt2450_Mes);
+                                     GB_Kt2450_Mes,
+                                     [ST_KT2450SweepStart,ST_KT2450SweepStop,
+                                      ST_KT2450SweepDelay,ST_KT2450SweepStepPoint,
+                                      ST_KT2450SweepCount,ST_KT2450SweepRange],
+                                     [L_KT2450SweepStart,L_KT2450SweepStop,
+                                      L_KT2450SweepDelay,L_KT2450SweepStepPoint,
+                                      L_KT2450SweepCount,L_KT2450SweepRange],
+                                      [B_KT2450SweepCreate,B_KT2450SweepInit,
+                                       B_KT2450SweepStop],
+                                       CB_KT2450SweepDual,CB_KT2450SweepAbortLim,
+                                       RG_KT2450SweepMode);
+ end;
+
+// KT2450Form.Show;
+
+//KT2450Form.Parent := IVchar.TS_Kt2450;
+//KT2450Form.Align := alClient;
+
+// Kt_2450_Show := TKt_2450_Show.Create(Kt_2450,
+//                                     [BKt2450Test,B_Kt2450_Reset,
+//                                      B_KT2450GetSetting,B_KT2450Azero,
+//                                     B_MyTrain],
+//                                     [SB_Kt2450_OutPut,SB_Kt2450_Termin],
+//                                     [PKt2450SaveSetup,PKt2450LoadSetup],
+//                                     [ST_KT2450VolProt,
+//                                     ST_KT2450Mode, ST_Kt2450_OutPut,
+//                                     ST_KT2450DelaySource,ST_KT2450LimitSource,
+//                                     ST_KT2450SouceRange,
+//                                     STKT2450_ResComp,ST_KT2450_Sense,
+//                                     ST_KT2450MeasureRange,ST_KT2450MeasureLowRange],
+//                                     [L_KT2450VolProt,L_KT2450Mode,
+//                                     L_Kt2450_OutPut,L_KT2450DelaySource,
+//                                     L_KT2450LimitSource,
+//                                     LKT2450_ResComp,L_KT2450MeasureLowRange],
+//                                     [CB_KT2450ReadBack,CB_KT2450DelaySource,
+//                                      CB_KT2450Azero],
+//                                     GB_Kt2450_Mes);
 
  AnyObjectArray.Add([Kt_2450]);
  ShowArray.Add([Kt2450_IPAdressShow,Kt_2450_Show]);
