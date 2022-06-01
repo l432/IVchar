@@ -3,6 +3,7 @@ object Main: TMain
   Top = 0
   BorderIcons = []
   BorderStyle = bsNone
+  Caption = 'IVchar'
   ClientHeight = 109
   ClientWidth = 210
   Color = clBtnFace
@@ -12,6 +13,7 @@ object Main: TMain
   Font.Name = 'Tahoma'
   Font.Style = []
   OldCreateOrder = False
+  Position = poDesktopCenter
   PixelsPerInch = 96
   TextHeight = 13
 end

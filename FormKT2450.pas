@@ -70,6 +70,11 @@ type
     PKt2450LoadSetup: TPanel;
     PKt2450SaveSetup: TPanel;
     B_KT2450GetSetting: TButton;
+    L_KT2450SourceValue: TLabel;
+    ST_KT2450SourceValue: TStaticText;
+    L_KT2450MeasTime: TLabel;
+    ST_KT2450MeasTime: TStaticText;
+    CB_KT2450SourHCap: TCheckBox;
     procedure BCloseClick(Sender: TObject);
     procedure FormPaint(Sender: TObject);
   private
@@ -84,13 +89,24 @@ var
 implementation
 
 uses
-  ShowTypes;
+  ShowTypes, IVchar_main;
 
 {$R *.dfm}
 
 procedure TKT2450Form.BCloseClick(Sender: TObject);
 begin
-  KT2450Form.Hide;
+//  KT2450Form.Hide;
+  if Parent=nil then IVchar.B_Kt2450drive.Click
+                else
+   begin
+    Align := alNone;
+    BorderStyle:=bsSingle;
+    Parent := nil;
+    BClose.Caption:='Dock';
+    Color:=clCream;
+    Position:=poScreenCenter;
+    Height:=Height+20;
+   end;
 end;
 
 procedure TKT2450Form.FormPaint(Sender: TObject);

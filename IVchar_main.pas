@@ -739,7 +739,7 @@ type
     ComPortIT6332B: TComPort;
     TS_Kt2450: TTabSheet;
     TelnetKt2450: TIdTelnet;
-    Button2: TButton;
+    B_Kt2450drive: TButton;
 
     procedure FormCreate(Sender: TObject);
     procedure BConnectClick(Sender: TObject);
@@ -782,7 +782,7 @@ type
 //    procedure FormPaint(Sender: TObject);
     procedure FormShow(Sender: TObject);
     procedure BBCloseClick(Sender: TObject);
-    procedure Button2Click(Sender: TObject);
+    procedure B_Kt2450driveClick(Sender: TObject);
   private
     procedure ComponentView;
     {початкове налаштування різних компонентів}
@@ -909,6 +909,7 @@ type
     procedure IscVocPin_toVoc;
     procedure IscVocPin_toIsc;
     procedure ComPort1Reload;
+    procedure  FormsTunning;
   public
     TestVar2:TINA226_Channel;
 //     TestVar:TINA226_Module;
@@ -969,7 +970,7 @@ type
 
     IscVocPinChanger,LEDOpenPinChanger:TArduinoPinChanger;
     IscVocPinChangerShow,LEDOpenPinChangerShow:TArduinoPinChangerShow;
-    ConfigFile:TIniFile;
+//    ConfigFile:TIniFile;
     NumberPins:TStringList; // номери пінів, які використовуються як керуючі для SPI
     NumberPinsOneWire:TStringList; // номери пінів, які використовуються для OneWire
     NumberPinsInput:TStringList; // номери пінів, які можуть бути викристані для переривань
@@ -1067,7 +1068,7 @@ const
 
 var
   IVchar: TIVchar;
-
+  ConfigFile:TIniFile;
 implementation
 
 uses
@@ -2872,9 +2873,15 @@ end;
 
 
 
-procedure TIVchar.Button2Click(Sender: TObject);
+procedure TIVchar.B_Kt2450driveClick(Sender: TObject);
 begin
-  KT2450Form.Show;
+//  KT2450Form.Show;
+  KT2450Form.Parent := IVchar.TS_Kt2450;
+  KT2450Form.BorderStyle:=bsNone;
+  KT2450Form.Align := alClient;
+  KT2450Form.BClose.Caption:='UnDock';
+  KT2450Form.Color:=clBtnFace;
+  KT2450Form.Height:=KT2450Form.Height-20;
 end;
 
 procedure TIVchar.BWriteTMClick(Sender: TObject);
@@ -3089,7 +3096,7 @@ begin
  DecimalSeparator:='.';
  ComponentView();
 
- ConfigFile:=TIniFile.Create(ExtractFilePath(Application.ExeName)+'IVChar.ini');
+// ConfigFile:=TIniFile.Create(ExtractFilePath(Application.ExeName)+'IVChar.ini');
  ShowArray:=TObjectArray.Create;
  AnyObjectArray:=TObjectArray.Create;
  ArduinoMeters:=TObjectArray.Create;
@@ -3152,6 +3159,7 @@ begin
   for I := 0 to ArduinoMeters.HighIndex do
     (ArduinoMeters[i] as TArduinoMeter).AddDataSubject(ArduinoDataSubject);
 
+ FormsTunning();
 
  if (ComPort1.Connected)and(SettingDevice.ActiveInterface.Name=DACR2R.Name) then SettingDevice.Reset();
 
@@ -3183,9 +3191,9 @@ begin
 
 
 // DACFree();
- ObjectsFree();
+  ObjectsFree();
              end;
-  ConfigFile.Free;
+//  ConfigFile.Free;
 
  ShowArray.Free;
  AnyObjectArray.Free;
@@ -3213,82 +3221,13 @@ end;
 //end;
 
 procedure TIVchar.FormShow(Sender: TObject);
-//  var I: Integer;
 begin
-// DecimalSeparator:='.';
-// ComponentView();
-//
-// ConfigFile:=TIniFile.Create(ExtractFilePath(Application.ExeName)+'IVChar.ini');
-// ShowArray:=TObjectArray.Create;
-// AnyObjectArray:=TObjectArray.Create;
-// ArduinoMeters:=TObjectArray.Create;
-// NumberPins:=TStringList.Create;
-// NumberPinsOneWire:=TStringList.Create;
-// NumberPinsInput:=TStringList.Create;
-// PinsFromIniFile();
-//
-// VoltmetrsCreate();
-// ET1255Create();
-// VectorsCreate();
-//
-// ConstantShowCreate();
-//
-// PIDShowCreateAndFromIniFile();
-// BoxFromIniFile();
-//
-//
-// RangesCreate();
-// StepsReadFromIniFile();
-// ForwStepShow();
-// RevStepShow();
-//
-// DelayTimeReadFromIniFile();
-//
-// DACCreate();
-// DACReadFromIniFileAndToForm;
-//
-// DevicesCreate();
-// DependenceMeasuringCreate();
-// ShowArray.ReadFromIniFile(ConfigFile);
-// TemperatureMeasIntervalCS.ReadFromIniFile(ConfigFile);
-//
-// if FreeTest then TestVarCreate;
-//
-//
-// ComPortsBegining;
-//
-//
-//// RS232_MediatorTread:=TRS232_MediatorTread.Create(ComPort1,
-////                 [INA226_Module,ADS11115module,HTU21D,
-////                 DACR2R,V721A,V721_I,V721_II,DS18B20,
-////                 TMP102,
-////                 MLX90615,
-////                 D30_06,IscVocPinChanger,LEDOpenPinChanger,
-////                 MCP3424,AD9833,STS21,ADT74x0,MCP9808]);
-// ArduinoSenders:=TArrIArduinoSender.Create([INA226_Module,ADS11115module,HTU21D,
-//                 DACR2R,V721A,V721_I,V721_II,DS18B20,
-//                 TMP102,
-//                 MLX90615,
-//                 D30_06,IscVocPinChanger,LEDOpenPinChanger,
-//                 MCP3424,AD9833,STS21,ADT74x0,MCP9808,
-//                 AD5752_Modul,FastArduinoIV.ArduinoCommunication]);
-//
-// AnyObjectArray.Add(ArduinoSenders);
-// RS232_MediatorTread:=TRS232_MediatorTread.Create(ComPort1,ArduinoSenders);
-//
-//  ArduinoDataSubject:=TArduinoDataSubject.Create(ComPort1);
-//
-//  for I := 0 to ArduinoMeters.HighIndex do
-//    (ArduinoMeters[i] as TArduinoMeter).AddDataSubject(ArduinoDataSubject);
-//
-//
-// if (ComPort1.Connected)and(SettingDevice.ActiveInterface.Name=DACR2R.Name) then SettingDevice.Reset();
-//
-//  if (ComPort1.Connected) then D30_06.Reset;
-//// Kt2450_IPAdressShow.IPUpDate;
-
-
  Kt2450_IPAdressShow.IPUpDate;
+end;
+
+procedure TIVchar.FormsTunning;
+begin
+ B_Kt2450drive.Click;
 end;
 
 procedure TIVchar.PCChange(Sender: TObject);
@@ -4512,15 +4451,19 @@ begin
                                      [PKt2450SaveSetup,PKt2450LoadSetup],
                                      [ST_KT2450VolProt,
                                      ST_KT2450Mode, ST_Kt2450_OutPut,
-                                     ST_KT2450DelaySource,ST_KT2450LimitSource,
+                                     ST_KT2450DelaySource,
+                                     ST_KT2450SourceValue,ST_KT2450LimitSource,
                                      ST_KT2450SouceRange,
                                      STKT2450_ResComp,ST_KT2450_Sense,
-                                     ST_KT2450MeasureRange,ST_KT2450MeasureLowRange],
+                                     ST_KT2450MeasureRange,
+                                     ST_KT2450MeasTime,ST_KT2450MeasureLowRange],
                                      [L_KT2450VolProt,L_KT2450Mode,
                                      L_Kt2450_OutPut,L_KT2450DelaySource,
-                                     L_KT2450LimitSource,
-                                     LKT2450_ResComp,L_KT2450MeasureLowRange],
+                                     L_KT2450SourceValue,L_KT2450LimitSource,
+                                     LKT2450_ResComp,L_KT2450MeasTime,
+                                     L_KT2450MeasureLowRange],
                                      [CB_KT2450ReadBack,CB_KT2450DelaySource,
+                                     CB_KT2450SourHCap,
                                       CB_KT2450Azero],
                                      GB_Kt2450_Mes,
                                      [ST_KT2450SweepStart,ST_KT2450SweepStop,
@@ -4702,5 +4645,11 @@ begin
   IscVocOnTimeIsRun:=False;
 
 end;
+
+initialization
+   ConfigFile:=TIniFile.Create(ExtractFilePath(Application.ExeName)+'IVChar.ini');
+
+finalization
+  ConfigFile.Free;
 
 end.

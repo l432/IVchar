@@ -89,6 +89,7 @@ end;
    fResistanceCompencateOn:TKt2450_MeasureBool;
    fAzeroState:TKt2450_MeasureBool;
    fReadBack:TKt2450_SourceBool;
+   fHighCapacitance:TKt2450_SourceBool;
    fSences:TKt2450_Senses;
    fMeasureUnits:TKt_2450_MeasureUnits;
    fOutputOffState:TKt_2450_OutputOffStates;
@@ -105,7 +106,11 @@ end;
    fMeasureVoltageLowRange:TKt2450VoltageRange;
    fMeasureCurrentLowRange:TKt2450CurrentRange;
    fSourceDelay:TKt2450_SourceDouble;
+//   fSourceDelay2:TKt2450_SourceDouble;
+   {це поле для шаманства...}
+   fSourceValue:TKt2450_SourceDouble;
    fSourceDelayAuto:TKt2450_SourceBool;
+   fMeasureTime:TKt2450_MeasureDouble;
    fDataVector:TVector;
    procedure OnOffFromBool(toOn:boolean);
    function StringToVoltageProtection(Str:string;var vp:TKt_2450_VoltageProtection):boolean;
@@ -138,6 +143,7 @@ end;
    property OutPutOn:boolean read fOutPutOn;
    property ResistanceCompencateOn:TKt2450_MeasureBool read fResistanceCompencateOn;
    property ReadBack:TKt2450_SourceBool read fReadBack;
+   property HighCapacitance:TKt2450_SourceBool read fHighCapacitance;
    property Sences:TKt2450_Senses read fSences;
    property MeasureUnits:TKt_2450_MeasureUnits read fMeasureUnits;
    property OutputOffState:TKt_2450_OutputOffStates read fOutputOffState;
@@ -150,7 +156,9 @@ end;
    property MeasureCurrentLowRange:TKt2450CurrentRange read fMeasureCurrentLowRange;
    property AzeroState:TKt2450_MeasureBool read fAzeroState;
    property SourceDelay:TKt2450_SourceDouble read fSourceDelay;
+   property SourceValue:TKt2450_SourceDouble read fSourceValue;
    property SourceDelayAuto:TKt2450_SourceBool read fSourceDelayAuto;
+   property MeasureTime:TKt2450_MeasureDouble read fMeasureTime;
 
    Constructor Create(Telnet:TIdTelnet;IPAdressShow: TIPAdressShow;
                Nm:string='Keitley2450');
@@ -204,6 +212,15 @@ end;
    function IsReadBackOn():boolean;overload;
    function GetReadBacks():boolean;
 
+   procedure SetHighCapacitanceState(Source:TKt2450_Source;
+                              toOn:boolean);overload;
+   {встановлюється високоємнісний стан виходу}
+   procedure SetHighCapacitanceState(toOn:boolean);overload;
+   function IsHighCapacitanceOn(Source:TKt2450_Source):boolean;overload;
+   function IsHighCapacitanceOn():boolean;overload;
+   function GetHighCapacitanceStates():boolean;
+
+
    procedure SetAzeroState(Measure:TKt2450_Measure;
                               toOn:boolean);overload;
    {чи перевіряються опорні значення перед кожним виміром}
@@ -252,6 +269,14 @@ end;
    function GetMeasureUnit(Measure:TKt2450_Measure):boolean;
    function GetMeasureUnits():boolean;
 
+   procedure SetMeasureTime(Measure:TKt2450_Measure; Value:double);overload;
+   {час на вимірювння []=мс, можливий діапазон - (0,2-200)}
+   procedure SetMeasureTime(Value:double);overload;
+   function GetMeasureTime(Measure:TKt2450_Measure):boolean;overload;
+   function GetMeasureTime():boolean;overload;
+   function GetMeasureTimes():boolean;
+
+
    procedure SetMode(Mode:TKt_2450_Mode);
    function GetDeviceMode():boolean;
 
@@ -282,6 +307,17 @@ end;
    не робив детальних як для попереднього, бо не виносив на керування;
    ВИДАЛИВ, бо дочитався в інструкції, що встановлення
    працює лише в режимі ом-метра, для інших - лише читання}
+
+
+   procedure SetSourceValue(Source:TKt2450_Source;
+                            value:double);overload;
+   {значення джерела, воно реально з'явиться
+   лише після включення OutPut, якщо вже
+   включено - з'явиться миттєво}
+   procedure SetSourceValue(value:double);overload;
+   function GetSourceValue(Source:TKt2450_Source):boolean;overload;
+   function GetSourceValue():boolean;overload;
+   function GetSourceValues():boolean;
 
    procedure SetSourceDelay(Source:TKt2450_Source;
                             value:double);overload;
@@ -396,6 +432,7 @@ begin
    fMeasureUnits[TKt2450_Measure(i)]:=kt_mu_amp;
    fResistanceCompencateOn[TKt2450_Measure(i)]:=False;
    fAzeroState[TKt2450_Measure(i)]:=True;
+   fMeasureTime[TKt2450_Measure(i)]:=1;
    end;
  for I := ord(Low(TKt2450_Source)) to ord(High(TKt2450_Source)) do
    begin
@@ -403,6 +440,8 @@ begin
    fSourceDelay[TKt2450_Source(i)]:=0;
    fSourceDelayAuto[TKt2450_Source(i)]:=True;
    SweepParameters[TKt2450_Source(i)]:=TKt_2450_SweepParameters.Create(TKt2450_Source(i));
+   fSourceValue[TKt2450_Source(i)]:=0;
+   fHighCapacitance[TKt2450_Source(i)]:=False;
    end;
  for I := ord(Low(TKt2450_Source)) to ord(High(TKt2450_Source)) do
    fOutputOffState[TKt2450_Source(i)]:=kt_oos_norm;
@@ -457,6 +496,11 @@ begin
  if Result then fMode:=ModeDetermination;
 end;
 
+function TKt_2450.GetHighCapacitanceStates: boolean;
+begin
+ Result:=IsHighCapacitanceOn(kt_sCurr) and IsHighCapacitanceOn(kt_sVolt);
+end;
+
 function TKt_2450.IsInterlockOn: boolean;
 begin
 //:OUTP:INT:STAT?
@@ -508,6 +552,25 @@ end;
 function TKt_2450.GetMeasureRanges: boolean;
 begin
  Result:=GetMeasureVoltageRange() and GetMeasureCurrentRange();
+end;
+
+function TKt_2450.GetMeasureTime(Measure: TKt2450_Measure): boolean;
+begin
+// SetupOperation(ord(Measure)+12,26);
+ QuireOperation(ord(Measure)+12,26);
+ Result:=(fDevice.Value<>ErResult);
+ if Result then fMeasureTime[Measure]:=fDevice.Value*KT_2450_MeaureTimeConvertConst;
+end;
+
+function TKt_2450.GetMeasureTime: boolean;
+begin
+ Result:=GetMeasureTime(fMeasureFunction);
+end;
+
+function TKt_2450.GetMeasureTimes: boolean;
+begin
+ Result:= GetMeasureTime(kt_mCurrent)
+         and GetMeasureTime(kt_mVoltage);
 end;
 
 function TKt_2450.GetMeasureUnit(Measure: TKt2450_Measure): boolean;
@@ -595,6 +658,9 @@ begin
  if not(GetAzeroStates()) then Exit;
  if not(GetSourceDelays()) then Exit;
  if not(GetSourceDelayAutoOns()) then Exit;
+ if not(GetSourceValues()) then Exit;
+ if not(GetMeasureTimes()) then Exit;
+ if not(GetHighCapacitanceStates()) then Exit;
 end;
 
 function TKt_2450.IsReadBackOn(Source: TKt2450_Source): boolean;
@@ -689,6 +755,23 @@ begin
  Result:=(fDevice.Value<>ErResult);
 end;
 
+function TKt_2450.GetSourceValue: boolean;
+begin
+ Result:=GetSourceValue(fSourceType);
+end;
+
+function TKt_2450.GetSourceValues: boolean;
+begin
+ Result:=GetSourceValue(kt_sVolt) and GetSourceValue(kt_sCurr);
+end;
+
+function TKt_2450.GetSourceValue(Source: TKt2450_Source): boolean;
+begin
+ QuireOperation(11,1-ord(Source)+12);
+ Result:=(fDevice.Value<>ErResult);
+ if Result then fSourceValue[Source]:=fDevice.Value;
+end;
+
 function TKt_2450.GetSourceVoltageRange:boolean;
 begin
  QuireOperation(11,13,16);
@@ -748,6 +831,18 @@ end;
 function TKt_2450.IsCurrentLimitExceeded: boolean;
 begin
  Result:=IsLimitExcided(13,13);
+end;
+
+function TKt_2450.IsHighCapacitanceOn(Source: TKt2450_Source): boolean;
+begin
+ QuireOperation(11,1-ord(Source)+12,27);
+ Result:=(fDevice.Value=1);
+ fHighCapacitance[Source]:=Result;
+end;
+
+function TKt_2450.IsHighCapacitanceOn: boolean;
+begin
+  Result:=IsHighCapacitanceOn(fSourceType);
 end;
 
 function TKt_2450.IsLimitExcided(FirstLevelNode, LeafNode: byte): boolean;
@@ -848,7 +943,40 @@ begin
 //  fDevice.Request();
 //  fDevice.GetData;
 
-KT2450Form.Show;
+
+// showmessage(booltostr(IsHighCapacitanceOn(),True));
+// SetHighCapacitanceState(False);
+// showmessage(booltostr(IsHighCapacitanceOn(),True));
+
+//SetHighCapacitanceState(kt_sVolt,False);
+//SetHighCapacitanceState(kt_sCurr,True);
+//SetHighCapacitanceState(True);
+
+//if GetMeasureTime then
+//  showmessage('ura! '+floattostr(fMeasureTime[fMeasureFunction]));
+//if GetMeasureTime(kt_mCurrent) then
+//  showmessage('ura! '+floattostr(fMeasureTime[kt_mCurrent]));
+
+// SetMeasureTime(0.5);
+// SetMeasureTime(kt_mVoltage,0.005);
+// SetMeasureTime(kt_mCurrent,143);
+
+//if GetSourceValue then
+//  showmessage('ura! '+floattostr(fSourceValue[fSourceType]));
+//if GetSourceValue(kt_sCurr) then
+//  showmessage('ura! '+floattostr(fSourceValue[kt_sCurr]));
+
+// SetSourceValue(0.5);
+// SetSourceValue(kt_sVolt,0.25);
+// SetSourceValue(kt_sCurr,-1e-6);
+
+//   procedure SetSourceValue(Source:TKt2450_Source;
+//                            value:double);overload;
+//   procedure SetSourceValue(value:double);overload;
+//   function GetSourceValue(Source:TKt2450_Source):boolean;overload;
+//   function GetSourceValue():boolean;overload;
+//   function GetSourceValues():boolean;
+
 
 //Init();
 //Abort();
@@ -1142,16 +1270,24 @@ begin
    11:begin
       case fFirstLevelNode of
        12..13:begin
+              case fLeafNode of
+//                  SetupOperation(11,1-ord(Source)+12);
+                0:fDevice.JoinToStringToSend(RootNoodKt_2450[fFirstLevelNode]);
+                else
+                   begin
 //    SetupOperation(11,13,10)замість SetupOperation(11,1,0);
 //    SetupOperation(11,12,12)замість SetupOperation(11,0,2);
 //    SetupOperation(11,13,13);
 //    SetupOperation(11,12|13,17);
 //    SetupOperation(11,13,16);
 //    SetupOperation(11,1-ord(Source)+12,21|22);
-           fDevice.JoinToStringToSend(RootNoodKt_2450[fFirstLevelNode]);
-           fDevice.JoinToStringToSend(FirstNodeKt_2450[fLeafNode]);
-           if fIsTripped then fDevice.JoinToStringToSend(FirstNodeKt_2450[11]);
-          end;
+//    SetupOperation(11,1-ord(Source)+12,27);
+                    fDevice.JoinToStringToSend(RootNoodKt_2450[fFirstLevelNode]);
+                    fDevice.JoinToStringToSend(FirstNodeKt_2450[fLeafNode]);
+                    if fIsTripped then fDevice.JoinToStringToSend(FirstNodeKt_2450[11]);
+                   end;
+              end;
+           end;
 //        SetupOperation(11,55,14);
        55:fDevice.JoinToStringToSend(RootNoodKt_2450[15]);
 //    SetupOperation(11,23,1-ord(Source)+12);
@@ -1190,6 +1326,7 @@ begin
 //          SetupOperation(ord(Measure)+12,14);
 //        SetupOperation(12|13,16|15);
 //        SetupOperation(12|13|14,20);
+ // SetupOperation(ord(Measure)+12,26);
             fDevice.JoinToStringToSend(FirstNodeKt_2450[fFirstLevelNode]);
 //             SetupOperation(12|13,15|16,18|19);
          case fLeafNode of
@@ -1242,14 +1379,15 @@ begin
                 then fDevice.Value:=ord(fVoltageProtection);
         //      QuireOperation(11,13,15);
         // QuireOperation(11,1-ord(Source)+12,21);
-            12..13,15,21:fDevice.Value:=SCPI_StringToValue(Str);
+//         QuireOperation(11,1-ord(Source)+12);
+            0,12..13,15,21:fDevice.Value:=SCPI_StringToValue(Str);
         //      2..3:fDevice.Value:=SCPI_StringToValue(Str);
         //          QuireOperation(11,55,55);
             55:if StringToSourceType(AnsiLowerCase(Str)) then fDevice.Value:=ord(fSourceType);
         // QuireOperation(11,1-ord(Source),17);
         //QuireOperation(11,13,16);
         //QuireOperation(11,12|13,22);
-            16,17,22:fDevice.Value:=StrToInt(Str);
+            16,17,22,27:fDevice.Value:=StrToInt(Str);
         //      QuireOperation(11,13,15);
         //      15:;
            end;
@@ -1268,7 +1406,8 @@ begin
                     then fDevice.Value:=ord(fMeasureUnits[TKt2450_Measure(fFirstLevelNode-12)]);
 //    QuireOperation(12|13,15);
 //  QuireOperation(12|13,15,18);
-             16,15:fDevice.Value:=SCPI_StringToValue(Str);
+//  QuireOperation(12|13,15,26);
+             16,15,26:fDevice.Value:=SCPI_StringToValue(Str);
             end;
 
          end;
@@ -1313,6 +1452,20 @@ if Value=0 then
  SetupOperation(11,13,13);
 end;
 
+procedure TKt_2450.SetHighCapacitanceState(Source: TKt2450_Source;
+  toOn: boolean);
+begin
+//SOUR:VOLT|CURR:HIGH:CAP ON|OFF
+ OnOffFromBool(toOn);
+ SetupOperation(11,1-ord(Source)+12,27);
+ fHighCapacitance[Source]:=toOn;
+end;
+
+procedure TKt_2450.SetHighCapacitanceState(toOn: boolean);
+begin
+  SetHighCapacitanceState(fSourceType,toOn);
+end;
+
 procedure TKt_2450.SetInterlockStatus(toOn: boolean);
 begin
 // :OUTP:INT:STAT on|off
@@ -1355,6 +1508,19 @@ begin
 
  SetupOperation(15);
  fMeasureFunction:=MeasureFunction;
+end;
+
+procedure TKt_2450.SetMeasureTime(Measure: TKt2450_Measure; Value: double);
+begin
+//CURR|VOLT|RES:NPLC value
+ fAdditionalString:=NumberToStrLimited(Value/KT_2450_MeaureTimeConvertConst,Kt_2450_MeasureTimeLimits);
+ SetupOperation(ord(Measure)+12,26);
+ fMeasureTime[Measure]:=strtofloat(fAdditionalString)*KT_2450_MeaureTimeConvertConst;
+end;
+
+procedure TKt_2450.SetMeasureTime(Value: double);
+begin
+  SetMeasureTime(fMeasureFunction,Value);
 end;
 
 //procedure TKt_2450.SetMeasureHighRange(Value: double);
@@ -1513,6 +1679,19 @@ begin
  fAdditionalString:=Kt2450_SourceName[SourseType];
  SetupOperation(11,55);
  fSourceType:=SourseType;
+end;
+
+procedure TKt_2450.SetSourceValue(value: double);
+begin
+ SetSourceValue(fSourceType,value);
+end;
+
+procedure TKt_2450.SetSourceValue(Source: TKt2450_Source; value: double);
+begin
+// SOUR:VOLT|CURR <n>
+ fAdditionalString:=NumberToStrLimited(Value,Kt_2450_SourceSweepLimits[Source]);
+ SetupOperation(11,1-ord(Source)+12);
+ fSourceValue[Source]:=strtofloat(fAdditionalString);
 end;
 
 procedure TKt_2450.SetSourceVoltageRange(Range: TKt2450VoltageRange);

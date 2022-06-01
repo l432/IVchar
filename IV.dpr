@@ -53,7 +53,8 @@ begin
   Application.CreateForm(TKT2450Form, KT2450Form);
   Application.CreateForm(TIVchar, IVchar);
 //  KT2450Form.Hide;
+  Main.Hide;
   IVchar.Show;
-  Application.ShowMainForm:=False;
+//  Application.ShowMainForm:=False;
   Application.Run;
 end.

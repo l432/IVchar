@@ -11,7 +11,7 @@ const
   ButtonNumberKt2450 = 4;
   SpeedButtonNumberKt2450 = 1;
   PanelNumberKt2450 = 1;
-  CheckBoxNumberKt2450 = 2;
+  CheckBoxNumberKt2450 = 3;
 
 type
 
@@ -114,6 +114,7 @@ TKt_2450_SourceShow=class(TKt_2450_AbstractElementShow)
   fLimitLabelNames:array[TKt2450_Source]of string;
   fCBReadBack: TCheckBox;
   fCBDelay:TCheckBox;
+  fCBHighCapacitance:TCheckBox;
   STDelay:TStaticText;
 
   fRangeShow:TKt_RangeSourceShow;
@@ -126,6 +127,7 @@ TKt_2450_SourceShow=class(TKt_2450_AbstractElementShow)
   procedure OutputOffOkClick();
   procedure LimitClick();
   procedure DelayClick();
+  procedure ValueClick();
   procedure ReadBackClick(Sender:TObject);
  public
   Constructor Create(Kt_2450:TKt_2450;
@@ -145,6 +147,7 @@ TKt_2450_MeasurementShow=class(TKt_2450_AbstractElementShow)
 
   fRangeShow:TKt_RangeMeasureShow;
   fRangeLimitedShow:TKt_RangeLimitedShow;
+  fTimeShow:TDoubleParameterShow;
 
   procedure SettingsShowSLCreate();override;
   procedure SettingsShowFree();override;
@@ -152,6 +155,7 @@ TKt_2450_MeasurementShow=class(TKt_2450_AbstractElementShow)
                           Labels:array of TLabel);override;
   procedure ResCompOkClick();
   procedure SenseOkClick();
+  procedure TimeOkClick();
  public
   property RangeShow:TKt_RangeMeasureShow read fRangeShow;
   Constructor Create(Kt_2450:TKt_2450;
@@ -173,7 +177,7 @@ TKt_2450_SweetShow=class(TKt_2450_AbstractElementShow)
   fDualCB,
   fAbortLimitCB:TCheckBox;
   fMode:TRadioGroup;
-  CF:TIniFile;
+//  CF:TIniFile;
   fStepPointST:TStaticText;
   fStepPointLab:TLabel;
 
@@ -221,6 +225,7 @@ end;
    SourceShowLabels:array[TKt2450_SourceSettings]of TLabel;
    SourceReadBackCB: TCheckBox;
    fSourceDelayCB: TCheckBox;
+   fSourceHCapac: TCheckBox;
    fSourceShowState:0..2;
    {2 - не створювався, 0 - створено під kt_sVolt; 1 - kt_sCurr}
 
@@ -250,7 +255,7 @@ end;
    procedure MeasureShowFree();
 
    procedure SweetShowCreate();
-   procedure SweetShowFree();
+//   procedure SweetShowFree();
 
    procedure TestButtonClick(Sender:TObject);
    procedure ResetButtonClick(Sender:TObject);
@@ -303,7 +308,8 @@ var
 implementation
 
 uses
-  Dialogs, Graphics, SysUtils, TelnetDevice, OlegFunction, Forms, SCPI;
+  Dialogs, Graphics, SysUtils, TelnetDevice, OlegFunction, Forms, SCPI, 
+  IVchar_main;
 
 { TKt_2450_Show }
 
@@ -371,7 +377,7 @@ begin
                         +ord(High(TKt2450_MeasureSettings))+1)))
      or(High(Labels)<>(ord(High(TKt2450_Settings))
                        +ord(kt_ss_limit)-ord(kt_ss_outputoff)+1
-                       +ord(kt_ms_rescomp)-ord(kt_ms_rescomp)+1+1))
+                       +ord(kt_ms_rescomp)-ord(kt_ms_rescomp)+1+1+1))
      or(High(CheckBoxs)<>CheckBoxNumberKt2450)
      or(High(SweetST)<>ord(High(TKt2450_SweepSettings)))
      or(High(SweetLab)<>ord(High(TKt2450_SweepSettings)))
@@ -399,6 +405,9 @@ begin
   inc(CBnumber);
   fSourceDelayCB:=CheckBoxs[CBnumber];
   inc(CBnumber);
+  fSourceHCapac:=CheckBoxs[CBnumber];
+  inc(CBnumber);
+
   SourceShowCreate();
 
   fMeasurementShowState:=5;
@@ -407,7 +416,8 @@ begin
                                                            +ord(High(TKt2450_SourceSettings))+1+i];
  i:=ord(High(TKt2450_Settings))+1+ord(kt_ss_limit)-ord(kt_ss_outputoff)+1;
  fMeasurementShowLabels[kt_ms_rescomp]:=Labels[i];
- fMeasurementShowLabels[kt_ms_lrange]:=Labels[i+1];
+ fMeasurementShowLabels[kt_ms_time]:=Labels[i+1];
+ fMeasurementShowLabels[kt_ms_lrange]:=Labels[i+2];
 //   for i:=ord(kt_ms_rescomp) to ord(kt_ms_rescomp) do
 //       fMeasurementShowLabels[TKt2450_MeasureSettings(ord(kt_ms_rescomp)+i)]:=
 //                            Labels[ord(High(TKt2450_Settings))+1
@@ -445,7 +455,8 @@ end;
 destructor TKt_2450_Show.Destroy;
 begin
   FreeAndNil(fSetupMemoryShow);
-  SweetShowFree();
+  FreeAndNil(fSweetShow);
+//  SweetShowFree();
   MeasureShowFree();
   SourceShowFree();
   SettingsShowFree;
@@ -464,7 +475,8 @@ begin
     fKt_2450.IsResistanceCompencateOn();
     fKt_2450.GetVoltageLimit();
     fKt_2450.GetCurrentLimit();
-    fKt_2450.GetReadBacks();
+//    fKt_2450.GetReadBacks();
+    fKt_2450.IsReadBackOn();
     fKt_2450.GetSenses();
     fKt_2450.GetOutputOffStates;
     fKt_2450.GetSourceRanges();
@@ -473,6 +485,9 @@ begin
     fKt_2450.IsAzeroStateOn();
     fKt_2450.IsSourceDelayAutoOn();
     fKt_2450.GetSourceDelay();
+    fKt_2450.GetSourceValue();
+    fKt_2450.GetMeasureTime();
+    fKt_2450.IsHighCapacitanceOn();
     end;
 
   ObjectToSetting();
@@ -501,8 +516,10 @@ begin
                  [fMeasurementShowStaticText[kt_ms_rescomp],
                   fMeasurementShowStaticText[kt_ms_sense],
                   fMeasurementShowStaticText[kt_ms_range],
+                  fMeasurementShowStaticText[kt_ms_time],
                   fMeasurementShowStaticText[kt_ms_lrange]],
                  [fMeasurementShowLabels[kt_ms_rescomp],
+                  fMeasurementShowLabels[kt_ms_time],
                   fMeasurementShowLabels[kt_ms_lrange]],
                   fMeasurementShowGB,
                   MeasureShowType
@@ -547,6 +564,7 @@ begin
     fMeasurementShow.RangeShow.Enabled := True;
   fMeasurementShow.ChangeRange();
   AZeroFromDevice();
+  SweetShowCreate();
 end;
 
 procedure TKt_2450_Show.RefreshZeroClick(Sender: TObject);
@@ -646,12 +664,15 @@ begin
  fSourceShow:=TKt_2450_SourceShow.Create(fKt_2450,
                  [SourceShowStaticText[kt_ss_outputoff],
                   SourceShowStaticText[kt_ss_delay],
+                  SourceShowStaticText[kt_ss_value],
                   SourceShowStaticText[kt_ss_limit],
                   SourceShowStaticText[kt_ss_range]],
                  [SourceShowLabels[kt_ss_outputoff],
                   SourceShowLabels[kt_ss_delay],
+                  SourceShowLabels[kt_ss_value],
                   SourceShowLabels[kt_ss_limit]],
-                  [SourceReadBackCB,fSourceDelayCB]
+                  [SourceReadBackCB,fSourceDelayCB,
+                  fSourceHCapac]
                   );
   fSourceShowState:=ord(fKt_2450.SourceType);
 // fSourceShow.ObjectToSetting;
@@ -674,21 +695,28 @@ procedure TKt_2450_Show.SweetShowCreate;
 begin
  if fSweetShowState=ord(fKt_2450.SourceType) then
   begin
-  fSWeetShow.ObjectToSetting();
+  fSWeetShow.UpDateObject();
   Exit;
   end;
- SweetShowFree();
+ if fSweetShowState<>2 then
+  begin
+   fSweetShow.WriteToIniFile(ConfigFile);
+   FreeAndNil(fSweetShow);
+  end;
+ 
+// SweetShowFree();
  fSweetShow:=TKt_2450_SweetShow.Create(fKt_2450,
                      fSweetST,fSweetLab,fSweetButtons,
                      fSweetDualCB,fSweetAbortLimitCB,
                      fSweetMode);
-  fSweetShowState:=ord(fKt_2450.SourceType);
+ if fSweetShowState<>2 then fSweetShow.ReadFromIniFile(ConfigFile);
+ fSweetShowState:=ord(fKt_2450.SourceType);
 end;
 
-procedure TKt_2450_Show.SweetShowFree;
-begin
- if fSweetShowState<>2 then FreeAndNil(fSweetShow);
-end;
+//procedure TKt_2450_Show.SweetShowFree;
+//begin
+// if fSweetShowState<>2 then FreeAndNil(fSweetShow);
+//end;
 
 procedure TKt_2450_Show.TerminalsFromDevice;
 begin
@@ -748,7 +776,7 @@ constructor TKT2450_SetupMemoryShow.Create(KT2450_Show:TKt_2450_Show;
                               PanelSave, PanelLoad: TPanel);
 begin
  fKT2450_Show:=KT2450_Show;
- fMemoryPins:=TKT2450_SetupMemoryPins.Create(fKT2450_Show.fKt_2450.Name);
+ fMemoryPins:=TKT2450_SetupMemoryPins.Create(fKT2450_Show.fKt_2450.Name+'Pins');
  inherited Create(fMemoryPins,[PanelSave, PanelLoad]);
  LabelsFilling();
 end;
@@ -828,11 +856,14 @@ constructor TKt_2450_SourceShow.Create(Kt_2450: TKt_2450;
 begin
 // fSourceType:=Kt_2450.SourceType;
  fCBReadBack:=CBoxs[0];
- fCBReadBack.Checked:=True;
+ AccurateCheckBoxCheckedChange(fCBReadBack,True);
  fCBReadBack.OnClick:=ReadBackClick;
  fCBDelay:=CBoxs[1];
  fCBDelay.OnClick:=ReadBackClick;
  fRangeShow:=TKt_RangeSourceShow.Create(STexts[ord(kt_ss_range)],Kt_2450);
+ fCBHighCapacitance:=CBoxs[2];
+ AccurateCheckBoxCheckedChange(fCBHighCapacitance,False);
+ fCBHighCapacitance.OnClick:=ReadBackClick;
  inherited Create(Kt_2450,STexts,Labels);
 
 end;
@@ -866,9 +897,8 @@ end;
 procedure TKt_2450_SourceShow.ObjectToSetting;
 begin
  (fSettingsShow[kt_ss_outputoff] as TStringParameterShow).Data:=
-//    ord(fKt_2450.OutputOffState[fSourceType]);
     ord(fKt_2450.OutputOffState[fKt_2450.SourceType]);
-// case fSourceType of
+
  case fKt_2450.SourceType of
    kt_sVolt: (fSettingsShow[kt_ss_limit] as TDoubleParameterShow).Data:=fKt_2450.CurrentLimit;
    kt_sCurr: (fSettingsShow[kt_ss_limit] as TDoubleParameterShow).Data:=fKt_2450.VoltageLimit;
@@ -877,28 +907,19 @@ begin
 
  if fKt_2450.ReadBack[fKt_2450.SourceType]<>fCBReadBack.Checked then
   AccurateCheckBoxCheckedChange(fCBReadBack,fKt_2450.ReadBack[fKt_2450.SourceType]);
-//  begin
-//   fCBReadBack.OnClick:=nil;
-////   fCBReadBack.Checked:=fKt_2450.ReadBack[fSourceType];
-//   fCBReadBack.Checked:=fKt_2450.ReadBack[fKt_2450.SourceType];
-//   fCBReadBack.OnClick:=ReadBackClick;
-//  end;
 
  if fKt_2450.SourceDelayAuto[fKt_2450.SourceType]<>fCBDelay.Checked then
   AccurateCheckBoxCheckedChange(fCBDelay,fKt_2450.SourceDelayAuto[fKt_2450.SourceType]);
-//  begin
-//   fCBDelay.OnClick:=nil;
-//   fCBDelay.Checked:=fKt_2450.SourceDelayAuto[fKt_2450.SourceType];
-//   fCBDelay.OnClick:=ReadBackClick;
-//  end;
+
+ if fKt_2450.HighCapacitance[fKt_2450.SourceType]<>fCBHighCapacitance.Checked then
+  AccurateCheckBoxCheckedChange(fCBHighCapacitance,fKt_2450.HighCapacitance[fKt_2450.SourceType]);
+
+
  STDelay.Enabled:=not(fCBDelay.Checked);
 
  fRangeShow.ObjectToSetting;
-// case fSourceType of
-//   kt_sVolt: fRangeShow.Data:=ord(fKt_2450.SourceVoltageRange);
-//   kt_sCurr: fRangeShow.Data:=ord(fKt_2450.SourceCurrentRange);
-// end;
 
+ (fSettingsShow[kt_ss_value] as TDoubleParameterShow).Data:=fKt_2450.SourceValue[fKt_2450.SourceType];
 
 end;
 
@@ -917,6 +938,8 @@ begin
      fKt_2450.SetSourceDelayAuto(fCBDelay.Checked);
      STDelay.Enabled:=not(fCBDelay.Checked);
     end;
+ if (Sender=fCBHighCapacitance) then fKt_2450.SetHighCapacitanceState(fCBHighCapacitance.Checked);
+
 end;
 
 procedure TKt_2450_SourceShow.SettingsShowCreate(STexts: array of TStaticText;
@@ -949,13 +972,29 @@ begin
  fSettingsShow[kt_ss_limit].HookParameterClick:=LimitClick;
  Labels[ord(kt_ss_limit)].WordWrap:=False;
 
-  fSettingsShow[kt_ss_delay]:=TDoubleParameterShow.Create(STexts[ord(kt_ss_delay)],
+ fSettingsShow[kt_ss_delay]:=TDoubleParameterShow.Create(STexts[ord(kt_ss_delay)],
                                 Labels[ord(kt_ss_delay)],
                                 'Delay after source set, s',
                                 0,5);
  fSettingsShow[kt_ss_delay].HookParameterClick:=DelayClick;
  Labels[ord(kt_ss_delay)].WordWrap:=False;
  STDelay:=STexts[ord(kt_ss_delay)];
+
+ fSettingsShow[kt_ss_value]:=TDoubleParameterShow.Create(STexts[ord(kt_ss_value)],
+                                Labels[ord(kt_ss_value)],
+                                'Output Value, ',
+                                0,4);
+ fSettingsShow[kt_ss_value].HookParameterClick:=ValueClick;
+ Labels[ord(kt_ss_value)].WordWrap:=False;
+ if fKt_2450.SourceType=kt_sVolt then
+    Labels[ord(kt_ss_value)].Caption:=Labels[ord(kt_ss_value)].Caption+'V'
+                                  else
+    Labels[ord(kt_ss_value)].Caption:=Labels[ord(kt_ss_value)].Caption+'A';
+(fSettingsShow[kt_ss_value] as TDoubleParameterShow).Limits.SetLimits(
+                        Kt_2450_SourceSweepLimits[fKt_2450.SourceType,lvMin],
+                        Kt_2450_SourceSweepLimits[fKt_2450.SourceType,lvMax]);
+
+
 end;
 
 
@@ -983,6 +1022,12 @@ begin
 
  fLimitLabelNames[kt_sVolt]:='Limit'#10'Current, A';
  fLimitLabelNames[kt_sCurr]:='Limit'#10'Voltage, V';
+end;
+
+procedure TKt_2450_SourceShow.ValueClick;
+begin
+ fKt_2450.SetSourceValue((fSettingsShow[kt_ss_value] as TDoubleParameterShow).Data);
+ (fSettingsShow[kt_ss_value] as TDoubleParameterShow).Data:=fKt_2450.SourceValue[fKt_2450.SourceType];
 end;
 
 { TKt_2450_MeasurementShow }
@@ -1036,6 +1081,8 @@ if fKt_2450.ResistanceCompencateOn[fKt_2450.MeasureFunction]
 
   fRangeShow.ObjectToSetting;
   fRangeLimitedShow.ObjectToSetting;
+  fTimeShow.Data:=fKt_2450.MeasureTime[fKt_2450.MeasureFunction];
+
 // case fKt_2450.SourceType of
 //   kt_sVolt: fRangeShow.Data:=ord(fKt_2450.MeasureVoltageRange);
 //   kt_sCurr: fRangeShow.Data:=ord(fKt_2450.MeasureCurrentRange);
@@ -1082,6 +1129,15 @@ begin
                         SettingsCaption[i], fSettingsShowSL[i]);
  fSettingsShow[kt_ms_sense].HookParameterClick:=SenseOkClick;
 
+ fTimeShow:=TDoubleParameterShow.Create(STexts[ord(kt_ms_time)],
+                                        Labels[High(Labels)-1],
+                                        'Measure time, ms',
+                                        1);
+ fTimeShow.Limits.SetLimits(
+                        Kt_2450_MeasureTimeLimits[lvMin],
+                        Kt_2450_MeasureTimeLimits[lvMax]);
+ fTimeShow.HookParameterClick:=TimeOkClick;
+
 end;
 
 
@@ -1101,6 +1157,11 @@ begin
 
 end;
 
+procedure TKt_2450_MeasurementShow.TimeOkClick;
+begin
+ fKt_2450.SetMeasureTime(fTimeShow.Data);
+end;
+
 procedure TKt_2450_MeasurementShow.SettingsShowFree;
  var i:TKt2450_MeasureSettings;
 begin
@@ -1108,6 +1169,7 @@ begin
   FreeAndNil(fSettingsShowSL[i]);
  for i := Low(fSettingsShow) to High(fSettingsShow) do
   FreeAndNil(fSettingsShow[i]);
+FreeAndNil(fTimeShow);
 end;
 
 { TKt_RangeShow }
@@ -1327,7 +1389,7 @@ begin
  fMode.OnClick:=ModeClick;
 // fMode.Name:=Kt_2450.Name;
  inherited Create(Kt_2450,STexts,Labels);
- CF:=TIniFile.Create(ExtractFilePath(Application.ExeName)+'IVChar.ini');
+// CF:=TIniFile.Create(ExtractFilePath(Application.ExeName)+'IVChar.ini');
 
  ButtonsTunning(Buttons);
  CheckBoxTunning(DualCB, AbortLimitCB);
@@ -1365,7 +1427,7 @@ begin
     or((fMode.ItemIndex<>0)and(fSettingsShow[kt_sws_stpo] is TDoubleParameterShow))
  then
   begin
-    fSettingsShow[kt_sws_stpo].WriteToIniFile(CF);
+    fSettingsShow[kt_sws_stpo].WriteToIniFile(ConfigFile);
     FreeAndNil(fSettingsShow[kt_sws_stpo]);
     case fMode.ItemIndex of
      0:begin
@@ -1373,6 +1435,11 @@ begin
                                     fStepPointST,fStepPointLab,'SW_Step',
                                     0.05,5);
        (fSettingsShow[kt_sws_stpo] as TDoubleParameterShow).Limits.SetLimits(1e-6);
+       fStepPointLab.Caption:=Kt2450_SweepLabelNames[kt_sws_stpo];
+       if fKt_2450.SourceType=kt_sVolt
+             then fStepPointLab.Caption:=fStepPointLab.Caption+'V'
+             else fStepPointLab.Caption:=fStepPointLab.Caption+'A'
+
        end;
      else begin
           fSettingsShow[kt_sws_stpo]:=TIntegerParameterShow.Create(
@@ -1380,11 +1447,13 @@ begin
          (fSettingsShow[kt_sws_stpo] as TIntegerParameterShow).Limits.SetLimits(
                         Kt_2450_SweepCountLimits[lvMin],
                         Kt_2450_SweepCountLimits[lvMax]);
-
+          fStepPointLab.Caption:='Points';
           end;
     end;
     SettingTunning(kt_sws_stpo);
-    fSettingsShow[kt_sws_stpo].ReadFromIniFile(CF);
+    fStepPointLab.WordWrap:=False;
+//    fStepPointLab.Caption:=Kt2450_SweepLabelNames[kt_sws_stpo];
+    fSettingsShow[kt_sws_stpo].ReadFromIniFile(ConfigFile);
   end;
 
 end;
@@ -1396,7 +1465,7 @@ end;
 
 destructor TKt_2450_SweetShow.Destroy;
 begin
-  FreeAndNil(CF);
+//  FreeAndNil(CF);
   inherited;
 end;
 
@@ -1414,7 +1483,7 @@ procedure TKt_2450_SweetShow.ReadFromIniFile(ConfigFile: TIniFile);
  var i:TKt2450_SweepSettings;
 begin
  for i := Low(fSettingsShow) to High(fSettingsShow) do
-   fSettingsShow[i].ReadFromIniFile(CF);
+   fSettingsShow[i].ReadFromIniFile(ConfigFile);
  fMode.ItemIndex:= ConfigFile.ReadInteger(fKt_2450.Name,
            'SW_Mode'+Kt2450_SourceName[fKt_2450.SourceType],0);
  fDualCB.Checked:= ConfigFile.ReadBool(fKt_2450.Name,
@@ -1427,17 +1496,10 @@ end;
 
 procedure TKt_2450_SweetShow.SettingsShowCreate(STexts: array of TStaticText;
   Labels: array of TLabel);
-  const LabelNames:array[TKt2450_SweepSettings]of string=
-          ('From, ','To, ', 'Delay, s', 'Step, V',
-           'Times to run','Used range');
+
   var i:TKt2450_SweepSettings;
 begin
 
- for i := Low(TKt2450_SweepSettings) to High(TKt2450_SweepSettings) do
-  begin
-   Labels[ord(i)].WordWrap:=False;
-   Labels[ord(i)].Caption:=LabelNames[i];
-  end;
 
  fSettingsShow[kt_sws_start]:=TDoubleParameterShow.Create(
                                     STexts[0],Labels[0],'SW_Start',
@@ -1482,10 +1544,20 @@ begin
 
 
  for i := Low(TKt2450_SweepSettings) to High(TKt2450_SweepSettings) do
-    SettingTunning(i);
+  begin
+   Labels[ord(i)].WordWrap:=False;
+   Labels[ord(i)].Caption:=Kt2450_SweepLabelNames[i];
+   if i in [kt_sws_start,kt_sws_stop,kt_sws_stpo] then
+      if fKt_2450.SourceType=kt_sVolt
+          then Labels[ord(i)].Caption:=Labels[ord(i)].Caption+'V'
+          else Labels[ord(i)].Caption:=Labels[ord(i)].Caption+'A';
+   SettingTunning(i);
+  end;
 
-// TKt2450_SweepSettings=(kt_sws_start,kt_sws_stop,kt_sws_stpo,
-//                          kt_sws_delay,kt_sws_count,kt_sws_ranget);
+
+// for i := Low(TKt2450_SweepSettings) to High(TKt2450_SweepSettings) do
+//    SettingTunning(i);
+
 
 end;
 
@@ -1542,10 +1614,13 @@ procedure TKt_2450_SweetShow.WriteToIniFile(ConfigFile: TIniFile);
  var i:TKt2450_SweepSettings;
 begin
  for i := Low(fSettingsShow) to High(fSettingsShow) do
-   fSettingsShow[i].WriteToIniFile(CF);
- WriteIniDef(ConfigFile, fKt_2450.Name, 'SW_Mode'+Kt2450_SourceName[fKt_2450.SourceType], fMode.ItemIndex);
- WriteIniDef(ConfigFile, fKt_2450.Name, 'SW_Dual'+Kt2450_SourceName[fKt_2450.SourceType], fDualCB.Checked);
- WriteIniDef(ConfigFile, fKt_2450.Name, 'SW_FailAbort'+Kt2450_SourceName[fKt_2450.SourceType], fAbortLimitCB.Checked);
+   fSettingsShow[i].WriteToIniFile(ConfigFile);
+
+ WriteIniDef(ConfigFile, fKt_2450.Name, 'SW_Mode'+Kt2450_SourceName[fKt_2450.SourceType], fMode.ItemIndex, 0);
+// WriteIniDef(ConfigFile, fKt_2450.Name, 'SW_Dual'+Kt2450_SourceName[fKt_2450.SourceType], fDualCB.Checked, False);
+// WriteIniDef(ConfigFile, fKt_2450.Name, 'SW_FailAbort'+Kt2450_SourceName[fKt_2450.SourceType], fAbortLimitCB.Checked);
+ ConfigFile.WriteBool(fKt_2450.Name,'SW_Dual'+Kt2450_SourceName[fKt_2450.SourceType], fDualCB.Checked);
+ ConfigFile.WriteBool(fKt_2450.Name,'SW_FailAbort'+Kt2450_SourceName[fKt_2450.SourceType], fAbortLimitCB.Checked);
 end;
 
 procedure TKt_2450_SweetShow.SettingTunning(i: TKt2450_SweepSettings);

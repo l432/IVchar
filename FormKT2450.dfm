@@ -1,11 +1,11 @@
 object KT2450Form: TKT2450Form
   Left = 0
   Top = 0
-  BorderIcons = [biSystemMenu]
+  BorderIcons = []
   BorderStyle = bsSingle
   Caption = 'KT2450 Settings'
-  ClientHeight = 465
-  ClientWidth = 744
+  ClientHeight = 454
+  ClientWidth = 735
   Color = clCream
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -13,7 +13,7 @@ object KT2450Form: TKT2450Form
   Font.Name = 'Tahoma'
   Font.Style = []
   OldCreateOrder = False
-  Position = poDesktopCenter
+  Position = poScreenCenter
   Visible = True
   OnPaint = FormPaint
   PixelsPerInch = 96
@@ -167,7 +167,7 @@ object KT2450Form: TKT2450Form
     Top = 4
     Width = 71
     Height = 25
-    Caption = 'Close'
+    Caption = 'UnDock'
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -15
@@ -178,7 +178,7 @@ object KT2450Form: TKT2450Form
     OnClick = BCloseClick
   end
   object GB_KT2450Sweep: TGroupBox
-    Left = 474
+    Left = 464
     Top = 8
     Width = 263
     Height = 199
@@ -446,7 +446,7 @@ object KT2450Form: TKT2450Form
   end
   object B_MyTrain: TButton
     Left = 372
-    Top = 185
+    Top = 143
     Width = 75
     Height = 25
     Caption = 'B_MyTrain'
@@ -469,8 +469,8 @@ object KT2450Form: TKT2450Form
   end
   object GB_Kt2450_Source: TGroupBox
     Left = 5
-    Top = 181
-    Width = 300
+    Top = 165
+    Width = 336
     Height = 274
     Caption = 'Source'
     Font.Charset = RUSSIAN_CHARSET
@@ -550,6 +550,19 @@ object KT2450Form: TKT2450Form
       Font.Style = [fsBold]
       ParentFont = False
       WordWrap = True
+    end
+    object L_KT2450SourceValue: TLabel
+      Left = 205
+      Top = 109
+      Width = 100
+      Height = 16
+      Caption = 'Output Value, V'
+      Font.Charset = RUSSIAN_CHARSET
+      Font.Color = clBlack
+      Font.Height = -13
+      Font.Name = 'Arial'
+      Font.Style = [fsBold]
+      ParentFont = False
     end
     object ST_Kt2450_OutPut: TStaticText
       Left = 68
@@ -654,10 +667,39 @@ object KT2450Form: TKT2450Form
       ShowAccelChar = False
       TabOrder = 6
     end
+    object ST_KT2450SourceValue: TStaticText
+      Left = 205
+      Top = 127
+      Width = 58
+      Height = 24
+      Caption = '0.025'
+      Font.Charset = RUSSIAN_CHARSET
+      Font.Color = clBlack
+      Font.Height = -17
+      Font.Name = 'Verdana'
+      Font.Style = [fsBold]
+      ParentFont = False
+      ShowAccelChar = False
+      TabOrder = 7
+    end
+    object CB_KT2450SourHCap: TCheckBox
+      Left = 194
+      Top = 240
+      Width = 129
+      Height = 17
+      Caption = 'H-capacitance'
+      Font.Charset = RUSSIAN_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -13
+      Font.Name = 'Verdana'
+      Font.Style = [fsBold]
+      ParentFont = False
+      TabOrder = 8
+    end
   end
   object GB_Kt2450_Mes: TGroupBox
-    Left = 330
-    Top = 232
+    Left = 356
+    Top = 216
     Width = 235
     Height = 223
     Caption = 'Resistance'
@@ -689,6 +731,20 @@ object KT2450Form: TKT2450Form
       Caption = 'Low Auto Limit'
       Font.Charset = RUSSIAN_CHARSET
       Font.Color = clOlive
+      Font.Height = -13
+      Font.Name = 'Arial'
+      Font.Style = [fsBold]
+      ParentFont = False
+      WordWrap = True
+    end
+    object L_KT2450MeasTime: TLabel
+      Left = 14
+      Top = 101
+      Width = 54
+      Height = 32
+      Caption = 'Measure time, ms'
+      Font.Charset = RUSSIAN_CHARSET
+      Font.Color = clNavy
       Font.Height = -13
       Font.Name = 'Arial'
       Font.Style = [fsBold]
@@ -777,10 +833,25 @@ object KT2450Form: TKT2450Form
       Caption = 'Manual Zero'
       TabOrder = 5
     end
+    object ST_KT2450MeasTime: TStaticText
+      Left = 14
+      Top = 134
+      Width = 40
+      Height = 24
+      Caption = '143'
+      Font.Charset = RUSSIAN_CHARSET
+      Font.Color = clNavy
+      Font.Height = -17
+      Font.Name = 'Verdana'
+      Font.Style = [fsBold]
+      ParentFont = False
+      ShowAccelChar = False
+      TabOrder = 6
+    end
   end
   object GB_FT2450Setup: TGroupBox
     Tag = 110
-    Left = 626
+    Left = 622
     Top = 226
     Width = 108
     Height = 122
