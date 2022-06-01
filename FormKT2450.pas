@@ -75,6 +75,7 @@ type
     L_KT2450MeasTime: TLabel;
     ST_KT2450MeasTime: TStaticText;
     CB_KT2450SourHCap: TCheckBox;
+    ST_KT2450DisplDN: TStaticText;
     procedure BCloseClick(Sender: TObject);
     procedure FormPaint(Sender: TObject);
   private

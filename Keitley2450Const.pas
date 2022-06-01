@@ -9,7 +9,7 @@ const
   Kt_2450_Test='KEITHLEY INSTRUMENTS,MODEL 2450';
 
   RootNoodKt_2450:array[0..18]of string=
-  ('*idn?','*rcl ','*rst','*sav',':acq',':outp','disp:',':syst','scr:run',
+  ('*idn?','*rcl ','*rst','*sav',':acq',':outp',':disp',':syst','scr:run',
 //   0       1       2      3      4        5       6        7      8
   'rout',':sens',':sour',':curr', ':volt', ':res',':func',':azer:once','init',
 //  9       10     11        12      13      14      15         16       17
@@ -21,15 +21,15 @@ const
  'amp','volt','ohm','watt' );
 //   4     5    6      7
 
-  FirstNodeKt_2450:array[0..27]of string=
-  ('scr','user1:text','user2:text','cle',':pos',':int:stat',':term',
+  FirstNodeKt_2450:array[0..28]of string=
+  (':scr',':user1:text',':user2:text','cle',':pos',':int:stat',':term',
 //     0       1             2         3      4        5         6
    ':rsen',':smod',':ocom',':prot',':trip',':vlim',':ilim',':unit',
 //    7       8       9       10      11      12      13      14
    ':rang',':rang:auto',':read:back',':llim',':ulim',':azer',':del',
 //   15         16            17        18     19      20       21
-   ':del:auto',':list',':app',':swe',':nplc',':high:cap');
-//      22        23      24     25     26        27
+   ':del:auto',':list',':app',':swe',':nplc',':high:cap',':dig');
+//      22        23      24     25     26        27       28
 
    PartDelimiter=', ';
 
@@ -62,7 +62,8 @@ type
  TKt2450_SourceSettings=(kt_ss_outputoff,kt_ss_delay,kt_ss_value,
          kt_ss_limit,kt_ss_range);
 
- TKt2450_MeasureSettings=(kt_ms_rescomp,kt_ms_sense,kt_ms_range,
+ TKt2450_MeasureSettings=(kt_ms_rescomp,kt_ms_displaydn,
+                          kt_ms_sense,kt_ms_range,
                           kt_ms_time,kt_ms_lrange);
  TKt2450_MeasureShowType=(kt_mst_cur,kt_mst_volt,kt_mst_res,kt_mst_pow);
 
@@ -72,6 +73,9 @@ type
  TKt2450CurrentRange=(kt_crAuto,kt_cr10nA,kt_cr100nA,kt_cr1uA,
                       kt_cr10uA,kt_cr100uA,kt_cr1mA,kt_cr10mA,
                       kt_cr100mA,kt_cr1A);
+
+ Kt2450DisplayDigitsNumber=3..6;
+ TKt2450_MeasureDisplayDN=array[TKt2450_Measure]of Kt2450DisplayDigitsNumber;
 
  TKt2450_SweepRangeType=(kt_srt_Auto,kt_srt_Best,kt_srt_Fixed);
 
@@ -144,7 +148,7 @@ const
           ('From, ','To, ', 'Delay, s', 'Step, ',
            'Times to run','Used range');
 
-
+ Kt2450DisplayDNLabel='.5 digit';
 //  OperationKod:array [TKt2450_Settings] of array[0..2] of byte=
 ////                  RootNood  FirstNode  LeafNode
 //{kt_curr_sense}   ((  10,         0,           0),

@@ -848,6 +848,21 @@ object KT2450Form: TKT2450Form
       ShowAccelChar = False
       TabOrder = 6
     end
+    object ST_KT2450DisplDN: TStaticText
+      Left = 145
+      Top = 196
+      Width = 84
+      Height = 24
+      Caption = '5.5 digit'
+      Font.Charset = RUSSIAN_CHARSET
+      Font.Color = clPurple
+      Font.Height = -17
+      Font.Name = 'Verdana'
+      Font.Style = [fsBold]
+      ParentFont = False
+      ShowAccelChar = False
+      TabOrder = 7
+    end
   end
   object GB_FT2450Setup: TGroupBox
     Tag = 110

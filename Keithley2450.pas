@@ -111,6 +111,7 @@ end;
    fSourceValue:TKt2450_SourceDouble;
    fSourceDelayAuto:TKt2450_SourceBool;
    fMeasureTime:TKt2450_MeasureDouble;
+   fDisplayDN:TKt2450_MeasureDisplayDN;
    fDataVector:TVector;
    procedure OnOffFromBool(toOn:boolean);
    function StringToVoltageProtection(Str:string;var vp:TKt_2450_VoltageProtection):boolean;
@@ -158,6 +159,7 @@ end;
    property SourceDelay:TKt2450_SourceDouble read fSourceDelay;
    property SourceValue:TKt2450_SourceDouble read fSourceValue;
    property SourceDelayAuto:TKt2450_SourceBool read fSourceDelayAuto;
+   property DisplayDN:TKt2450_MeasureDisplayDN read fDisplayDN;
    property MeasureTime:TKt2450_MeasureDouble read fMeasureTime;
 
    Constructor Create(Telnet:TIdTelnet;IPAdressShow: TIPAdressShow;
@@ -275,6 +277,14 @@ end;
    function GetMeasureTime(Measure:TKt2450_Measure):boolean;overload;
    function GetMeasureTime():boolean;overload;
    function GetMeasureTimes():boolean;
+
+   procedure SetDisplayDigitsNumber(Measure:TKt2450_Measure; Number:Kt2450DisplayDigitsNumber);overload;
+   {кількість цифр, що відображаються на екрані,
+     на точність самого вимірювання не впливає}
+   procedure SetDisplayDigitsNumber(Number:Kt2450DisplayDigitsNumber);overload;
+   function GetDisplayDigitsNumber(Measure:TKt2450_Measure):boolean;overload;
+   function GetDisplayDigitsNumber():boolean;overload;
+   function GetDisplayDNs():boolean;
 
 
    procedure SetMode(Mode:TKt_2450_Mode);
@@ -433,6 +443,7 @@ begin
    fResistanceCompencateOn[TKt2450_Measure(i)]:=False;
    fAzeroState[TKt2450_Measure(i)]:=True;
    fMeasureTime[TKt2450_Measure(i)]:=1;
+   fDisplayDN[TKt2450_Measure(i)]:=5;
    end;
  for I := ord(Low(TKt2450_Source)) to ord(High(TKt2450_Source)) do
    begin
@@ -494,6 +505,27 @@ begin
  Result:=Result and GetMeasureUnit(fMeasureFunction);
  Result:=Result and GetSourceType();
  if Result then fMode:=ModeDetermination;
+end;
+
+function TKt_2450.GetDisplayDNs: boolean;
+begin
+ Result:=GetDisplayDigitsNumber(kt_mCurrent) and GetDisplayDigitsNumber(kt_mVoltage);
+end;
+
+function TKt_2450.GetDisplayDigitsNumber: boolean;
+begin
+ Result:=GetDisplayDigitsNumber(MeasureFunction);
+end;
+
+function TKt_2450.GetDisplayDigitsNumber(Measure: TKt2450_Measure): boolean;
+begin
+ QuireOperation(6,ord(Measure)+12,28);
+ try
+  fDisplayDN[Measure]:=round(fDevice.Value);
+  result:=True;
+ except
+  Result:=False;
+ end;
 end;
 
 function TKt_2450.GetHighCapacitanceStates: boolean;
@@ -661,6 +693,7 @@ begin
  if not(GetSourceValues()) then Exit;
  if not(GetMeasureTimes()) then Exit;
  if not(GetHighCapacitanceStates()) then Exit;
+ if not(GetDisplayDNs()) then Exit;
 end;
 
 function TKt_2450.IsReadBackOn(Source: TKt2450_Source): boolean;
@@ -936,12 +969,21 @@ end;
 
 procedure TKt_2450.MyTraining;
 // var str:string;
-  var ArrDouble: TArrSingle;
+//  var ArrDouble: TArrSingle;
 begin
 //  (fDevice as TTelnetMeterDeviceSingle).SetStringToSend(':VOLT:RANG:AUTO:LLIM 20');
 //  (fDevice as TTelnetMeterDeviceSingle).SetStringToSend(':SOUR:VOLT:RANG:Auto?');
 //  fDevice.Request();
 //  fDevice.GetData;
+
+//if GetDisplayDigitsNumber then
+//  showmessage(inttostr(fDisplayDN[fMeasureFunction])+Kt2450DisplayDNLabel);
+//if GetDisplayDigitsNumber(kt_mCurrent) then
+//  showmessage(inttostr(fDisplayDN[kt_mVoltage])+Kt2450DisplayDNLabel);
+
+// SetDisplayDigitsNumber(4);
+// SetDisplayDigitsNumber(kt_mVoltage,3);
+// SetDisplayDigitsNumber(kt_mCurrent,6);
 
 
 // showmessage(booltostr(IsHighCapacitanceOn(),True));
@@ -1252,10 +1294,20 @@ begin
     end;
     end;
   6:begin
+     case fFirstLevelNode of
+//  SetupOperation(6,ord(Measure)+12,28);
+      12,13,14:
+        begin
+        fDevice.JoinToStringToSend(RootNoodKt_2450[fFirstLevelNode]);
+        fDevice.JoinToStringToSend(FirstNodeKt_2450[fLeafNode]);
+        end;
 //        SetupOperation(6,0);
 //        SetupOperation(6,1);
 //        SetupOperation(6,2);
-     fDevice.JoinToStringToSend(FirstNodeKt_2450[fFirstLevelNode]);
+      else fDevice.JoinToStringToSend(FirstNodeKt_2450[fFirstLevelNode]);
+     end;
+
+     
     end;
    7:begin
 //        SetupOperation(7,4);
@@ -1355,6 +1407,7 @@ begin
           end;
     end;
     end;
+  6:fDevice.Value:=StrToInt(Str);
   9:begin
 //     QuireOperation(9,6);
      if StringToTerminals(AnsiLowerCase(Str))
@@ -1450,6 +1503,20 @@ if Value=0 then
       fCurrentLimit:=strtofloat(fAdditionalString);
      end;
  SetupOperation(11,13,13);
+end;
+
+procedure TKt_2450.SetDisplayDigitsNumber(Measure: TKt2450_Measure;
+  Number: Kt2450DisplayDigitsNumber);
+begin
+//:DISP:CURR|VOLT|RES:DIG n
+ fAdditionalString:=inttostr(Number);
+ SetupOperation(6,ord(Measure)+12,28);
+ fDisplayDN[Measure]:=Number;
+end;
+
+procedure TKt_2450.SetDisplayDigitsNumber(Number: Kt2450DisplayDigitsNumber);
+begin
+  SetDisplayDigitsNumber(fMeasureFunction,Number);
 end;
 
 procedure TKt_2450.SetHighCapacitanceState(Source: TKt2450_Source;

@@ -155,6 +155,7 @@ TKt_2450_MeasurementShow=class(TKt_2450_AbstractElementShow)
                           Labels:array of TLabel);override;
   procedure ResCompOkClick();
   procedure SenseOkClick();
+  procedure DisplayDNOkClick();
   procedure TimeOkClick();
  public
   property RangeShow:TKt_RangeMeasureShow read fRangeShow;
@@ -488,6 +489,7 @@ begin
     fKt_2450.GetSourceValue();
     fKt_2450.GetMeasureTime();
     fKt_2450.IsHighCapacitanceOn();
+//    fKt_2450.GetDisplayDigitsNumber();
     end;
 
   ObjectToSetting();
@@ -514,6 +516,7 @@ begin
  MeasureShowFree();
  fMeasurementShow:=TKt_2450_MeasurementShow.Create(fKt_2450,
                  [fMeasurementShowStaticText[kt_ms_rescomp],
+                  fMeasurementShowStaticText[kt_ms_displaydn],
                   fMeasurementShowStaticText[kt_ms_sense],
                   fMeasurementShowStaticText[kt_ms_range],
                   fMeasurementShowStaticText[kt_ms_time],
@@ -1062,6 +1065,11 @@ begin
   inherited;
 end;
 
+procedure TKt_2450_MeasurementShow.DisplayDNOkClick;
+begin
+ fKt_2450.SetDisplayDigitsNumber(3+fSettingsShow[kt_ms_displaydn].Data);
+end;
+
 procedure TKt_2450_MeasurementShow.ObjectToSetting;
 begin
 if fKt_2450.ResistanceCompencateOn[fKt_2450.MeasureFunction]
@@ -1082,6 +1090,7 @@ if fKt_2450.ResistanceCompencateOn[fKt_2450.MeasureFunction]
   fRangeShow.ObjectToSetting;
   fRangeLimitedShow.ObjectToSetting;
   fTimeShow.Data:=fKt_2450.MeasureTime[fKt_2450.MeasureFunction];
+  fSettingsShow[kt_ms_displaydn].Data:=ord(fKt_2450.DisplayDN[fKt_2450.MeasureFunction]);
 
 // case fKt_2450.SourceType of
 //   kt_sVolt: fRangeShow.Data:=ord(fKt_2450.MeasureVoltageRange);
@@ -1116,7 +1125,7 @@ procedure TKt_2450_MeasurementShow.SettingsShowCreate(
      STexts: array of TStaticText; Labels: array of TLabel);
  const
      SettingsCaption:array[kt_ms_rescomp..kt_ms_sense]of string=
-      ('ResistComp','Sense');
+      ('ResistComp','DisplayDN','Sense');
  var i:TKt2450_MeasureSettings;
 begin
  for I := Low(TKt2450_MeasureSettings) to kt_ms_rescomp do
@@ -1124,10 +1133,12 @@ begin
                         Labels[ord(i)], SettingsCaption[i], fSettingsShowSL[i]);
  fSettingsShow[kt_ms_rescomp].HookParameterClick:=ResCompOkClick;
 
- for I := kt_ms_sense to kt_ms_sense do
+ for I := kt_ms_displaydn to kt_ms_sense do
    fSettingsShow[i]:=TStringParameterShow.Create(STexts[ord(i)],
                         SettingsCaption[i], fSettingsShowSL[i]);
  fSettingsShow[kt_ms_sense].HookParameterClick:=SenseOkClick;
+ fSettingsShow[kt_ms_displaydn].HookParameterClick:=DisplayDNOkClick;
+ fSettingsShow[kt_ms_displaydn].Data:=2;
 
  fTimeShow:=TDoubleParameterShow.Create(STexts[ord(kt_ms_time)],
                                         Labels[High(Labels)-1],
@@ -1154,7 +1165,8 @@ begin
   fSettingsShowSL[kt_ms_rescomp].Add(SuffixKt_2450[i]);
  for I := 0 to ord(High(TKt2450_Sense)) do
     fSettingsShowSL[kt_ms_sense].Add(KT2450_SenseLabels[TKt2450_Sense(i)]);
-
+ for I := Low(Kt2450DisplayDigitsNumber) to High(Kt2450DisplayDigitsNumber) do
+    fSettingsShowSL[kt_ms_displaydn].Add(inttostr(i)+Kt2450DisplayDNLabel);
 end;
 
 procedure TKt_2450_MeasurementShow.TimeOkClick;
