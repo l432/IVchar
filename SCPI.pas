@@ -35,7 +35,7 @@ type
     procedure DeviceCreate(Nm:string='Device');virtual;abstract;
     procedure PrepareString;virtual;abstract;
     procedure JoinAddString();
-    function StringToInvertedCommas(str:string):string;
+//    function StringToInvertedCommas(str:string):string;
     procedure DefaultSettings;virtual;
     function SCPI_StringToValue(Str:string):double;
     Function DeleteSubstring(Source:string;Substring: string=':'):string;
@@ -48,11 +48,13 @@ type
    public
     Constructor Create(Nm:string);
     destructor Destroy;override;
-    procedure ProcessingString(Str:string);virtual;abstract;
     function Test():boolean;virtual;abstract;
+    procedure ProcessingString(Str:string);virtual;abstract;
     class Function NumberMap(Value:double;LimitValues:TLimitValues):double;overload;
     {повертається число. яке знаходиться в межах LimitValues}
     class Function NumberMap(Value:integer;LimitValues:TLimitValues):integer;overload;
+    class function StringToInvertedCommas(str:string):string;
+    class function DeleteSubstringAll(Source:string;Substring: string=' '):string;
   end;
 
   TRS232_SCPI=class(TRS232)
@@ -133,7 +135,14 @@ function TSCPInew.DeleteSubstring(Source, Substring: string): string;
 begin
  Result:=Source;
  if pos(Substring,Source)<>0 then
-     Delete(Result,pos(Substring,Source),Length(Substring));
+     Delete(Result,pos(Substring,Result),Length(Substring));
+end;
+
+class function TSCPInew.DeleteSubstringAll(Source, Substring: string): string;
+begin
+ Result:=Source;
+ while pos(Substring,Result)<>0 do
+   Delete(Result,pos(Substring,Result),Length(Substring));
 end;
 
 destructor TSCPInew.Destroy;
@@ -244,7 +253,7 @@ begin
  fDevice.Request();
 end;
 
-function TSCPInew.StringToInvertedCommas(str: string): string;
+class function TSCPInew.StringToInvertedCommas(str: string): string;
 begin
  Result:='"'+str+'"';
 end;

@@ -7,29 +7,36 @@ uses
 const
 
   Kt_2450_Test='KEITHLEY INSTRUMENTS,MODEL 2450';
+  Kt2450DisplayDNLabel='.5 digit';
+  Kt2450DefBuffer='defbuffer1';
+  Kt2450DefBuffer2='defbuffer2';
+  MyBuffer='OlegData';
 
-  RootNoodKt_2450:array[0..18]of string=
+  RootNoodKt_2450:array[0..19]of string=
   ('*idn?','*rcl ','*rst','*sav',':acq',':outp',':disp',':syst','scr:run',
 //   0       1       2      3      4        5       6        7      8
   'rout',':sens',':sour',':curr', ':volt', ':res',':func',':azer:once','init',
 //  9       10     11        12      13      14      15         16       17
-  ':abor');
-//   18
+  ':abor',':trac');
+//   18      19
 
   SuffixKt_2450:array[0..7]of string=('on','off', 'rst',{'?','prot',}'def',
 //                                      0    1      2                  3
  'amp','volt','ohm','watt' );
 //   4     5    6      7
 
-  FirstNodeKt_2450:array[0..28]of string=
+  FirstNodeKt_2450:array[0..31]of string=
   (':scr',':user1:text',':user2:text','cle',':pos',':int:stat',':term',
 //     0       1             2         3      4        5         6
    ':rsen',':smod',':ocom',':prot',':trip',':vlim',':ilim',':unit',
 //    7       8       9       10      11      12      13      14
    ':rang',':rang:auto',':read:back',':llim',':ulim',':azer',':del',
 //   15         16            17        18     19      20       21
-   ':del:auto',':list',':app',':swe',':nplc',':high:cap',':dig');
-//      22        23      24     25     26        27       28
+   ':del:auto',':list',':app',':swe',':nplc',':high:cap',':dig',':make',
+//      22        23      24     25     26        27       28      29
+   ':del',':poin');
+//   30     31
+
 
    PartDelimiter=', ';
 
@@ -86,8 +93,17 @@ type
 
  TKt2450_SweepButtonArray=array[TKt2450_SweepButtons] of TButton;
 
-//  ConfigFile:=TIniFile.Create(ExtractFilePath(Application.ExeName)+'IVChar.ini');
-//ConfigFile:TIniFile;
+ TKt2450_BufferStyle=(kt_bs_comp,{6.5 digits, 1 us accurate relative
+                                timestamp with a one-hour time span
+                                before the timestamp starts over}
+                      kt_bs_stan,{full accuracy with formatting,
+                                 the timestamp is absolute; full
+                                 date and time is recorded}
+                      kt_bs_full,// plus additional information
+                      kt_bs_writ,{буфер, куди не можна записувати результати
+                                 вимірювань, для збереження якоїсь зовнішньої
+                                 інформації}
+                      kt_bs_fwrite);// два зовнішніх значення на запис
 
 const
  Kt2450_TerminalsName:array [TKt2450_OutputTerminals]
@@ -123,7 +139,9 @@ const
  ((-210,210),(-1.05,1.05));
  Kt_2450_SweepPointsLimits:TLimitValues=(2,1e6);
  Kt_2450_SweepCountLimits:TLimitValues=(1,268435455);
-
+ Kt_2450_BufferSizeLimits:TLimitValues=(10,1e6);
+ {загалом ємність всіх буферів - 4,500,000 стандартних
+  записів або 20,000,000 компактних}
 
  KT2450_SenseLabels:array[TKt2450_Sense]of string=
  ('4-Wire','2-Wire');
@@ -148,7 +166,8 @@ const
           ('From, ','To, ', 'Delay, s', 'Step, ',
            'Times to run','Used range');
 
- Kt2450DisplayDNLabel='.5 digit';
+
+
 //  OperationKod:array [TKt2450_Settings] of array[0..2] of byte=
 ////                  RootNood  FirstNode  LeafNode
 //{kt_curr_sense}   ((  10,         0,           0),

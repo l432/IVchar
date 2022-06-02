@@ -42,7 +42,8 @@ uses
   Keithley2450Show in 'Keithley2450Show.pas',
   Keitley2450Const in 'Keitley2450Const.pas',
   FormKT2450 in 'FormKT2450.pas' {KT2450Form},
-  PsevdoMainForm in 'PsevdoMainForm.pas' {Main};
+  PsevdoMainForm in 'PsevdoMainForm.pas' {Main},
+  Keitley2450Device in 'Keitley2450Device.pas';
 
 {$R *.res}
 
@@ -52,7 +53,7 @@ begin
   Application.CreateForm(TMain, Main);
   Application.CreateForm(TKT2450Form, KT2450Form);
   Application.CreateForm(TIVchar, IVchar);
-//  KT2450Form.Hide;
+  //  KT2450Form.Hide;
   Main.Hide;
   IVchar.Show;
 //  Application.ShowMainForm:=False;

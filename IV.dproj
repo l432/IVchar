@@ -57,6 +57,7 @@
     <DCCReference Include="Keithley2450.pas" />
     <DCCReference Include="Keithley2450Show.pas" />
     <DCCReference Include="Keitley2450Const.pas" />
+    <DCCReference Include="Keitley2450Device.pas" />
     <DCCReference Include="MCP3424u.pas" />
     <DCCReference Include="MCP9808u.pas" />
     <DCCReference Include="MDevice.pas" />
