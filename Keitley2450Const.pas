@@ -12,20 +12,20 @@ const
   Kt2450DefBuffer2='defbuffer2';
   MyBuffer='OlegData';
 
-  RootNoodKt_2450:array[0..19]of string=
+  RootNoodKt_2450:array[0..20]of string=
   ('*idn?','*rcl ','*rst','*sav',':acq',':outp',':disp',':syst','scr:run',
 //   0       1       2      3      4        5       6        7      8
   'rout',':sens',':sour',':curr', ':volt', ':res',':func',':azer:once','init',
 //  9       10     11        12      13      14      15         16       17
-  ':abor',':trac');
-//   18      19
+  ':abor',':trac',':coun');
+//   18      19      20
 
   SuffixKt_2450:array[0..7]of string=('on','off', 'rst',{'?','prot',}'def',
 //                                      0    1      2                  3
  'amp','volt','ohm','watt' );
 //   4     5    6      7
 
-  FirstNodeKt_2450:array[0..31]of string=
+  FirstNodeKt_2450:array[0..32]of string=
   (':scr',':user1:text',':user2:text','cle',':pos',':int:stat',':term',
 //     0       1             2         3      4        5         6
    ':rsen',':smod',':ocom',':prot',':trip',':vlim',':ilim',':unit',
@@ -34,8 +34,8 @@ const
 //   15         16            17        18     19      20       21
    ':del:auto',':list',':app',':swe',':nplc',':high:cap',':dig',':make',
 //      22        23      24     25     26        27       28      29
-   ':del',':poin');
-//   30     31
+   ':del',':poin',':fill:mode');
+//   30     31         32
 
 
    PartDelimiter=', ';
@@ -104,6 +104,10 @@ type
                                  вимірювань, для збереження якоїсь зовнішньої
                                  інформації}
                       kt_bs_fwrite);// два зовнішніх значення на запис
+TKt2450_BufferFillMode=(kt_fm_cont,kt_fm_once);
+{в першому випадку при досягнення кінці запис продовжується спочатку,
+в другому - виникає помилка}
+
 
 const
  Kt2450_TerminalsName:array [TKt2450_OutputTerminals]

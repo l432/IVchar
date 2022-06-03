@@ -476,7 +476,6 @@ begin
     fKt_2450.IsResistanceCompencateOn();
     fKt_2450.GetVoltageLimit();
     fKt_2450.GetCurrentLimit();
-//    fKt_2450.GetReadBacks();
     fKt_2450.IsReadBackOn();
     fKt_2450.GetSenses();
     fKt_2450.GetOutputOffStates;
@@ -490,6 +489,7 @@ begin
     fKt_2450.GetMeasureTime();
     fKt_2450.IsHighCapacitanceOn();
 //    fKt_2450.GetDisplayDigitsNumber();
+//    fKt_2450.GetCount();
     end;
 
   ObjectToSetting();
@@ -616,8 +616,8 @@ begin
    end;
 
   fSettingsShow[kt_voltprot].HookParameterClick:=VoltageProtectionOkClick;
-
   fSettingsShow[kt_mode].HookParameterClick:=ModeOkClick;
+
 end;
 
 procedure TKt_2450_Show.SettingsShowFree;

@@ -114,6 +114,8 @@ end;
    fDisplayDN:TKt2450_MeasureDisplayDN;
    fDataVector:TVector;
    fBuffer:TKt2450_Buffer;
+   fCount:integer;
+
    procedure OnOffFromBool(toOn:boolean);
    function StringToVoltageProtection(Str:string;var vp:TKt_2450_VoltageProtection):boolean;
    function StringToSourceType(Str:string):boolean;
@@ -129,6 +131,7 @@ end;
    function VoltageRangeToString(Range:TKt2450VoltageRange):string;
    function ValueToCurrentRange(Value:double):TKt2450CurrentRange;
    function CurrentRangeToString(Range:TKt2450CurrentRange):string;
+   procedure SetCountNumber(Value:integer);
   protected
    procedure PrepareString;override;
    procedure DeviceCreate(Nm:string);override;
@@ -163,6 +166,7 @@ end;
    property DisplayDN:TKt2450_MeasureDisplayDN read fDisplayDN;
    property MeasureTime:TKt2450_MeasureDouble read fMeasureTime;
    property Buffer:TKt2450_Buffer read fBuffer;
+   property Count:integer read fCount write SetCountNumber;
 
    Constructor Create(Telnet:TIdTelnet;IPAdressShow: TIPAdressShow;
                Nm:string='Keitley2450');
@@ -376,8 +380,16 @@ end;
    {змінює можливу кількість записів у буфері,
    при цьому він очищується}
    procedure BufferReSize(BufName:string;NewSize:integer);overload;
-   function GetBufferSize():integer;overload;
-   function GetBufferSize(BufName:string):integer;overload;
+   function BufferGetSize():integer;overload;
+   function BufferGetSize(BufName:string):integer;overload;
+   procedure BufferSetFillMode(FillMode:TKt2450_BufferFillMode);overload;
+   procedure BufferSetFillMode(BufName:string;FillMode:TKt2450_BufferFillMode);overload;
+   function BufferGetFillMode():boolean;overload;
+   function BufferGetFillMode(BufName:string):boolean;overload;
+
+   procedure SetCount(Cnt:integer);
+   {кількість повторних вимірювань, коли прилад просять поміряти}
+   function GetCount():boolean;
 
    Procedure GetParametersFromDevice;
 
@@ -492,6 +504,7 @@ begin
  fMeasureCurrentRange:=kt_crAuto;
  fMeasureVoltageLowRange:=kt_vr20mV;
  fMeasureCurrentLowRange:=kt_cr10nA;
+ fCount:=1;
 
  fDataVector:=TVector.Create;
 
@@ -520,14 +533,14 @@ begin
    Result:=Result and IsAzeroStateOn(i);
 end;
 
-function TKt_2450.GetBufferSize(BufName: string): integer;
+function TKt_2450.BufferGetSize(BufName: string): integer;
 begin
 // :TRAC:POIN? "<bufferName>"
  Buffer.SetName(BufName);
- Result:=GetBufferSize();
+ Result:=BufferGetSize();
 end;
 
-function TKt_2450.GetBufferSize: integer;
+function TKt_2450.BufferGetSize: integer;
 begin
 //  SetupOperation(19,31);
  QuireOperation(19,31,1,False);
@@ -537,6 +550,13 @@ begin
        Buffer.Count:=Result
      end       else
        Result:=-1;
+end;
+
+function TKt_2450.GetCount: boolean;
+begin
+ QuireOperation(20);
+ Result:=fDevice.isReceived;
+ if Result then Count:=round(fDevice.Value);
 end;
 
 function TKt_2450.GetCurrentLimit: boolean;
@@ -742,6 +762,7 @@ begin
  if not(GetMeasureTimes()) then Exit;
  if not(GetHighCapacitanceStates()) then Exit;
  if not(GetDisplayDNs()) then Exit;
+ if not(GetCount()) then Exit;
 end;
 
 function TKt_2450.IsReadBackOn(Source: TKt2450_Source): boolean;
@@ -1024,9 +1045,21 @@ begin
 //  fDevice.Request();
 //  fDevice.GetData;
 
-//showmessage(inttostr(GetBufferSize));
+if GetCount() then showmessage('Count='+inttostr(Count));
+
+//SetCount(-56);
+
+//if BufferGetFillMode() then
+//  showmessage('ura! '+TKt2450_BufferFillModeCommand[Buffer.FillMode]);
+//if BufferGetFillMode('TestBuffer') then
+//  showmessage('ura! '+TKt2450_BufferFillModeCommand[Buffer.FillMode]);
+
+//BufferSetFillMode(kt_fm_cont);
+//BufferSetFillMode('TestBuffer',kt_fm_once);
+
+//showmessage(inttostr(BufferGetSize));
 //showmessage(inttostr(Buffer.Count));
-//showmessage(inttostr(GetBufferSize('TestBuffer')));
+//showmessage(inttostr(BufferGetSize('TestBuffer')));
 
 //BufferReSize(100);
 //BufferReSize('TestBuffer',5);
@@ -1454,8 +1487,11 @@ begin
         30:fAdditionalString:=Buffer.Name;
 // SetupOperation(19,31);
 // QuireOperation(19,31,1,False);
-        31: if fLeafNode=1 then fDevice.JoinToStringToSend(Buffer.GetSize)
+        31: if fLeafNode=1 then fDevice.JoinToStringToSend(Buffer.Get)
                            else fAdditionalString:=Buffer.ReSize;
+//     SetupOperation(19,32); QuireOperation(19,32,1,False);
+        32:if fLeafNode=1 then fDevice.JoinToStringToSend(Buffer.Get)
+                           else fAdditionalString:=Buffer.FillModeChange;
        end;
 
       end;
@@ -1542,8 +1578,12 @@ begin
          case fFirstLevelNode of
   // QuireOperation(19,31,1,False);
           31: fDevice.Value:=StrToInt(Str);
+//          QuireOperation(19,32,1,False);
+          32:if Buffer.StringToFillMode(AnsiLowerCase(Str))
+            then fDevice.Value:=ord(TKt2450_BufferFillMode(Buffer.FillMode));
          end;
       end;
+    20:fDevice.Value:=StrToInt(Str);
  end;
 
 end;
@@ -1566,6 +1606,20 @@ end;
 procedure TKt_2450.SetAzeroState(toOn: boolean);
 begin
   SetAzeroState(fMeasureFunction,toOn);
+end;
+
+procedure TKt_2450.SetCount(Cnt: integer);
+begin
+// :COUN <n>
+ Count:=Cnt;
+ fAdditionalString:=IntToStr(Count);
+ SetupOperation(20);
+end;
+
+procedure TKt_2450.SetCountNumber(Value: integer);
+ const CountLimits:TLimitValues=(1,300000);
+begin
+ fCount:=NumberMap(Value,CountLimits);
 end;
 
 procedure TKt_2450.SetCurrentLimit(Value: double);
@@ -2129,11 +2183,38 @@ begin
  BufferDelete();
 end;
 
+function TKt_2450.BufferGetFillMode: boolean;
+begin
+  QuireOperation(19,32,1,False);
+  Result:=(fDevice.Value<>ErResult);
+end;
+
+function TKt_2450.BufferGetFillMode(BufName: string): boolean;
+begin
+// :TRAC:FILL:MODE? "<bufferName>"
+ Buffer.SetName(BufName);
+ Result:=BufferGetFillMode();
+end;
+
 procedure TKt_2450.BufferReSize(BufName: string; NewSize: integer);
 begin
 // :TRAC:POIN <newSize>, "<bufferName>"
  Buffer.SetName(BufName);
  BufferReSize(NewSize);
+end;
+
+procedure TKt_2450.BufferSetFillMode(BufName: string;
+  FillMode: TKt2450_BufferFillMode);
+begin
+// :TRACe:FILL:MODE ONCE|CONT, "<bufferName>"
+ Buffer.SetName(BufName);
+ BufferSetFillMode(FillMode);
+end;
+
+procedure TKt_2450.BufferSetFillMode(FillMode: TKt2450_BufferFillMode);
+begin
+ Buffer.FillMode:=FillMode;
+ SetupOperation(19,32);
 end;
 
 procedure TKt_2450.BufferReSize(NewSize: integer);

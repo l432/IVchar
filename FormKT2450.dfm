@@ -869,7 +869,7 @@ object KT2450Form: TKT2450Form
     Left = 622
     Top = 226
     Width = 108
-    Height = 122
+    Height = 210
     Caption = 'Settings'
     Font.Charset = RUSSIAN_CHARSET
     Font.Color = clMaroon
@@ -878,6 +878,20 @@ object KT2450Form: TKT2450Form
     Font.Style = [fsBold]
     ParentFont = False
     TabOrder = 8
+    object L_KT2450MCount: TLabel
+      Left = 5
+      Top = 120
+      Width = 64
+      Height = 33
+      Caption = 'Measure Count'
+      Font.Charset = RUSSIAN_CHARSET
+      Font.Color = clNavy
+      Font.Height = -13
+      Font.Name = 'Arial'
+      Font.Style = [fsBold]
+      ParentFont = False
+      WordWrap = True
+    end
     object PKt2450LoadSetup: TPanel
       Left = 11
       Top = 49
@@ -921,6 +935,21 @@ object KT2450Form: TKT2450Form
       Height = 25
       Caption = 'Get'
       TabOrder = 2
+    end
+    object ST_KT2450MCount: TStaticText
+      Left = 65
+      Top = 126
+      Width = 40
+      Height = 24
+      Caption = '210'
+      Font.Charset = RUSSIAN_CHARSET
+      Font.Color = clNavy
+      Font.Height = -17
+      Font.Name = 'Verdana'
+      Font.Style = [fsBold]
+      ParentFont = False
+      ShowAccelChar = False
+      TabOrder = 3
     end
   end
 end
