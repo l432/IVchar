@@ -65,7 +65,7 @@ type
  TKt_2450_Mode=(kt_md_sVmC,kt_md_sVmV,kt_md_sVmR,kt_md_sVmP,
                 kt_md_sImC,kt_md_sImV,kt_md_sImR,kt_md_sImP);
 
- TKt2450_Settings=(kt_voltprot,kt_mode);
+ TKt2450_Settings=(kt_voltprot,kt_mode,kt_meascount);
  TKt2450_SourceSettings=(kt_ss_outputoff,kt_ss_delay,kt_ss_value,
          kt_ss_limit,kt_ss_range);
 
