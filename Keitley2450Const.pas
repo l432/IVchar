@@ -25,7 +25,7 @@ const
  'amp','volt','ohm','watt' );
 //   4     5    6      7
 
-  FirstNodeKt_2450:array[0..32]of string=
+  FirstNodeKt_2450:array[0..35]of string=
   (':scr',':user1:text',':user2:text','cle',':pos',':int:stat',':term',
 //     0       1             2         3      4        5         6
    ':rsen',':smod',':ocom',':prot',':trip',':vlim',':ilim',':unit',
@@ -34,8 +34,8 @@ const
 //   15         16            17        18     19      20       21
    ':del:auto',':list',':app',':swe',':nplc',':high:cap',':dig',':make',
 //      22        23      24     25     26        27       28      29
-   ':del',':poin',':fill:mode');
-//   30     31         32
+   ':del',':poin',':fill:mode',':data',':cle',':act');
+//   30     31         32         33     34     35
 
 
    PartDelimiter=', ';
@@ -111,8 +111,8 @@ TKt2450_BufferFillMode=(kt_fm_cont,kt_fm_once);
 {що саме хочемо отримати від приладу}
 TKt2450_ReturnedData=(kt_rd_MS,{результат виміру та значення джерела}
                       kt_rd_MT,{результат виміру та його час}
-                      kt_rd_MST); {результат виміру, джерело, час}
-
+                      kt_rd_MST, {результат виміру, джерело, час}
+                      kt_rd_M);{результат виміру}
 
 const
  Kt2450_TerminalsName:array [TKt2450_OutputTerminals]
@@ -174,6 +174,9 @@ const
  Kt2450_SweepLabelNames:array[TKt2450_SweepSettings]of string=
           ('From, ','To, ', 'Delay, s', 'Step, ',
            'Times to run','Used range');
+
+Kt2450_PartInRespond:array[TKt2450_ReturnedData] of integer=
+               (2,2,3,1);
 
 
 

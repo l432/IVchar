@@ -7,10 +7,15 @@ uses
 
 
 const
- TKt2450_BufferStyleCommand:array [TKt2450_BufferStyle]
+ Kt2450_BufferStyleCommand:array [TKt2450_BufferStyle]
             of string=('comp', 'stan', 'full', 'writ','fullwrit');
- TKt2450_BufferFillModeCommand:array [TKt2450_BufferFillMode]
+ Kt2450_BufferFillModeCommand:array [TKt2450_BufferFillMode]
             of string=('cont', 'once');
+ Kt2450_DataRequestCommand:array[TKt2450_ReturnedData] of string=
+               ('read, sour',
+                'read, time',
+                'read, time, sour',
+                'read');
 
 type
 
@@ -21,30 +26,38 @@ TKt2450_Buffer=class(TNamedInterfacedObject)
   записів або 20,000,000 компактних}
   fStyle:TKt2450_BufferStyle;
   fFillMode:TKt2450_BufferFillMode;
+  fStartIndex:integer;
+  fEndIndex:integer;
   function GetCreateStr:string;
   function GetReSize:string;
   function GetGet:string;
   function GetFillMode:string;
-  procedure SetCount(Value:integer);
+  function GetLimitIndexies:string;
+  procedure SetCountMax(Value:integer);
+  procedure SetStartIndex(Value:integer);
+  procedure SetEndIndex(Value:integer);
  public
-  property Count:integer read fSize write SetCount;
+  property CountMax:integer read fSize write SetCountMax;
   property Style:TKt2450_BufferStyle read fStyle write fStyle;
   property FillMode:TKt2450_BufferFillMode read fFillMode write fFillMode;
   property CreateStr:string read GetCreateStr;
   property ReSize:string read GetReSize;
+  property LimitIndexies:string read GetLimitIndexies;
   property Get:string read GetGet;
   property FillModeChange:string read GetFillMode;
+  property StartIndex:integer read fStartIndex write SetStartIndex;
+  property EndIndex:integer read fEndIndex write SetEndIndex;
   constructor Create(Nm:string=MyBuffer);
   procedure SetName(Name:string);
   function StringToFillMode(Str:string):boolean;
   function DataDemand(DataType:TKt2450_ReturnedData):string;
-
+  function DataDemandArray(DataType:TKt2450_ReturnedData):string;
 end;
 
 implementation
 
 uses
-  SysUtils, SCPI;
+  SysUtils, SCPI, Math;
 
 { TKt2450_Buffer }
 
@@ -55,28 +68,32 @@ begin
  fSize:=10000;
  fStyle:=kt_bs_comp;
  fFillMode:=kt_fm_cont;
+ fStartIndex:=1;
+ fEndIndex:=1;
 end;
 
 function TKt2450_Buffer.DataDemand(DataType: TKt2450_ReturnedData): string;
 begin
- Result:=GetGet+PartDelimiter+'read'+PartDelimiter;
- case DataType of
-  kt_rd_MS:Result:=Result+'sour';
-  kt_rd_MT:Result:=Result+'time';
-  kt_rd_MST:Result:=Result+'sour'+PartDelimiter+'time';
- end;
+ Result:=GetGet+PartDelimiter+Kt2450_DataRequestCommand[DataType];
+end;
+
+function TKt2450_Buffer.DataDemandArray(DataType: TKt2450_ReturnedData): string;
+begin
+ Result:='? '+intToStr(fStartIndex)+PartDelimiter
+         +intToStr(fEndIndex)+PartDelimiter
+         +Name+PathDelim+Kt2450_DataRequestCommand[DataType];
 end;
 
 function TKt2450_Buffer.GetCreateStr: string;
 begin
  Result:=Name+PartDelimiter
         +inttostr(fSize)+PartDelimiter
-        +TKt2450_BufferStyleCommand[Style];
+        +Kt2450_BufferStyleCommand[Style];
 end;
 
 function TKt2450_Buffer.GetFillMode: string;
 begin
- Result:=TKt2450_BufferFillModeCommand[fFillMode]
+ Result:=Kt2450_BufferFillModeCommand[fFillMode]
          +PartDelimiter+Name;
 end;
 
@@ -85,14 +102,24 @@ begin
  Result:='? '+Name;
 end;
 
+function TKt2450_Buffer.GetLimitIndexies: string;
+begin
+ Result:=':star? '+Name+' ; end? '+Name;
+end;
+
 function TKt2450_Buffer.GetReSize: string;
 begin
  Result:=inttostr(fSize)+PartDelimiter+Name;
 end;
 
-procedure TKt2450_Buffer.SetCount(Value: integer);
+procedure TKt2450_Buffer.SetCountMax(Value: integer);
 begin
  fSize:=TSCPInew.NumberMap(Value,Kt_2450_BufferSizeLimits)
+end;
+
+procedure TKt2450_Buffer.SetEndIndex(Value: integer);
+begin
+ fEndIndex:=max(Value,fStartIndex)
 end;
 
 procedure TKt2450_Buffer.SetName(Name: string);
@@ -106,12 +133,17 @@ begin
  fName:='"'+temp+'"';
 end;
 
+procedure TKt2450_Buffer.SetStartIndex(Value: integer);
+begin
+ fStartIndex:=max(1,Value);
+end;
+
 function TKt2450_Buffer.StringToFillMode(Str: string): boolean;
   var i:TKt2450_BufferFillMode;
 begin
  Result:=False;
  for I := Low(TKt2450_BufferFillMode) to high(TKt2450_BufferFillMode) do
-   if pos(TKt2450_BufferFillModeCommand[i],Str)<>0 then
+   if pos(Kt2450_BufferFillModeCommand[i],Str)<>0 then
      begin
        fFillMode:=i;
        Result:=True;

@@ -128,8 +128,10 @@ end;
    function StringToTerminals(Str:string):boolean;
    function StringToOutPutState(Str:string):boolean;
    function StringToMeasureUnit(Str:string):boolean;
+   function StringToBufferIndexies(Str:string):boolean;
    procedure StringToArray(Str:string);
-   procedure StringToMesuredData(Str:string;LevelNode:byte);
+   procedure StringToMesuredData(Str:string;DataType:TKt2450_ReturnedData);
+   procedure StringToMesuredDataArray(Str:string;DataType:TKt2450_ReturnedData);
    function StringToMeasureTime(Str:string):double;
    function IsLimitExcided(FirstLevelNode,LeafNode:byte):boolean;
    {типова функція для запиту, чи ввімкнув прилад певні захисти}
@@ -386,12 +388,22 @@ end;
    procedure BufferCreate(Style:TKt2450_BufferStyle);overload;
    procedure BufferDelete();overload;
    procedure BufferDelete(Name:string);overload;
+   procedure BufferClear();overload;
+   procedure BufferClear(BufName:string);overload;
+
    procedure BufferReSize(NewSize:integer);overload;
    {змінює можливу кількість записів у буфері,
    при цьому він очищується}
    procedure BufferReSize(BufName:string;NewSize:integer);overload;
    function BufferGetSize():integer;overload;
    function BufferGetSize(BufName:string):integer;overload;
+   function BufferGetReadingNumber(BufName:string=Kt2450DefBuffer):integer;
+   {повертає існуючу кількість записів у буфері}
+   function BufferGetStartEndIndex(BufName:string=Kt2450DefBuffer):boolean;
+   {повертає початковий та кінцевий індекси існуючих
+   в буфері записів, якщо все добре вони знаходяться
+   в Buffer.StartIndex та Buffer.EndIndex}
+
    procedure BufferSetFillMode(FillMode:TKt2450_BufferFillMode);overload;
    procedure BufferSetFillMode(BufName:string;FillMode:TKt2450_BufferFillMode);overload;
    function BufferGetFillMode():boolean;overload;
@@ -407,7 +419,18 @@ end;
                             BufName:string=Kt2450DefBuffer);
    {як попередні, проте повертає більше даних
    (див. TKt2450_ReturnedData) щодо останнього виміру}
-
+   Procedure BufferDataArrayExtended(SIndex,EIndex:integer;
+                     DataType:TKt2450_ReturnedData=kt_rd_MS;
+                     BufName:string=Kt2450DefBuffer);
+   {зчитування з буферу BufName результатів, збережених за
+   індексами в діапазоні від SIndex до EIndex,
+   що саме повертається залежить від DataType,
+   результати вимірювань в DataVector.Y,
+   значення джерела в DataVector.Х,
+   якщо берем час вимірювання, то він в  DataTimeVector.X,
+   а результат виміру в  DataTimeVector.Y,
+   якщо DataType=kt_rd_M, то вимір і в  ataVector.Х}
+   {треба оцінити час передачі}
 
    procedure SetCount(Cnt:integer);
    {кількість повторних вимірювань, коли прилад просять поміряти}
@@ -443,7 +466,7 @@ var
 implementation
 
 uses
-  Dialogs, SysUtils, Math, FormKT2450, OlegFunction;
+  Dialogs, SysUtils, Math, FormKT2450, OlegFunction, StrUtils;
 
 { TKt_2450 }
 
@@ -467,6 +490,7 @@ end;
 
 procedure TKt_2450.BufferCreate;
 begin
+ fAdditionalString:=Buffer.CreateStr;
  SetupOperation(19,29);
 end;
 
@@ -582,9 +606,17 @@ begin
  Result:=BufferGetSize();
 end;
 
+function TKt_2450.BufferGetStartEndIndex(BufName: string): boolean;
+begin
+ Buffer.SetName(BufName);
+ QuireOperation(19,35,2,False);
+ Result:=(fDevice.Value=1);
+end;
+
 procedure TKt_2450.BufferLastDataExtended(DataType: TKt2450_ReturnedData;
   BufName: string);
 begin
+ // :FETC? "<bufferName>", <bufferElements>
  Buffer.SetName(BufName);
  QuireOperation(22,ord(DataType)+2,0,False);
 end;
@@ -607,7 +639,7 @@ begin
  if fDevice.isReceived then
      begin
        Result:=round(fDevice.Value);
-       Buffer.Count:=Result
+       Buffer.CountMax:=Result
      end       else
        Result:=-1;
 end;
@@ -1081,6 +1113,7 @@ end;
 procedure TKt_2450.MeasureExtended(DataType: TKt2450_ReturnedData;
   BufName: string);
 begin
+// :READ? "<bufferName>", <bufferElements>
  Buffer.SetName(BufName);
  QuireOperation(21,ord(DataType)+2,0,False);
 end;
@@ -1122,6 +1155,34 @@ begin
 //  (fDevice as TTelnetMeterDeviceSingle).SetStringToSend(':SOUR:VOLT:RANG:Auto?');
 //  fDevice.Request();
 //  fDevice.GetData;
+
+if BufferGetStartEndIndex()
+  then showmessage(inttostr(Buffer.StartIndex)+'  '+inttostr(Buffer.EndIndex))
+  else showmessage('ups :(');
+
+
+//showmessage(inttostr(BufferGetReadingNumber()));
+//showmessage(inttostr(BufferGetReadingNumber(MyBuffer)));
+
+//BufferDataArrayExtended(1,5,kt_rd_MT);
+//showmessage(fDataVector.XYtoString+#10#10+fDataTimeVector.XYtoString);
+//BufferClear(Kt2450DefBuffer);
+//BufferDataArrayExtended(1,5,kt_rd_MT);
+//showmessage(fDataVector.XYtoString+#10#10+fDataTimeVector.XYtoString);
+
+
+//BufferDataArrayExtended(1,5,kt_rd_M);
+//showmessage(fDataVector.XYtoString+#10#10+fDataTimeVector.XYtoString);
+//
+//BufferDataArrayExtended(1,5,kt_rd_MST);
+//showmessage(fDataVector.XYtoString+#10#10+fDataTimeVector.XYtoString);
+//
+//BufferDataArrayExtended(1,5,kt_rd_MT);
+//showmessage(fDataVector.XYtoString+#10#10+fDataTimeVector.XYtoString);
+//
+//BufferDataArrayExtended(1,5,kt_rd_MS);
+//showmessage(fDataVector.XYtoString+#10#10+fDataTimeVector.XYtoString);
+
 
 //BufferLastDataExtended(kt_rd_MST,MyBuffer);
 //showmessage(floattostr(fDevice.Value)
@@ -1595,8 +1656,8 @@ begin
        fDevice.JoinToStringToSend(FirstNodeKt_2450[fFirstLevelNode]);
        case fFirstLevelNode of
 //        SetupOperation(19,29);
-        29:fAdditionalString:=Buffer.CreateStr;
-        30:fAdditionalString:=Buffer.Name;
+        29:;//fAdditionalString:=Buffer.CreateStr;
+        30:;//fAdditionalString:=Buffer.Name;
 // SetupOperation(19,31);
 // QuireOperation(19,31,1,False);
         31: if fLeafNode=1 then fDevice.JoinToStringToSend(Buffer.Get)
@@ -1604,6 +1665,12 @@ begin
 //     SetupOperation(19,32); QuireOperation(19,32,1,False);
         32:if fLeafNode=1 then fDevice.JoinToStringToSend(Buffer.Get)
                            else fAdditionalString:=Buffer.FillModeChange;
+        33:fDevice.JoinToStringToSend(Buffer.DataDemandArray(TKt2450_ReturnedData(fLeafNode)));
+        34:;
+        35:case fLeafNode of
+            1:fDevice.JoinToStringToSend(Buffer.Get);
+            2:fDevice.JoinToStringToSend(Buffer.LimitIndexies)
+           end;
        end;
       end;
     21:case fFirstLevelNode of
@@ -1611,14 +1678,14 @@ begin
        0:;
        1:fDevice.JoinToStringToSend(Buffer.Get);
 //        QuireOperation(21,ord(DataType)+2,0,False);
-       2,3,4:fDevice.JoinToStringToSend(Buffer.DataDemand(TKt2450_ReturnedData(fFirstLevelNode-2)))
+       2..5:fDevice.JoinToStringToSend(Buffer.DataDemand(TKt2450_ReturnedData(fFirstLevelNode-2)))
        end;
     22:case fFirstLevelNode of
 //     QuireOperation(22);
        0:;
        1:fDevice.JoinToStringToSend(Buffer.Get);
 //        QuireOperation(22,ord(DataType)+2,0,False);
-       2,3,4:fDevice.JoinToStringToSend(Buffer.DataDemand(TKt2450_ReturnedData(fFirstLevelNode-2)))
+       2..5:fDevice.JoinToStringToSend(Buffer.DataDemand(TKt2450_ReturnedData(fFirstLevelNode-2)))
        end;
    end;
 
@@ -1706,18 +1773,23 @@ begin
 //          QuireOperation(19,32,1,False);
           32:if Buffer.StringToFillMode(AnsiLowerCase(Str))
             then fDevice.Value:=ord(TKt2450_BufferFillMode(Buffer.FillMode));
+          33:StringToMesuredDataArray(Str,TKt2450_ReturnedData(fLeafNode));
+          35:case fLeafNode of
+              0,1:fDevice.Value:=StrToInt(Str);
+              2:if StringToBufferIndexies(Str) then fDevice.Value:=1;
+             end;
          end;
       end;
     20:fDevice.Value:=StrToInt(Str);
     21:case fFirstLevelNode of
 //     QuireOperation(21);
        0,1:fDevice.Value:=SCPI_StringToValue(Str);
-       2,3,4:StringToMesuredData(Str,fFirstLevelNode);
+       2..5:StringToMesuredData(Str,TKt2450_ReturnedData(fFirstLevelNode-2));
        end;
     22:case fFirstLevelNode of
 //     QuireOperation(22);
        0,1:fDevice.Value:=SCPI_StringToValue(Str);
-       2,3,4:StringToMesuredData(Str,fFirstLevelNode);
+       2..5:StringToMesuredData(Str,TKt2450_ReturnedData(fFirstLevelNode-2));
        end;
  end;
 
@@ -2145,6 +2217,14 @@ begin
  fDataVector.DeleteErResult;
 end;
 
+function TKt_2450.StringToBufferIndexies(Str: string): boolean;
+begin
+ Str:=AnsiReplaceStr(Str,';',' ');
+ Buffer.StartIndex:=round(FloatDataFromRow(Str,1));
+ Buffer.EndIndex:=round(FloatDataFromRow(Str,2));
+ Result:=(Buffer.StartIndex<>ErResult)and(Buffer.EndIndex<>ErResult);
+end;
+
 function TKt_2450.StringToMeasureFunction(Str: string): boolean;
   var i:TKt2450_Measure;
 begin
@@ -2180,19 +2260,49 @@ begin
   end;
 end;
 
-procedure TKt_2450.StringToMesuredData(Str: string;LevelNode:byte);
+procedure TKt_2450.StringToMesuredData(Str: string;DataType:TKt2450_ReturnedData);
 begin
- case LevelNode of
-   2,3:if NumberOfSubstringInRow(Str)<>2 then Exit;
-   4:if NumberOfSubstringInRow(Str)<>3 then Exit;
- end;
+// if NumberOfSubstringInRow(Str)<>Kt2450_PartInRespond[DataType] then Exit;
+ Str:=DeleteSubstringAll(Str,',');
  fDevice.Value:=FloatDataFromRow(Str,1);
- if fDevice.Value=ErResult then Exit;
- case LevelNode of
-   2,4:fSourceMeasuredValue:=FloatDataFromRow(Str,2);
-   3:fTimeValue:=StringToMeasureTime(Str);
+ if (fDevice.Value=ErResult)or(DataType=kt_rd_M) then Exit;
+ case DataType of
+   kt_rd_MS,kt_rd_MST:fSourceMeasuredValue:=FloatDataFromRow(Str,2);
+   kt_rd_MT:fTimeValue:=StringToMeasureTime(Str);
  end;
- if LevelNode=4 then fTimeValue:=StringToMeasureTime(Str);
+ if DataType=kt_rd_MST then fTimeValue:=StringToMeasureTime(Str);
+end;
+
+procedure TKt_2450.StringToMesuredDataArray(Str: string;
+  DataType: TKt2450_ReturnedData);
+  var partStr:string;
+      PartNumbers,i:integer;
+      NumbersArray:TArrInteger;
+begin
+ fDataVector.Clear;
+ fDataTimeVector.Clear;
+ PartNumbers:=NumberOfSubstringInRow(Str);
+ SetLength(NumbersArray,Kt2450_PartInRespond[DataType]);
+ for I := 0 to High(NumbersArray) do
+  NumbersArray[i]:=i;
+
+ while PartNumbers>=Kt2450_PartInRespond[DataType] do
+  begin
+   partStr:=NewStringByNumbers(Str,NumbersArray);
+   StringToMesuredData(partStr,DataType);
+   case DataType of
+    kt_rd_MS:fDataVector.Add(fSourceMeasuredValue,fDevice.Value);
+    kt_rd_MT:fDataTimeVector.Add(fTimeValue,fDevice.Value);
+    kt_rd_MST:begin
+               fDataVector.Add(fSourceMeasuredValue,fDevice.Value);
+               fDataTimeVector.Add(fTimeValue,fDevice.Value);
+              end;
+    kt_rd_M:fDataVector.Add(fDevice.Value,fDevice.Value);
+   end;
+   PartNumbers:=PartNumbers-Kt2450_PartInRespond[DataType];
+   for I := 1 to Kt2450_PartInRespond[DataType] do
+    Str:=DeleteStringDataFromRow(Str,1);
+  end;
 end;
 
 function TKt_2450.StringToOutPutState(Str: string): boolean;
@@ -2308,7 +2418,7 @@ end;
 
 procedure TKt_2450.BufferCreate(Name: string; Size: integer);
 begin
- Buffer.Count:=Size;
+ Buffer.CountMax:=Size;
  BufferCreate(Name);
 end;
 
@@ -2320,6 +2430,20 @@ begin
  BufferCreate(Name,Size);
 end;
 
+procedure TKt_2450.BufferClear;
+begin
+  fAdditionalString:=Buffer.Name;
+  SetupOperation(19,34);
+end;
+
+procedure TKt_2450.BufferClear(BufName: string);
+begin
+//:TRAC:CLE "<bufferName>"
+ Buffer.SetName(BufName);
+ fAdditionalString:=Buffer.Name;
+ SetupOperation(19,34);
+end;
+
 procedure TKt_2450.BufferCreate(Style: TKt2450_BufferStyle);
 begin
  Buffer.Style:=Style;
@@ -2328,7 +2452,18 @@ end;
 
 procedure TKt_2450.BufferDelete;
 begin
+ fAdditionalString:=Buffer.Name;
  SetupOperation(19,30);
+end;
+
+procedure TKt_2450.BufferDataArrayExtended(SIndex, EIndex: integer;
+  DataType: TKt2450_ReturnedData; BufName: string);
+begin
+// :TRAC:DATA? <startIndex>, <endIndex>, "<bufferName>", <bufferElements>
+ Buffer.SetName(BufName);
+ Buffer.StartIndex:=SIndex;
+ Buffer.EndIndex:=EIndex;
+ QuireOperation(19,33,ord(DataType),False);
 end;
 
 procedure TKt_2450.BufferDelete(Name: string);
@@ -2349,6 +2484,21 @@ begin
 // :TRAC:FILL:MODE? "<bufferName>"
  Buffer.SetName(BufName);
  Result:=BufferGetFillMode();
+end;
+
+
+function TKt_2450.BufferGetReadingNumber(BufName: string): integer;
+begin
+// :TRAC:ACT? "<bufferName>"
+ if BufName=Kt2450DefBuffer
+      then QuireOperation(19,35)
+      else begin
+           Buffer.SetName(BufName);
+           QuireOperation(19,35,1,False);
+           end;
+ if fDevice.isReceived
+    then Result:=round(fDevice.Value)
+    else Result:=-1;
 end;
 
 procedure TKt_2450.BufferReSize(BufName: string; NewSize: integer);
@@ -2374,7 +2524,7 @@ end;
 
 procedure TKt_2450.BufferReSize(NewSize: integer);
 begin
- Buffer.Count:=NewSize;
+ Buffer.CountMax:=NewSize;
  SetupOperation(19,31);
 end;
 
