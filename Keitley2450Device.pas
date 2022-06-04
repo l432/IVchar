@@ -37,6 +37,8 @@ TKt2450_Buffer=class(TNamedInterfacedObject)
   constructor Create(Nm:string=MyBuffer);
   procedure SetName(Name:string);
   function StringToFillMode(Str:string):boolean;
+  function DataDemand(DataType:TKt2450_ReturnedData):string;
+
 end;
 
 implementation
@@ -53,6 +55,16 @@ begin
  fSize:=10000;
  fStyle:=kt_bs_comp;
  fFillMode:=kt_fm_cont;
+end;
+
+function TKt2450_Buffer.DataDemand(DataType: TKt2450_ReturnedData): string;
+begin
+ Result:=GetGet+PartDelimiter+'read'+PartDelimiter;
+ case DataType of
+  kt_rd_MS:Result:=Result+'sour';
+  kt_rd_MT:Result:=Result+'time';
+  kt_rd_MST:Result:=Result+'sour'+PartDelimiter+'time';
+ end;
 end;
 
 function TKt2450_Buffer.GetCreateStr: string;

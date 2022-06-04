@@ -12,13 +12,13 @@ const
   Kt2450DefBuffer2='defbuffer2';
   MyBuffer='OlegData';
 
-  RootNoodKt_2450:array[0..20]of string=
+  RootNoodKt_2450:array[0..22]of string=
   ('*idn?','*rcl ','*rst','*sav',':acq',':outp',':disp',':syst','scr:run',
 //   0       1       2      3      4        5       6        7      8
   'rout',':sens',':sour',':curr', ':volt', ':res',':func',':azer:once','init',
 //  9       10     11        12      13      14      15         16       17
-  ':abor',':trac',':coun');
-//   18      19      20
+  ':abor',':trac',':coun',':read',':fetc');
+//   18      19      20      21      22
 
   SuffixKt_2450:array[0..7]of string=('on','off', 'rst',{'?','prot',}'def',
 //                                      0    1      2                  3
@@ -107,6 +107,11 @@ type
 TKt2450_BufferFillMode=(kt_fm_cont,kt_fm_once);
 {в першому випадку при дос€гненн€ к≥нц≥ запис продовжуЇтьс€ спочатку,
 в другому - виникаЇ помилка}
+
+{що саме хочемо отримати в≥д приладу}
+TKt2450_ReturnedData=(kt_rd_MS,{результат вим≥ру та значенн€ джерела}
+                      kt_rd_MT,{результат вим≥ру та його час}
+                      kt_rd_MST); {результат вим≥ру, джерело, час}
 
 
 const

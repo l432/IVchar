@@ -113,9 +113,14 @@ end;
    fMeasureTime:TKt2450_MeasureDouble;
    fDisplayDN:TKt2450_MeasureDisplayDN;
    fDataVector:TVector;
+   {X - значення джерела; Y - результат виміру}
+   fDataTimeVector:TVector;
+   {X - час виміру (мілісекунди з початку доби); Y - результат виміру}
    fBuffer:TKt2450_Buffer;
    fCount:integer;
-
+   fSourceMeasuredValue:double;
+   fTimeValue:double;
+   {час виміру, в мілісекундах з початку доби}
    procedure OnOffFromBool(toOn:boolean);
    function StringToVoltageProtection(Str:string;var vp:TKt_2450_VoltageProtection):boolean;
    function StringToSourceType(Str:string):boolean;
@@ -124,6 +129,8 @@ end;
    function StringToOutPutState(Str:string):boolean;
    function StringToMeasureUnit(Str:string):boolean;
    procedure StringToArray(Str:string);
+   procedure StringToMesuredData(Str:string;LevelNode:byte);
+   function StringToMeasureTime(Str:string):double;
    function IsLimitExcided(FirstLevelNode,LeafNode:byte):boolean;
    {типова функція для запиту, чи ввімкнув прилад певні захисти}
    function ModeDetermination:TKt_2450_Mode;
@@ -139,6 +146,7 @@ end;
   public
    SweepParameters:array[TKt2450_Source]of TKt_2450_SweepParameters;
    property DataVector:TVector read fDataVector;
+   property DataTimeVector:TVector read fDataTimeVector;
    property SourceType:TKt2450_Source read fSourceType;
    property MeasureFunction:TKt2450_Measure read fMeasureFunction;
    property VoltageProtection:TKt_2450_VoltageProtection read fVoltageProtection;
@@ -167,6 +175,8 @@ end;
    property MeasureTime:TKt2450_MeasureDouble read fMeasureTime;
    property Buffer:TKt2450_Buffer read fBuffer;
    property Count:integer read fCount write SetCountNumber;
+   property SourceMeasuredValue:double read fSourceMeasuredValue;
+   property TimeValue:double read fTimeValue;
 
    Constructor Create(Telnet:TIdTelnet;IPAdressShow: TIPAdressShow;
                Nm:string='Keitley2450');
@@ -386,12 +396,41 @@ end;
    procedure BufferSetFillMode(BufName:string;FillMode:TKt2450_BufferFillMode);overload;
    function BufferGetFillMode():boolean;overload;
    function BufferGetFillMode(BufName:string):boolean;overload;
+   Procedure BufferLastDataSimple();overload;
+   {без вимірювання видобувається результат останнього
+   вимірювання, що зберігається у defbuffer1,
+   розміщується в fDevice.Value}
+   Procedure BufferLastDataSimple(BufName:string);overload;
+   {отримання останнього збереженого результату
+   вимірювань з буфера BufName}
+   Procedure BufferLastDataExtended(DataType:TKt2450_ReturnedData=kt_rd_MS;
+                            BufName:string=Kt2450DefBuffer);
+   {як попередні, проте повертає більше даних
+   (див. TKt2450_ReturnedData) щодо останнього виміру}
+
 
    procedure SetCount(Cnt:integer);
    {кількість повторних вимірювань, коли прилад просять поміряти}
    function GetCount():boolean;
 
    Procedure GetParametersFromDevice;
+
+   Procedure MeasureSimple();overload;
+   {проводиться вимірювання стільки разів, скільки
+   вказано в Count, всі результати розміщуються
+   в defbuffer1, повертається результат останнього виміру;
+   вимірюється та функція, яка зараз встановлена на приладі,
+   можна зробити, щоб вимірювалося щось інше, але я не
+   схотів гратися з такою не дуже реальною на перший погляд
+   задачею}
+   Procedure MeasureSimple(BufName:string);overload;
+   {результати записуються у буфер BufName
+   і з нього ж зчитується останній результат}
+   Procedure MeasureExtended(DataType:TKt2450_ReturnedData=kt_rd_MS;
+                           BufName:string=Kt2450DefBuffer);
+   {як попередні, проте повертає більше даних
+   (див. TKt2450_ReturnedData) щодо останнього виміру}
+
 
    Procedure Init;
    Procedure Abort;
@@ -404,7 +443,7 @@ var
 implementation
 
 uses
-  Dialogs, SysUtils, Math, FormKT2450;
+  Dialogs, SysUtils, Math, FormKT2450, OlegFunction;
 
 { TKt_2450 }
 
@@ -507,7 +546,9 @@ begin
  fCount:=1;
 
  fDataVector:=TVector.Create;
-
+ fDataTimeVector:=TVector.Create;
+ fSourceMeasuredValue:=ErResult;
+ fTimeValue:=ErResult;
 end;
 
 destructor TKt_2450.Destroy;
@@ -516,6 +557,7 @@ begin
   FreeAndNil(fBuffer);
   for I := Low(TKt2450_Source) to High(TKt2450_Source) do
    FreeAndNil(SweepParameters[i]);
+  FreeAndNil(fDataTimeVector);
   FreeAndNil(fDataVector);
   inherited;
 end;
@@ -538,6 +580,24 @@ begin
 // :TRAC:POIN? "<bufferName>"
  Buffer.SetName(BufName);
  Result:=BufferGetSize();
+end;
+
+procedure TKt_2450.BufferLastDataExtended(DataType: TKt2450_ReturnedData;
+  BufName: string);
+begin
+ Buffer.SetName(BufName);
+ QuireOperation(22,ord(DataType)+2,0,False);
+end;
+
+procedure TKt_2450.BufferLastDataSimple;
+begin
+  QuireOperation(22);
+end;
+
+procedure TKt_2450.BufferLastDataSimple(BufName: string);
+begin
+ Buffer.SetName(BufName);
+ QuireOperation(22,1,0,False);
 end;
 
 function TKt_2450.BufferGetSize: integer;
@@ -1013,6 +1073,24 @@ begin
   SetupOperation(7,4);
 end;
 
+procedure TKt_2450.MeasureSimple;
+begin
+ QuireOperation(21);
+end;
+
+procedure TKt_2450.MeasureExtended(DataType: TKt2450_ReturnedData;
+  BufName: string);
+begin
+ Buffer.SetName(BufName);
+ QuireOperation(21,ord(DataType)+2,0,False);
+end;
+
+procedure TKt_2450.MeasureSimple(BufName: string);
+begin
+ Buffer.SetName(BufName);
+ QuireOperation(21,1,0,False);
+end;
+
 function TKt_2450.ModeDetermination: TKt_2450_Mode;
 begin
  Result:=kt_md_sVmC;
@@ -1045,7 +1123,41 @@ begin
 //  fDevice.Request();
 //  fDevice.GetData;
 
-if GetCount() then showmessage('Count='+inttostr(Count));
+//BufferLastDataExtended(kt_rd_MST,MyBuffer);
+//showmessage(floattostr(fDevice.Value)
+//              +'  '+floattostr(fSourceMeasuredValue)
+//              +'  '+floattostr(fTimeValue));
+//
+//BufferLastDataExtended(kt_rd_MT);
+//showmessage(floattostr(fDevice.Value)+'  '+floattostr(fTimeValue));
+//
+//BufferLastDataExtended();
+//showmessage(floattostr(fDevice.Value)+'  '+floattostr(fSourceMeasuredValue));
+
+// BufferLastDataSimple(MyBuffer);
+// showmessage(floattostr(fDevice.Value));
+
+// BufferLastDataSimple();
+// showmessage(floattostr(fDevice.Value));
+
+//MeasureExtended(kt_rd_MST,MyBuffer);
+//showmessage(floattostr(fDevice.Value)
+//              +'  '+floattostr(fSourceMeasuredValue)
+//              +'  '+floattostr(fTimeValue));
+//
+//MeasureExtended(kt_rd_MT);
+//showmessage(floattostr(fDevice.Value)+'  '+floattostr(fTimeValue));
+//
+//MeasureExtended();
+//showmessage(floattostr(fDevice.Value)+'  '+floattostr(fSourceMeasuredValue));
+
+// MeasureSimple(MyBuffer);
+// showmessage(floattostr(fDevice.Value));
+
+// MeasureSimple();
+// showmessage(floattostr(fDevice.Value));
+
+//if GetCount() then showmessage('Count='+inttostr(Count));
 
 //SetCount(-56);
 
@@ -1493,8 +1605,21 @@ begin
         32:if fLeafNode=1 then fDevice.JoinToStringToSend(Buffer.Get)
                            else fAdditionalString:=Buffer.FillModeChange;
        end;
-
       end;
+    21:case fFirstLevelNode of
+//     QuireOperation(21);
+       0:;
+       1:fDevice.JoinToStringToSend(Buffer.Get);
+//        QuireOperation(21,ord(DataType)+2,0,False);
+       2,3,4:fDevice.JoinToStringToSend(Buffer.DataDemand(TKt2450_ReturnedData(fFirstLevelNode-2)))
+       end;
+    22:case fFirstLevelNode of
+//     QuireOperation(22);
+       0:;
+       1:fDevice.JoinToStringToSend(Buffer.Get);
+//        QuireOperation(22,ord(DataType)+2,0,False);
+       2,3,4:fDevice.JoinToStringToSend(Buffer.DataDemand(TKt2450_ReturnedData(fFirstLevelNode-2)))
+       end;
    end;
 
  if fIsSuffix then JoinAddString;
@@ -1584,6 +1709,16 @@ begin
          end;
       end;
     20:fDevice.Value:=StrToInt(Str);
+    21:case fFirstLevelNode of
+//     QuireOperation(21);
+       0,1:fDevice.Value:=SCPI_StringToValue(Str);
+       2,3,4:StringToMesuredData(Str,fFirstLevelNode);
+       end;
+    22:case fFirstLevelNode of
+//     QuireOperation(22);
+       0,1:fDevice.Value:=SCPI_StringToValue(Str);
+       2,3,4:StringToMesuredData(Str,fFirstLevelNode);
+       end;
  end;
 
 end;
@@ -2023,6 +2158,11 @@ begin
      end;
 end;
 
+function TKt_2450.StringToMeasureTime(Str: string): double;
+begin
+ Result:=ErResult;
+end;
+
 function TKt_2450.StringToMeasureUnit(Str: string): boolean;
   var i:TKt_2450_MeasureUnit;
 begin
@@ -2038,6 +2178,21 @@ begin
        Break;
      end;
   end;
+end;
+
+procedure TKt_2450.StringToMesuredData(Str: string;LevelNode:byte);
+begin
+ case LevelNode of
+   2,3:if NumberOfSubstringInRow(Str)<>2 then Exit;
+   4:if NumberOfSubstringInRow(Str)<>3 then Exit;
+ end;
+ fDevice.Value:=FloatDataFromRow(Str,1);
+ if fDevice.Value=ErResult then Exit;
+ case LevelNode of
+   2,4:fSourceMeasuredValue:=FloatDataFromRow(Str,2);
+   3:fTimeValue:=StringToMeasureTime(Str);
+ end;
+ if LevelNode=4 then fTimeValue:=StringToMeasureTime(Str);
 end;
 
 function TKt_2450.StringToOutPutState(Str: string): boolean;
