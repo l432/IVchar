@@ -12,20 +12,20 @@ const
   Kt2450DefBuffer2='defbuffer2';
   MyBuffer='OlegData';
 
-  RootNoodKt_2450:array[0..22]of string=
+  RootNoodKt_2450:array[0..23]of string=
   ('*idn?','*rcl ','*rst','*sav',':acq',':outp',':disp',':syst','scr:run',
 //   0       1       2      3      4        5       6        7      8
   'rout',':sens',':sour',':curr', ':volt', ':res',':func',':azer:once','init',
 //  9       10     11        12      13      14      15         16       17
-  ':abor',':trac',':coun',':read',':fetc');
-//   18      19      20      21      22
+  ':abor',':trac',':coun',':read',':fetc',':dig');
+//   18      19      20      21      22      23
 
   SuffixKt_2450:array[0..7]of string=('on','off', 'rst',{'?','prot',}'def',
 //                                      0    1      2                  3
  'amp','volt','ohm','watt' );
 //   4     5    6      7
 
-  FirstNodeKt_2450:array[0..35]of string=
+  FirstNodeKt_2450:array[0..36]of string=
   (':scr',':user1:text',':user2:text','cle',':pos',':int:stat',':term',
 //     0       1             2         3      4        5         6
    ':rsen',':smod',':ocom',':prot',':trip',':vlim',':ilim',':unit',
@@ -34,8 +34,8 @@ const
 //   15         16            17        18     19      20       21
    ':del:auto',':list',':app',':swe',':nplc',':high:cap',':dig',':make',
 //      22        23      24     25     26        27       28      29
-   ':del',':poin',':fill:mode',':data',':cle',':act');
-//   30     31         32         33     34     35
+   ':del',':poin',':fill:mode',':data',':cle',':act',':line#:mode');
+//   30     31         32         33     34     35        36
 
 
    PartDelimiter=', ';
@@ -114,6 +114,27 @@ TKt2450_ReturnedData=(kt_rd_MS,{результат виміру та значення джерела}
                       kt_rd_MST, {результат виміру, джерело, час}
                       kt_rd_M);{результат виміру}
 
+TKt240_DigLines=1..6;
+TKt240_DigLineType=(kt_dt_dig, {як звичайні цифрові лінії}
+                    kt_dt_trig, {тригерний режим, коли "1"-"0" задаються фронтом сигналу,
+                                напрям імпульсів можна налаштовувати}
+                    kt_dt_sync);{ще якийсь тригерний режим, де можна підключати декілька
+                                Keitley-приладів... див. деталі в описі}
+TKt240_DigLineTypes=array[TKt240_DigLines] of  TKt240_DigLineType;
+
+TKt240_DigLineDirection=(kt_dd_in,  {працює на вхід, що означаї "1"-"0"
+                                     суттєво залежить від типу лінії}
+                         kt_dd_out, {працює на вихід, що означаї "1"-"0"
+                                     суттєво залежить від типу лінії}
+                         kt_dd_opdr, {режим з відкритим затвором,
+                                       може бути як вхідним, так і вихідним,
+                                      наскільки я зрозумів}
+                         kt_dd_mas,
+                         kt_dd_ac);   {два останні варіанти можуть бути
+                                      використані лише для kt_dt_sync}
+
+TKt240_DigLineDirections=array[TKt240_DigLines] of  TKt240_DigLineDirection;
+
 const
  Kt2450_TerminalsName:array [TKt2450_OutputTerminals]
             of string=('fron', 'rear');
@@ -178,7 +199,11 @@ const
 Kt2450_PartInRespond:array[TKt2450_ReturnedData] of integer=
                (2,2,3,1);
 
+Kt2450_DigLineTypeCommand:array[TKt240_DigLineType]of string=
+       ('dig','trig','sync');
 
+Kt2450_DigLineDirectionCommand:array[TKt240_DigLineDirection]of string=
+       ('in','out','open','mast','acc');
 
 //  OperationKod:array [TKt2450_Settings] of array[0..2] of byte=
 ////                  RootNood  FirstNode  LeafNode

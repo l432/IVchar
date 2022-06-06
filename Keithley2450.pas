@@ -121,6 +121,9 @@ end;
    fSourceMeasuredValue:double;
    fTimeValue:double;
    {час виміру, в мілісекундах з початку доби}
+   fDigitLineType:TKt240_DigLineTypes;
+   fDigitLineDirec:TKt240_DigLineDirections;
+   fDLActive:TKt240_DigLines;
    procedure OnOffFromBool(toOn:boolean);
    function StringToVoltageProtection(Str:string;var vp:TKt_2450_VoltageProtection):boolean;
    function StringToSourceType(Str:string):boolean;
@@ -129,6 +132,7 @@ end;
    function StringToOutPutState(Str:string):boolean;
    function StringToMeasureUnit(Str:string):boolean;
    function StringToBufferIndexies(Str:string):boolean;
+   procedure StringToDigLineStatus(Str:string);
    procedure StringToArray(Str:string);
    procedure StringToMesuredData(Str:string;DataType:TKt2450_ReturnedData);
    procedure StringToMesuredDataArray(Str:string;DataType:TKt2450_ReturnedData);
@@ -179,7 +183,8 @@ end;
    property Count:integer read fCount write SetCountNumber;
    property SourceMeasuredValue:double read fSourceMeasuredValue;
    property TimeValue:double read fTimeValue;
-
+   property DigitLineType:TKt240_DigLineTypes read fDigitLineType;
+   property DigitLineTypeDirec:TKt240_DigLineDirections read fDigitLineDirec;
    Constructor Create(Telnet:TIdTelnet;IPAdressShow: TIPAdressShow;
                Nm:string='Keitley2450');
    destructor Destroy; override;
@@ -218,7 +223,8 @@ end;
 
    procedure SetOutputOffState(Source:TKt2450_Source;
                            OutputOffState:TKt_2450_OutputOffState);
-   {перемикання типу входу: нормальний, високоімпедансний тощо}
+   {перемикання типу виходу джерела,
+   коли воно не ввімкнене входу: нормальний, високоімпедансний тощо}
    function GetOutputOffState(Source:TKt2450_Source):boolean;
    function GetOutputOffStates():boolean;
 
@@ -436,6 +442,11 @@ end;
    {кількість повторних вимірювань, коли прилад просять поміряти}
    function GetCount():boolean;
 
+   procedure SetDigLineMode(LineNumber:TKt240_DigLines;
+                            LineType:TKt240_DigLineType;
+                            Direction:TKt240_DigLineDirection);
+   function GetDigLineMode(LineNumber:TKt240_DigLines):boolean;
+
    Procedure GetParametersFromDevice;
 
    Procedure MeasureSimple();overload;
@@ -573,6 +584,13 @@ begin
  fDataTimeVector:=TVector.Create;
  fSourceMeasuredValue:=ErResult;
  fTimeValue:=ErResult;
+
+ for I := Low(TKt240_DigLines) to High(TKt240_DigLines) do
+   begin
+   fDigitLineType[i]:=kt_dt_dig;
+   fDigitLineDirec[i]:=kt_dd_in;
+   end;
+ fDLActive:=1;
 end;
 
 destructor TKt_2450.Destroy;
@@ -670,6 +688,13 @@ end;
 function TKt_2450.GetDisplayDNs: boolean;
 begin
  Result:=GetDisplayDigitsNumber(kt_mCurrent) and GetDisplayDigitsNumber(kt_mVoltage);
+end;
+
+function TKt_2450.GetDigLineMode(LineNumber: TKt240_DigLines): boolean;
+begin
+ fDLActive:=LineNumber;
+ QuireOperation(23,36);
+ Result:=(fDevice.Value=2);
 end;
 
 function TKt_2450.GetDisplayDigitsNumber: boolean;
@@ -1156,9 +1181,16 @@ begin
 //  fDevice.Request();
 //  fDevice.GetData;
 
-if BufferGetStartEndIndex()
-  then showmessage(inttostr(Buffer.StartIndex)+'  '+inttostr(Buffer.EndIndex))
-  else showmessage('ups :(');
+if GetDigLineMode(3) then
+  showmessage(Kt2450_DigLineTypeCommand[fDigitLineType[fDLActive]]+'  '
+              +Kt2450_DigLineDirectionCommand[fDigitLineDirec[fDLActive]])
+
+//SetDigLineMode(5,kt_dt_sync,kt_dd_in);
+//SetDigLineMode(1,kt_dt_trig,kt_dd_out);
+
+//if BufferGetStartEndIndex()
+//  then showmessage(inttostr(Buffer.StartIndex)+'  '+inttostr(Buffer.EndIndex))
+//  else showmessage('ups :(');
 
 
 //showmessage(inttostr(BufferGetReadingNumber()));
@@ -1687,6 +1719,11 @@ begin
 //        QuireOperation(22,ord(DataType)+2,0,False);
        2..5:fDevice.JoinToStringToSend(Buffer.DataDemand(TKt2450_ReturnedData(fFirstLevelNode-2)))
        end;
+    23:case fFirstLevelNode of
+//        SetupOperation(23,36);
+        36:fDevice.JoinToStringToSend(AnsiReplaceStr(FirstNodeKt_2450[fFirstLevelNode],'#',inttostr(fDLActive)));
+       end;
+
    end;
 
  if fIsSuffix then JoinAddString;
@@ -1791,6 +1828,9 @@ begin
        0,1:fDevice.Value:=SCPI_StringToValue(Str);
        2..5:StringToMesuredData(Str,TKt2450_ReturnedData(fFirstLevelNode-2));
        end;
+    23:case fFirstLevelNode of
+        36:StringToDigLineStatus(AnsiLowerCase(Str));
+       end;
  end;
 
 end;
@@ -1852,6 +1892,23 @@ begin
  fAdditionalString:=inttostr(Number);
  SetupOperation(6,ord(Measure)+12,28);
  fDisplayDN[Measure]:=Number;
+end;
+
+procedure TKt_2450.SetDigLineMode(LineNumber: TKt240_DigLines;
+  LineType: TKt240_DigLineType; Direction: TKt240_DigLineDirection);
+begin
+//:DIG:LINE<n>:MODE <lineType>, <lineDirection>
+ if ((LineType=kt_dt_sync)and(Direction in [kt_dd_in..kt_dd_opdr]))
+    or((LineType<>kt_dt_sync)and(Direction in [kt_dd_mas..kt_dd_ac])) then Exit;
+
+
+ fDLActive:=LineNumber;
+ fDigitLineType[fDLActive]:=LineType;
+ fDigitLineDirec[fDLActive]:=Direction;
+ fAdditionalString:=Kt2450_DigLineTypeCommand[LineType]+PartDelimiter
+                    +Kt2450_DigLineDirectionCommand[Direction];
+
+ SetupOperation(23,36);
 end;
 
 procedure TKt_2450.SetDisplayDigitsNumber(Number: Kt2450DisplayDigitsNumber);
@@ -2223,6 +2280,29 @@ begin
  Buffer.StartIndex:=round(FloatDataFromRow(Str,1));
  Buffer.EndIndex:=round(FloatDataFromRow(Str,2));
  Result:=(Buffer.StartIndex<>ErResult)and(Buffer.EndIndex<>ErResult);
+end;
+
+procedure TKt_2450.StringToDigLineStatus(Str: string);
+ var i:integer;
+     tempStr:string;
+begin
+ Str:=AnsiReplaceStr(Str,',',' ');
+ TempStr:=StringDataFromRow(Str,1);
+ for I := ord(Low(TKt240_DigLineType)) to ord(High(TKt240_DigLineType)) do
+   if tempStr=Kt2450_DigLineTypeCommand[TKt240_DigLineType(i)] then
+     begin
+       fDigitLineType[fDLActive]:=TKt240_DigLineType(i);
+       fDevice.Value:=1;
+       Break;
+     end;
+ TempStr:=StringDataFromRow(Str,2);
+ for I := ord(Low(TKt240_DigLineDirection)) to ord(High(TKt240_DigLineDirection)) do
+   if tempStr=Kt2450_DigLineDirectionCommand[TKt240_DigLineDirection(i)] then
+     begin
+       fDigitLineDirec[fDLActive]:=TKt240_DigLineDirection(i);
+       fDevice.Value:=fDevice.Value+1;
+       Break;
+     end;
 end;
 
 function TKt_2450.StringToMeasureFunction(Str: string): boolean;
