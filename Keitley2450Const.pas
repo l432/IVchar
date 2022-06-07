@@ -25,7 +25,7 @@ const
  'amp','volt','ohm','watt' );
 //   4     5    6      7
 
-  FirstNodeKt_2450:array[0..36]of string=
+  FirstNodeKt_2450:array[0..37]of string=
   (':scr',':user1:text',':user2:text','cle',':pos',':int:stat',':term',
 //     0       1             2         3      4        5         6
    ':rsen',':smod',':ocom',':prot',':trip',':vlim',':ilim',':unit',
@@ -34,9 +34,10 @@ const
 //   15         16            17        18     19      20       21
    ':del:auto',':list',':app',':swe',':nplc',':high:cap',':dig',':make',
 //      22        23      24     25     26        27       28      29
-   ':del',':poin',':fill:mode',':data',':cle',':act',':line#:mode');
+   ':del',':poin',':fill:mode',':data',':cle',':act',':line#:mode',
 //   30     31         32         33     34     35        36
-
+   ':line#:stat');
+//      37
 
    PartDelimiter=', ';
 
@@ -197,7 +198,7 @@ const
            'Times to run','Used range');
 
 Kt2450_PartInRespond:array[TKt2450_ReturnedData] of integer=
-               (2,2,3,1);
+               (2,3,4,1);
 
 Kt2450_DigLineTypeCommand:array[TKt240_DigLineType]of string=
        ('dig','trig','sync');

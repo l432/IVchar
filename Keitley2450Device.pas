@@ -13,8 +13,9 @@ const
             of string=('cont', 'once');
  Kt2450_DataRequestCommand:array[TKt2450_ReturnedData] of string=
                ('read, sour',
-                'read, time',
-                'read, time, sour',
+//                'read, time',
+                'read, time, frac',
+                'read, sour, time, frac',
                 'read');
 
 type
@@ -81,7 +82,7 @@ function TKt2450_Buffer.DataDemandArray(DataType: TKt2450_ReturnedData): string;
 begin
  Result:='? '+intToStr(fStartIndex)+PartDelimiter
          +intToStr(fEndIndex)+PartDelimiter
-         +Name+PathDelim+Kt2450_DataRequestCommand[DataType];
+         +Name+PartDelimiter+Kt2450_DataRequestCommand[DataType];
 end;
 
 function TKt2450_Buffer.GetCreateStr: string;

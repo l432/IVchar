@@ -446,6 +446,15 @@ end;
                             LineType:TKt240_DigLineType;
                             Direction:TKt240_DigLineDirection);
    function GetDigLineMode(LineNumber:TKt240_DigLines):boolean;
+   procedure SetDidLinOut(LineNumber:TKt240_DigLines;HighLevel:boolean=True);
+   {якщо лінія LineNumber має kt_dt_dig та kt_dd_out, то
+   для неї можна встановили високий чи низький рівні}
+   function GetDidLinOut(LineNumber:TKt240_DigLines):integer;
+   {якщо лінія LineNumber має kt_dt_dig та kt_dd_in, то
+   для неї можна зчитати значення рівня;
+   Resul=1 якщо високий
+         0 якщо низький
+        -1 якщо не отримали відповідь}
 
    Procedure GetParametersFromDevice;
 
@@ -688,6 +697,16 @@ end;
 function TKt_2450.GetDisplayDNs: boolean;
 begin
  Result:=GetDisplayDigitsNumber(kt_mCurrent) and GetDisplayDigitsNumber(kt_mVoltage);
+end;
+
+function TKt_2450.GetDidLinOut(LineNumber: TKt240_DigLines): integer;
+begin
+ Result:=-1;
+ if (fDigitLineType[LineNumber]<>kt_dt_dig)
+    or(fDigitLineDirec[LineNumber]<>kt_dd_in) then Exit;
+ fDLActive:=LineNumber;
+ QuireOperation(23,37);
+ if fDevice.isReceived then Result:=round(fDevice.Value);
 end;
 
 function TKt_2450.GetDigLineMode(LineNumber: TKt240_DigLines): boolean;
@@ -1177,16 +1196,25 @@ procedure TKt_2450.MyTraining;
 //  var ArrDouble: TArrSingle;
 begin
 //  (fDevice as TTelnetMeterDeviceSingle).SetStringToSend(':VOLT:RANG:AUTO:LLIM 20');
-//  (fDevice as TTelnetMeterDeviceSingle).SetStringToSend(':SOUR:VOLT:RANG:Auto?');
+//  (fDevice as TTelnetMeterDeviceSingle).SetStringToSend(':FORM:ASC:PREC DEF');
 //  fDevice.Request();
 //  fDevice.GetData;
 
-if GetDigLineMode(3) then
-  showmessage(Kt2450_DigLineTypeCommand[fDigitLineType[fDLActive]]+'  '
-              +Kt2450_DigLineDirectionCommand[fDigitLineDirec[fDLActive]])
+
+//  SetDigLineMode(1,kt_dt_trig,kt_dd_out);
+//  SetDidLinOut(1);
+//  SetDigLineMode(2,kt_dt_dig,kt_dd_out);
+//  SetDidLinOut(2);
+//  SetDigLineMode(3,kt_dt_dig,kt_dd_in);
+// showmessage(inttostr(GetDidLinOut(3)));
+
+//if GetDigLineMode(1) then
+//  showmessage(Kt2450_DigLineTypeCommand[fDigitLineType[fDLActive]]+'  '
+//              +Kt2450_DigLineDirectionCommand[fDigitLineDirec[fDLActive]]);
 
 //SetDigLineMode(5,kt_dt_sync,kt_dd_in);
 //SetDigLineMode(1,kt_dt_trig,kt_dd_out);
+
 
 //if BufferGetStartEndIndex()
 //  then showmessage(inttostr(Buffer.StartIndex)+'  '+inttostr(Buffer.EndIndex))
@@ -1194,6 +1222,7 @@ if GetDigLineMode(3) then
 
 
 //showmessage(inttostr(BufferGetReadingNumber()));
+//BufferCreate();
 //showmessage(inttostr(BufferGetReadingNumber(MyBuffer)));
 
 //BufferDataArrayExtended(1,5,kt_rd_MT);
@@ -1203,7 +1232,7 @@ if GetDigLineMode(3) then
 //showmessage(fDataVector.XYtoString+#10#10+fDataTimeVector.XYtoString);
 
 
-//BufferDataArrayExtended(1,5,kt_rd_M);
+//BufferDataArrayExtended(2,5,kt_rd_M);
 //showmessage(fDataVector.XYtoString+#10#10+fDataTimeVector.XYtoString);
 //
 //BufferDataArrayExtended(1,5,kt_rd_MST);
@@ -1211,7 +1240,8 @@ if GetDigLineMode(3) then
 //
 //BufferDataArrayExtended(1,5,kt_rd_MT);
 //showmessage(fDataVector.XYtoString+#10#10+fDataTimeVector.XYtoString);
-//
+
+
 //BufferDataArrayExtended(1,5,kt_rd_MS);
 //showmessage(fDataVector.XYtoString+#10#10+fDataTimeVector.XYtoString);
 
@@ -1233,11 +1263,12 @@ if GetDigLineMode(3) then
 // BufferLastDataSimple();
 // showmessage(floattostr(fDevice.Value));
 
+
 //MeasureExtended(kt_rd_MST,MyBuffer);
 //showmessage(floattostr(fDevice.Value)
 //              +'  '+floattostr(fSourceMeasuredValue)
 //              +'  '+floattostr(fTimeValue));
-//
+
 //MeasureExtended(kt_rd_MT);
 //showmessage(floattostr(fDevice.Value)+'  '+floattostr(fTimeValue));
 //
@@ -1247,25 +1278,30 @@ if GetDigLineMode(3) then
 // MeasureSimple(MyBuffer);
 // showmessage(floattostr(fDevice.Value));
 
+// BufferClear(Kt2450DefBuffer);
 // MeasureSimple();
 // showmessage(floattostr(fDevice.Value));
 
 //if GetCount() then showmessage('Count='+inttostr(Count));
 
+//SetCount(10);
 //SetCount(-56);
 
 //if BufferGetFillMode() then
-//  showmessage('ura! '+TKt2450_BufferFillModeCommand[Buffer.FillMode]);
+//  showmessage('ura! '+Kt2450_BufferFillModeCommand[Buffer.FillMode]);
 //if BufferGetFillMode('TestBuffer') then
-//  showmessage('ura! '+TKt2450_BufferFillModeCommand[Buffer.FillMode]);
+//  showmessage('ura! '+Kt2450_BufferFillModeCommand[Buffer.FillMode]);
 
 //BufferSetFillMode(kt_fm_cont);
 //BufferSetFillMode('TestBuffer',kt_fm_once);
 
 //showmessage(inttostr(BufferGetSize));
-//showmessage(inttostr(Buffer.Count));
+//showmessage(inttostr(Buffer.CountMax));
 //showmessage(inttostr(BufferGetSize('TestBuffer')));
 
+
+//BufferCreate();
+//BufferCreate('Test  Buffer ',500,kt_bs_stan);
 //BufferReSize(100);
 //BufferReSize('TestBuffer',5);
 
@@ -1275,15 +1311,16 @@ if GetDigLineMode(3) then
 //BufferCreate();
 //BufferCreate('Test  Buffer ',500,kt_bs_stan);
 
+
+
 //if GetDisplayDigitsNumber then
 //  showmessage(inttostr(fDisplayDN[fMeasureFunction])+Kt2450DisplayDNLabel);
 //if GetDisplayDigitsNumber(kt_mCurrent) then
-//  showmessage(inttostr(fDisplayDN[kt_mVoltage])+Kt2450DisplayDNLabel);
+//  showmessage(inttostr(fDisplayDN[kt_mCurrent])+Kt2450DisplayDNLabel);
 
 // SetDisplayDigitsNumber(4);
 // SetDisplayDigitsNumber(kt_mVoltage,3);
 // SetDisplayDigitsNumber(kt_mCurrent,6);
-//----------------------------------------------------------
 
 // showmessage(booltostr(IsHighCapacitanceOn(),True));
 // SetHighCapacitanceState(False);
@@ -1721,7 +1758,8 @@ begin
        end;
     23:case fFirstLevelNode of
 //        SetupOperation(23,36);
-        36:fDevice.JoinToStringToSend(AnsiReplaceStr(FirstNodeKt_2450[fFirstLevelNode],'#',inttostr(fDLActive)));
+// SetupOperation(23,37);
+        36,37:fDevice.JoinToStringToSend(AnsiReplaceStr(FirstNodeKt_2450[fFirstLevelNode],'#',inttostr(fDLActive)));
        end;
 
    end;
@@ -1810,7 +1848,7 @@ begin
 //          QuireOperation(19,32,1,False);
           32:if Buffer.StringToFillMode(AnsiLowerCase(Str))
             then fDevice.Value:=ord(TKt2450_BufferFillMode(Buffer.FillMode));
-          33:StringToMesuredDataArray(Str,TKt2450_ReturnedData(fLeafNode));
+          33:StringToMesuredDataArray(AnsiReplaceStr(Str,',',' '),TKt2450_ReturnedData(fLeafNode));
           35:case fLeafNode of
               0,1:fDevice.Value:=StrToInt(Str);
               2:if StringToBufferIndexies(Str) then fDevice.Value:=1;
@@ -1821,15 +1859,17 @@ begin
     21:case fFirstLevelNode of
 //     QuireOperation(21);
        0,1:fDevice.Value:=SCPI_StringToValue(Str);
-       2..5:StringToMesuredData(Str,TKt2450_ReturnedData(fFirstLevelNode-2));
+       2..5:StringToMesuredData(AnsiReplaceStr(Str,',',' '),TKt2450_ReturnedData(fFirstLevelNode-2));
        end;
     22:case fFirstLevelNode of
 //     QuireOperation(22);
        0,1:fDevice.Value:=SCPI_StringToValue(Str);
-       2..5:StringToMesuredData(Str,TKt2450_ReturnedData(fFirstLevelNode-2));
+       2..5:StringToMesuredData(AnsiReplaceStr(Str,',',' '),TKt2450_ReturnedData(fFirstLevelNode-2));
        end;
     23:case fFirstLevelNode of
         36:StringToDigLineStatus(AnsiLowerCase(Str));
+//         QuireOperation(23,37);
+        37:fDevice.Value:=StrToInt(Str);
        end;
  end;
 
@@ -1892,6 +1932,17 @@ begin
  fAdditionalString:=inttostr(Number);
  SetupOperation(6,ord(Measure)+12,28);
  fDisplayDN[Measure]:=Number;
+end;
+
+procedure TKt_2450.SetDidLinOut(LineNumber: TKt240_DigLines;
+  HighLevel: boolean);
+begin
+ if (fDigitLineType[LineNumber]<>kt_dt_dig)
+    or(fDigitLineDirec[LineNumber]<>kt_dd_out) then Exit;
+ fDLActive:=LineNumber;
+ if HighLevel then fAdditionalString:='1'
+              else fAdditionalString:='0';
+ SetupOperation(23,37);
 end;
 
 procedure TKt_2450.SetDigLineMode(LineNumber: TKt240_DigLines;
@@ -2320,7 +2371,9 @@ end;
 
 function TKt_2450.StringToMeasureTime(Str: string): double;
 begin
- Result:=ErResult;
+ Str:=AnsiReplaceStr(Str,':',' ');
+ Result:=(FloatDataFromRow(Str,4)+FloatDataFromRow(Str,3)
+         +60*FloatDataFromRow(Str,2)+3600*FloatDataFromRow(Str,1))*1e3;
 end;
 
 function TKt_2450.StringToMeasureUnit(Str: string): boolean;
@@ -2343,14 +2396,16 @@ end;
 procedure TKt_2450.StringToMesuredData(Str: string;DataType:TKt2450_ReturnedData);
 begin
 // if NumberOfSubstringInRow(Str)<>Kt2450_PartInRespond[DataType] then Exit;
- Str:=DeleteSubstringAll(Str,',');
+// Str:=DeleteSubstringAll(Str,',');
+// showmessage(Str);
+// Str:=AnsiReplaceStr(Str,',',' ');
  fDevice.Value:=FloatDataFromRow(Str,1);
  if (fDevice.Value=ErResult)or(DataType=kt_rd_M) then Exit;
  case DataType of
    kt_rd_MS,kt_rd_MST:fSourceMeasuredValue:=FloatDataFromRow(Str,2);
-   kt_rd_MT:fTimeValue:=StringToMeasureTime(Str);
+   kt_rd_MT:fTimeValue:=StringToMeasureTime(DeleteStringDataFromRow(Str,1));
  end;
- if DataType=kt_rd_MST then fTimeValue:=StringToMeasureTime(Str);
+ if DataType=kt_rd_MST then fTimeValue:=StringToMeasureTime(DeleteStringDataFromRow(DeleteStringDataFromRow(Str,1),1));
 end;
 
 procedure TKt_2450.StringToMesuredDataArray(Str: string;
@@ -2359,12 +2414,11 @@ procedure TKt_2450.StringToMesuredDataArray(Str: string;
       PartNumbers,i:integer;
       NumbersArray:TArrInteger;
 begin
- fDataVector.Clear;
- fDataTimeVector.Clear;
+
  PartNumbers:=NumberOfSubstringInRow(Str);
  SetLength(NumbersArray,Kt2450_PartInRespond[DataType]);
  for I := 0 to High(NumbersArray) do
-  NumbersArray[i]:=i;
+  NumbersArray[i]:=i+1;
 
  while PartNumbers>=Kt2450_PartInRespond[DataType] do
   begin
@@ -2540,6 +2594,8 @@ procedure TKt_2450.BufferDataArrayExtended(SIndex, EIndex: integer;
   DataType: TKt2450_ReturnedData; BufName: string);
 begin
 // :TRAC:DATA? <startIndex>, <endIndex>, "<bufferName>", <bufferElements>
+ fDataVector.Clear;
+ fDataTimeVector.Clear;
  Buffer.SetName(BufName);
  Buffer.StartIndex:=SIndex;
  Buffer.EndIndex:=EIndex;

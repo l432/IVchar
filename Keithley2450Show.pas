@@ -42,10 +42,8 @@ type
 TKt_2450_AbstractElementShow=class(TSimpleFreeAndAiniObject)
  private
   fKt_2450:TKt_2450;
-  fSettingsShow:array of TParameterShowNew;
-  fSettingsShowSL:array of TStringList;
-  procedure SettingsShowSLCreate();virtual;
-  procedure SettingsShowFree();virtual;//abstract;
+  procedure SettingsShowSLCreate();virtual;abstract;
+  procedure SettingsShowFree();virtual;abstract;
   procedure SettingsShowCreate(STexts:array of TStaticText;
                           Labels:array of TLabel);virtual;abstract;
   procedure CreateFooter();
@@ -110,8 +108,8 @@ end;
 
 TKt_2450_SourceShow=class(TKt_2450_AbstractElementShow)
  private
-//  fSettingsShow:array[kt_ss_outputoff..kt_ss_limit]of TParameterShowNew;
-//  fSettingsShowSL:array[kt_ss_outputoff..kt_ss_outputoff]of TStringList;
+  fSettingsShow:array[kt_ss_outputoff..kt_ss_limit]of TParameterShowNew;
+  fSettingsShowSL:array[kt_ss_outputoff..kt_ss_outputoff]of TStringList;
   fLimitLabelNames:array[TKt2450_Source]of string;
   fCBReadBack: TCheckBox;
   fCBDelay:TCheckBox;
@@ -121,7 +119,7 @@ TKt_2450_SourceShow=class(TKt_2450_AbstractElementShow)
   fRangeShow:TKt_RangeSourceShow;
 
   procedure SettingsShowSLCreate();override;
-//  procedure SettingsShowFree();override;
+  procedure SettingsShowFree();override;
   procedure SettingsShowCreate(STexts:array of TStaticText;
                           Labels:array of TLabel);override;
 //  procedure SettingsShowFree;override;
@@ -143,8 +141,8 @@ TKt_2450_SourceShow=class(TKt_2450_AbstractElementShow)
 
 TKt_2450_MeasurementShow=class(TKt_2450_AbstractElementShow)
  private
-//  fSettingsShow:array[kt_ms_rescomp..kt_ms_sense]of TStringParameterShow;
-//  fSettingsShowSL:array[kt_ms_rescomp..kt_ms_sense]of TStringList;
+  fSettingsShow:array[kt_ms_rescomp..kt_ms_sense]of TStringParameterShow;
+  fSettingsShowSL:array[kt_ms_rescomp..kt_ms_sense]of TStringList;
 
   fRangeShow:TKt_RangeMeasureShow;
   fRangeLimitedShow:TKt_RangeLimitedShow;
@@ -174,7 +172,7 @@ end;
 TKt_2450_SweetShow=class(TKt_2450_AbstractElementShow)
  private
   fKt_2450_SweepParameters:TKt_2450_SweepParameters;
-//  fSettingsShow:array[TKt2450_SweepSettings]of TParameterShowNew;
+  fSettingsShow:array[TKt2450_SweepSettings]of TParameterShowNew;
   fRangeTypeSettingsShow:TStringList;
   fDualCB,
   fAbortLimitCB:TCheckBox;
@@ -205,7 +203,7 @@ TKt_2450_SweetShow=class(TKt_2450_AbstractElementShow)
                       DualCB,AbortLimitCB:TCheckBox;
                       Mode:TRadioGroup
                       );
-//  destructor Destroy;override;
+  destructor Destroy;override;
   procedure ObjectToSetting;override;
   procedure ReadFromIniFile(ConfigFile: TIniFile);override;
   procedure WriteToIniFile(ConfigFile: TIniFile);override;
@@ -217,18 +215,16 @@ end;
    fKt_2450:TKt_2450;
 //   fSettingsShow:array[TKt2450_Settings]of TStringParameterShow;
 //   fSettingsShowSL:array[TKt2450_Settings]of TStringList;
-   fSettingsShow:array[TKt2450_Settings]of TParameterShowNew;
-   fSettingsShowSL:array[kt_voltprot..kt_mode]of TStringList;
+   fSettingsShow:array of TParameterShowNew;
+   fSettingsShowSL:array of TStringList;
    BTest:TButton;
    fOutPutOnOff:TSpeedButton;
    fTerminalsFrRe:TSpeedButton;
    fSetupMemoryShow:TKT2450_SetupMemoryShow;
 
    fSourceShow:TKt_2450_SourceShow;
-//   SourceShowStaticText:array[TKt2450_SourceSettings]of TStaticText;
-//   SourceShowLabels:array[TKt2450_SourceSettings]of TLabel;
-   SourceShowStaticText:array of TStaticText;
-   SourceShowLabels:array of TLabel;
+   SourceShowStaticText:array[TKt2450_SourceSettings]of TStaticText;
+   SourceShowLabels:array[TKt2450_SourceSettings]of TLabel;
    SourceReadBackCB: TCheckBox;
    fSourceDelayCB: TCheckBox;
    fSourceHCapac: TCheckBox;
@@ -236,10 +232,8 @@ end;
    {2 - не створювався, 0 - створено під kt_sVolt; 1 - kt_sCurr}
 
    fMeasurementShow:TKt_2450_MeasurementShow;
-//   fMeasurementShowStaticText:array[TKt2450_MeasureSettings]of TStaticText;
-//   fMeasurementShowLabels:array[TKt2450_MeasureSettings]of TLabel;
-   fMeasurementShowStaticText:array of TStaticText;
-   fMeasurementShowLabels:array of TLabel;
+   fMeasurementShowStaticText:array[TKt2450_MeasureSettings]of TStaticText;
+   fMeasurementShowLabels:array[TKt2450_MeasureSettings]of TLabel;
    fMeasurementShowGB:TGroupBox;
    fMeasurementShowState:0..5;
    {5 - не створювався, 0 - створено під струм; 1 - напругу,
@@ -285,8 +279,8 @@ end;
    procedure AZeroFromDevice();
    procedure VoltageProtectionOkClick();
    procedure ModeOkClick();
-   procedure MeasureCountOkClick();
-   procedure ReCreateElements;
+   procedure CountOkClick();
+    procedure ReCreateElements;
   public
    Constructor Create(Kt_2450:TKt_2450;
                       Buttons:Array of TButton;
@@ -363,6 +357,11 @@ begin
   fZeroManualB:= Buttons[3];
 end;
 
+procedure TKt_2450_Show.CountOkClick;
+begin
+ fKt_2450.SetCount((fSettingsShow[ord(kt_meascount)] as TIntegerParameterShow).Data);
+end;
+
 constructor TKt_2450_Show.Create(Kt_2450: TKt_2450;
                                 Buttons:Array of TButton;
                                 SpeedButtons:Array of TSpeedButton;
@@ -376,7 +375,7 @@ constructor TKt_2450_Show.Create(Kt_2450: TKt_2450;
                                 SweetButtons:Array of TButton;
                                 SweetDualCB,SweetAbortLimitCB:TCheckBox;
                                 SweetMode:TRadioGroup);
- var i,j,CBnumber:integer;
+ var i,CBnumber:integer;
 
 begin
   if (High(Buttons)<>ButtonNumberKt2450)
@@ -406,18 +405,10 @@ begin
   SettingsShowCreate(STexts,Labels);
 
   fSourceShowState:=2;
-//  for i:=0 to ord(High(TKt2450_SourceSettings)) do
-//     SourceShowStaticText[TKt2450_SourceSettings(i)]:=STexts[ord(High(TKt2450_Settings))+1+i];
-//  for i:=0 to ord(kt_ss_limit) do
-//     SourceShowLabels[TKt2450_SourceSettings(i)]:=Labels[ord(High(TKt2450_Settings))+1+i];
-
-  SetLength(SourceShowStaticText,ord(High(TKt2450_SourceSettings))+1);
-  for i:=0 to High(SourceShowStaticText) do
-     SourceShowStaticText[i]:=STexts[ord(High(TKt2450_Settings))+1+i];
-  SetLength(SourceShowLabels,ord(kt_ss_limit)+1);
-  for i:=0 to High(SourceShowLabels) do
-     SourceShowLabels[i]:=Labels[ord(High(TKt2450_Settings))+1+i];
-
+  for i:=0 to ord(High(TKt2450_SourceSettings)) do
+     SourceShowStaticText[TKt2450_SourceSettings(i)]:=STexts[ord(High(TKt2450_Settings))+1+i];
+  for i:=0 to ord(kt_ss_limit) do
+     SourceShowLabels[TKt2450_SourceSettings(i)]:=Labels[ord(High(TKt2450_Settings))+1+i];
   SourceReadBackCB:=CheckBoxs[CBnumber];
   inc(CBnumber);
   fSourceDelayCB:=CheckBoxs[CBnumber];
@@ -428,23 +419,17 @@ begin
   SourceShowCreate();
 
   fMeasurementShowState:=5;
-//  for i:=0 to ord(High(TKt2450_MeasureSettings)) do
-//     fMeasurementShowStaticText[TKt2450_MeasureSettings(i)]:=STexts[ord(High(TKt2450_Settings))+1
-//                                                           +ord(High(TKt2450_SourceSettings))+1+i];
- SetLength(fMeasurementShowStaticText,ord(High(TKt2450_MeasureSettings))+1);
-  for i:=0 to High(fMeasurementShowStaticText) do
-     fMeasurementShowStaticText[i]:=STexts[ord(High(TKt2450_Settings))+1
-                                             +ord(High(TKt2450_SourceSettings))+1+i];
-
-
+  for i:=0 to ord(High(TKt2450_MeasureSettings)) do
+     fMeasurementShowStaticText[TKt2450_MeasureSettings(i)]:=STexts[ord(High(TKt2450_Settings))+1
+                                                           +ord(High(TKt2450_SourceSettings))+1+i];
  i:=ord(High(TKt2450_Settings))+1+ord(kt_ss_limit)-ord(kt_ss_outputoff)+1;
-// fMeasurementShowLabels[kt_ms_rescomp]:=Labels[i];
-// fMeasurementShowLabels[kt_ms_time]:=Labels[i+1];
-// fMeasurementShowLabels[kt_ms_lrange]:=Labels[i+2];
-
- SetLength(fMeasurementShowLabels,3);
- for j:=0 to High(fMeasurementShowLabels) do
- fMeasurementShowLabels[j]:=Labels[j+i];
+ fMeasurementShowLabels[kt_ms_rescomp]:=Labels[i];
+ fMeasurementShowLabels[kt_ms_time]:=Labels[i+1];
+ fMeasurementShowLabels[kt_ms_lrange]:=Labels[i+2];
+//   for i:=ord(kt_ms_rescomp) to ord(kt_ms_rescomp) do
+//       fMeasurementShowLabels[TKt2450_MeasureSettings(ord(kt_ms_rescomp)+i)]:=
+//                            Labels[ord(High(TKt2450_Settings))+1
+//                                   +ord(kt_ss_limit)-ord(kt_ss_outputoff)+1+i];
 
   fMeasurementShowGB:=GroupBox;
   MeasureShowCreate();
@@ -510,16 +495,11 @@ begin
     fKt_2450.GetSourceValue();
     fKt_2450.GetMeasureTime();
     fKt_2450.IsHighCapacitanceOn();
-//    fKt_2450.GetDisplayDigitsNumber();
-//    fKt_2450.GetCount();
+    fKt_2450.GetDisplayDigitsNumber();
+    fKt_2450.GetCount();
     end;
 
   ObjectToSetting();
-end;
-
-procedure TKt_2450_Show.MeasureCountOkClick;
-begin
- fKt_2450.SetCount((fSettingsShow[kt_meascount] as TIntegerParameterShow).Data);
 end;
 
 procedure TKt_2450_Show.MeasureShowCreate;
@@ -541,22 +521,16 @@ begin
   Exit;
   end;
  MeasureShowFree();
-// fMeasurementShow:=TKt_2450_MeasurementShow.Create(fKt_2450,
-//                 [fMeasurementShowStaticText[kt_ms_rescomp],
-//                  fMeasurementShowStaticText[kt_ms_displaydn],
-//                  fMeasurementShowStaticText[kt_ms_sense],
-//                  fMeasurementShowStaticText[kt_ms_range],
-//                  fMeasurementShowStaticText[kt_ms_time],
-//                  fMeasurementShowStaticText[kt_ms_lrange]],
-//                 [fMeasurementShowLabels[kt_ms_rescomp],
-//                  fMeasurementShowLabels[kt_ms_time],
-//                  fMeasurementShowLabels[kt_ms_lrange]],
-//                  fMeasurementShowGB,
-//                  MeasureShowType
-//                  );
  fMeasurementShow:=TKt_2450_MeasurementShow.Create(fKt_2450,
-                  fMeasurementShowStaticText,
-                  fMeasurementShowLabels,
+                 [fMeasurementShowStaticText[kt_ms_rescomp],
+                  fMeasurementShowStaticText[kt_ms_displaydn],
+                  fMeasurementShowStaticText[kt_ms_sense],
+                  fMeasurementShowStaticText[kt_ms_range],
+                  fMeasurementShowStaticText[kt_ms_time],
+                  fMeasurementShowStaticText[kt_ms_lrange]],
+                 [fMeasurementShowLabels[kt_ms_rescomp],
+                  fMeasurementShowLabels[kt_ms_time],
+                  fMeasurementShowLabels[kt_ms_lrange]],
                   fMeasurementShowGB,
                   MeasureShowType
                   );
@@ -570,7 +544,7 @@ end;
 
 procedure TKt_2450_Show.ModeOkClick;
 begin
- fKt_2450.SetMode(TKt_2450_Mode((fSettingsShow[kt_mode] as TStringParameterShow).Data));
+ fKt_2450.SetMode(TKt_2450_Mode((fSettingsShow[ord(kt_mode)] as TStringParameterShow).Data));
  ReCreateElements();
 end;
 
@@ -583,10 +557,13 @@ procedure TKt_2450_Show.ObjectToSetting;
 begin
  TerminalsFromDevice();
  OutPutOnFromDevice();
- (fSettingsShow[kt_voltprot] as TStringParameterShow).Data:=ord(fKt_2450.VoltageProtection);
- (fSettingsShow[kt_mode] as TStringParameterShow).Data:=ord(fKt_2450.Mode);
- (fSettingsShow[kt_meascount] as TIntegerParameterShow).Data:=fKt_2450.Count;
+ (fSettingsShow[ord(kt_voltprot)] as TStringParameterShow).Data:=ord(fKt_2450.VoltageProtection);
+ (fSettingsShow[ord(kt_mode)] as TStringParameterShow).Data:=ord(fKt_2450.Mode);
+ (fSettingsShow[ord(kt_meascount)] as TIntegerParameterShow).Data:=fKt_2450.Count;
+
  ReCreateElements();
+
+
 end;
 
 procedure TKt_2450_Show.ReCreateElements;
@@ -637,49 +614,76 @@ procedure TKt_2450_Show.SettingsShowCreate(STexts: array of TStaticText;
  const
       SettingsCaption:array[TKt2450_Settings]of string=
       ('Overvoltage Protection','Device Mode','Measure Count');
- var i:TKt2450_Settings;
+// var i:TKt2450_Settings;
+ var i:integer;
 begin
+ SetLength(fSettingsShow,ord(High(TKt2450_Settings))+1);
 
- for I := Low(TKt2450_Settings) to kt_mode do
+// for I := Low(TKt2450_Settings) to High(TKt2450_Settings) do
+//   begin
+//   fSettingsShow[i]:=TStringParameterShow.Create(STexts[ord(i)],
+//                        Labels[ord(i)], SettingsCaption[i], fSettingsShowSL[i]);
+////   fSettingsShow[i].ForUseInShowObject(fKt_2450,False,False);
+//   end;
+
+// fSettingsShow[ord(kt_voltprot)]:=
+
+ for I := 0 to ord(kt_mode) do
    begin
-   fSettingsShow[i]:=TStringParameterShow.Create(STexts[ord(i)],
-                        Labels[ord(i)], SettingsCaption[i], fSettingsShowSL[i]);
-//   fSettingsShow[i].ForUseInShowObject(fKt_2450,False,False);
+   fSettingsShow[i]:=TStringParameterShow.Create(STexts[i],
+                        Labels[i], SettingsCaption[TKt2450_Settings(i)],
+                        fSettingsShowSL[i]);
    end;
 
-  fSettingsShow[kt_meascount]:=TIntegerParameterShow.Create(STexts[ord(kt_meascount)],
-                        Labels[ord(kt_meascount)], SettingsCaption[kt_meascount], 1);
-  (fSettingsShow[kt_meascount] as TIntegerParameterShow).Limits.SetLimits(1,300000);
+  fSettingsShow[ord(kt_voltprot)].HookParameterClick:=VoltageProtectionOkClick;
+  fSettingsShow[ord(kt_mode)].HookParameterClick:=ModeOkClick;
 
-  fSettingsShow[kt_voltprot].HookParameterClick:=VoltageProtectionOkClick;
-  fSettingsShow[kt_mode].HookParameterClick:=ModeOkClick;
-  fSettingsShow[kt_meascount].HookParameterClick:=MeasureCountOkClick;
+  fSettingsShow[ord(kt_meascount)]:=TIntegerParameterShow.Create(STexts[ord(kt_meascount)],
+                        Labels[ord(kt_meascount)], SettingsCaption[kt_meascount],1);
+  (fSettingsShow[ord(kt_meascount)] as TIntegerParameterShow).Limits.SetLimits(1,300000);
+  fSettingsShow[ord(kt_meascount)].HookParameterClick:=CountOkClick;
 
 end;
 
 procedure TKt_2450_Show.SettingsShowFree;
- var i:TKt2450_Settings;
+// var i:TKt2450_Settings;
+ var i:integer;
 begin
+// for I := Low(TKt2450_Settings) to High(TKt2450_Settings) do
+//   FreeAndNil(fSettingsShow[i]);
  for I := Low(fSettingsShow) to High(fSettingsShow) do
    FreeAndNil(fSettingsShow[i]);
  for I := Low(fSettingsShowSL) to High(fSettingsShowSL) do
-  FreeAndNil(fSettingsShowSL[i]);
+   FreeAndNil(fSettingsShowSL[i]);
+
 end;
 
 procedure TKt_2450_Show.SettingsShowSLCreate;
  var i:integer;
 begin
-  for I := 0 to ord(kt_mode) do
+  SetLength(fSettingsShowSL,ord(kt_mode)-ord(kt_voltprot)+1);
+
+//  for I := 0 to ord(High(TKt2450_Settings)) do
+  for I := 0 to High(fSettingsShowSL) do
    begin
-   fSettingsShowSL[TKt2450_Settings(i)]:=TStringList.Create();
-   fSettingsShowSL[TKt2450_Settings(i)].Clear;
+//   fSettingsShowSL[TKt2450_Settings(i)]:=TStringList.Create();
+//   fSettingsShowSL[TKt2450_Settings(i)].Clear;
+   fSettingsShowSL[i]:=TStringList.Create();
+   fSettingsShowSL[i].Clear;
    end;
 
+// for I := 0 to ord(High(TKt_2450_VoltageProtection)) do
+//  fSettingsShowSL[kt_voltprot].Add(Kt_2450_VoltageProtectionLabel[TKt_2450_VoltageProtection(i)]);
+//
+// for I := 0 to ord(High(TKt_2450_Mode)) do
+//  fSettingsShowSL[kt_mode].Add(KT2450_ModeLabels[TKt_2450_Mode(i)]);
+
  for I := 0 to ord(High(TKt_2450_VoltageProtection)) do
-  fSettingsShowSL[kt_voltprot].Add(Kt_2450_VoltageProtectionLabel[TKt_2450_VoltageProtection(i)]);
+  fSettingsShowSL[ord(kt_voltprot)].Add(Kt_2450_VoltageProtectionLabel[TKt_2450_VoltageProtection(i)]);
 
  for I := 0 to ord(High(TKt_2450_Mode)) do
-  fSettingsShowSL[kt_mode].Add(KT2450_ModeLabels[TKt_2450_Mode(i)]);
+  fSettingsShowSL[ord(kt_mode)].Add(KT2450_ModeLabels[TKt_2450_Mode(i)]);
+
 
 end;
 
@@ -703,22 +707,16 @@ begin
   Exit;
   end;
  SourceShowFree();
-// fSourceShow:=TKt_2450_SourceShow.Create(fKt_2450,
-//                 [SourceShowStaticText[kt_ss_outputoff],
-//                  SourceShowStaticText[kt_ss_delay],
-//                  SourceShowStaticText[kt_ss_value],
-//                  SourceShowStaticText[kt_ss_limit],
-//                  SourceShowStaticText[kt_ss_range]],
-//                 [SourceShowLabels[kt_ss_outputoff],
-//                  SourceShowLabels[kt_ss_delay],
-//                  SourceShowLabels[kt_ss_value],
-//                  SourceShowLabels[kt_ss_limit]],
-//                  [SourceReadBackCB,fSourceDelayCB,
-//                  fSourceHCapac]
-//                  );
  fSourceShow:=TKt_2450_SourceShow.Create(fKt_2450,
-                   SourceShowStaticText,
-                   SourceShowLabels,
+                 [SourceShowStaticText[kt_ss_outputoff],
+                  SourceShowStaticText[kt_ss_delay],
+                  SourceShowStaticText[kt_ss_value],
+                  SourceShowStaticText[kt_ss_limit],
+                  SourceShowStaticText[kt_ss_range]],
+                 [SourceShowLabels[kt_ss_outputoff],
+                  SourceShowLabels[kt_ss_delay],
+                  SourceShowLabels[kt_ss_value],
+                  SourceShowLabels[kt_ss_limit]],
                   [SourceReadBackCB,fSourceDelayCB,
                   fSourceHCapac]
                   );
@@ -804,7 +802,7 @@ end;
 procedure TKt_2450_Show.VoltageProtectionOkClick;
 begin
  fKt_2450.SetVoltageProtection(TKt_2450_VoltageProtection
-                          ((fSettingsShow[kt_voltprot] as TStringParameterShow).Data));
+                          ((fSettingsShow[ord(kt_voltprot)] as TStringParameterShow).Data));
 end;
 
 procedure TKt_2450_Show.WriteToIniFile(ConfigFile: TIniFile);
@@ -896,25 +894,6 @@ begin
   inherited;
 end;
 
-procedure TKt_2450_AbstractElementShow.SettingsShowFree;
- var i:integer;
-begin
-  for I := 0 to High(fSettingsShow) do
-    FreeAndNil(fSettingsShow[i]);
-  for I := 0 to High(fSettingsShowSL) do
-    FreeAndNil(fSettingsShowSL[i]);
-end;
-
-procedure TKt_2450_AbstractElementShow.SettingsShowSLCreate;
- var i:integer;
-begin
- for I := 0 to High(fSettingsShowSL) do
-  begin
-   fSettingsShowSL[i]:=TStringList.Create;
-   fSettingsShowSL[i].Clear;
-  end;
-end;
-
 { TKt_2450_SourceShow }
 
 constructor TKt_2450_SourceShow.Create(Kt_2450: TKt_2450;
@@ -937,8 +916,8 @@ end;
 
 procedure TKt_2450_SourceShow.DelayClick;
 begin
- fKt_2450.SetSourceDelay((fSettingsShow[ord(kt_ss_delay)] as TDoubleParameterShow).Data);
- (fSettingsShow[ord(kt_ss_delay)] as TDoubleParameterShow).Data:=fKt_2450.SourceDelay[fKt_2450.SourceType];
+ fKt_2450.SetSourceDelay((fSettingsShow[kt_ss_delay] as TDoubleParameterShow).Data);
+ (fSettingsShow[kt_ss_delay] as TDoubleParameterShow).Data:=fKt_2450.SourceDelay[fKt_2450.SourceType];
 end;
 
 destructor TKt_2450_SourceShow.Destroy;
@@ -951,26 +930,26 @@ procedure TKt_2450_SourceShow.LimitClick;
 begin
 // case fSourceType of
  case fKt_2450.SourceType of
-   kt_sVolt: fKt_2450.SetCurrentLimit((fSettingsShow[ord(kt_ss_limit)] as TDoubleParameterShow).Data);
-   kt_sCurr: fKt_2450.SetVoltageLimit((fSettingsShow[ord(kt_ss_limit)] as TDoubleParameterShow).Data);
+   kt_sVolt: fKt_2450.SetCurrentLimit((fSettingsShow[kt_ss_limit] as TDoubleParameterShow).Data);
+   kt_sCurr: fKt_2450.SetVoltageLimit((fSettingsShow[kt_ss_limit] as TDoubleParameterShow).Data);
  end;
 // case fSourceType of
  case fKt_2450.SourceType of
-   kt_sVolt: (fSettingsShow[ord(kt_ss_limit)] as TDoubleParameterShow).Data:=fKt_2450.CurrentLimit;
-   kt_sCurr: (fSettingsShow[ord(kt_ss_limit)] as TDoubleParameterShow).Data:=fKt_2450.VoltageLimit;
+   kt_sVolt: (fSettingsShow[kt_ss_limit] as TDoubleParameterShow).Data:=fKt_2450.CurrentLimit;
+   kt_sCurr: (fSettingsShow[kt_ss_limit] as TDoubleParameterShow).Data:=fKt_2450.VoltageLimit;
  end;
 end;
 
 procedure TKt_2450_SourceShow.ObjectToSetting;
 begin
- (fSettingsShow[ord(kt_ss_outputoff)] as TStringParameterShow).Data:=
+ (fSettingsShow[kt_ss_outputoff] as TStringParameterShow).Data:=
     ord(fKt_2450.OutputOffState[fKt_2450.SourceType]);
 
  case fKt_2450.SourceType of
-   kt_sVolt: (fSettingsShow[ord(kt_ss_limit)] as TDoubleParameterShow).Data:=fKt_2450.CurrentLimit;
-   kt_sCurr: (fSettingsShow[ord(kt_ss_limit)] as TDoubleParameterShow).Data:=fKt_2450.VoltageLimit;
+   kt_sVolt: (fSettingsShow[kt_ss_limit] as TDoubleParameterShow).Data:=fKt_2450.CurrentLimit;
+   kt_sCurr: (fSettingsShow[kt_ss_limit] as TDoubleParameterShow).Data:=fKt_2450.VoltageLimit;
  end;
- (fSettingsShow[ord(kt_ss_delay)] as TDoubleParameterShow).Data:=fKt_2450.SourceDelay[fKt_2450.SourceType];
+ (fSettingsShow[kt_ss_delay] as TDoubleParameterShow).Data:=fKt_2450.SourceDelay[fKt_2450.SourceType];
 
  if fKt_2450.ReadBack[fKt_2450.SourceType]<>fCBReadBack.Checked then
   AccurateCheckBoxCheckedChange(fCBReadBack,fKt_2450.ReadBack[fKt_2450.SourceType]);
@@ -986,7 +965,7 @@ begin
 
  fRangeShow.ObjectToSetting;
 
- (fSettingsShow[ord(kt_ss_value)] as TDoubleParameterShow).Data:=fKt_2450.SourceValue[fKt_2450.SourceType];
+ (fSettingsShow[kt_ss_value] as TDoubleParameterShow).Data:=fKt_2450.SourceValue[fKt_2450.SourceType];
 
 end;
 
@@ -994,7 +973,7 @@ procedure TKt_2450_SourceShow.OutputOffOkClick;
 begin
 // fKt_2450.SetOutputOffState(fSourceType,
  fKt_2450.SetOutputOffState(fKt_2450.SourceType,
-    TKt_2450_OutputOffState((fSettingsShow[ord(kt_ss_outputoff)] as TStringParameterShow).Data));
+    TKt_2450_OutputOffState((fSettingsShow[kt_ss_outputoff] as TStringParameterShow).Data));
 end;
 
 procedure TKt_2450_SourceShow.ReadBackClick(Sender: TObject);
@@ -1011,61 +990,53 @@ end;
 
 procedure TKt_2450_SourceShow.SettingsShowCreate(STexts: array of TStaticText;
   Labels: array of TLabel);
-// const
-//      SettingsCaption:array[kt_ss_outputoff..kt_ss_outputoff]of string=
-//      ('OutputOff Type');
- var //i:TKt2450_SourceSettings;
+ const
+      SettingsCaption:array[kt_ss_outputoff..kt_ss_outputoff]of string=
+      ('OutputOff Type');
+ var i:TKt2450_SourceSettings;
      LimitValueDef:double;
 begin
 
-//  fSettingsShow:array[kt_ss_outputoff..kt_ss_limit]of TParameterShowNew;
-//  fSettingsShowSL:array[kt_ss_outputoff..kt_ss_outputoff]of TStringList;
- SetLength(fSettingsShow,ord(kt_ss_limit)+1);
+ for I := kt_ss_outputoff to kt_ss_outputoff do
+   begin
+   fSettingsShow[i]:=TStringParameterShow.Create(STexts[ord(i)],
+                         Labels[ord(i)],SettingsCaption[i], fSettingsShowSL[i]);
+//   fSettingsShow[i].ForUseInShowObject(fKt_2450,False,False);
+   end;
+  fSettingsShow[kt_ss_outputoff].HookParameterClick:=OutputOffOkClick;
 
-// for I := kt_ss_outputoff to kt_ss_outputoff do
-//   begin
-//   fSettingsShow[i]:=TStringParameterShow.Create(STexts[ord(i)],
-//                         Labels[ord(i)],SettingsCaption[i], fSettingsShowSL[i]);
-//   end;
-//  fSettingsShow[kt_ss_outputoff].HookParameterClick:=OutputOffOkClick;
-
-   fSettingsShow[ord(kt_ss_outputoff)]:=TStringParameterShow.Create(STexts[ord(kt_ss_outputoff)],
-                         Labels[ord(kt_ss_outputoff)],'OutputOff Type', fSettingsShowSL[ord(kt_ss_outputoff)]);
-  fSettingsShow[ord(kt_ss_outputoff)].HookParameterClick:=OutputOffOkClick;
-
-
-
+//  if fSourceType=kt_sVolt
   if fKt_2450.SourceType=kt_sVolt
       then LimitValueDef:=Kt_2450_CurrentLimDef
       else LimitValueDef:=Kt_2450_VoltageLimDef;
 
 
-  fSettingsShow[ord(kt_ss_limit)]:=TDoubleParameterShow.Create(STexts[ord(kt_ss_limit)],
+  fSettingsShow[kt_ss_limit]:=TDoubleParameterShow.Create(STexts[ord(kt_ss_limit)],
                                 Labels[ord(kt_ss_limit)],
                                 fLimitLabelNames[fKt_2450.SourceType],
                                 LimitValueDef);
- fSettingsShow[ord(kt_ss_limit)].HookParameterClick:=LimitClick;
+ fSettingsShow[kt_ss_limit].HookParameterClick:=LimitClick;
  Labels[ord(kt_ss_limit)].WordWrap:=False;
 
- fSettingsShow[ord(kt_ss_delay)]:=TDoubleParameterShow.Create(STexts[ord(kt_ss_delay)],
+ fSettingsShow[kt_ss_delay]:=TDoubleParameterShow.Create(STexts[ord(kt_ss_delay)],
                                 Labels[ord(kt_ss_delay)],
                                 'Delay after source set, s',
                                 0,5);
- fSettingsShow[ord(kt_ss_delay)].HookParameterClick:=DelayClick;
+ fSettingsShow[kt_ss_delay].HookParameterClick:=DelayClick;
  Labels[ord(kt_ss_delay)].WordWrap:=False;
  STDelay:=STexts[ord(kt_ss_delay)];
 
- fSettingsShow[ord(kt_ss_value)]:=TDoubleParameterShow.Create(STexts[ord(kt_ss_value)],
+ fSettingsShow[kt_ss_value]:=TDoubleParameterShow.Create(STexts[ord(kt_ss_value)],
                                 Labels[ord(kt_ss_value)],
                                 'Output Value, ',
                                 0,4);
- fSettingsShow[ord(kt_ss_value)].HookParameterClick:=ValueClick;
+ fSettingsShow[kt_ss_value].HookParameterClick:=ValueClick;
  Labels[ord(kt_ss_value)].WordWrap:=False;
  if fKt_2450.SourceType=kt_sVolt then
     Labels[ord(kt_ss_value)].Caption:=Labels[ord(kt_ss_value)].Caption+'V'
                                   else
     Labels[ord(kt_ss_value)].Caption:=Labels[ord(kt_ss_value)].Caption+'A';
-(fSettingsShow[ord(kt_ss_value)] as TDoubleParameterShow).Limits.SetLimits(
+(fSettingsShow[kt_ss_value] as TDoubleParameterShow).Limits.SetLimits(
                         Kt_2450_SourceSweepLimits[fKt_2450.SourceType,lvMin],
                         Kt_2450_SourceSweepLimits[fKt_2450.SourceType,lvMax]);
 
@@ -1073,31 +1044,27 @@ begin
 end;
 
 
-//procedure TKt_2450_SourceShow.SettingsShowFree;
-// var i:TKt2450_SourceSettings;
-//begin
-// for I := low(fSettingsShowSL) to High(fSettingsShowSL) do
-//  FreeAndNil(fSettingsShowSL[i]);
-// for i := Low(fSettingsShow) to High(fSettingsShow) do
-//  FreeAndNil(fSettingsShow[i]);
-//end;
+procedure TKt_2450_SourceShow.SettingsShowFree;
+ var i:TKt2450_SourceSettings;
+begin
+ for I := low(fSettingsShowSL) to High(fSettingsShowSL) do
+  FreeAndNil(fSettingsShowSL[i]);
+ for i := Low(fSettingsShow) to High(fSettingsShow) do
+  FreeAndNil(fSettingsShow[i]);
+end;
 
 procedure TKt_2450_SourceShow.SettingsShowSLCreate;
  var i:integer;
 begin
-//  fSettingsShow:array[kt_ss_outputoff..kt_ss_limit]of TParameterShowNew;
-//  fSettingsShowSL:array[kt_ss_outputoff..kt_ss_outputoff]of TStringList;
- SetLength(fSettingsShowSL,ord(kt_ss_outputoff)-ord(kt_ss_outputoff)+1);
 
- inherited SettingsShowSLCreate;
-// for I := ord(kt_ss_outputoff) to ord(kt_ss_outputoff) do
-//  begin
-//  fSettingsShowSL[TKt2450_SourceSettings(i)]:=TStringList.Create();
-//  fSettingsShowSL[TKt2450_SourceSettings(i)].Clear;
-//  end;
+ for I := ord(kt_ss_outputoff) to ord(kt_ss_outputoff) do
+  begin
+  fSettingsShowSL[TKt2450_SourceSettings(i)]:=TStringList.Create();
+  fSettingsShowSL[TKt2450_SourceSettings(i)].Clear;
+  end;
 
  for I := 0 to ord(High(TKt_2450_OutputOffState)) do
-   fSettingsShowSL[ord(kt_ss_outputoff)].Add(KT2450_OutputOffStateLabels[TKt_2450_OutputOffState(i)]);
+   fSettingsShowSL[kt_ss_outputoff].Add(KT2450_OutputOffStateLabels[TKt_2450_OutputOffState(i)]);
 
  fLimitLabelNames[kt_sVolt]:='Limit'#10'Current, A';
  fLimitLabelNames[kt_sCurr]:='Limit'#10'Voltage, V';
@@ -1105,8 +1072,8 @@ end;
 
 procedure TKt_2450_SourceShow.ValueClick;
 begin
- fKt_2450.SetSourceValue((fSettingsShow[ord(kt_ss_value)] as TDoubleParameterShow).Data);
- (fSettingsShow[ord(kt_ss_value)] as TDoubleParameterShow).Data:=fKt_2450.SourceValue[fKt_2450.SourceType];
+ fKt_2450.SetSourceValue((fSettingsShow[kt_ss_value] as TDoubleParameterShow).Data);
+ (fSettingsShow[kt_ss_value] as TDoubleParameterShow).Data:=fKt_2450.SourceValue[fKt_2450.SourceType];
 end;
 
 { TKt_2450_MeasurementShow }
@@ -1120,7 +1087,7 @@ constructor TKt_2450_MeasurementShow.Create(Kt_2450: TKt_2450;
   STexts: array of TStaticText; Labels: array of TLabel; GroupBox: TGroupBox;
   ShowType:TKt2450_MeasureShowType);
 begin
- fRangeShow:=TKt_RangeMeasureShow.Create(STexts[ord(kt_ms_range)],Kt_2450);
+ fRangeShow:=TKt_RangeMeasureShow.Create(STexts[ord(kt_ms_range)],{Kt_2450.SourceType,}Kt_2450);
  fRangeLimitedShow:=TKt_RangeLimitedShow.Create(STexts[ord(kt_ms_lrange)],Kt_2450,Labels[High(Labels)]);
  fRangeShow.HookHookParameterClick:=ChangeRange;
  inherited Create(Kt_2450,STexts,Labels);
@@ -1143,30 +1110,30 @@ end;
 
 procedure TKt_2450_MeasurementShow.DisplayDNOkClick;
 begin
- fKt_2450.SetDisplayDigitsNumber(3+(fSettingsShow[ord(kt_ms_displaydn)] as TStringParameterShow).Data);
+ fKt_2450.SetDisplayDigitsNumber(3+fSettingsShow[kt_ms_displaydn].Data);
 end;
 
 procedure TKt_2450_MeasurementShow.ObjectToSetting;
 begin
 if fKt_2450.ResistanceCompencateOn[fKt_2450.MeasureFunction]
-   then (fSettingsShow[ord(kt_ms_rescomp)] as TStringParameterShow).Data:=0
-   else (fSettingsShow[ord(kt_ms_rescomp)] as TStringParameterShow).Data:=1;
+   then fSettingsShow[kt_ms_rescomp].Data:=0
+   else fSettingsShow[kt_ms_rescomp].Data:=1;
 
   case fKt_2450.Mode of
     kt_md_sVmC,
     kt_md_sVmR,
     kt_md_sVmP,
-    kt_md_sImC:(fSettingsShow[ord(kt_ms_sense)] as TStringParameterShow).Data:=ord(fKt_2450.Sences[kt_mCurrent]);
+    kt_md_sImC:fSettingsShow[kt_ms_sense].Data:=ord(fKt_2450.Sences[kt_mCurrent]);
     kt_md_sVmV,
     kt_md_sImV,
     kt_md_sImR,
-    kt_md_sImP:(fSettingsShow[ord(kt_ms_sense)] as TStringParameterShow).Data:=ord(fKt_2450.Sences[kt_mVoltage]);
+    kt_md_sImP:fSettingsShow[kt_ms_sense].Data:=ord(fKt_2450.Sences[kt_mVoltage]);
   end;
 
   fRangeShow.ObjectToSetting;
   fRangeLimitedShow.ObjectToSetting;
   fTimeShow.Data:=fKt_2450.MeasureTime[fKt_2450.MeasureFunction];
-  (fSettingsShow[ord(kt_ms_displaydn)] as TStringParameterShow).Data:=ord(fKt_2450.DisplayDN[fKt_2450.MeasureFunction]);
+  fSettingsShow[kt_ms_displaydn].Data:=fKt_2450.DisplayDN[fKt_2450.MeasureFunction]-3;
 
 // case fKt_2450.SourceType of
 //   kt_sVolt: fRangeShow.Data:=ord(fKt_2450.MeasureVoltageRange);
@@ -1177,7 +1144,7 @@ end;
 
 procedure TKt_2450_MeasurementShow.ResCompOkClick;
 begin
- if (fSettingsShow[ord(kt_ms_rescomp)] as TStringParameterShow).Data=0
+ if fSettingsShow[kt_ms_rescomp].Data=0
     then fKt_2450.SetResistanceCompencate(True)
     else fKt_2450.SetResistanceCompencate(False)
 end;
@@ -1188,11 +1155,11 @@ begin
     kt_md_sVmC,
     kt_md_sVmR,
     kt_md_sVmP,
-    kt_md_sImC:fKt_2450.SetSense(kt_mCurrent,TKt2450_Sense((fSettingsShow[ord(kt_ms_sense)] as TStringParameterShow).Data));
+    kt_md_sImC:fKt_2450.SetSense(kt_mCurrent,TKt2450_Sense(fSettingsShow[kt_ms_sense].Data));
     kt_md_sVmV,
     kt_md_sImV,
     kt_md_sImR,
-    kt_md_sImP:fKt_2450.SetSense(kt_mVoltage,TKt2450_Sense((fSettingsShow[ord(kt_ms_sense)] as TStringParameterShow).Data));
+    kt_md_sImP:fKt_2450.SetSense(kt_mVoltage,TKt2450_Sense(fSettingsShow[kt_ms_sense].Data));
   end;
 
 end;
@@ -1204,20 +1171,17 @@ procedure TKt_2450_MeasurementShow.SettingsShowCreate(
       ('ResistComp','DisplayDN','Sense');
  var i:TKt2450_MeasureSettings;
 begin
- SetLength(fSettingsShow,ord(kt_ms_sense)+1);
-
  for I := Low(TKt2450_MeasureSettings) to kt_ms_rescomp do
-   fSettingsShow[ord(i)]:=TStringParameterShow.Create(STexts[ord(i)],
-                        Labels[ord(i)], SettingsCaption[i], fSettingsShowSL[ord(i)]);
-
- fSettingsShow[ord(kt_ms_rescomp)].HookParameterClick:=ResCompOkClick;
+   fSettingsShow[i]:=TStringParameterShow.Create(STexts[ord(i)],
+                        Labels[ord(i)], SettingsCaption[i], fSettingsShowSL[i]);
+ fSettingsShow[kt_ms_rescomp].HookParameterClick:=ResCompOkClick;
 
  for I := kt_ms_displaydn to kt_ms_sense do
-   fSettingsShow[ord(i)]:=TStringParameterShow.Create(STexts[ord(i)],
-                        SettingsCaption[i], fSettingsShowSL[ord(i)]);
- fSettingsShow[ord(kt_ms_sense)].HookParameterClick:=SenseOkClick;
- fSettingsShow[ord(kt_ms_displaydn)].HookParameterClick:=DisplayDNOkClick;
- (fSettingsShow[ord(kt_ms_displaydn)] as TStringParameterShow).Data:=2;
+   fSettingsShow[i]:=TStringParameterShow.Create(STexts[ord(i)],
+                        SettingsCaption[i], fSettingsShowSL[i]);
+ fSettingsShow[kt_ms_sense].HookParameterClick:=SenseOkClick;
+ fSettingsShow[kt_ms_displaydn].HookParameterClick:=DisplayDNOkClick;
+ fSettingsShow[kt_ms_displaydn].Data:=2;
 
  fTimeShow:=TDoubleParameterShow.Create(STexts[ord(kt_ms_time)],
                                         Labels[High(Labels)-1],
@@ -1234,23 +1198,18 @@ end;
 procedure TKt_2450_MeasurementShow.SettingsShowSLCreate;
  var i:integer;
 begin
-//    fSettingsShow:array[kt_ms_rescomp..kt_ms_sense]of TStringParameterShow;
-//  fSettingsShowSL:array[kt_ms_rescomp..kt_ms_sense]of TStringList;
-  SetLength(fSettingsShowSL,ord(kt_ms_sense)+1);
-  inherited SettingsShowSLCreate;
-
-//  for I := ord(low(fSettingsShowSL)) to ord(High(fSettingsShowSL)) do
-//   begin
-//   fSettingsShowSL[TKt2450_MeasureSettings(i)]:=TStringList.Create();
-//   fSettingsShowSL[TKt2450_MeasureSettings(i)].Clear;
-//   end;
+  for I := ord(low(fSettingsShowSL)) to ord(High(fSettingsShowSL)) do
+   begin
+   fSettingsShowSL[TKt2450_MeasureSettings(i)]:=TStringList.Create();
+   fSettingsShowSL[TKt2450_MeasureSettings(i)].Clear;
+   end;
 
  for I := 0 to 1 do
-  fSettingsShowSL[ord(kt_ms_rescomp)].Add(SuffixKt_2450[i]);
+  fSettingsShowSL[kt_ms_rescomp].Add(SuffixKt_2450[i]);
  for I := 0 to ord(High(TKt2450_Sense)) do
-    fSettingsShowSL[ord(kt_ms_sense)].Add(KT2450_SenseLabels[TKt2450_Sense(i)]);
+    fSettingsShowSL[kt_ms_sense].Add(KT2450_SenseLabels[TKt2450_Sense(i)]);
  for I := Low(Kt2450DisplayDigitsNumber) to High(Kt2450DisplayDigitsNumber) do
-    fSettingsShowSL[ord(kt_ms_displaydn)].Add(inttostr(i)+Kt2450DisplayDNLabel);
+    fSettingsShowSL[kt_ms_displaydn].Add(inttostr(i)+Kt2450DisplayDNLabel);
 end;
 
 procedure TKt_2450_MeasurementShow.TimeOkClick;
@@ -1259,13 +1218,12 @@ begin
 end;
 
 procedure TKt_2450_MeasurementShow.SettingsShowFree;
-// var i:TKt2450_MeasureSettings;
+ var i:TKt2450_MeasureSettings;
 begin
- inherited SettingsShowFree;
-// for I := low(fSettingsShowSL) to High(fSettingsShowSL) do
-//  FreeAndNil(fSettingsShowSL[i]);
-// for i := Low(fSettingsShow) to High(fSettingsShow) do
-//  FreeAndNil(fSettingsShow[i]);
+ for I := low(fSettingsShowSL) to High(fSettingsShowSL) do
+  FreeAndNil(fSettingsShowSL[i]);
+ for i := Low(fSettingsShow) to High(fSettingsShow) do
+  FreeAndNil(fSettingsShow[i]);
 FreeAndNil(fTimeShow);
 end;
 
@@ -1478,7 +1436,6 @@ constructor TKt_2450_SweetShow.Create(Kt_2450: TKt_2450;
 begin
  fKt_2450_SweepParameters:=Kt_2450.SweepParameters[Kt_2450.SourceType];
  fMode:=Mode;
- fMode.OnClick:=nil;
  fMode.Items.Clear;
  fMode.Items.Add('Linear Step');
  fMode.Items.Add('Linear Point');
@@ -1521,18 +1478,18 @@ begin
 //    fSettingsShow[kt_sws_stpo].ReadFromIniFile(CF);
 //  end;
 
- if ((fMode.ItemIndex=0)and(fSettingsShow[ord(kt_sws_stpo)] is TIntegerParameterShow))
-    or((fMode.ItemIndex<>0)and(fSettingsShow[ord(kt_sws_stpo)] is TDoubleParameterShow))
+ if ((fMode.ItemIndex=0)and(fSettingsShow[kt_sws_stpo] is TIntegerParameterShow))
+    or((fMode.ItemIndex<>0)and(fSettingsShow[kt_sws_stpo] is TDoubleParameterShow))
  then
   begin
-    fSettingsShow[ord(kt_sws_stpo)].WriteToIniFile(ConfigFile);
-    FreeAndNil(fSettingsShow[ord(kt_sws_stpo)]);
+    fSettingsShow[kt_sws_stpo].WriteToIniFile(ConfigFile);
+    FreeAndNil(fSettingsShow[kt_sws_stpo]);
     case fMode.ItemIndex of
      0:begin
-       fSettingsShow[ord(kt_sws_stpo)]:=TDoubleParameterShow.Create(
+       fSettingsShow[kt_sws_stpo]:=TDoubleParameterShow.Create(
                                     fStepPointST,fStepPointLab,'SW_Step',
                                     0.05,5);
-       (fSettingsShow[ord(kt_sws_stpo)] as TDoubleParameterShow).Limits.SetLimits(1e-6);
+       (fSettingsShow[kt_sws_stpo] as TDoubleParameterShow).Limits.SetLimits(1e-6);
        fStepPointLab.Caption:=Kt2450_SweepLabelNames[kt_sws_stpo];
        if fKt_2450.SourceType=kt_sVolt
              then fStepPointLab.Caption:=fStepPointLab.Caption+'V'
@@ -1540,9 +1497,9 @@ begin
 
        end;
      else begin
-          fSettingsShow[ord(kt_sws_stpo)]:=TIntegerParameterShow.Create(
+          fSettingsShow[kt_sws_stpo]:=TIntegerParameterShow.Create(
                                 fStepPointST,fStepPointLab,'SW_Points',2);
-         (fSettingsShow[ord(kt_sws_stpo)] as TIntegerParameterShow).Limits.SetLimits(
+         (fSettingsShow[kt_sws_stpo] as TIntegerParameterShow).Limits.SetLimits(
                         Kt_2450_SweepCountLimits[lvMin],
                         Kt_2450_SweepCountLimits[lvMax]);
           fStepPointLab.Caption:='Points';
@@ -1551,7 +1508,7 @@ begin
     SettingTunning(kt_sws_stpo);
     fStepPointLab.WordWrap:=False;
 //    fStepPointLab.Caption:=Kt2450_SweepLabelNames[kt_sws_stpo];
-    fSettingsShow[ord(kt_sws_stpo)].ReadFromIniFile(ConfigFile);
+    fSettingsShow[kt_sws_stpo].ReadFromIniFile(ConfigFile);
   end;
 
 end;
@@ -1561,11 +1518,11 @@ end;
 // fKt_2450_SweepParameters.Delay:=(fSettingsShow[kt_sws_delay] as TDoubleParameterShow).Data;
 //end;
 
-//destructor TKt_2450_SweetShow.Destroy;
-//begin
-////  FreeAndNil(CF);
-//  inherited;
-//end;
+destructor TKt_2450_SweetShow.Destroy;
+begin
+//  FreeAndNil(CF);
+  inherited;
+end;
 
 procedure TKt_2450_SweetShow.ModeClick(Sender: TObject);
 begin
@@ -1578,9 +1535,9 @@ begin
 end;
 
 procedure TKt_2450_SweetShow.ReadFromIniFile(ConfigFile: TIniFile);
- var i:integer;
+ var i:TKt2450_SweepSettings;
 begin
- for i := 0 to High(fSettingsShow) do
+ for i := Low(fSettingsShow) to High(fSettingsShow) do
    fSettingsShow[i].ReadFromIniFile(ConfigFile);
  fMode.ItemIndex:= ConfigFile.ReadInteger(fKt_2450.Name,
            'SW_Mode'+Kt2450_SourceName[fKt_2450.SourceType],0);
@@ -1598,47 +1555,45 @@ procedure TKt_2450_SweetShow.SettingsShowCreate(STexts: array of TStaticText;
   var i:TKt2450_SweepSettings;
 begin
 
- //  fSettingsShow:array[TKt2450_SweepSettings]of TParameterShowNew;
- SetLength(fSettingsShow,ord(High(TKt2450_SweepSettings))+1);
 
- fSettingsShow[ord(kt_sws_start)]:=TDoubleParameterShow.Create(
+ fSettingsShow[kt_sws_start]:=TDoubleParameterShow.Create(
                                     STexts[0],Labels[0],'SW_Start',
                                     0,4);
-(fSettingsShow[ord(kt_sws_start)] as TDoubleParameterShow).Limits.SetLimits(
+(fSettingsShow[kt_sws_start] as TDoubleParameterShow).Limits.SetLimits(
                         Kt_2450_SourceSweepLimits[fKt_2450.SourceType,lvMin],
                         Kt_2450_SourceSweepLimits[fKt_2450.SourceType,lvMax]);
 
 
- fSettingsShow[ord(kt_sws_stop)]:=TDoubleParameterShow.Create(
+ fSettingsShow[kt_sws_stop]:=TDoubleParameterShow.Create(
                                     STexts[1],Labels[1],'SW_Stop',
                                     0.1,4);
-(fSettingsShow[ord(kt_sws_stop)] as TDoubleParameterShow).Limits.SetLimits(
+(fSettingsShow[kt_sws_stop] as TDoubleParameterShow).Limits.SetLimits(
                         Kt_2450_SourceSweepLimits[fKt_2450.SourceType,lvMin],
                         Kt_2450_SourceSweepLimits[fKt_2450.SourceType,lvMax]);
 
- fSettingsShow[ord(kt_sws_delay)]:=TDoubleParameterShow.Create(
+ fSettingsShow[kt_sws_delay]:=TDoubleParameterShow.Create(
                                     STexts[2],Labels[2],'SW_Delay',
                                     0,4);
-(fSettingsShow[ord(kt_sws_delay)] as TDoubleParameterShow).Limits.SetLimits(
+(fSettingsShow[kt_sws_delay] as TDoubleParameterShow).Limits.SetLimits(
             0,Kt_2450_SweepDelayLimits[lvMax]);
 
 
  fStepPointST:=STexts[3];
  fStepPointLab:=Labels[3];
- fSettingsShow[ord(kt_sws_stpo)]:=TDoubleParameterShow.Create(
+ fSettingsShow[kt_sws_stpo]:=TDoubleParameterShow.Create(
                                     fStepPointST,fStepPointLab,'SW_Step',
                                     0.05,5);
-(fSettingsShow[ord(kt_sws_stpo)] as TDoubleParameterShow).Limits.SetLimits(1e-6);
+(fSettingsShow[kt_sws_stpo] as TDoubleParameterShow).Limits.SetLimits(1e-6);
 
 // CreateStepPointShow();
- fSettingsShow[ord(kt_sws_count)]:=TIntegerParameterShow.Create(
+ fSettingsShow[kt_sws_count]:=TIntegerParameterShow.Create(
                                     STexts[4],Labels[4],'SW_Count',
                                     1);
-(fSettingsShow[ord(kt_sws_count)] as TIntegerParameterShow).Limits.SetLimits(
+(fSettingsShow[kt_sws_count] as TIntegerParameterShow).Limits.SetLimits(
                         Kt_2450_SweepCountLimits[lvMin],
                         Kt_2450_SweepCountLimits[lvMax]);
 
- fSettingsShow[ord(kt_sws_ranget)]:=TStringParameterShow.Create(
+ fSettingsShow[kt_sws_ranget]:=TStringParameterShow.Create(
                                     STexts[5],Labels[5],'SW_RangeT',
                                     fRangeTypeSettingsShow);
 
@@ -1662,12 +1617,11 @@ begin
 end;
 
 procedure TKt_2450_SweetShow.SettingsShowFree;
-// var i:TKt2450_SweepSettings;
+ var i:TKt2450_SweepSettings;
 begin
  FreeAndNil(fRangeTypeSettingsShow);
- inherited SettingsShowFree;
-// for i := Low(fSettingsShow) to High(fSettingsShow) do
-//  FreeAndNil(fSettingsShow[i]);
+ for i := Low(fSettingsShow) to High(fSettingsShow) do
+  FreeAndNil(fSettingsShow[i]);
 end;
 
 procedure TKt_2450_SweetShow.SettingsShowSLCreate;
@@ -1697,24 +1651,24 @@ end;
 
 procedure TKt_2450_SweetShow.UpDateObject;
 begin
- fKt_2450_SweepParameters.Stop:=(fSettingsShow[ord(kt_sws_stop)] as TDoubleParameterShow).Data;
- fKt_2450_SweepParameters.Start:=(fSettingsShow[ord(kt_sws_start)] as TDoubleParameterShow).Data;
+ fKt_2450_SweepParameters.Stop:=(fSettingsShow[kt_sws_stop] as TDoubleParameterShow).Data;
+ fKt_2450_SweepParameters.Start:=(fSettingsShow[kt_sws_start] as TDoubleParameterShow).Data;
  case fMode.ItemIndex of
-   0:fKt_2450_SweepParameters.Step:=(fSettingsShow[ord(kt_sws_stpo)] as TDoubleParameterShow).Data;
-   else fKt_2450_SweepParameters.Points:=(fSettingsShow[ord(kt_sws_stpo)] as TIntegerParameterShow).Data;
+   0:fKt_2450_SweepParameters.Step:=(fSettingsShow[kt_sws_stpo] as TDoubleParameterShow).Data;
+   else fKt_2450_SweepParameters.Points:=(fSettingsShow[kt_sws_stpo] as TIntegerParameterShow).Data;
  end;
 // showmessage(inttostr((fSettingsShow[kt_sws_count] as TIntegerParameterShow).Data));
- fKt_2450_SweepParameters.Delay:=(fSettingsShow[ord(kt_sws_delay)] as TDoubleParameterShow).Data;
- fKt_2450_SweepParameters.Count:=(fSettingsShow[ord(kt_sws_count)] as TIntegerParameterShow).Data;
- fKt_2450_SweepParameters.RangeType:=TKt2450_SweepRangeType((fSettingsShow[ord(kt_sws_ranget)] as TStringParameterShow).Data);
+ fKt_2450_SweepParameters.Delay:=(fSettingsShow[kt_sws_delay] as TDoubleParameterShow).Data;
+ fKt_2450_SweepParameters.Count:=(fSettingsShow[kt_sws_count] as TIntegerParameterShow).Data;
+ fKt_2450_SweepParameters.RangeType:=TKt2450_SweepRangeType((fSettingsShow[kt_sws_ranget] as TStringParameterShow).Data);
  fKt_2450_SweepParameters.Dual:=fDualCB.Checked;
  fKt_2450_SweepParameters.FailAbort:=fAbortLimitCB.Checked;
 end;
 
 procedure TKt_2450_SweetShow.WriteToIniFile(ConfigFile: TIniFile);
- var i:integer;
+ var i:TKt2450_SweepSettings;
 begin
- for i := 0 to High(fSettingsShow) do
+ for i := Low(fSettingsShow) to High(fSettingsShow) do
    fSettingsShow[i].WriteToIniFile(ConfigFile);
 
  WriteIniDef(ConfigFile, fKt_2450.Name, 'SW_Mode'+Kt2450_SourceName[fKt_2450.SourceType], fMode.ItemIndex, 0);
@@ -1726,9 +1680,9 @@ end;
 
 procedure TKt_2450_SweetShow.SettingTunning(i: TKt2450_SweepSettings);
 begin
-  fSettingsShow[ord(i)].SetName(fKt_2450.Name);
-  fSettingsShow[ord(i)].IniNameSalt := Kt2450_SourceName[fKt_2450.SourceType];
-  fSettingsShow[ord(i)].HookParameterClick := UpDateObject;
+  fSettingsShow[i].SetName(fKt_2450.Name);
+  fSettingsShow[i].IniNameSalt := Kt2450_SourceName[fKt_2450.SourceType];
+  fSettingsShow[i].HookParameterClick := UpDateObject;
 end;
 
 end.

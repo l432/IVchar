@@ -3,7 +3,7 @@ unit SCPI;
 interface
 
 uses
-  RS232deviceNew, CPort, OlegTypePart2, OlegType, StrUtils;
+  RS232deviceNew, CPort, OlegTypePart2, OlegType, StrUtils, Measurement;
 
 const
 //  TestShow=True;
@@ -46,6 +46,7 @@ type
     procedure StrToNumberArray(var Values:TArrSingle; Str:string; Decimator:string=',');
     {розміщує в Values числа, розташовані в рядку Str і розділені між собою Decimator}
    public
+    property Device:TMeterDevice read fDevice;
     Constructor Create(Nm:string);
     destructor Destroy;override;
     function Test():boolean;virtual;abstract;
@@ -56,6 +57,26 @@ type
     class function StringToInvertedCommas(str:string):string;
     class function DeleteSubstringAll(Source:string;Substring: string=' '):string;
   end;
+
+TMeasurementSimple=class(TNamedInterfacedObject,IMeasurement)
+{заготовка для простих вимірювачів на кшталт каналу осцилографа
+тобто об'єкт, для якого реальні вимірювання проводить щось
+більш складніше, а тут практично реалізація інтерфейсу мінімальна,
+щоб можна було підключити, наприклад, до TMeasurementShowSimple}
+ protected
+  fValue:double;
+  fNewData:boolean;
+  function GetNewData:boolean;
+  function GetValue:double;
+  procedure SetNewData(Value:boolean);
+  function GetDeviceKod:byte;
+ public
+ property NewData:boolean read GetNewData write SetNewData;
+ property Value:double read GetValue;
+ function GetData:double;virtual;abstract;
+ procedure GetDataThread(WPARAM: word; EventEnd:THandle);
+end;
+
 
   TRS232_SCPI=class(TRS232)
     protected
@@ -267,6 +288,35 @@ begin
   SetLength(Values,NumberOfSubstringInRow(Str));
   for I := 0 to High(Values) do
    Values[i]:=FloatDataFromRow(Str,i+1);
+end;
+
+{ TMeasurementSimple }
+
+
+procedure TMeasurementSimple.GetDataThread(WPARAM: word; EventEnd: THandle);
+begin
+  // не зробив
+end;
+
+function TMeasurementSimple.GetDeviceKod: byte;
+begin
+ Result:=0;
+end;
+
+
+function TMeasurementSimple.GetNewData: boolean;
+begin
+   Result:=fNewData;
+end;
+
+function TMeasurementSimple.GetValue: double;
+begin
+  Result:=fValue;
+end;
+
+procedure TMeasurementSimple.SetNewData(Value: boolean);
+begin
+   fNewData:=Value;
 end;
 
 end.

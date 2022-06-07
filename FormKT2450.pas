@@ -78,6 +78,10 @@ type
     ST_KT2450DisplDN: TStaticText;
     L_KT2450MCount: TLabel;
     ST_KT2450MCount: TStaticText;
+    LKT2450_Meas: TLabel;
+    LKT2450_MeasU: TLabel;
+    B_KT2450_Meas: TButton;
+    B_KT2450_MeasAuto: TSpeedButton;
     procedure BCloseClick(Sender: TObject);
     procedure FormPaint(Sender: TObject);
   private

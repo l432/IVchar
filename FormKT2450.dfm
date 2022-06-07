@@ -724,8 +724,8 @@ object KT2450Form: TKT2450Form
       ParentFont = False
     end
     object L_KT2450MeasureLowRange: TLabel
-      Left = 88
-      Top = 58
+      Left = 130
+      Top = 108
       Width = 60
       Height = 32
       Caption = 'Low Auto Limit'
@@ -739,7 +739,7 @@ object KT2450Form: TKT2450Form
     end
     object L_KT2450MeasTime: TLabel
       Left = 14
-      Top = 101
+      Top = 107
       Width = 54
       Height = 32
       Caption = 'Measure time, ms'
@@ -751,9 +751,56 @@ object KT2450Form: TKT2450Form
       ParentFont = False
       WordWrap = True
     end
+    object LKT2450_Meas: TLabel
+      Left = 3
+      Top = 14
+      Width = 174
+      Height = 31
+      AutoSize = False
+      Caption = '  ERROR'
+      Color = clWhite
+      Font.Charset = RUSSIAN_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -25
+      Font.Name = 'Verdana'
+      Font.Style = [fsBold]
+      ParentColor = False
+      ParentFont = False
+    end
+    object LKT2450_MeasU: TLabel
+      Left = 177
+      Top = 14
+      Width = 40
+      Height = 31
+      AutoSize = False
+      Caption = 'a'
+      Color = clInfoText
+      Font.Charset = RUSSIAN_CHARSET
+      Font.Color = clWhite
+      Font.Height = -27
+      Font.Name = 'Arial'
+      Font.Style = [fsBold]
+      ParentColor = False
+      ParentFont = False
+    end
+    object B_KT2450_MeasAuto: TSpeedButton
+      Left = 146
+      Top = 56
+      Width = 45
+      Height = 19
+      AllowAllUp = True
+      GroupIndex = 2
+      Caption = 'AUTO'
+      Font.Charset = RUSSIAN_CHARSET
+      Font.Color = clDefault
+      Font.Height = -13
+      Font.Name = 'Arial'
+      Font.Style = [fsBold]
+      ParentFont = False
+    end
     object ST_KT2450_Sense: TStaticText
-      Left = 10
-      Top = 18
+      Left = 12
+      Top = 81
       Width = 68
       Height = 24
       Caption = '2-Wire'
@@ -782,8 +829,8 @@ object KT2450Form: TKT2450Form
       TabOrder = 1
     end
     object ST_KT2450MeasureRange: TStaticText
-      Left = 11
-      Top = 71
+      Left = 131
+      Top = 82
       Width = 49
       Height = 24
       Caption = 'Auto'
@@ -797,8 +844,8 @@ object KT2450Form: TKT2450Form
       TabOrder = 2
     end
     object ST_KT2450MeasureLowRange: TStaticText
-      Left = 154
-      Top = 66
+      Left = 128
+      Top = 142
       Width = 59
       Height = 24
       Caption = '10 nA'
@@ -812,8 +859,8 @@ object KT2450Form: TKT2450Form
       TabOrder = 3
     end
     object CB_KT2450Azero: TCheckBox
-      Left = 16
-      Top = 167
+      Left = 12
+      Top = 173
       Width = 97
       Height = 17
       Caption = 'Auto Zero'
@@ -827,7 +874,7 @@ object KT2450Form: TKT2450Form
     end
     object B_KT2450Azero: TButton
       Left = 119
-      Top = 160
+      Top = 164
       Width = 98
       Height = 25
       Caption = 'Manual Zero'
@@ -835,7 +882,7 @@ object KT2450Form: TKT2450Form
     end
     object ST_KT2450MeasTime: TStaticText
       Left = 14
-      Top = 134
+      Top = 140
       Width = 40
       Height = 24
       Caption = '143'
@@ -863,6 +910,20 @@ object KT2450Form: TKT2450Form
       ShowAccelChar = False
       TabOrder = 7
     end
+    object B_KT2450_Meas: TButton
+      Left = 31
+      Top = 56
+      Width = 79
+      Height = 19
+      Caption = 'measure'
+      Font.Charset = RUSSIAN_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -13
+      Font.Name = 'Arial'
+      Font.Style = [fsBold]
+      ParentFont = False
+      TabOrder = 8
+    end
   end
   object GB_FT2450Setup: TGroupBox
     Tag = 110
@@ -881,8 +942,8 @@ object KT2450Form: TKT2450Form
     object L_KT2450MCount: TLabel
       Left = 5
       Top = 120
-      Width = 64
-      Height = 33
+      Width = 58
+      Height = 32
       Caption = 'Measure Count'
       Font.Charset = RUSSIAN_CHARSET
       Font.Color = clNavy

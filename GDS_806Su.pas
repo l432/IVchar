@@ -282,25 +282,26 @@ type
     procedure GetMeasuringDataVectors(Chan:TGDS_Channel);
   end;
 
-TGDS_806S_Channel=class(TNamedInterfacedObject,IMeasurement)
+//TGDS_806S_Channel=class(TNamedInterfacedObject,IMeasurement)
+TGDS_806S_Channel=class(TMeasurementSimple)
  private
-  fValue:double;
-  fNewData:boolean;
+//  fValue:double;
+//  fNewData:boolean;
   fChanelNumber: TGDS_Channel;
   fParentModule:TGDS_806S;
-  function GetNewData:boolean;
-  function GetValue:double;
-  procedure SetNewData(Value:boolean);
+//  function GetNewData:boolean;
+//  function GetValue:double;
+//  procedure SetNewData(Value:boolean);
   function GetMeasureModeLabel():string;
-  function GetDeviceKod:byte;
+//  function GetDeviceKod:byte;
  public
- property NewData:boolean read GetNewData write SetNewData;
- property Value:double read GetValue;
+// property NewData:boolean read GetNewData write SetNewData;
+// property Value:double read GetValue;
  property MeasureModeLabel:string read GetMeasureModeLabel;
  constructor Create(ChanelNumber:TGDS_Channel;
                      GDS_806S:TGDS_806S);
- function GetData:double;
- procedure GetDataThread(WPARAM: word; EventEnd:THandle);
+ function GetData:double;override;
+// procedure GetDataThread(WPARAM: word; EventEnd:THandle);
  procedure SetMeasType(MType:byte);overload;
  procedure SetMeasType(MType:TGDS_MeasureTypeSym);overload;
 end;
@@ -1736,16 +1737,16 @@ begin
  fNewData:=True;
 end;
 
-procedure TGDS_806S_Channel.GetDataThread(WPARAM: word; EventEnd: THandle);
-begin
-// не зробив
-end;
+//procedure TGDS_806S_Channel.GetDataThread(WPARAM: word; EventEnd: THandle);
+//begin
+//// не зробив
+//end;
 
 
-function TGDS_806S_Channel.GetDeviceKod: byte;
-begin
- Result:=0;
-end;
+//function TGDS_806S_Channel.GetDeviceKod: byte;
+//begin
+// Result:=0;
+//end;
 
 function TGDS_806S_Channel.GetMeasureModeLabel: string;
 begin
@@ -1755,15 +1756,15 @@ begin
     Result:=fParentModule.MTypeToMeasureModeLabel(fParentModule.fSettings[gds_ch2_mtype])
 end;
 
-function TGDS_806S_Channel.GetNewData: boolean;
-begin
-  Result:=fNewData;
-end;
-
-function TGDS_806S_Channel.GetValue: double;
-begin
-  Result:=fValue;
-end;
+//function TGDS_806S_Channel.GetNewData: boolean;
+//begin
+//  Result:=fNewData;
+//end;
+//
+//function TGDS_806S_Channel.GetValue: double;
+//begin
+//  Result:=fValue;
+//end;
 
 procedure TGDS_806S_Channel.SetMeasType(MType: byte);
 begin
@@ -1775,10 +1776,10 @@ begin
  fParentModule.SetMeasType(fChanelNumber,MType);
 end;
 
-procedure TGDS_806S_Channel.SetNewData(Value: boolean);
-begin
-  fNewData:=Value;
-end;
+//procedure TGDS_806S_Channel.SetNewData(Value: boolean);
+//begin
+//  fNewData:=Value;
+//end;
 
 { TGDSnew_Chan_Show }
 
