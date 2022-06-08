@@ -43,28 +43,24 @@ type
 
   TControllerThread = class(TTheadCycle)
   private
-//    fMeasurement:IMeasurement;
-//    fDAC:IDAC;
     fMeasurement,fDAC:Pointer;
     fPID:TPID;
     fInterialPIDused:boolean;
     function GetMeasurement:IMeasurement;
-    function GetDAC:IDAC;
+//    function GetDAC:IDAC;
+    function GetDAC:ISource;
     function Mesuring():double;
     procedure ControllerOutput;
   protected
     procedure DoSomething;override;
   public
    property Measurement:IMeasurement read GetMeasurement;
-   property DAC:IDAC read GetDAC;
+//   property DAC:IDAC read GetDAC;
+   property DAC:ISource read GetDAC;
    destructor Destroy; override;
-//   constructor Create(Measurement:IMeasurement;
-//                      IDAC:IDAC;
-//                      Interval:double;
-//                      PID_ParamArr:TPID_ParamArr);overload;
-////                      Kpp,Kii,Kdd,NeededValue,Tolerance:double);overload;
    constructor Create(Measurement:IMeasurement;
-                      IDAC:IDAC;
+                      IDAC:ISource;
+//                      IDAC:IDAC;
                       Interval:double;
                       PID:TPID);overload;
   end;
@@ -157,8 +153,10 @@ bb:
    Result:=Measurement.Value;
 end;
 
-constructor TControllerThread.Create(Measurement: IMeasurement; IDAC: IDAC;
-  Interval: double; PID: TPID);
+constructor TControllerThread.Create(Measurement: IMeasurement;
+//              IDAC: IDAC;
+              IDAC: ISource;
+              Interval: double; PID: TPID);
 begin
   inherited Create(Interval);
 
@@ -185,9 +183,12 @@ begin
 end;
 
 
-function TControllerThread.GetDAC: IDAC;
+//function TControllerThread.GetDAC: IDAC;
+function TControllerThread.GetDAC: ISource;
 begin
-  Result:=IDAC(fDAC);
+  Result:=ISource(fDAC);
+//  Result:=IDAC(fDAC);
+
 end;
 
 function TControllerThread.GetMeasurement: IMeasurement;

@@ -49,17 +49,29 @@ IMeasurement = interface (IName)
  property DeviceKod:byte read GetDeviceKod;
 end;
 
-IDAC = interface (IName)
-  ['{F729B2E9-AF49-4293-873B-83D53C258E0A}']
+ISource = interface (IName)
+  ['{3E3BA1FA-AA35-4998-BD6F-47FC04A869C4}']
  function GetOutputValue:double;
- function GetDACKod:byte;
  procedure Output(Value:double);
  {встановлює на виході напругу Value}
- procedure OutputInt(Kod:integer);
- {встановлює на виході напругу, яка відповідає Kod}
  Procedure Reset();
  {встановлює на виході 0}
  property OutputValue:double read GetOutputValue;
+end;
+
+
+//IDAC = interface (IName)
+IDAC = interface (ISource)
+  ['{F729B2E9-AF49-4293-873B-83D53C258E0A}']
+// function GetOutputValue:double;
+ function GetDACKod:byte;
+// procedure Output(Value:double);
+ {встановлює на виході напругу Value}
+ procedure OutputInt(Kod:integer);
+ {встановлює на виході напругу, яка відповідає Kod}
+// Procedure Reset();
+ {встановлює на виході 0}
+// property OutputValue:double read GetOutputValue;
  property DACKod:byte read GetDACKod;
 end;
 
@@ -81,7 +93,7 @@ end;
 
 
 
-TSimulator = class (TNamedInterfacedObject,IMeasurement,IDAC,ITemperatureMeasurement)
+TSimulator = class (TNamedInterfacedObject,IMeasurement,ISource,IDAC,ITemperatureMeasurement)
 private
  fValue:double;
  fNewData:boolean;
@@ -115,16 +127,18 @@ TMeasurementShowSimple=class(TSimpleFreeAndAiniObject)
   protected
 //   fMeter:IMeasurement;
    fMeter:pointer;
+   fDigitNumber:byte;
    DataLabel,UnitLabel:TLabel;
    MeasurementButton:TButton;
    Time:TTimer;
-   procedure MeasurementButtonClick(Sender: TObject);
+   procedure MeasurementButtonClick(Sender: TObject);virtual;
    procedure AutoSpeedButtonClick(Sender: TObject);
    function UnitModeLabel():string;virtual;
    function GetMeter:IMeasurement;
   public
    AutoSpeedButton:TSpeedButton;
    property Meter:IMeasurement read GetMeter;
+   property DigitNumber:byte read fDigitNumber write fDigitNumber;
    Constructor Create(Meter:IMeasurement;
                       DL,UL:TLabel;
                       MB:TButton;
@@ -425,6 +439,7 @@ begin
    UnitLabel.Caption := '';
    MeasurementButton.OnClick:=MeasurementButtonClick;
    AutoSpeedButton.OnClick:=AutoSpeedButtonClick;
+   fDigitNumber:=4;
 end;
 
 function TMeasurementShowSimple.GetMeter: IMeasurement;
@@ -443,7 +458,7 @@ begin
   if Meter.Value<>ErResult then
      begin
        UnitLabel.Caption:=UnitModeLabel();
-       DataLabel.Caption:=FloatToStrF(Meter.Value,ffExponent,4,2)
+       DataLabel.Caption:=FloatToStrF(Meter.Value,ffExponent,fDigitNumber,2)
      end
                         else
      begin

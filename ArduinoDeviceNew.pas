@@ -249,7 +249,7 @@ type
    procedure Request;override;
  end;
 
-  TArduinoDACbase=class(TArduinoSetter,IDAC)
+  TArduinoDACbase=class(TArduinoSetter,IDAC,ISource)
     {базовий клас для ЦАП, що керується
     за допомогою Arduino    }
   protected

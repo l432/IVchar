@@ -3,7 +3,7 @@ unit Keitley2450Device;
 interface
 
 uses
-  Keitley2450Const, OlegTypePart2;
+  Keitley2450Const, OlegTypePart2, SCPI;
 
 
 const
@@ -55,10 +55,11 @@ TKt2450_Buffer=class(TNamedInterfacedObject)
   function DataDemandArray(DataType:TKt2450_ReturnedData):string;
 end;
 
+
 implementation
 
 uses
-  SysUtils, SCPI, Math;
+  SysUtils, Math;
 
 { TKt2450_Buffer }
 

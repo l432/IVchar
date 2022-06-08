@@ -99,16 +99,36 @@ private
 public
 end;
 
-TDAC_Show=class(TSimpleFreeAndAiniObject)
+TSource_Show=class(TSimpleFreeAndAiniObject)
   private
-//   fOutputInterface: IDAC;
    fOutputInterface: pointer;
    fValueShow:TDoubleParameterShow;
+//   ValueSetButton,ResetButton:TButton;
+   procedure ValueSetButtonAction(Sender:TObject);virtual;
+   procedure ResetButtonClick(Sender:TObject);virtual;
+   function GetSource:ISource;
+  public
+   property Source:ISource read GetSource;
+   property ValueShow:TDoubleParameterShow read fValueShow;
+   Constructor Create(const OI: ISource;
+                      VData:TStaticText;
+                      VL: TLabel;
+                      VSB, RB: TButton);
+   procedure ReadFromIniFile(ConfigFile:TIniFile);override;
+   procedure WriteToIniFile(ConfigFile:TIniFile);override;
+   destructor Destroy;override;
+end;
+
+//TDAC_Show=class(TSimpleFreeAndAiniObject)
+TDAC_Show=class(TSource_Show)
+  private
+//   fOutputInterface: pointer;
+//   fValueShow:TDoubleParameterShow;
    fKodShow:TIntegerParameterShow;
-   ValueSetButton,KodSetButton,ResetButton:TButton;
-   procedure ValueSetButtonAction(Sender:TObject);
+//   {ValueSetButton,}KodSetButton{,ResetButton}:TButton;
+   procedure ValueSetButtonAction(Sender:TObject);override;
    procedure KodSetButtonAction(Sender:TObject);
-   procedure ResetButtonClick(Sender:TObject);
+   procedure ResetButtonClick(Sender:TObject);override;
    function GetDAC:IDAC;
   public
    property DAC:IDAC read GetDAC;
@@ -116,14 +136,13 @@ TDAC_Show=class(TSimpleFreeAndAiniObject)
                       VData,KData:TStaticText;
                       VL, KL: TLabel;
                       VSB, KSB, RB: TButton);
-   procedure ReadFromIniFile(ConfigFile:TIniFile);override;//virtual;
-   procedure WriteToIniFile(ConfigFile:TIniFile);override;//virtual;
-//    procedure Free;//override;
+   procedure ReadFromIniFile(ConfigFile:TIniFile);override;
+   procedure WriteToIniFile(ConfigFile:TIniFile);override;
    destructor Destroy;override;
 end;
 
 
-  TArduinoDACShow=class(TArduinoSetterShow)
+TArduinoDACShow=class(TArduinoSetterShow)
   private
    fDAC_Show:TDAC_Show;
   public
@@ -376,24 +395,26 @@ constructor TDAC_Show.Create(const OI: IDAC;
                                 VL, KL: TLabel;
                                 VSB, KSB, RB: TButton);
 begin
-//  fOutputInterface:=OI;
-  fOutputInterface:=pointer(OI);
-  fValueShow:=TDoubleParameterShow.Create(VData,VL,'Output value',0,5);
-  fValueShow.ForUseInShowObject(OI);
-
-  ValueSetButton:=VSB;
-  ValueSetButton.OnClick:=ValueSetButtonAction;
-  ValueSetButton.Caption:='Set value';
-  ResetButton:=RB;
-  ResetButton.OnClick:=ResetButtonClick;
-  ResetButton.Caption:='Reset';
+  inherited Create(OI,VData,VL,VSB, RB);
+//  fOutputInterface:=pointer(OI);
+//  fValueShow:=TDoubleParameterShow.Create(VData,VL,'Output value',0,5);
+//  fValueShow.ForUseInShowObject(OI);
+//
+//  ValueSetButton:=VSB;
+//  ValueSetButton.OnClick:=ValueSetButtonAction;
+//  ValueSetButton.Caption:='Set value';
+//  ResetButton:=RB;
+//  ResetButton.OnClick:=ResetButtonClick;
+//  ResetButton.Caption:='Reset';
 
   fKodShow:=TIntegerParameterShow.Create(KData,KL,'Output code',0);
   fKodShow.ForUseInShowObject(OI);
 
-  KodSetButton:=KSB;
-  KodSetButton.OnClick:=KodSetButtonAction;
-  KodSetButton.Caption:='Set code';
+//  KodSetButton:=KSB;
+//  KodSetButton.OnClick:=KodSetButtonAction;
+//  KodSetButton.Caption:='Set code';
+  KSB.OnClick:=KodSetButtonAction;
+  KSB.Caption:='Set code';
 end;
 
 
@@ -406,7 +427,7 @@ end;
 destructor TDAC_Show.Destroy;
 begin
  fKodShow.Free;
- fValueShow.Free;
+// fValueShow.Free;
  inherited;
 end;
 
@@ -425,30 +446,32 @@ end;
 
 procedure TDAC_Show.ReadFromIniFile(ConfigFile: TIniFile);
 begin
-   fValueShow.ReadFromIniFile(ConfigFile);
+   inherited;
+//   fValueShow.ReadFromIniFile(ConfigFile);
    fKodShow.ReadFromIniFile(ConfigFile);
 end;
 
 procedure TDAC_Show.ResetButtonClick(Sender: TObject);
 begin
-// fOutputInterface.Reset();
- DAC.Reset();
+  inherited;
+// DAC.Reset();
  fKodShow.ColorToActive(false);
- fValueShow.ColorToActive(false);
+// fValueShow.ColorToActive(false);
 end;
 
 
 procedure TDAC_Show.ValueSetButtonAction(Sender: TObject);
 begin
-// fOutputInterface.Output(fValueShow.Data);
- DAC.Output(fValueShow.Data);
- fValueShow.ColorToActive(true);
+ inherited;
+// DAC.Output(fValueShow.Data);
+// fValueShow.ColorToActive(true);
  fKodShow.ColorToActive(false);
 end;
 
 procedure TDAC_Show.WriteToIniFile(ConfigFile: TIniFile);
 begin
-   fValueShow.WriteToIniFile(ConfigFile);
+   inherited;
+//   fValueShow.WriteToIniFile(ConfigFile);
    fKodShow.WriteToIniFile(ConfigFile);
 end;
 
@@ -604,6 +627,63 @@ begin
  ConfigFile.EraseSection(fName);
  for i := 1 to 4 do
    WriteIniDef(ConfigFile,fName,fIPadressShow[i].Name,fIPadressShow[i].Value,192);
+end;
+
+{ TSource_Show }
+
+constructor TSource_Show.Create(const OI: ISource; VData: TStaticText;
+  VL: TLabel; VSB, RB: TButton);
+begin
+  fOutputInterface:=pointer(OI);
+  fValueShow:=TDoubleParameterShow.Create(VData,VL,'Output value',0,5);
+  fValueShow.ForUseInShowObject(OI);
+
+//  ValueSetButton:=VSB;
+//  ValueSetButton.OnClick:=ValueSetButtonAction;
+//  ValueSetButton.Caption:='Set value';
+//
+//  ResetButton:=RB;
+//  ResetButton.OnClick:=ResetButtonClick;
+//  ResetButton.Caption:='Reset';
+
+  VSB.OnClick:=ValueSetButtonAction;
+  VSB.Caption:='Set value';
+
+  RB.OnClick:=ResetButtonClick;
+  RB.Caption:='Reset';
+end;
+
+destructor TSource_Show.Destroy;
+begin
+ FreeAndNil(fValueShow);
+ inherited;
+end;
+
+function TSource_Show.GetSource: ISource;
+begin
+ Result:=ISource(fOutputInterface);
+end;
+
+procedure TSource_Show.ReadFromIniFile(ConfigFile: TIniFile);
+begin
+ fValueShow.ReadFromIniFile(ConfigFile);
+end;
+
+procedure TSource_Show.ResetButtonClick(Sender: TObject);
+begin
+ Source.Reset();
+ fValueShow.ColorToActive(false);
+end;
+
+procedure TSource_Show.ValueSetButtonAction(Sender: TObject);
+begin
+ Source.Output(fValueShow.Data);
+ fValueShow.ColorToActive(true);
+end;
+
+procedure TSource_Show.WriteToIniFile(ConfigFile: TIniFile);
+begin
+ fValueShow.WriteToIniFile(ConfigFile);
 end;
 
 end.

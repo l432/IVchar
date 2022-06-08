@@ -262,7 +262,7 @@ end;
     procedure MetterDataShow();override;
  end;
 
- TET1255_DAC=class(TNamedInterfacedObject,IDAC)
+ TET1255_DAC=class(TNamedInterfacedObject,IDAC,ISource)
  private
   fChanelNumber:TET1255_DAC_ChanelNumber;
   fOutputValue:double;

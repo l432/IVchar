@@ -4,7 +4,7 @@ interface
 
 uses
   TelnetDevice, IdTelnet, ShowTypes, Keitley2450Const, SCPI, OlegType, 
-  OlegVector, OlegTypePart2, Keitley2450Device;
+  OlegVector, OlegTypePart2, Keitley2450Device, ExtCtrls, Measurement;
 
 
 type
@@ -77,6 +77,9 @@ TKt_2450_SweepParameters=class(TSimpleFreeAndAiniObject)
   class function BoolToOnOffString(bool:boolean):string;
 end;
 
+TKT2450_Meter=class;
+TKT2450_SourceMeter=class;
+TKT2450_SourceDevice=class;
 
  TKt_2450=class(TSCPInew)
   private
@@ -121,9 +124,13 @@ end;
    fSourceMeasuredValue:double;
    fTimeValue:double;
    {час виміру, в мілісекундах з початку доби}
-   fDigitLineType:TKt240_DigLineTypes;
-   fDigitLineDirec:TKt240_DigLineDirections;
-   fDLActive:TKt240_DigLines;
+   fDigitLineType:TKt2450_DigLineTypes;
+   fDigitLineDirec:TKt2450_DigLineDirections;
+   fDLActive:TKt2450_DigLines;
+   fMeter:TKT2450_Meter;
+   fSourceMeter:TKT2450_SourceMeter;
+   fSourceDevice:TKT2450_SourceDevice;
+   fDisplayState:TKt2450_DisplayState;
    procedure OnOffFromBool(toOn:boolean);
    function StringToVoltageProtection(Str:string;var vp:TKt_2450_VoltageProtection):boolean;
    function StringToSourceType(Str:string):boolean;
@@ -132,6 +139,7 @@ end;
    function StringToOutPutState(Str:string):boolean;
    function StringToMeasureUnit(Str:string):boolean;
    function StringToBufferIndexies(Str:string):boolean;
+   function StringToDisplayBrightness(Str:string):boolean;
    procedure StringToDigLineStatus(Str:string);
    procedure StringToArray(Str:string);
    procedure StringToMesuredData(Str:string;DataType:TKt2450_ReturnedData);
@@ -159,7 +167,7 @@ end;
    property VoltageLimit:double read fVoltageLimit;
    property CurrentLimit:double read fCurrentLimit;
    property Terminal:TKt2450_OutputTerminals read fTerminal;
-   property OutPutOn:boolean read fOutPutOn;
+   property OutPutOn:boolean read fOutPutOn write fOutPutOn;
    property ResistanceCompencateOn:TKt2450_MeasureBool read fResistanceCompencateOn;
    property ReadBack:TKt2450_SourceBool read fReadBack;
    property HighCapacitance:TKt2450_SourceBool read fHighCapacitance;
@@ -183,8 +191,12 @@ end;
    property Count:integer read fCount write SetCountNumber;
    property SourceMeasuredValue:double read fSourceMeasuredValue;
    property TimeValue:double read fTimeValue;
-   property DigitLineType:TKt240_DigLineTypes read fDigitLineType;
-   property DigitLineTypeDirec:TKt240_DigLineDirections read fDigitLineDirec;
+   property DigitLineType:TKt2450_DigLineTypes read fDigitLineType;
+   property DigitLineTypeDirec:TKt2450_DigLineDirections read fDigitLineDirec;
+   property Meter:TKT2450_Meter read fMeter;
+   property SourceMeter:TKT2450_SourceMeter read fSourceMeter;
+   property SourceDevice:TKT2450_SourceDevice read fSourceDevice;
+   property DisplayState:TKt2450_DisplayState read fDisplayState;
    Constructor Create(Telnet:TIdTelnet;IPAdressShow: TIPAdressShow;
                Nm:string='Keitley2450');
    destructor Destroy; override;
@@ -442,19 +454,23 @@ end;
    {кількість повторних вимірювань, коли прилад просять поміряти}
    function GetCount():boolean;
 
-   procedure SetDigLineMode(LineNumber:TKt240_DigLines;
-                            LineType:TKt240_DigLineType;
-                            Direction:TKt240_DigLineDirection);
-   function GetDigLineMode(LineNumber:TKt240_DigLines):boolean;
-   procedure SetDidLinOut(LineNumber:TKt240_DigLines;HighLevel:boolean=True);
+   procedure SetDigLineMode(LineNumber:TKt2450_DigLines;
+                            LineType:TKt2450_DigLineType;
+                            Direction:TKt2450_DigLineDirection);
+   function GetDigLineMode(LineNumber:TKt2450_DigLines):boolean;
+   procedure SetDidLinOut(LineNumber:TKt2450_DigLines;HighLevel:boolean=True);
    {якщо лінія LineNumber має kt_dt_dig та kt_dd_out, то
    для неї можна встановили високий чи низький рівні}
-   function GetDidLinOut(LineNumber:TKt240_DigLines):integer;
+   function GetDidLinOut(LineNumber:TKt2450_DigLines):integer;
    {якщо лінія LineNumber має kt_dt_dig та kt_dd_in, то
    для неї можна зчитати значення рівня;
    Resul=1 якщо високий
          0 якщо низький
         -1 якщо не отримали відповідь}
+
+   procedure SetDisplayBrightness(State:TKt2450_DisplayState);
+   function GetDisplayBrightness():boolean;
+
 
    Procedure GetParametersFromDevice;
 
@@ -478,6 +494,52 @@ end;
    Procedure Init;
    Procedure Abort;
  end;
+
+TKT2450_Measurement=class(TMeasurementSimple)
+ private
+  fParentModule: TKt_2450;
+  procedure GetDataPreparation;
+  function GetValueFromDevice:double;virtual;
+ public
+  constructor Create(Kt_2450:TKt_2450);
+  function GetData:double;override;
+end;
+
+
+//TKT2450_Meter=class(TMeasurementSimple)
+TKT2450_Meter=class(TKT2450_Measurement)
+ private
+  fTimer:TTimer;
+  function GetMeasureModeLabel():string;
+  function GetValueFromDevice:double;override;
+ public
+  property MeasureModeLabel:string read GetMeasureModeLabel;
+  property Timer:TTimer read fTimer;
+  constructor Create(Kt_2450:TKt_2450);
+  destructor Destroy; override;
+//  function GetData:double;override;
+end;
+
+TKT2450_SourceMeter=class(TKT2450_Measurement)
+ private
+  function GetValueFromDevice:double;override;
+ public
+  constructor Create(Kt_2450:TKt_2450);
+end;
+
+TKT2450_SourceDevice=class(TNamedInterfacedObject,ISource)
+ private
+  fParentModule: TKt_2450;
+  fOutputValue:double;
+  function GetOutputValue:double;
+  procedure Output(Value:double);
+ {встановлює на виході напругу Value}
+  Procedure Reset();
+ {встановлює на виході 0}
+ public
+  property OutputValue:double read GetOutputValue;
+  constructor Create(Kt_2450:TKt_2450);
+end;
 
 
 var
@@ -527,6 +589,9 @@ begin
  fIPAdressShow:=IPAdressShow;
  inherited Create(Nm);
  fBuffer:=TKt2450_Buffer.Create;
+ fMeter:=TKT2450_Meter.Create(Self);
+ fSourceMeter:=TKT2450_SourceMeter.Create(Self);
+ fSourceDevice:=TKT2450_SourceDevice.Create(Self);
 end;
 
 function TKt_2450.CurrentRangeToString(Range: TKt2450CurrentRange): string;
@@ -594,17 +659,22 @@ begin
  fSourceMeasuredValue:=ErResult;
  fTimeValue:=ErResult;
 
- for I := Low(TKt240_DigLines) to High(TKt240_DigLines) do
+ for I := Low(TKt2450_DigLines) to High(TKt2450_DigLines) do
    begin
    fDigitLineType[i]:=kt_dt_dig;
    fDigitLineDirec[i]:=kt_dd_in;
    end;
  fDLActive:=1;
+
+ fDisplayState:=kt_ds_on25;
 end;
 
 destructor TKt_2450.Destroy;
  var i:TKt2450_Source;
 begin
+  FreeAndNil(fSourceDevice);
+  FreeAndNil(fSourceMeter);
+  FreeAndNil(fMeter);
   FreeAndNil(fBuffer);
   for I := Low(TKt2450_Source) to High(TKt2450_Source) do
    FreeAndNil(SweepParameters[i]);
@@ -699,7 +769,7 @@ begin
  Result:=GetDisplayDigitsNumber(kt_mCurrent) and GetDisplayDigitsNumber(kt_mVoltage);
 end;
 
-function TKt_2450.GetDidLinOut(LineNumber: TKt240_DigLines): integer;
+function TKt_2450.GetDidLinOut(LineNumber: TKt2450_DigLines): integer;
 begin
  Result:=-1;
  if (fDigitLineType[LineNumber]<>kt_dt_dig)
@@ -709,11 +779,18 @@ begin
  if fDevice.isReceived then Result:=round(fDevice.Value);
 end;
 
-function TKt_2450.GetDigLineMode(LineNumber: TKt240_DigLines): boolean;
+function TKt_2450.GetDigLineMode(LineNumber: TKt2450_DigLines): boolean;
 begin
  fDLActive:=LineNumber;
  QuireOperation(23,36);
  Result:=(fDevice.Value=2);
+end;
+
+function TKt_2450.GetDisplayBrightness: boolean;
+begin
+ QuireOperation(6,38);
+ Result:=(fDevice.Value<>ErResult);
+// if Result then fSourceDelay[Source]:=fDevice.Value;
 end;
 
 function TKt_2450.GetDisplayDigitsNumber: boolean;
@@ -899,6 +976,7 @@ begin
  if not(GetHighCapacitanceStates()) then Exit;
  if not(GetDisplayDNs()) then Exit;
  if not(GetCount()) then Exit;
+ if not(GetDisplayBrightness()) then Exit;
 end;
 
 function TKt_2450.IsReadBackOn(Source: TKt2450_Source): boolean;
@@ -1199,6 +1277,19 @@ begin
 //  (fDevice as TTelnetMeterDeviceSingle).SetStringToSend(':FORM:ASC:PREC DEF');
 //  fDevice.Request();
 //  fDevice.GetData;
+
+// SetDisplayBrightness(kt_ds_on75);
+// if GetDisplayBrightness()
+//  then showmessage(Kt2450_DisplayStateLabel[fDisplayState]);
+// SetDisplayBrightness(kt_ds_off);
+// if GetDisplayBrightness()
+//  then showmessage(Kt2450_DisplayStateLabel[fDisplayState]);
+// SetDisplayBrightness(kt_ds_black);
+// if GetDisplayBrightness()
+//  then showmessage(Kt2450_DisplayStateLabel[fDisplayState]);
+// SetDisplayBrightness(kt_ds_on25);
+ if GetDisplayBrightness()
+  then showmessage(Kt2450_DisplayStateLabel[fDisplayState]);
 
 
 //  SetDigLineMode(1,kt_dt_trig,kt_dd_out);
@@ -1640,6 +1731,7 @@ begin
 //        SetupOperation(6,0);
 //        SetupOperation(6,1);
 //        SetupOperation(6,2);
+// SetupOperation(6,38);
       else fDevice.JoinToStringToSend(FirstNodeKt_2450[fFirstLevelNode]);
      end;
 
@@ -1783,7 +1875,15 @@ begin
           end;
     end;
     end;
-  6:fDevice.Value:=StrToInt(Str);
+  6:if fFirstLevelNode=38
+       then
+        begin
+        if StringToDisplayBrightness(AnsiLowerCase(Str))
+            then fDevice.Value:=ord(fDisplayState);
+
+        end 
+       else fDevice.Value:=StrToInt(Str);
+// QuireOperation(6,38);
   9:begin
 //     QuireOperation(9,6);
      if StringToTerminals(AnsiLowerCase(Str))
@@ -1934,7 +2034,7 @@ begin
  fDisplayDN[Measure]:=Number;
 end;
 
-procedure TKt_2450.SetDidLinOut(LineNumber: TKt240_DigLines;
+procedure TKt_2450.SetDidLinOut(LineNumber: TKt2450_DigLines;
   HighLevel: boolean);
 begin
  if (fDigitLineType[LineNumber]<>kt_dt_dig)
@@ -1945,8 +2045,8 @@ begin
  SetupOperation(23,37);
 end;
 
-procedure TKt_2450.SetDigLineMode(LineNumber: TKt240_DigLines;
-  LineType: TKt240_DigLineType; Direction: TKt240_DigLineDirection);
+procedure TKt_2450.SetDigLineMode(LineNumber: TKt2450_DigLines;
+  LineType: TKt2450_DigLineType; Direction: TKt2450_DigLineDirection);
 begin
 //:DIG:LINE<n>:MODE <lineType>, <lineDirection>
  if ((LineType=kt_dt_sync)and(Direction in [kt_dd_in..kt_dd_opdr]))
@@ -1960,6 +2060,14 @@ begin
                     +Kt2450_DigLineDirectionCommand[Direction];
 
  SetupOperation(23,36);
+end;
+
+procedure TKt_2450.SetDisplayBrightness(State: TKt2450_DisplayState);
+begin
+//:DISP:LIGH:STAT <brightness>
+ fDisplayState:=State;
+ fAdditionalString:=Kt2450_DisplayStateCommand[State];
+ SetupOperation(6,38);
 end;
 
 procedure TKt_2450.SetDisplayDigitsNumber(Number: Kt2450DisplayDigitsNumber);
@@ -2339,21 +2447,36 @@ procedure TKt_2450.StringToDigLineStatus(Str: string);
 begin
  Str:=AnsiReplaceStr(Str,',',' ');
  TempStr:=StringDataFromRow(Str,1);
- for I := ord(Low(TKt240_DigLineType)) to ord(High(TKt240_DigLineType)) do
-   if tempStr=Kt2450_DigLineTypeCommand[TKt240_DigLineType(i)] then
+ for I := ord(Low(TKt2450_DigLineType)) to ord(High(TKt2450_DigLineType)) do
+   if tempStr=Kt2450_DigLineTypeCommand[TKt2450_DigLineType(i)] then
      begin
-       fDigitLineType[fDLActive]:=TKt240_DigLineType(i);
+       fDigitLineType[fDLActive]:=TKt2450_DigLineType(i);
        fDevice.Value:=1;
        Break;
      end;
  TempStr:=StringDataFromRow(Str,2);
- for I := ord(Low(TKt240_DigLineDirection)) to ord(High(TKt240_DigLineDirection)) do
-   if tempStr=Kt2450_DigLineDirectionCommand[TKt240_DigLineDirection(i)] then
+ for I := ord(Low(TKt2450_DigLineDirection)) to ord(High(TKt2450_DigLineDirection)) do
+   if tempStr=Kt2450_DigLineDirectionCommand[TKt2450_DigLineDirection(i)] then
      begin
-       fDigitLineDirec[fDLActive]:=TKt240_DigLineDirection(i);
+       fDigitLineDirec[fDLActive]:=TKt2450_DigLineDirection(i);
        fDevice.Value:=fDevice.Value+1;
        Break;
      end;
+end;
+
+function TKt_2450.StringToDisplayBrightness(Str: string): boolean;
+  var i:TKt2450_DisplayState;
+begin
+ Result:=False;
+ for I := Low(TKt2450_DisplayState) to High(TKt2450_DisplayState) do
+  begin
+   if Str=Kt2450_DisplayStateCommand[i] then
+     begin
+       fDisplayState:=i;
+       Result:=True;
+       Break;
+     end;
+  end;
 end;
 
 function TKt_2450.StringToMeasureFunction(Str: string): boolean;
@@ -2788,6 +2911,120 @@ end;
 procedure TKt_2450_SweepParameters.SetStop(Value: double);
 begin
  fStop:=TSCPInew.NumberMap(Value,Kt_2450_SourceSweepLimits[fSource]);
+end;
+
+{ TKT2450_Measurement }
+
+constructor TKT2450_Meter.Create(Kt_2450: TKt_2450);
+begin
+ fTimer:=TTimer.Create(nil);
+ fTimer.Enabled:=False;
+ fTimer.Interval:=2000;
+ inherited Create(Kt_2450);
+ fName:='KT2450Meter';
+// fParentModule:=Kt_2450;
+end;
+
+destructor TKT2450_Meter.Destroy;
+begin
+ FreeAndNil(fTimer);
+ inherited;
+end;
+
+//function TKT2450_Meter.GetData: double;
+//begin
+// if (fParentModule.Sences[fParentModule.MeasureFunction]=kt_s4wire)
+//    or(fParentModule.Mode in [kt_md_sVmR,kt_md_sImR])
+//    or (fParentModule.OutputOffState[fParentModule.SourceType] =kt_oos_himp)
+//     then fParentModule.OutPutChange(true);
+// fParentModule.MeasureSimple;
+// fValue:=fParentModule.Device.Value;
+// Result:=fValue;
+// fNewData:=fParentModule.Device.NewData;
+//end;
+
+function TKT2450_Meter.GetMeasureModeLabel: string;
+begin
+ case fParentModule.Mode of
+  kt_md_sVmC,kt_md_sImC:Result:=' A';
+  kt_md_sVmV,kt_md_sImV:Result:=' V';
+  kt_md_sVmR,kt_md_sImR:Result:='Ohm';
+  else Result:=' W';
+ end;
+end;
+
+function TKT2450_Meter.GetValueFromDevice: double;
+begin
+ Result:=fParentModule.Device.Value;
+end;
+
+{ TKT2450_Measurement }
+
+constructor TKT2450_Measurement.Create(Kt_2450: TKt_2450);
+begin
+ inherited Create;
+ fParentModule:=Kt_2450;
+end;
+
+function TKT2450_Measurement.GetData: double;
+begin
+ GetDataPreparation;
+ fValue:=GetValueFromDevice;
+ Result:=fValue;
+ fNewData:=fParentModule.Device.NewData;
+end;
+
+procedure TKT2450_Measurement.GetDataPreparation;
+begin
+  if (fParentModule.Sences[fParentModule.MeasureFunction] = kt_s4wire) or (fParentModule.Mode in [kt_md_sVmR, kt_md_sImR]) or (fParentModule.OutputOffState[fParentModule.SourceType] = kt_oos_himp) then
+    fParentModule.OutPutChange(true);
+  fParentModule.MeasureExtended(kt_rd_MS);
+//  fParentModule.MeasureSimple;
+end;
+
+function TKT2450_Measurement.GetValueFromDevice: double;
+begin
+ Result:=ErResult;
+end;
+
+{ TKT2450_SourceMeter }
+
+constructor TKT2450_SourceMeter.Create(Kt_2450: TKt_2450);
+begin
+ inherited Create(Kt_2450);
+ fName:='KT2450SourceMeter';
+end;
+
+function TKT2450_SourceMeter.GetValueFromDevice: double;
+begin
+  Result:=fParentModule.SourceMeasuredValue;
+end;
+
+{ TKT2450_Source }
+
+constructor TKT2450_SourceDevice.Create(Kt_2450: TKt_2450);
+begin
+ inherited Create;
+ fParentModule:=Kt_2450;
+ fName:='Kt2450Source'
+end;
+
+function TKT2450_SourceDevice.GetOutputValue: double;
+begin
+ Result:=fOutputValue;
+end;
+
+procedure TKT2450_SourceDevice.Output(Value: double);
+begin
+ fParentModule.SetSourceValue(Value);
+ if not(fParentModule.OutPutOn) then
+    fParentModule.OutPutChange(True);
+end;
+
+procedure TKT2450_SourceDevice.Reset;
+begin
+ fParentModule.SetSourceValue(0);
+ fParentModule.OutPutChange(False);
 end;
 
 end.

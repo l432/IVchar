@@ -5,7 +5,7 @@ object KT2450Form: TKT2450Form
   BorderStyle = bsSingle
   Caption = 'KT2450 Settings'
   ClientHeight = 454
-  ClientWidth = 735
+  ClientWidth = 764
   Color = clCream
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -46,6 +46,19 @@ object KT2450Form: TKT2450Form
     Font.Style = [fsBold]
     ParentFont = False
     WordWrap = True
+  end
+  object L_KT2450_DispBr: TLabel
+    Left = 655
+    Top = 395
+    Width = 83
+    Height = 16
+    Caption = 'Display State'
+    Font.Charset = RUSSIAN_CHARSET
+    Font.Color = clBlack
+    Font.Height = -13
+    Font.Name = 'Arial'
+    Font.Style = [fsBold]
+    ParentFont = False
   end
   object GB_K2450IP: TGroupBox
     Tag = 110
@@ -178,7 +191,7 @@ object KT2450Form: TKT2450Form
     OnClick = BCloseClick
   end
   object GB_KT2450Sweep: TGroupBox
-    Left = 464
+    Left = 484
     Top = 8
     Width = 263
     Height = 199
@@ -483,7 +496,7 @@ object KT2450Form: TKT2450Form
     object SB_Kt2450_Termin: TSpeedButton
       Left = 7
       Top = 22
-      Width = 121
+      Width = 118
       Height = 29
       AllowAllUp = True
       GroupIndex = 3
@@ -552,15 +565,41 @@ object KT2450Form: TKT2450Form
       WordWrap = True
     end
     object L_KT2450SourceValue: TLabel
-      Left = 205
-      Top = 109
-      Width = 100
+      Left = 136
+      Top = 17
+      Width = 87
       Height = 16
-      Caption = 'Output Value, V'
+      Caption = 'Output Value:'
       Font.Charset = RUSSIAN_CHARSET
       Font.Color = clBlack
       Font.Height = -13
       Font.Name = 'Arial'
+      Font.Style = [fsBold]
+      ParentFont = False
+    end
+    object LOVDACR2R: TLabel
+      Left = 87
+      Top = 98
+      Width = 87
+      Height = 16
+      Caption = 'Output Value:'
+      Font.Charset = RUSSIAN_CHARSET
+      Font.Color = clBlack
+      Font.Height = -13
+      Font.Name = 'Arial'
+      Font.Style = [fsBold]
+      ParentFont = False
+    end
+    object LKT2450_SourceValueRange: TLabel
+      Left = 151
+      Top = 39
+      Width = 76
+      Height = 16
+      Caption = '-6.6 ... 6.6'
+      Font.Charset = RUSSIAN_CHARSET
+      Font.Color = clGreen
+      Font.Height = -13
+      Font.Name = 'Verdana'
       Font.Style = [fsBold]
       ParentFont = False
     end
@@ -668,8 +707,8 @@ object KT2450Form: TKT2450Form
       TabOrder = 6
     end
     object ST_KT2450SourceValue: TStaticText
-      Left = 205
-      Top = 127
+      Left = 229
+      Top = 14
       Width = 58
       Height = 24
       Caption = '0.025'
@@ -696,11 +735,67 @@ object KT2450Form: TKT2450Form
       ParentFont = False
       TabOrder = 8
     end
+    object STOVDACR2R: TStaticText
+      Left = 97
+      Top = 72
+      Width = 78
+      Height = 24
+      Caption = '-0.0008'
+      Font.Charset = RUSSIAN_CHARSET
+      Font.Color = clBlack
+      Font.Height = -17
+      Font.Name = 'Verdana'
+      Font.Style = [fsBold]
+      ParentFont = False
+      TabOrder = 9
+    end
+    object GBMeasR2R: TGroupBox
+      Tag = 110
+      Left = 209
+      Top = 61
+      Width = 119
+      Height = 66
+      Caption = 'Measurement'
+      Font.Charset = RUSSIAN_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -13
+      Font.Name = 'Arial'
+      Font.Style = [fsBold]
+      ParentFont = False
+      TabOrder = 10
+      object LKT2450_SourceMeasure: TLabel
+        Left = 9
+        Top = 43
+        Width = 71
+        Height = 16
+        Caption = '-0.0008'
+        Font.Charset = RUSSIAN_CHARSET
+        Font.Color = clBlack
+        Font.Height = -17
+        Font.Name = 'Courier'
+        Font.Style = [fsBold]
+        ParentFont = False
+      end
+      object BKT2450_SourceMeasure: TButton
+        Left = 7
+        Top = 16
+        Width = 105
+        Height = 24
+        Caption = 'to measure'
+        Font.Charset = RUSSIAN_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -17
+        Font.Name = 'Arial'
+        Font.Style = [fsBold]
+        ParentFont = False
+        TabOrder = 0
+      end
+    end
   end
   object GB_Kt2450_Mes: TGroupBox
     Left = 356
     Top = 216
-    Width = 235
+    Width = 257
     Height = 223
     Caption = 'Resistance'
     Font.Charset = RUSSIAN_CHARSET
@@ -754,7 +849,7 @@ object KT2450Form: TKT2450Form
     object LKT2450_Meas: TLabel
       Left = 3
       Top = 14
-      Width = 174
+      Width = 208
       Height = 31
       AutoSize = False
       Caption = '  ERROR'
@@ -768,9 +863,9 @@ object KT2450Form: TKT2450Form
       ParentFont = False
     end
     object LKT2450_MeasU: TLabel
-      Left = 177
+      Left = 207
       Top = 14
-      Width = 40
+      Width = 47
       Height = 31
       AutoSize = False
       Caption = 'a'
@@ -927,10 +1022,10 @@ object KT2450Form: TKT2450Form
   end
   object GB_FT2450Setup: TGroupBox
     Tag = 110
-    Left = 622
+    Left = 642
     Top = 226
     Width = 108
-    Height = 210
+    Height = 163
     Caption = 'Settings'
     Font.Charset = RUSSIAN_CHARSET
     Font.Color = clMaroon
@@ -1012,5 +1107,20 @@ object KT2450Form: TKT2450Form
       ShowAccelChar = False
       TabOrder = 3
     end
+  end
+  object ST_KT2450_DispBr: TStaticText
+    Left = 625
+    Top = 417
+    Width = 136
+    Height = 20
+    Caption = 'sourceV measR(I)'
+    Font.Charset = RUSSIAN_CHARSET
+    Font.Color = clBlack
+    Font.Height = -13
+    Font.Name = 'Verdana'
+    Font.Style = [fsBold]
+    ParentFont = False
+    ShowAccelChar = False
+    TabOrder = 9
   end
 end

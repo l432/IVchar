@@ -3242,6 +3242,14 @@ begin
      end;
    except
    end;
+ try
+ if Kt_2450_Show.MeterShow.AutoSpeedButton.Down then
+    begin
+      Kt_2450_Show.MeterShow.AutoSpeedButton.Down:=False;
+      Kt_2450_Show.MeterShow.AutoSpeedButton.OnClick(Sender);
+    end;
+ except
+ end;
 end;
 
 procedure TIVchar.PCChanging(Sender: TObject; var AllowChange: Boolean);
@@ -4243,6 +4251,13 @@ begin
 
 //  SetLength(Devices,High(Devices)+2);
 //  Devices[High(Devices)]:=OlegCurrent;
+
+  AllDevices.Add(Kt_2450.Meter);
+  VandIDevices.Add(Kt_2450.Meter);
+  AllDevices.Add(Kt_2450.SourceMeter);
+  VandIDevices.Add(Kt_2450.SourceMeter);
+
+
   AllDevices.Add(OlegCurrent);
   VandIDevices.Add(OlegCurrent);
   AllDevices.Add(OlegVoltage);
@@ -4326,6 +4341,7 @@ begin
 
   SetingDevices:=TArrIDAC.Create([Simulator,DACR2R,D30_06,AD5752_chA,AD5752_chB]);
   AnyObjectArray.Add(SetingDevices);
+ SetingDevices.Add([Kt_2450.SourceDevice]);
 
   if ET1255isPresent then
    begin
@@ -4446,11 +4462,13 @@ begin
  Kt_2450_Show := TKt_2450_Show.Create(Kt_2450,
                                      [BKt2450Test,B_Kt2450_Reset,
                                       B_KT2450GetSetting,B_KT2450Azero,
+                                      BKT2450_SourceMeasure,
                                      B_MyTrain],
                                      [SB_Kt2450_OutPut,SB_Kt2450_Termin],
                                      [PKt2450SaveSetup,PKt2450LoadSetup],
                                      [ST_KT2450VolProt,ST_KT2450Mode,
-                                     ST_KT2450MCount, ST_Kt2450_OutPut,
+                                     ST_KT2450MCount,ST_KT2450_DispBr,
+                                     ST_Kt2450_OutPut,
                                      ST_KT2450DelaySource,
                                      ST_KT2450SourceValue,ST_KT2450LimitSource,
                                      ST_KT2450SouceRange,
@@ -4459,9 +4477,10 @@ begin
                                      ST_KT2450MeasureRange,
                                      ST_KT2450MeasTime,ST_KT2450MeasureLowRange],
                                      [L_KT2450VolProt,L_KT2450Mode,
-                                     L_KT2450MCount,
+                                     L_KT2450MCount, LKT2450_SourceMeasure,
                                      L_Kt2450_OutPut,L_KT2450DelaySource,
                                      L_KT2450SourceValue,L_KT2450LimitSource,
+                                     LKT2450_SourceValueRange,
                                      LKT2450_ResComp,L_KT2450MeasTime,
                                      L_KT2450MeasureLowRange],
                                      [CB_KT2450ReadBack,CB_KT2450DelaySource,
@@ -4477,7 +4496,9 @@ begin
                                       [B_KT2450SweepCreate,B_KT2450SweepInit,
                                        B_KT2450SweepStop],
                                        CB_KT2450SweepDual,CB_KT2450SweepAbortLim,
-                                       RG_KT2450SweepMode);
+                                       RG_KT2450SweepMode,
+                                       LKT2450_Meas,LKT2450_MeasU,
+                                       B_KT2450_Meas,B_KT2450_MeasAuto);
  end;
 
 // KT2450Form.Show;

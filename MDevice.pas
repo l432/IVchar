@@ -31,14 +31,24 @@ TArrIMeas=class(TArrI)
 end;
 
 
+//TArrIDAC=class(TArrI)
+// private
+//  function  GetDAC(Index:Integer):IDAC;
+// public
+//  property DAC[Index:Integer]:IDAC read GetDAC;
+//  Constructor Create(const SOI: array of IDAC);
+//  procedure Add(const IO:IDAC);overload;
+//  procedure Add(const SOI:array of IDAC);overload;
+//end;
+
 TArrIDAC=class(TArrI)
  private
-  function  GetDAC(Index:Integer):IDAC;
+  function  GetDAC(Index:Integer):ISource;
  public
-  property DAC[Index:Integer]:IDAC read GetDAC;
-  Constructor Create(const SOI: array of IDAC);
-  procedure Add(const IO:IDAC);overload;
-  procedure Add(const SOI:array of IDAC);overload;
+  property DAC[Index:Integer]:ISource read GetDAC;
+  Constructor Create(const SOI: array of ISource);
+  procedure Add(const IO:ISource);overload;
+  procedure Add(const SOI:array of ISource);overload;
 end;
 
 TArrITempMeas=class(TArrI)
@@ -132,12 +142,12 @@ end;
 
 TSettingDevice =class(TDevice)
 private
-// fSetOfInterface:array of IDAC;
  fArrIDAC:TArrIDAC;
- function GetActiveInterface():IDAC;
+// function GetActiveInterface():IDAC;
+ function GetActiveInterface():ISource;
 public
- property ActiveInterface:IDAC read GetActiveInterface;
-// Constructor Create(const SOI:array of IDAC;
+ property ActiveInterface:ISource read GetActiveInterface;
+// property ActiveInterface:IDAC read GetActiveInterface;
  Constructor Create(ArrIDAC:TArrIDAC;
                     DevCB:TComboBox; IdentName: string);
  procedure SetValue(Value:double);
@@ -247,12 +257,10 @@ end;
 
 { TSettingDevice }
 
-//constructor TSettingDevice.Create(const SOI: array of IDAC;
 constructor TSettingDevice.Create(ArrIDAC:TArrIDAC;
                                DevCB: TComboBox;IdentName: string);
 var I: Integer;
 begin
-
  inherited Create(DevCB,IdentName);
  fArrIDAC:=ArrIDAC;
 
@@ -263,45 +271,20 @@ begin
 
   if (DevicesComboBox<>nil)and
      (DevicesComboBox.Items.Count>0) then DevicesComboBox.ItemIndex:=0;
-
-
-
-
-
-// inherited Create(DevCB,IdentName);
-//
-// if High(SOI)<0 then Exit;
-// SetLength(fSetOfInterface,High(SOI)+1);
-// for I := 0 to High(SOI) do
-//  begin
-////   if DevicesComboBox<>nil then DevicesComboBox.Items.Add(IMeasurement(fSetOfInterface[i]).Name);
-//   fSetOfInterface[i] := Pointer(SOI[i]);
-//   if DevicesComboBox<>nil then DevicesComboBox.Items.Add(IMeasurement(fSetOfInterface[i]).Name);
-//  end;
-//
-//// if High(SOI)<0 then Exit;
-//// SetLength(fSetOfInterface,High(SOI)+1);
-//// for I := 0 to High(SOI) do
-////  begin
-////   DevicesComboBox.Items.Add(SOI[i].Name);
-////   fSetOfInterface[i]:=SOI[i];
-////  end;
-//  if (DevicesComboBox<>nil)and
-//     (DevicesComboBox.Items.Count>0) then DevicesComboBox.ItemIndex:=0;
 end;
 
-function TSettingDevice.GetActiveInterface: IDAC;
+function TSettingDevice.GetActiveInterface: ISource;
 begin
  if DevicesComboBox=nil
    then Result:=nil
    else Result:=fArrIDAC.DAC[DevicesComboBox.ItemIndex];
-
-//  if DevicesComboBox=nil
-//   then Result:=nil
-////   else Result:=fSetOfInterface[DevicesComboBox.ItemIndex];
-//   else Result:=IDAC(fSetOfInterface[DevicesComboBox.ItemIndex]);
-
 end;
+//function TSettingDevice.GetActiveInterface: IDAC;
+//begin
+// if DevicesComboBox=nil
+//   then Result:=nil
+//   else Result:=fArrIDAC.DAC[DevicesComboBox.ItemIndex];
+//end;
 
 procedure TSettingDevice.Reset;
 begin
@@ -729,13 +712,13 @@ end;
 
 { TArrIDAC }
 
-procedure TArrIDAC.Add(const IO: IDAC);
+procedure TArrIDAC.Add(const IO: ISource);
 begin
   SetLength(fSetOfInterface,High(fSetOfInterface)+2);
   fSetOfInterface[High(fSetOfInterface)]:=Pointer(IO);
 end;
 
-procedure TArrIDAC.Add(const SOI: array of IDAC);
+procedure TArrIDAC.Add(const SOI: array of ISource);
  var i:integer;
 begin
  SetLength(fSetOfInterface,High(SOI)+High(fSetOfInterface)+2);
@@ -743,7 +726,21 @@ begin
   fSetOfInterface[High(fSetOfInterface)-High(SOI)+i]:=Pointer(SOI[i]);
 end;
 
-constructor TArrIDAC.Create(const SOI: array of IDAC);
+//procedure TArrIDAC.Add(const IO: IDAC);
+//begin
+//  SetLength(fSetOfInterface,High(fSetOfInterface)+2);
+//  fSetOfInterface[High(fSetOfInterface)]:=Pointer(IO);
+//end;
+//
+//procedure TArrIDAC.Add(const SOI: array of IDAC);
+// var i:integer;
+//begin
+// SetLength(fSetOfInterface,High(SOI)+High(fSetOfInterface)+2);
+// for I := 0 to High(SOI) do
+//  fSetOfInterface[High(fSetOfInterface)-High(SOI)+i]:=Pointer(SOI[i]);
+//end;
+
+constructor TArrIDAC.Create(const SOI: array of ISource);
 var I: Integer;
 begin
   inherited Create;
@@ -751,15 +748,29 @@ begin
  SetLength(fSetOfInterface,High(SOI)+1);
  for I := 0 to High(SOI) do
    fSetOfInterface[i] := Pointer(SOI[i]);
-
 end;
+//constructor TArrIDAC.Create(const SOI: array of IDAC);
+//var I: Integer;
+//begin
+//  inherited Create;
+// if High(SOI)<0 then Exit;
+// SetLength(fSetOfInterface,High(SOI)+1);
+// for I := 0 to High(SOI) do
+//   fSetOfInterface[i] := Pointer(SOI[i]);
+//end;
 
-function TArrIDAC.GetDAC(Index: Integer): IDAC;
+function TArrIDAC.GetDAC(Index: Integer): ISource;
 begin
  if (Index<0) or (Index>HighIndex)
    then Result:=nil
-   else Result:=IDAC(fSetOfInterface[Index]);
+   else Result:=ISource(fSetOfInterface[Index]);
 end;
+//function TArrIDAC.GetDAC(Index: Integer): IDAC;
+//begin
+// if (Index<0) or (Index>HighIndex)
+//   then Result:=nil
+//   else Result:=IDAC(fSetOfInterface[Index]);
+//end;
 
 { TArrITempMeas }
 

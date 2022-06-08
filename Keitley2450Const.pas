@@ -25,7 +25,7 @@ const
  'amp','volt','ohm','watt' );
 //   4     5    6      7
 
-  FirstNodeKt_2450:array[0..37]of string=
+  FirstNodeKt_2450:array[0..38]of string=
   (':scr',':user1:text',':user2:text','cle',':pos',':int:stat',':term',
 //     0       1             2         3      4        5         6
    ':rsen',':smod',':ocom',':prot',':trip',':vlim',':ilim',':unit',
@@ -36,8 +36,8 @@ const
 //      22        23      24     25     26        27       28      29
    ':del',':poin',':fill:mode',':data',':cle',':act',':line#:mode',
 //   30     31         32         33     34     35        36
-   ':line#:stat');
-//      37
+   ':line#:stat',':ligh:stat');
+//      37           38
 
    PartDelimiter=', ';
 
@@ -115,15 +115,15 @@ TKt2450_ReturnedData=(kt_rd_MS,{результат виміру та значення джерела}
                       kt_rd_MST, {результат виміру, джерело, час}
                       kt_rd_M);{результат виміру}
 
-TKt240_DigLines=1..6;
-TKt240_DigLineType=(kt_dt_dig, {як звичайні цифрові лінії}
+TKt2450_DigLines=1..6;
+TKt2450_DigLineType=(kt_dt_dig, {як звичайні цифрові лінії}
                     kt_dt_trig, {тригерний режим, коли "1"-"0" задаються фронтом сигналу,
                                 напрям імпульсів можна налаштовувати}
                     kt_dt_sync);{ще якийсь тригерний режим, де можна підключати декілька
                                 Keitley-приладів... див. деталі в описі}
-TKt240_DigLineTypes=array[TKt240_DigLines] of  TKt240_DigLineType;
+TKt2450_DigLineTypes=array[TKt2450_DigLines] of  TKt2450_DigLineType;
 
-TKt240_DigLineDirection=(kt_dd_in,  {працює на вхід, що означаї "1"-"0"
+TKt2450_DigLineDirection=(kt_dd_in,  {працює на вхід, що означаї "1"-"0"
                                      суттєво залежить від типу лінії}
                          kt_dd_out, {працює на вихід, що означаї "1"-"0"
                                      суттєво залежить від типу лінії}
@@ -134,7 +134,10 @@ TKt240_DigLineDirection=(kt_dd_in,  {працює на вхід, що означаї "1"-"0"
                          kt_dd_ac);   {два останні варіанти можуть бути
                                       використані лише для kt_dt_sync}
 
-TKt240_DigLineDirections=array[TKt240_DigLines] of  TKt240_DigLineDirection;
+TKt2450_DigLineDirections=array[TKt2450_DigLines] of  TKt2450_DigLineDirection;
+
+TKt2450_DisplayState=(kt_ds_on100,kt_ds_on75,kt_ds_on50,kt_ds_on25,
+                      kt_ds_off,kt_ds_black);
 
 const
  Kt2450_TerminalsName:array [TKt2450_OutputTerminals]
@@ -200,11 +203,19 @@ const
 Kt2450_PartInRespond:array[TKt2450_ReturnedData] of integer=
                (2,3,4,1);
 
-Kt2450_DigLineTypeCommand:array[TKt240_DigLineType]of string=
+Kt2450_DigLineTypeCommand:array[TKt2450_DigLineType]of string=
        ('dig','trig','sync');
 
-Kt2450_DigLineDirectionCommand:array[TKt240_DigLineDirection]of string=
+Kt2450_DigLineDirectionCommand:array[TKt2450_DigLineDirection]of string=
        ('in','out','open','mast','acc');
+
+Kt2450_DisplayStateCommand:array[TKt2450_DisplayState]of string=
+       ('on100','on75','on50','on25','off','blac');
+
+Kt2450_DisplayStateLabel:array[TKt2450_DisplayState]of string=
+       ('Full brightness','75% brightness','50% brightness',
+        '25% brightness','Display off','Display & indicators off');
+
 
 //  OperationKod:array [TKt2450_Settings] of array[0..2] of byte=
 ////                  RootNood  FirstNode  LeafNode

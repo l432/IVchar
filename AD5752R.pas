@@ -71,7 +71,7 @@ type
                       PinVariant:TStringList);
  end;
 
-  TAD5752_Chanel=class(TNamedInterfacedObject,IDAC)
+  TAD5752_Chanel=class(TNamedInterfacedObject,IDAC,ISource)
     {базовий клас для ЦАП, що керується
     за допомогою Arduino    }
   private

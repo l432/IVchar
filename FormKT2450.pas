@@ -82,6 +82,14 @@ type
     LKT2450_MeasU: TLabel;
     B_KT2450_Meas: TButton;
     B_KT2450_MeasAuto: TSpeedButton;
+    LOVDACR2R: TLabel;
+    STOVDACR2R: TStaticText;
+    LKT2450_SourceValueRange: TLabel;
+    GBMeasR2R: TGroupBox;
+    LKT2450_SourceMeasure: TLabel;
+    BKT2450_SourceMeasure: TButton;
+    L_KT2450_DispBr: TLabel;
+    ST_KT2450_DispBr: TStaticText;
     procedure BCloseClick(Sender: TObject);
     procedure FormPaint(Sender: TObject);
   private
