@@ -471,6 +471,14 @@ TKT2450_SourceDevice=class;
    procedure SetDisplayBrightness(State:TKt2450_DisplayState);
    function GetDisplayBrightness():boolean;
 
+   procedure Beep(Freq:word=600;Duration:double=0.1);
+   {звук частотою Freq √ц прот€гом Duration секунд}
+
+   procedure ConfigMeasureCreate(ListName:string=MyMeasList);
+   procedure ConfigSourceCreate(ListName:string=MySourceList);
+   procedure ConfigMeasureDelete(ListName:string=MyMeasList;ItemIndex:byte=0);
+   {€кщо ItemIndex=0, то видал€Їтьс€ весь список}
+   procedure ConfigSourceDelete(ListName:string=MySourceList;ItemIndex:byte=0);
 
    Procedure GetParametersFromDevice;
 
@@ -580,6 +588,38 @@ procedure TKt_2450.ClearUserScreen;
 begin
 // :DISP:CLE
  SetupOperation(6,3,0,false);
+end;
+
+procedure TKt_2450.ConfigMeasureCreate(ListName: string);
+begin
+//:CONF:LIST:CRE "<name>"
+ fAdditionalString:=StringToInvertedCommas(ListName);
+ SetupOperation(24,23,0);
+end;
+
+procedure TKt_2450.ConfigMeasureDelete(ListName: string;ItemIndex:byte);
+begin
+//:CONF:LIST:DEL "<name>", <index>
+ fAdditionalString:=StringToInvertedCommas(ListName);
+ if ItemIndex<>0 then fAdditionalString:=fAdditionalString+PartDelimiter+
+                                         IntToStr(ItemIndex);
+ SetupOperation(24,23,1);
+end;
+
+procedure TKt_2450.ConfigSourceCreate(ListName: string);
+begin
+//:SOUR:CONF:LIST:CRE "<name>"
+ fAdditionalString:=StringToInvertedCommas(ListName);
+ SetupOperation(11,24,0);
+end;
+
+procedure TKt_2450.ConfigSourceDelete(ListName: string;ItemIndex:byte);
+begin
+//:SOUR:CONF:LIST:DEL "<name>", <index>
+ fAdditionalString:=StringToInvertedCommas(ListName);
+ if ItemIndex<>0 then fAdditionalString:=fAdditionalString+PartDelimiter+
+                                         IntToStr(ItemIndex);
+ SetupOperation(11,24,1);
 end;
 
 constructor TKt_2450.Create(Telnet: TIdTelnet; IPAdressShow: TIPAdressShow;
@@ -788,7 +828,7 @@ end;
 
 function TKt_2450.GetDisplayBrightness: boolean;
 begin
- QuireOperation(6,38);
+ QuireOperation(6,30);
  Result:=(fDevice.Value<>ErResult);
 // if Result then fSourceDelay[Source]:=fDevice.Value;
 end;
@@ -1278,6 +1318,14 @@ begin
 //  fDevice.Request();
 //  fDevice.GetData;
 
+// ConfigMeasureDelete;
+// ConfigSourceDelete;
+
+// ConfigMeasureCreate;
+// ConfigSourceCreate;
+
+//Beep(600,0.1);
+
 // SetDisplayBrightness(kt_ds_on75);
 // if GetDisplayBrightness()
 //  then showmessage(Kt2450_DisplayStateLabel[fDisplayState]);
@@ -1288,8 +1336,8 @@ begin
 // if GetDisplayBrightness()
 //  then showmessage(Kt2450_DisplayStateLabel[fDisplayState]);
 // SetDisplayBrightness(kt_ds_on25);
- if GetDisplayBrightness()
-  then showmessage(Kt2450_DisplayStateLabel[fDisplayState]);
+// if GetDisplayBrightness()
+//  then showmessage(Kt2450_DisplayStateLabel[fDisplayState]);
 
 
 //  SetDigLineMode(1,kt_dt_trig,kt_dd_out);
@@ -1739,6 +1787,7 @@ begin
     end;
    7:begin
 //        SetupOperation(7,4);
+//        SetupOperation(7,39);
       fDevice.JoinToStringToSend(FirstNodeKt_2450[fFirstLevelNode]);
      end;
    9:begin
@@ -1787,6 +1836,13 @@ begin
                  end;
            end;
           end;
+        24:begin
+//            SetupOperation(11,24,0);
+            fDevice.JoinToStringToSend(RootNoodKt_2450[fFirstLevelNode]);
+            fDevice.JoinToStringToSend(FirstNodeKt_2450[23]);
+            fDevice.JoinToStringToSend(ConfLeafNodeKt_2450[fLeafNode]);
+           end;
+
         25:begin
             fDevice.JoinToStringToSend(FirstNodeKt_2450[fFirstLevelNode]);
 //            SetupOperation(11,25,1,False);
@@ -1818,7 +1874,7 @@ begin
        case fFirstLevelNode of
 //        SetupOperation(19,29);
         29:;//fAdditionalString:=Buffer.CreateStr;
-        30:;//fAdditionalString:=Buffer.Name;
+        21:;//fAdditionalString:=Buffer.Name;
 // SetupOperation(19,31);
 // QuireOperation(19,31,1,False);
         31: if fLeafNode=1 then fDevice.JoinToStringToSend(Buffer.Get)
@@ -1827,7 +1883,7 @@ begin
         32:if fLeafNode=1 then fDevice.JoinToStringToSend(Buffer.Get)
                            else fAdditionalString:=Buffer.FillModeChange;
         33:fDevice.JoinToStringToSend(Buffer.DataDemandArray(TKt2450_ReturnedData(fLeafNode)));
-        34:;
+        3:;
         35:case fLeafNode of
             1:fDevice.JoinToStringToSend(Buffer.Get);
             2:fDevice.JoinToStringToSend(Buffer.LimitIndexies)
@@ -1853,6 +1909,14 @@ begin
 // SetupOperation(23,37);
         36,37:fDevice.JoinToStringToSend(AnsiReplaceStr(FirstNodeKt_2450[fFirstLevelNode],'#',inttostr(fDLActive)));
        end;
+    24:begin
+       // SetupOperation(24,23,0);
+//        case fFirstLevelNode of
+//         36,37:fDevice.JoinToStringToSend(AnsiReplaceStr(FirstNodeKt_2450[fFirstLevelNode],'#',inttostr(fDLActive)));
+//        end;
+        fDevice.JoinToStringToSend(FirstNodeKt_2450[fFirstLevelNode]);
+        fDevice.JoinToStringToSend(ConfLeafNodeKt_2450[fLeafNode]);
+       end;
 
    end;
 
@@ -1875,7 +1939,7 @@ begin
           end;
     end;
     end;
-  6:if fFirstLevelNode=38
+  6:if fFirstLevelNode=30
        then
         begin
         if StringToDisplayBrightness(AnsiLowerCase(Str))
@@ -2067,7 +2131,7 @@ begin
 //:DISP:LIGH:STAT <brightness>
  fDisplayState:=State;
  fAdditionalString:=Kt2450_DisplayStateCommand[State];
- SetupOperation(6,38);
+ SetupOperation(6,30);
 end;
 
 procedure TKt_2450.SetDisplayDigitsNumber(Number: Kt2450DisplayDigitsNumber);
@@ -2690,7 +2754,16 @@ end;
 procedure TKt_2450.BufferClear;
 begin
   fAdditionalString:=Buffer.Name;
-  SetupOperation(19,34);
+  SetupOperation(19,3);
+end;
+
+procedure TKt_2450.Beep(Freq: word; Duration: double);
+begin
+//:SYST:BEEP <frequency>, <duration>
+fAdditionalString:=IntToStr(NumberMap(Freq,Kt_2450_BeepFrequancyLimits))
+                   +PartDelimiter
+                   +floattostr(NumberMap(Duration,Kt_2450_BeepDurationLimits));
+ SetupOperation(7,34);
 end;
 
 procedure TKt_2450.BufferClear(BufName: string);
@@ -2698,7 +2771,7 @@ begin
 //:TRAC:CLE "<bufferName>"
  Buffer.SetName(BufName);
  fAdditionalString:=Buffer.Name;
- SetupOperation(19,34);
+ SetupOperation(19,3);
 end;
 
 procedure TKt_2450.BufferCreate(Style: TKt2450_BufferStyle);
@@ -2710,7 +2783,7 @@ end;
 procedure TKt_2450.BufferDelete;
 begin
  fAdditionalString:=Buffer.Name;
- SetupOperation(19,30);
+ SetupOperation(19,21);
 end;
 
 procedure TKt_2450.BufferDataArrayExtended(SIndex, EIndex: integer;

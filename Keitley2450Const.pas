@@ -11,21 +11,23 @@ const
   Kt2450DefBuffer='defbuffer1';
   Kt2450DefBuffer2='defbuffer2';
   MyBuffer='OlegData';
+  MySourceList='OlegSourceList';
+  MyMeasList='OlegMeasList';
 
-  RootNoodKt_2450:array[0..23]of string=
+  RootNoodKt_2450:array[0..24]of string=
   ('*idn?','*rcl ','*rst','*sav',':acq',':outp',':disp',':syst','scr:run',
-//   0       1       2      3      4        5       6        7      8
+//   0       1       2      3      4        5       6       7      8
   'rout',':sens',':sour',':curr', ':volt', ':res',':func',':azer:once','init',
 //  9       10     11        12      13      14      15         16       17
-  ':abor',':trac',':coun',':read',':fetc',':dig');
-//   18      19      20      21      22      23
+  ':abor',':trac',':coun',':read',':fetc',':dig',':conf');
+//   18      19      20      21      22      23    24
 
   SuffixKt_2450:array[0..7]of string=('on','off', 'rst',{'?','prot',}'def',
 //                                      0    1      2                  3
  'amp','volt','ohm','watt' );
 //   4     5    6      7
 
-  FirstNodeKt_2450:array[0..38]of string=
+  FirstNodeKt_2450:array[0..37]of string=
   (':scr',':user1:text',':user2:text','cle',':pos',':int:stat',':term',
 //     0       1             2         3      4        5         6
    ':rsen',':smod',':ocom',':prot',':trip',':vlim',':ilim',':unit',
@@ -34,10 +36,13 @@ const
 //   15         16            17        18     19      20       21
    ':del:auto',':list',':app',':swe',':nplc',':high:cap',':dig',':make',
 //      22        23      24     25     26        27       28      29
-   ':del',':poin',':fill:mode',':data',':cle',':act',':line#:mode',
-//   30     31         32         33     34     35        36
-   ':line#:stat',':ligh:stat');
-//      37           38
+   ':ligh:stat',':poin',':fill:mode',':data',':beep',':act',':line#:mode',
+//     30          31         32         33     34      35        36
+   ':line#:stat');
+//      37
+
+ ConfLeafNodeKt_2450:array[0..2]of string=
+ (':cre',':del','stor');
 
    PartDelimiter=', ';
 
@@ -176,6 +181,8 @@ const
  Kt_2450_BufferSizeLimits:TLimitValues=(10,1e6);
  {загалом ємність всіх буферів - 4,500,000 стандартних
   записів або 20,000,000 компактних}
+ Kt_2450_BeepDurationLimits:TLimitValues=(1e-3,1e2);
+ Kt_2450_BeepFrequancyLimits:TLimitValues=(20,8000);
 
  KT2450_SenseLabels:array[TKt2450_Sense]of string=
  ('4-Wire','2-Wire');
