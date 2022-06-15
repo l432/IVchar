@@ -41,8 +41,8 @@ const
    ':line#:stat');
 //      37
 
- ConfLeafNodeKt_2450:array[0..2]of string=
- (':cre',':del','stor');
+ ConfLeafNodeKt_2450:array[0..3]of string=
+ (':cre',':del',':rec',':stor');
 
    PartDelimiter=', ';
 

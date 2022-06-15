@@ -1073,7 +1073,7 @@ implementation
 
 uses
   ArduinoADC, OlegFunction, AD5752R, IT6332B, Keithley2450Show, FormKT2450, 
-  PsevdoMainForm;
+  PsevdoMainForm, Keitley2450Const;
 
 {$R *.dfm}
 
@@ -1182,11 +1182,17 @@ begin
 
     if FindFirst(FileName,faAnyFile,SR)<>0 then Exit;
     name:=SR.Name;
-//    AssignFile(FF,'comments');
-//    if FindFirst('comments',faAnyFile,SR)=0 then Append(FF) else ReWrite(FF);
+
     FindClose(SR);
     DateTimeToString(temp, 'd.m.yyyy', FileDateToDateTime(SR.Time));
-    writeln(FF,Name,' - ',temp,'  :'+inttostr(SecondFromDayBegining(FileDateToDateTime(SR.Time))));
+
+    if Current_MD.ActiveInterface.Name='KT2450Meter'
+                        then
+      begin
+       Kt_2450.BufferLastDataExtended(kt_rd_MT);
+       writeln(FF,Name,' - ',temp,'  :'+floattostr(Kt_2450.TimeValue));
+      end               else
+       writeln(FF,Name,' - ',temp,'  :'+inttostr(SecondFromDayBegining(FileDateToDateTime(SR.Time))));
 
     //    writeln(FF,Name,' - ',DateTimeToStr(FileDateToDateTime(DT)));
     write(FF,'T=',LTLastValue.Caption);
@@ -2519,9 +2525,9 @@ end;
 
 procedure TIVchar.SaveIVMeasurementResults(FileName: string; DataVector:TVector);
 begin
-//  DataVector.Sorting;
-//  DataVector.DeleteDuplicate;
-  DataVector.WriteToFile(FileName,5);
+  if Current_MD.ActiveInterface.Name='KT2450Meter'
+   then DataVector.WriteToFile(FileName,8)
+   else DataVector.WriteToFile(FileName,5);
   //       ToFileFromTwoVector(SaveDialog.FileName,IVResult,VolCorrectionNew);
   LTLastValue.Caption := FloatToStrF(Temperature, ffFixed, 5, 2);
   SaveCommentsFile(FileName);

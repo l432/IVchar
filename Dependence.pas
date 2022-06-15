@@ -457,7 +457,7 @@ implementation
 uses
   SysUtils, Forms, Windows, Math, DateUtils,
   Dialogs, OlegGraph, OlegFunction, 
-  OlegMath, Measurement, Buttons;
+  OlegMath, Measurement, Buttons, Keithley2450;
 
 var
 //  fItIsForward:boolean;
@@ -1298,6 +1298,9 @@ begin
   fTempResults:=TVectorTransform.Create;
 
   fPreviousPointMeasurementNeededIndex:=-1;
+
+  if SettingDevice.Name='Kt2450Source' then Kt_2450.OutPutChange(True);
+  
 //  fTreadToMeasuring:=TFastIVDependenceAction.Create(self);
 //  fTreadToStop:=TFastIVDependenceStop.Create(self,fTreadToMeasuring);
 //  fTreadToMeasuring.Resume;
@@ -1352,6 +1355,13 @@ begin
   fPreviousPointMeasurementNeeded:=false;
   AtempNumber := 0;
   repeat
+   if Current_MD.ActiveInterface.Name='KT2450Meter'
+    then
+     begin
+      fCurrentMeasured:=Kt_2450.Meter.GetValueFromDevice* fDiodOrientationVoltageFactor;
+      Break;
+     end;
+   
    fCurrentMeasured:= ValueMeasuring(Current_MD);
    if fCurrentMeasured=ErResult then Exit;
    if (Results.IsEmpty) then Break;
@@ -1366,7 +1376,7 @@ begin
   if (FCurrentValueLimitEnable and (abs(fCurrentMeasured)>=Imax))
     then
      begin
-     fAbsVoltageValue:=50;
+     fAbsVoltageValue:=300;
      Exit;
      end;
 

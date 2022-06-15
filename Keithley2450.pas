@@ -476,9 +476,22 @@ TKT2450_SourceDevice=class;
 
    procedure ConfigMeasureCreate(ListName:string=MyMeasList);
    procedure ConfigSourceCreate(ListName:string=MySourceList);
-   procedure ConfigMeasureDelete(ListName:string=MyMeasList;ItemIndex:byte=0);
+   procedure ConfigMeasureDelete(ListName:string=MyMeasList;ItemIndex:word=0);
    {якщо ItemIndex=0, то видаляється весь список}
-   procedure ConfigSourceDelete(ListName:string=MySourceList;ItemIndex:byte=0);
+   procedure ConfigSourceDelete(ListName:string=MySourceList;ItemIndex:word=0);
+   procedure ConfigMeasureRecall(ListName:string=MyMeasList;ItemIndex:word=1);
+   {завантаження налаштувань, записаних в ItemIndex;
+   якщо потрібно викликати налаштування і для джерела,
+   і для вимірювача - спочатку завантажувати треба для джерела}
+   procedure ConfigSourceRecall(ListName:string=MySourceList;ItemIndex:word=1);
+   procedure ConfigBothRecall(SourceListName:string=MySourceList;
+                              MeasListName:string=MyMeasList;
+                              SourceItemIndex:word=1;
+                              MeasItemIndex:word=1);
+   procedure ConfigMeasureStore(ListName:string=MyMeasList;ItemIndex:word=0);
+   {запис налаштувань у список;
+   якщо ItemIndex=0, то записується у кінець списку}
+   procedure ConfigSourceStore(ListName:string=MySourceList;ItemIndex:word=0);
 
    Procedure GetParametersFromDevice;
 
@@ -519,12 +532,13 @@ TKT2450_Meter=class(TKT2450_Measurement)
  private
   fTimer:TTimer;
   function GetMeasureModeLabel():string;
-  function GetValueFromDevice:double;override;
+//  function GetValueFromDevice:double;override;
  public
   property MeasureModeLabel:string read GetMeasureModeLabel;
   property Timer:TTimer read fTimer;
   constructor Create(Kt_2450:TKt_2450);
   destructor Destroy; override;
+  function GetValueFromDevice:double;override;
 //  function GetData:double;override;
 end;
 
@@ -590,6 +604,17 @@ begin
  SetupOperation(6,3,0,false);
 end;
 
+procedure TKt_2450.ConfigBothRecall(SourceListName, MeasListName: string;
+  SourceItemIndex, MeasItemIndex: word);
+begin
+//:SOUR:CONF:LIST:REC "<name>", <index>, "<measureListName>", <measureIndex>
+ fAdditionalString:=StringToInvertedCommas(SourceListName)+PartDelimiter
+                    +IntToStr(max(SourceItemIndex,1))+PartDelimiter
+                    +StringToInvertedCommas(MeasListName)+PartDelimiter
+                    +IntToStr(max(MeasItemIndex,1));
+ SetupOperation(11,24,2);
+end;
+
 procedure TKt_2450.ConfigMeasureCreate(ListName: string);
 begin
 //:CONF:LIST:CRE "<name>"
@@ -597,13 +622,30 @@ begin
  SetupOperation(24,23,0);
 end;
 
-procedure TKt_2450.ConfigMeasureDelete(ListName: string;ItemIndex:byte);
+procedure TKt_2450.ConfigMeasureDelete(ListName: string;ItemIndex:word);
 begin
 //:CONF:LIST:DEL "<name>", <index>
  fAdditionalString:=StringToInvertedCommas(ListName);
  if ItemIndex<>0 then fAdditionalString:=fAdditionalString+PartDelimiter+
                                          IntToStr(ItemIndex);
  SetupOperation(24,23,1);
+end;
+
+procedure TKt_2450.ConfigMeasureRecall(ListName: string; ItemIndex: word);
+begin
+//:CONF:LIST:REC "<name>", <index>
+ fAdditionalString:=StringToInvertedCommas(ListName)+PartDelimiter
+                    +IntToStr(max(ItemIndex,1));
+ SetupOperation(24,23,2);
+end;
+
+procedure TKt_2450.ConfigMeasureStore(ListName: string; ItemIndex: word);
+begin
+//:CONF:LIST:STOR "<name>", <index>
+ fAdditionalString:=StringToInvertedCommas(ListName);
+ if ItemIndex<>0 then fAdditionalString:=fAdditionalString+PartDelimiter+
+                                         IntToStr(ItemIndex);
+ SetupOperation(24,23,3);
 end;
 
 procedure TKt_2450.ConfigSourceCreate(ListName: string);
@@ -613,13 +655,30 @@ begin
  SetupOperation(11,24,0);
 end;
 
-procedure TKt_2450.ConfigSourceDelete(ListName: string;ItemIndex:byte);
+procedure TKt_2450.ConfigSourceDelete(ListName: string;ItemIndex:word);
 begin
 //:SOUR:CONF:LIST:DEL "<name>", <index>
  fAdditionalString:=StringToInvertedCommas(ListName);
  if ItemIndex<>0 then fAdditionalString:=fAdditionalString+PartDelimiter+
                                          IntToStr(ItemIndex);
  SetupOperation(11,24,1);
+end;
+
+procedure TKt_2450.ConfigSourceRecall(ListName: string; ItemIndex: word);
+begin
+//:SOUR:CONF:LIST:REC "<name>", <index>
+ fAdditionalString:=StringToInvertedCommas(ListName)+PartDelimiter
+                    +IntToStr(max(ItemIndex,1));
+ SetupOperation(11,24,2);
+end;
+
+procedure TKt_2450.ConfigSourceStore(ListName: string; ItemIndex: word);
+begin
+//:SOUR:CONF:LIST:STOR "<name>", <index>
+ fAdditionalString:=StringToInvertedCommas(ListName);
+ if ItemIndex<>0 then fAdditionalString:=fAdditionalString+PartDelimiter+
+                                         IntToStr(ItemIndex);
+ SetupOperation(11,24,3);
 end;
 
 constructor TKt_2450.Create(Telnet: TIdTelnet; IPAdressShow: TIPAdressShow;
@@ -1323,6 +1382,12 @@ begin
 
 // ConfigMeasureCreate;
 // ConfigSourceCreate;
+// ConfigMeasureStore;
+// ConfigSourceStore;
+// ConfigMeasureRecall;
+// ConfigSourceRecall;
+// ConfigBothRecall;
+
 
 //Beep(600,0.1);
 
