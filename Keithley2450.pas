@@ -131,6 +131,10 @@ TKT2450_SourceDevice=class;
    fSourceMeter:TKT2450_SourceMeter;
    fSourceDevice:TKT2450_SourceDevice;
    fDisplayState:TKt2450_DisplayState;
+   fHookForTrigDataObtain: TSimpleEvent;
+   fTrigBranchNumber:word;
+   fDragonBackTime:double;
+   fToUseDragonBackTime:boolean;
    procedure OnOffFromBool(toOn:boolean);
    function StringToVoltageProtection(Str:string;var vp:TKt_2450_VoltageProtection):boolean;
    function StringToSourceType(Str:string):boolean;
@@ -159,6 +163,8 @@ TKT2450_SourceDevice=class;
    procedure DefaultSettings;override;
   public
    SweepParameters:array[TKt2450_Source]of TKt_2450_SweepParameters;
+//   IVDependence:TFastIVDependence;
+   property HookForTrigDataObtain:TSimpleEvent read fHookForTrigDataObtain write fHookForTrigDataObtain;
    property DataVector:TVector read fDataVector;
    property DataTimeVector:TVector read fDataTimeVector;
    property SourceType:TKt2450_Source read fSourceType;
@@ -197,6 +203,8 @@ TKT2450_SourceDevice=class;
    property SourceMeter:TKT2450_SourceMeter read fSourceMeter;
    property SourceDevice:TKT2450_SourceDevice read fSourceDevice;
    property DisplayState:TKt2450_DisplayState read fDisplayState;
+   property DragonBackTime:double read fDragonBackTime write fDragonBackTime;
+   property ToUseDragonBackTime:boolean read fToUseDragonBackTime write fToUseDragonBackTime;
    Constructor Create(Telnet:TIdTelnet;IPAdressShow: TIPAdressShow;
                Nm:string='Keitley2450');
    destructor Destroy; override;
@@ -514,6 +522,7 @@ TKT2450_SourceDevice=class;
 
    Procedure Init;
    Procedure Abort;
+   Procedure TrigForIVCreate;
  end;
 
 TKT2450_Measurement=class(TMeasurementSimple)
@@ -766,6 +775,7 @@ begin
  fDLActive:=1;
 
  fDisplayState:=kt_ds_on25;
+ fTrigBranchNumber:=1;
 end;
 
 destructor TKt_2450.Destroy;
@@ -1380,10 +1390,10 @@ begin
 // ConfigMeasureDelete;
 // ConfigSourceDelete;
 
-// ConfigMeasureCreate;
-// ConfigSourceCreate;
-// ConfigMeasureStore;
-// ConfigSourceStore;
+ ConfigMeasureCreate;
+ ConfigSourceCreate;
+ ConfigMeasureStore;
+ ConfigSourceStore;
 // ConfigMeasureRecall;
 // ConfigSourceRecall;
 // ConfigBothRecall;
@@ -2800,6 +2810,30 @@ begin
      fAdditionalString:=StringToInvertedCommas(bottom_text);
      SetupOperation(6,2);
    end;
+end;
+
+procedure TKt_2450.TrigForIVCreate;
+ var SourceValueTemp:double;
+     i:integer;
+begin
+ HookForTrigDataObtain();
+ showmessage(DataVector.XYtoString);
+
+ ConfigMeasureCreate;
+ ConfigSourceCreate;
+ SetMode(kt_md_sVmC);
+ SourceValueTemp:=SourceValue[fSourceType];
+ OutPutChange(False);
+ ConfigMeasureStore();
+ for I := 0 to DataVector.HighNumber do
+   begin
+     SetSourceValue(DataVector.X[i]);
+     ConfigSourceStore();
+   end;
+ SetSourceValue(SourceValueTemp);
+
+ fTrigBranchNumber:=1;
+
 end;
 
 procedure TKt_2450.BufferCreate(Name: string; Size: integer);

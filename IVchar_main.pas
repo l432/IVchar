@@ -740,6 +740,7 @@ type
     TS_Kt2450: TTabSheet;
     TelnetKt2450: TIdTelnet;
     B_Kt2450drive: TButton;
+    CBuseKT2450: TCheckBox;
 
     procedure FormCreate(Sender: TObject);
     procedure BConnectClick(Sender: TObject);
@@ -783,6 +784,7 @@ type
     procedure FormShow(Sender: TObject);
     procedure BBCloseClick(Sender: TObject);
     procedure B_Kt2450driveClick(Sender: TObject);
+    procedure CBuseKT2450Click(Sender: TObject);
   private
     procedure ComponentView;
     {початкове налаштування різних компонентів}
@@ -838,6 +840,7 @@ type
     procedure HookBegin;
     procedure FastIVHookBeginBase(FastIVDep:TFastIVDependence);
     procedure FastIVHookBegin;
+    procedure Kt2450HookForTrig;
     procedure FastArduinoIVHookBegin;
     procedure FastIVHookEndBase(FastIVDep:TFastIVDependence);
     procedure FastIVHookEnd;
@@ -1287,6 +1290,8 @@ begin
   FastIVMeasuring.RGDiodOrientation:=RGDO;
   FastIVMeasuring.Voltage_MD:=VoltageIV_MD;
   FastIVMeasuring.Current_MD:=Current_MD;
+
+  Kt_2450.HookForTrigDataObtain:=Kt2450HookForTrig;
 
   FastArduinoIV.HookBeginMeasuring:=FastArduinoIVHookBegin;
   FastArduinoIV.HookEndMeasuring:=FastArduinoIVHookEnd;
@@ -1941,6 +1946,13 @@ begin
 
 end;
 
+procedure TIVchar.CBuseKT2450Click(Sender: TObject);
+begin
+ CBVS.Enabled:=not(CBuseKT2450.Checked);
+ CBVMD.Enabled:=not(CBuseKT2450.Checked);
+ CBCMD.Enabled:=not(CBuseKT2450.Checked);
+end;
+
 procedure TIVchar.ParametersFileWork(Action: TSimpleEvent);
  var tempdir: string;
 begin
@@ -2456,27 +2468,11 @@ begin
      BIVSave.Font.Style:=BIVSave.Font.Style+[fsStrikeOut];
    end;
 
-
-//  SaveDialog.FileName:=FastIVMeasuring.DatFileNameToSave;
-//  SaveDialog.Title := 'Last file - ' +
-//      LastDATFileName(FastIVMeasuring.PrefixToFileName) + '.dat';
-//  SaveDialog.InitialDir := GetCurrentDir;
-//
-//  if SaveDialog.Execute then
-//   begin
-//     SaveIVMeasurementResults(SaveDialog.FileName,FastIVMeasuring.Results);
-//     BIVSave.Font.Style:=BIVSave.Font.Style+[fsStrikeOut];
-//   end;
 end;
 
 procedure TIVchar.ADS1115Create;
-// var i:TADS1115_ChanelNumber;
 begin
-//  ADS11115module := TADS1115_Module.Create;
   ADS11115show := TI2C_PinsShow.Create(ADS11115module.Pins, Pads1115_adr, ADS1115_StartAdress,ADS1115_LastAdress);
-
-//  for I := Low(TADS1115_ChanelNumber) to High(TADS1115_ChanelNumber) do
-//    ADS11115_Channels[i] := TADS1115_Channel.Create(i, ADS11115module);
 
   ADS11115_ChannelShows[0]:=
      TADS1115_ChannelShow.Create(ADS11115_Channels[0], Pads1115_Ch1dr, Pads1115_Ch1gain, Lads1115_Ch1meas, Bads1115_Ch1meas);
@@ -2487,7 +2483,6 @@ begin
 
   ShowArray.Add([ADS11115show,ADS11115_ChannelShows[0],ADS11115_ChannelShows[1],ADS11115_ChannelShows[2]]);
   ArduinoMeters.Add(ADS11115module);
-//  AnyObjectArray.Add([ADS11115module, ADS11115_Channels[0],ADS11115_Channels[1],ADS11115_Channels[2]]);
 end;
 
 procedure TIVchar.GDS_Create;
@@ -3026,6 +3021,8 @@ begin
  FastIVDep.CurrentValueLimitEnable:=CBCurrentValue.Checked;
  FastIVDep.DragonBackTime:=Dragon_backTimeCS.Data;
  FastIVDep.ToUseDragonBackTime:=CBuseDBT.Checked;
+
+ FastIVDep.KT2450Used:=CBuseKT2450.Checked;
 end;
 
 procedure TIVchar.FastIVHookEnd;
@@ -4434,6 +4431,14 @@ begin
     VoltageInputSign := -TIVParameters.VoltageInput;
 end;
 
+procedure TIVchar.Kt2450HookForTrig;
+begin
+ FastIVMeasuring.VoltageValuesFilling;
+ Kt_2450.DragonBackTime:=FastIVMeasuring.DragonBackTime;
+ Kt_2450.ToUseDragonBackTime:=FastIVMeasuring.ToUseDragonBackTime;
+// FastIVMeasuring.Results.CopyTo(Kt_2450.DataVector);
+end;
+
 procedure TIVchar.Kt2450_Create;
 begin
 // Kt2450_IPAdressShow:=TIPAdressShow.Create('KT2450IP',
@@ -4502,7 +4507,8 @@ begin
                                       [B_KT2450SweepCreate,B_KT2450SweepInit,
                                        B_KT2450SweepStop],
                                        CB_KT2450SweepDual,CB_KT2450SweepAbortLim,
-                                       RG_KT2450SweepMode,
+                                       RG_KT2450SweepMode,RG_KT2450SweepSelect,
+                                       GB_KT2450Sweep,
                                        LKT2450_Meas,LKT2450_MeasU,
                                        B_KT2450_Meas,B_KT2450_MeasAuto);
  end;

@@ -27,9 +27,6 @@ type
     L_KT2450SweepDelay: TLabel;
     L_KT2450SweepCount: TLabel;
     L_KT2450SweepRange: TLabel;
-    B_KT2450SweepCreate: TButton;
-    B_KT2450SweepInit: TButton;
-    B_KT2450SweepStop: TButton;
     RG_KT2450SweepMode: TRadioGroup;
     ST_KT2450SweepStart: TStaticText;
     ST_KT2450SweepStop: TStaticText;
@@ -82,14 +79,18 @@ type
     LKT2450_MeasU: TLabel;
     B_KT2450_Meas: TButton;
     B_KT2450_MeasAuto: TSpeedButton;
-    LOVDACR2R: TLabel;
-    STOVDACR2R: TStaticText;
     LKT2450_SourceValueRange: TLabel;
-    GBMeasR2R: TGroupBox;
+    GBKT2450MeasSource: TGroupBox;
     LKT2450_SourceMeasure: TLabel;
     BKT2450_SourceMeasure: TButton;
     L_KT2450_DispBr: TLabel;
     ST_KT2450_DispBr: TStaticText;
+    GBKT2450Mode: TGroupBox;
+    RG_KT2450SweepSelect: TRadioGroup;
+    GBKT2450_IVMeasur: TGroupBox;
+    B_KT2450SweepCreate: TButton;
+    B_KT2450SweepInit: TButton;
+    B_KT2450SweepStop: TButton;
     procedure BCloseClick(Sender: TObject);
     procedure FormPaint(Sender: TObject);
   private
@@ -124,6 +125,8 @@ begin
    end;
 end;
 
+
+
 procedure TKT2450Form.FormPaint(Sender: TObject);
 begin
  TMyGroupBox(GB_K2450IP).Canvas.Brush.Color:=clBlack;
@@ -131,5 +134,6 @@ begin
  TMyGroupBox(GB_K2450IP).Canvas.Ellipse(129,45,134,50);
  TMyGroupBox(GB_K2450IP).Canvas.Ellipse(191,45,196,50);
 end;
+
 
 end.

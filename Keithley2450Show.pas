@@ -206,12 +206,14 @@ TKt_2450_SweetShow=class(TKt_2450_AbstractElementShow)
   fKt_2450_SweepParameters:TKt_2450_SweepParameters;
   fSettingsShow:array[TKt2450_SweepSettings]of TParameterShowNew;
   fRangeTypeSettingsShow:TStringList;
-  fDualCB,
+  fDualCB:TCheckBox;
   fAbortLimitCB:TCheckBox;
   fMode:TRadioGroup;
+  fSelect:TRadioGroup;
 //  CF:TIniFile;
   fStepPointST:TStaticText;
   fStepPointLab:TLabel;
+  fSweepGB:TGroupBox;
 
   procedure SettingsShowSLCreate();override;
   procedure SettingsShowFree();override;
@@ -221,6 +223,7 @@ TKt_2450_SweetShow=class(TKt_2450_AbstractElementShow)
   procedure ButtonInitClick(Sender:TObject);
   procedure ButtonStopClick(Sender:TObject);
   procedure ModeClick(Sender:TObject);
+  procedure SelectClick(Sender:TObject);
   procedure CheckBoxClick(Sender:TObject);
   procedure CreateStepPointShow;
   procedure UpDateObject();
@@ -233,7 +236,8 @@ TKt_2450_SweetShow=class(TKt_2450_AbstractElementShow)
                       Labels:array of TLabel;
                       Buttons:TKt2450_SweepButtonArray;
                       DualCB,AbortLimitCB:TCheckBox;
-                      Mode:TRadioGroup
+                      Mode,Select:TRadioGroup;
+                      SweepGB:TGroupBox
                       );
   destructor Destroy;override;
   procedure ObjectToSetting;override;
@@ -297,6 +301,8 @@ end;
    fSweetButtons:TKt2450_SweepButtonArray;
    fSweetDualCB,fSweetAbortLimitCB:TCheckBox;
    fSweetMode:TRadioGroup;
+   fSweetSelect:TRadioGroup;
+   fSweepGB:TGroupBox;
    fSweetShowState:0..2;
    {2 - не створювався, 0 - створено під kt_sVolt; 1 - kt_sCurr}
 
@@ -352,7 +358,8 @@ end;
                       SweetLab:array of TLabel;
                       SweetButtons:Array of TButton;
                       SweetDualCB,SweetAbortLimitCB:TCheckBox;
-                      SweetMode:TRadioGroup;
+                      SweetMode,SweetSelect:TRadioGroup;
+                      SweepGB:TGroupBox;
                       DataMeterL,UnitMeterL:TLabel;
                       MeasureMeterB:TButton;
                       AutoMMeterB:TSpeedButton);
@@ -399,7 +406,7 @@ end;
 procedure TKt_2450_Show.ButtonsTune(Buttons: array of TButton);
 const
   ButtonCaption: array[0..ButtonNumberKt2450] of string =
-  ('Connection Test ?','Reset','Get','Refresh Zero','to measure',
+  ('Connection Test ?','Reset','Get from device','Refresh Zero','to measure',
   'MyTrain');
 var
   ButtonAction: array[0..ButtonNumberKt2450] of TNotifyEvent;
@@ -438,7 +445,8 @@ constructor TKt_2450_Show.Create(Kt_2450: TKt_2450;
                                 SweetLab:array of TLabel;
                                 SweetButtons:Array of TButton;
                                 SweetDualCB,SweetAbortLimitCB:TCheckBox;
-                                SweetMode:TRadioGroup;
+                                SweetMode,SweetSelect:TRadioGroup;
+                                SweepGB:TGroupBox;
                                 DataMeterL,UnitMeterL:TLabel;
                                 MeasureMeterB:TButton;
                                 AutoMMeterB:TSpeedButton);
@@ -521,6 +529,8 @@ begin
   fSweetDualCB:=SweetDualCB;
   fSweetAbortLimitCB:=SweetAbortLimitCB;
   fSweetMode:=SweetMode;
+  fSweetSelect:=SweetSelect;
+  fSweepGB:=SweepGB;
   SweetShowCreate();
 
   fMeterShow:=TKt_2450_MeterShow.Create(fKt_2450.Meter,Self,
@@ -686,6 +696,11 @@ end;
 procedure TKt_2450_Show.ResetButtonClick(Sender: TObject);
 begin
  fKt_2450.ResetSetting();
+ if fKt_2450.OutPutOn then
+   begin
+     fKt_2450.OutPutOn:=False;
+     OutPutOnFromDevice;
+   end;
 end;
 
 procedure TKt_2450_Show.SettingsShowCreate(STexts: array of TStaticText;
@@ -847,7 +862,7 @@ begin
  fSweetShow:=TKt_2450_SweetShow.Create(fKt_2450,
                      fSweetST,fSweetLab,fSweetButtons,
                      fSweetDualCB,fSweetAbortLimitCB,
-                     fSweetMode);
+                     fSweetMode,fSweetSelect,fSweepGB);
  if fSweetShowState<>2 then fSweetShow.ReadFromIniFile(ConfigFile);
  fSweetShowState:=ord(fKt_2450.SourceType);
 end;
@@ -1503,12 +1518,16 @@ end;
 
 procedure TKt_2450_SweetShow.ButtonCreateClick(Sender: TObject);
 begin
- UpDateObject();
- case fMode.ItemIndex of
-   0:fKt_2450.SwepLinearStepCreate;
-   1:fKt_2450.SwepLinearPointCreate;
-   2:fKt_2450.SwepLogStepCreate;
- end;
+ if fSelect.ItemIndex=1 then
+ begin
+   UpDateObject();
+   case fMode.ItemIndex of
+     0:fKt_2450.SwepLinearStepCreate;
+     1:fKt_2450.SwepLinearPointCreate;
+     2:fKt_2450.SwepLogStepCreate;
+   end;
+ end                    else
+  fKt_2450.TrigForIVCreate;
 end;
 
 procedure TKt_2450_SweetShow.ButtonInitClick(Sender: TObject);
@@ -1561,7 +1580,8 @@ constructor TKt_2450_SweetShow.Create(Kt_2450: TKt_2450;
                                  Labels: array of TLabel;
                                  Buttons: TKt2450_SweepButtonArray;
                                  DualCB, AbortLimitCB: TCheckBox;
-                                 Mode: TRadioGroup);
+                                 Mode,Select: TRadioGroup;
+                                 SweepGB:TGroupBox);
 begin
  fKt_2450_SweepParameters:=Kt_2450.SweepParameters[Kt_2450.SourceType];
  fMode:=Mode;
@@ -1571,6 +1591,16 @@ begin
  fMode.Items.Add('Log Point');
  fMode.ItemIndex:=0;
  fMode.OnClick:=ModeClick;
+
+ fSelect:=Select;
+ fSelect.Items.Clear;
+ fSelect.Items.Add('From Setting');
+ fSelect.Items.Add('From Sweep');
+ fSelect.ItemIndex:=0;
+ fSelect.OnClick:=SelectClick;
+
+ fSweepGB:=SweepGB;
+
 // fMode.Name:=Kt_2450.Name;
  inherited Create(Kt_2450,STexts,Labels);
 // CF:=TIniFile.Create(ExtractFilePath(Application.ExeName)+'IVChar.ini');
@@ -1670,12 +1700,21 @@ begin
    fSettingsShow[i].ReadFromIniFile(ConfigFile);
  fMode.ItemIndex:= ConfigFile.ReadInteger(fKt_2450.Name,
            'SW_Mode'+Kt2450_SourceName[fKt_2450.SourceType],0);
+ fSelect.ItemIndex:= ConfigFile.ReadInteger(fKt_2450.Name,
+           'SW_Select',0);
  fDualCB.Checked:= ConfigFile.ReadBool(fKt_2450.Name,
            'SW_Dual'+Kt2450_SourceName[fKt_2450.SourceType],False);
  fAbortLimitCB.Checked:= ConfigFile.ReadBool(fKt_2450.Name,
            'SW_FailAbort'+Kt2450_SourceName[fKt_2450.SourceType],True);
 
  UpDateObject();
+
+end;
+
+procedure TKt_2450_SweetShow.SelectClick(Sender: TObject);
+begin
+ fSweepGB.Enabled:=(fSelect.ItemIndex=1);
+ fSweepGB.Visible:=(fSelect.ItemIndex=1);
 end;
 
 procedure TKt_2450_SweetShow.SettingsShowCreate(STexts: array of TStaticText;
@@ -1792,6 +1831,8 @@ begin
  fKt_2450_SweepParameters.RangeType:=TKt2450_SweepRangeType((fSettingsShow[kt_sws_ranget] as TStringParameterShow).Data);
  fKt_2450_SweepParameters.Dual:=fDualCB.Checked;
  fKt_2450_SweepParameters.FailAbort:=fAbortLimitCB.Checked;
+
+ SelectClick(nil);
 end;
 
 procedure TKt_2450_SweetShow.WriteToIniFile(ConfigFile: TIniFile);
@@ -1801,6 +1842,8 @@ begin
    fSettingsShow[i].WriteToIniFile(ConfigFile);
 
  WriteIniDef(ConfigFile, fKt_2450.Name, 'SW_Mode'+Kt2450_SourceName[fKt_2450.SourceType], fMode.ItemIndex, 0);
+ ConfigFile.WriteInteger(fKt_2450.Name, 'SW_Select', fSelect.ItemIndex);
+// WriteIniDef(ConfigFile, fKt_2450.Name, 'SW_Select', fSelect.ItemIndex, 0);
 // WriteIniDef(ConfigFile, fKt_2450.Name, 'SW_Dual'+Kt2450_SourceName[fKt_2450.SourceType], fDualCB.Checked, False);
 // WriteIniDef(ConfigFile, fKt_2450.Name, 'SW_FailAbort'+Kt2450_SourceName[fKt_2450.SourceType], fAbortLimitCB.Checked);
  ConfigFile.WriteBool(fKt_2450.Name,'SW_Dual'+Kt2450_SourceName[fKt_2450.SourceType], fDualCB.Checked);
