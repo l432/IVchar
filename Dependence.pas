@@ -1672,7 +1672,7 @@ end;
 
 procedure TFastIVDependence.SetVoltageImitation;
 begin
- if ToUseDragonBackTime and (fAbsVoltageValue<>0)
+ if ToUseDragonBackTime //and (fAbsVoltageValue<>0)
    then fKt_2450.DataVector.Add(DragonBackOvershootHeight*fVoltageFactor * fAbsVoltageValue,1);
  fKt_2450.DataVector.Add(fVoltageFactor * fAbsVoltageValue,1);
 end;
@@ -1691,14 +1691,6 @@ begin
  RealStep:=abs((fVoltageMeasured)
        -Results.X[Results.HighNumber]);
  Result:=(RealStep>0.9*VoltageStep)and(RealStep<1.1*VoltageStep);
-// if not(Result) then
-//  HelpForMe(inttostr(MilliSecond)+'_T'+floattostr(VoltageStep)+
-//      '_R'+floattostr(RealStep)+
-//     '_'+floattostr(fVoltageMeasured)) ;
-
-
- // Result:=(abs(fVoltageMeasured)
-//       -abs(Results.X[Results.HighNumber])-VoltageStep)<0.1*VoltageStep;
 end;
 
 procedure TFastIVDependence.VoltageMeasuring;
@@ -1805,32 +1797,10 @@ begin
   DiodOrientationVoltageFactorDetermination();
 
   if CBForw.Checked then VoltageValuesFillingPart(True);
+  if (CBForw.Checked)and(CBRev.Checked) then fKt_2450.DataVector.Add(ErResult,ErResult);
   if CBRev.Checked then VoltageValuesFillingPart(False);
-//   begin
-//    fForwardBranch:=true;
-//    fAbsVoltageValue:=RangeFor.LowValue;
-//    VoltageFactorDetermination();
-//    while (round(fAbsVoltageValue*1000)<=round(RangeFor.HighValue*1000)) do
-//       begin
-//        SetVoltageImitation;
-//        VoltageChange();
-//       end;
-//   end;
-//
-//  if CBRev.Checked then
-//   begin
-//    fForwardBranch:=false;
-//    fAbsVoltageValue:=RangeRev.LowValue;
-//    if (fAbsVoltageValue=0)
-//      and(RangeFor.LowValue=0)
-//      and(CBForw.Checked) then VoltageChange();
-//    VoltageFactorDetermination();
-//    while (round(fAbsVoltageValue*1000)<=round(RangeRev.HighValue*1000)) do
-//       begin
-//        SetVoltageImitation;
-//        VoltageChange();
-//       end;
-//   end;
+
+  fKt_2450.DataVector.Add(0,1);
 end;
 
 procedure TFastIVDependence.VoltageValuesFillingPart(ItIsForwardBranch: boolean);

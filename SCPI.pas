@@ -45,6 +45,7 @@ type
     Function NumbersArrayToStrLimited(Values:TArrInteger;LimitValues:TLimitValues):string;overload;
     procedure StrToNumberArray(var Values:TArrSingle; Str:string; Decimator:string=',');
     {розміщує в Values числа, розташовані в рядку Str і розділені між собою Decimator}
+    procedure JoinToStringToSend(Str:string);
    public
     property Device:TMeterDevice read fDevice;
     Constructor Create(Nm:string);
@@ -184,6 +185,11 @@ procedure TSCPInew.JoinAddString;
 begin
  if fIsQuery then fDevice.JoinToStringToSend('?')
              else fDevice.JoinToStringToSend(' '+fAdditionalString);
+end;
+
+procedure TSCPInew.JoinToStringToSend(Str: string);
+begin
+ fDevice.JoinToStringToSend(Str);
 end;
 
 function TSCPInew.NumbersArrayToStrLimited(Values: TArrSingle;

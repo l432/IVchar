@@ -4436,6 +4436,7 @@ begin
  FastIVMeasuring.VoltageValuesFilling;
  Kt_2450.DragonBackTime:=FastIVMeasuring.DragonBackTime;
  Kt_2450.ToUseDragonBackTime:=FastIVMeasuring.ToUseDragonBackTime;
+ Kt_2450.Imax:=FastIVMeasuring.Imax;
 // FastIVMeasuring.Results.CopyTo(Kt_2450.DataVector);
 end;
 

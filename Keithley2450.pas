@@ -132,9 +132,10 @@ TKT2450_SourceDevice=class;
    fSourceDevice:TKT2450_SourceDevice;
    fDisplayState:TKt2450_DisplayState;
    fHookForTrigDataObtain: TSimpleEvent;
-   fTrigBranchNumber:word;
+   fTrigBlockNumber:word;
    fDragonBackTime:double;
    fToUseDragonBackTime:boolean;
+   fImax:double;
    procedure OnOffFromBool(toOn:boolean);
    function StringToVoltageProtection(Str:string;var vp:TKt_2450_VoltageProtection):boolean;
    function StringToSourceType(Str:string):boolean;
@@ -205,6 +206,7 @@ TKT2450_SourceDevice=class;
    property DisplayState:TKt2450_DisplayState read fDisplayState;
    property DragonBackTime:double read fDragonBackTime write fDragonBackTime;
    property ToUseDragonBackTime:boolean read fToUseDragonBackTime write fToUseDragonBackTime;
+   property Imax:double read fImax write fImax;
    Constructor Create(Telnet:TIdTelnet;IPAdressShow: TIPAdressShow;
                Nm:string='Keitley2450');
    destructor Destroy; override;
@@ -522,7 +524,53 @@ TKT2450_SourceDevice=class;
 
    Procedure Init;
    Procedure Abort;
+   Procedure Wait;
+   Procedure InitWait;
+
    Procedure TrigForIVCreate;
+   Procedure TrigNewCreate;
+   {any blocks that have been defined in the trigger model
+   are cleared so the trigger model has no blocks defined}
+   Procedure TrigBufferClear(BufName:string=Kt2450DefBuffer);
+   Procedure TrigConfigListRecall(ListName:string;Index:integer=1);
+   Procedure TrigConfigListNext(ListName:string);overload;
+   Procedure TrigConfigListNext(ListName1,ListName2:string);overload;
+   Procedure TrigOutPutChange(toOn:boolean);
+   Procedure TrigAlwaysTransition(TransitionBlockNumber:word);
+   Procedure TrigDelay(DelayTime:double);
+   Procedure TrigMeasure(BufName:string=Kt2450DefBuffer;Count:word=1);
+   {при досягненні цього блоку прилад вимірює Count разів,
+   після чого виконується наступний блок;
+   Count=0 може використовуватися для зупинки нескінченних вимірювань
+   - див. далі;
+   результати заносяться в BufName}
+   Procedure TrigMeasureInf(BufName:string=Kt2450DefBuffer);
+   {при досягненні цього блоку прилад починає
+   виміри і виконується наступний блок; виміри продовжуються доти,
+   поки не зустрінеться новий вимірювальний блок чи не буде кінець моделі}
+   Procedure TrigMeasureCountDevice(BufName:string=Kt2450DefBuffer);
+   {при досягненні цього блоку прилад вимірює стільки разів, скільки
+   передбачено попередньо встановленою властивістю Count,
+   після чого виконується наступний блок}
+
+   Procedure TrigMeasureResultTransition(LimitType:TK2450_TrigLimitType;
+                    LimA,LimB:double;TransitionBlockNumber:word;
+                    MeasureBlockNumber:word=0);
+   {якщо вимірювання задовольняє умові, яка передбачена в LimitType,
+   то відбувається перехід на блок TransitionBlockNumber;
+   при MeasureBlockNumber=0 береться до уваги останнє
+   вимірювання, інакше те, яке відбулося в блоці з номером MeasureBlockNumber;
+   якщо задати LimA>LimB, то прилад автоматично їх поміняє місцями
+   умова виконується, якщо результат (MeasureResult)
+   при kt_tlt_above: MeasureResult > LimB
+   kt_tlt_below: MeasureResult < LimA
+   kt_tlt_inside: LimA < MeasureResult < LimB  (про <= не знаю, треба експерементувати)
+   kt_tlt_outside:  MeasureResult не належить [LimA, LimB]
+   }
+   Procedure TrigCounterTransition(TargetCount,TransitionBlockNumber:word);
+   {якщо кількість приходів на цей блок менша TargetCount, то відбувається
+   перехід на блок TransitionBlockNumber}
+
  end;
 
 TKT2450_Measurement=class(TMeasurementSimple)
@@ -775,7 +823,7 @@ begin
  fDLActive:=1;
 
  fDisplayState:=kt_ds_on25;
- fTrigBranchNumber:=1;
+ fTrigBlockNumber:=1;
 end;
 
 destructor TKt_2450.Destroy;
@@ -1248,6 +1296,13 @@ begin
  SetupOperation(17,0,0,False);
 end;
 
+procedure TKt_2450.InitWait;
+begin
+// INIT; *WAI
+ fAdditionalString:=CommandDelimiter+RootNoodKt_2450[25];
+ SetupOperation(17,1,0,False);
+end;
+
 function TKt_2450.IsAzeroStateOn: boolean;
 begin
  Result:=IsAzeroStateOn(fMeasureFunction);
@@ -1358,24 +1413,10 @@ end;
 function TKt_2450.ModeDetermination: TKt_2450_Mode;
 begin
  Result:=kt_md_sVmC;
-// case fSourceType of
-//   kt_sVolt: case fMeasureFunction of
-//             kt_mCurrent:Result:=TKt_2450_Mode(ord(fMeasureUnits[kt_mCurrent]));
-//             kt_mVoltage:Result:=TKt_2450_Mode(ord(fMeasureUnits[kt_mVoltage]));
-//             end;
-//   kt_sCurr:case fMeasureFunction of
-//             kt_mCurrent:Result:=TKt_2450_Mode(3+ord(fMeasureUnits[kt_mCurrent]));
-//             kt_mVoltage:Result:=TKt_2450_Mode(3+ord(fMeasureUnits[kt_mCurrent]));
-//             end;
-// end;
-
-// showmessage('mode '+inttostr(ord(fMeasureUnits[fMeasureFunction])));
  case fSourceType of
    kt_sVolt:Result:=TKt_2450_Mode(ord(fMeasureUnits[fMeasureFunction]));
    kt_sCurr:Result:=TKt_2450_Mode(4+ord(fMeasureUnits[fMeasureFunction]));
  end;
-
-//       TKt_2450_MeasureUnit=(kt_mu_amp,kt_mu_volt, kt_mu_ohm, kt_mu_watt);
 end;
 
 procedure TKt_2450.MyTraining;
@@ -1387,13 +1428,31 @@ begin
 //  fDevice.Request();
 //  fDevice.GetData;
 
+TrigNewCreate;
+//TrigBufferClear;
+//TrigConfigListRecall(MyMeasList);
+//TrigConfigListRecall(MySourceList);
+//TrigConfigListNext(MySourceList);
+//TrigOutPutChange(True);
+//TrigOutPutChange(False);
+//TrigAlwaysTransition(7);
+//TrigDelay(5e-2);
+//TrigMeasure;
+//TrigMeasureResultTransition(kt_tlt_outside,-2e-3,0.01,8);
+//TrigCounterTransition(3,4);
+
+//Init;
+//InitWait;
+//Wait();
+
+//-------------------------------------------
 // ConfigMeasureDelete;
 // ConfigSourceDelete;
 
- ConfigMeasureCreate;
- ConfigSourceCreate;
- ConfigMeasureStore;
- ConfigSourceStore;
+// ConfigMeasureCreate;
+// ConfigSourceCreate;
+// ConfigMeasureStore;
+// ConfigSourceStore;
 // ConfigMeasureRecall;
 // ConfigSourceRecall;
 // ConfigBothRecall;
@@ -1832,168 +1891,121 @@ begin
  (fDevice as TKt_2450Device).ClearStringToSend;
  (fDevice as TKt_2450Device).SetStringToSend(RootNoodKt_2450[fRootNode]);
  case fRootNode of
-  5:begin
-////     JoinToStringToSend(FirstNodeKt_2450_5[fFirstLevelNode]);
-    case fFirstLevelNode of
-     5: fDevice.JoinToStringToSend(FirstNodeKt_2450[fFirstLevelNode]);
+  5:case fFirstLevelNode of
+     5: JoinToStringToSend(FirstNodeKt_2450[fFirstLevelNode]);
      0..1:begin
-//     SetupOperation(5,1-ord(Source),8);
-           fDevice.JoinToStringToSend(RootNoodKt_2450[12+fFirstLevelNode]);
-           fDevice.JoinToStringToSend(FirstNodeKt_2450[fLeafNode]);
+           JoinToStringToSend(RootNoodKt_2450[12+fFirstLevelNode]);
+           JoinToStringToSend(FirstNodeKt_2450[fLeafNode]);
           end;
-    end;
-    end;
-  6:begin
-     case fFirstLevelNode of
-//  SetupOperation(6,ord(Measure)+12,28);
+    end;  // fRootNode=5
+  6:case fFirstLevelNode of
       12,13,14:
         begin
-        fDevice.JoinToStringToSend(RootNoodKt_2450[fFirstLevelNode]);
-        fDevice.JoinToStringToSend(FirstNodeKt_2450[fLeafNode]);
+        JoinToStringToSend(RootNoodKt_2450[fFirstLevelNode]);
+        JoinToStringToSend(FirstNodeKt_2450[fLeafNode]);
         end;
-//        SetupOperation(6,0);
-//        SetupOperation(6,1);
-//        SetupOperation(6,2);
-// SetupOperation(6,38);
-      else fDevice.JoinToStringToSend(FirstNodeKt_2450[fFirstLevelNode]);
-     end;
-
-
-    end;
-   7:begin
-//        SetupOperation(7,4);
-//        SetupOperation(7,39);
-      fDevice.JoinToStringToSend(FirstNodeKt_2450[fFirstLevelNode]);
-     end;
-   9:begin
-//      SetupOperation(9,6);
-      fDevice.JoinToStringToSend(FirstNodeKt_2450[fFirstLevelNode]);
-
-     end;
-
-   11:begin
-      case fFirstLevelNode of
-       12..13:begin
-              case fLeafNode of
-//                  SetupOperation(11,1-ord(Source)+12);
-                0:fDevice.JoinToStringToSend(RootNoodKt_2450[fFirstLevelNode]);
+      else JoinToStringToSend(FirstNodeKt_2450[fFirstLevelNode]);
+     end;  // fRootNode=6
+  7,9:JoinToStringToSend(FirstNodeKt_2450[fFirstLevelNode]);
+  11:case fFirstLevelNode of
+       12..13:case fLeafNode of
+                0:JoinToStringToSend(RootNoodKt_2450[fFirstLevelNode]);
                 else
                    begin
-//    SetupOperation(11,13,10)замість SetupOperation(11,1,0);
-//    SetupOperation(11,12,12)замість SetupOperation(11,0,2);
-//    SetupOperation(11,13,13);
-//    SetupOperation(11,12|13,17);
-//    SetupOperation(11,13,16);
-//    SetupOperation(11,1-ord(Source)+12,21|22);
-//    SetupOperation(11,1-ord(Source)+12,27);
-                    fDevice.JoinToStringToSend(RootNoodKt_2450[fFirstLevelNode]);
-                    fDevice.JoinToStringToSend(FirstNodeKt_2450[fLeafNode]);
-                    if fIsTripped then fDevice.JoinToStringToSend(FirstNodeKt_2450[11]);
+                    JoinToStringToSend(RootNoodKt_2450[fFirstLevelNode]);
+                    JoinToStringToSend(FirstNodeKt_2450[fLeafNode]);
+                    if fIsTripped then JoinToStringToSend(FirstNodeKt_2450[11]);
                    end;
               end;
-           end;
-//        SetupOperation(11,55,14);
-       55:fDevice.JoinToStringToSend(RootNoodKt_2450[15]);
-//    SetupOperation(11,23,1-ord(Source)+12);
-//    SetupOperation(11,23,24);
-       23:begin
-           case fLeafNode of
+       55:JoinToStringToSend(RootNoodKt_2450[15]);
+       23:case fLeafNode of
              79,80:begin
-//                  SetupOperation(11,23,55+24+1-ord(Source));//79,80
-                   fDevice.JoinToStringToSend(FirstNodeKt_2450[fFirstLevelNode]);
-                   fDevice.JoinToStringToSend(RootNoodKt_2450[fLeafNode-79+12]);
-                   fDevice.JoinToStringToSend(FirstNodeKt_2450[24]);
+                   JoinToStringToSend(FirstNodeKt_2450[fFirstLevelNode]);
+                   JoinToStringToSend(RootNoodKt_2450[fLeafNode-79+12]);
+                   JoinToStringToSend(FirstNodeKt_2450[24]);
                    end;
              else
                  begin
-                 fDevice.JoinToStringToSend(FirstNodeKt_2450[fFirstLevelNode]);
-                 fDevice.JoinToStringToSend(RootNoodKt_2450[fLeafNode]);
+                 JoinToStringToSend(FirstNodeKt_2450[fFirstLevelNode]);
+                 JoinToStringToSend(RootNoodKt_2450[fLeafNode]);
                  end;
-           end;
           end;
         24:begin
-//            SetupOperation(11,24,0);
-            fDevice.JoinToStringToSend(RootNoodKt_2450[fFirstLevelNode]);
-            fDevice.JoinToStringToSend(FirstNodeKt_2450[23]);
-            fDevice.JoinToStringToSend(ConfLeafNodeKt_2450[fLeafNode]);
+            JoinToStringToSend(RootNoodKt_2450[fFirstLevelNode]);
+            JoinToStringToSend(FirstNodeKt_2450[23]);
+            JoinToStringToSend(ConfLeafNodeKt_2450[fLeafNode]);
            end;
-
         25:begin
-            fDevice.JoinToStringToSend(FirstNodeKt_2450[fFirstLevelNode]);
-//            SetupOperation(11,25,1,False);
+            JoinToStringToSend(FirstNodeKt_2450[fFirstLevelNode]);
             case fLeafNode of
-              1:fDevice.JoinToStringToSend(SweepParameters[fSourceType].Lin);
-              2:fDevice.JoinToStringToSend(SweepParameters[fSourceType].LinStep);
-              3:fDevice.JoinToStringToSend(SweepParameters[fSourceType].List);
-              4:fDevice.JoinToStringToSend(SweepParameters[fSourceType].Log);
+              1:JoinToStringToSend(SweepParameters[fSourceType].Lin);
+              2:JoinToStringToSend(SweepParameters[fSourceType].LinStep);
+              3:JoinToStringToSend(SweepParameters[fSourceType].List);
+              4:JoinToStringToSend(SweepParameters[fSourceType].Log);
             end;
            end;
-//       fDevice.JoinToStringToSend(FirstNodeKt_2450[fLeafNode]);
-      end;
-      end;
-     12..14:
+     end;// fRootNode=11
+  12..14:
        begin
-//          SetupOperation(12+ord(MeasureType),7);
-//          SetupOperation(ord(Measure)+12,14);
-//        SetupOperation(12|13,16|15);
-//        SetupOperation(12|13|14,20);
- // SetupOperation(ord(Measure)+12,26);
-            fDevice.JoinToStringToSend(FirstNodeKt_2450[fFirstLevelNode]);
-//             SetupOperation(12|13,15|16,18|19);
+         JoinToStringToSend(FirstNodeKt_2450[fFirstLevelNode]);
          case fLeafNode of
-          18,19:fDevice.JoinToStringToSend(FirstNodeKt_2450[fLeafNode]);
+          18,19:JoinToStringToSend(FirstNodeKt_2450[fLeafNode]);
          end;
-       end;
-   19:begin
-       fDevice.JoinToStringToSend(FirstNodeKt_2450[fFirstLevelNode]);
+       end; // fRootNode=12..14
+  17:if fFirstLevelNode=1 then JoinToStringToSend(fAdditionalString);
+  19:begin
+       JoinToStringToSend(FirstNodeKt_2450[fFirstLevelNode]);
        case fFirstLevelNode of
-//        SetupOperation(19,29);
-        29:;//fAdditionalString:=Buffer.CreateStr;
-        21:;//fAdditionalString:=Buffer.Name;
-// SetupOperation(19,31);
-// QuireOperation(19,31,1,False);
-        31: if fLeafNode=1 then fDevice.JoinToStringToSend(Buffer.Get)
+        31:if fLeafNode=1 then JoinToStringToSend(Buffer.Get)
                            else fAdditionalString:=Buffer.ReSize;
-//     SetupOperation(19,32); QuireOperation(19,32,1,False);
-        32:if fLeafNode=1 then fDevice.JoinToStringToSend(Buffer.Get)
+        32:if fLeafNode=1 then JoinToStringToSend(Buffer.Get)
                            else fAdditionalString:=Buffer.FillModeChange;
-        33:fDevice.JoinToStringToSend(Buffer.DataDemandArray(TKt2450_ReturnedData(fLeafNode)));
-        3:;
+        33:JoinToStringToSend(Buffer.DataDemandArray(TKt2450_ReturnedData(fLeafNode)));
         35:case fLeafNode of
-            1:fDevice.JoinToStringToSend(Buffer.Get);
-            2:fDevice.JoinToStringToSend(Buffer.LimitIndexies)
+            1:JoinToStringToSend(Buffer.Get);
+            2:JoinToStringToSend(Buffer.LimitIndexies)
            end;
        end;
-      end;
-    21:case fFirstLevelNode of
-//     QuireOperation(21);
-       0:;
-       1:fDevice.JoinToStringToSend(Buffer.Get);
-//        QuireOperation(21,ord(DataType)+2,0,False);
-       2..5:fDevice.JoinToStringToSend(Buffer.DataDemand(TKt2450_ReturnedData(fFirstLevelNode-2)))
-       end;
-    22:case fFirstLevelNode of
-//     QuireOperation(22);
-       0:;
-       1:fDevice.JoinToStringToSend(Buffer.Get);
-//        QuireOperation(22,ord(DataType)+2,0,False);
-       2..5:fDevice.JoinToStringToSend(Buffer.DataDemand(TKt2450_ReturnedData(fFirstLevelNode-2)))
-       end;
-    23:case fFirstLevelNode of
-//        SetupOperation(23,36);
-// SetupOperation(23,37);
-        36,37:fDevice.JoinToStringToSend(AnsiReplaceStr(FirstNodeKt_2450[fFirstLevelNode],'#',inttostr(fDLActive)));
-       end;
-    24:begin
-       // SetupOperation(24,23,0);
-//        case fFirstLevelNode of
-//         36,37:fDevice.JoinToStringToSend(AnsiReplaceStr(FirstNodeKt_2450[fFirstLevelNode],'#',inttostr(fDLActive)));
-//        end;
-        fDevice.JoinToStringToSend(FirstNodeKt_2450[fFirstLevelNode]);
-        fDevice.JoinToStringToSend(ConfLeafNodeKt_2450[fLeafNode]);
-       end;
-
-   end;
+      end; // fRootNode=19
+  21:case fFirstLevelNode of
+       1:JoinToStringToSend(Buffer.Get);
+       2..5:JoinToStringToSend(Buffer.DataDemand(TKt2450_ReturnedData(fFirstLevelNode-2)))
+     end; // fRootNode=21
+  22:case fFirstLevelNode of
+       1:JoinToStringToSend(Buffer.Get);
+       2..5:JoinToStringToSend(Buffer.DataDemand(TKt2450_ReturnedData(fFirstLevelNode-2)))
+     end; // fRootNode=22
+  23:case fFirstLevelNode of
+        36,37:JoinToStringToSend(AnsiReplaceStr(FirstNodeKt_2450[fFirstLevelNode],'#',inttostr(fDLActive)));
+     end; // fRootNode=23
+  24:begin
+        JoinToStringToSend(FirstNodeKt_2450[fFirstLevelNode]);
+        JoinToStringToSend(ConfLeafNodeKt_2450[fLeafNode]);
+     end; // fRootNode=24
+  26:case fFirstLevelNode of
+        38:JoinToStringToSend(FirstNodeKt_2450[fFirstLevelNode]);
+        40,41,21,43:begin
+            JoinToStringToSend(FirstNodeKt_2450[39]);
+            JoinToStringToSend(FirstNodeKt_2450[fFirstLevelNode]);
+            JoinToStringToSend(TrigLeafNodeKt_2450[fLeafNode]);
+            fAdditionalString:=IntTostr(fTrigBlockNumber)+PartDelimiter+fAdditionalString;
+            inc(fTrigBlockNumber);
+           end;
+        24,11:begin
+            JoinToStringToSend(FirstNodeKt_2450[39]);
+            JoinToStringToSend(RootNoodKt_2450[fFirstLevelNode]);
+            JoinToStringToSend(TrigLeafNodeKt_2450[fLeafNode]);
+            fAdditionalString:=IntTostr(fTrigBlockNumber)+PartDelimiter+fAdditionalString;
+            inc(fTrigBlockNumber);
+           end;
+         42:begin
+             JoinToStringToSend(FirstNodeKt_2450[39]);
+             JoinToStringToSend(FirstNodeKt_2450[fFirstLevelNode]);
+             fAdditionalString:=IntTostr(fTrigBlockNumber)+PartDelimiter+fAdditionalString;
+             inc(fTrigBlockNumber);
+            end;
+     end;// fRootNode=26
+ end;
 
  if fIsSuffix then JoinAddString;
 
@@ -2004,114 +2016,68 @@ begin
  Str:=Trim(Str);
  case fRootNode of
   0:if pos(Kt_2450_Test,Str)<>0 then fDevice.Value:=314;
-  5:begin
-    case fFirstLevelNode of
+  5:case fFirstLevelNode of
      5,55:fDevice.Value:=StrToInt(Str);
      0..1:begin
-//     QuireOperation(5,1-ord(Source),8);
-        if StringToOutPutState(AnsiLowerCase(Str))
+          if StringToOutPutState(AnsiLowerCase(Str))
             then fDevice.Value:=ord(fOutputOffState[TKt2450_Source(fFirstLevelNode)]);
           end;
-    end;
-    end;
+    end; //fRootNode=5
   6:if fFirstLevelNode=30
        then
         begin
         if StringToDisplayBrightness(AnsiLowerCase(Str))
             then fDevice.Value:=ord(fDisplayState);
 
-        end 
+        end
        else fDevice.Value:=StrToInt(Str);
-// QuireOperation(6,38);
-  9:begin
-//     QuireOperation(9,6);
-     if StringToTerminals(AnsiLowerCase(Str))
+  9:if StringToTerminals(AnsiLowerCase(Str))
           then fDevice.Value:=ord(fTerminal);
-    end;
-
-  11:begin
-//      QuireOperation(11,13,10);
-
-// QuireOperation(11,12,12);
-
-// QuireOperation(11,23,1-ord(Source)+12);
-      case fFirstLevelNode of
+  11:case fFirstLevelNode of
         23:begin
            StringToArray(Str);
            if fDataVector.Count>0 then fDevice.Value:=1;
            end;
         else
-           begin
            case fLeafNode of
             10:if StringToVoltageProtection(AnsiLowerCase(Str),fVoltageProtection)
                 then fDevice.Value:=ord(fVoltageProtection);
-        //      QuireOperation(11,13,15);
-        // QuireOperation(11,1-ord(Source)+12,21);
-//         QuireOperation(11,1-ord(Source)+12);
             0,12..13,15,21:fDevice.Value:=SCPI_StringToValue(Str);
-        //      2..3:fDevice.Value:=SCPI_StringToValue(Str);
-        //          QuireOperation(11,55,55);
             55:if StringToSourceType(AnsiLowerCase(Str)) then fDevice.Value:=ord(fSourceType);
-        // QuireOperation(11,1-ord(Source),17);
-        //QuireOperation(11,13,16);
-        //QuireOperation(11,12|13,22);
             16,17,22,27:fDevice.Value:=StrToInt(Str);
-        //      QuireOperation(11,13,15);
-        //      15:;
            end;
-           end;
-      end;
-     end;
-   12..14:begin
-            case fFirstLevelNode of
-//          QuireOperation(12+ord(MeasureType),7);
-//          QuireOperation(12|13,9);
-//          QuireOperation(12|13,16);
-//          QuireOperation(ord(12|13|14,20);
-             7,9,{15,}20: fDevice.Value:=StrToInt(Str);
- //          QuireOperation(12|13,14);
+     end; //fRootNode=11
+   12..14:case fFirstLevelNode of
+             7,9,20: fDevice.Value:=StrToInt(Str);
              14: if StringToMeasureUnit(AnsiLowerCase(Str))
                     then fDevice.Value:=ord(fMeasureUnits[TKt2450_Measure(fFirstLevelNode-12)]);
-//    QuireOperation(12|13,15);
-//  QuireOperation(12|13,15,18);
-//  QuireOperation(12|13,15,26);
              16,15,26:fDevice.Value:=SCPI_StringToValue(Str);
-            end;
-
-         end;
+          end;   //fRootNode=12..14
    15:if StringToMeasureFunction(AnsiLowerCase(Str)) then fDevice.Value:=ord(fMeasureFunction);
-   19:begin
-         case fFirstLevelNode of
-  // QuireOperation(19,31,1,False);
+   19:case fFirstLevelNode of
           31: fDevice.Value:=StrToInt(Str);
-//          QuireOperation(19,32,1,False);
           32:if Buffer.StringToFillMode(AnsiLowerCase(Str))
-            then fDevice.Value:=ord(TKt2450_BufferFillMode(Buffer.FillMode));
+                then fDevice.Value:=ord(TKt2450_BufferFillMode(Buffer.FillMode));
           33:StringToMesuredDataArray(AnsiReplaceStr(Str,',',' '),TKt2450_ReturnedData(fLeafNode));
           35:case fLeafNode of
               0,1:fDevice.Value:=StrToInt(Str);
               2:if StringToBufferIndexies(Str) then fDevice.Value:=1;
              end;
-         end;
+      end; //fRootNode=19
+   20:fDevice.Value:=StrToInt(Str);
+   21:case fFirstLevelNode of
+       0,1:fDevice.Value:=SCPI_StringToValue(Str);
+       2..5:StringToMesuredData(AnsiReplaceStr(Str,',',' '),TKt2450_ReturnedData(fFirstLevelNode-2));
+       end; //fRootNode=21
+   22:case fFirstLevelNode of
+       0,1:fDevice.Value:=SCPI_StringToValue(Str);
+       2..5:StringToMesuredData(AnsiReplaceStr(Str,',',' '),TKt2450_ReturnedData(fFirstLevelNode-2));
+      end;  //fRootNode=22
+   23:case fFirstLevelNode of
+       36:StringToDigLineStatus(AnsiLowerCase(Str));
+       37:fDevice.Value:=StrToInt(Str);
       end;
-    20:fDevice.Value:=StrToInt(Str);
-    21:case fFirstLevelNode of
-//     QuireOperation(21);
-       0,1:fDevice.Value:=SCPI_StringToValue(Str);
-       2..5:StringToMesuredData(AnsiReplaceStr(Str,',',' '),TKt2450_ReturnedData(fFirstLevelNode-2));
-       end;
-    22:case fFirstLevelNode of
-//     QuireOperation(22);
-       0,1:fDevice.Value:=SCPI_StringToValue(Str);
-       2..5:StringToMesuredData(AnsiReplaceStr(Str,',',' '),TKt2450_ReturnedData(fFirstLevelNode-2));
-       end;
-    23:case fFirstLevelNode of
-        36:StringToDigLineStatus(AnsiLowerCase(Str));
-//         QuireOperation(23,37);
-        37:fDevice.Value:=StrToInt(Str);
-       end;
  end;
-
 end;
 
 procedure TKt_2450.SaveSetup(SlotNumber: TKt2450_SetupMemorySlot);
@@ -2505,6 +2471,12 @@ begin
   Result:=floattostr(2e-2*Power(10,ord(Range)-1));
 end;
 
+procedure TKt_2450.Wait;
+begin
+// *WAI
+ SetupOperation(25,0,0,False);
+end;
+
 procedure TKt_2450.SetVoltageLimit(Value: double);
 begin
 // :SOUR:CURR:VLIM <value>
@@ -2812,9 +2784,65 @@ begin
    end;
 end;
 
+procedure TKt_2450.TrigAlwaysTransition(TransitionBlockNumber: word);
+begin
+//:TRIG:BLOC:BRAN:ALW <blockNumber>, <branchToBlock>
+ if TransitionBlockNumber=0 then exit;
+ fAdditionalString:=IntToStr(TransitionBlockNumber);
+ SetupOperation(26,41,4);
+end;
+
+procedure TKt_2450.TrigBufferClear(BufName: string);
+begin
+//:TRIG:BLOC:BUFF:CLE <blockNumber>, "<bufferName>"
+ fAdditionalString:=StringToInvertedCommas(BufName);
+ SetupOperation(26,40,0);
+// inc(fTrigBranchNumber);
+end;
+
+procedure TKt_2450.TrigConfigListNext(ListName: string);
+begin
+//:TRIG:BLOC:CONF:NEXT <blockNumber>, "<configurationList>"
+ fAdditionalString:=StringToInvertedCommas(ListName);
+ SetupOperation(26,24,2);
+end;
+
+procedure TKt_2450.TrigConfigListNext(ListName1, ListName2: string);
+begin
+//:TRIG:BLOC:CONF::NEXT <blockNumber>, "<configurationList>", "<configurationList2>"
+ fAdditionalString:=StringToInvertedCommas(ListName1)+PartDelimiter
+                    +StringToInvertedCommas(ListName2);
+ SetupOperation(26,24,2);
+end;
+
+procedure TKt_2450.TrigConfigListRecall(ListName: string; Index: integer);
+begin
+//:TRIG:BLOC:CONF:REC <blockNumber>, "<configurationList>", <index>
+ fAdditionalString:=StringToInvertedCommas(ListName)+PartDelimiter+
+                    inttostr(Index);
+ SetupOperation(26,24,1);
+end;
+
+procedure TKt_2450.TrigCounterTransition(TargetCount,
+  TransitionBlockNumber: word);
+begin
+//:TRIG:BLOC:BRAN:COUN <blockNumber>, <targetCount>, <branchToBlock>
+ if (TransitionBlockNumber=0)or(TargetCount=0) then Exit;
+ fAdditionalString:=IntToStr(TargetCount)+PartDelimiter
+                    + IntToStr(TransitionBlockNumber);
+  SetupOperation(26,43,7);
+end;
+
+procedure TKt_2450.TrigDelay(DelayTime: double);
+begin
+//:TRIG:BLOC:DEL:CONS <blockNumber>, <time>
+ fAdditionalString:=floattostr(NumberMap(DelayTime,Kt_2450_TrigDelayLimits));
+ SetupOperation(26,21,5);
+end;
+
 procedure TKt_2450.TrigForIVCreate;
  var SourceValueTemp:double;
-     i:integer;
+     i,BranchesLimitIndex:integer;
 begin
  HookForTrigDataObtain();
  showmessage(DataVector.XYtoString);
@@ -2825,15 +2853,134 @@ begin
  SourceValueTemp:=SourceValue[fSourceType];
  OutPutChange(False);
  ConfigMeasureStore();
+ BranchesLimitIndex:=0;
  for I := 0 to DataVector.HighNumber do
    begin
+     if DataVector.X[i]=ErResult then
+      begin
+        BranchesLimitIndex:=i+1;
+        Continue;
+      end;
      SetSourceValue(DataVector.X[i]);
      ConfigSourceStore();
    end;
  SetSourceValue(SourceValueTemp);
 
- fTrigBranchNumber:=1;
+ TrigNewCreate();
+ TrigBufferClear();
+ TrigConfigListRecall(MyMeasList);
+ TrigConfigListRecall(MySourceList);
+ TrigOutPutChange(True);
+ TrigAlwaysTransition(7);
+ TrigConfigListNext(MySourceList);
+ TrigDelay(DragonBackTime);
+ if ToUseDragonBackTime then
+  begin
+   TrigConfigListNext(MySourceList);
+   TrigDelay(DragonBackTime);
+  end;
+ TrigMeasure;
+ if ToUseDragonBackTime
+   then TrigMeasureResultTransition(kt_tlt_outside,-Imax,Imax,13)
+   else TrigMeasureResultTransition(kt_tlt_outside,-Imax,Imax,11);
 
+ if  BranchesLimitIndex>0 then
+   begin
+     if ToUseDragonBackTime
+        then i:=round((BranchesLimitIndex-1)/2)
+        else i:=BranchesLimitIndex-1;
+   end                    else
+   begin
+     if ToUseDragonBackTime
+        then i:=round(DataVector.HighNumber/2)
+        else i:=DataVector.HighNumber;
+   end;
+
+ TrigCounterTransition(i,6);
+
+ if  BranchesLimitIndex=0
+   then TrigConfigListNext(MySourceList)
+   else
+    begin
+      TrigConfigListRecall(MySourceList,BranchesLimitIndex);
+      if ToUseDragonBackTime
+        then TrigAlwaysTransition(16)
+        else TrigAlwaysTransition(14);
+      TrigConfigListNext(MySourceList);
+      TrigDelay(DragonBackTime);
+      if ToUseDragonBackTime then
+        begin
+        TrigConfigListNext(MySourceList);
+        TrigDelay(DragonBackTime);
+        end;
+      TrigMeasure;
+      if ToUseDragonBackTime
+       then TrigMeasureResultTransition(kt_tlt_outside,-Imax,Imax,22)
+       else TrigMeasureResultTransition(kt_tlt_outside,-Imax,Imax,18);
+      if ToUseDragonBackTime
+        then i:=round((DataVector.HighNumber-BranchesLimitIndex)/2)
+        else i:=DataVector.HighNumber-BranchesLimitIndex;
+      if ToUseDragonBackTime
+        then TrigCounterTransition(i,15)
+        else TrigCounterTransition(i,13);
+      TrigConfigListNext(MySourceList);
+    end;
+
+ TrigOutPutChange(False);
+
+end;
+
+procedure TKt_2450.TrigMeasure(BufName: string; Count: word);
+begin
+//:TRIG:BLOC:MDIG <blockNumber>, "<bufferName>", <count>
+ fAdditionalString:=StringToInvertedCommas(BufName)+PartDelimiter
+                    +IntToStr(Count);
+ SetupOperation(26,42);
+end;
+
+procedure TKt_2450.TrigMeasureCountDevice(BufName: string);
+begin
+//:TRIG:BLOC:MDIG <blockNumber>, "<bufferName>", AUTO
+ fAdditionalString:=StringToInvertedCommas(BufName)+PartDelimiter
+                    +'auto';
+ SetupOperation(26,42);
+end;
+
+procedure TKt_2450.TrigMeasureInf(BufName: string);
+begin
+//:TRIG:BLOC:MDIG <blockNumber>, "<bufferName>", INF
+ fAdditionalString:=StringToInvertedCommas(BufName)+PartDelimiter
+                    +'inf';
+ SetupOperation(26,42);
+end;
+
+procedure TKt_2450.TrigMeasureResultTransition(LimitType: TK2450_TrigLimitType;
+  LimA, LimB: double; TransitionBlockNumber, MeasureBlockNumber: word);
+begin
+//:TRIG:BLOC:BRAN:LIM:CONS <blockNumber>, <limitType>, <limitA>, <limitB>,
+//<branchToBlock>, <measureDigitizeBlock>
+ if TransitionBlockNumber=0 then Exit;
+ fAdditionalString:=Kt2450_TrigLimitTypeCommand[LimitType]+PartDelimiter
+                    +floattostr(LimA)+PartDelimiter
+                    +floattostr(LimB)+PartDelimiter
+                    +IntTostr(TransitionBlockNumber)+PartDelimiter
+                    +IntTostr(MeasureBlockNumber);
+ SetupOperation(26,43,6);
+end;
+
+procedure TKt_2450.TrigNewCreate;
+begin
+//:TRIGger:LOAD "Empty"
+ fTrigBlockNumber:=1;
+ fAdditionalString:=StringToInvertedCommas('Empty');
+ SetupOperation(26,38);
+end;
+
+procedure TKt_2450.TrigOutPutChange(toOn: boolean);
+begin
+//:TRIG:BLOC:SOUR:STAT <blockNumber>, ON|OFF
+ OnOffFromBool(toOn);
+ SetupOperation(26,11,3);
 end;
 
 procedure TKt_2450.BufferCreate(Name: string; Size: integer);

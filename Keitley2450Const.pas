@@ -14,20 +14,20 @@ const
   MySourceList='OlegSourceList';
   MyMeasList='OlegMeasList';
 
-  RootNoodKt_2450:array[0..24]of string=
+  RootNoodKt_2450:array[0..26]of string=
   ('*idn?','*rcl ','*rst','*sav',':acq',':outp',':disp',':syst','scr:run',
 //   0       1       2      3      4        5       6       7      8
   'rout',':sens',':sour',':curr', ':volt', ':res',':func',':azer:once','init',
 //  9       10     11        12      13      14      15         16       17
-  ':abor',':trac',':coun',':read',':fetc',':dig',':conf');
-//   18      19      20      21      22      23    24
+  ':abor',':trac',':coun',':read',':fetc',':dig',':conf','*wai',':trig');
+//   18      19      20      21      22      23    24      25     26
 
-  SuffixKt_2450:array[0..7]of string=('on','off', 'rst',{'?','prot',}'def',
-//                                      0    1      2                  3
+  SuffixKt_2450:array[0..7]of string=('on','off','rst','def',
+//                                      0    1     2     3
  'amp','volt','ohm','watt' );
 //   4     5    6      7
 
-  FirstNodeKt_2450:array[0..37]of string=
+  FirstNodeKt_2450:array[0..43]of string=
   (':scr',':user1:text',':user2:text','cle',':pos',':int:stat',':term',
 //     0       1             2         3      4        5         6
    ':rsen',':smod',':ocom',':prot',':trip',':vlim',':ilim',':unit',
@@ -38,13 +38,18 @@ const
 //      22        23      24     25     26        27       28      29
    ':ligh:stat',':poin',':fill:mode',':data',':beep',':act',':line#:mode',
 //     30          31         32         33     34      35        36
-   ':line#:stat');
-//      37
+   ':line#:stat',':load', ':bloc',':buff',':bran',':mdig',':bran');
+//      37         38        39      40      41      42      43
 
  ConfLeafNodeKt_2450:array[0..3]of string=
  (':cre',':del',':rec',':stor');
 
+ TrigLeafNodeKt_2450:array[0..7]of string=
+ (':cle',':rec',':next',':stat',':alw',':cons',':lim:cons',':coun');
+//   0      1       2       3      4      5         6         7
+
    PartDelimiter=', ';
+   CommandDelimiter='; ';
 
 type
 
@@ -144,6 +149,8 @@ TKt2450_DigLineDirections=array[TKt2450_DigLines] of  TKt2450_DigLineDirection;
 TKt2450_DisplayState=(kt_ds_on100,kt_ds_on75,kt_ds_on50,kt_ds_on25,
                       kt_ds_off,kt_ds_black);
 
+TK2450_TrigLimitType=(kt_tlt_above, kt_tlt_below, kt_tlt_inside, kt_tlt_outside);
+
 const
  Kt2450_TerminalsName:array [TKt2450_OutputTerminals]
             of string=('fron', 'rear');
@@ -170,6 +177,7 @@ const
   ((1e-8,1),(0.02,200),(2,2e8));
  Kt_2450_SourceDelayLimits:TLimitValues=(0,1e3);
  Kt_2450_SweepDelayLimits:TLimitValues=(5e-5,1e3);
+ Kt_2450_TrigDelayLimits:TLimitValues=(1.67e-7,1e3);
 
  Kt_2450_MeasureTimeLimits:TLimitValues=(0.01,10);
  KT_2450_MeaureTimeConvertConst=20;
@@ -223,6 +231,8 @@ Kt2450_DisplayStateLabel:array[TKt2450_DisplayState]of string=
        ('Full brightness','75% brightness','50% brightness',
         '25% brightness','Display off','Display & indicators off');
 
+Kt2450_TrigLimitTypeCommand:array[TK2450_TrigLimitType]of string=
+       ('abov','bel','in','out');
 
 //  OperationKod:array [TKt2450_Settings] of array[0..2] of byte=
 ////                  RootNood  FirstNode  LeafNode
