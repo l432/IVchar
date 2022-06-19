@@ -296,94 +296,14 @@ TThreadTermin= class(TThread)
   property IsTerminated:boolean read getIsTerminated;
 end;
 
-//TSimpleIVDependence=class (TFastDependence)
-//  private
-//    FImax: double;
-//    FImin: double;
-//    fForwardBranch:boolean;
-//    RevLine: TPointSeries;
-//    RevLg: TPointSeries;
-//
-////    fTreadToStop:TThread;
-////    fTreadToMeasuring:TThreadTermin;
-//
-//    fTempResults:TVectorTransform;
-//    fVoltageStepPrivate:double;
-//    fPreviousPointMeasurementNeeded:boolean;
-//    fPreviousPointMeasurementNeededIndex:integer;
-//    procedure SetImax(const Value: double);
-//    procedure SetImin(const Value: double);
-//    procedure SetDragonBackTime(const Value: double);
-//
-//   procedure SeriesClear();override;
-//
-//   function VoltageStep:double;
-//   procedure VoltageChange;
-//   procedure ActionMeasurement();override;
-//   procedure VoltageFactorDetermination;
-//   procedure DiodOrientationVoltageFactorDetermination;
-//   procedure VoltageMeasuring();
-//   procedure CurrentMeasuring();
-//   function ValueMeasuring(MD:TMeasuringDevice):double;
-//   function CurrentGrowth():boolean;
-//   function DerivateGrowth():boolean;
-//   function VoltageIntervalCorrect():boolean;
-//   procedure DataSave();override;
-//
-//   procedure VocIscDetermine;
-//   procedure PointSeriesFilling;
-// protected
-//   fVoltageMeasured,fCurrentMeasured:double;
-//   FCurrentValueLimitEnable: boolean;
-//   fToUseDragonBackTime:boolean;
-//   fVoltageFactor:double;
-//   fAbsVoltageValue:double;
-//   fItIsBranchBegining:boolean;
-//   fBranchBeginingIndex:integer;
-//   fItIsLightIV:boolean;
-//   fDragonBackTime:double;
-//   fDiodOrientationVoltageFactor:integer;
-//   fSingleMeasurement:boolean;
-//   fVoc:double;
-//   fIsc:double;
-//   function StepFromVector(Vector:TVector):double;
-//   procedure BeginMeasuring();override;
-//   procedure EndMeasuring();override;
-// public
-//
-//  RangeFor:TLimitShow;
-//  RangeRev:TLimitShowRev;
-//  ForwardDelV:TVector;
-//  ReverseDelV:TVector;
-//  CBForw,CBRev: TCheckBox;
-//  SettingDevice:TSettingDevice;
-//  RGDiodOrientation: TRadioGroup;
-//  Voltage_MD,Current_MD:TMeasuringDevice;
-//  PrefixToFileName:string;
-//
-//  property Imax:double read FImax write SetImax;
-//  property Imin:double read FImin write SetImin;
-//  property CurrentValueLimitEnable:boolean read FCurrentValueLimitEnable write FCurrentValueLimitEnable;
-//  property ForwardBranch:boolean read fForwardBranch;
-//  property ToUseDragonBackTime:boolean read fToUseDragonBackTime write fToUseDragonBackTime;
-//  property DragonBackTime:double read fDragonBackTime write SetDragonBackTime;
-//  property SingleMeasurement:boolean read fSingleMeasurement write fSingleMeasurement;
-//  property Voc:double read FVoc;
-//  property Isc:double read FIsc;
-//
-//  Constructor Create(
-//                     BS: TButton;
-//                     FLn,RLn,FLg,RLg:TPointSeries);
-//  procedure Cycle(ItIsForwardInput: Boolean);
-//  procedure Measuring(SingleMeasurement:boolean=true;FilePrefix:string='');virtual;
-//  procedure SetVoltage();
-//  function DatFileNameToSave:string;
-//  procedure CopyDecorationTo(Target:TFastIVDependence);
-//end;
+TFastIVstate=class;
 
 TFastIVDependence=class (TFastDependence)
-//TFastIVDependence=class (TSimpleIVDependence)
   private
+   fKt2450State:TFastIVstate;
+   fOldState:TFastIVstate;
+   fCurrentState:TFastIVstate;
+
    fKt_2450:TKt_2450;
    FImax: double;
    FImin: double;
@@ -435,7 +355,7 @@ TFastIVDependence=class (TFastDependence)
    fSingleMeasurement:boolean;
    fVoc:double;
    fIsc:double;
-   fKT2450Used:boolean;
+//   fKT2450Used:boolean;
    function StepFromVector(Vector:TVector):double;
    procedure BeginMeasuring();override;
    procedure EndMeasuring();override;
@@ -460,11 +380,17 @@ TFastIVDependence=class (TFastDependence)
   property SingleMeasurement:boolean read fSingleMeasurement write fSingleMeasurement;
   property Voc:double read FVoc;
   property Isc:double read FIsc;
-  property KT2450Used:boolean read fKT2450Used write fKT2450Used;
+  property Kt2450:TKt_2450 read fKt_2450;
+//  property KT2450Used:boolean read fKT2450Used write fKT2450Used;
+
+  property Kt2450State:TFastIVstate read fKt2450State;
+  property OldState:TFastIVstate read fOldState;
+  property CurrentState:TFastIVstate write fCurrentState;
 
   Constructor Create(
                      BS: TButton;
                      FLn,RLn,FLg,RLg:TPointSeries);
+  destructor Destroy; override;
   procedure Cycle(ItIsForwardInput: Boolean);
   procedure Measuring(SingleMeasurement:boolean=true;FilePrefix:string='');virtual;
   procedure SetVoltage();
@@ -472,16 +398,26 @@ TFastIVDependence=class (TFastDependence)
   function DatFileNameToSave:string;
   procedure CopyDecorationTo(Target:TFastIVDependence);
   procedure VoltageValuesFilling;
+
 end;
 
-//TKt2450IVDependence=class (TSimpleIVDependence)
-// private
-//
-// protected
-//
-// public
-//
-//end;
+
+TFastIVstate=class
+ private
+  fFastIV:TFastIVDependence;
+ public
+  Constructor Create(FastIV:TFastIVDependence);
+  procedure ButtonStopClick;virtual;
+end;
+
+TKt2450FastIVstate=class(TFastIVstate)
+ public
+  procedure ButtonStopClick;override;
+end;
+
+TOldFastIVstate=class(TFastIVstate)
+ public
+end;
 
 
 TFastIVDependenceAction = class(TThreadTermin)
@@ -1348,7 +1284,7 @@ end;
 procedure TFastIVDependence.ButtonStopClick(Sender: TObject);
 begin
  inherited;
- if fKT2450Used then fKt_2450.Abort;
+ fCurrentState.ButtonStopClick;
 end;
 
 procedure TFastIVDependence.CopyDecorationTo(Target: TFastIVDependence);
@@ -1379,7 +1315,11 @@ begin
  fToUseDragonBackTime:=True;
 
  fKt_2450:=Kt_2450;
- fKT2450Used:=False;
+// fKT2450Used:=False;
+
+ fKt2450State:=TKt2450FastIVstate.Create(Self);
+ fOldState:=TOldFastIVstate.Create(Self);
+ fCurrentState:=fOldState;
 end;
 
 function TFastIVDependence.CurrentGrowth: boolean;
@@ -1525,6 +1465,13 @@ begin
 // if not(Result) then
 //  HelpForMe(inttostr(MilliSecond)+'_T'+floattostr(Results.Y[Results.HighNumber])+
 //     '_'+floattostr(fCurrentMeasured)) ;
+end;
+
+destructor TFastIVDependence.Destroy;
+begin
+  FreeAndNil(fKt2450State);
+  FreeAndNil(fOldState);
+  inherited;
 end;
 
 procedure TFastIVDependence.PointSeriesFilling;
@@ -1758,12 +1705,7 @@ begin
      if Results.MaxY>0 then fVoc:=Results.Xvalue(0)
                         else FVoc:=0;
      if Results.MinX<=0 then fIsc:=-Results.Yvalue(0)
-//                         else fIsc:=-Y_X0(Results.X[0],
-//                                         Results.Y[0],
-//                                         Results.X[1],
-//                                         Results.Y[1],
-//                                         0);
-                         else fIsc:=-Y_X0(Results[0],
+                        else fIsc:=-Y_X0(Results[0],
                                          Results[1],
                                          0);
     if fVoc=ErResult then fVoc:=0;
@@ -2205,6 +2147,25 @@ begin
 //   Result:=Result and (Vax.Y[i]>Vax.Y[i-1]) and ((Vax.X[i]-Vax.X[i-1])>0.005);
 end;
 
+
+{ TFastIVstate }
+
+procedure TFastIVstate.ButtonStopClick;
+begin
+end;
+
+constructor TFastIVstate.Create(FastIV: TFastIVDependence);
+begin
+ inherited Create;
+ fFastIV:=FastIV;
+end;
+
+{ TKt2450FastIVstate }
+
+procedure TKt2450FastIVstate.ButtonStopClick;
+begin
+  fFastIV.Kt2450.Abort;
+end;
 
 initialization
   EventToStopDependence := CreateEvent(nil,

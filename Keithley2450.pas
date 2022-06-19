@@ -136,6 +136,8 @@ TKT2450_SourceDevice=class;
    fDragonBackTime:double;
    fToUseDragonBackTime:boolean;
    fImax:double;
+   fImin:double;
+   FCurrentValueLimitEnable:boolean;
    procedure OnOffFromBool(toOn:boolean);
    function StringToVoltageProtection(Str:string;var vp:TKt_2450_VoltageProtection):boolean;
    function StringToSourceType(Str:string):boolean;
@@ -158,6 +160,7 @@ TKT2450_SourceDevice=class;
    function ValueToCurrentRange(Value:double):TKt2450CurrentRange;
    function CurrentRangeToString(Range:TKt2450CurrentRange):string;
    procedure SetCountNumber(Value:integer);
+    procedure TrigIVLoop(i: Integer);
   protected
    procedure PrepareString;override;
    procedure DeviceCreate(Nm:string);override;
@@ -207,6 +210,8 @@ TKT2450_SourceDevice=class;
    property DragonBackTime:double read fDragonBackTime write fDragonBackTime;
    property ToUseDragonBackTime:boolean read fToUseDragonBackTime write fToUseDragonBackTime;
    property Imax:double read fImax write fImax;
+   property Imin:double read FImin write FImin;
+   property CurrentValueLimitEnable:boolean read FCurrentValueLimitEnable write FCurrentValueLimitEnable;
    Constructor Create(Telnet:TIdTelnet;IPAdressShow: TIPAdressShow;
                Nm:string='Keitley2450');
    destructor Destroy; override;
@@ -2833,6 +2838,25 @@ begin
   SetupOperation(26,43,7);
 end;
 
+procedure TKt_2450.TrigIVLoop(i: Integer);
+var
+  LoopTransitionNumber: Word;
+begin
+  TrigAlwaysTransition(fTrigBlockNumber + 2);
+  LoopTransitionNumber := fTrigBlockNumber;
+  TrigConfigListNext(MySourceList);
+  TrigDelay(DragonBackTime);
+  if ToUseDragonBackTime then
+  begin
+    TrigConfigListNext(MySourceList);
+    TrigDelay(DragonBackTime);
+  end;
+  TrigMeasure;
+  if CurrentValueLimitEnable then
+    TrigMeasureResultTransition(kt_tlt_outside, -Imax, Imax, fTrigBlockNumber + 2);
+  TrigCounterTransition(i, LoopTransitionNumber);
+end;
+
 procedure TKt_2450.TrigDelay(DelayTime: double);
 begin
 //:TRIG:BLOC:DEL:CONS <blockNumber>, <time>
@@ -2843,6 +2867,7 @@ end;
 procedure TKt_2450.TrigForIVCreate;
  var SourceValueTemp:double;
      i,BranchesLimitIndex:integer;
+//     LoopTransitionNumber:word;
 begin
  HookForTrigDataObtain();
  showmessage(DataVector.XYtoString);
@@ -2871,18 +2896,6 @@ begin
  TrigConfigListRecall(MyMeasList);
  TrigConfigListRecall(MySourceList);
  TrigOutPutChange(True);
- TrigAlwaysTransition(7);
- TrigConfigListNext(MySourceList);
- TrigDelay(DragonBackTime);
- if ToUseDragonBackTime then
-  begin
-   TrigConfigListNext(MySourceList);
-   TrigDelay(DragonBackTime);
-  end;
- TrigMeasure;
- if ToUseDragonBackTime
-   then TrigMeasureResultTransition(kt_tlt_outside,-Imax,Imax,13)
-   else TrigMeasureResultTransition(kt_tlt_outside,-Imax,Imax,11);
 
  if  BranchesLimitIndex>0 then
    begin
@@ -2895,37 +2908,21 @@ begin
         then i:=round(DataVector.HighNumber/2)
         else i:=DataVector.HighNumber;
    end;
+ TrigIVLoop(i);
 
- TrigCounterTransition(i,6);
-
- if  BranchesLimitIndex=0
-   then TrigConfigListNext(MySourceList)
-   else
+ if  BranchesLimitIndex>0
+   then
     begin
       TrigConfigListRecall(MySourceList,BranchesLimitIndex);
-      if ToUseDragonBackTime
-        then TrigAlwaysTransition(16)
-        else TrigAlwaysTransition(14);
-      TrigConfigListNext(MySourceList);
-      TrigDelay(DragonBackTime);
-      if ToUseDragonBackTime then
-        begin
-        TrigConfigListNext(MySourceList);
-        TrigDelay(DragonBackTime);
-        end;
-      TrigMeasure;
-      if ToUseDragonBackTime
-       then TrigMeasureResultTransition(kt_tlt_outside,-Imax,Imax,22)
-       else TrigMeasureResultTransition(kt_tlt_outside,-Imax,Imax,18);
+
       if ToUseDragonBackTime
         then i:=round((DataVector.HighNumber-BranchesLimitIndex)/2)
         else i:=DataVector.HighNumber-BranchesLimitIndex;
-      if ToUseDragonBackTime
-        then TrigCounterTransition(i,15)
-        else TrigCounterTransition(i,13);
-      TrigConfigListNext(MySourceList);
+
+      TrigIVLoop(i);
     end;
 
+ TrigConfigListNext(MySourceList);
  TrigOutPutChange(False);
 
 end;

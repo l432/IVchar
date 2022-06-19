@@ -3022,7 +3022,9 @@ begin
  FastIVDep.DragonBackTime:=Dragon_backTimeCS.Data;
  FastIVDep.ToUseDragonBackTime:=CBuseDBT.Checked;
 
- FastIVDep.KT2450Used:=CBuseKT2450.Checked;
+ if CBuseKT2450.Checked
+    then FastIVDep.CurrentState:=FastIVDep.Kt2450State
+    else FastIVDep.CurrentState:=FastIVDep.OldState;
 end;
 
 procedure TIVchar.FastIVHookEnd;
@@ -4437,6 +4439,9 @@ begin
  Kt_2450.DragonBackTime:=FastIVMeasuring.DragonBackTime;
  Kt_2450.ToUseDragonBackTime:=FastIVMeasuring.ToUseDragonBackTime;
  Kt_2450.Imax:=FastIVMeasuring.Imax;
+ Kt_2450.Imin:=FastIVMeasuring.Imin;
+ Kt_2450.CurrentValueLimitEnable:=FastIVMeasuring.CurrentValueLimitEnable;
+
 // FastIVMeasuring.Results.CopyTo(Kt_2450.DataVector);
 end;
 
