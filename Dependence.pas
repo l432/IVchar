@@ -408,15 +408,24 @@ TFastIVstate=class
  public
   Constructor Create(FastIV:TFastIVDependence);
   procedure ButtonStopClick;virtual;
+  procedure BeginMeasuringState;virtual;
+  procedure EndMeasuringState;virtual;
+  procedure MeasuringState;virtual;
 end;
 
 TKt2450FastIVstate=class(TFastIVstate)
+ private
+  procedure SmallCurrentsDelete;
  public
   procedure ButtonStopClick;override;
+  procedure MeasuringState;override;
 end;
 
 TOldFastIVstate=class(TFastIVstate)
  public
+  procedure BeginMeasuringState;override;
+  procedure EndMeasuringState;override;
+  procedure MeasuringState;override;
 end;
 
 
@@ -489,7 +498,7 @@ implementation
 uses
   SysUtils, Forms, Windows, Math, DateUtils,
   Dialogs, OlegGraph, OlegFunction, 
-  OlegMath, Measurement, Buttons;
+  OlegMath, Measurement, Buttons, Keitley2450Const;
 
 var
 //  fItIsForward:boolean;
@@ -1268,9 +1277,9 @@ begin
   DiodOrientationVoltageFactorDetermination();
   fItIsLightIV:=False;
 
-  fTempResults:=TVectorTransform.Create;
-
-  fPreviousPointMeasurementNeededIndex:=-1;
+  fCurrentState.BeginMeasuringState();
+//  fTempResults:=TVectorTransform.Create;
+//  fPreviousPointMeasurementNeededIndex:=-1;
 
   if SettingDevice.Name='Kt2450Source' then Kt_2450.OutPutChange(True);
   
@@ -1513,18 +1522,18 @@ end;
 
 procedure TFastIVDependence.EndMeasuring;
 begin
-  fTempResults.Free;
+//  fTempResults.Free;
+//  SettingDevice.ActiveInterface.Reset();
+//  Results.Sorting;
+//  Results.DeleteDuplicate;
+  fCurrentState.EndMeasuringState;
+
   if fSingleMeasurement then
    begin
     PointSeriesFilling;
     ButtonStop.Enabled := False;
    end;
-  SettingDevice.ActiveInterface.Reset();
-  Results.Sorting;
-  Results.DeleteDuplicate;
 
-//  DataVector.Sorting;
-//  DataVector.DeleteDuplicate;
 
   VocIscDetermine();
 
@@ -1565,9 +1574,13 @@ begin
 
   BeginMeasuring();
 
-  Cycle(True);
-  if not(fIVMeasuringToStop)
-     then Cycle(False);
+  fCurrentState.MeasuringState();
+//  Cycle(True);
+//  if not(fIVMeasuringToStop)
+//     then Cycle(False);
+
+
+
   EndMeasuring();
 
 //  if CollectInfo then helpforme(Info,'vv');
@@ -2150,6 +2163,10 @@ end;
 
 { TFastIVstate }
 
+procedure TFastIVstate.BeginMeasuringState;
+begin
+end;
+
 procedure TFastIVstate.ButtonStopClick;
 begin
 end;
@@ -2160,11 +2177,96 @@ begin
  fFastIV:=FastIV;
 end;
 
+procedure TFastIVstate.EndMeasuringState;
+begin
+end;
+
+procedure TFastIVstate.MeasuringState;
+begin
+end;
+
 { TKt2450FastIVstate }
 
 procedure TKt2450FastIVstate.ButtonStopClick;
 begin
   fFastIV.Kt2450.Abort;
+end;
+
+procedure TKt2450FastIVstate.MeasuringState;
+ var NumberInBuffer:integer;
+begin
+ if not(fFastIV.Kt2450.SweepWasCreated) then Exit;
+
+ fFastIV.Kt2450.AzeroOnce;
+ fFastIV.Kt2450.InitWait;
+ fFastIV.Kt2450.Device.DelayTimeStep:=round(fFastIV.Kt2450.DragonBackTime);
+ NumberInBuffer:=fFastIV.Kt2450.BufferGetReadingNumber;
+ fFastIV.Kt2450.Device.DelayTimeStep:=10;
+ fFastIV.Kt2450.BufferDataArrayExtended(1,NumberInBuffer,kt_rd_MST);
+ fFastIV.Kt2450.DataVector.CopyTo(fFastIV.Results);
+ if fFastIV.fDiodOrientationVoltageFactor<1 then
+   begin
+    fFastIV.Results.SwapXY;
+    fFastIV.Results.MultiplyY(fFastIV.fDiodOrientationVoltageFactor);
+    fFastIV.Results.SwapXY;
+    fFastIV.Results.MultiplyY(fFastIV.fDiodOrientationVoltageFactor);
+   end;
+
+// fFastIV.Results.Sorting;
+ fFastIV.Results.DeleteDuplicate;
+ fFastIV.fItIsLightIV:=(fFastIV.Results.Yvalue(0)<-1e-5);
+
+ if fFastIV.FCurrentValueLimitEnable then SmallCurrentsDelete;
+end;
+
+procedure TKt2450FastIVstate.SmallCurrentsDelete;
+ var Vec1{,Vec2}:TVectorTransform;
+     i,k:integer;
+begin
+ Vec1:=TVectorTransform.Create(fFastIV.Results);
+// Vec2:=TVectorTransform.Create;
+ Vec1.ReverseX(fFastIV.Results);
+// Vec1.ForwardX(Vec2);
+ Vec1.Itself(Vec1.ForwardX);
+
+ fFastIV.Results.Sorting();
+ for i:=fFastIV.Results.HighNumber downto 0 do
+  if (abs(fFastIV.Results.Y[i])<fFastIV.Imin)
+       then fFastIV.Results.DeletePoint(i);
+
+ k:=fFastIV.Results.HighNumber;
+ Vec1.Sorting();
+ for i:= 0 to Vec1.HighNumber do
+  if (abs(Vec1.Y[i])<fFastIV.Imin)
+     and (k=fFastIV.Results.HighNumber)
+     then Continue
+     else fFastIV.Results.Add(Vec1[i]);
+
+ FreeAndNil(Vec1);
+// FreeAndNil(Vec2);
+end;
+
+{ TOldFastIVstate }
+
+procedure TOldFastIVstate.BeginMeasuringState;
+begin
+  fFastIV.fTempResults:=TVectorTransform.Create;
+  fFastIV.fPreviousPointMeasurementNeededIndex:=-1;
+end;
+
+procedure TOldFastIVstate.EndMeasuringState;
+begin
+  fFastIV.fTempResults.Free;
+  fFastIV.SettingDevice.ActiveInterface.Reset();
+  fFastIV.Results.Sorting;
+  fFastIV.Results.DeleteDuplicate;
+end;
+
+procedure TOldFastIVstate.MeasuringState;
+begin
+  fFastIV.Cycle(True);
+  if not(fIVMeasuringToStop)
+     then fFastIV.Cycle(False);
 end;
 
 initialization

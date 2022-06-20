@@ -1528,11 +1528,13 @@ begin
    end;
  end                    else
   fKt_2450.TrigForIVCreate;
+ fKt_2450.SweepWasCreated:=True;
 end;
 
 procedure TKt_2450_SweetShow.ButtonInitClick(Sender: TObject);
 begin
- fKt_2450.Init;
+// fKt_2450.Init;
+ fKt_2450.InitWait;
 end;
 
 procedure TKt_2450_SweetShow.ButtonStopClick(Sender: TObject);

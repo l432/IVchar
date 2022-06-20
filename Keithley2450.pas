@@ -138,6 +138,7 @@ TKT2450_SourceDevice=class;
    fImax:double;
    fImin:double;
    FCurrentValueLimitEnable:boolean;
+   fSweepWasCreated:boolean;
    procedure OnOffFromBool(toOn:boolean);
    function StringToVoltageProtection(Str:string;var vp:TKt_2450_VoltageProtection):boolean;
    function StringToSourceType(Str:string):boolean;
@@ -212,6 +213,7 @@ TKT2450_SourceDevice=class;
    property Imax:double read fImax write fImax;
    property Imin:double read FImin write FImin;
    property CurrentValueLimitEnable:boolean read FCurrentValueLimitEnable write FCurrentValueLimitEnable;
+   property SweepWasCreated:boolean read fSweepWasCreated write fSweepWasCreated;
    Constructor Create(Telnet:TIdTelnet;IPAdressShow: TIPAdressShow;
                Nm:string='Keitley2450');
    destructor Destroy; override;
@@ -462,7 +464,7 @@ TKT2450_SourceDevice=class;
    значення джерела в DataVector.Х,
    якщо берем час вимірювання, то він в  DataTimeVector.X,
    а результат виміру в  DataTimeVector.Y,
-   якщо DataType=kt_rd_M, то вимір і в  ataVector.Х}
+   якщо DataType=kt_rd_M, то вимір і в  DataVector.Х}
    {треба оцінити час передачі}
 
    procedure SetCount(Cnt:integer);
@@ -829,6 +831,7 @@ begin
 
  fDisplayState:=kt_ds_on25;
  fTrigBlockNumber:=1;
+ fSweepWasCreated:=False;
 end;
 
 destructor TKt_2450.Destroy;
@@ -2870,7 +2873,7 @@ procedure TKt_2450.TrigForIVCreate;
 //     LoopTransitionNumber:word;
 begin
  HookForTrigDataObtain();
- showmessage(DataVector.XYtoString);
+// showmessage(DataVector.XYtoString);
 
  ConfigMeasureCreate;
  ConfigSourceCreate;
@@ -3113,6 +3116,19 @@ begin
  fMinDelayTime:=0;
  fDelayTimeStep:=10;
  fDelayTimeMax:=200;
+
+//   fMinDelayTime:integer;
+//  {інтервал очікування перед початком перевірки
+//  вхідного буфера, []=мс, за замовчуванням 0}
+//   fDelayTimeStep:integer;
+//   {проміжок часу, через який перевіряється
+//   надходження даних, []=мс, за замовчуванням 10}
+//   fDelayTimeMax:integer;
+//   {максимальна кількість перевірок
+//   надходження даних, []=штук, за замовчуванням 130,
+//   тобто за замовчуванням інтервал очікуввання
+//   складає 0+10*130=1300 мс}
+
 end;
 
 procedure TKt_2450Device.UpDate;

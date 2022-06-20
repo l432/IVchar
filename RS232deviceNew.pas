@@ -167,7 +167,7 @@ TMeterDevice=class(TCustomDevice,IMeasurement,IDataObserver)
    property Value:double read GetValue write fValue;
    property isReceived:boolean read fIsReceived write fIsReceived;
    property MinDelayTime:integer read  fMinDelayTime;
-   property DelayTimeStep:integer read  fDelayTimeStep;
+   property DelayTimeStep:integer read  fDelayTimeStep write fDelayTimeStep;
    property DelayTimeMax:integer read  fDelayTimeMax;
    property DeviceKod:byte read GetDeviceKod;
    Constructor Create(Nm:string);
