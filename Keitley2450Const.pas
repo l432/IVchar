@@ -39,14 +39,14 @@ const
    ':ligh:stat',':poin',':fill:mode',':data',':beep',':act',':line#:mode',
 //     30          31         32         33     34      35        36
    ':line#:stat',':load', ':bloc',':buff',':bran',':mdig',':bran',':paus',':res');
-//      37         38        39      40      41      42      43      44    45
+//      37         38        39      40      41      42      43      44     45
 
  ConfLeafNodeKt_2450:array[0..3]of string=
  (':cre',':del',':rec',':stor');
 
- TrigLeafNodeKt_2450:array[0..7]of string=
- (':cle',':rec',':next',':stat',':alw',':cons',':lim:cons',':coun');
-//   0      1       2       3      4      5         6         7
+ TrigLeafNodeKt_2450:array[0..8]of string=
+ (':cle',':rec',':next',':stat',':alw',':cons',':lim:cons',':coun',':even');
+//   0      1       2       3      4      5         6         7       8
 
    PartDelimiter=', ';
    CommandDelimiter='; ';

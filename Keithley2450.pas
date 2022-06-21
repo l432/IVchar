@@ -161,7 +161,7 @@ TKT2450_SourceDevice=class;
    function ValueToCurrentRange(Value:double):TKt2450CurrentRange;
    function CurrentRangeToString(Range:TKt2450CurrentRange):string;
    procedure SetCountNumber(Value:integer);
-    procedure TrigIVLoop(i: Integer);
+   procedure TrigIVLoop(i: Integer);
   protected
    procedure PrepareString;override;
    procedure DeviceCreate(Nm:string);override;
@@ -581,9 +581,11 @@ TKT2450_SourceDevice=class;
    Procedure TrigCounterTransition(TargetCount,TransitionBlockNumber:word);
    {якщо кількість приходів на цей блок менша TargetCount, то відбувається
    перехід на блок TransitionBlockNumber}
-//   Procedure TrigEventTransition(TransitionBlockNumber:word;
-//                                 EventType:TK2450_TriggerEvents=kt_te_comm;
-//                                 EventNumber:word);
+   Procedure TrigEventTransition(TransitionBlockNumber:word;
+                                 EventType:TK2450_TriggerEvents=kt_te_comm;
+                                 EventNumber:word=1);
+   {якщо до того, як дійшли на цей блок, відбулася подія EventType,
+   то відбувається перехід на TransitionBlockNumber}
 
  end;
 
@@ -2864,6 +2866,7 @@ begin
   TrigMeasure;
   if CurrentValueLimitEnable then
     TrigMeasureResultTransition(kt_tlt_outside, -Imax, Imax, fTrigBlockNumber + 2);
+  inc(fTrigBlockNumber);
   TrigCounterTransition(i, LoopTransitionNumber);
 end;
 
@@ -2880,9 +2883,30 @@ begin
  SetupOperation(27,0,0,False);
 end;
 
+procedure TKt_2450.TrigEventTransition(TransitionBlockNumber: word;
+  EventType: TK2450_TriggerEvents; EventNumber: word);
+begin
+//:TRIG:BLOC:BRAN:EVEN <blockNumber>, <event>, <branchToBlock>
+ if (TransitionBlockNumber=0)or(EventNumber=0) then Exit;
+ if (EventType=kt_te_timer)and(EventNumber>4) then Exit;
+ if (EventType=kt_te_notify)and(EventNumber>8) then Exit;
+ if (EventType=kt_te_lan)and(EventNumber>8) then Exit;
+ if (EventType=kt_te_dig)and(EventNumber>6) then Exit;
+ if (EventType=kt_te_blend)and(EventNumber>2) then Exit;
+ if (EventType=kt_te_tspl)and(EventNumber>3) then Exit;
+
+ fAdditionalString:=Kt2450_TriggerEventsCommand[EventType];
+ if EventType in [kt_te_timer..kt_te_tspl] then
+   fAdditionalString:=fAdditionalString + IntToStr(EventNumber);
+ fAdditionalString:=fAdditionalString+PartDelimiter
+                    + IntToStr(TransitionBlockNumber);
+ SetupOperation(26,43,8);
+end;
+
 procedure TKt_2450.TrigForIVCreate;
  var SourceValueTemp:double;
      i,BranchesLimitIndex:integer;
+     PlaceForTrigEvent1,PlaceForTrigEvent2:integer;
 //     LoopTransitionNumber:word;
 begin
  HookForTrigDataObtain();
@@ -2925,7 +2949,9 @@ begin
         else i:=DataVector.HighNumber;
    end;
  TrigIVLoop(i);
-
+ PlaceForTrigEvent1:=fTrigBlockNumber-2;
+ PlaceForTrigEvent2:=fTrigBlockNumber-2;
+{останній не треба, але кричало про можливу невизначеність PlaceForTrigEvent2}
  if  BranchesLimitIndex>0
    then
     begin
@@ -2936,10 +2962,20 @@ begin
         else i:=DataVector.HighNumber-BranchesLimitIndex;
 
       TrigIVLoop(i);
+      PlaceForTrigEvent2:=fTrigBlockNumber-2;
     end;
 
  TrigConfigListNext(MySourceList);
  TrigOutPutChange(False);
+
+ i:=fTrigBlockNumber-2;
+ fTrigBlockNumber:=PlaceForTrigEvent1;
+ TrigEventTransition(i);
+ if BranchesLimitIndex>0 then
+   begin
+   fTrigBlockNumber:=PlaceForTrigEvent2;
+   TrigEventTransition(i);
+   end;
 
 end;
 
