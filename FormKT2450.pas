@@ -91,6 +91,8 @@ type
     B_KT2450SweepCreate: TButton;
     B_KT2450SweepInit: TButton;
     B_KT2450SweepStop: TButton;
+    B_KT2450SweepPause: TButton;
+    B_KT2450SweepResume: TButton;
     procedure BCloseClick(Sender: TObject);
     procedure FormPaint(Sender: TObject);
   private

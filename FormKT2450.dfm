@@ -187,8 +187,8 @@ object KT2450Form: TKT2450Form
     object L_Kt2450_OutPut: TLabel
       Left = 190
       Top = 136
-      Width = 97
-      Height = 23
+      Width = 77
+      Height = 16
       Caption = 'Output Type'
       Font.Charset = RUSSIAN_CHARSET
       Font.Color = clTeal
@@ -889,7 +889,7 @@ object KT2450Form: TKT2450Form
       TabOrder = 0
     end
     object B_KT2450SweepCreate: TButton
-      Left = 61
+      Left = 10
       Top = 56
       Width = 68
       Height = 25
@@ -897,7 +897,7 @@ object KT2450Form: TKT2450Form
       TabOrder = 1
     end
     object B_KT2450SweepInit: TButton
-      Left = 175
+      Left = 85
       Top = 56
       Width = 68
       Height = 25
@@ -905,7 +905,7 @@ object KT2450Form: TKT2450Form
       TabOrder = 2
     end
     object B_KT2450SweepStop: TButton
-      Left = 291
+      Left = 160
       Top = 56
       Width = 68
       Height = 25
@@ -1140,6 +1140,22 @@ object KT2450Form: TKT2450Form
         ParentFont = False
         TabOrder = 8
       end
+    end
+    object B_KT2450SweepPause: TButton
+      Left = 235
+      Top = 56
+      Width = 68
+      Height = 25
+      Caption = 'Pause'
+      TabOrder = 5
+    end
+    object B_KT2450SweepResume: TButton
+      Left = 310
+      Top = 56
+      Width = 68
+      Height = 25
+      Caption = 'Resume'
+      TabOrder = 6
     end
   end
 end

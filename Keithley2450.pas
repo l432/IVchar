@@ -532,7 +532,11 @@ TKT2450_SourceDevice=class;
    Procedure Init;
    Procedure Abort;
    Procedure Wait;
+   Procedure TrigPause;
+   Procedure TrigResume;
    Procedure InitWait;
+   Procedure TrigEventGenerate;
+   {generates a trigger event }
 
    Procedure TrigForIVCreate;
    Procedure TrigNewCreate;
@@ -577,6 +581,9 @@ TKT2450_SourceDevice=class;
    Procedure TrigCounterTransition(TargetCount,TransitionBlockNumber:word);
    {якщо кількість приходів на цей блок менша TargetCount, то відбувається
    перехід на блок TransitionBlockNumber}
+//   Procedure TrigEventTransition(TransitionBlockNumber:word;
+//                                 EventType:TK2450_TriggerEvents=kt_te_comm;
+//                                 EventNumber:word);
 
  end;
 
@@ -1991,7 +1998,7 @@ begin
         JoinToStringToSend(ConfLeafNodeKt_2450[fLeafNode]);
      end; // fRootNode=24
   26:case fFirstLevelNode of
-        38:JoinToStringToSend(FirstNodeKt_2450[fFirstLevelNode]);
+        38,44,45:JoinToStringToSend(FirstNodeKt_2450[fFirstLevelNode]);
         40,41,21,43:begin
             JoinToStringToSend(FirstNodeKt_2450[39]);
             JoinToStringToSend(FirstNodeKt_2450[fFirstLevelNode]);
@@ -2867,6 +2874,12 @@ begin
  SetupOperation(26,21,5);
 end;
 
+procedure TKt_2450.TrigEventGenerate;
+begin
+// *TRG
+ SetupOperation(27,0,0,False);
+end;
+
 procedure TKt_2450.TrigForIVCreate;
  var SourceValueTemp:double;
      i,BranchesLimitIndex:integer;
@@ -2981,6 +2994,18 @@ begin
 //:TRIG:BLOC:SOUR:STAT <blockNumber>, ON|OFF
  OnOffFromBool(toOn);
  SetupOperation(26,11,3);
+end;
+
+procedure TKt_2450.TrigPause;
+begin
+//:TRIG:PAUS
+ SetupOperation(26,44,0,False);
+end;
+
+procedure TKt_2450.TrigResume;
+begin
+//:TRIG:RES
+ SetupOperation(26,45,0,False);
 end;
 
 procedure TKt_2450.BufferCreate(Name: string; Size: integer);

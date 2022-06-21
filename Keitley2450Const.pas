@@ -14,20 +14,20 @@ const
   MySourceList='OlegSourceList';
   MyMeasList='OlegMeasList';
 
-  RootNoodKt_2450:array[0..26]of string=
+  RootNoodKt_2450:array[0..27]of string=
   ('*idn?','*rcl ','*rst','*sav',':acq',':outp',':disp',':syst','scr:run',
 //   0       1       2      3      4        5       6       7      8
   'rout',':sens',':sour',':curr', ':volt', ':res',':func',':azer:once','init',
 //  9       10     11        12      13      14      15         16       17
-  ':abor',':trac',':coun',':read',':fetc',':dig',':conf','*wai',':trig');
-//   18      19      20      21      22      23    24      25     26
+  ':abor',':trac',':coun',':read',':fetc',':dig',':conf','*wai',':trig','*trg');
+//   18      19      20      21      22      23    24      25     26      27
 
   SuffixKt_2450:array[0..7]of string=('on','off','rst','def',
 //                                      0    1     2     3
  'amp','volt','ohm','watt' );
 //   4     5    6      7
 
-  FirstNodeKt_2450:array[0..43]of string=
+  FirstNodeKt_2450:array[0..45]of string=
   (':scr',':user1:text',':user2:text','cle',':pos',':int:stat',':term',
 //     0       1             2         3      4        5         6
    ':rsen',':smod',':ocom',':prot',':trip',':vlim',':ilim',':unit',
@@ -38,8 +38,8 @@ const
 //      22        23      24     25     26        27       28      29
    ':ligh:stat',':poin',':fill:mode',':data',':beep',':act',':line#:mode',
 //     30          31         32         33     34      35        36
-   ':line#:stat',':load', ':bloc',':buff',':bran',':mdig',':bran');
-//      37         38        39      40      41      42      43
+   ':line#:stat',':load', ':bloc',':buff',':bran',':mdig',':bran',':paus',':res');
+//      37         38        39      40      41      42      43      44    45
 
  ConfLeafNodeKt_2450:array[0..3]of string=
  (':cre',':del',':rec',':stor');
@@ -100,7 +100,8 @@ type
  TKt2450_SweepSettings=(kt_sws_start,kt_sws_stop,kt_sws_delay,
                         kt_sws_stpo,kt_sws_count,kt_sws_ranget);
 
- TKt2450_SweepButtons=(kt_swb_create,kt_swb_init,kt_swb_stop);
+ TKt2450_SweepButtons=(kt_swb_create,kt_swb_init,kt_swb_stop,
+                       kt_swb_pause,kt_swb_resume);
 
  TKt2450_SweepButtonArray=array[TKt2450_SweepButtons] of TButton;
 
@@ -150,6 +151,16 @@ TKt2450_DisplayState=(kt_ds_on100,kt_ds_on75,kt_ds_on50,kt_ds_on25,
                       kt_ds_off,kt_ds_black);
 
 TK2450_TrigLimitType=(kt_tlt_above, kt_tlt_below, kt_tlt_inside, kt_tlt_outside);
+TK2450_TriggerEvents=(kt_te_comm,//подія через command interface
+                      kt_te_disp,//натискування кнопки "TRIGGER" на панелі
+                      kt_te_none,//відсутність події
+                      kt_te_slim,//Source limit condition occurs
+                      kt_te_timer,//завершився один з таймерів
+                      kt_te_notify,//згенерувана одна з подій під час виконання моделі
+                      kt_te_lan,//LXI trigger packet is received on LAN trigger object
+                      kt_te_dig,//щось відбулося на цифрових лініях
+                      kt_te_blend,//Trigger event blender, which combines trigger events
+                      kt_te_tspl);//Line edge detected on TSP-Link synchronization line
 
 const
  Kt2450_TerminalsName:array [TKt2450_OutputTerminals]
@@ -210,7 +221,7 @@ const
  KT2450_SweepRangeLabels:array[TKt2450_SweepRangeType]of string=
          ('Auto','Best', 'Fixed');
  Kt2450_SweepButtonNames:array[TKt2450_SweepButtons] of string=
-        ('Create','Init','Abort');
+        ('Create','Init','Abort','Pause','Resume');
  Kt2450_SweepLabelNames:array[TKt2450_SweepSettings]of string=
           ('From, ','To, ', 'Delay, s', 'Step, ',
            'Times to run','Used range');
@@ -234,16 +245,10 @@ Kt2450_DisplayStateLabel:array[TKt2450_DisplayState]of string=
 Kt2450_TrigLimitTypeCommand:array[TK2450_TrigLimitType]of string=
        ('abov','bel','in','out');
 
-//  OperationKod:array [TKt2450_Settings] of array[0..2] of byte=
-////                  RootNood  FirstNode  LeafNode
-//{kt_curr_sense}   ((  10,         0,           0),
-//{kt_volt_sense}    (  10,         1,           0),
-//{kt_res_sense}     (  10,         2,           0),
-//{kt_outputoff}     (   5,         2,           0),
-//{kt_rescomp}       (  10,         2,           1),
-//{kt_voltprot}      (  11,         1,           0)
-//
-//    );
+Kt2450_TriggerEventsCommand:array[TK2450_TriggerEvents]of string=
+       ('comm','disp','none','slim','tim','not',
+        'lan','dig','blen','tspl');
+
 
 
 

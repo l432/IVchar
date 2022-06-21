@@ -222,6 +222,8 @@ TKt_2450_SweetShow=class(TKt_2450_AbstractElementShow)
   procedure ButtonCreateClick(Sender:TObject);
   procedure ButtonInitClick(Sender:TObject);
   procedure ButtonStopClick(Sender:TObject);
+  procedure ButtonPauseClick(Sender:TObject);
+  procedure ButtonResumeClick(Sender:TObject);
   procedure ModeClick(Sender:TObject);
   procedure SelectClick(Sender:TObject);
   procedure CheckBoxClick(Sender:TObject);
@@ -1533,8 +1535,18 @@ end;
 
 procedure TKt_2450_SweetShow.ButtonInitClick(Sender: TObject);
 begin
-// fKt_2450.Init;
- fKt_2450.InitWait;
+ fKt_2450.Init;
+// fKt_2450.InitWait;
+end;
+
+procedure TKt_2450_SweetShow.ButtonPauseClick(Sender: TObject);
+begin
+  fKt_2450.TrigPause;
+end;
+
+procedure TKt_2450_SweetShow.ButtonResumeClick(Sender: TObject);
+begin
+  fKt_2450.TrigResume;
 end;
 
 procedure TKt_2450_SweetShow.ButtonStopClick(Sender: TObject);
@@ -1550,6 +1562,8 @@ begin
  Buttons[kt_swb_create].OnClick:=ButtonCreateClick;
  Buttons[kt_swb_init].OnClick:=ButtonInitClick;
  Buttons[kt_swb_stop].OnClick:=ButtonStopClick;
+ Buttons[kt_swb_pause].OnClick:=ButtonPauseClick;
+ Buttons[kt_swb_resume].OnClick:=ButtonResumeClick;
 end;
 
 procedure TKt_2450_SweetShow.CheckBoxClick(Sender: TObject);

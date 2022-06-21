@@ -2526,10 +2526,11 @@ end;
 
 procedure TIVchar.SaveIVMeasurementResults(FileName: string; DataVector:TVector);
 begin
-//  if Current_MD.ActiveInterface.Name='KT2450Meter'
-//   then DataVector.WriteToFile(FileName,8)
-//   else DataVector.WriteToFile(FileName,5);
-   DataVector.WriteToFile(FileName,8);
+
+  if (Current_MD.ActiveInterface.Name='KT2450Meter')
+      or(CBuseDBT.Checked)
+   then DataVector.WriteToFile(FileName,8)
+   else DataVector.WriteToFile(FileName,5);
   LTLastValue.Caption := FloatToStrF(Temperature, ffFixed, 5, 2);
   SaveCommentsFile(FileName);
 end;
@@ -4517,7 +4518,8 @@ begin
                                       L_KT2450SweepDelay,L_KT2450SweepStepPoint,
                                       L_KT2450SweepCount,L_KT2450SweepRange],
                                       [B_KT2450SweepCreate,B_KT2450SweepInit,
-                                       B_KT2450SweepStop],
+                                       B_KT2450SweepStop,B_KT2450SweepPause,
+                                       B_KT2450SweepResume],
                                        CB_KT2450SweepDual,CB_KT2450SweepAbortLim,
                                        RG_KT2450SweepMode,RG_KT2450SweepSelect,
                                        GB_KT2450Sweep,
