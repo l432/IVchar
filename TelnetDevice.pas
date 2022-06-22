@@ -6,8 +6,8 @@ uses
   IdTelnet, ShowTypes, OlegTypePart2, RS232deviceNew;
 
 const
-//  TestShowEthernet=False;
-  TestShowEthernet=True;
+  TestShowEthernet=False;
+//  TestShowEthernet=True;
   DeviceEthernetisAbsent=False;
 //  DeviceEthernetisAbsent=True;
 
@@ -74,7 +74,7 @@ end;
 implementation
 
 uses
-  Dialogs, SCPI, SysUtils, OlegType;
+  Dialogs, SCPI, SysUtils, OlegType, OlegFunction, StrUtils;
 
 { TTelnet }
 
@@ -139,8 +139,13 @@ end;
 procedure TTelnetDataSubjectSingle.PacketReceiving(Sender: TIdTelnet;
   const Str: string);
 begin
-  fReceivedString:=Str+SCPI_PacketEndChar;
+//  fReceivedString:=Str{+SCPI_PacketEndChar};
+  fReceivedString:=fReceivedString+Str;
   NotifyObservers();
+
+  HelpForMe(Str,'s'+inttostr(MilliSecond));
+//  HelpForMe(fReceivedString,'s'+inttostr(MilliSecond));
+//  HelpForMe(AnsiReplaceStr(fReceivedString,',',#10#13),'s'+inttostr(MilliSecond));
 end;
 
 function TTelnetDataSubjectSingle.PortConnected: boolean;
@@ -237,6 +242,8 @@ begin
 //     showmessage('Virtual send:  '+fDataRequest.fTelnet.fStringToSend);
 //     Exit;
 //     end;
+
+  fDataSubject.fReceivedString:='';
 
   if DeviceEthernetisAbsent or fDataSubject.PortConnected then
    begin

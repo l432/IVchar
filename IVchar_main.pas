@@ -1189,7 +1189,7 @@ begin
     FindClose(SR);
     DateTimeToString(temp, 'd.m.yyyy', FileDateToDateTime(SR.Time));
 
-    if CBuseDBT.Checked
+    if CBuseKT2450.Checked
      then writeln(FF,Name,' - ',temp,'  :'+floattostr(Kt_2450.DataTimeVector.X[Kt_2450.DataTimeVector.HighNumber]))
      else
        begin
@@ -2528,7 +2528,7 @@ procedure TIVchar.SaveIVMeasurementResults(FileName: string; DataVector:TVector)
 begin
 
   if (Current_MD.ActiveInterface.Name='KT2450Meter')
-      or(CBuseDBT.Checked)
+      or(CBuseKT2450.Checked)
    then DataVector.WriteToFile(FileName,8)
    else DataVector.WriteToFile(FileName,5);
   LTLastValue.Caption := FloatToStrF(Temperature, ffFixed, 5, 2);

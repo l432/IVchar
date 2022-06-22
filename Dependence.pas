@@ -2204,6 +2204,8 @@ begin
  NumberInBuffer:=fFastIV.Kt2450.BufferGetReadingNumber;
  fFastIV.Kt2450.Device.DelayTimeStep:=10;
  fFastIV.Kt2450.BufferDataArrayExtended(1,NumberInBuffer,kt_rd_MST);
+// fFastIV.Kt2450.BufferDataArrayExtended(1,43,kt_rd_MST);
+// fFastIV.Kt2450.Device.DelayTimeStep:=10;
  fFastIV.Kt2450.DataVector.CopyTo(fFastIV.Results);
  if fFastIV.fDiodOrientationVoltageFactor<1 then
    begin

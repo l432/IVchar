@@ -1445,7 +1445,12 @@ begin
 //  fDevice.Request();
 //  fDevice.GetData;
 
-TrigNewCreate;
+// showmessage(inttostr(BufferGetReadingNumber));
+ fDevice.DelayTimeStep:=100;
+ BufferDataArrayExtended(1,43,kt_rd_MST);
+// showmessage(DataVector.XYtoString);
+
+//TrigNewCreate;
 //TrigBufferClear;
 //TrigConfigListRecall(MyMeasList);
 //TrigConfigListRecall(MySourceList);
@@ -2665,8 +2670,11 @@ procedure TKt_2450.StringToMesuredDataArray(Str: string;
       PartNumbers,i:integer;
       NumbersArray:TArrInteger;
 begin
+  HelpForMe(Str,'d'+inttostr(MilliSecond));
 
  PartNumbers:=NumberOfSubstringInRow(Str);
+// showmessage(inttostr(PartNumbers));
+// showmessage(AnsiReplaceStr(Str,' ',#10));
  SetLength(NumbersArray,Kt2450_PartInRespond[DataType]);
  for I := 0 to High(NumbersArray) do
   NumbersArray[i]:=i+1;
@@ -2857,15 +2865,15 @@ begin
   TrigAlwaysTransition(fTrigBlockNumber + 2);
   LoopTransitionNumber := fTrigBlockNumber;
   TrigConfigListNext(MySourceList);
-  TrigDelay(DragonBackTime);
+  TrigDelay(DragonBackTime*1e-3);
   if ToUseDragonBackTime then
   begin
     TrigConfigListNext(MySourceList);
-    TrigDelay(DragonBackTime);
+    TrigDelay(DragonBackTime*1e-3);
   end;
   TrigMeasure;
   if CurrentValueLimitEnable then
-    TrigMeasureResultTransition(kt_tlt_outside, -Imax, Imax, fTrigBlockNumber + 2);
+    TrigMeasureResultTransition(kt_tlt_outside, -Imax, Imax, fTrigBlockNumber + 3);
   inc(fTrigBlockNumber);
   TrigCounterTransition(i, LoopTransitionNumber);
 end;
@@ -2963,9 +2971,11 @@ begin
 
       TrigIVLoop(i);
       PlaceForTrigEvent2:=fTrigBlockNumber-2;
-    end;
-
- TrigConfigListNext(MySourceList);
+      TrigConfigListRecall(MySourceList,DataVector.HighNumber)
+    end
+   else
+     TrigConfigListRecall(MySourceList,DataVector.Count);
+// TrigConfigListNext(MySourceList);
  TrigOutPutChange(False);
 
  i:=fTrigBlockNumber-2;
@@ -3194,7 +3204,9 @@ end;
 
 procedure TKt_2450Device.UpDate;
 begin
+// showmessage('recived');
  fSCPI.ProcessingString(fDataSubject.ReceivedString);
+
  fIsReceived:=True;
  if TestShowEthernet then showmessage('recived:  '+fDataSubject.ReceivedString);
 end;
