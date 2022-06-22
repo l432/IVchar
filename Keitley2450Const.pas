@@ -27,7 +27,7 @@ const
  'amp','volt','ohm','watt' );
 //   4     5    6      7
 
-  FirstNodeKt_2450:array[0..45]of string=
+  FirstNodeKt_2450:array[0..44]of string=
   (':scr',':user1:text',':user2:text','cle',':pos',':int:stat',':term',
 //     0       1             2         3      4        5         6
    ':rsen',':smod',':ocom',':prot',':trip',':vlim',':ilim',':unit',
@@ -38,8 +38,8 @@ const
 //      22        23      24     25     26        27       28      29
    ':ligh:stat',':poin',':fill:mode',':data',':beep',':act',':line#:mode',
 //     30          31         32         33     34      35        36
-   ':line#:stat',':load', ':bloc',':buff',':bran',':mdig',':bran',':paus',':res');
-//      37         38        39      40      41      42      43      44     45
+   ':line#:stat',':load', ':bloc',':buff',':bran',':mdig',':res',':paus');
+//      37         38        39      40      41      42      43      44    
 
  ConfLeafNodeKt_2450:array[0..3]of string=
  (':cre',':del',':rec',':stor');

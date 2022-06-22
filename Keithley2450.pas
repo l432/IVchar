@@ -2005,8 +2005,8 @@ begin
         JoinToStringToSend(ConfLeafNodeKt_2450[fLeafNode]);
      end; // fRootNode=24
   26:case fFirstLevelNode of
-        38,44,45:JoinToStringToSend(FirstNodeKt_2450[fFirstLevelNode]);
-        40,41,21,43:begin
+        38,44,43:JoinToStringToSend(FirstNodeKt_2450[fFirstLevelNode]);
+        40,41,21:begin
             JoinToStringToSend(FirstNodeKt_2450[39]);
             JoinToStringToSend(FirstNodeKt_2450[fFirstLevelNode]);
             JoinToStringToSend(TrigLeafNodeKt_2450[fLeafNode]);
@@ -2670,8 +2670,9 @@ procedure TKt_2450.StringToMesuredDataArray(Str: string;
       PartNumbers,i:integer;
       NumbersArray:TArrInteger;
 begin
-  HelpForMe(Str,'d'+inttostr(MilliSecond));
-
+//  HelpForMe(Str,'d'+inttostr(MilliSecond));
+ fDataVector.Clear;
+ fDataTimeVector.Clear;
  PartNumbers:=NumberOfSubstringInRow(Str);
 // showmessage(inttostr(PartNumbers));
 // showmessage(AnsiReplaceStr(Str,' ',#10));
@@ -2696,6 +2697,8 @@ begin
    for I := 1 to Kt2450_PartInRespond[DataType] do
     Str:=DeleteStringDataFromRow(Str,1);
   end;
+ if fDataVector.Count<>(Buffer.EndIndex-Buffer.StartIndex+1) then
+    fDevice.Value:=ErResult;
 end;
 
 function TKt_2450.StringToOutPutState(Str: string): boolean;
@@ -2855,7 +2858,7 @@ begin
  if (TransitionBlockNumber=0)or(TargetCount=0) then Exit;
  fAdditionalString:=IntToStr(TargetCount)+PartDelimiter
                     + IntToStr(TransitionBlockNumber);
-  SetupOperation(26,43,7);
+  SetupOperation(26,41,7);
 end;
 
 procedure TKt_2450.TrigIVLoop(i: Integer);
@@ -2908,7 +2911,7 @@ begin
    fAdditionalString:=fAdditionalString + IntToStr(EventNumber);
  fAdditionalString:=fAdditionalString+PartDelimiter
                     + IntToStr(TransitionBlockNumber);
- SetupOperation(26,43,8);
+ SetupOperation(26,41,8);
 end;
 
 procedure TKt_2450.TrigForIVCreate;
@@ -3024,7 +3027,7 @@ begin
                     +floattostr(LimB)+PartDelimiter
                     +IntTostr(TransitionBlockNumber)+PartDelimiter
                     +IntTostr(MeasureBlockNumber);
- SetupOperation(26,43,6);
+ SetupOperation(26,41,6);
 end;
 
 procedure TKt_2450.TrigNewCreate;
@@ -3051,7 +3054,7 @@ end;
 procedure TKt_2450.TrigResume;
 begin
 //:TRIG:RES
- SetupOperation(26,45,0,False);
+ SetupOperation(26,43,0,False);
 end;
 
 procedure TKt_2450.BufferCreate(Name: string; Size: integer);
@@ -3206,8 +3209,8 @@ procedure TKt_2450Device.UpDate;
 begin
 // showmessage('recived');
  fSCPI.ProcessingString(fDataSubject.ReceivedString);
-
- fIsReceived:=True;
+ if fValue<>ErResult then
+     fIsReceived:=True;
  if TestShowEthernet then showmessage('recived:  '+fDataSubject.ReceivedString);
 end;
 

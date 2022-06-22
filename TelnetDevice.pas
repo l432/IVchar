@@ -143,7 +143,7 @@ begin
   fReceivedString:=fReceivedString+Str;
   NotifyObservers();
 
-  HelpForMe(Str,'s'+inttostr(MilliSecond));
+//  HelpForMe(Str,'s'+inttostr(MilliSecond));
 //  HelpForMe(fReceivedString,'s'+inttostr(MilliSecond));
 //  HelpForMe(AnsiReplaceStr(fReceivedString,',',#10#13),'s'+inttostr(MilliSecond));
 end;
