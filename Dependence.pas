@@ -1124,6 +1124,7 @@ begin
   DecimalSeparator:='.';
   fPointNumber:=0;
   Results.SetLenVector(fPointNumber);
+  ButtonStop.OnClick := ButtonStopClick;
   ButtonStop.Enabled:=True;
 //-----------------
   SeriesClear();
@@ -1193,7 +1194,7 @@ end;
 procedure TFastDependence.CreateFooter(BS: TButton; FLn, FLg: TPointSeries);
 begin
   ButtonStop := BS;
-  ButtonStop.OnClick := Self.ButtonStopClick;
+//  ButtonStop.OnClick := ButtonStopClick;
   ForwLine := FLn;
   ForwLg := FLg;
   HookBeginMeasuring := TSimpleClass.EmptyProcedure;
@@ -1316,7 +1317,7 @@ constructor TFastIVDependence.Create(BS: TButton;
 begin
 // inherited Create(BS,Res,FLn, FLg);
  inherited Create(BS,FLn, FLg);
- ButtonStop.OnClick := Self.ButtonStopClick;
+// ButtonStop.OnClick := Self.ButtonStopClick;
  RevLine:=RLn;
  RevLg:=RLg;
  PrefixToFileName:='';

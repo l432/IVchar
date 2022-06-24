@@ -6,8 +6,8 @@ uses
   IdTelnet, ShowTypes, OlegTypePart2, RS232deviceNew;
 
 const
-//  TestShowEthernet=False;
-  TestShowEthernet=True;
+  TestShowEthernet=False;
+//  TestShowEthernet=True;
   DeviceEthernetisAbsent=False;
 //  DeviceEthernetisAbsent=True;
 
