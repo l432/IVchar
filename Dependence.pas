@@ -1193,7 +1193,7 @@ end;
 procedure TFastDependence.CreateFooter(BS: TButton; FLn, FLg: TPointSeries);
 begin
   ButtonStop := BS;
-  ButtonStop.OnClick := ButtonStopClick;
+  ButtonStop.OnClick := Self.ButtonStopClick;
   ForwLine := FLn;
   ForwLg := FLg;
   HookBeginMeasuring := TSimpleClass.EmptyProcedure;
@@ -1292,7 +1292,7 @@ end;
 
 procedure TFastIVDependence.ButtonStopClick(Sender: TObject);
 begin
- inherited;
+ inherited ButtonStopClick(Sender);
  fCurrentState.ButtonStopClick;
 end;
 
@@ -1316,6 +1316,7 @@ constructor TFastIVDependence.Create(BS: TButton;
 begin
 // inherited Create(BS,Res,FLn, FLg);
  inherited Create(BS,FLn, FLg);
+ ButtonStop.OnClick := Self.ButtonStopClick;
  RevLine:=RLn;
  RevLg:=RLg;
  PrefixToFileName:='';

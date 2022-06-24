@@ -1445,10 +1445,7 @@ begin
 //  fDevice.Request();
 //  fDevice.GetData;
 
-// showmessage(inttostr(BufferGetReadingNumber));
- fDevice.DelayTimeStep:=100;
- BufferDataArrayExtended(1,43,kt_rd_MST);
-// showmessage(DataVector.XYtoString);
+TrigEventGenerate();
 
 //TrigNewCreate;
 //TrigBufferClear;
@@ -2937,10 +2934,13 @@ begin
         BranchesLimitIndex:=i+1;
         Continue;
       end;
+//     showmessage(floattostr(DataVector.X[i]));
      SetSourceValue(DataVector.X[i]);
      ConfigSourceStore();
    end;
  SetSourceValue(SourceValueTemp);
+
+// showmessage(DataVector.XYtoString);
 
  TrigNewCreate();
  TrigBufferClear();
