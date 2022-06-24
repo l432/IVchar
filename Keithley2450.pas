@@ -1440,12 +1440,16 @@ procedure TKt_2450.MyTraining;
 // var str:string;
 //  var ArrDouble: TArrSingle;
 begin
-//  (fDevice as TTelnetMeterDeviceSingle).SetStringToSend(':VOLT:RANG:AUTO:LLIM 20');
-//  (fDevice as TTelnetMeterDeviceSingle).SetStringToSend(':FORM:ASC:PREC DEF');
-//  fDevice.Request();
-//  fDevice.GetData;
+  (fDevice as TTelnetMeterDeviceSingle).SetStringToSend('TRIG:LAN1:OUT:IP:ADDR "192.168.2.2"');
+  fDevice.Request();
+  (fDevice as TTelnetMeterDeviceSingle).SetStringToSend(':TRIG:LAN1:OUT:CONN:STAT ON');
+  fDevice.Request();
+  (fDevice as TTelnetMeterDeviceSingle).SetStringToSend(':TRIG:LAN1:OUT:CONN:STAT?');
 
-TrigEventGenerate();
+//  (fDevice as TTelnetMeterDeviceSingle).SetStringToSend(':TRIG:LAN1:OUT:STIM NONE');
+  fDevice.GetData;
+
+//TrigEventGenerate();
 
 //TrigNewCreate;
 //TrigBufferClear;
