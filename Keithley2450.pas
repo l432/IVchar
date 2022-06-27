@@ -4,20 +4,21 @@ interface
 
 uses
   TelnetDevice, IdTelnet, ShowTypes, Keitley2450Const, SCPI, OlegType, 
-  OlegVector, OlegTypePart2, Keitley2450Device, ExtCtrls, Measurement;
+  OlegVector, OlegTypePart2, Keitley2450Device, ExtCtrls, Measurement, 
+  Keithley;
 
 
 type
 
- TKt_2450Device=class(TTelnetMeterDeviceSingle)
-  private
-   fSCPI:TSCPInew;
-  protected
-   procedure UpDate();override;
-  public
-   Constructor Create(SCPInew:TSCPInew;Telnet:TIdTelnet;IPAdressShow: TIPAdressShow;
-               Nm:string);
- end;
+// TKeitleyDevice=class(TTelnetMeterDeviceSingle)
+//  private
+//   fSCPI:TSCPInew;
+//  protected
+//   procedure UpDate();override;
+//  public
+//   Constructor Create(SCPInew:TSCPInew;Telnet:TIdTelnet;IPAdressShow: TIPAdressShow;
+//               Nm:string);
+// end;
 
 //TKt_2450=class;
 
@@ -81,10 +82,11 @@ TKT2450_Meter=class;
 TKT2450_SourceMeter=class;
 TKT2450_SourceDevice=class;
 
- TKt_2450=class(TSCPInew)
+// TKt_2450=class(TSCPInew)
+ TKt_2450=class(TKeitley)
   private
-   fTelnet:TIdTelnet;
-   fIPAdressShow: TIPAdressShow;
+//   fTelnet:TIdTelnet;
+//   fIPAdressShow: TIPAdressShow;
    fIsTripped:boolean;
 
    fTerminal:TKt2450_OutputTerminals;
@@ -757,9 +759,10 @@ end;
 constructor TKt_2450.Create(Telnet: TIdTelnet; IPAdressShow: TIPAdressShow;
   Nm: string);
 begin
- fTelnet:=Telnet;
- fIPAdressShow:=IPAdressShow;
- inherited Create(Nm);
+// fTelnet:=Telnet;
+// fIPAdressShow:=IPAdressShow;
+// inherited Create(Nm);
+ inherited Create(Telnet,IPAdressShow,Nm);
  fBuffer:=TKt2450_Buffer.Create;
  fMeter:=TKT2450_Meter.Create(Self);
  fSourceMeter:=TKT2450_SourceMeter.Create(Self);
@@ -859,7 +862,7 @@ end;
 
 procedure TKt_2450.DeviceCreate(Nm: string);
 begin
- fDevice:=TKt_2450Device.Create(Self,fTelnet,fIPAdressShow,Nm);
+ fDevice:=TKeitleyDevice.Create(Self,fTelnet,fIPAdressShow,Nm);
 end;
 
 function TKt_2450.GetAzeroStates: boolean;
@@ -1911,8 +1914,8 @@ end;
 
 procedure TKt_2450.PrepareString;
 begin
- (fDevice as TKt_2450Device).ClearStringToSend;
- (fDevice as TKt_2450Device).SetStringToSend(RootNoodKt_2450[fRootNode]);
+ (fDevice as TKeitleyDevice).ClearStringToSend;
+ (fDevice as TKeitleyDevice).SetStringToSend(RootNoodKt_2450[fRootNode]);
  case fRootNode of
   5:case fFirstLevelNode of
      5: JoinToStringToSend(FirstNodeKt_2450[fFirstLevelNode]);
@@ -3186,37 +3189,37 @@ end;
 
 { TKt_2450Device }
 
-constructor TKt_2450Device.Create(SCPInew:TSCPInew;Telnet: TIdTelnet;
-  IPAdressShow: TIPAdressShow; Nm: string);
-begin
- inherited Create(Telnet,IPAdressShow,Nm);
- fSCPI:=SCPInew;
- fMinDelayTime:=0;
- fDelayTimeStep:=10;
- fDelayTimeMax:=200;
-
-//   fMinDelayTime:integer;
-//  {інтервал очікування перед початком перевірки
-//  вхідного буфера, []=мс, за замовчуванням 0}
-//   fDelayTimeStep:integer;
-//   {проміжок часу, через який перевіряється
-//   надходження даних, []=мс, за замовчуванням 10}
-//   fDelayTimeMax:integer;
-//   {максимальна кількість перевірок
-//   надходження даних, []=штук, за замовчуванням 130,
-//   тобто за замовчуванням інтервал очікуввання
-//   складає 0+10*130=1300 мс}
-
-end;
-
-procedure TKt_2450Device.UpDate;
-begin
-// showmessage('recived');
- fSCPI.ProcessingString(fDataSubject.ReceivedString);
- if fValue<>ErResult then
-     fIsReceived:=True;
- if TestShowEthernet then showmessage('recived:  '+fDataSubject.ReceivedString);
-end;
+//constructor TKeitleyDevice.Create(SCPInew:TSCPInew;Telnet: TIdTelnet;
+//  IPAdressShow: TIPAdressShow; Nm: string);
+//begin
+// inherited Create(Telnet,IPAdressShow,Nm);
+// fSCPI:=SCPInew;
+// fMinDelayTime:=0;
+// fDelayTimeStep:=10;
+// fDelayTimeMax:=200;
+//
+////   fMinDelayTime:integer;
+////  {інтервал очікування перед початком перевірки
+////  вхідного буфера, []=мс, за замовчуванням 0}
+////   fDelayTimeStep:integer;
+////   {проміжок часу, через який перевіряється
+////   надходження даних, []=мс, за замовчуванням 10}
+////   fDelayTimeMax:integer;
+////   {максимальна кількість перевірок
+////   надходження даних, []=штук, за замовчуванням 130,
+////   тобто за замовчуванням інтервал очікуввання
+////   складає 0+10*130=1300 мс}
+//
+//end;
+//
+//procedure TKeitleyDevice.UpDate;
+//begin
+//// showmessage('recived');
+// fSCPI.ProcessingString(fDataSubject.ReceivedString);
+// if fValue<>ErResult then
+//     fIsReceived:=True;
+// if TestShowEthernet then showmessage('recived:  '+fDataSubject.ReceivedString);
+//end;
 
 { TKt_2450_SweepParameters }
 

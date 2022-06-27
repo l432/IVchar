@@ -54,6 +54,7 @@
     <DCCReference Include="IVchar_main.pas">
       <Form>IVchar</Form>
     </DCCReference>
+    <DCCReference Include="Keithley.pas" />
     <DCCReference Include="Keithley2450.pas" />
     <DCCReference Include="Keithley2450Show.pas" />
     <DCCReference Include="Keitley2450Const.pas" />

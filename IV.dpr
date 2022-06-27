@@ -43,7 +43,8 @@ uses
   Keitley2450Const in 'Keitley2450Const.pas',
   FormKT2450 in 'FormKT2450.pas' {KT2450Form},
   PsevdoMainForm in 'PsevdoMainForm.pas' {Main},
-  Keitley2450Device in 'Keitley2450Device.pas';
+  Keitley2450Device in 'Keitley2450Device.pas',
+  Keithley in 'Keithley.pas';
 
 {$R *.res}
 

@@ -37,7 +37,7 @@ object IVchar: TIVchar
     Top = 0
     Width = 788
     Height = 530
-    ActivePage = TS_Setting
+    ActivePage = TS_DM6500
     Align = alTop
     Font.Charset = RUSSIAN_CHARSET
     Font.Color = clWindowText
@@ -9290,10 +9290,29 @@ object IVchar: TIVchar
       ImageIndex = 16
       object B_Kt2450drive: TButton
         Left = 16
-        Top = 12
+        Top = 11
         Width = 241
         Height = 33
         Caption = 'Kt2450 setting dock'
+        Font.Charset = RUSSIAN_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -21
+        Font.Name = 'Arial'
+        Font.Style = [fsBold]
+        ParentFont = False
+        TabOrder = 0
+        OnClick = B_Kt2450driveClick
+      end
+    end
+    object TS_DM6500: TTabSheet
+      Caption = 'DM6500'
+      ImageIndex = 17
+      object B_DM6500drive: TButton
+        Left = 16
+        Top = 11
+        Width = 241
+        Height = 33
+        Caption = 'DM6500 setting dock'
         Font.Charset = RUSSIAN_CHARSET
         Font.Color = clWindowText
         Font.Height = -21

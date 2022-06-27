@@ -741,6 +741,8 @@ type
     TelnetKt2450: TIdTelnet;
     B_Kt2450drive: TButton;
     CBuseKT2450: TCheckBox;
+    TS_DM6500: TTabSheet;
+    B_DM6500drive: TButton;
 
     procedure FormCreate(Sender: TObject);
     procedure BConnectClick(Sender: TObject);
