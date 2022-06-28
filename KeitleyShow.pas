@@ -3,12 +3,36 @@ unit KeitleyShow;
 interface
 
 uses
-  OlegTypePart2, Keithley, StdCtrls;
+  OlegTypePart2, Keithley, StdCtrls, OlegShowTypes, Classes;
 
 const
   ButtonNumberKeitley = 1;
 
 type
+
+TKeitley_StringParameterShow=class(TStringParameterShow)
+ protected
+  fSettingsShowSL:TStringList;
+  fKeitley:TKeitley;
+  fCaption:string;
+  procedure OkClick();virtual;abstract;
+  procedure SettingsShowSLFilling();virtual;abstract;
+  procedure SomeAction();virtual;abstract;
+ public
+  Constructor Create(ST:TStaticText;Keitley:TKeitley);
+  destructor Destroy;override;
+  procedure ObjectToSetting;virtual;abstract;
+end;
+
+TKeitley_BrightnessShow=class(TKeitley_StringParameterShow)
+ protected
+  procedure OkClick();override;
+  procedure SettingsShowSLFilling();override;
+  procedure SomeAction();override;
+ public
+  procedure ObjectToSetting;override;
+end;
+
 
  TKeitley_Show=class(TSimpleFreeAndAiniObject)
   private
@@ -56,8 +80,8 @@ type
 //
 //   fSourceMeterValueLab:TLabel;
 //
-//   fBrightnessShow:TKt2450_BrightnessShow;
-//
+   fBrightnessShow:TKeitley_BrightnessShow;
+
 //   procedure SourceShowCreate();
 //   procedure SourceShowFree();
 //
@@ -67,13 +91,13 @@ type
 //   procedure SweetShowCreate();
 //
    procedure TestButtonClick(Sender:TObject);
-//   procedure ResetButtonClick(Sender:TObject);
-//   procedure GetSettingButtonClick(Sender:TObject);
+
+
 //   procedure RefreshZeroClick(Sender:TObject);
 //   procedure SourceMeasureClick(Sender:TObject);
    procedure MyTrainButtonClick(Sender:TObject);
 //   procedure AutoZeroClick(Sender:TObject);
-   procedure ButtonsTune(Buttons: array of TButton);
+
 //   procedure SpeedButtonsTune(SpeedButtons: array of TSpeedButton);
 //   procedure SettingsShowSLCreate();
 //   procedure SettingsShowCreate(STexts:array of TStaticText;
@@ -89,11 +113,16 @@ type
 //   procedure CountOkClick();
 //    procedure ReCreateElements;
   protected
-   BTest:TButton;
+//   BTest:TButton;
+   procedure ButtonsTune(Buttons: array of TButton);virtual;
+   procedure ResetButtonClick(Sender:TObject);virtual;
+   procedure GetSettingButtonClick(Sender:TObject);virtual;
   public
 //   property MeterShow:TKt_2450_MeterShow read fMeterShow;
    Constructor Create(Keitley:TKeitley;
-                      Buttons:Array of TButton);
+                      Buttons:Array of TButton;
+                      STextsBrightness:TStaticText
+                      );
 //                      SpeedButtons:Array of TSpeedButton;
 //                      Panels:Array of TPanel;
 //                      STexts:array of TStaticText;
@@ -110,11 +139,11 @@ type
 //                      MeasureMeterB:TButton;
 //                      AutoMMeterB:TSpeedButton);
 //
-//  destructor Destroy;override;
+  destructor Destroy;override;
 //  procedure ReadFromIniFile(ConfigFile:TIniFile);override;
 //  procedure WriteToIniFile(ConfigFile:TIniFile);override;
 //  procedure SettingToObject;
-//  procedure ObjectToSetting;virtual;
+  procedure ObjectToSetting;virtual;
 //  procedure OutPutOnFromDevice();
  end;
 
@@ -122,7 +151,7 @@ type
 implementation
 
 uses
-  Dialogs, Graphics;
+  Dialogs, Graphics, SysUtils, Keitley2450Const, TelnetDevice;
 
 { TKt_2450_Show }
 
@@ -130,15 +159,23 @@ procedure TKeitley_Show.ButtonsTune(Buttons: array of TButton);
 begin
   Buttons[0].Caption := 'Connection Test ?';
   Buttons[0].OnClick := TestButtonClick;
-  BTest := Buttons[0];
+//  BTest := Buttons[0];
 
-  Buttons[1].Caption := 'MyTrain';
-  Buttons[1].OnClick := MyTrainButtonClick;
+  Buttons[1].Caption := 'Reset';
+  Buttons[1].OnClick := ResetButtonClick;
+
+  Buttons[2].Caption := 'Get from device';
+  Buttons[2].OnClick := GetSettingButtonClick;
+
+  Buttons[High(Buttons)].Caption := 'MyTrain';
+  Buttons[High(Buttons)].OnClick := MyTrainButtonClick;
 end;
 
-constructor TKeitley_Show.Create(Keitley: TKeitley; Buttons: array of TButton);
+constructor TKeitley_Show.Create(Keitley: TKeitley;
+                      Buttons: array of TButton;
+                      STextsBrightness:TStaticText);
 begin
-  if (High(Buttons)<>ButtonNumberKeitley)
+//  if (High(Buttons)<>ButtonNumberKeitley)
 //     or(High(SpeedButtons)<>SpeedButtonNumberKt2450)
 //     or(High(Panels)<>PanelNumberKt2450)
 //     or(High(STexts)<>((ord(High(TKt2450_Settings))+1+ord(High(TKt2450_SourceSettings))+1
@@ -150,11 +187,11 @@ begin
 //     or(High(SweetST)<>ord(High(TKt2450_SweepSettings)))
 //     or(High(SweetLab)<>ord(High(TKt2450_SweepSettings)))
 //     or(High(SweetButtons)<>ord(High(TKt2450_SweepButtons)))
-   then
-    begin
-      showmessage('Keitley_Show is not created!');
-      Exit;
-    end;
+//   then
+//    begin
+//      showmessage('Keitley_Show is not created!');
+//      Exit;
+//    end;
   fKeitley:=Keitley;
   ButtonsTune(Buttons);
 
@@ -164,7 +201,7 @@ begin
 //
 //  SettingsShowSLCreate();
 //  SettingsShowCreate(STexts,Labels);
-//  fBrightnessShow:=TKt2450_BrightnessShow.Create(STexts[ord(High(TKt2450_Settings))+1],fKt_2450);
+  fBrightnessShow:=TKeitley_BrightnessShow.Create(STextsBrightness,fKeitley);
 //
 //  fSourceShowState:=2;
 //  for i:=0 to ord(High(TKt2450_SourceSettings)) do
@@ -225,27 +262,117 @@ begin
 
 end;
 
+destructor TKeitley_Show.Destroy;
+begin
+  FreeAndNil(fBrightnessShow);
+  inherited;
+end;
+
+procedure TKeitley_Show.GetSettingButtonClick(Sender: TObject);
+begin
+  if not(DeviceEthernetisAbsent) then
+    begin
+//    fKt_2450.GetTerminal();
+//    fKt_2450.IsOutPutOn();
+//    fKt_2450.GetVoltageProtection;
+//    fKt_2450.GetDeviceMode;
+//    fKt_2450.IsResistanceCompencateOn();
+//    fKt_2450.GetVoltageLimit();
+//    fKt_2450.GetCurrentLimit();
+//    fKt_2450.IsReadBackOn();
+//    fKt_2450.GetSenses();
+//    fKt_2450.GetOutputOffStates;
+//    fKt_2450.GetSourceRanges();
+//    fKt_2450.GetMeasureRanges();
+//    fKt_2450.GetMeasureLowRanges();
+//    fKt_2450.IsAzeroStateOn();
+//    fKt_2450.IsSourceDelayAutoOn();
+//    fKt_2450.GetSourceDelay();
+//    fKt_2450.GetSourceValue();
+//    fKt_2450.GetMeasureTime();
+//    fKt_2450.IsHighCapacitanceOn();
+//    fKt_2450.GetDisplayDigitsNumber();
+//    fKt_2450.GetCount();
+    fKeitley.GetDisplayBrightness();
+    end;
+
+  ObjectToSetting();
+end;
+
 procedure TKeitley_Show.MyTrainButtonClick(Sender: TObject);
 begin
  fKeitley.MyTraining();
 end;
 
-//procedure TKeitley_Show.ObjectToSetting;
-//begin
-//
-//end;
+procedure TKeitley_Show.ObjectToSetting;
+begin
+
+ fBrightnessShow.ObjectToSetting;
+end;
+
+procedure TKeitley_Show.ResetButtonClick(Sender: TObject);
+begin
+ fKeitley.ResetSetting();
+end;
 
 procedure TKeitley_Show.TestButtonClick(Sender: TObject);
 begin
-   if fKeitley.Test then
-        begin
-          BTest.Caption:='Connection Test - Ok';
-          BTest.Font.Color:=clBlue;
-        end        else
-        begin
-          BTest.Caption:='Connection Test - Failed';
-          BTest.Font.Color:=clRed;
-        end;
+   if fKeitley.Test
+     then (Sender as TButton).Caption:='Connection Test - Ok'
+     else (Sender as TButton).Caption:='Connection Test - Failed';
+//
+//   if fKeitley.Test then
+//        begin
+//          BTest.Caption:='Connection Test - Ok';
+//          BTest.Font.Color:=clBlue;
+//        end        else
+//        begin
+//          BTest.Caption:='Connection Test - Failed';
+//          BTest.Font.Color:=clRed;
+//        end;
+end;
+
+{ TKeitley_StringParameterShow }
+
+constructor TKeitley_StringParameterShow.Create(ST: TStaticText;
+  Keitley: TKeitley);
+begin
+  fKeitley:=Keitley;
+  SomeAction();
+  fSettingsShowSL:=TStringList.Create;
+  SettingsShowSLFilling();
+  inherited Create(ST,fCaption,fSettingsShowSL);
+  HookParameterClick:=OkClick;
+end;
+
+destructor TKeitley_StringParameterShow.Destroy;
+begin
+  FreeAndNil(fSettingsShowSL);
+  inherited;
+end;
+
+{ TKeitley_BrightnessShow }
+
+procedure TKeitley_BrightnessShow.ObjectToSetting;
+begin
+ Data:=ord(fKeitley.DisplayState);
+end;
+
+procedure TKeitley_BrightnessShow.OkClick;
+begin
+ fKeitley.SetDisplayBrightness(TKeitley_DisplayState(Data));
+end;
+
+procedure TKeitley_BrightnessShow.SettingsShowSLFilling;
+ var i:TKeitley_DisplayState;
+begin
+ for I := Low(TKeitley_DisplayState) to High(TKeitley_DisplayState) do
+             fSettingsShowSL.Add(Keitley_DisplayStateLabel[i]);
+end;
+
+procedure TKeitley_BrightnessShow.SomeAction;
+begin
+ fCaption:='Brightness';
 end;
 
 end.

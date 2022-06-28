@@ -232,7 +232,7 @@ object DMM6500Form: TDMM6500Form
       Top = 111
       Width = 81
       Height = 25
-      Caption = 'B_Kt2450_SetSet'
+      Caption = 'Reset'
       Font.Charset = RUSSIAN_CHARSET
       Font.Color = clWindowText
       Font.Height = -15

@@ -17,7 +17,7 @@ type
 
  TKt_2450_Show=class;
 
- TKT2450_SetupMemoryPins=class(TPins)
+ TKeitley_SetupMemoryPins=class(TPins)
   protected
    Function GetPinStr(Index:integer):string;override;
   public
@@ -25,10 +25,10 @@ type
  end;
 
 
- TKT2450_SetupMemoryShow=class(TPinsShowUniversal)
+ TKeitley_SetupMemoryShow=class(TPinsShowUniversal)
    private
     fKT2450_Show:TKt_2450_Show;
-    fMemoryPins:TKT2450_SetupMemoryPins;
+    fMemoryPins:TKeitley_SetupMemoryPins;
    protected
     procedure LabelsFilling;
     procedure CommandSend;
@@ -56,44 +56,46 @@ TKt_2450_AbstractElementShow=class(TSimpleFreeAndAiniObject)
   procedure ObjectToSetting;virtual;abstract;
  end;
 
-TKt2450_StringParameterShow=class(TStringParameterShow)
- private
-  fSettingsShowSL:TStringList;
-  fKt_2450:TKt_2450;
-  fCaption:string;
-  procedure OkClick();virtual;abstract;
-  procedure SettingsShowSLFilling();virtual;abstract;
-  procedure SomeAction();virtual;abstract;
- public
-  Constructor Create(ST:TStaticText;Kt_2450:TKt_2450);
-  destructor Destroy;override;
-  procedure ObjectToSetting;virtual;abstract;
-end;
+//TKeitley_StringParameterShow=class(TStringParameterShow)
+// private
+//  fSettingsShowSL:TStringList;
+//  fKt_2450:TKt_2450;
+//  fCaption:string;
+//  procedure OkClick();virtual;abstract;
+//  procedure SettingsShowSLFilling();virtual;abstract;
+//  procedure SomeAction();virtual;abstract;
+// public
+//  Constructor Create(ST:TStaticText;Kt_2450:TKt_2450);
+//  destructor Destroy;override;
+//  procedure ObjectToSetting;virtual;abstract;
+//end;
 
-TKt2450_BrightnessShow=class(TKt2450_StringParameterShow)
- private
-  procedure OkClick();override;
-  procedure SettingsShowSLFilling();override;
-  procedure SomeAction();override;
- public
-  procedure ObjectToSetting;override;
-end;
+//TKeitley_BrightnessShow=class(TKeitley_StringParameterShow)
+// protected
+//  procedure OkClick();override;
+//  procedure SettingsShowSLFilling();override;
+//  procedure SomeAction();override;
+// public
+//  procedure ObjectToSetting;override;
+//end;
 
 //TKt_RangeShow=class(TStringParameterShow)
-TKt_RangeShow=class(TKt2450_StringParameterShow)
+TKt_RangeShow=class(TKeitley_StringParameterShow)
  private
 //  fSettingsShowSL:TStringList;
   fType:TKt2450_Source;
-//  fKt_2450:TKt_2450;
+  fKt_2450:TKt_2450;
 //  procedure RangeOkClick();virtual;abstract;
-  procedure SettingsShowSLFilling();override;
-  procedure SomeAction();override;
+
   procedure TypeDetermination();virtual;abstract;
   procedure SetEnabled(Value:boolean);virtual;
   function GetEnable():boolean;
+ protected
+  procedure SettingsShowSLFilling();override;
+  procedure SomeAction();override;
  public
   property Enabled:boolean read GetEnable write SetEnabled;
-//  Constructor Create(ST:TStaticText;{Source:TKt2450_Source;}Kt_2450:TKt_2450);
+  Constructor Create(ST:TStaticText;Kt_2450:TKt_2450);
 //  destructor Destroy;override;
 //  procedure ObjectToSetting;virtual;abstract;
 end;
@@ -102,8 +104,10 @@ TKt_RangeMeasureShow=class(TKt_RangeShow)
  private
   fHookHookParameterClick: TSimpleEvent;
 //  procedure RangeOkClick();override;
-  procedure OkClick();override;
+
   procedure TypeDetermination();override;
+ protected
+  procedure OkClick();override;
  public
   property HookHookParameterClick:TSimpleEvent read fHookHookParameterClick write fHookHookParameterClick;
   Constructor Create(ST:TStaticText;Kt_2450:TKt_2450);
@@ -113,8 +117,10 @@ end;
 TKt_RangeSourceShow=class(TKt_RangeShow)
  private
 //  procedure RangeOkClick();override;
-  procedure OkClick();override;
+//  procedure OkClick();override;
   procedure TypeDetermination();override;
+ protected
+  procedure OkClick();override;
  public
   procedure ObjectToSetting;override;
 end;
@@ -123,10 +129,13 @@ end;
 TKt_RangeLimitedShow=class(TKt_RangeMeasureShow)
  private
   fLabel:TLabel;
-  procedure SettingsShowSLFilling();override;
+//  procedure SettingsShowSLFilling();override;
   procedure SetEnabled(Value:boolean);override;
 //  procedure RangeOkClick();override;
+//  procedure OkClick();override;
+ protected
   procedure OkClick();override;
+  procedure SettingsShowSLFilling();override;
  public
   Constructor Create(ST:TStaticText;Kt_2450:TKt_2450;Lab:TLabel);
   procedure ObjectToSetting;override;
@@ -276,7 +285,7 @@ end;
 //   BTest:TButton;
    fOutPutOnOff:TSpeedButton;
    fTerminalsFrRe:TSpeedButton;
-   fSetupMemoryShow:TKT2450_SetupMemoryShow;
+   fSetupMemoryShow:TKeitley_SetupMemoryShow;
 
    fSourceShow:TKt_2450_SourceShow;
    SourceShowStaticText:array[TKt2450_SourceSettings]of TStaticText;
@@ -313,7 +322,7 @@ end;
 
    fSourceMeterValueLab:TLabel;
 
-   fBrightnessShow:TKt2450_BrightnessShow;
+//   fBrightnessShow:TKeitley_BrightnessShow;
 
    procedure SourceShowCreate();
    procedure SourceShowFree();
@@ -325,13 +334,13 @@ end;
 //   procedure SweetShowFree();
 
 //   procedure TestButtonClick(Sender:TObject);
-   procedure ResetButtonClick(Sender:TObject);
-   procedure GetSettingButtonClick(Sender:TObject);
+//   procedure ResetButtonClick(Sender:TObject);override;
+//   procedure GetSettingButtonClick(Sender:TObject);
    procedure RefreshZeroClick(Sender:TObject);
    procedure SourceMeasureClick(Sender:TObject);
 //   procedure MyTrainButtonClick(Sender:TObject);
    procedure AutoZeroClick(Sender:TObject);
-   procedure ButtonsTune(Buttons: array of TButton);
+//   procedure ButtonsTune(Buttons: array of TButton);override;
    procedure SpeedButtonsTune(SpeedButtons: array of TSpeedButton);
    procedure SettingsShowSLCreate();
 //   procedure SettingsShowSLFree();
@@ -346,7 +355,11 @@ end;
    procedure VoltageProtectionOkClick();
    procedure ModeOkClick();
    procedure CountOkClick();
-    procedure ReCreateElements;
+   procedure ReCreateElements;
+  protected
+   procedure ButtonsTune(Buttons: array of TButton);override;
+   procedure ResetButtonClick(Sender:TObject);override;
+   procedure GetSettingButtonClick(Sender:TObject);override;
   public
    property MeterShow:TKt_2450_MeterShow read fMeterShow;
    Constructor Create(Kt_2450:TKt_2450;
@@ -371,7 +384,7 @@ end;
   procedure ReadFromIniFile(ConfigFile:TIniFile);override;
   procedure WriteToIniFile(ConfigFile:TIniFile);override;
   procedure SettingToObject;
-  procedure ObjectToSetting;// override;
+  procedure ObjectToSetting; override;
   procedure OutPutOnFromDevice();
  end;
 
@@ -415,12 +428,7 @@ procedure TKt_2450_Show.ButtonsTune(Buttons: array of TButton);
 //  ButtonAction: array[0..ButtonNumberKt2450] of TNotifyEvent;
 //  i: Integer;
 begin
-
-  Buttons[1].Caption := 'Reset';
-  Buttons[1].OnClick := ResetButtonClick;
-
-  Buttons[2].Caption := 'Get from device';
-  Buttons[2].OnClick := GetSettingButtonClick;
+  inherited;
 
   Buttons[3].Caption := 'Refresh Zero';
   Buttons[3].OnClick := RefreshZeroClick;
@@ -489,17 +497,18 @@ begin
       Exit;
     end;
 
-  inherited Create(Kt_2450,[Buttons[0],Buttons[5]]);
+//  inherited Create(Kt_2450,[Buttons[0],Buttons[5]]);
+  inherited Create(Kt_2450,Buttons,STexts[ord(High(TKt2450_Settings))+1]);
   fKt_2450:=Kt_2450;
 
-  ButtonsTune(Buttons);
+//  ButtonsTune(Buttons);
   SpeedButtonsTune(SpeedButtons);
 
   CBnumber:=0;
 
   SettingsShowSLCreate();
   SettingsShowCreate(STexts,Labels);
-  fBrightnessShow:=TKt2450_BrightnessShow.Create(STexts[ord(High(TKt2450_Settings))+1],fKt_2450);
+//  fBrightnessShow:=TKeitley_BrightnessShow.Create(STexts[ord(High(TKt2450_Settings))+1],fKt_2450);
 
   fSourceShowState:=2;
   for i:=0 to ord(High(TKt2450_SourceSettings)) do
@@ -559,7 +568,7 @@ begin
                                 MeasureMeterB,AutoMMeterB);
   fMeterShow.DigitNumber:=6;
 
-  fSetupMemoryShow:=TKT2450_SetupMemoryShow.Create(Self,Panels[0],Panels[1]);
+  fSetupMemoryShow:=TKeitley_SetupMemoryShow.Create(Self,Panels[0],Panels[1]);
 
   ObjectToSetting();
 end;
@@ -569,12 +578,10 @@ begin
   FreeAndNil(fSetupMemoryShow);
   FreeAndNil(fMeterShow);
   FreeAndNil(fSweetShow);
-//  SweetShowFree();
   MeasureShowFree();
   SourceShowFree();
   SettingsShowFree;
-  FreeAndNil(fBrightnessShow);
-//  SettingsShowSLFree;
+//  FreeAndNil(fBrightnessShow);
   inherited;
 end;
 
@@ -603,10 +610,11 @@ begin
     fKt_2450.IsHighCapacitanceOn();
     fKt_2450.GetDisplayDigitsNumber();
     fKt_2450.GetCount();
-    fKt_2450.GetDisplayBrightness();
+//    fKt_2450.GetDisplayBrightness();
     end;
 
-  ObjectToSetting();
+//  ObjectToSetting();
+  inherited;
 end;
 
 procedure TKt_2450_Show.MeasureShowCreate;
@@ -664,6 +672,7 @@ end;
 
 procedure TKt_2450_Show.ObjectToSetting;
 begin
+ inherited;
  TerminalsFromDevice();
  OutPutOnFromDevice();
  (fSettingsShow[ord(kt_voltprot)] as TStringParameterShow).Data:=ord(fKt_2450.VoltageProtection);
@@ -671,7 +680,7 @@ begin
  (fSettingsShow[ord(kt_meascount)] as TIntegerParameterShow).Data:=fKt_2450.Count;
 
  ReCreateElements();
- fBrightnessShow.ObjectToSetting;
+// fBrightnessShow.ObjectToSetting;
 
 end;
 
@@ -716,7 +725,8 @@ end;
 
 procedure TKt_2450_Show.ResetButtonClick(Sender: TObject);
 begin
- fKt_2450.ResetSetting();
+// fKt_2450.ResetSetting();
+ inherited;
  if fKt_2450.OutPutOn then
    begin
      fKt_2450.OutPutOn:=False;
@@ -942,57 +952,57 @@ end;
 
 { TKT2450_SetupMemory }
 
-procedure TKT2450_SetupMemoryShow.CommandSend;
+procedure TKeitley_SetupMemoryShow.CommandSend;
 begin
 
 end;
 
-constructor TKT2450_SetupMemoryShow.Create(KT2450_Show:TKt_2450_Show;
+constructor TKeitley_SetupMemoryShow.Create(KT2450_Show:TKt_2450_Show;
                               PanelSave, PanelLoad: TPanel);
 begin
  fKT2450_Show:=KT2450_Show;
- fMemoryPins:=TKT2450_SetupMemoryPins.Create(fKT2450_Show.fKt_2450.Name+'Pins');
+ fMemoryPins:=TKeitley_SetupMemoryPins.Create(fKT2450_Show.fKt_2450.Name+'Pins');
  inherited Create(fMemoryPins,[PanelSave, PanelLoad]);
  LabelsFilling();
 end;
 
 { TKT2450_SetupMemoryPins }
 
-constructor TKT2450_SetupMemoryPins.Create(Name: string);
+constructor TKeitley_SetupMemoryPins.Create(Name: string);
 begin
  inherited Create(Name,['SaveSlot','LoadSlot']);
  PinStrPart:='';
 end;
 
-destructor TKT2450_SetupMemoryShow.Destroy;
+destructor TKeitley_SetupMemoryShow.Destroy;
 begin
   fKT2450_Show:=nil;
   FreeAndNil(fMemoryPins);
   inherited;
 end;
 
-procedure TKT2450_SetupMemoryShow.LabelsFilling;
- var i:TKt2450_SetupMemorySlot;
+procedure TKeitley_SetupMemoryShow.LabelsFilling;
+ var i:TKeitley_SetupMemorySlot;
 begin
  fPinVariants[0].Clear;
  fPinVariants[1].Clear;
- for I := Low(TKt2450_SetupMemorySlot) to High(TKt2450_SetupMemorySlot) do
+ for I := Low(TKeitley_SetupMemorySlot) to High(TKeitley_SetupMemorySlot) do
    begin
      fPinVariants[0].Add(inttostr(I));
      fPinVariants[1].Add(inttostr(I));
    end;
 end;
 
-procedure TKT2450_SetupMemoryShow.NumberPinShow(PinActiveNumber: integer;ChooseNumber:integer);
+procedure TKeitley_SetupMemoryShow.NumberPinShow(PinActiveNumber: integer;ChooseNumber:integer);
 begin
  inherited;
  case PinActiveNumber of
-  0:fKT2450_Show.fKt_2450.SaveSetup(TKt2450_SetupMemorySlot(ChooseNumber));
-  1:fKT2450_Show.fKt_2450.LoadSetup(TKt2450_SetupMemorySlot(ChooseNumber));
+  0:fKT2450_Show.fKt_2450.SaveSetup(TKeitley_SetupMemorySlot(ChooseNumber));
+  1:fKT2450_Show.fKt_2450.LoadSetup(TKeitley_SetupMemorySlot(ChooseNumber));
  end;
 end;
 
-function TKT2450_SetupMemoryPins.GetPinStr(Index: integer): string;
+function TKeitley_SetupMemoryPins.GetPinStr(Index: integer): string;
 begin
  case Index of
   0:Result:='Save Setup';
@@ -1403,6 +1413,12 @@ end;
 //  FreeAndNil(fSettingsShowSL);
 //  inherited;
 //end;
+
+constructor TKt_RangeShow.Create(ST: TStaticText; Kt_2450: TKt_2450);
+begin
+ fKt_2450:=Kt_2450;
+ inherited Create(ST,Kt_2450);
+end;
 
 function TKt_RangeShow.GetEnable: boolean;
 begin
@@ -1917,45 +1933,45 @@ end;
 
 { TKt_StringParameterShow }
 
-constructor TKt2450_StringParameterShow.Create(ST: TStaticText; Kt_2450: TKt_2450);
-begin
-  fKt_2450:=Kt_2450;
-  SomeAction();
-  fSettingsShowSL:=TStringList.Create;
-  SettingsShowSLFilling();
-  inherited Create(ST,fCaption,fSettingsShowSL);
-  HookParameterClick:=OkClick;
-end;
+//constructor TKeitley_StringParameterShow.Create(ST: TStaticText; Kt_2450: TKt_2450);
+//begin
+//  fKt_2450:=Kt_2450;
+//  SomeAction();
+//  fSettingsShowSL:=TStringList.Create;
+//  SettingsShowSLFilling();
+//  inherited Create(ST,fCaption,fSettingsShowSL);
+//  HookParameterClick:=OkClick;
+//end;
 
-destructor TKt2450_StringParameterShow.Destroy;
-begin
-  FreeAndNil(fSettingsShowSL);
-  inherited;
-end;
+//destructor TKeitley_StringParameterShow.Destroy;
+//begin
+//  FreeAndNil(fSettingsShowSL);
+//  inherited;
+//end;
 
 { TKt_BrightnessShow }
 
-procedure TKt2450_BrightnessShow.ObjectToSetting;
-begin
-// showmessage(inttostr(ord(fKt_2450.DisplayState)));
- Data:=ord(fKt_2450.DisplayState);
-end;
-
-procedure TKt2450_BrightnessShow.OkClick;
-begin
- fKt_2450.SetDisplayBrightness(TKt2450_DisplayState(Data));
-end;
-
-procedure TKt2450_BrightnessShow.SettingsShowSLFilling;
- var i:TKt2450_DisplayState;
-begin
- for I := Low(TKt2450_DisplayState) to High(TKt2450_DisplayState) do
-             fSettingsShowSL.Add(Kt2450_DisplayStateLabel[i]);
-end;
-
-procedure TKt2450_BrightnessShow.SomeAction;
-begin
- fCaption:='Brightness';
-end;
+//procedure TKeitley_BrightnessShow.ObjectToSetting;
+//begin
+//// showmessage(inttostr(ord(fKt_2450.DisplayState)));
+// Data:=ord(fKt_2450.DisplayState);
+//end;
+//
+//procedure TKeitley_BrightnessShow.OkClick;
+//begin
+// fKt_2450.SetDisplayBrightness(TKeitley_DisplayState(Data));
+//end;
+//
+//procedure TKeitley_BrightnessShow.SettingsShowSLFilling;
+// var i:TKeitley_DisplayState;
+//begin
+// for I := Low(TKeitley_DisplayState) to High(TKeitley_DisplayState) do
+//             fSettingsShowSL.Add(Keitley_DisplayStateLabel[i]);
+//end;
+//
+//procedure TKeitley_BrightnessShow.SomeAction;
+//begin
+// fCaption:='Brightness';
+//end;
 
 end.

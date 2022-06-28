@@ -53,7 +53,7 @@ const
 
 type
 
- TKt2450_SetupMemorySlot=0..4;
+ TKeitley_SetupMemorySlot=0..4;
  TKt2450_OutputTerminals=(kt_otFront, kt_otRear);
  TKt2450_Source=(kt_sVolt, kt_sCurr);
  TKt2450_SourceBool=array[TKt2450_Source]of boolean;
@@ -147,7 +147,7 @@ TKt2450_DigLineDirection=(kt_dd_in,  {працює на вхід, що означаї "1"-"0"
 
 TKt2450_DigLineDirections=array[TKt2450_DigLines] of  TKt2450_DigLineDirection;
 
-TKt2450_DisplayState=(kt_ds_on100,kt_ds_on75,kt_ds_on50,kt_ds_on25,
+TKeitley_DisplayState=(kt_ds_on100,kt_ds_on75,kt_ds_on50,kt_ds_on25,
                       kt_ds_off,kt_ds_black);
 
 TK2450_TrigLimitType=(kt_tlt_above, kt_tlt_below, kt_tlt_inside, kt_tlt_outside);
@@ -200,8 +200,9 @@ const
  Kt_2450_BufferSizeLimits:TLimitValues=(10,1e6);
  {загалом ємність всіх буферів - 4,500,000 стандартних
   записів або 20,000,000 компактних}
- Kt_2450_BeepDurationLimits:TLimitValues=(1e-3,1e2);
- Kt_2450_BeepFrequancyLimits:TLimitValues=(20,8000);
+
+ Keitley_BeepDurationLimits:TLimitValues=(1e-3,1e2);
+ Keitley_BeepFrequancyLimits:TLimitValues=(20,8000);
 
  KT2450_SenseLabels:array[TKt2450_Sense]of string=
  ('4-Wire','2-Wire');
@@ -235,10 +236,10 @@ Kt2450_DigLineTypeCommand:array[TKt2450_DigLineType]of string=
 Kt2450_DigLineDirectionCommand:array[TKt2450_DigLineDirection]of string=
        ('in','out','open','mast','acc');
 
-Kt2450_DisplayStateCommand:array[TKt2450_DisplayState]of string=
+Keitley_DisplayStateCommand:array[TKeitley_DisplayState]of string=
        ('on100','on75','on50','on25','off','blac');
 
-Kt2450_DisplayStateLabel:array[TKt2450_DisplayState]of string=
+Keitley_DisplayStateLabel:array[TKeitley_DisplayState]of string=
        ('Full brightness','75% brightness','50% brightness',
         '25% brightness','Display off','Display & indicators off');
 

@@ -3,7 +3,7 @@ unit DMM6500;
 interface
 
 uses
-  Keithley, IdTelnet, ShowTypes;
+  Keithley, IdTelnet, ShowTypes,Keitley2450Const;
 
 const
  DMM6500_Test='KEITHLEY INSTRUMENTS,MODEL DMM6500';
@@ -35,7 +35,10 @@ end;
 
 procedure TDMM6500.MyTraining;
 begin
- Test();
+Beep;
+//SetDisplayBrightness(kt_ds_on75);
+// GetDisplayBrightness;
+// Test();
 end;
 
 procedure TDMM6500.ProcessingStringByRootNode(Str: string);

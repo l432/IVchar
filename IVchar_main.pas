@@ -4449,8 +4449,10 @@ begin
  with DMM6500Form do
  begin
  DMM6500_Show := TDMM6500_Show.Create(DMM_6500,
-                                     [B_DM6500Test,
-                                     B_MyTrain]);
+                                     [B_DM6500Test,B_DM6500_Reset,
+                                     B_DM6500GetSetting,
+                                     B_MyTrain],
+                                     ST_DM6500_DispBr);
 //                                     [SB_Kt2450_OutPut,SB_Kt2450_Termin],
 //                                     [PKt2450SaveSetup,PKt2450LoadSetup],
 //                                     [ST_KT2450VolProt,ST_KT2450Mode,

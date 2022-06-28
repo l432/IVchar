@@ -132,7 +132,7 @@ TKT2450_SourceDevice=class;
    fMeter:TKT2450_Meter;
    fSourceMeter:TKT2450_SourceMeter;
    fSourceDevice:TKT2450_SourceDevice;
-   fDisplayState:TKt2450_DisplayState;
+//   fDisplayState:TKeitley_DisplayState;
    fHookForTrigDataObtain: TSimpleEvent;
    fTrigBlockNumber:word;
    fDragonBackTime:double;
@@ -149,7 +149,7 @@ TKT2450_SourceDevice=class;
    function StringToOutPutState(Str:string):boolean;
    function StringToMeasureUnit(Str:string):boolean;
    function StringToBufferIndexies(Str:string):boolean;
-   function StringToDisplayBrightness(Str:string):boolean;
+//   function StringToDisplayBrightness(Str:string):boolean;
    procedure StringToDigLineStatus(Str:string);
    procedure StringToArray(Str:string);
    procedure StringToMesuredData(Str:string;DataType:TKt2450_ReturnedData);
@@ -166,7 +166,7 @@ TKT2450_SourceDevice=class;
    procedure TrigIVLoop(i: Integer);
   protected
 //   procedure PrepareString;override;
-   procedure PrepareStringByRootNood;override;
+   procedure PrepareStringByRootNode;override;
    procedure ProcessingStringByRootNode(Str:string);override;
 //   procedure DeviceCreate(Nm:string);override;
    procedure DefaultSettings;override;
@@ -211,7 +211,7 @@ TKT2450_SourceDevice=class;
    property Meter:TKT2450_Meter read fMeter;
    property SourceMeter:TKT2450_SourceMeter read fSourceMeter;
    property SourceDevice:TKT2450_SourceDevice read fSourceDevice;
-   property DisplayState:TKt2450_DisplayState read fDisplayState;
+//   property DisplayState:TKeitley_DisplayState read fDisplayState;
    property DragonBackTime:double read fDragonBackTime write fDragonBackTime;
    property ToUseDragonBackTime:boolean read fToUseDragonBackTime write fToUseDragonBackTime;
    property Imax:double read fImax write fImax;
@@ -224,7 +224,7 @@ TKT2450_SourceDevice=class;
 
 //   function Test():boolean;override;
 //   procedure ProcessingString(Str:string);override;
-   procedure ResetSetting();
+//   procedure ResetSetting();
    procedure MyTraining();override;
 
    procedure OutPutChange(toOn:boolean);
@@ -237,11 +237,11 @@ TKT2450_SourceDevice=class;
    procedure ClearUserScreen();
    procedure TextToUserScreen(top_text:string='';bottom_text:string='');
 
-   procedure SaveSetup(SlotNumber:TKt2450_SetupMemorySlot);
-   procedure LoadSetup(SlotNumber:TKt2450_SetupMemorySlot);
-   procedure LoadSetupPowerOn(SlotNumber:TKt2450_SetupMemorySlot);
+//   procedure SaveSetup(SlotNumber:TKeitley_SetupMemorySlot);
+   procedure LoadSetup(SlotNumber:TKeitley_SetupMemorySlot);
+   procedure LoadSetupPowerOn(SlotNumber:TKeitley_SetupMemorySlot);
    procedure UnloadSetupPowerOn();
-   procedure RunningMacroScript(ScriptName:string);
+//   procedure RunningMacroScript(ScriptName:string);
 
    procedure SetTerminal(Terminal:TKt2450_OutputTerminals);
    {вих≥д на передню чи задню панель}
@@ -489,11 +489,11 @@ TKT2450_SourceDevice=class;
          0 €кщо низький
         -1 €кщо не отримали в≥дпов≥дь}
 
-   procedure SetDisplayBrightness(State:TKt2450_DisplayState);
-   function GetDisplayBrightness():boolean;
+//   procedure SetDisplayBrightness(State:TKeitley_DisplayState);
+//   function GetDisplayBrightness():boolean;
 
-   procedure Beep(Freq:word=600;Duration:double=0.1);
-   {звук частотою Freq √ц прот€гом Duration секунд}
+//   procedure Beep(Freq:word=600;Duration:double=0.1);
+//   {звук частотою Freq √ц прот€гом Duration секунд}
 
    procedure ConfigMeasureCreate(ListName:string=MyMeasList);
    procedure ConfigSourceCreate(ListName:string=MySourceList);
@@ -514,7 +514,7 @@ TKT2450_SourceDevice=class;
    €кщо ItemIndex=0, то записуЇтьс€ у к≥нець списку}
    procedure ConfigSourceStore(ListName:string=MySourceList;ItemIndex:word=0);
 
-   Procedure GetParametersFromDevice;
+   Procedure GetParametersFromDevice;override;
 
    Procedure MeasureSimple();overload;
    {проводитьс€ вим≥рюванн€ ст≥льки раз≥в, ск≥льки
@@ -776,22 +776,24 @@ begin
  Result:=floattostr(1e-8*Power(10,ord(Range)-1));
 end;
 
-procedure TKt_2450.ResetSetting;
-begin
-//  *RST
-  SetupOperation(2,0,0,False);
-end;
+//procedure TKt_2450.ResetSetting;
+//begin
+////  *RST
+//  SetupOperation(2,0,0,False);
+//end;
 
-procedure TKt_2450.RunningMacroScript(ScriptName: string);
-begin
-//  SCR:RUN "ScriptName"
-  fAdditionalString:=StringToInvertedCommas(ScriptName);
-  SetupOperation(8);
-end;
+//procedure TKt_2450.RunningMacroScript(ScriptName: string);
+//begin
+////  SCR:RUN "ScriptName"
+//  fAdditionalString:=StringToInvertedCommas(ScriptName);
+//  SetupOperation(8);
+//end;
 
 procedure TKt_2450.DefaultSettings;
  var i:integer;
 begin
+ inherited;
+
  fIsTripped:=False;
  fSourceType:=kt_sVolt;
  fMeasureFunction:=kt_mCurrent;
@@ -800,7 +802,6 @@ begin
  fCurrentLimit:=Kt_2450_CurrentLimDef;
  fTerminal:=kt_otFront;
  fOutPutOn:=False;
-// fResistanceCompencateOn:=False;
  for I := ord(Low(TKt2450_Measure)) to ord(High(TKt2450_Measure)) do
    begin
    fSences[TKt2450_Measure(i)]:=kt_s2wire;
@@ -821,8 +822,8 @@ begin
    end;
  for I := ord(Low(TKt2450_Source)) to ord(High(TKt2450_Source)) do
    fOutputOffState[TKt2450_Source(i)]:=kt_oos_norm;
+
  fMode:=ModeDetermination();
-// fMode:=kt_md_sVmP;
  fSourceVoltageRange:=kt_vrAuto;
  fSourceCurrentRange:=kt_crAuto;
  fMeasureVoltageRange:=kt_vrAuto;
@@ -843,7 +844,7 @@ begin
    end;
  fDLActive:=1;
 
- fDisplayState:=kt_ds_on25;
+// fDisplayState:=kt_ds_on25;
  fTrigBlockNumber:=1;
  fSweepWasCreated:=False;
 end;
@@ -965,12 +966,12 @@ begin
  Result:=(fDevice.Value=2);
 end;
 
-function TKt_2450.GetDisplayBrightness: boolean;
-begin
- QuireOperation(6,30);
- Result:=(fDevice.Value<>ErResult);
-// if Result then fSourceDelay[Source]:=fDevice.Value;
-end;
+//function TKt_2450.GetDisplayBrightness: boolean;
+//begin
+// QuireOperation(6,30);
+// Result:=(fDevice.Value<>ErResult);
+//// if Result then fSourceDelay[Source]:=fDevice.Value;
+//end;
 
 function TKt_2450.GetDisplayDigitsNumber: boolean;
 begin
@@ -1130,6 +1131,7 @@ end;
 
 procedure TKt_2450.GetParametersFromDevice;
 begin
+ inherited;
  if not(GetVoltageProtection()) then Exit;
  if not(GetVoltageLimit()) then Exit;
  if not(GetCurrentLimit()) then Exit;
@@ -1155,7 +1157,7 @@ begin
  if not(GetHighCapacitanceStates()) then Exit;
  if not(GetDisplayDNs()) then Exit;
  if not(GetCount()) then Exit;
- if not(GetDisplayBrightness()) then Exit;
+// if not(GetDisplayBrightness()) then Exit;
 end;
 
 function TKt_2450.IsReadBackOn(Source: TKt2450_Source): boolean;
@@ -1399,14 +1401,14 @@ begin
  Result:=IsLimitExcided(13,10);
 end;
 
-procedure TKt_2450.LoadSetup(SlotNumber: TKt2450_SetupMemorySlot);
+procedure TKt_2450.LoadSetup(SlotNumber: TKeitley_SetupMemorySlot);
 begin
 // *RCL <n>
  fAdditionalString:=inttostr(SlotNumber);
  SetupOperation(1);
 end;
 
-procedure TKt_2450.LoadSetupPowerOn(SlotNumber: TKt2450_SetupMemorySlot);
+procedure TKt_2450.LoadSetupPowerOn(SlotNumber: TKeitley_SetupMemorySlot);
 begin
 //  SYST:POS SAV1
   fAdditionalString:='sav'+inttostr(SlotNumber);
@@ -1915,7 +1917,7 @@ begin
 end;
 
 //procedure TKt_2450.PrepareString;
-procedure TKt_2450.PrepareStringByRootNood;
+procedure TKt_2450.PrepareStringByRootNode;
 begin
 // (fDevice as TKeitleyDevice).ClearStringToSend;
 // (fDevice as TKeitleyDevice).SetStringToSend(RootNoodKeitley[fRootNode]);
@@ -1928,6 +1930,7 @@ begin
           end;
     end;  // fRootNode=5
   6:case fFirstLevelNode of
+      30:;
       12,13,14:
         begin
         JoinToStringToSend(RootNoodKeitley[fFirstLevelNode]);
@@ -1935,7 +1938,8 @@ begin
         end;
       else JoinToStringToSend(FirstNodeKt_2450[fFirstLevelNode]);
      end;  // fRootNode=6
-  7,9:JoinToStringToSend(FirstNodeKt_2450[fFirstLevelNode]);
+//  7,
+  9:JoinToStringToSend(FirstNodeKt_2450[fFirstLevelNode]);
   11:case fFirstLevelNode of
        12..13:case fLeafNode of
                 0:JoinToStringToSend(RootNoodKeitley[fFirstLevelNode]);
@@ -2053,14 +2057,14 @@ begin
             then fDevice.Value:=ord(fOutputOffState[TKt2450_Source(fFirstLevelNode)]);
           end;
     end; //fRootNode=5
-  6:if fFirstLevelNode=30
-       then
-        begin
-        if StringToDisplayBrightness(AnsiLowerCase(Str))
-            then fDevice.Value:=ord(fDisplayState);
-
-        end
-       else fDevice.Value:=StrToInt(Str);
+//  6:if fFirstLevelNode=30
+//       then
+//        begin
+//        if StringToDisplayBrightness(AnsiLowerCase(Str))
+//            then fDevice.Value:=ord(fDisplayState);
+//
+//        end
+//       else fDevice.Value:=StrToInt(Str);
   9:if StringToTerminals(AnsiLowerCase(Str))
           then fDevice.Value:=ord(fTerminal);
   11:case fFirstLevelNode of
@@ -2110,12 +2114,12 @@ begin
  end;
 end;
 
-procedure TKt_2450.SaveSetup(SlotNumber: TKt2450_SetupMemorySlot);
-begin
-// *SAV <n>
- fAdditionalString:=inttostr(SlotNumber);
- SetupOperation(3);
-end;
+//procedure TKt_2450.SaveSetup(SlotNumber: TKeitley_SetupMemorySlot);
+//begin
+//// *SAV <n>
+// fAdditionalString:=inttostr(SlotNumber);
+// SetupOperation(3);
+//end;
 
 procedure TKt_2450.SetAzeroState(Measure: TKt2450_Measure; toOn: boolean);
 begin
@@ -2197,13 +2201,13 @@ begin
  SetupOperation(23,36);
 end;
 
-procedure TKt_2450.SetDisplayBrightness(State: TKt2450_DisplayState);
-begin
-//:DISP:LIGH:STAT <brightness>
- fDisplayState:=State;
- fAdditionalString:=Kt2450_DisplayStateCommand[State];
- SetupOperation(6,30);
-end;
+//procedure TKt_2450.SetDisplayBrightness(State: TKeitley_DisplayState);
+//begin
+////:DISP:LIGH:STAT <brightness>
+// fDisplayState:=State;
+// fAdditionalString:=Keitley_DisplayStateCommand[State];
+// SetupOperation(6,30);
+//end;
 
 procedure TKt_2450.SetDisplayDigitsNumber(Number: Kt2450DisplayDigitsNumber);
 begin
@@ -2605,20 +2609,20 @@ begin
      end;
 end;
 
-function TKt_2450.StringToDisplayBrightness(Str: string): boolean;
-  var i:TKt2450_DisplayState;
-begin
- Result:=False;
- for I := Low(TKt2450_DisplayState) to High(TKt2450_DisplayState) do
-  begin
-   if Str=Kt2450_DisplayStateCommand[i] then
-     begin
-       fDisplayState:=i;
-       Result:=True;
-       Break;
-     end;
-  end;
-end;
+//function TKt_2450.StringToDisplayBrightness(Str: string): boolean;
+//  var i:TKeitley_DisplayState;
+//begin
+// Result:=False;
+// for I := Low(TKeitley_DisplayState) to High(TKeitley_DisplayState) do
+//  begin
+//   if Str=Keitley_DisplayStateCommand[i] then
+//     begin
+//       fDisplayState:=i;
+//       Result:=True;
+//       Break;
+//     end;
+//  end;
+//end;
 
 function TKt_2450.StringToMeasureFunction(Str: string): boolean;
   var i:TKt2450_Measure;
@@ -3088,14 +3092,14 @@ begin
   SetupOperation(19,3);
 end;
 
-procedure TKt_2450.Beep(Freq: word; Duration: double);
-begin
-//:SYST:BEEP <frequency>, <duration>
-fAdditionalString:=IntToStr(NumberMap(Freq,Kt_2450_BeepFrequancyLimits))
-                   +PartDelimiter
-                   +floattostr(NumberMap(Duration,Kt_2450_BeepDurationLimits));
- SetupOperation(7,34);
-end;
+//procedure TKt_2450.Beep(Freq: word; Duration: double);
+//begin
+////:SYST:BEEP <frequency>, <duration>
+//fAdditionalString:=IntToStr(NumberMap(Freq,Keitley_BeepFrequancyLimits))
+//                   +PartDelimiter
+//                   +floattostr(NumberMap(Duration,Keitley_BeepDurationLimits));
+// SetupOperation(7,34);
+//end;
 
 procedure TKt_2450.BufferClear(BufName: string);
 begin

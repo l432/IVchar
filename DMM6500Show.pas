@@ -53,8 +53,6 @@ type
 //
 //   fSourceMeterValueLab:TLabel;
 //
-//   fBrightnessShow:TKt2450_BrightnessShow;
-//
 //   procedure SourceShowCreate();
 //   procedure SourceShowFree();
 //
@@ -64,7 +62,7 @@ type
 //   procedure SweetShowCreate();
 //
 //   procedure ResetButtonClick(Sender:TObject);
-//   procedure GetSettingButtonClick(Sender:TObject);
+
 //   procedure RefreshZeroClick(Sender:TObject);
 //   procedure SourceMeasureClick(Sender:TObject);
 //   procedure AutoZeroClick(Sender:TObject);
@@ -83,10 +81,13 @@ type
 //   procedure ModeOkClick();
 //   procedure CountOkClick();
 //    procedure ReCreateElements;
+  protected
+    procedure GetSettingButtonClick(Sender:TObject);override;
   public
 //   property MeterShow:TKt_2450_MeterShow read fMeterShow;
    Constructor Create(DMM6500:TDMM6500;
-                      ButtonsKeitley:Array of TButton);
+                      ButtonsKeitley:Array of TButton;
+                      STextsBrightness:TStaticText);
 //                      SpeedButtons:Array of TSpeedButton;
 //                      Panels:Array of TPanel;
 //                      STexts:array of TStaticText;
@@ -122,10 +123,46 @@ implementation
 
 { TDMM6500_Show }
 
-constructor TDMM6500_Show.Create(DMM6500: TDMM6500; ButtonsKeitley: array of TButton);
+constructor TDMM6500_Show.Create(DMM6500: TDMM6500;
+                  ButtonsKeitley: array of TButton;
+                  STextsBrightness:TStaticText);
 begin
-  inherited Create(DMM6500,ButtonsKeitley);
+
+  inherited Create(DMM6500,ButtonsKeitley,STextsBrightness);
   fDMM6500:=DMM6500;
+
+
+  ObjectToSetting();
+end;
+
+procedure TDMM6500_Show.GetSettingButtonClick(Sender: TObject);
+begin
+//  if not(DeviceEthernetisAbsent) then
+//    begin
+//    fKt_2450.GetTerminal();
+//    fKt_2450.IsOutPutOn();
+//    fKt_2450.GetVoltageProtection;
+//    fKt_2450.GetDeviceMode;
+//    fKt_2450.IsResistanceCompencateOn();
+//    fKt_2450.GetVoltageLimit();
+//    fKt_2450.GetCurrentLimit();
+//    fKt_2450.IsReadBackOn();
+//    fKt_2450.GetSenses();
+//    fKt_2450.GetOutputOffStates;
+//    fKt_2450.GetSourceRanges();
+//    fKt_2450.GetMeasureRanges();
+//    fKt_2450.GetMeasureLowRanges();
+//    fKt_2450.IsAzeroStateOn();
+//    fKt_2450.IsSourceDelayAutoOn();
+//    fKt_2450.GetSourceDelay();
+//    fKt_2450.GetSourceValue();
+//    fKt_2450.GetMeasureTime();
+//    fKt_2450.IsHighCapacitanceOn();
+//    fKt_2450.GetDisplayDigitsNumber();
+//    fKt_2450.GetCount();
+//    end;
+
+  inherited;
 end;
 
 end.
