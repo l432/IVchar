@@ -44,7 +44,11 @@ uses
   FormKT2450 in 'FormKT2450.pas' {KT2450Form},
   PsevdoMainForm in 'PsevdoMainForm.pas' {Main},
   Keitley2450Device in 'Keitley2450Device.pas',
-  Keithley in 'Keithley.pas';
+  Keithley in 'Keithley.pas',
+  FormDMM6500 in 'FormDMM6500.pas' {DMM6500Form},
+  DMM6500 in 'DMM6500.pas',
+  KeitleyShow in 'KeitleyShow.pas',
+  DMM6500Show in 'DMM6500Show.pas';
 
 {$R *.res}
 
@@ -53,6 +57,7 @@ begin
   Application.MainFormOnTaskbar := True;
   Application.CreateForm(TMain, Main);
   Application.CreateForm(TKT2450Form, KT2450Form);
+  Application.CreateForm(TDMM6500Form, DMM6500Form);
   Application.CreateForm(TIVchar, IVchar);
   //  KT2450Form.Hide;
   Main.Hide;

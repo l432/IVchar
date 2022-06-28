@@ -135,7 +135,7 @@ object KT2450Form: TKT2450Form
   end
   object BClose: TButton
     Left = 5
-    Top = 4
+    Top = 3
     Width = 71
     Height = 25
     Caption = 'UnDock'

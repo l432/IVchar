@@ -98,8 +98,10 @@ type
   protected
    fTelnet:TIdTelnet;
    fIPAdressShow: TIPAdressShow;
-//   procedure PrepareString;override;
-//   procedure DeviceCreate(Nm:string);override;
+   procedure PrepareString;override;
+   procedure PrepareStringByRootNood;virtual;
+   procedure DeviceCreate(Nm:string);override;
+   procedure ProcessingStringByRootNode(Str:string);virtual;
 //   procedure DefaultSettings;override;
   public
 //   SweepParameters:array[TKt2450_Source]of TKt_2450_SweepParameters;
@@ -152,10 +154,10 @@ type
                Nm:string);
 //   destructor Destroy; override;
 //
-//   function Test():boolean;override;
-//   procedure ProcessingString(Str:string);override;
+   function Test():boolean;override;
+   procedure ProcessingString(Str:string);override;
 //   procedure ResetSetting();
-//   procedure MyTraining();
+   procedure MyTraining();virtual;
 //
 //   procedure OutPutChange(toOn:boolean);
 //   {вмикає/вимикає вихід приладу}
@@ -520,7 +522,7 @@ type
 implementation
 
 uses
-  OlegType, Dialogs;
+  OlegType, Dialogs, Keitley2450Const, SysUtils;
 
 { TKeitleyDevice }
 
@@ -564,6 +566,229 @@ begin
  fTelnet:=Telnet;
  fIPAdressShow:=IPAdressShow;
  inherited Create(Nm);
+end;
+
+procedure TKeitley.DeviceCreate(Nm: string);
+begin
+  fDevice:=TKeitleyDevice.Create(Self,fTelnet,fIPAdressShow,Nm);
+end;
+
+procedure TKeitley.MyTraining;
+begin
+
+end;
+
+procedure TKeitley.PrepareString;
+begin
+ (fDevice as TKeitleyDevice).ClearStringToSend;
+ (fDevice as TKeitleyDevice).SetStringToSend(RootNoodKeitley[fRootNode]);
+ PrepareStringByRootNood;
+// case fRootNode of
+//  5:case fFirstLevelNode of
+//     5: JoinToStringToSend(FirstNodeKt_2450[fFirstLevelNode]);
+//     0..1:begin
+//           JoinToStringToSend(RootNoodKt_2450[12+fFirstLevelNode]);
+//           JoinToStringToSend(FirstNodeKt_2450[fLeafNode]);
+//          end;
+//    end;  // fRootNode=5
+//  6:case fFirstLevelNode of
+//      12,13,14:
+//        begin
+//        JoinToStringToSend(RootNoodKt_2450[fFirstLevelNode]);
+//        JoinToStringToSend(FirstNodeKt_2450[fLeafNode]);
+//        end;
+//      else JoinToStringToSend(FirstNodeKt_2450[fFirstLevelNode]);
+//     end;  // fRootNode=6
+//  7,9:JoinToStringToSend(FirstNodeKt_2450[fFirstLevelNode]);
+//  11:case fFirstLevelNode of
+//       12..13:case fLeafNode of
+//                0:JoinToStringToSend(RootNoodKt_2450[fFirstLevelNode]);
+//                else
+//                   begin
+//                    JoinToStringToSend(RootNoodKt_2450[fFirstLevelNode]);
+//                    JoinToStringToSend(FirstNodeKt_2450[fLeafNode]);
+//                    if fIsTripped then JoinToStringToSend(FirstNodeKt_2450[11]);
+//                   end;
+//              end;
+//       55:JoinToStringToSend(RootNoodKt_2450[15]);
+//       23:case fLeafNode of
+//             79,80:begin
+//                   JoinToStringToSend(FirstNodeKt_2450[fFirstLevelNode]);
+//                   JoinToStringToSend(RootNoodKt_2450[fLeafNode-79+12]);
+//                   JoinToStringToSend(FirstNodeKt_2450[24]);
+//                   end;
+//             else
+//                 begin
+//                 JoinToStringToSend(FirstNodeKt_2450[fFirstLevelNode]);
+//                 JoinToStringToSend(RootNoodKt_2450[fLeafNode]);
+//                 end;
+//          end;
+//        24:begin
+//            JoinToStringToSend(RootNoodKt_2450[fFirstLevelNode]);
+//            JoinToStringToSend(FirstNodeKt_2450[23]);
+//            JoinToStringToSend(ConfLeafNodeKt_2450[fLeafNode]);
+//           end;
+//        25:begin
+//            JoinToStringToSend(FirstNodeKt_2450[fFirstLevelNode]);
+//            case fLeafNode of
+//              1:JoinToStringToSend(SweepParameters[fSourceType].Lin);
+//              2:JoinToStringToSend(SweepParameters[fSourceType].LinStep);
+//              3:JoinToStringToSend(SweepParameters[fSourceType].List);
+//              4:JoinToStringToSend(SweepParameters[fSourceType].Log);
+//            end;
+//           end;
+//     end;// fRootNode=11
+//  12..14:
+//       begin
+//         JoinToStringToSend(FirstNodeKt_2450[fFirstLevelNode]);
+//         case fLeafNode of
+//          18,19:JoinToStringToSend(FirstNodeKt_2450[fLeafNode]);
+//         end;
+//       end; // fRootNode=12..14
+//  17:if fFirstLevelNode=1 then JoinToStringToSend(fAdditionalString);
+//  19:begin
+//       JoinToStringToSend(FirstNodeKt_2450[fFirstLevelNode]);
+//       case fFirstLevelNode of
+//        31:if fLeafNode=1 then JoinToStringToSend(Buffer.Get)
+//                           else fAdditionalString:=Buffer.ReSize;
+//        32:if fLeafNode=1 then JoinToStringToSend(Buffer.Get)
+//                           else fAdditionalString:=Buffer.FillModeChange;
+//        33:JoinToStringToSend(Buffer.DataDemandArray(TKt2450_ReturnedData(fLeafNode)));
+//        35:case fLeafNode of
+//            1:JoinToStringToSend(Buffer.Get);
+//            2:JoinToStringToSend(Buffer.LimitIndexies)
+//           end;
+//       end;
+//      end; // fRootNode=19
+//  21:case fFirstLevelNode of
+//       1:JoinToStringToSend(Buffer.Get);
+//       2..5:JoinToStringToSend(Buffer.DataDemand(TKt2450_ReturnedData(fFirstLevelNode-2)))
+//     end; // fRootNode=21
+//  22:case fFirstLevelNode of
+//       1:JoinToStringToSend(Buffer.Get);
+//       2..5:JoinToStringToSend(Buffer.DataDemand(TKt2450_ReturnedData(fFirstLevelNode-2)))
+//     end; // fRootNode=22
+//  23:case fFirstLevelNode of
+//        36,37:JoinToStringToSend(AnsiReplaceStr(FirstNodeKt_2450[fFirstLevelNode],'#',inttostr(fDLActive)));
+//     end; // fRootNode=23
+//  24:begin
+//        JoinToStringToSend(FirstNodeKt_2450[fFirstLevelNode]);
+//        JoinToStringToSend(ConfLeafNodeKt_2450[fLeafNode]);
+//     end; // fRootNode=24
+//  26:case fFirstLevelNode of
+//        38,44,43:JoinToStringToSend(FirstNodeKt_2450[fFirstLevelNode]);
+//        40,41,21:begin
+//            JoinToStringToSend(FirstNodeKt_2450[39]);
+//            JoinToStringToSend(FirstNodeKt_2450[fFirstLevelNode]);
+//            JoinToStringToSend(TrigLeafNodeKt_2450[fLeafNode]);
+//            fAdditionalString:=IntTostr(fTrigBlockNumber)+PartDelimiter+fAdditionalString;
+//            inc(fTrigBlockNumber);
+//           end;
+//        24,11:begin
+//            JoinToStringToSend(FirstNodeKt_2450[39]);
+//            JoinToStringToSend(RootNoodKt_2450[fFirstLevelNode]);
+//            JoinToStringToSend(TrigLeafNodeKt_2450[fLeafNode]);
+//            fAdditionalString:=IntTostr(fTrigBlockNumber)+PartDelimiter+fAdditionalString;
+//            inc(fTrigBlockNumber);
+//           end;
+//         42:begin
+//             JoinToStringToSend(FirstNodeKt_2450[39]);
+//             JoinToStringToSend(FirstNodeKt_2450[fFirstLevelNode]);
+//             fAdditionalString:=IntTostr(fTrigBlockNumber)+PartDelimiter+fAdditionalString;
+//             inc(fTrigBlockNumber);
+//            end;
+//     end;// fRootNode=26
+// end;
+
+ if fIsSuffix then JoinAddString;
+end;
+
+procedure TKeitley.PrepareStringByRootNood;
+begin
+
+end;
+
+procedure TKeitley.ProcessingString(Str: string);
+begin
+ Str:=Trim(Str);
+ ProcessingStringByRootNode(Str);
+// case fRootNode of
+//  0:if pos(Kt_2450_Test,Str)<>0 then fDevice.Value:=314;
+//  5:case fFirstLevelNode of
+//     5,55:fDevice.Value:=StrToInt(Str);
+//     0..1:begin
+//          if StringToOutPutState(AnsiLowerCase(Str))
+//            then fDevice.Value:=ord(fOutputOffState[TKt2450_Source(fFirstLevelNode)]);
+//          end;
+//    end; //fRootNode=5
+//  6:if fFirstLevelNode=30
+//       then
+//        begin
+//        if StringToDisplayBrightness(AnsiLowerCase(Str))
+//            then fDevice.Value:=ord(fDisplayState);
+//
+//        end
+//       else fDevice.Value:=StrToInt(Str);
+//  9:if StringToTerminals(AnsiLowerCase(Str))
+//          then fDevice.Value:=ord(fTerminal);
+//  11:case fFirstLevelNode of
+//        23:begin
+//           StringToArray(Str);
+//           if fDataVector.Count>0 then fDevice.Value:=1;
+//           end;
+//        else
+//           case fLeafNode of
+//            10:if StringToVoltageProtection(AnsiLowerCase(Str),fVoltageProtection)
+//                then fDevice.Value:=ord(fVoltageProtection);
+//            0,12..13,15,21:fDevice.Value:=SCPI_StringToValue(Str);
+//            55:if StringToSourceType(AnsiLowerCase(Str)) then fDevice.Value:=ord(fSourceType);
+//            16,17,22,27:fDevice.Value:=StrToInt(Str);
+//           end;
+//     end; //fRootNode=11
+//   12..14:case fFirstLevelNode of
+//             7,9,20: fDevice.Value:=StrToInt(Str);
+//             14: if StringToMeasureUnit(AnsiLowerCase(Str))
+//                    then fDevice.Value:=ord(fMeasureUnits[TKt2450_Measure(fFirstLevelNode-12)]);
+//             16,15,26:fDevice.Value:=SCPI_StringToValue(Str);
+//          end;   //fRootNode=12..14
+//   15:if StringToMeasureFunction(AnsiLowerCase(Str)) then fDevice.Value:=ord(fMeasureFunction);
+//   19:case fFirstLevelNode of
+//          31: fDevice.Value:=StrToInt(Str);
+//          32:if Buffer.StringToFillMode(AnsiLowerCase(Str))
+//                then fDevice.Value:=ord(TKt2450_BufferFillMode(Buffer.FillMode));
+//          33:StringToMesuredDataArray(AnsiReplaceStr(Str,',',' '),TKt2450_ReturnedData(fLeafNode));
+//          35:case fLeafNode of
+//              0,1:fDevice.Value:=StrToInt(Str);
+//              2:if StringToBufferIndexies(Str) then fDevice.Value:=1;
+//             end;
+//      end; //fRootNode=19
+//   20:fDevice.Value:=StrToInt(Str);
+//   21:case fFirstLevelNode of
+//       0,1:fDevice.Value:=SCPI_StringToValue(Str);
+//       2..5:StringToMesuredData(AnsiReplaceStr(Str,',',' '),TKt2450_ReturnedData(fFirstLevelNode-2));
+//       end; //fRootNode=21
+//   22:case fFirstLevelNode of
+//       0,1:fDevice.Value:=SCPI_StringToValue(Str);
+//       2..5:StringToMesuredData(AnsiReplaceStr(Str,',',' '),TKt2450_ReturnedData(fFirstLevelNode-2));
+//      end;  //fRootNode=22
+//   23:case fFirstLevelNode of
+//       36:StringToDigLineStatus(AnsiLowerCase(Str));
+//       37:fDevice.Value:=StrToInt(Str);
+//      end;
+// end;
+
+end;
+
+procedure TKeitley.ProcessingStringByRootNode(Str:string);
+begin
+
+end;
+
+function TKeitley.Test: boolean;
+begin
+// *IDN?
+ QuireOperation(0,0,0,False);
+ Result:=(fDevice.Value=314);
 end;
 
 end.

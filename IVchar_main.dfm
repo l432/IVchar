@@ -37,7 +37,7 @@ object IVchar: TIVchar
     Top = 0
     Width = 788
     Height = 530
-    ActivePage = TS_DM6500
+    ActivePage = TS_Kt2450
     Align = alTop
     Font.Charset = RUSSIAN_CHARSET
     Font.Color = clWindowText
@@ -9320,7 +9320,7 @@ object IVchar: TIVchar
         Font.Style = [fsBold]
         ParentFont = False
         TabOrder = 0
-        OnClick = B_Kt2450driveClick
+        OnClick = B_DM6500driveClick
       end
     end
   end

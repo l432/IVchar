@@ -43,7 +43,12 @@
     <DCCReference Include="DACR2Ru.pas" />
     <DCCReference Include="Dependence.pas" />
     <DCCReference Include="DependOnArduino.pas" />
+    <DCCReference Include="DMM6500.pas" />
+    <DCCReference Include="DMM6500Show.pas" />
     <DCCReference Include="ET1255.pas" />
+    <DCCReference Include="FormDMM6500.pas">
+      <Form>DMM6500Form</Form>
+    </DCCReference>
     <DCCReference Include="FormKT2450.pas">
       <Form>KT2450Form</Form>
     </DCCReference>
@@ -59,6 +64,7 @@
     <DCCReference Include="Keithley2450Show.pas" />
     <DCCReference Include="Keitley2450Const.pas" />
     <DCCReference Include="Keitley2450Device.pas" />
+    <DCCReference Include="KeitleyShow.pas" />
     <DCCReference Include="MCP3424u.pas" />
     <DCCReference Include="MCP9808u.pas" />
     <DCCReference Include="MDevice.pas" />

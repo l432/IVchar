@@ -787,6 +787,7 @@ type
     procedure BBCloseClick(Sender: TObject);
     procedure B_Kt2450driveClick(Sender: TObject);
     procedure CBuseKT2450Click(Sender: TObject);
+    procedure B_DM6500driveClick(Sender: TObject);
   private
     procedure ComponentView;
     {початкове налаштування різних компонентів}
@@ -1061,8 +1062,10 @@ type
     IscVocOnTimeIsRun:boolean;
     IVMeasResult,IVMRFirst,IVMRSecond:TIVMeasurementResult;
     Key:string;
-    Kt2450_IPAdressShow:TIPAdressShow;
+    Kt2450_IPAdressShow,DMM6500_IPAdressShow:TIPAdressShow;
     procedure Kt2450_Create;
+    procedure DMM6500_Create;
+
   end;
 
 const
@@ -1078,7 +1081,7 @@ implementation
 
 uses
   ArduinoADC, OlegFunction, AD5752R, IT6332B, Keithley2450Show, FormKT2450, 
-  PsevdoMainForm, Keitley2450Const;
+  PsevdoMainForm, Keitley2450Const, FormDMM6500, DMM6500, DMM6500Show;
 
 {$R *.dfm}
 
@@ -2906,6 +2909,16 @@ begin
     CloseFile(FF);
 end;
 
+procedure TIVchar.B_DM6500driveClick(Sender: TObject);
+begin
+  DMM6500Form.Parent := IVchar.TS_DM6500;
+  DMM6500Form.BorderStyle:=bsNone;
+  DMM6500Form.Align := alClient;
+  DMM6500Form.BClose.Caption:='UnDock';
+  DMM6500Form.Color:=clBtnFace;
+  DMM6500Form.Height:=DMM6500Form.Height-20;
+end;
+
 procedure TIVchar.B_IT6332_TestClick(Sender: TObject);
 // var StringToSend:string;
 begin
@@ -3237,11 +3250,13 @@ end;
 procedure TIVchar.FormShow(Sender: TObject);
 begin
  Kt2450_IPAdressShow.IPUpDate;
+ DMM6500_IPAdressShow.IPUpDate;
 end;
 
 procedure TIVchar.FormsTunning;
 begin
  B_Kt2450drive.Click;
+ B_DM6500drive.Click;
 end;
 
 procedure TIVchar.PCChange(Sender: TObject);
@@ -3920,6 +3935,7 @@ begin
   GDS_Create();
   IB6332_Create();
   Kt2450_Create();
+  DMM6500_Create();
 
 end;
 
@@ -4410,6 +4426,73 @@ begin
  if Measurement.Name= 'B7-21 (2)' then Result:=V721_II.Diapazon;
  if Measurement.Name= 'UT70B' then Result:=UT70B.Diapazon;
  if Measurement.Name= 'UT70C' then Result:=UT70C.Diapazon;
+end;
+
+procedure TIVchar.DMM6500_Create;
+begin
+
+ with DMM6500Form do
+ begin
+ DMM6500_IPAdressShow:=TIPAdressShow.Create('DMM6500IP',
+                              UD_DM6500Ip1,UD_DM6500Ip2,
+                              UD_DM6500Ip3,UD_DM6500Ip4,
+                              E_DM6500Ip1, E_DM6500Ip2,
+                              E_DM6500Ip3,E_DM6500Ip4,
+                              B_DM6500UpDate);
+
+ TMyGroupBox(GB_DM6500IP).Canvas.Rectangle(0,0,100,100);
+ end;
+
+
+ DMM_6500 := TDMM6500.Create(DMM6500Form.TelnetDMM6500,DMM6500_IPAdressShow);
+
+ with DMM6500Form do
+ begin
+ DMM6500_Show := TDMM6500_Show.Create(DMM_6500,
+                                     [B_DM6500Test,
+                                     B_MyTrain]);
+//                                     [SB_Kt2450_OutPut,SB_Kt2450_Termin],
+//                                     [PKt2450SaveSetup,PKt2450LoadSetup],
+//                                     [ST_KT2450VolProt,ST_KT2450Mode,
+//                                     ST_KT2450MCount,ST_KT2450_DispBr,
+//                                     ST_Kt2450_OutPut,
+//                                     ST_KT2450DelaySource,
+//                                     ST_KT2450SourceValue,ST_KT2450LimitSource,
+//                                     ST_KT2450SouceRange,
+//                                     STKT2450_ResComp,ST_KT2450DisplDN,
+//                                     ST_KT2450_Sense,
+//                                     ST_KT2450MeasureRange,
+//                                     ST_KT2450MeasTime,ST_KT2450MeasureLowRange],
+//                                     [L_KT2450VolProt,L_KT2450Mode,
+//                                     L_KT2450MCount, LKT2450_SourceMeasure,
+//                                     L_Kt2450_OutPut,L_KT2450DelaySource,
+//                                     L_KT2450SourceValue,L_KT2450LimitSource,
+//                                     LKT2450_SourceValueRange,
+//                                     LKT2450_ResComp,L_KT2450MeasTime,
+//                                     L_KT2450MeasureLowRange],
+//                                     [CB_KT2450ReadBack,CB_KT2450DelaySource,
+//                                     CB_KT2450SourHCap,
+//                                      CB_KT2450Azero],
+//                                     GB_Kt2450_Mes,
+//                                     [ST_KT2450SweepStart,ST_KT2450SweepStop,
+//                                      ST_KT2450SweepDelay,ST_KT2450SweepStepPoint,
+//                                      ST_KT2450SweepCount,ST_KT2450SweepRange],
+//                                     [L_KT2450SweepStart,L_KT2450SweepStop,
+//                                      L_KT2450SweepDelay,L_KT2450SweepStepPoint,
+//                                      L_KT2450SweepCount,L_KT2450SweepRange],
+//                                      [B_KT2450SweepCreate,B_KT2450SweepInit,
+//                                       B_KT2450SweepStop,B_KT2450SweepPause,
+//                                       B_KT2450SweepResume],
+//                                       CB_KT2450SweepDual,CB_KT2450SweepAbortLim,
+//                                       RG_KT2450SweepMode,RG_KT2450SweepSelect,
+//                                       GB_KT2450Sweep,
+//                                       LKT2450_Meas,LKT2450_MeasU,
+//                                       B_KT2450_Meas,B_KT2450_MeasAuto);
+ end;
+
+ AnyObjectArray.Add([DMM_6500]);
+ ShowArray.Add([DMM6500_IPAdressShow,DMM6500_Show]);
+
 end;
 
 procedure TIVchar.CorrectionLimit(var NewCorrection: Double);

@@ -5,7 +5,7 @@ interface
 uses
   OlegTypePart2, Keithley2450, StdCtrls, Buttons,
   ArduinoDeviceNew, ExtCtrls, IniFiles, OlegShowTypes, Classes, 
-  Keitley2450Const, OlegType, Measurement;
+  Keitley2450Const, OlegType, Measurement, KeitleyShow;
 
 const
   ButtonNumberKt2450 = 5;
@@ -264,7 +264,8 @@ TKt_2450_MeterShow=class(TMeasurementShowSimple)
 end;
 
 
- TKt_2450_Show=class(TSimpleFreeAndAiniObject)
+// TKt_2450_Show=class(TSimpleFreeAndAiniObject)
+ TKt_2450_Show=class(TKeitley_Show)
   private
    fKt_2450:TKt_2450;
 
@@ -272,7 +273,7 @@ end;
 //   fSettingsShowSL:array[TKt2450_Settings]of TStringList;
    fSettingsShow:array of TParameterShowNew;
    fSettingsShowSL:array of TStringList;
-   BTest:TButton;
+//   BTest:TButton;
    fOutPutOnOff:TSpeedButton;
    fTerminalsFrRe:TSpeedButton;
    fSetupMemoryShow:TKT2450_SetupMemoryShow;
@@ -323,12 +324,12 @@ end;
    procedure SweetShowCreate();
 //   procedure SweetShowFree();
 
-   procedure TestButtonClick(Sender:TObject);
+//   procedure TestButtonClick(Sender:TObject);
    procedure ResetButtonClick(Sender:TObject);
    procedure GetSettingButtonClick(Sender:TObject);
    procedure RefreshZeroClick(Sender:TObject);
    procedure SourceMeasureClick(Sender:TObject);
-   procedure MyTrainButtonClick(Sender:TObject);
+//   procedure MyTrainButtonClick(Sender:TObject);
    procedure AutoZeroClick(Sender:TObject);
    procedure ButtonsTune(Buttons: array of TButton);
    procedure SpeedButtonsTune(SpeedButtons: array of TSpeedButton);
@@ -370,7 +371,7 @@ end;
   procedure ReadFromIniFile(ConfigFile:TIniFile);override;
   procedure WriteToIniFile(ConfigFile:TIniFile);override;
   procedure SettingToObject;
-  procedure ObjectToSetting;
+  procedure ObjectToSetting;// override;
   procedure OutPutOnFromDevice();
  end;
 
@@ -406,28 +407,43 @@ begin
 end;
 
 procedure TKt_2450_Show.ButtonsTune(Buttons: array of TButton);
-const
-  ButtonCaption: array[0..ButtonNumberKt2450] of string =
-  ('Connection Test ?','Reset','Get from device','Refresh Zero','to measure',
-  'MyTrain');
-var
-  ButtonAction: array[0..ButtonNumberKt2450] of TNotifyEvent;
-  i: Integer;
+//const
+//  ButtonCaption: array[0..ButtonNumberKt2450] of string =
+//  ('Connection Test ?','Reset','Get from device','Refresh Zero','to measure',
+//  'MyTrain');
+//var
+//  ButtonAction: array[0..ButtonNumberKt2450] of TNotifyEvent;
+//  i: Integer;
 begin
-  ButtonAction[0] := TestButtonClick;
-  ButtonAction[1] := ResetButtonClick;
-  ButtonAction[2] := GetSettingButtonClick;
-  ButtonAction[3] := RefreshZeroClick;
-  ButtonAction[4] := SourceMeasureClick;
 
-  ButtonAction[ButtonNumberKt2450] := MyTrainButtonClick;
-  for I := 0 to ButtonNumberKt2450 do
-  begin
-    Buttons[i].Caption := ButtonCaption[i];
-    Buttons[i].OnClick := ButtonAction[i];
-  end;
-  BTest := Buttons[0];
+  Buttons[1].Caption := 'Reset';
+  Buttons[1].OnClick := ResetButtonClick;
+
+  Buttons[2].Caption := 'Get from device';
+  Buttons[2].OnClick := GetSettingButtonClick;
+
+  Buttons[3].Caption := 'Refresh Zero';
+  Buttons[3].OnClick := RefreshZeroClick;
   fZeroManualB:= Buttons[3];
+
+  Buttons[4].Caption := 'to measure';
+  Buttons[4].OnClick := SourceMeasureClick;
+
+
+//  ButtonAction[0] := TestButtonClick;
+//  ButtonAction[1] := ResetButtonClick;
+//  ButtonAction[2] := GetSettingButtonClick;
+//  ButtonAction[3] := RefreshZeroClick;
+//  ButtonAction[4] := SourceMeasureClick;
+//
+//  ButtonAction[ButtonNumberKt2450] := MyTrainButtonClick;
+//  for I := 0 to ButtonNumberKt2450 do
+//  begin
+//    Buttons[i].Caption := ButtonCaption[i];
+//    Buttons[i].OnClick := ButtonAction[i];
+//  end;
+//  BTest := Buttons[0];
+//  fZeroManualB:= Buttons[3];
 end;
 
 procedure TKt_2450_Show.CountOkClick;
@@ -472,7 +488,10 @@ begin
       showmessage('Kt_2450_Show is not created!');
       Exit;
     end;
+
+  inherited Create(Kt_2450,[Buttons[0],Buttons[5]]);
   fKt_2450:=Kt_2450;
+
   ButtonsTune(Buttons);
   SpeedButtonsTune(SpeedButtons);
 
@@ -638,10 +657,10 @@ begin
  ReCreateElements();
 end;
 
-procedure TKt_2450_Show.MyTrainButtonClick(Sender: TObject);
-begin
- fKt_2450.MyTraining();
-end;
+//procedure TKt_2450_Show.MyTrainButtonClick(Sender: TObject);
+//begin
+// fKt_2450.MyTraining();
+//end;
 
 procedure TKt_2450_Show.ObjectToSetting;
 begin
@@ -895,18 +914,18 @@ begin
       end;
 end;
 
-procedure TKt_2450_Show.TestButtonClick(Sender: TObject);
-begin
-   if fKt_2450.Test then
-        begin
-          BTest.Caption:='Connection Test - Ok';
-          BTest.Font.Color:=clBlue;
-        end        else
-        begin
-          BTest.Caption:='Connection Test - Failed';
-          BTest.Font.Color:=clRed;
-        end;
-end;
+//procedure TKt_2450_Show.TestButtonClick(Sender: TObject);
+//begin
+//   if fKt_2450.Test then
+//        begin
+//          BTest.Caption:='Connection Test - Ok';
+//          BTest.Font.Color:=clBlue;
+//        end        else
+//        begin
+//          BTest.Caption:='Connection Test - Failed';
+//          BTest.Font.Color:=clRed;
+//        end;
+//end;
 
 
 procedure TKt_2450_Show.VoltageProtectionOkClick;

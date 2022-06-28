@@ -28,5 +28,10 @@
     <Transaction>2022.05.31 17:48:24.203.dfm,\\vmware-host\Shared Folders\oleg\IVchar\Unit1.dfm=\\vmware-host\Shared Folders\oleg\IVchar\PsevdoMainForm.dfm</Transaction>
     <Transaction>2022.06.02 15:16:17.484.pas,\\vmware-host\Shared Folders\oleg\IVchar\Unit1.pas=\\vmware-host\Shared Folders\oleg\IVchar\Keitley2450Device.pas</Transaction>
     <Transaction>2022.06.27 19:44:25.847.pas,\\vmware-host\Shared Folders\oleg\IVchar\Unit1.pas=\\vmware-host\Shared Folders\oleg\IVchar\Keithley.pas</Transaction>
+    <Transaction>2022.06.28 11:35:28.046.pas,D:\Oleg\Shottky_Program\IVchar\Unit1.pas=D:\Oleg\Shottky_Program\IVchar\FormDMM6500.pas</Transaction>
+    <Transaction>2022.06.28 11:35:28.046.dfm,D:\Oleg\Shottky_Program\IVchar\Unit1.dfm=D:\Oleg\Shottky_Program\IVchar\FormDMM6500.dfm</Transaction>
+    <Transaction>2022.06.28 12:11:15.140.pas,D:\Oleg\Shottky_Program\IVchar\Unit1.pas=D:\Oleg\Shottky_Program\IVchar\DMM6500.pas</Transaction>
+    <Transaction>2022.06.28 12:55:13.218.pas,D:\Oleg\Shottky_Program\IVchar\Unit1.pas=D:\Oleg\Shottky_Program\IVchar\KeitleyShow.pas</Transaction>
+    <Transaction>2022.06.28 13:04:28.015.pas,D:\Oleg\Shottky_Program\IVchar\Unit1.pas=D:\Oleg\Shottky_Program\IVchar\DMM6500Show.pas</Transaction>
   </Transactions>
 </BorlandProject>

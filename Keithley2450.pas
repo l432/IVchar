@@ -165,8 +165,10 @@ TKT2450_SourceDevice=class;
    procedure SetCountNumber(Value:integer);
    procedure TrigIVLoop(i: Integer);
   protected
-   procedure PrepareString;override;
-   procedure DeviceCreate(Nm:string);override;
+//   procedure PrepareString;override;
+   procedure PrepareStringByRootNood;override;
+   procedure ProcessingStringByRootNode(Str:string);override;
+//   procedure DeviceCreate(Nm:string);override;
    procedure DefaultSettings;override;
   public
    SweepParameters:array[TKt2450_Source]of TKt_2450_SweepParameters;
@@ -220,10 +222,10 @@ TKT2450_SourceDevice=class;
                Nm:string='Keitley2450');
    destructor Destroy; override;
 
-   function Test():boolean;override;
-   procedure ProcessingString(Str:string);override;
+//   function Test():boolean;override;
+//   procedure ProcessingString(Str:string);override;
    procedure ResetSetting();
-   procedure MyTraining();
+   procedure MyTraining();override;
 
    procedure OutPutChange(toOn:boolean);
    {вмикає/вимикає вихід приладу}
@@ -860,10 +862,10 @@ begin
   inherited;
 end;
 
-procedure TKt_2450.DeviceCreate(Nm: string);
-begin
- fDevice:=TKeitleyDevice.Create(Self,fTelnet,fIPAdressShow,Nm);
-end;
+//procedure TKt_2450.DeviceCreate(Nm: string);
+//begin
+// fDevice:=TKeitleyDevice.Create(Self,fTelnet,fIPAdressShow,Nm);
+//end;
 
 function TKt_2450.GetAzeroStates: boolean;
  var i:TKt2450_Measure;
@@ -1319,7 +1321,7 @@ end;
 procedure TKt_2450.InitWait;
 begin
 // INIT; *WAI
- fAdditionalString:=CommandDelimiter+RootNoodKt_2450[25];
+ fAdditionalString:=CommandDelimiter+RootNoodKeitley[25];
  SetupOperation(17,1,0,False);
 end;
 
@@ -1912,22 +1914,23 @@ begin
  fOutPutOn:=toOn;
 end;
 
-procedure TKt_2450.PrepareString;
+//procedure TKt_2450.PrepareString;
+procedure TKt_2450.PrepareStringByRootNood;
 begin
- (fDevice as TKeitleyDevice).ClearStringToSend;
- (fDevice as TKeitleyDevice).SetStringToSend(RootNoodKt_2450[fRootNode]);
+// (fDevice as TKeitleyDevice).ClearStringToSend;
+// (fDevice as TKeitleyDevice).SetStringToSend(RootNoodKeitley[fRootNode]);
  case fRootNode of
   5:case fFirstLevelNode of
      5: JoinToStringToSend(FirstNodeKt_2450[fFirstLevelNode]);
      0..1:begin
-           JoinToStringToSend(RootNoodKt_2450[12+fFirstLevelNode]);
+           JoinToStringToSend(RootNoodKeitley[12+fFirstLevelNode]);
            JoinToStringToSend(FirstNodeKt_2450[fLeafNode]);
           end;
     end;  // fRootNode=5
   6:case fFirstLevelNode of
       12,13,14:
         begin
-        JoinToStringToSend(RootNoodKt_2450[fFirstLevelNode]);
+        JoinToStringToSend(RootNoodKeitley[fFirstLevelNode]);
         JoinToStringToSend(FirstNodeKt_2450[fLeafNode]);
         end;
       else JoinToStringToSend(FirstNodeKt_2450[fFirstLevelNode]);
@@ -1935,29 +1938,29 @@ begin
   7,9:JoinToStringToSend(FirstNodeKt_2450[fFirstLevelNode]);
   11:case fFirstLevelNode of
        12..13:case fLeafNode of
-                0:JoinToStringToSend(RootNoodKt_2450[fFirstLevelNode]);
+                0:JoinToStringToSend(RootNoodKeitley[fFirstLevelNode]);
                 else
                    begin
-                    JoinToStringToSend(RootNoodKt_2450[fFirstLevelNode]);
+                    JoinToStringToSend(RootNoodKeitley[fFirstLevelNode]);
                     JoinToStringToSend(FirstNodeKt_2450[fLeafNode]);
                     if fIsTripped then JoinToStringToSend(FirstNodeKt_2450[11]);
                    end;
               end;
-       55:JoinToStringToSend(RootNoodKt_2450[15]);
+       55:JoinToStringToSend(RootNoodKeitley[15]);
        23:case fLeafNode of
              79,80:begin
                    JoinToStringToSend(FirstNodeKt_2450[fFirstLevelNode]);
-                   JoinToStringToSend(RootNoodKt_2450[fLeafNode-79+12]);
+                   JoinToStringToSend(RootNoodKeitley[fLeafNode-79+12]);
                    JoinToStringToSend(FirstNodeKt_2450[24]);
                    end;
              else
                  begin
                  JoinToStringToSend(FirstNodeKt_2450[fFirstLevelNode]);
-                 JoinToStringToSend(RootNoodKt_2450[fLeafNode]);
+                 JoinToStringToSend(RootNoodKeitley[fLeafNode]);
                  end;
           end;
         24:begin
-            JoinToStringToSend(RootNoodKt_2450[fFirstLevelNode]);
+            JoinToStringToSend(RootNoodKeitley[fFirstLevelNode]);
             JoinToStringToSend(FirstNodeKt_2450[23]);
             JoinToStringToSend(ConfLeafNodeKt_2450[fLeafNode]);
            end;
@@ -2019,7 +2022,7 @@ begin
            end;
         24,11:begin
             JoinToStringToSend(FirstNodeKt_2450[39]);
-            JoinToStringToSend(RootNoodKt_2450[fFirstLevelNode]);
+            JoinToStringToSend(RootNoodKeitley[fFirstLevelNode]);
             JoinToStringToSend(TrigLeafNodeKt_2450[fLeafNode]);
             fAdditionalString:=IntTostr(fTrigBlockNumber)+PartDelimiter+fAdditionalString;
             inc(fTrigBlockNumber);
@@ -2033,13 +2036,14 @@ begin
      end;// fRootNode=26
  end;
 
- if fIsSuffix then JoinAddString;
+// if fIsSuffix then JoinAddString;
 
 end;
 
-procedure TKt_2450.ProcessingString(Str: string);
+//procedure TKt_2450.ProcessingString(Str: string);
+procedure TKt_2450.ProcessingStringByRootNode(Str: string);
 begin
- Str:=Trim(Str);
+// Str:=Trim(Str);
  case fRootNode of
   0:if pos(Kt_2450_Test,Str)<>0 then fDevice.Value:=314;
   5:case fFirstLevelNode of
@@ -2255,8 +2259,8 @@ procedure TKt_2450.SetMeasureFunction(MeasureFunction: TKt2450_Measure);
 begin
 // :FUNC "VOLT"|"CURR"
  case MeasureFunction of
-  kt_mCurrent:fAdditionalString:=StringToInvertedCommas(DeleteSubstring(RootNoodKt_2450[12]));
-  kt_mVoltage:fAdditionalString:=StringToInvertedCommas(DeleteSubstring(RootNoodKt_2450[13]));
+  kt_mCurrent:fAdditionalString:=StringToInvertedCommas(DeleteSubstring(RootNoodKeitley[12]));
+  kt_mVoltage:fAdditionalString:=StringToInvertedCommas(DeleteSubstring(RootNoodKeitley[13]));
   kt_mResistance:Exit;
  end;
 
@@ -2476,7 +2480,7 @@ end;
 procedure TKt_2450.UnloadSetupPowerOn;
 begin
 //SYST:POS RST
-  fAdditionalString:=DeleteSubstring(RootNoodKt_2450[2],'*');
+  fAdditionalString:=DeleteSubstring(RootNoodKeitley[2],'*');
   SetupOperation(7,4);
 end;
 
@@ -2621,7 +2625,7 @@ function TKt_2450.StringToMeasureFunction(Str: string): boolean;
 begin
  Result:=False;
  for I := Low(TKt2450_Measure) to kt_mResistance do
-   if pos(DeleteSubstring(RootNoodKt_2450[ord(i)+12]),Str)<>0 then
+   if pos(DeleteSubstring(RootNoodKeitley[ord(i)+12]),Str)<>0 then
      begin
        fMeasureFunction:=i;
        Result:=True;
@@ -2788,12 +2792,12 @@ begin
   SetupOperation(11,25,4,False);
 end;
 
-function TKt_2450.Test: boolean;
-begin
-// *IDN?
- QuireOperation(0,0,0,False);
- Result:=(fDevice.Value=314);
-end;
+//function TKt_2450.Test: boolean;
+//begin
+//// *IDN?
+// QuireOperation(0,0,0,False);
+// Result:=(fDevice.Value=314);
+//end;
 
 procedure TKt_2450.TextToUserScreen(top_text, bottom_text: string);
 begin
@@ -3246,20 +3250,20 @@ end;
 
 function TKt_2450_SweepParameters.GetLin: string;
 begin
- Result:=RootNoodKt_2450[1-ord(fSource)+12]+':lin '
+ Result:=RootNoodKeitley[1-ord(fSource)+12]+':lin '
          +ParameterString();
 end;
 
 function TKt_2450_SweepParameters.GetLinStep: string;
 begin
- Result:=RootNoodKt_2450[1-ord(fSource)+12]+':lin:step '
+ Result:=RootNoodKeitley[1-ord(fSource)+12]+':lin:step '
          +ParameterString(True);
 end;
 
 function TKt_2450_SweepParameters.GetList: string;
 begin
 //LIST <startIndex>, <delay>, <count>, <failAbort>
- Result:=RootNoodKt_2450[1-ord(fSource)+12]+FirstNodeKt_2450[23]+' '
+ Result:=RootNoodKeitley[1-ord(fSource)+12]+FirstNodeKt_2450[23]+' '
          +Inttostr(fStartIndex)+PartDelimiter
          +FloatToStrF(fDelay,ffExponent,4,0)+PartDelimiter
          +IntToStr(fCount)+PartDelimiter
@@ -3268,7 +3272,7 @@ end;
 
 function TKt_2450_SweepParameters.GetLog: string;
 begin
- Result:=RootNoodKt_2450[1-ord(fSource)+12]+':log '
+ Result:=RootNoodKeitley[1-ord(fSource)+12]+':log '
          +ParameterString();
 end;
 
