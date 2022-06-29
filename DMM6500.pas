@@ -22,6 +22,10 @@ type
    Constructor Create(Telnet:TIdTelnet;IPAdressShow: TIPAdressShow;
                Nm:string='DMM6500');
    procedure MyTraining();override;
+
+   procedure BufferCreate(Name:string;Size:integer;Style:TKt2450_BufferStyle);overload;override;
+   procedure BufferCreate(Style:TKt2450_BufferStyle);overload;override;
+
    Procedure GetParametersFromDevice;override;
  end;
 
@@ -34,6 +38,19 @@ uses
   Dialogs, SysUtils;
 
 { TKt_2450 }
+
+procedure TDMM6500.BufferCreate(Name: string; Size: integer;
+  Style: TKt2450_BufferStyle);
+begin
+  if Style=kt_bs_comp then Exit;
+  inherited BufferCreate(Name,Size,Style);
+end;
+
+procedure TDMM6500.BufferCreate(Style: TKt2450_BufferStyle);
+begin
+  if Style=kt_bs_comp then Exit;
+  inherited BufferCreate(Style);
+end;
 
 constructor TDMM6500.Create(Telnet: TIdTelnet; IPAdressShow: TIPAdressShow;
   Nm: string);
@@ -56,10 +73,20 @@ begin
 end;
 
 procedure TDMM6500.MyTraining;
- var i:integer;
+// var i:integer;
 begin
-for I := ord(Low(TKeitley_Measure)) to ord(High(TKeitley_Measure)) do
- SetMeasureFunction(TKeitley_Measure(i));
+BufferReSize(100);
+BufferReSize('TestBuffer',5);
+//BufferClear(KeitleyDefBuffer);
+//BufferDelete();
+//BufferDelete('Test  Buffer ');
+// BufferCreate();
+// BufferCreate('Test  Buffer ',500,kt_bs_full);
+// BufferCreate('Test  Buffer ',500,kt_bs_comp);
+// BufferCreate(kt_bs_full);
+// BufferCreate(kt_bs_comp);
+//for I := ord(Low(TKeitley_Measure)) to ord(High(TKeitley_Measure)) do
+// SetMeasureFunction(TKeitley_Measure(i));
 // if GetMeasureFunction then
 //   showmessage('ura!!!'+DMM65000_MeasureLabel[MeasureFunction]);
 // TextToUserScreen('Hi, Oleg!','I am glad to see you');

@@ -3,7 +3,7 @@ unit Keithley;
 interface
 
 uses
-  TelnetDevice, SCPI, IdTelnet, ShowTypes, Keitley2450Const;
+  TelnetDevice, SCPI, IdTelnet, ShowTypes, Keitley2450Const, Keitley2450Device;
 
 type
 
@@ -52,7 +52,7 @@ type
 //   {X - значення джерела; Y - результат виміру}
 //   fDataTimeVector:TVector;
 //   {X - час виміру (мілісекунди з початку доби); Y - результат виміру}
-//   fBuffer:TKt2450_Buffer;
+   fBuffer:TKeitley_Buffer;
 //   fCount:integer;
 //   fSourceMeasuredValue:double;
 //   fTimeValue:double;
@@ -139,7 +139,7 @@ type
 //   property SourceDelayAuto:TKt2450_SourceBool read fSourceDelayAuto;
 //   property DisplayDN:TKt2450_MeasureDisplayDN read fDisplayDN;
 //   property MeasureTime:TKt2450_MeasureDouble read fMeasureTime;
-//   property Buffer:TKt2450_Buffer read fBuffer;
+   property Buffer:TKeitley_Buffer read fBuffer;
 //   property Count:integer read fCount write SetCountNumber;
 //   property SourceMeasuredValue:double read fSourceMeasuredValue;
 //   property TimeValue:double read fTimeValue;
@@ -157,7 +157,7 @@ type
 //   property SweepWasCreated:boolean read fSweepWasCreated write fSweepWasCreated;
    Constructor Create(Telnet:TIdTelnet;IPAdressShow: TIPAdressShow;
                Nm:string);
-//   destructor Destroy; override;
+   destructor Destroy; override;
 //
    function Test():boolean;override;
    procedure ProcessingString(Str:string);override;
@@ -350,20 +350,20 @@ type
 //   procedure SwepListCreate(StartIndex:word=1);
 //   procedure SwepLogStepCreate();
 //
-//   procedure BufferCreate();overload;
-//   procedure BufferCreate(Name:string);overload;
-//   procedure BufferCreate(Name:string;Size:integer);overload;
-//   procedure BufferCreate(Name:string;Size:integer;Style:TKt2450_BufferStyle);overload;
-//   procedure BufferCreate(Style:TKt2450_BufferStyle);overload;
-//   procedure BufferDelete();overload;
-//   procedure BufferDelete(Name:string);overload;
-//   procedure BufferClear();overload;
-//   procedure BufferClear(BufName:string);overload;
+   procedure BufferCreate();overload;
+   procedure BufferCreate(Name:string);overload;
+   procedure BufferCreate(Name:string;Size:integer);overload;
+   procedure BufferCreate(Name:string;Size:integer;Style:TKt2450_BufferStyle);overload;virtual;
+   procedure BufferCreate(Style:TKt2450_BufferStyle);overload;virtual;
+   procedure BufferDelete();overload;
+   procedure BufferDelete(Name:string);overload;
+   procedure BufferClear();overload;
+   procedure BufferClear(BufName:string);overload;
 //
-//   procedure BufferReSize(NewSize:integer);overload;
-//   {змінює можливу кількість записів у буфері,
-//   при цьому він очищується}
-//   procedure BufferReSize(BufName:string;NewSize:integer);overload;
+   procedure BufferReSize(NewSize:integer);overload;
+   {змінює можливу кількість записів у буфері,
+   при цьому він очищується}
+   procedure BufferReSize(BufName:string;NewSize:integer);overload;
 //   function BufferGetSize():integer;overload;
 //   function BufferGetSize(BufName:string):integer;overload;
 //   function BufferGetReadingNumber(BufName:string=Kt2450DefBuffer):integer;
@@ -580,6 +580,79 @@ fAdditionalString:=IntToStr(NumberMap(Freq,Keitley_BeepFrequancyLimits))
  SetupOperation(7,34);
 end;
 
+procedure TKeitley.BufferCreate(Name: string);
+begin
+ Buffer.SetName(Name);
+ BufferCreate;
+end;
+
+procedure TKeitley.BufferCreate;
+begin
+ fAdditionalString:=Buffer.CreateStr;
+ SetupOperation(19,29);
+end;
+
+procedure TKeitley.BufferCreate(Name: string; Size: integer);
+begin
+ Buffer.CountMax:=Size;
+ BufferCreate(Name);
+end;
+
+procedure TKeitley.BufferClear;
+begin
+  fAdditionalString:=Buffer.Name;
+  SetupOperation(19,3);
+end;
+
+procedure TKeitley.BufferClear(BufName: string);
+begin
+//:TRAC:CLE "<bufferName>"
+ Buffer.SetName(BufName);
+ BufferClear;
+// fAdditionalString:=Buffer.Name;
+// SetupOperation(19,3);
+end;
+
+procedure TKeitley.BufferCreate(Style: TKt2450_BufferStyle);
+begin
+ Buffer.Style:=Style;
+ BufferCreate();
+end;
+
+procedure TKeitley.BufferDelete;
+begin
+ fAdditionalString:=Buffer.Name;
+ SetupOperation(19,21);
+end;
+
+procedure TKeitley.BufferDelete(Name: string);
+begin
+// :TRAC:DEL "testData"
+ Buffer.SetName(Name);
+ BufferDelete();
+end;
+
+procedure TKeitley.BufferReSize(NewSize: integer);
+begin
+ Buffer.CountMax:=NewSize;
+ SetupOperation(19,31);
+end;
+
+procedure TKeitley.BufferReSize(BufName: string; NewSize: integer);
+begin
+// :TRAC:POIN <newSize>, "<bufferName>"
+ Buffer.SetName(BufName);
+ BufferReSize(NewSize);
+end;
+
+procedure TKeitley.BufferCreate(Name: string; Size: integer;
+  Style: TKt2450_BufferStyle);
+begin
+// :TRAC:MAKE "<bufferName>", <bufferSize>, <bufferStyle>
+ Buffer.Style:=Style;
+ BufferCreate(Name,Size);
+end;
+
 procedure TKeitley.ClearUserScreen;
 begin
 // :DISP:CLE
@@ -592,6 +665,7 @@ begin
  fTelnet:=Telnet;
  fIPAdressShow:=IPAdressShow;
  inherited Create(Nm);
+ fBuffer:=TKeitley_Buffer.Create;
 end;
 
 procedure TKeitley.DefaultSettings;
@@ -651,6 +725,12 @@ begin
 // fSweepWasCreated:=False;
 
 
+end;
+
+destructor TKeitley.Destroy;
+begin
+  FreeAndNil(fBuffer);
+  inherited;
 end;
 
 procedure TKeitley.DeviceCreate(Nm: string);
@@ -827,20 +907,20 @@ begin
 //         end;
 //       end; // fRootNode=12..14
   17:if fFirstLevelNode=1 then JoinToStringToSend(fAdditionalString);
-//  19:begin
-//       JoinToStringToSend(FirstNodeKt_2450[fFirstLevelNode]);
-//       case fFirstLevelNode of
-//        31:if fLeafNode=1 then JoinToStringToSend(Buffer.Get)
-//                           else fAdditionalString:=Buffer.ReSize;
-//        32:if fLeafNode=1 then JoinToStringToSend(Buffer.Get)
-//                           else fAdditionalString:=Buffer.FillModeChange;
-//        33:JoinToStringToSend(Buffer.DataDemandArray(TKt2450_ReturnedData(fLeafNode)));
-//        35:case fLeafNode of
-//            1:JoinToStringToSend(Buffer.Get);
-//            2:JoinToStringToSend(Buffer.LimitIndexies)
-//           end;
-//       end;
-//      end; // fRootNode=19
+  19:begin
+       JoinToStringToSend(FirstNodeKt_2450[fFirstLevelNode]);
+       case fFirstLevelNode of
+        31:if fLeafNode=1 then JoinToStringToSend(Buffer.Get)
+                           else fAdditionalString:=Buffer.ReSize;
+        32:if fLeafNode=1 then JoinToStringToSend(Buffer.Get)
+                           else fAdditionalString:=Buffer.FillModeChange;
+        33:JoinToStringToSend(Buffer.DataDemandArray(TKt2450_ReturnedData(fLeafNode)));
+        35:case fLeafNode of
+            1:JoinToStringToSend(Buffer.Get);
+            2:JoinToStringToSend(Buffer.LimitIndexies)
+           end;
+       end;
+      end; // fRootNode=19
 //  21:case fFirstLevelNode of
 //       1:JoinToStringToSend(Buffer.Get);
 //       2..5:JoinToStringToSend(Buffer.DataDemand(TKt2450_ReturnedData(fFirstLevelNode-2)))

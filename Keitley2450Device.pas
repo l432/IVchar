@@ -20,7 +20,7 @@ const
 
 type
 
-TKt2450_Buffer=class(TNamedInterfacedObject)
+TKeitley_Buffer=class(TNamedInterfacedObject)
  private
   fSize:integer;
   {загалом ємність всіх буферів - 4,500,000 стандартних
@@ -63,68 +63,68 @@ uses
 
 { TKt2450_Buffer }
 
-constructor TKt2450_Buffer.Create(Nm: string);
+constructor TKeitley_Buffer.Create(Nm: string);
 begin
  inherited Create;
  SetName(Nm);
  fSize:=10000;
- fStyle:=kt_bs_comp;
+ fStyle:=kt_bs_stan;
  fFillMode:=kt_fm_cont;
  fStartIndex:=1;
  fEndIndex:=1;
 end;
 
-function TKt2450_Buffer.DataDemand(DataType: TKt2450_ReturnedData): string;
+function TKeitley_Buffer.DataDemand(DataType: TKt2450_ReturnedData): string;
 begin
  Result:=GetGet+PartDelimiter+Kt2450_DataRequestCommand[DataType];
 end;
 
-function TKt2450_Buffer.DataDemandArray(DataType: TKt2450_ReturnedData): string;
+function TKeitley_Buffer.DataDemandArray(DataType: TKt2450_ReturnedData): string;
 begin
  Result:='? '+intToStr(fStartIndex)+PartDelimiter
          +intToStr(fEndIndex)+PartDelimiter
          +Name+PartDelimiter+Kt2450_DataRequestCommand[DataType];
 end;
 
-function TKt2450_Buffer.GetCreateStr: string;
+function TKeitley_Buffer.GetCreateStr: string;
 begin
  Result:=Name+PartDelimiter
         +inttostr(fSize)+PartDelimiter
         +Kt2450_BufferStyleCommand[Style];
 end;
 
-function TKt2450_Buffer.GetFillMode: string;
+function TKeitley_Buffer.GetFillMode: string;
 begin
  Result:=Kt2450_BufferFillModeCommand[fFillMode]
          +PartDelimiter+Name;
 end;
 
-function TKt2450_Buffer.GetGet: string;
+function TKeitley_Buffer.GetGet: string;
 begin
  Result:='? '+Name;
 end;
 
-function TKt2450_Buffer.GetLimitIndexies: string;
+function TKeitley_Buffer.GetLimitIndexies: string;
 begin
  Result:=':star? '+Name+' ; end? '+Name;
 end;
 
-function TKt2450_Buffer.GetReSize: string;
+function TKeitley_Buffer.GetReSize: string;
 begin
  Result:=inttostr(fSize)+PartDelimiter+Name;
 end;
 
-procedure TKt2450_Buffer.SetCountMax(Value: integer);
+procedure TKeitley_Buffer.SetCountMax(Value: integer);
 begin
  fSize:=TSCPInew.NumberMap(Value,Kt_2450_BufferSizeLimits)
 end;
 
-procedure TKt2450_Buffer.SetEndIndex(Value: integer);
+procedure TKeitley_Buffer.SetEndIndex(Value: integer);
 begin
  fEndIndex:=max(Value,fStartIndex)
 end;
 
-procedure TKt2450_Buffer.SetName(Name: string);
+procedure TKeitley_Buffer.SetName(Name: string);
  var temp:string;
 begin
  temp:=TSCPInew.DeleteSubstringAll(Name);
@@ -135,12 +135,12 @@ begin
  fName:='"'+temp+'"';
 end;
 
-procedure TKt2450_Buffer.SetStartIndex(Value: integer);
+procedure TKeitley_Buffer.SetStartIndex(Value: integer);
 begin
  fStartIndex:=max(1,Value);
 end;
 
-function TKt2450_Buffer.StringToFillMode(Str: string): boolean;
+function TKeitley_Buffer.StringToFillMode(Str: string): boolean;
   var i:TKt2450_BufferFillMode;
 begin
  Result:=False;

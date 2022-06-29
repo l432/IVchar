@@ -8,8 +8,8 @@ const
 
   Kt_2450_Test='KEITHLEY INSTRUMENTS,MODEL 2450';
   Kt2450DisplayDNLabel='.5 digit';
-  Kt2450DefBuffer='defbuffer1';
-  Kt2450DefBuffer2='defbuffer2';
+  KeitleyDefBuffer='defbuffer1';
+  KeitleyDefBuffer2='defbuffer2';
   MyBuffer='OlegData';
   MySourceList='OlegSourceList';
   MyMeasList='OlegMeasList';
@@ -43,7 +43,7 @@ const
    ':ligh:stat',':poin',':fill:mode',':data',':beep',':act',':line#:mode',
 //     30          31         32         33     34      35        36
    ':line#:stat',':load', ':bloc',':buff',':bran',':mdig',':res',':paus');
-//      37         38        39      40      41      42      43      44    
+//      37         38        39      40      41      42      43      44
 
  ConfLeafNodeKt_2450:array[0..3]of string=
  (':cre',':del',':rec',':stor');
@@ -74,9 +74,6 @@ type
  TKt2450_Senses=array[TKt2450_Measure]of TKt2450_Sense;
  TKt2450_MeasureBool=array[TKt2450_Measure]of boolean;
  TKt2450_MeasureDouble=array[TKt2450_Measure]of double;
-// TKt2450_Senses=array[kt_mCurDC..kt_mRes2W]of TKt2450_Sense;
-// TKt2450_MeasureBool=array[kt_mCurDC..kt_mRes2W]of boolean;
-// TKt2450_MeasureDouble=array[kt_mCurDC..kt_mRes2W]of double;
 
  TKt_2450_OutputOffState=(kt_oos_norm,kt_oos_zero,kt_oos_himp,kt_oos_guard);
  TKt_2450_OutputOffStates=array[TKt2450_Source]of TKt_2450_OutputOffState;
@@ -86,7 +83,6 @@ type
                             kt_vp180,kt_vpnone);
  TKt_2450_MeasureUnit=(kt_mu_amp,kt_mu_volt, kt_mu_ohm, kt_mu_watt);
  TKt_2450_MeasureUnits=array[TKt2450_Measure]of TKt_2450_MeasureUnit;
-// TKt_2450_MeasureUnits=array[kt_mCurDC..kt_mRes2W]of TKt_2450_MeasureUnit;
 
  TKt_2450_Mode=(kt_md_sVmC,kt_md_sVmV,kt_md_sVmR,kt_md_sVmP,
                 kt_md_sImC,kt_md_sImV,kt_md_sImR,kt_md_sImP);
@@ -109,7 +105,6 @@ type
 
  Kt2450DisplayDigitsNumber=3..6;
  TKt2450_MeasureDisplayDN=array[TKt2450_Measure]of Kt2450DisplayDigitsNumber;
-// TKt2450_MeasureDisplayDN=array[kt_mCurDC..kt_mRes2W]of Kt2450DisplayDigitsNumber;
 
  TKt2450_SweepRangeType=(kt_srt_Auto,kt_srt_Best,kt_srt_Fixed);
 
@@ -188,8 +183,7 @@ const
 
  Kt2450_SourceName:array [TKt2450_Source] of string=
            ('volt', 'curr');
-// Kt2450_MeasureName:array [TKt2450_Measure] of string=
-//           (':curr', ':volt', ':res'{, ':pow??'});
+
  Kt_2450_OutputOffStateName:array[TKt_2450_OutputOffState]of string=
           ('norm','zero', 'himp', 'guar');
  Kt_2450_VoltageProtectionLabel:array[TKt_2450_VoltageProtection]of string=
@@ -202,8 +196,6 @@ const
 
  Kt_2450_RangesLimits:array[TKt2450_Measure] of TLimitValues=
   ((1e-8,1),(0.02,200),(2,2e8));
-// Kt_2450_RangesLimits:array[kt_mCurDC..kt_mRes2W] of TLimitValues=
-//  ((1e-8,1),(0.02,200),(2,2e8));
 
  Kt_2450_SourceDelayLimits:TLimitValues=(0,1e3);
  Kt_2450_SweepDelayLimits:TLimitValues=(5e-5,1e3);
