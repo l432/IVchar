@@ -2191,7 +2191,7 @@ end;
 
 procedure TKt2450FastIVstate.ButtonStopClick;
 begin
-  fFastIV.Kt2450.TrigEventGenerate;
+//  fFastIV.Kt2450.TrigEventGenerate;
 end;
 
 procedure TKt2450FastIVstate.MeasuringState;

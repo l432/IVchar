@@ -3,14 +3,14 @@ unit DMM6500Show;
 interface
 
 uses
-  OlegTypePart2, DMM6500, KeitleyShow, StdCtrls;
+  OlegTypePart2, DMM6500, KeitleyShow, StdCtrls, ExtCtrls;
 
 type
 
  TDMM6500_Show=class(TKeitley_Show)
   private
    fDMM6500:TDMM6500;
-
+   fTerminalState:TStaticText;
 //   fSettingsShow:array of TParameterShowNew;
 //   fSettingsShowSL:array of TStringList;
 //   BTest:TButton;
@@ -87,7 +87,8 @@ type
 //   property MeterShow:TKt_2450_MeterShow read fMeterShow;
    Constructor Create(DMM6500:TDMM6500;
                       ButtonsKeitley:Array of TButton;
-                      STextsBrightness:TStaticText);
+                      PanelsSetting:Array of TPanel;
+                      STexts:array of TStaticText);
 //                      SpeedButtons:Array of TSpeedButton;
 //                      Panels:Array of TPanel;
 //                      STexts:array of TStaticText;
@@ -108,7 +109,7 @@ type
 //  procedure ReadFromIniFile(ConfigFile:TIniFile);override;
 //  procedure WriteToIniFile(ConfigFile:TIniFile);override;
 //  procedure SettingToObject;
-//  procedure ObjectToSetting;
+  procedure ObjectToSetting;override;
 //  procedure OutPutOnFromDevice();
  end;
 
@@ -121,16 +122,22 @@ var
 
 implementation
 
+uses
+  Keitley2450Const;
+
 { TDMM6500_Show }
 
 constructor TDMM6500_Show.Create(DMM6500: TDMM6500;
                   ButtonsKeitley: array of TButton;
-                  STextsBrightness:TStaticText);
+                  PanelsSetting:Array of TPanel;
+                  STexts:array of TStaticText);
 begin
 
-  inherited Create(DMM6500,ButtonsKeitley,STextsBrightness);
+  inherited Create(DMM6500,ButtonsKeitley,
+                   PanelsSetting,
+                   STexts[0]);
   fDMM6500:=DMM6500;
-
+  fTerminalState:=STexts[1];
 
   ObjectToSetting();
 end;
@@ -139,7 +146,6 @@ procedure TDMM6500_Show.GetSettingButtonClick(Sender: TObject);
 begin
 //  if not(DeviceEthernetisAbsent) then
 //    begin
-//    fKt_2450.GetTerminal();
 //    fKt_2450.IsOutPutOn();
 //    fKt_2450.GetVoltageProtection;
 //    fKt_2450.GetDeviceMode;
@@ -163,6 +169,12 @@ begin
 //    end;
 
   inherited;
+end;
+
+procedure TDMM6500_Show.ObjectToSetting;
+begin
+  inherited;
+  fTerminalState.Caption:=Keitlay_TerminalsButtonName[fDMM6500.Terminal];
 end;
 
 end.

@@ -33,5 +33,6 @@
     <Transaction>2022.06.28 12:11:15.140.pas,D:\Oleg\Shottky_Program\IVchar\Unit1.pas=D:\Oleg\Shottky_Program\IVchar\DMM6500.pas</Transaction>
     <Transaction>2022.06.28 12:55:13.218.pas,D:\Oleg\Shottky_Program\IVchar\Unit1.pas=D:\Oleg\Shottky_Program\IVchar\KeitleyShow.pas</Transaction>
     <Transaction>2022.06.28 13:04:28.015.pas,D:\Oleg\Shottky_Program\IVchar\Unit1.pas=D:\Oleg\Shottky_Program\IVchar\DMM6500Show.pas</Transaction>
+    <Transaction>2022.06.29 11:57:36.046.pas,D:\Oleg\Shottky_Program\IVchar\Unit1.pas=D:\Oleg\Shottky_Program\IVchar\DMM6500_Const.pas</Transaction>
   </Transactions>
 </BorlandProject>

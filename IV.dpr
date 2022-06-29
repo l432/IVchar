@@ -48,7 +48,8 @@ uses
   FormDMM6500 in 'FormDMM6500.pas' {DMM6500Form},
   DMM6500 in 'DMM6500.pas',
   KeitleyShow in 'KeitleyShow.pas',
-  DMM6500Show in 'DMM6500Show.pas';
+  DMM6500Show in 'DMM6500Show.pas',
+  DMM6500_Const in 'DMM6500_Const.pas';
 
 {$R *.res}
 

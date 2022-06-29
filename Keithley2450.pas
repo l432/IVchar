@@ -89,7 +89,7 @@ TKT2450_SourceDevice=class;
 //   fIPAdressShow: TIPAdressShow;
    fIsTripped:boolean;
 
-   fTerminal:TKt2450_OutputTerminals;
+//   fTerminal:TKeitley_OutputTerminals;
    fOutPutOn:boolean;
    fResistanceCompencateOn:TKt2450_MeasureBool;
    fAzeroState:TKt2450_MeasureBool;
@@ -99,7 +99,7 @@ TKT2450_SourceDevice=class;
    fMeasureUnits:TKt_2450_MeasureUnits;
    fOutputOffState:TKt_2450_OutputOffStates;
    fSourceType:TKt2450_Source;
-   fMeasureFunction:TKt2450_Measure;
+//   fMeasureFunction:TKt2450_Measure;
    fVoltageProtection:TKt_2450_VoltageProtection;
    fVoltageLimit:double;
    fCurrentLimit:double;
@@ -144,8 +144,8 @@ TKT2450_SourceDevice=class;
    procedure OnOffFromBool(toOn:boolean);
    function StringToVoltageProtection(Str:string;var vp:TKt_2450_VoltageProtection):boolean;
    function StringToSourceType(Str:string):boolean;
-   function StringToMeasureFunction(Str:string):boolean;
-   function StringToTerminals(Str:string):boolean;
+//   function StringToMeasureFunction(Str:string):boolean;
+//   function StringToTerminals(Str:string):boolean;
    function StringToOutPutState(Str:string):boolean;
    function StringToMeasureUnit(Str:string):boolean;
    function StringToBufferIndexies(Str:string):boolean;
@@ -170,6 +170,7 @@ TKT2450_SourceDevice=class;
    procedure ProcessingStringByRootNode(Str:string);override;
 //   procedure DeviceCreate(Nm:string);override;
    procedure DefaultSettings;override;
+//   function StringToMeasureFunction(Str:string):boolean;override;
   public
    SweepParameters:array[TKt2450_Source]of TKt_2450_SweepParameters;
 //   IVDependence:TFastIVDependence;
@@ -177,11 +178,11 @@ TKT2450_SourceDevice=class;
    property DataVector:TVector read fDataVector;
    property DataTimeVector:TVector read fDataTimeVector;
    property SourceType:TKt2450_Source read fSourceType;
-   property MeasureFunction:TKt2450_Measure read fMeasureFunction;
+//   property MeasureFunction:TKt2450_Measure read fMeasureFunction;
    property VoltageProtection:TKt_2450_VoltageProtection read fVoltageProtection;
    property VoltageLimit:double read fVoltageLimit;
    property CurrentLimit:double read fCurrentLimit;
-   property Terminal:TKt2450_OutputTerminals read fTerminal;
+//   property Terminal:TKeitley_OutputTerminals read fTerminal;
    property OutPutOn:boolean read fOutPutOn write fOutPutOn;
    property ResistanceCompencateOn:TKt2450_MeasureBool read fResistanceCompencateOn;
    property ReadBack:TKt2450_SourceBool read fReadBack;
@@ -234,18 +235,18 @@ TKT2450_SourceDevice=class;
    procedure SetInterlockStatus(toOn:boolean);
    function IsInterlockOn():boolean;
 
-   procedure ClearUserScreen();
-   procedure TextToUserScreen(top_text:string='';bottom_text:string='');
+//   procedure ClearUserScreen();
+//   procedure TextToUserScreen(top_text:string='';bottom_text:string='');
 
 //   procedure SaveSetup(SlotNumber:TKeitley_SetupMemorySlot);
-   procedure LoadSetup(SlotNumber:TKeitley_SetupMemorySlot);
-   procedure LoadSetupPowerOn(SlotNumber:TKeitley_SetupMemorySlot);
-   procedure UnloadSetupPowerOn();
+//   procedure LoadSetup(SlotNumber:TKeitley_SetupMemorySlot);
+//   procedure LoadSetupPowerOn(SlotNumber:TKeitley_SetupMemorySlot);
+//   procedure UnloadSetupPowerOn();
 //   procedure RunningMacroScript(ScriptName:string);
 
-   procedure SetTerminal(Terminal:TKt2450_OutputTerminals);
+   procedure SetTerminal(TerminalType:TKeitley_OutputTerminals);
    {вихід на передню чи задню панель}
-   function GetTerminal():boolean;
+//   function GetTerminal():boolean;
    {вихід на передню чи задню панель}
 
    procedure SetSense(MeasureType:TKt2450_Measure;Sense:TKt2450_Sense);
@@ -319,9 +320,11 @@ TKT2450_SourceDevice=class;
    при цьому вихід виключається OutPut=Off}
    function GetSourceType():boolean;
 
-   procedure SetMeasureFunction(MeasureFunction:TKt2450_Measure=kt_mCurrent);
+//   procedure SetMeasureFunction(MeasureFunction:TKt2450_Measure=kt_mCurrent);
+   procedure SetMeasureFunction(MeasureFunction:TKt2450_Measure=kt_mCurDC);reintroduce;overload;
+//   procedure SetMeasureFunction(MeasureFunction:TKt2450_Measure=kt_mCurDC);overload;
    {прилад вимірює напругу чи струм}
-   function GetMeasureFunction():boolean;
+//   function GetMeasureFunction():boolean;
 
    procedure SetMeasureUnit(Measure:TKt2450_Measure; MeasureUnit:TKt_2450_MeasureUnit);
    {що буде вимірювати (розраховувати) при реальних вимірах Measure}
@@ -533,12 +536,12 @@ TKT2450_SourceDevice=class;
    (див. TKt2450_ReturnedData) щодо останнього виміру}
 
 
-   Procedure Init;
-   Procedure Abort;
-   Procedure Wait;
+//   Procedure Init;
+//   Procedure Abort;
+//   Procedure Wait;
    Procedure TrigPause;
    Procedure TrigResume;
-   Procedure InitWait;
+//   Procedure InitWait;
    Procedure TrigEventGenerate;
    {generates a trigger event }
 
@@ -651,11 +654,11 @@ uses
 
 { TKt_2450 }
 
-procedure TKt_2450.Abort;
-begin
-//:ABOR
- SetupOperation(18,0,0,False);
-end;
+//procedure TKt_2450.Abort;
+//begin
+////:ABOR
+// SetupOperation(18,0,0,False);
+//end;
 
 procedure TKt_2450.AzeroOnce;
 begin
@@ -675,11 +678,11 @@ begin
  SetupOperation(19,29);
 end;
 
-procedure TKt_2450.ClearUserScreen;
-begin
-// :DISP:CLE
- SetupOperation(6,3,0,false);
-end;
+//procedure TKt_2450.ClearUserScreen;
+//begin
+//// :DISP:CLE
+// SetupOperation(6,3,0,false);
+//end;
 
 procedure TKt_2450.ConfigBothRecall(SourceListName, MeasListName: string;
   SourceItemIndex, MeasItemIndex: word);
@@ -796,11 +799,12 @@ begin
 
  fIsTripped:=False;
  fSourceType:=kt_sVolt;
- fMeasureFunction:=kt_mCurrent;
+// fMeasureFunction:=kt_mCurrent;
+ fMeasureFunction:=kt_mCurDC;
  fVoltageProtection:=kt_vpnone;
  fVoltageLimit:=Kt_2450_VoltageLimDef;
  fCurrentLimit:=Kt_2450_CurrentLimDef;
- fTerminal:=kt_otFront;
+// fTerminal:=kt_otFront;
  fOutPutOn:=False;
  for I := ord(Low(TKt2450_Measure)) to ord(High(TKt2450_Measure)) do
    begin
@@ -946,7 +950,9 @@ end;
 
 function TKt_2450.GetDisplayDNs: boolean;
 begin
- Result:=GetDisplayDigitsNumber(kt_mCurrent) and GetDisplayDigitsNumber(kt_mVoltage);
+// Result:=GetDisplayDigitsNumber(kt_mCurrent) and GetDisplayDigitsNumber(kt_mVoltage);
+ Result:=GetDisplayDigitsNumber(kt_mCurDC)
+         and GetDisplayDigitsNumber(kt_mVolDC);
 end;
 
 function TKt_2450.GetDidLinOut(LineNumber: TKt2450_DigLines): integer;
@@ -1030,12 +1036,12 @@ begin
    end;
 end;
 
-function TKt_2450.GetMeasureFunction: boolean;
-begin
- QuireOperation(15);
- Result:=(fDevice.Value<>ErResult);
-// showmessage('measure '+inttostr(ord(fMeasureFunction)))
-end;
+//function TKt_2450.GetMeasureFunction: boolean;
+//begin
+// QuireOperation(15);
+// Result:=(fDevice.Value<>ErResult);
+//// showmessage('measure '+inttostr(ord(fMeasureFunction)))
+//end;
 
 function TKt_2450.GetMeasureLowRanges: boolean;
 begin
@@ -1052,7 +1058,7 @@ begin
 // SetupOperation(ord(Measure)+12,26);
  QuireOperation(ord(Measure)+12,26);
  Result:=(fDevice.Value<>ErResult);
- if Result then fMeasureTime[Measure]:=fDevice.Value*KT_2450_MeaureTimeConvertConst;
+ if Result then fMeasureTime[Measure]:=fDevice.Value*Keitley_MeaureTimeConvertConst;
 end;
 
 function TKt_2450.GetMeasureTime: boolean;
@@ -1062,14 +1068,17 @@ end;
 
 function TKt_2450.GetMeasureTimes: boolean;
 begin
- Result:= GetMeasureTime(kt_mCurrent)
-         and GetMeasureTime(kt_mVoltage);
+// Result:= GetMeasureTime(kt_mCurrent)
+//         and GetMeasureTime(kt_mVoltage);
+ Result:= GetMeasureTime(kt_mCurDC)
+         and GetMeasureTime(kt_mVolDC);
 end;
 
 function TKt_2450.GetMeasureUnit(Measure: TKt2450_Measure): boolean;
 begin
  Result:=False;
- if Measure>kt_mVoltage then Exit;
+// if Measure>kt_mVoltage then Exit;
+ if Measure>kt_mVolDC then Exit;
  QuireOperation(ord(Measure)+12,14);
  Result:=(fDevice.Value<>ErResult);
 // showmessage('measure2 '+inttostr(ord(Measure)));
@@ -1081,7 +1090,9 @@ function TKt_2450.GetMeasureUnits: boolean;
  var i:TKt2450_Measure;
 begin
  Result:=True;
- for I := kt_mCurrent to kt_mVoltage do
+// for I := kt_mCurrent to kt_mVoltage do
+//   Result:=Result and GetMeasureUnit(i);
+ for I := kt_mCurDC to kt_mVolDC do
    Result:=Result and GetMeasureUnit(i);
 end;
 
@@ -1132,6 +1143,7 @@ end;
 procedure TKt_2450.GetParametersFromDevice;
 begin
  inherited;
+
  if not(GetVoltageProtection()) then Exit;
  if not(GetVoltageLimit()) then Exit;
  if not(GetCurrentLimit()) then Exit;
@@ -1139,7 +1151,7 @@ begin
  if not(GetMeasureFunction()) then Exit; //GetDeviceMode
  if not(IsResistanceCompencateOn()) then Exit;  //має бути після GetMeasureFunction
 
- if not(GetTerminal()) then Exit;
+// if not(GetTerminal()) then Exit;
  if not(IsOutPutOn()) then Exit;
  if not(GetSenses()) then Exit;
  if not(GetOutputOffStates()) then Exit;
@@ -1288,11 +1300,11 @@ begin
    end;
 end;
 
-function TKt_2450.GetTerminal: boolean;
-begin
- QuireOperation(9,6);
- Result:=(fDevice.Value<>ErResult);
-end;
+//function TKt_2450.GetTerminal: boolean;
+//begin
+// QuireOperation(9,6);
+// Result:=(fDevice.Value<>ErResult);
+//end;
 
 function TKt_2450.GetVoltageLimit: boolean;
 begin
@@ -1314,18 +1326,18 @@ begin
  fAzeroState[Measure]:=Result;
 end;
 
-procedure TKt_2450.Init;
-begin
-// INIT
- SetupOperation(17,0,0,False);
-end;
+//procedure TKt_2450.Init;
+//begin
+//// INIT
+// SetupOperation(17,0,0,False);
+//end;
 
-procedure TKt_2450.InitWait;
-begin
-// INIT; *WAI
- fAdditionalString:=CommandDelimiter+RootNoodKeitley[25];
- SetupOperation(17,1,0,False);
-end;
+//procedure TKt_2450.InitWait;
+//begin
+//// INIT; *WAI
+// fAdditionalString:=CommandDelimiter+RootNoodKeitley[25];
+// SetupOperation(17,1,0,False);
+//end;
 
 function TKt_2450.IsAzeroStateOn: boolean;
 begin
@@ -1372,8 +1384,10 @@ end;
 function TKt_2450.IsResistanceCompencateOn: boolean;
 begin
  case fMeasureFunction of
-   kt_mCurrent: QuireOperation(12,9);
-   kt_mVoltage: QuireOperation(13,9);
+//   kt_mCurrent: QuireOperation(12,9);
+//   kt_mVoltage: QuireOperation(13,9);
+   kt_mCurDC: QuireOperation(12,9);
+   kt_mVolDC: QuireOperation(13,9);
  end;
  Result:=(fDevice.Value=1);
  fResistanceCompencateOn[fMeasureFunction]:=Result;
@@ -1401,19 +1415,19 @@ begin
  Result:=IsLimitExcided(13,10);
 end;
 
-procedure TKt_2450.LoadSetup(SlotNumber: TKeitley_SetupMemorySlot);
-begin
-// *RCL <n>
- fAdditionalString:=inttostr(SlotNumber);
- SetupOperation(1);
-end;
+//procedure TKt_2450.LoadSetup(SlotNumber: TKeitley_SetupMemorySlot);
+//begin
+//// *RCL <n>
+// fAdditionalString:=inttostr(SlotNumber);
+// SetupOperation(1);
+//end;
 
-procedure TKt_2450.LoadSetupPowerOn(SlotNumber: TKeitley_SetupMemorySlot);
-begin
-//  SYST:POS SAV1
-  fAdditionalString:='sav'+inttostr(SlotNumber);
-  SetupOperation(7,4);
-end;
+//procedure TKt_2450.LoadSetupPowerOn(SlotNumber: TKeitley_SetupMemorySlot);
+//begin
+////  SYST:POS SAV1
+//  fAdditionalString:='sav'+inttostr(SlotNumber);
+//  SetupOperation(7,4);
+//end;
 
 procedure TKt_2450.MeasureSimple;
 begin
@@ -1925,46 +1939,46 @@ begin
   5:case fFirstLevelNode of
      5: JoinToStringToSend(FirstNodeKt_2450[fFirstLevelNode]);
      0..1:begin
-           JoinToStringToSend(RootNoodKeitley[12+fFirstLevelNode]);
+           JoinToStringToSend(RootNodeKeitley[12+fFirstLevelNode]);
            JoinToStringToSend(FirstNodeKt_2450[fLeafNode]);
           end;
     end;  // fRootNode=5
   6:case fFirstLevelNode of
-      30:;
+      30,0,1,2,3:;
       12,13,14:
         begin
-        JoinToStringToSend(RootNoodKeitley[fFirstLevelNode]);
+        JoinToStringToSend(RootNodeKeitley[fFirstLevelNode]);
         JoinToStringToSend(FirstNodeKt_2450[fLeafNode]);
         end;
       else JoinToStringToSend(FirstNodeKt_2450[fFirstLevelNode]);
      end;  // fRootNode=6
 //  7,
-  9:JoinToStringToSend(FirstNodeKt_2450[fFirstLevelNode]);
+//  9:JoinToStringToSend(FirstNodeKt_2450[fFirstLevelNode]);
   11:case fFirstLevelNode of
        12..13:case fLeafNode of
-                0:JoinToStringToSend(RootNoodKeitley[fFirstLevelNode]);
+                0:JoinToStringToSend(RootNodeKeitley[fFirstLevelNode]);
                 else
                    begin
-                    JoinToStringToSend(RootNoodKeitley[fFirstLevelNode]);
+                    JoinToStringToSend(RootNodeKeitley[fFirstLevelNode]);
                     JoinToStringToSend(FirstNodeKt_2450[fLeafNode]);
                     if fIsTripped then JoinToStringToSend(FirstNodeKt_2450[11]);
                    end;
               end;
-       55:JoinToStringToSend(RootNoodKeitley[15]);
+       55:JoinToStringToSend(RootNodeKeitley[15]);
        23:case fLeafNode of
              79,80:begin
                    JoinToStringToSend(FirstNodeKt_2450[fFirstLevelNode]);
-                   JoinToStringToSend(RootNoodKeitley[fLeafNode-79+12]);
+                   JoinToStringToSend(RootNodeKeitley[fLeafNode-79+12]);
                    JoinToStringToSend(FirstNodeKt_2450[24]);
                    end;
              else
                  begin
                  JoinToStringToSend(FirstNodeKt_2450[fFirstLevelNode]);
-                 JoinToStringToSend(RootNoodKeitley[fLeafNode]);
+                 JoinToStringToSend(RootNodeKeitley[fLeafNode]);
                  end;
           end;
         24:begin
-            JoinToStringToSend(RootNoodKeitley[fFirstLevelNode]);
+            JoinToStringToSend(RootNodeKeitley[fFirstLevelNode]);
             JoinToStringToSend(FirstNodeKt_2450[23]);
             JoinToStringToSend(ConfLeafNodeKt_2450[fLeafNode]);
            end;
@@ -1985,7 +1999,7 @@ begin
           18,19:JoinToStringToSend(FirstNodeKt_2450[fLeafNode]);
          end;
        end; // fRootNode=12..14
-  17:if fFirstLevelNode=1 then JoinToStringToSend(fAdditionalString);
+//  17:if fFirstLevelNode=1 then JoinToStringToSend(fAdditionalString);
   19:begin
        JoinToStringToSend(FirstNodeKt_2450[fFirstLevelNode]);
        case fFirstLevelNode of
@@ -2026,7 +2040,7 @@ begin
            end;
         24,11:begin
             JoinToStringToSend(FirstNodeKt_2450[39]);
-            JoinToStringToSend(RootNoodKeitley[fFirstLevelNode]);
+            JoinToStringToSend(RootNodeKeitley[fFirstLevelNode]);
             JoinToStringToSend(TrigLeafNodeKt_2450[fLeafNode]);
             fAdditionalString:=IntTostr(fTrigBlockNumber)+PartDelimiter+fAdditionalString;
             inc(fTrigBlockNumber);
@@ -2065,8 +2079,8 @@ begin
 //
 //        end
 //       else fDevice.Value:=StrToInt(Str);
-  9:if StringToTerminals(AnsiLowerCase(Str))
-          then fDevice.Value:=ord(fTerminal);
+//  9:if StringToTerminals(AnsiLowerCase(Str))
+//          then fDevice.Value:=ord(fTerminal);
   11:case fFirstLevelNode of
         23:begin
            StringToArray(Str);
@@ -2087,7 +2101,7 @@ begin
                     then fDevice.Value:=ord(fMeasureUnits[TKt2450_Measure(fFirstLevelNode-12)]);
              16,15,26:fDevice.Value:=SCPI_StringToValue(Str);
           end;   //fRootNode=12..14
-   15:if StringToMeasureFunction(AnsiLowerCase(Str)) then fDevice.Value:=ord(fMeasureFunction);
+//   15:if StringToMeasureFunction(AnsiLowerCase(Str)) then fDevice.Value:=ord(fMeasureFunction);
    19:case fFirstLevelNode of
           31: fDevice.Value:=StrToInt(Str);
           32:if Buffer.StringToFillMode(AnsiLowerCase(Str))
@@ -2262,22 +2276,27 @@ end;
 procedure TKt_2450.SetMeasureFunction(MeasureFunction: TKt2450_Measure);
 begin
 // :FUNC "VOLT"|"CURR"
- case MeasureFunction of
-  kt_mCurrent:fAdditionalString:=StringToInvertedCommas(DeleteSubstring(RootNoodKeitley[12]));
-  kt_mVoltage:fAdditionalString:=StringToInvertedCommas(DeleteSubstring(RootNoodKeitley[13]));
-  kt_mResistance:Exit;
- end;
-
- SetupOperation(15);
- fMeasureFunction:=MeasureFunction;
+ if MeasureFunction=kt_mRes2W then Exit;
+ inherited SetMeasureFunction(MeasureFunction);
+// case MeasureFunction of
+////  kt_mCurrent:fAdditionalString:=StringToInvertedCommas(DeleteSubstring(RootNoodKeitley[12]));
+////  kt_mVoltage:fAdditionalString:=StringToInvertedCommas(DeleteSubstring(RootNoodKeitley[13]));
+////  kt_mResistance:Exit;
+//  kt_mCurDC:fAdditionalString:=StringToInvertedCommas(DeleteSubstring(RootNodeKeitley[12]));
+//  kt_mVolDC:fAdditionalString:=StringToInvertedCommas(DeleteSubstring(RootNodeKeitley[13]));
+//  kt_mRes2W:Exit;
+// end;
+//
+// SetupOperation(15);
+// fMeasureFunction:=MeasureFunction;
 end;
 
 procedure TKt_2450.SetMeasureTime(Measure: TKt2450_Measure; Value: double);
 begin
 //CURR|VOLT|RES:NPLC value
- fAdditionalString:=NumberToStrLimited(Value/KT_2450_MeaureTimeConvertConst,Kt_2450_MeasureTimeLimits);
+ fAdditionalString:=NumberToStrLimited(Value/Keitley_MeaureTimeConvertConst,Kt_2450_MeasureTimeLimits);
  SetupOperation(ord(Measure)+12,26);
- fMeasureTime[Measure]:=strtofloat(fAdditionalString)*KT_2450_MeaureTimeConvertConst;
+ fMeasureTime[Measure]:=strtofloat(fAdditionalString)*Keitley_MeaureTimeConvertConst;
 end;
 
 procedure TKt_2450.SetMeasureTime(Value: double);
@@ -2296,10 +2315,15 @@ procedure TKt_2450.SetMeasureUnit(Measure: TKt2450_Measure;
      MeasureUnit: TKt_2450_MeasureUnit);
 begin
 // :VOLT|CURR:UNIT VOLT|AMP|OHM|WATT
-  if Measure>kt_mVoltage then Exit;
-  if (Measure=kt_mVoltage)and(MeasureUnit=kt_mu_amp)
+//  if Measure>kt_mVoltage then Exit;
+//  if (Measure=kt_mVoltage)and(MeasureUnit=kt_mu_amp)
+//                  then Exit;
+//  if (Measure=kt_mCurrent)and(MeasureUnit=kt_mu_volt)
+//                 then Exit;
+  if Measure>kt_mVolDC then Exit;
+  if (Measure=kt_mVolDC)and(MeasureUnit=kt_mu_amp)
                   then Exit;
-  if (Measure=kt_mCurrent)and(MeasureUnit=kt_mu_volt)
+  if (Measure=kt_mCurDC)and(MeasureUnit=kt_mu_volt)
                  then Exit;
   fAdditionalString:=SuffixKt_2450[ord(MeasureUnit)+4];
  SetupOperation(ord(Measure)+12,14);
@@ -2335,16 +2359,25 @@ procedure TKt_2450.SetMode(Mode: TKt_2450_Mode);
 begin
  if Mode in [kt_md_sVmC,kt_md_sVmR,kt_md_sVmP,kt_md_sImC]
      then SetMeasureFunction()
-     else SetMeasureFunction(kt_mVoltage);
+//     else SetMeasureFunction(kt_mVoltage);
+     else SetMeasureFunction(kt_mVolDC);
  case Mode of
-  kt_md_sVmC:SetMeasureUnit(kt_mCurrent,kt_mu_amp);
-  kt_md_sVmV:SetMeasureUnit(kt_mVoltage,kt_mu_volt);
-  kt_md_sVmR:SetMeasureUnit(kt_mCurrent,kt_mu_ohm);
-  kt_md_sVmP:SetMeasureUnit(kt_mCurrent,kt_mu_watt);
-  kt_md_sImC:SetMeasureUnit(kt_mCurrent,kt_mu_amp);
-  kt_md_sImV:SetMeasureUnit(kt_mVoltage,kt_mu_volt);
-  kt_md_sImR:SetMeasureUnit(kt_mVoltage,kt_mu_ohm);
-  kt_md_sImP:SetMeasureUnit(kt_mVoltage,kt_mu_watt);
+//  kt_md_sVmC:SetMeasureUnit(kt_mCurrent,kt_mu_amp);
+//  kt_md_sVmV:SetMeasureUnit(kt_mVoltage,kt_mu_volt);
+//  kt_md_sVmR:SetMeasureUnit(kt_mCurrent,kt_mu_ohm);
+//  kt_md_sVmP:SetMeasureUnit(kt_mCurrent,kt_mu_watt);
+//  kt_md_sImC:SetMeasureUnit(kt_mCurrent,kt_mu_amp);
+//  kt_md_sImV:SetMeasureUnit(kt_mVoltage,kt_mu_volt);
+//  kt_md_sImR:SetMeasureUnit(kt_mVoltage,kt_mu_ohm);
+//  kt_md_sImP:SetMeasureUnit(kt_mVoltage,kt_mu_watt);
+  kt_md_sVmC:SetMeasureUnit(kt_mCurDC,kt_mu_amp);
+  kt_md_sVmV:SetMeasureUnit(kt_mVolDC,kt_mu_volt);
+  kt_md_sVmR:SetMeasureUnit(kt_mCurDC,kt_mu_ohm);
+  kt_md_sVmP:SetMeasureUnit(kt_mCurDC,kt_mu_watt);
+  kt_md_sImC:SetMeasureUnit(kt_mCurDC,kt_mu_amp);
+  kt_md_sImV:SetMeasureUnit(kt_mVolDC,kt_mu_volt);
+  kt_md_sImR:SetMeasureUnit(kt_mVolDC,kt_mu_ohm);
+  kt_md_sImP:SetMeasureUnit(kt_mVolDC,kt_mu_watt);
  end;
  if Mode in [kt_md_sVmC..kt_md_sVmP]
      then SetSourceType(kt_sVolt)
@@ -2379,8 +2412,10 @@ begin
 // RES:OCOM ON|OFF
  OnOffFromBool(toOn);
  case fMeasureFunction of
-   kt_mCurrent: SetupOperation(12,9);
-   kt_mVoltage: SetupOperation(13,9);
+//   kt_mCurrent: SetupOperation(12,9);
+//   kt_mVoltage: SetupOperation(13,9);
+   kt_mCurDC: SetupOperation(12,9);
+   kt_mVolDC: SetupOperation(13,9);
  end;
  fResistanceCompencateOn[fMeasureFunction]:=toOn;
 end;
@@ -2473,20 +2508,20 @@ if Range=kt_vrAuto then
 fSourceVoltageRange:=Range;
 end;
 
-procedure TKt_2450.SetTerminal(Terminal: TKt2450_OutputTerminals);
+procedure TKt_2450.SetTerminal(TerminalType: TKeitley_OutputTerminals);
 begin
 // :ROUT:TERM  FRON|REAR
- fAdditionalString:=Kt2450_TerminalsName[Terminal];
+ fAdditionalString:=Keitley_TerminalsName[TerminalType];
  SetupOperation(9,6);
- fTerminal:=Terminal;
+ Terminal:=TerminalType;
 end;
 
-procedure TKt_2450.UnloadSetupPowerOn;
-begin
-//SYST:POS RST
-  fAdditionalString:=DeleteSubstring(RootNoodKeitley[2],'*');
-  SetupOperation(7,4);
-end;
+//procedure TKt_2450.UnloadSetupPowerOn;
+//begin
+////SYST:POS RST
+//  fAdditionalString:=DeleteSubstring(RootNoodKeitley[2],'*');
+//  SetupOperation(7,4);
+//end;
 
 
 function TKt_2450.ValueToCurrentRange(Value: double): TKt2450CurrentRange;
@@ -2505,11 +2540,11 @@ begin
   Result:=floattostr(2e-2*Power(10,ord(Range)-1));
 end;
 
-procedure TKt_2450.Wait;
-begin
-// *WAI
- SetupOperation(25,0,0,False);
-end;
+//procedure TKt_2450.Wait;
+//begin
+//// *WAI
+// SetupOperation(25,0,0,False);
+//end;
 
 procedure TKt_2450.SetVoltageLimit(Value: double);
 begin
@@ -2624,18 +2659,19 @@ end;
 //  end;
 //end;
 
-function TKt_2450.StringToMeasureFunction(Str: string): boolean;
-  var i:TKt2450_Measure;
-begin
- Result:=False;
- for I := Low(TKt2450_Measure) to kt_mResistance do
-   if pos(DeleteSubstring(RootNoodKeitley[ord(i)+12]),Str)<>0 then
-     begin
-       fMeasureFunction:=i;
-       Result:=True;
-       Break;
-     end;
-end;
+//function TKt_2450.StringToMeasureFunction(Str: string): boolean;
+//  var i:TKt2450_Measure;
+//begin
+// Result:=False;
+// for I := Low(TKt2450_Measure) to kt_mResistance do
+//   if pos(DeleteSubstring(RootNoodKeitley[ord(i)+12]),Str)<>0 then
+//     begin
+//       fMeasureFunction:=i;
+//       Result:=True;
+//       fDevice.Value:=ord(fMeasureFunction);
+//       Break;
+//     end;
+//end;
 
 function TKt_2450.StringToMeasureTime(Str: string): double;
 begin
@@ -2745,18 +2781,18 @@ begin
      end;
 end;
 
-function TKt_2450.StringToTerminals(Str: string): boolean;
-  var i:TKt2450_OutputTerminals;
-begin
- Result:=False;
- for I := Low(TKt2450_OutputTerminals) to High(TKt2450_OutputTerminals) do
-   if Str=Kt2450_TerminalsName[i] then
-     begin
-       fTerminal:=i;
-       Result:=True;
-       Break;
-     end;
-end;
+//function TKt_2450.StringToTerminals(Str: string): boolean;
+//  var i:TKeitley_OutputTerminals;
+//begin
+// Result:=False;
+// for I := Low(TKeitley_OutputTerminals) to High(TKeitley_OutputTerminals) do
+//   if Str=Keitley_TerminalsName[i] then
+//     begin
+//       fTerminal:=i;
+//       Result:=True;
+//       Break;
+//     end;
+//end;
 
 function TKt_2450.StringToVoltageProtection(Str: string;
     var vp: TKt_2450_VoltageProtection): boolean;
@@ -2803,26 +2839,26 @@ end;
 // Result:=(fDevice.Value=314);
 //end;
 
-procedure TKt_2450.TextToUserScreen(top_text, bottom_text: string);
-begin
-//DISP:SCR SWIPE_USER
-//DISP:USER1:TEXT "top_text"
-//DISP:USER2:TEXT "Tbottom_text"
- fAdditionalString:='SWIPE_USER';
- SetupOperation(6,0);
- if top_text<>'' then
-   begin
-     if Length(top_text)>20 then SetLength(top_text,20);
-     fAdditionalString:=StringToInvertedCommas(top_text);
-     SetupOperation(6,1);
-   end;
- if bottom_text<>'' then
-   begin
-     if Length(bottom_text)>32 then SetLength(bottom_text,32);
-     fAdditionalString:=StringToInvertedCommas(bottom_text);
-     SetupOperation(6,2);
-   end;
-end;
+//procedure TKt_2450.TextToUserScreen(top_text, bottom_text: string);
+//begin
+////DISP:SCR SWIPE_USER
+////DISP:USER1:TEXT "top_text"
+////DISP:USER2:TEXT "Tbottom_text"
+// fAdditionalString:='SWIPE_USER';
+// SetupOperation(6,0);
+// if top_text<>'' then
+//   begin
+//     if Length(top_text)>20 then SetLength(top_text,20);
+//     fAdditionalString:=StringToInvertedCommas(top_text);
+//     SetupOperation(6,1);
+//   end;
+// if bottom_text<>'' then
+//   begin
+//     if Length(bottom_text)>32 then SetLength(bottom_text,32);
+//     fAdditionalString:=StringToInvertedCommas(bottom_text);
+//     SetupOperation(6,2);
+//   end;
+//end;
 
 procedure TKt_2450.TrigAlwaysTransition(TransitionBlockNumber: word);
 begin
@@ -3254,20 +3290,20 @@ end;
 
 function TKt_2450_SweepParameters.GetLin: string;
 begin
- Result:=RootNoodKeitley[1-ord(fSource)+12]+':lin '
+ Result:=RootNodeKeitley[1-ord(fSource)+12]+':lin '
          +ParameterString();
 end;
 
 function TKt_2450_SweepParameters.GetLinStep: string;
 begin
- Result:=RootNoodKeitley[1-ord(fSource)+12]+':lin:step '
+ Result:=RootNodeKeitley[1-ord(fSource)+12]+':lin:step '
          +ParameterString(True);
 end;
 
 function TKt_2450_SweepParameters.GetList: string;
 begin
 //LIST <startIndex>, <delay>, <count>, <failAbort>
- Result:=RootNoodKeitley[1-ord(fSource)+12]+FirstNodeKt_2450[23]+' '
+ Result:=RootNodeKeitley[1-ord(fSource)+12]+FirstNodeKt_2450[23]+' '
          +Inttostr(fStartIndex)+PartDelimiter
          +FloatToStrF(fDelay,ffExponent,4,0)+PartDelimiter
          +IntToStr(fCount)+PartDelimiter
@@ -3276,7 +3312,7 @@ end;
 
 function TKt_2450_SweepParameters.GetLog: string;
 begin
- Result:=RootNoodKeitley[1-ord(fSource)+12]+':log '
+ Result:=RootNodeKeitley[1-ord(fSource)+12]+':log '
          +ParameterString();
 end;
 

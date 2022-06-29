@@ -161,7 +161,7 @@ object DMM6500Form: TDMM6500Form
     Left = 632
     Top = 4
     Width = 139
-    Height = 201
+    Height = 231
     Caption = 'Settings'
     Font.Charset = RUSSIAN_CHARSET
     Font.Color = clMaroon
@@ -172,7 +172,7 @@ object DMM6500Form: TDMM6500Form
     TabOrder = 3
     object L_DM6500_DispBr: TLabel
       Left = 24
-      Top = 153
+      Top = 185
       Width = 83
       Height = 16
       Caption = 'Display State'
@@ -184,7 +184,7 @@ object DMM6500Form: TDMM6500Form
       ParentFont = False
     end
     object PDM6500LoadSetup: TPanel
-      Left = 21
+      Left = 25
       Top = 49
       Width = 85
       Height = 23
@@ -202,7 +202,7 @@ object DMM6500Form: TDMM6500Form
       TabOrder = 0
     end
     object PDM6500SaveSetup: TPanel
-      Left = 19
+      Left = 25
       Top = 20
       Width = 85
       Height = 23
@@ -220,7 +220,7 @@ object DMM6500Form: TDMM6500Form
       TabOrder = 1
     end
     object B_DM6500GetSetting: TButton
-      Left = 3
+      Left = 7
       Top = 78
       Width = 124
       Height = 25
@@ -228,7 +228,7 @@ object DMM6500Form: TDMM6500Form
       TabOrder = 2
     end
     object B_DM6500_Reset: TButton
-      Left = 24
+      Left = 26
       Top = 111
       Width = 81
       Height = 25
@@ -243,7 +243,7 @@ object DMM6500Form: TDMM6500Form
     end
     object ST_DM6500_DispBr: TStaticText
       Left = 3
-      Top = 172
+      Top = 204
       Width = 136
       Height = 20
       Caption = 'sourceV measR(I)'
@@ -255,6 +255,21 @@ object DMM6500Form: TDMM6500Form
       ParentFont = False
       ShowAccelChar = False
       TabOrder = 4
+    end
+    object ST_DM6500_Terminals: TStaticText
+      Left = 9
+      Top = 155
+      Width = 118
+      Height = 20
+      Caption = 'Front Terminals'
+      Font.Charset = RUSSIAN_CHARSET
+      Font.Color = clPurple
+      Font.Height = -13
+      Font.Name = 'Verdana'
+      Font.Style = [fsBold]
+      ParentFont = False
+      ShowAccelChar = False
+      TabOrder = 5
     end
   end
   object TelnetDMM6500: TIdTelnet

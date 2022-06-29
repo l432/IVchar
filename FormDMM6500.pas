@@ -24,12 +24,13 @@ type
     B_DM6500Test: TButton;
     TelnetDMM6500: TIdTelnet;
     GB_DM6500Setup: TGroupBox;
-    L_DM6500_DispBr: TLabel;
     PDM6500LoadSetup: TPanel;
     PDM6500SaveSetup: TPanel;
     B_DM6500GetSetting: TButton;
     B_DM6500_Reset: TButton;
     ST_DM6500_DispBr: TStaticText;
+    L_DM6500_DispBr: TLabel;
+    ST_DM6500_Terminals: TStaticText;
     procedure BCloseClick(Sender: TObject);
     procedure FormPaint(Sender: TObject);
   private

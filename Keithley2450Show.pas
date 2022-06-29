@@ -17,27 +17,27 @@ type
 
  TKt_2450_Show=class;
 
- TKeitley_SetupMemoryPins=class(TPins)
-  protected
-   Function GetPinStr(Index:integer):string;override;
-  public
-   Constructor Create(Name:string);
- end;
+// TKeitley_SetupMemoryPins=class(TPins)
+//  protected
+//   Function GetPinStr(Index:integer):string;override;
+//  public
+//   Constructor Create(Name:string);
+// end;
 
 
- TKeitley_SetupMemoryShow=class(TPinsShowUniversal)
-   private
-    fKT2450_Show:TKt_2450_Show;
-    fMemoryPins:TKeitley_SetupMemoryPins;
-   protected
-    procedure LabelsFilling;
-    procedure CommandSend;
-   public
-    Constructor Create(KT2450_Show:TKt_2450_Show;
-                       PanelSave, PanelLoad:TPanel);
-    destructor Destroy;override;
-    procedure NumberPinShow(PinActiveNumber:integer=-1;ChooseNumber:integer=-1);override;
- end;
+// TKeitley_SetupMemoryShow=class(TPinsShowUniversal)
+//   private
+//    fKT2450_Show:TKt_2450_Show;
+//    fMemoryPins:TKeitley_SetupMemoryPins;
+//   protected
+//    procedure LabelsFilling;
+//    procedure CommandSend;
+//   public
+//    Constructor Create(KT2450_Show:TKt_2450_Show;
+//                       PanelSave, PanelLoad:TPanel);
+//    destructor Destroy;override;
+//    procedure NumberPinShow(PinActiveNumber:integer=-1;ChooseNumber:integer=-1);override;
+// end;
 
 TKt_2450_AbstractElementShow=class(TSimpleFreeAndAiniObject)
  private
@@ -285,7 +285,7 @@ end;
 //   BTest:TButton;
    fOutPutOnOff:TSpeedButton;
    fTerminalsFrRe:TSpeedButton;
-   fSetupMemoryShow:TKeitley_SetupMemoryShow;
+//   fSetupMemoryShow:TKeitley_SetupMemoryShow;
 
    fSourceShow:TKt_2450_SourceShow;
    SourceShowStaticText:array[TKt2450_SourceSettings]of TStaticText;
@@ -498,7 +498,9 @@ begin
     end;
 
 //  inherited Create(Kt_2450,[Buttons[0],Buttons[5]]);
-  inherited Create(Kt_2450,Buttons,STexts[ord(High(TKt2450_Settings))+1]);
+  inherited Create(Kt_2450,Buttons,
+                   Panels,
+                   STexts[ord(High(TKt2450_Settings))+1]);
   fKt_2450:=Kt_2450;
 
 //  ButtonsTune(Buttons);
@@ -568,14 +570,14 @@ begin
                                 MeasureMeterB,AutoMMeterB);
   fMeterShow.DigitNumber:=6;
 
-  fSetupMemoryShow:=TKeitley_SetupMemoryShow.Create(Self,Panels[0],Panels[1]);
+//  fSetupMemoryShow:=TKeitley_SetupMemoryShow.Create(Self,Panels[0],Panels[1]);
 
   ObjectToSetting();
 end;
 
 destructor TKt_2450_Show.Destroy;
 begin
-  FreeAndNil(fSetupMemoryShow);
+//  FreeAndNil(fSetupMemoryShow);
   FreeAndNil(fMeterShow);
   FreeAndNil(fSweetShow);
   MeasureShowFree();
@@ -589,7 +591,7 @@ procedure TKt_2450_Show.GetSettingButtonClick(Sender: TObject);
 begin
   if not(DeviceEthernetisAbsent) then
     begin
-    fKt_2450.GetTerminal();
+//    fKt_2450.GetTerminal();
     fKt_2450.IsOutPutOn();
     fKt_2450.GetVoltageProtection;
     fKt_2450.GetDeviceMode;
@@ -719,8 +721,9 @@ end;
 
 procedure TKt_2450_Show.ReadFromIniFile(ConfigFile: TIniFile);
 begin
+  inherited;
   fSweetShow.ReadFromIniFile(ConfigFile);
-  fSetupMemoryShow.ReadFromIniFile(ConfigFile);
+//  fSetupMemoryShow.ReadFromIniFile(ConfigFile);
 end;
 
 procedure TKt_2450_Show.ResetButtonClick(Sender: TObject);
@@ -906,7 +909,7 @@ end;
 procedure TKt_2450_Show.TerminalsFromDevice;
 begin
   fTerminalsFrRe.OnClick:=nil;
-  fTerminalsFrRe.Caption:=Kt2450_TerminalsButtonName[fKt_2450.Terminal];
+  fTerminalsFrRe.Caption:=Keitlay_TerminalsButtonName[fKt_2450.Terminal];
   fTerminalsFrRe.Down:=(fKt_2450.Terminal=kt_otRear);
   fTerminalsFrRe.OnClick:=TerminalsFrReSpeedButtonClick;
 end;
@@ -916,11 +919,11 @@ begin
  if fTerminalsFrRe.Down then
       begin
        fKt_2450.SetTerminal(kt_otRear);
-       fTerminalsFrRe.Caption:=Kt2450_TerminalsButtonName[kt_otRear];
+       fTerminalsFrRe.Caption:=Keitlay_TerminalsButtonName[kt_otRear];
       end             else
       begin
        fKt_2450.SetTerminal(kt_otFront);
-       fTerminalsFrRe.Caption:=Kt2450_TerminalsButtonName[kt_otFront];
+       fTerminalsFrRe.Caption:=Keitlay_TerminalsButtonName[kt_otFront];
       end;
 end;
 
@@ -946,69 +949,70 @@ end;
 
 procedure TKt_2450_Show.WriteToIniFile(ConfigFile: TIniFile);
 begin
+ inherited;
  fSweetShow.WriteToIniFile(ConfigFile);
- fSetupMemoryShow.WriteToIniFile(ConfigFile);
+// fSetupMemoryShow.WriteToIniFile(ConfigFile);
 end;
 
 { TKT2450_SetupMemory }
 
-procedure TKeitley_SetupMemoryShow.CommandSend;
-begin
+//procedure TKeitley_SetupMemoryShow.CommandSend;
+//begin
+//
+//end;
 
-end;
-
-constructor TKeitley_SetupMemoryShow.Create(KT2450_Show:TKt_2450_Show;
-                              PanelSave, PanelLoad: TPanel);
-begin
- fKT2450_Show:=KT2450_Show;
- fMemoryPins:=TKeitley_SetupMemoryPins.Create(fKT2450_Show.fKt_2450.Name+'Pins');
- inherited Create(fMemoryPins,[PanelSave, PanelLoad]);
- LabelsFilling();
-end;
+//constructor TKeitley_SetupMemoryShow.Create(KT2450_Show:TKt_2450_Show;
+//                              PanelSave, PanelLoad: TPanel);
+//begin
+// fKT2450_Show:=KT2450_Show;
+// fMemoryPins:=TKeitley_SetupMemoryPins.Create(fKT2450_Show.fKt_2450.Name+'Pins');
+// inherited Create(fMemoryPins,[PanelSave, PanelLoad]);
+// LabelsFilling();
+//end;
 
 { TKT2450_SetupMemoryPins }
 
-constructor TKeitley_SetupMemoryPins.Create(Name: string);
-begin
- inherited Create(Name,['SaveSlot','LoadSlot']);
- PinStrPart:='';
-end;
+//constructor TKeitley_SetupMemoryPins.Create(Name: string);
+//begin
+// inherited Create(Name,['SaveSlot','LoadSlot']);
+// PinStrPart:='';
+//end;
 
-destructor TKeitley_SetupMemoryShow.Destroy;
-begin
-  fKT2450_Show:=nil;
-  FreeAndNil(fMemoryPins);
-  inherited;
-end;
+//destructor TKeitley_SetupMemoryShow.Destroy;
+//begin
+//  fKT2450_Show:=nil;
+//  FreeAndNil(fMemoryPins);
+//  inherited;
+//end;
 
-procedure TKeitley_SetupMemoryShow.LabelsFilling;
- var i:TKeitley_SetupMemorySlot;
-begin
- fPinVariants[0].Clear;
- fPinVariants[1].Clear;
- for I := Low(TKeitley_SetupMemorySlot) to High(TKeitley_SetupMemorySlot) do
-   begin
-     fPinVariants[0].Add(inttostr(I));
-     fPinVariants[1].Add(inttostr(I));
-   end;
-end;
+//procedure TKeitley_SetupMemoryShow.LabelsFilling;
+// var i:TKeitley_SetupMemorySlot;
+//begin
+// fPinVariants[0].Clear;
+// fPinVariants[1].Clear;
+// for I := Low(TKeitley_SetupMemorySlot) to High(TKeitley_SetupMemorySlot) do
+//   begin
+//     fPinVariants[0].Add(inttostr(I));
+//     fPinVariants[1].Add(inttostr(I));
+//   end;
+//end;
 
-procedure TKeitley_SetupMemoryShow.NumberPinShow(PinActiveNumber: integer;ChooseNumber:integer);
-begin
- inherited;
- case PinActiveNumber of
-  0:fKT2450_Show.fKt_2450.SaveSetup(TKeitley_SetupMemorySlot(ChooseNumber));
-  1:fKT2450_Show.fKt_2450.LoadSetup(TKeitley_SetupMemorySlot(ChooseNumber));
- end;
-end;
+//procedure TKeitley_SetupMemoryShow.NumberPinShow(PinActiveNumber: integer;ChooseNumber:integer);
+//begin
+// inherited;
+// case PinActiveNumber of
+//  0:fKT2450_Show.fKt_2450.SaveSetup(TKeitley_SetupMemorySlot(ChooseNumber));
+//  1:fKT2450_Show.fKt_2450.LoadSetup(TKeitley_SetupMemorySlot(ChooseNumber));
+// end;
+//end;
 
-function TKeitley_SetupMemoryPins.GetPinStr(Index: integer): string;
-begin
- case Index of
-  0:Result:='Save Setup';
-  else Result:='Load Setup';
- end;
-end;
+//function TKeitley_SetupMemoryPins.GetPinStr(Index: integer): string;
+//begin
+// case Index of
+//  0:Result:='Save Setup';
+//  else Result:='Load Setup';
+// end;
+//end;
 
 { TKt_2450_AbstractElementShow }
 
@@ -1282,11 +1286,13 @@ if fKt_2450.ResistanceCompencateOn[fKt_2450.MeasureFunction]
     kt_md_sVmC,
     kt_md_sVmR,
     kt_md_sVmP,
-    kt_md_sImC:fSettingsShow[kt_ms_sense].Data:=ord(fKt_2450.Sences[kt_mCurrent]);
+//    kt_md_sImC:fSettingsShow[kt_ms_sense].Data:=ord(fKt_2450.Sences[kt_mCurrent]);
+    kt_md_sImC:fSettingsShow[kt_ms_sense].Data:=ord(fKt_2450.Sences[kt_mCurDC]);
     kt_md_sVmV,
     kt_md_sImV,
     kt_md_sImR,
-    kt_md_sImP:fSettingsShow[kt_ms_sense].Data:=ord(fKt_2450.Sences[kt_mVoltage]);
+//    kt_md_sImP:fSettingsShow[kt_ms_sense].Data:=ord(fKt_2450.Sences[kt_mVoltage]);
+    kt_md_sImP:fSettingsShow[kt_ms_sense].Data:=ord(fKt_2450.Sences[kt_mVolDC]);
   end;
 
   fRangeShow.ObjectToSetting;
@@ -1314,11 +1320,13 @@ begin
     kt_md_sVmC,
     kt_md_sVmR,
     kt_md_sVmP,
-    kt_md_sImC:fKt_2450.SetSense(kt_mCurrent,TKt2450_Sense(fSettingsShow[kt_ms_sense].Data));
+//    kt_md_sImC:fKt_2450.SetSense(kt_mCurrent,TKt2450_Sense(fSettingsShow[kt_ms_sense].Data));
+    kt_md_sImC:fKt_2450.SetSense(kt_mCurDC,TKt2450_Sense(fSettingsShow[kt_ms_sense].Data));
     kt_md_sVmV,
     kt_md_sImV,
     kt_md_sImR,
-    kt_md_sImP:fKt_2450.SetSense(kt_mVoltage,TKt2450_Sense(fSettingsShow[kt_ms_sense].Data));
+//    kt_md_sImP:fKt_2450.SetSense(kt_mVoltage,TKt2450_Sense(fSettingsShow[kt_ms_sense].Data));
+    kt_md_sImP:fKt_2450.SetSense(kt_mVolDC,TKt2450_Sense(fSettingsShow[kt_ms_sense].Data));
   end;
  if fKt_2450.OutPutOn then
    begin
@@ -1478,7 +1486,8 @@ end;
 
 procedure TKt_RangeMeasureShow.TypeDetermination;
 begin
- if fKt_2450.MeasureFunction=kt_mCurrent
+// if fKt_2450.MeasureFunction=kt_mCurrent
+ if fKt_2450.MeasureFunction=kt_mCurDC
       then fType:=kt_sCurr
       else fType:=kt_sVolt;
 end;
@@ -1640,6 +1649,7 @@ begin
  fMode.Items.Add('Linear Step');
  fMode.Items.Add('Linear Point');
  fMode.Items.Add('Log Point');
+ fMode.OnClick:=nil;
  fMode.ItemIndex:=0;
  fMode.OnClick:=ModeClick;
 
@@ -1647,6 +1657,7 @@ begin
  fSelect.Items.Clear;
  fSelect.Items.Add('From Setting');
  fSelect.Items.Add('From Sweep');
+ fSelect.OnClick:=nil;
  fSelect.ItemIndex:=0;
  fSelect.OnClick:=SelectClick;
 

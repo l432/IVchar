@@ -741,7 +741,7 @@ object KT2450Form: TKT2450Form
       ParentFont = False
     end
     object PKt2450LoadSetup: TPanel
-      Left = 21
+      Left = 25
       Top = 49
       Width = 85
       Height = 23
@@ -759,7 +759,7 @@ object KT2450Form: TKT2450Form
       TabOrder = 0
     end
     object PKt2450SaveSetup: TPanel
-      Left = 19
+      Left = 25
       Top = 20
       Width = 85
       Height = 23
@@ -777,7 +777,7 @@ object KT2450Form: TKT2450Form
       TabOrder = 1
     end
     object B_KT2450GetSetting: TButton
-      Left = 3
+      Left = 7
       Top = 78
       Width = 124
       Height = 25
@@ -785,7 +785,7 @@ object KT2450Form: TKT2450Form
       TabOrder = 2
     end
     object B_Kt2450_Reset: TButton
-      Left = 24
+      Left = 25
       Top = 111
       Width = 81
       Height = 25

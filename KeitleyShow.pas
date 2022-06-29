@@ -3,12 +3,36 @@ unit KeitleyShow;
 interface
 
 uses
-  OlegTypePart2, Keithley, StdCtrls, OlegShowTypes, Classes;
+  OlegTypePart2, Keithley, StdCtrls, OlegShowTypes, Classes, ArduinoDeviceNew, 
+  ExtCtrls, IniFiles;
 
 const
   ButtonNumberKeitley = 1;
 
 type
+
+TKeitley_Show=class;
+
+TKeitley_SetupMemoryPins=class(TPins)
+ protected
+  Function GetPinStr(Index:integer):string;override;
+ public
+  Constructor Create(Name:string);
+end;
+
+TKeitley_SetupMemoryShow=class(TPinsShowUniversal)
+ private
+  fKeitley_Show:TKeitley_Show;
+  fMemoryPins:TKeitley_SetupMemoryPins;
+ protected
+  procedure LabelsFilling;
+  procedure CommandSend;
+ public
+  Constructor Create(Keitley_Show:TKeitley_Show;
+                     PanelSave, PanelLoad:TPanel);
+  destructor Destroy;override;
+  procedure NumberPinShow(PinActiveNumber:integer=-1;ChooseNumber:integer=-1);override;
+end;
 
 TKeitley_StringParameterShow=class(TStringParameterShow)
  protected
@@ -33,6 +57,14 @@ TKeitley_BrightnessShow=class(TKeitley_StringParameterShow)
   procedure ObjectToSetting;override;
 end;
 
+TKeitley_MeasurementType=class(TKeitley_StringParameterShow)
+ protected
+  procedure OkClick();override;
+  procedure SettingsShowSLFilling();override;
+  procedure SomeAction();override;
+ public
+  procedure ObjectToSetting;override;
+end;
 
  TKeitley_Show=class(TSimpleFreeAndAiniObject)
   private
@@ -43,7 +75,7 @@ end;
 
 //   fOutPutOnOff:TSpeedButton;
 //   fTerminalsFrRe:TSpeedButton;
-//   fSetupMemoryShow:TKT2450_SetupMemoryShow;
+   fSetupMemoryShow:TKeitley_SetupMemoryShow;
 //
 //   fSourceShow:TKt_2450_SourceShow;
 //   SourceShowStaticText:array[TKt2450_SourceSettings]of TStaticText;
@@ -121,10 +153,11 @@ end;
 //   property MeterShow:TKt_2450_MeterShow read fMeterShow;
    Constructor Create(Keitley:TKeitley;
                       Buttons:Array of TButton;
+                      Panels:Array of TPanel;
                       STextsBrightness:TStaticText
                       );
 //                      SpeedButtons:Array of TSpeedButton;
-//                      Panels:Array of TPanel;
+//                      
 //                      STexts:array of TStaticText;
 //                      Labels:array of TLabel;
 //                      CheckBoxs:array of TCheckBox;
@@ -140,8 +173,8 @@ end;
 //                      AutoMMeterB:TSpeedButton);
 //
   destructor Destroy;override;
-//  procedure ReadFromIniFile(ConfigFile:TIniFile);override;
-//  procedure WriteToIniFile(ConfigFile:TIniFile);override;
+  procedure ReadFromIniFile(ConfigFile:TIniFile);override;
+  procedure WriteToIniFile(ConfigFile:TIniFile);override;
 //  procedure SettingToObject;
   procedure ObjectToSetting;virtual;
 //  procedure OutPutOnFromDevice();
@@ -173,6 +206,7 @@ end;
 
 constructor TKeitley_Show.Create(Keitley: TKeitley;
                       Buttons: array of TButton;
+                      Panels:Array of TPanel;
                       STextsBrightness:TStaticText);
 begin
 //  if (High(Buttons)<>ButtonNumberKeitley)
@@ -256,7 +290,7 @@ begin
 //                                MeasureMeterB,AutoMMeterB);
 //  fMeterShow.DigitNumber:=6;
 //
-//  fSetupMemoryShow:=TKT2450_SetupMemoryShow.Create(Self,Panels[0],Panels[1]);
+  fSetupMemoryShow:=TKeitley_SetupMemoryShow.Create(Self,Panels[0],Panels[1]);
 
 //  ObjectToSetting();
 
@@ -264,6 +298,7 @@ end;
 
 destructor TKeitley_Show.Destroy;
 begin
+  FreeAndNil(fSetupMemoryShow);
   FreeAndNil(fBrightnessShow);
   inherited;
 end;
@@ -272,7 +307,7 @@ procedure TKeitley_Show.GetSettingButtonClick(Sender: TObject);
 begin
   if not(DeviceEthernetisAbsent) then
     begin
-//    fKt_2450.GetTerminal();
+    fKeitley.GetTerminal();
 //    fKt_2450.IsOutPutOn();
 //    fKt_2450.GetVoltageProtection;
 //    fKt_2450.GetDeviceMode;
@@ -306,8 +341,12 @@ end;
 
 procedure TKeitley_Show.ObjectToSetting;
 begin
-
  fBrightnessShow.ObjectToSetting;
+end;
+
+procedure TKeitley_Show.ReadFromIniFile(ConfigFile: TIniFile);
+begin
+ fSetupMemoryShow.ReadFromIniFile(ConfigFile);
 end;
 
 procedure TKeitley_Show.ResetButtonClick(Sender: TObject);
@@ -330,6 +369,11 @@ begin
 //          BTest.Caption:='Connection Test - Failed';
 //          BTest.Font.Color:=clRed;
 //        end;
+end;
+
+procedure TKeitley_Show.WriteToIniFile(ConfigFile: TIniFile);
+begin
+ fSetupMemoryShow.WriteToIniFile(ConfigFile);
 end;
 
 { TKeitley_StringParameterShow }
@@ -373,6 +417,90 @@ end;
 procedure TKeitley_BrightnessShow.SomeAction;
 begin
  fCaption:='Brightness';
+end;
+
+{ TKeitley_SetupMemoryPins }
+
+constructor TKeitley_SetupMemoryPins.Create(Name: string);
+begin
+ inherited Create(Name,['SaveSlot','LoadSlot']);
+ PinStrPart:='';
+end;
+
+function TKeitley_SetupMemoryPins.GetPinStr(Index: integer): string;
+begin
+ case Index of
+  0:Result:='Save Setup';
+  else Result:='Load Setup';
+ end;
+end;
+
+{ TKeitley_SetupMemoryShow }
+
+procedure TKeitley_SetupMemoryShow.CommandSend;
+begin
+end;
+
+constructor TKeitley_SetupMemoryShow.Create(Keitley_Show: TKeitley_Show;
+  PanelSave, PanelLoad: TPanel);
+begin
+ fKeitley_Show:=Keitley_Show;
+ fMemoryPins:=TKeitley_SetupMemoryPins.Create(fKeitley_Show.fKeitley.Name+'Pins');
+ inherited Create(fMemoryPins,[PanelSave, PanelLoad]);
+ LabelsFilling();
+end;
+
+destructor TKeitley_SetupMemoryShow.Destroy;
+begin
+  fKeitley_Show:=nil;
+  FreeAndNil(fMemoryPins);
+  inherited;
+end;
+
+procedure TKeitley_SetupMemoryShow.LabelsFilling;
+ var i:TKeitley_SetupMemorySlot;
+begin
+ fPinVariants[0].Clear;
+ fPinVariants[1].Clear;
+ for I := Low(TKeitley_SetupMemorySlot) to High(TKeitley_SetupMemorySlot) do
+   begin
+     fPinVariants[0].Add(inttostr(I));
+     fPinVariants[1].Add(inttostr(I));
+   end;
+end;
+
+procedure TKeitley_SetupMemoryShow.NumberPinShow(PinActiveNumber,
+  ChooseNumber: integer);
+begin
+ inherited;
+ case PinActiveNumber of
+  0:fKeitley_Show.fKeitley.SaveSetup(TKeitley_SetupMemorySlot(ChooseNumber));
+  1:fKeitley_Show.fKeitley.LoadSetup(TKeitley_SetupMemorySlot(ChooseNumber));
+ end;
+end;
+
+{ TKeitley_MeasurementType }
+
+procedure TKeitley_MeasurementType.ObjectToSetting;
+begin
+ Data:=ord(fKeitley.MeasureFunction);
+end;
+
+procedure TKeitley_MeasurementType.OkClick;
+begin
+  fKeitley.SetMeasureFunction(TKeitley_Measure(Data));
+end;
+
+procedure TKeitley_MeasurementType.SettingsShowSLFilling;
+ var i:TKeitley_Measure;
+begin
+ for I := Low(TKeitley_Measure) to High(TKeitley_Measure) do
+             fSettingsShowSL.Add(Keitley_MeasureLabel[i]);
+end;
+
+procedure TKeitley_MeasurementType.SomeAction;
+begin
+ fCaption:='MeasureType';
 end;
 
 end.

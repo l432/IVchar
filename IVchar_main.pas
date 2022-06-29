@@ -4452,11 +4452,12 @@ begin
                                      [B_DM6500Test,B_DM6500_Reset,
                                      B_DM6500GetSetting,
                                      B_MyTrain],
-                                     ST_DM6500_DispBr);
+                                     [PDM6500SaveSetup,PDM6500LoadSetup],
+                                     [ST_DM6500_DispBr,ST_DM6500_Terminals]);
 //                                     [SB_Kt2450_OutPut,SB_Kt2450_Termin],
 //                                     [PKt2450SaveSetup,PKt2450LoadSetup],
 //                                     [ST_KT2450VolProt,ST_KT2450Mode,
-//                                     ST_KT2450MCount,ST_KT2450_DispBr,
+//                                     ST_KT2450MCount,
 //                                     ST_Kt2450_OutPut,
 //                                     ST_KT2450DelaySource,
 //                                     ST_KT2450SourceValue,ST_KT2450LimitSource,
