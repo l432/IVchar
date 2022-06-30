@@ -9,13 +9,18 @@ uses
 const
  Kt2450_BufferStyleCommand:array [TKt2450_BufferStyle]
             of string=('comp', 'stan', 'full', 'writ','fullwrit');
- Kt2450_BufferFillModeCommand:array [TKt2450_BufferFillMode]
+ Keitley_BufferFillModeCommand:array [TKeitley_BufferFillMode]
             of string=('cont', 'once');
- Kt2450_DataRequestCommand:array[TKt2450_ReturnedData] of string=
+ Kt2450_DataRequestCommand:array[TKeitley_ReturnedData] of string=
                ('read, sour',
 //                'read, time',
                 'read, time, frac',
                 'read, sour, time, frac',
+                'read');
+ DMM6500_DataRequestCommand:array[TKeitley_ReturnedData] of string=
+               ('read, chan',
+                'read, time, frac',
+                'read, chan, time, frac',
                 'read');
 
 type
@@ -26,7 +31,7 @@ TKeitley_Buffer=class(TNamedInterfacedObject)
   {загалом ємність всіх буферів - 4,500,000 стандартних
   записів або 20,000,000 компактних}
   fStyle:TKt2450_BufferStyle;
-  fFillMode:TKt2450_BufferFillMode;
+  fFillMode:TKeitley_BufferFillMode;
   fStartIndex:integer;
   fEndIndex:integer;
   function GetCreateStr:string;
@@ -37,10 +42,11 @@ TKeitley_Buffer=class(TNamedInterfacedObject)
   procedure SetCountMax(Value:integer);
   procedure SetStartIndex(Value:integer);
   procedure SetEndIndex(Value:integer);
+  function DataDemandArrayPrefix:string;
  public
   property CountMax:integer read fSize write SetCountMax;
   property Style:TKt2450_BufferStyle read fStyle write fStyle;
-  property FillMode:TKt2450_BufferFillMode read fFillMode write fFillMode;
+  property FillMode:TKeitley_BufferFillMode read fFillMode write fFillMode;
   property CreateStr:string read GetCreateStr;
   property ReSize:string read GetReSize;
   property LimitIndexies:string read GetLimitIndexies;
@@ -51,8 +57,11 @@ TKeitley_Buffer=class(TNamedInterfacedObject)
   constructor Create(Nm:string=MyBuffer);
   procedure SetName(Name:string);
   function StringToFillMode(Str:string):boolean;
-  function DataDemand(DataType:TKt2450_ReturnedData):string;
-  function DataDemandArray(DataType:TKt2450_ReturnedData):string;
+  function DataDemand(DataType:TKeitley_ReturnedData):string;
+  function DataDemandDM6500(DataType:TKeitley_ReturnedData):string;
+
+  function DataDemandArray(DataType:TKeitley_ReturnedData):string;
+  function DataDemandDM6500Array(DataType:TKeitley_ReturnedData):string;
 end;
 
 
@@ -74,16 +83,36 @@ begin
  fEndIndex:=1;
 end;
 
-function TKeitley_Buffer.DataDemand(DataType: TKt2450_ReturnedData): string;
+function TKeitley_Buffer.DataDemand(DataType: TKeitley_ReturnedData): string;
 begin
  Result:=GetGet+PartDelimiter+Kt2450_DataRequestCommand[DataType];
 end;
 
-function TKeitley_Buffer.DataDemandArray(DataType: TKt2450_ReturnedData): string;
+function TKeitley_Buffer.DataDemandArray(DataType: TKeitley_ReturnedData): string;
+begin
+// Result:='? '+intToStr(fStartIndex)+PartDelimiter
+//         +intToStr(fEndIndex)+PartDelimiter
+//         +Name+PartDelimiter+Kt2450_DataRequestCommand[DataType];
+Result:=DataDemandArrayPrefix+Kt2450_DataRequestCommand[DataType];
+end;
+
+function TKeitley_Buffer.DataDemandArrayPrefix: string;
 begin
  Result:='? '+intToStr(fStartIndex)+PartDelimiter
          +intToStr(fEndIndex)+PartDelimiter
-         +Name+PartDelimiter+Kt2450_DataRequestCommand[DataType];
+         +Name+PartDelimiter;
+end;
+
+function TKeitley_Buffer.DataDemandDM6500(
+  DataType: TKeitley_ReturnedData): string;
+begin
+ Result:=GetGet+PartDelimiter+DMM6500_DataRequestCommand[DataType];
+end;
+
+function TKeitley_Buffer.DataDemandDM6500Array(
+  DataType: TKeitley_ReturnedData): string;
+begin
+Result:=DataDemandArrayPrefix+DMM6500_DataRequestCommand[DataType];
 end;
 
 function TKeitley_Buffer.GetCreateStr: string;
@@ -95,7 +124,7 @@ end;
 
 function TKeitley_Buffer.GetFillMode: string;
 begin
- Result:=Kt2450_BufferFillModeCommand[fFillMode]
+ Result:=Keitley_BufferFillModeCommand[fFillMode]
          +PartDelimiter+Name;
 end;
 
@@ -141,11 +170,11 @@ begin
 end;
 
 function TKeitley_Buffer.StringToFillMode(Str: string): boolean;
-  var i:TKt2450_BufferFillMode;
+  var i:TKeitley_BufferFillMode;
 begin
  Result:=False;
- for I := Low(TKt2450_BufferFillMode) to high(TKt2450_BufferFillMode) do
-   if pos(Kt2450_BufferFillModeCommand[i],Str)<>0 then
+ for I := Low(TKeitley_BufferFillMode) to high(TKeitley_BufferFillMode) do
+   if pos(Keitley_BufferFillModeCommand[i],Str)<>0 then
      begin
        fFillMode:=i;
        Result:=True;

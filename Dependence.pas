@@ -2203,7 +2203,7 @@ begin
  fFastIV.Kt2450.InitWait;
  fFastIV.Kt2450.Beep;
  fFastIV.Kt2450.Device.DelayTimeStep:=round(fFastIV.Kt2450.DragonBackTime);
- NumberInBuffer:=fFastIV.Kt2450.BufferGetReadingNumber;
+ NumberInBuffer:=fFastIV.Kt2450.BufferGetReadingsNumber;
  fFastIV.Kt2450.Device.DelayTimeStep:=10;
  fFastIV.Kt2450.BufferDataArrayExtended(1,NumberInBuffer,kt_rd_MST);
 // fFastIV.Kt2450.BufferDataArrayExtended(1,43,kt_rd_MST);

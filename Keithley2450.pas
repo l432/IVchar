@@ -117,14 +117,14 @@ TKT2450_SourceDevice=class;
    fSourceDelayAuto:TKt2450_SourceBool;
    fMeasureTime:TKt2450_MeasureDouble;
    fDisplayDN:TKt2450_MeasureDisplayDN;
-   fDataVector:TVector;
+//   fDataVector:TVector;
    {X - значення джерела; Y - результат виміру}
-   fDataTimeVector:TVector;
+//   fDataTimeVector:TVector;
    {X - час виміру (мілісекунди з початку доби); Y - результат виміру}
 //   fBuffer:TKeitley_Buffer;
    fCount:integer;
    fSourceMeasuredValue:double;
-   fTimeValue:double;
+//   fTimeValue:double;
    {час виміру, в мілісекундах з початку доби}
    fDigitLineType:TKt2450_DigLineTypes;
    fDigitLineDirec:TKt2450_DigLineDirections;
@@ -148,13 +148,13 @@ TKT2450_SourceDevice=class;
 //   function StringToTerminals(Str:string):boolean;
    function StringToOutPutState(Str:string):boolean;
    function StringToMeasureUnit(Str:string):boolean;
-   function StringToBufferIndexies(Str:string):boolean;
+//   function StringToBufferIndexies(Str:string):boolean;
 //   function StringToDisplayBrightness(Str:string):boolean;
    procedure StringToDigLineStatus(Str:string);
    procedure StringToArray(Str:string);
-   procedure StringToMesuredData(Str:string;DataType:TKt2450_ReturnedData);
-   procedure StringToMesuredDataArray(Str:string;DataType:TKt2450_ReturnedData);
-   function StringToMeasureTime(Str:string):double;
+//   procedure StringToMesuredData(Str:string;DataType:TKeitley_ReturnedData);
+//   procedure StringToMesuredDataArray(Str:string;DataType:TKeitley_ReturnedData);
+//   function StringToMeasureTime(Str:string):double;
    function IsLimitExcided(FirstLevelNode,LeafNode:byte):boolean;
    {типова функція для запиту, чи ввімкнув прилад певні захисти}
    function ModeDetermination:TKt_2450_Mode;
@@ -171,12 +171,15 @@ TKT2450_SourceDevice=class;
 //   procedure DeviceCreate(Nm:string);override;
    procedure DefaultSettings;override;
 //   function StringToMeasureFunction(Str:string):boolean;override;
+//   procedure StringToMesuredData(Str:string;DataType:TKeitley_ReturnedData);override;
+   procedure AdditionalDataFromString(Str:string);override;
+   procedure AdditionalDataToArrayFromString;override;
   public
    SweepParameters:array[TKt2450_Source]of TKt_2450_SweepParameters;
 //   IVDependence:TFastIVDependence;
    property HookForTrigDataObtain:TSimpleEvent read fHookForTrigDataObtain write fHookForTrigDataObtain;
-   property DataVector:TVector read fDataVector;
-   property DataTimeVector:TVector read fDataTimeVector;
+//   property DataVector:TVector read fDataVector;
+//   property DataTimeVector:TVector read fDataTimeVector;
    property SourceType:TKt2450_Source read fSourceType;
 //   property MeasureFunction:TKt2450_Measure read fMeasureFunction;
    property VoltageProtection:TKt_2450_VoltageProtection read fVoltageProtection;
@@ -206,7 +209,7 @@ TKT2450_SourceDevice=class;
 //   property Buffer:TKeitley_Buffer read fBuffer;
    property Count:integer read fCount write SetCountNumber;
    property SourceMeasuredValue:double read fSourceMeasuredValue;
-   property TimeValue:double read fTimeValue;
+//   property TimeValue:double read fTimeValue;
    property DigitLineType:TKt2450_DigLineTypes read fDigitLineType;
    property DigitLineTypeDirec:TKt2450_DigLineDirections read fDigitLineDirec;
    property Meter:TKT2450_Meter read fMeter;
@@ -437,33 +440,34 @@ TKT2450_SourceDevice=class;
    {змінює можливу кількість записів у буфері,
    при цьому він очищується}
 //   procedure BufferReSize(BufName:string;NewSize:integer);overload;
-   function BufferGetSize():integer;overload;
-   function BufferGetSize(BufName:string):integer;overload;
-   function BufferGetReadingNumber(BufName:string=KeitleyDefBuffer):integer;
+//   function BufferGetSize():integer;overload;
+//   function BufferGetSize(BufName:string):integer;overload;
+//   function BufferGetReadingNumber(BufName:string=KeitleyDefBuffer):integer;
    {повертає існуючу кількість записів у буфері}
-   function BufferGetStartEndIndex(BufName:string=KeitleyDefBuffer):boolean;
+//   function BufferGetStartEndIndex(BufName:string=KeitleyDefBuffer):boolean;
    {повертає початковий та кінцевий індекси існуючих
    в буфері записів, якщо все добре вони знаходяться
    в Buffer.StartIndex та Buffer.EndIndex}
 
-   procedure BufferSetFillMode(FillMode:TKt2450_BufferFillMode);overload;
-   procedure BufferSetFillMode(BufName:string;FillMode:TKt2450_BufferFillMode);overload;
-   function BufferGetFillMode():boolean;overload;
-   function BufferGetFillMode(BufName:string):boolean;overload;
-   Procedure BufferLastDataSimple();overload;
-   {без вимірювання видобувається результат останнього
-   вимірювання, що зберігається у defbuffer1,
-   розміщується в fDevice.Value}
-   Procedure BufferLastDataSimple(BufName:string);overload;
-   {отримання останнього збереженого результату
-   вимірювань з буфера BufName}
-   Procedure BufferLastDataExtended(DataType:TKt2450_ReturnedData=kt_rd_MS;
-                            BufName:string=KeitleyDefBuffer);
-   {як попередні, проте повертає більше даних
-   (див. TKt2450_ReturnedData) щодо останнього виміру}
-   Procedure BufferDataArrayExtended(SIndex,EIndex:integer;
-                     DataType:TKt2450_ReturnedData=kt_rd_MS;
-                     BufName:string=KeitleyDefBuffer);
+//   procedure BufferSetFillMode(FillMode:TKeitley_BufferFillMode);overload;
+//   procedure BufferSetFillMode(BufName:string;FillMode:TKeitley_BufferFillMode);overload;
+//   function BufferGetFillMode():boolean;overload;
+//   function BufferGetFillMode(BufName:string):boolean;overload;
+
+//   Procedure BufferLastDataSimple();overload;
+//   {без вимірювання видобувається результат останнього
+//   вимірювання, що зберігається у defbuffer1,
+//   розміщується в fDevice.Value}
+//   Procedure BufferLastDataSimple(BufName:string);overload;
+//   {отримання останнього збереженого результату
+//   вимірювань з буфера BufName}
+//   Procedure BufferLastDataExtended(DataType:TKeitley_ReturnedData=kt_rd_MS;
+//                            BufName:string=KeitleyDefBuffer);
+//   {як попередні, проте повертає більше даних
+//   (див. TKeitley_ReturnedData) щодо останнього виміру}
+//   Procedure BufferDataArrayExtended(SIndex,EIndex:integer;
+//                     DataType:TKeitley_ReturnedData=kt_rd_MS;
+//                     BufName:string=KeitleyDefBuffer);
    {зчитування з буферу BufName результатів, збережених за
    індексами в діапазоні від SIndex до EIndex,
    що саме повертається залежить від DataType,
@@ -530,7 +534,7 @@ TKT2450_SourceDevice=class;
    Procedure MeasureSimple(BufName:string);overload;
    {результати записуються у буфер BufName
    і з нього ж зчитується останній результат}
-   Procedure MeasureExtended(DataType:TKt2450_ReturnedData=kt_rd_MS;
+   Procedure MeasureExtended(DataType:TKeitley_ReturnedData=kt_rd_MS;
                            BufName:string=KeitleyDefBuffer);
    {як попередні, проте повертає більше даних
    (див. TKt2450_ReturnedData) щодо останнього виміру}
@@ -659,6 +663,16 @@ uses
 ////:ABOR
 // SetupOperation(18,0,0,False);
 //end;
+
+procedure TKt_2450.AdditionalDataFromString(Str: string);
+begin
+ fSourceMeasuredValue:=FloatDataFromRow(Str,2);
+end;
+
+procedure TKt_2450.AdditionalDataToArrayFromString;
+begin
+ DataVector.Add(fSourceMeasuredValue,fDevice.Value);
+end;
 
 procedure TKt_2450.AzeroOnce;
 begin
@@ -836,10 +850,10 @@ begin
  fMeasureCurrentLowRange:=kt_cr10nA;
  fCount:=1;
 
- fDataVector:=TVector.Create;
- fDataTimeVector:=TVector.Create;
+// fDataVector:=TVector.Create;
+// fDataTimeVector:=TVector.Create;
  fSourceMeasuredValue:=ErResult;
- fTimeValue:=ErResult;
+// fTimeValue:=ErResult;
 
  for I := Low(TKt2450_DigLines) to High(TKt2450_DigLines) do
    begin
@@ -862,8 +876,8 @@ begin
 //  FreeAndNil(fBuffer);
   for I := Low(TKt2450_Source) to High(TKt2450_Source) do
    FreeAndNil(SweepParameters[i]);
-  FreeAndNil(fDataTimeVector);
-  FreeAndNil(fDataVector);
+//  FreeAndNil(fDataTimeVector);
+//  FreeAndNil(fDataVector);
   inherited;
 end;
 
@@ -880,50 +894,50 @@ begin
    Result:=Result and IsAzeroStateOn(i);
 end;
 
-function TKt_2450.BufferGetSize(BufName: string): integer;
-begin
-// :TRAC:POIN? "<bufferName>"
- Buffer.SetName(BufName);
- Result:=BufferGetSize();
-end;
+//function TKt_2450.BufferGetSize(BufName: string): integer;
+//begin
+//// :TRAC:POIN? "<bufferName>"
+// Buffer.SetName(BufName);
+// Result:=BufferGetSize();
+//end;
 
-function TKt_2450.BufferGetStartEndIndex(BufName: string): boolean;
-begin
- Buffer.SetName(BufName);
- QuireOperation(19,35,2,False);
- Result:=(fDevice.Value=1);
-end;
+//function TKt_2450.BufferGetStartEndIndex(BufName: string): boolean;
+//begin
+// Buffer.SetName(BufName);
+// QuireOperation(19,35,2,False);
+// Result:=(fDevice.Value=1);
+//end;
 
-procedure TKt_2450.BufferLastDataExtended(DataType: TKt2450_ReturnedData;
-  BufName: string);
-begin
- // :FETC? "<bufferName>", <bufferElements>
- Buffer.SetName(BufName);
- QuireOperation(22,ord(DataType)+2,0,False);
-end;
+//procedure TKt_2450.BufferLastDataExtended(DataType: TKeitley_ReturnedData;
+//  BufName: string);
+//begin
+// // :FETC? "<bufferName>", <bufferElements>
+// Buffer.SetName(BufName);
+// QuireOperation(22,ord(DataType)+2,0,False);
+//end;
 
-procedure TKt_2450.BufferLastDataSimple;
-begin
-  QuireOperation(22);
-end;
+//procedure TKt_2450.BufferLastDataSimple;
+//begin
+//  QuireOperation(22);
+//end;
+//
+//procedure TKt_2450.BufferLastDataSimple(BufName: string);
+//begin
+// Buffer.SetName(BufName);
+// QuireOperation(22,1,0,False);
+//end;
 
-procedure TKt_2450.BufferLastDataSimple(BufName: string);
-begin
- Buffer.SetName(BufName);
- QuireOperation(22,1,0,False);
-end;
-
-function TKt_2450.BufferGetSize: integer;
-begin
-//  SetupOperation(19,31);
- QuireOperation(19,31,1,False);
- if fDevice.isReceived then
-     begin
-       Result:=round(fDevice.Value);
-       Buffer.CountMax:=Result
-     end       else
-       Result:=-1;
-end;
+//function TKt_2450.BufferGetSize: integer;
+//begin
+////  SetupOperation(19,31);
+// QuireOperation(19,31,1,False);
+// if fDevice.isReceived then
+//     begin
+//       Result:=round(fDevice.Value);
+//       Buffer.CountMax:=Result
+//     end       else
+//       Result:=-1;
+//end;
 
 function TKt_2450.GetCount: boolean;
 begin
@@ -1434,7 +1448,7 @@ begin
  QuireOperation(21);
 end;
 
-procedure TKt_2450.MeasureExtended(DataType: TKt2450_ReturnedData;
+procedure TKt_2450.MeasureExtended(DataType: TKeitley_ReturnedData;
   BufName: string);
 begin
 // :READ? "<bufferName>", <bufferElements>
@@ -1538,9 +1552,9 @@ begin
 //  else showmessage('ups :(');
 
 
-//showmessage(inttostr(BufferGetReadingNumber()));
+//showmessage(inttostr(BufferGetReadingsNumber()));
 //BufferCreate();
-//showmessage(inttostr(BufferGetReadingNumber(MyBuffer)));
+//showmessage(inttostr(BufferGetReadingsNumber(MyBuffer)));
 
 //BufferDataArrayExtended(1,5,kt_rd_MT);
 //showmessage(fDataVector.XYtoString+#10#10+fDataTimeVector.XYtoString);
@@ -1549,18 +1563,18 @@ begin
 //showmessage(fDataVector.XYtoString+#10#10+fDataTimeVector.XYtoString);
 
 
-//BufferDataArrayExtended(2,5,kt_rd_M);
-//showmessage(fDataVector.XYtoString+#10#10+fDataTimeVector.XYtoString);
-//
-//BufferDataArrayExtended(1,5,kt_rd_MST);
-//showmessage(fDataVector.XYtoString+#10#10+fDataTimeVector.XYtoString);
-//
-//BufferDataArrayExtended(1,5,kt_rd_MT);
-//showmessage(fDataVector.XYtoString+#10#10+fDataTimeVector.XYtoString);
+BufferDataArrayExtended(2,5,kt_rd_M);
+showmessage(DataVector.XYtoString+#10#10+DataTimeVector.XYtoString);
 
+BufferDataArrayExtended(1,5,kt_rd_MST);
+showmessage(DataVector.XYtoString+#10#10+DataTimeVector.XYtoString);
 
-//BufferDataArrayExtended(1,5,kt_rd_MS);
-//showmessage(fDataVector.XYtoString+#10#10+fDataTimeVector.XYtoString);
+BufferDataArrayExtended(1,5,kt_rd_MT);
+showmessage(DataVector.XYtoString+#10#10+DataTimeVector.XYtoString);
+//
+//
+BufferDataArrayExtended(1,5,kt_rd_MS);
+showmessage(DataVector.XYtoString+#10#10+DataTimeVector.XYtoString);
 
 
 //BufferLastDataExtended(kt_rd_MST,MyBuffer);
@@ -1576,7 +1590,7 @@ begin
 
 // BufferLastDataSimple(MyBuffer);
 // showmessage(floattostr(fDevice.Value));
-
+//
 // BufferLastDataSimple();
 // showmessage(floattostr(fDevice.Value));
 
@@ -1605,9 +1619,9 @@ begin
 //SetCount(-56);
 
 //if BufferGetFillMode() then
-//  showmessage('ura! '+Kt2450_BufferFillModeCommand[Buffer.FillMode]);
+//  showmessage('ura! '+Keitley_BufferFillModeCommand[Buffer.FillMode]);
 //if BufferGetFillMode('TestBuffer') then
-//  showmessage('ura! '+Kt2450_BufferFillModeCommand[Buffer.FillMode]);
+//  showmessage('ura! '+Keitley_BufferFillModeCommand[Buffer.FillMode]);
 
 //BufferSetFillMode(kt_fm_cont);
 //BufferSetFillMode('TestBuffer',kt_fm_once);
@@ -2002,27 +2016,27 @@ begin
          end;
        end; // fRootNode=12..14
 //  17:if fFirstLevelNode=1 then JoinToStringToSend(fAdditionalString);
-//  19:begin
+  19:begin
 //       JoinToStringToSend(FirstNodeKt_2450[fFirstLevelNode]);
-//       case fFirstLevelNode of
+       case fFirstLevelNode of
 //        31:if fLeafNode=1 then JoinToStringToSend(Buffer.Get)
 //                           else fAdditionalString:=Buffer.ReSize;
 //        32:if fLeafNode=1 then JoinToStringToSend(Buffer.Get)
 //                           else fAdditionalString:=Buffer.FillModeChange;
-//        33:JoinToStringToSend(Buffer.DataDemandArray(TKt2450_ReturnedData(fLeafNode)));
+        33:JoinToStringToSend(Buffer.DataDemandArray(TKeitley_ReturnedData(fLeafNode)));
 //        35:case fLeafNode of
 //            1:JoinToStringToSend(Buffer.Get);
 //            2:JoinToStringToSend(Buffer.LimitIndexies)
 //           end;
-//       end;
-//      end; // fRootNode=19
+       end;
+      end; // fRootNode=19
   21:case fFirstLevelNode of
        1:JoinToStringToSend(Buffer.Get);
-       2..5:JoinToStringToSend(Buffer.DataDemand(TKt2450_ReturnedData(fFirstLevelNode-2)))
+       2..5:JoinToStringToSend(Buffer.DataDemand(TKeitley_ReturnedData(fFirstLevelNode-2)))
      end; // fRootNode=21
   22:case fFirstLevelNode of
-       1:JoinToStringToSend(Buffer.Get);
-       2..5:JoinToStringToSend(Buffer.DataDemand(TKt2450_ReturnedData(fFirstLevelNode-2)))
+//       1:JoinToStringToSend(Buffer.Get);
+       2..5:JoinToStringToSend(Buffer.DataDemand(TKeitley_ReturnedData(fFirstLevelNode-2)))
      end; // fRootNode=22
   23:case fFirstLevelNode of
         36,37:JoinToStringToSend(AnsiReplaceStr(FirstNodeKt_2450[fFirstLevelNode],'#',inttostr(fDLActive)));
@@ -2088,7 +2102,7 @@ begin
   11:case fFirstLevelNode of
         23:begin
            StringToArray(Str);
-           if fDataVector.Count>0 then fDevice.Value:=1;
+           if DataVector.Count>0 then fDevice.Value:=1;
            end;
         else
            case fLeafNode of
@@ -2106,25 +2120,25 @@ begin
              16,15,26:fDevice.Value:=SCPI_StringToValue(Str);
           end;   //fRootNode=12..14
 //   15:if StringToMeasureFunction(AnsiLowerCase(Str)) then fDevice.Value:=ord(fMeasureFunction);
-   19:case fFirstLevelNode of
-          31: fDevice.Value:=StrToInt(Str);
-          32:if Buffer.StringToFillMode(AnsiLowerCase(Str))
-                then fDevice.Value:=ord(TKt2450_BufferFillMode(Buffer.FillMode));
-          33:StringToMesuredDataArray(AnsiReplaceStr(Str,',',' '),TKt2450_ReturnedData(fLeafNode));
-          35:case fLeafNode of
-              0,1:fDevice.Value:=StrToInt(Str);
-              2:if StringToBufferIndexies(Str) then fDevice.Value:=1;
-             end;
-      end; //fRootNode=19
+//   19:case fFirstLevelNode of
+//          31: fDevice.Value:=StrToInt(Str);
+//          32:if Buffer.StringToFillMode(AnsiLowerCase(Str))
+//                then fDevice.Value:=ord(TKeitley_BufferFillMode(Buffer.FillMode));
+//          33:StringToMesuredDataArray(AnsiReplaceStr(Str,',',' '),TKeitley_ReturnedData(fLeafNode));
+//          35:case fLeafNode of
+//              0,1:fDevice.Value:=StrToInt(Str);
+//              2:if StringToBufferIndexies(Str) then fDevice.Value:=1;
+//             end;
+//      end; //fRootNode=19
    20:fDevice.Value:=StrToInt(Str);
    21:case fFirstLevelNode of
        0,1:fDevice.Value:=SCPI_StringToValue(Str);
-       2..5:StringToMesuredData(AnsiReplaceStr(Str,',',' '),TKt2450_ReturnedData(fFirstLevelNode-2));
+       2..5:StringToMesuredData(AnsiReplaceStr(Str,',',' '),TKeitley_ReturnedData(fFirstLevelNode-2));
        end; //fRootNode=21
-   22:case fFirstLevelNode of
-       0,1:fDevice.Value:=SCPI_StringToValue(Str);
-       2..5:StringToMesuredData(AnsiReplaceStr(Str,',',' '),TKt2450_ReturnedData(fFirstLevelNode-2));
-      end;  //fRootNode=22
+//   22:case fFirstLevelNode of
+//       0,1:fDevice.Value:=SCPI_StringToValue(Str);
+//       2..5:StringToMesuredData(AnsiReplaceStr(Str,',',' '),TKeitley_ReturnedData(fFirstLevelNode-2));
+//      end;  //fRootNode=22
    23:case fFirstLevelNode of
        36:StringToDigLineStatus(AnsiLowerCase(Str));
        37:fDevice.Value:=StrToInt(Str);
@@ -2611,19 +2625,19 @@ end;
 procedure TKt_2450.StringToArray(Str: string);
  var tempArray:TArrSingle;
 begin
- fDataVector.Clear;
+ DataVector.Clear;
  StrToNumberArray(tempArray,Str);
- fDataVector.CopyFromXYArrays(tempArray,tempArray);
- fDataVector.DeleteErResult;
+ DataVector.CopyFromXYArrays(tempArray,tempArray);
+ DataVector.DeleteErResult;
 end;
 
-function TKt_2450.StringToBufferIndexies(Str: string): boolean;
-begin
- Str:=AnsiReplaceStr(Str,';',' ');
- Buffer.StartIndex:=round(FloatDataFromRow(Str,1));
- Buffer.EndIndex:=round(FloatDataFromRow(Str,2));
- Result:=(Buffer.StartIndex<>ErResult)and(Buffer.EndIndex<>ErResult);
-end;
+//function TKt_2450.StringToBufferIndexies(Str: string): boolean;
+//begin
+// Str:=AnsiReplaceStr(Str,';',' ');
+// Buffer.StartIndex:=round(FloatDataFromRow(Str,1));
+// Buffer.EndIndex:=round(FloatDataFromRow(Str,2));
+// Result:=(Buffer.StartIndex<>ErResult)and(Buffer.EndIndex<>ErResult);
+//end;
 
 procedure TKt_2450.StringToDigLineStatus(Str: string);
  var i:integer;
@@ -2677,12 +2691,12 @@ end;
 //     end;
 //end;
 
-function TKt_2450.StringToMeasureTime(Str: string): double;
-begin
- Str:=AnsiReplaceStr(Str,':',' ');
- Result:=(FloatDataFromRow(Str,4)+FloatDataFromRow(Str,3)
-         +60*FloatDataFromRow(Str,2)+3600*FloatDataFromRow(Str,1))*1e3;
-end;
+//function TKt_2450.StringToMeasureTime(Str: string): double;
+//begin
+// Str:=AnsiReplaceStr(Str,':',' ');
+// Result:=(FloatDataFromRow(Str,4)+FloatDataFromRow(Str,3)
+//         +60*FloatDataFromRow(Str,2)+3600*FloatDataFromRow(Str,1))*1e3;
+//end;
 
 function TKt_2450.StringToMeasureUnit(Str: string): boolean;
   var i:TKt_2450_MeasureUnit;
@@ -2701,57 +2715,51 @@ begin
   end;
 end;
 
-procedure TKt_2450.StringToMesuredData(Str: string;DataType:TKt2450_ReturnedData);
-begin
-// if NumberOfSubstringInRow(Str)<>Kt2450_PartInRespond[DataType] then Exit;
-// Str:=DeleteSubstringAll(Str,',');
-// showmessage(Str);
-// Str:=AnsiReplaceStr(Str,',',' ');
- fDevice.Value:=FloatDataFromRow(Str,1);
- if (fDevice.Value=ErResult)or(DataType=kt_rd_M) then Exit;
- case DataType of
-   kt_rd_MS,kt_rd_MST:fSourceMeasuredValue:=FloatDataFromRow(Str,2);
-   kt_rd_MT:fTimeValue:=StringToMeasureTime(DeleteStringDataFromRow(Str,1));
- end;
- if DataType=kt_rd_MST then fTimeValue:=StringToMeasureTime(DeleteStringDataFromRow(DeleteStringDataFromRow(Str,1),1));
-end;
 
-procedure TKt_2450.StringToMesuredDataArray(Str: string;
-  DataType: TKt2450_ReturnedData);
-  var partStr:string;
-      PartNumbers,i:integer;
-      NumbersArray:TArrInteger;
-begin
-//  HelpForMe(Str,'d'+inttostr(MilliSecond));
- fDataVector.Clear;
- fDataTimeVector.Clear;
- PartNumbers:=NumberOfSubstringInRow(Str);
-// showmessage(inttostr(PartNumbers));
-// showmessage(AnsiReplaceStr(Str,' ',#10));
- SetLength(NumbersArray,Kt2450_PartInRespond[DataType]);
- for I := 0 to High(NumbersArray) do
-  NumbersArray[i]:=i+1;
+//procedure TKt_2450.StringToMesuredData(Str: string;DataType:TKeitley_ReturnedData);
+//begin
+// fDevice.Value:=FloatDataFromRow(Str,1);
+// if (fDevice.Value=ErResult)or(DataType=kt_rd_M) then Exit;
+// case DataType of
+//   kt_rd_MS,kt_rd_MST:fSourceMeasuredValue:=FloatDataFromRow(Str,2);
+//   kt_rd_MT:fTimeValue:=StringToMeasureTime(DeleteStringDataFromRow(Str,1));
+// end;
+// if DataType=kt_rd_MST then fTimeValue:=StringToMeasureTime(DeleteStringDataFromRow(DeleteStringDataFromRow(Str,1),1));
+//end;
 
- while PartNumbers>=Kt2450_PartInRespond[DataType] do
-  begin
-   partStr:=NewStringByNumbers(Str,NumbersArray);
-   StringToMesuredData(partStr,DataType);
-   case DataType of
-    kt_rd_MS:fDataVector.Add(fSourceMeasuredValue,fDevice.Value);
-    kt_rd_MT:fDataTimeVector.Add(fTimeValue,fDevice.Value);
-    kt_rd_MST:begin
-               fDataVector.Add(fSourceMeasuredValue,fDevice.Value);
-               fDataTimeVector.Add(fTimeValue,fDevice.Value);
-              end;
-    kt_rd_M:fDataVector.Add(fDevice.Value,fDevice.Value);
-   end;
-   PartNumbers:=PartNumbers-Kt2450_PartInRespond[DataType];
-   for I := 1 to Kt2450_PartInRespond[DataType] do
-    Str:=DeleteStringDataFromRow(Str,1);
-  end;
- if fDataVector.Count<>(Buffer.EndIndex-Buffer.StartIndex+1) then
-    fDevice.Value:=ErResult;
-end;
+//procedure TKt_2450.StringToMesuredDataArray(Str: string;
+//  DataType: TKeitley_ReturnedData);
+//  var partStr:string;
+//      PartNumbers,i:integer;
+//      NumbersArray:TArrInteger;
+//begin
+// DataVector.Clear;
+// DataTimeVector.Clear;
+// PartNumbers:=NumberOfSubstringInRow(Str);
+// SetLength(NumbersArray,Keitley_PartInRespond[DataType]);
+// for I := 0 to High(NumbersArray) do
+//  NumbersArray[i]:=i+1;
+//
+// while PartNumbers>=Keitley_PartInRespond[DataType] do
+//  begin
+//   partStr:=NewStringByNumbers(Str,NumbersArray);
+//   StringToMesuredData(partStr,DataType);
+//   case DataType of
+//    kt_rd_MS:DataVector.Add(fSourceMeasuredValue,fDevice.Value);
+//    kt_rd_MT:DataTimeVector.Add(fTimeValue,fDevice.Value);
+//    kt_rd_MST:begin
+//               DataVector.Add(fSourceMeasuredValue,fDevice.Value);
+//               DataTimeVector.Add(fTimeValue,fDevice.Value);
+//              end;
+//    kt_rd_M:DataVector.Add(fDevice.Value,fDevice.Value);
+//   end;
+//   PartNumbers:=PartNumbers-Keitley_PartInRespond[DataType];
+//   for I := 1 to Keitley_PartInRespond[DataType] do
+//    Str:=DeleteStringDataFromRow(Str,1);
+//  end;
+// if DataVector.Count<>(Buffer.EndIndex-Buffer.StartIndex+1) then
+//    fDevice.Value:=ErResult;
+//end;
 
 function TKt_2450.StringToOutPutState(Str: string): boolean;
   var i:TKt_2450_OutputOffState;
@@ -3161,17 +3169,17 @@ end;
 // SetupOperation(19,21);
 //end;
 
-procedure TKt_2450.BufferDataArrayExtended(SIndex, EIndex: integer;
-  DataType: TKt2450_ReturnedData; BufName: string);
-begin
-// :TRAC:DATA? <startIndex>, <endIndex>, "<bufferName>", <bufferElements>
- fDataVector.Clear;
- fDataTimeVector.Clear;
- Buffer.SetName(BufName);
- Buffer.StartIndex:=SIndex;
- Buffer.EndIndex:=EIndex;
- QuireOperation(19,33,ord(DataType),False);
-end;
+//procedure TKt_2450.BufferDataArrayExtended(SIndex, EIndex: integer;
+//  DataType: TKeitley_ReturnedData; BufName: string);
+//begin
+//// :TRAC:DATA? <startIndex>, <endIndex>, "<bufferName>", <bufferElements>
+// DataVector.Clear;
+// DataTimeVector.Clear;
+// Buffer.SetName(BufName);
+// Buffer.StartIndex:=SIndex;
+// Buffer.EndIndex:=EIndex;
+// QuireOperation(19,33,ord(DataType),False);
+//end;
 
 //procedure TKt_2450.BufferDelete(Name: string);
 //begin
@@ -3180,33 +3188,33 @@ end;
 // BufferDelete();
 //end;
 
-function TKt_2450.BufferGetFillMode: boolean;
-begin
-  QuireOperation(19,32,1,False);
-  Result:=(fDevice.Value<>ErResult);
-end;
+//function TKt_2450.BufferGetFillMode: boolean;
+//begin
+//  QuireOperation(19,32,1,False);
+//  Result:=(fDevice.Value<>ErResult);
+//end;
 
-function TKt_2450.BufferGetFillMode(BufName: string): boolean;
-begin
-// :TRAC:FILL:MODE? "<bufferName>"
- Buffer.SetName(BufName);
- Result:=BufferGetFillMode();
-end;
+//function TKt_2450.BufferGetFillMode(BufName: string): boolean;
+//begin
+//// :TRAC:FILL:MODE? "<bufferName>"
+// Buffer.SetName(BufName);
+// Result:=BufferGetFillMode();
+//end;
 
-
-function TKt_2450.BufferGetReadingNumber(BufName: string): integer;
-begin
-// :TRAC:ACT? "<bufferName>"
- if BufName=KeitleyDefBuffer
-      then QuireOperation(19,35)
-      else begin
-           Buffer.SetName(BufName);
-           QuireOperation(19,35,1,False);
-           end;
- if fDevice.isReceived
-    then Result:=round(fDevice.Value)
-    else Result:=-1;
-end;
+//
+//function TKt_2450.BufferGetReadingNumber(BufName: string): integer;
+//begin
+//// :TRAC:ACT? "<bufferName>"
+// if BufName=KeitleyDefBuffer
+//      then QuireOperation(19,35)
+//      else begin
+//           Buffer.SetName(BufName);
+//           QuireOperation(19,35,1,False);
+//           end;
+// if fDevice.isReceived
+//    then Result:=round(fDevice.Value)
+//    else Result:=-1;
+//end;
 
 //procedure TKt_2450.BufferReSize(BufName: string; NewSize: integer);
 //begin
@@ -3215,19 +3223,19 @@ end;
 // BufferReSize(NewSize);
 //end;
 
-procedure TKt_2450.BufferSetFillMode(BufName: string;
-  FillMode: TKt2450_BufferFillMode);
-begin
-// :TRACe:FILL:MODE ONCE|CONT, "<bufferName>"
- Buffer.SetName(BufName);
- BufferSetFillMode(FillMode);
-end;
+//procedure TKt_2450.BufferSetFillMode(BufName: string;
+//  FillMode: TKeitley_BufferFillMode);
+//begin
+//// :TRACe:FILL:MODE ONCE|CONT, "<bufferName>"
+// Buffer.SetName(BufName);
+// BufferSetFillMode(FillMode);
+//end;
 
-procedure TKt_2450.BufferSetFillMode(FillMode: TKt2450_BufferFillMode);
-begin
- Buffer.FillMode:=FillMode;
- SetupOperation(19,32);
-end;
+//procedure TKt_2450.BufferSetFillMode(FillMode: TKeitley_BufferFillMode);
+//begin
+// Buffer.FillMode:=FillMode;
+// SetupOperation(19,32);
+//end;
 
 //procedure TKt_2450.BufferReSize(NewSize: integer);
 //begin

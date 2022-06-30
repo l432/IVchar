@@ -12,13 +12,15 @@ type
 
  TDMM6500=class(TKeitley)
   private
-//   fMeasureFunction:TKeitley_Measure;
+   fMeasureChanNumber:byte;
   protected
    procedure ProcessingStringByRootNode(Str:string);override;
-//   function StringToMeasureFunction(Str:string):boolean;override;
+   procedure PrepareStringByRootNode;override;
    procedure DefaultSettings;override;
+//   procedure StringToMesuredData(Str:string;DataType:TKeitley_ReturnedData);override;
+   procedure AdditionalDataFromString(Str:string);override;
+   procedure AdditionalDataToArrayFromString;override;
   public
-//   property MeasureFunction:TKeitley_Measure read fMeasureFunction;
    Constructor Create(Telnet:TIdTelnet;IPAdressShow: TIPAdressShow;
                Nm:string='DMM6500');
    procedure MyTraining();override;
@@ -35,7 +37,7 @@ var
 implementation
 
 uses
-  Dialogs, SysUtils;
+  Dialogs, SysUtils, Keitley2450Device, OlegFunction, OlegType;
 
 { TKt_2450 }
 
@@ -44,6 +46,16 @@ procedure TDMM6500.BufferCreate(Name: string; Size: integer;
 begin
   if Style=kt_bs_comp then Exit;
   inherited BufferCreate(Name,Size,Style);
+end;
+
+procedure TDMM6500.AdditionalDataFromString(Str: string);
+begin
+ fMeasureChanNumber:=round(FloatDataFromRow(Str,2));
+end;
+
+procedure TDMM6500.AdditionalDataToArrayFromString;
+begin
+ DataVector.Add(fMeasureChanNumber,fDevice.Value);
 end;
 
 procedure TDMM6500.BufferCreate(Style: TKt2450_BufferStyle);
@@ -61,7 +73,7 @@ end;
 procedure TDMM6500.DefaultSettings;
 begin
  inherited;
-
+ fMeasureChanNumber:=0;
 // fMeasureFunction:=dm_mVolDC;
 
 end;
@@ -75,8 +87,55 @@ end;
 procedure TDMM6500.MyTraining;
 // var i:integer;
 begin
-BufferReSize(100);
-BufferReSize('TestBuffer',5);
+
+BufferDataArrayExtended(2,5,kt_rd_M);
+showmessage(DataVector.XYtoString+#10#10+DataTimeVector.XYtoString);
+
+BufferDataArrayExtended(1,5,kt_rd_MST);
+showmessage(DataVector.XYtoString+#10#10+DataTimeVector.XYtoString);
+
+BufferDataArrayExtended(1,5,kt_rd_MT);
+showmessage(DataVector.XYtoString+#10#10+DataTimeVector.XYtoString);
+//
+//
+BufferDataArrayExtended(1,5,kt_rd_MS);
+showmessage(DataVector.XYtoString+#10#10+DataTimeVector.XYtoString);
+
+
+//BufferLastDataExtended(kt_rd_MST,KeitleyDefBuffer);
+//showmessage(floattostr(fDevice.Value)
+//              +'  '+floattostr(fMeasureChanNumber)
+//              +'  '+floattostr(TimeValue));
+//
+//BufferLastDataExtended(kt_rd_MT);
+//showmessage(floattostr(fDevice.Value)+'  '+floattostr(fTimeValue));
+//
+//BufferLastDataExtended();
+//showmessage(floattostr(fDevice.Value)+'  '+floattostr(fMeasureChanNumber));
+
+// BufferLastDataSimple();
+// showmessage(floattostr(fDevice.Value));
+
+//if BufferGetFillMode() then
+//  showmessage('ura! '+Keitley_BufferFillModeCommand[Buffer.FillMode]);
+//
+//BufferSetFillMode(kt_fm_cont);
+//BufferSetFillMode('TestBuffer',kt_fm_once);
+
+//if BufferGetStartEndIndex()
+//  then showmessage(inttostr(Buffer.StartIndex)+'  '+inttostr(Buffer.EndIndex))
+//  else showmessage('ups :(');
+
+//showmessage(inttostr(BufferGetReadingsNumber()));
+//BufferCreate();
+//showmessage(inttostr(BufferGetReadingsNumber(MyBuffer)));
+
+//showmessage(inttostr(BufferGetSize));
+//showmessage(inttostr(Buffer.CountMax));
+//showmessage(inttostr(BufferGetSize(KeitleyDefBuffer)));
+//-----------------------------------------
+//BufferReSize(100);
+//BufferReSize('TestBuffer',5);
 //BufferClear(KeitleyDefBuffer);
 //BufferDelete();
 //BufferDelete('Test  Buffer ');
@@ -98,6 +157,21 @@ BufferReSize('TestBuffer',5);
 // Test();
 end;
 
+procedure TDMM6500.PrepareStringByRootNode;
+begin
+ inherited;
+ case fRootNode of
+  19:begin
+       case fFirstLevelNode of
+        33:JoinToStringToSend(Buffer.DataDemandDM6500Array(TKeitley_ReturnedData(fLeafNode)));
+       end;
+      end; // fRootNode=19
+  22:case fFirstLevelNode of
+       2..5:JoinToStringToSend(Buffer.DataDemandDM6500(TKeitley_ReturnedData(fFirstLevelNode-2)))
+     end; // fRootNode=22
+ end;
+end;
+
 procedure TDMM6500.ProcessingStringByRootNode(Str: string);
 begin
  inherited;
@@ -106,6 +180,18 @@ begin
  end;
 
 end;
+
+//procedure TDMM6500.StringToMesuredData(Str: string;
+//  DataType: TKeitley_ReturnedData);
+//begin
+// fDevice.Value:=FloatDataFromRow(Str,1);
+// if (fDevice.Value=ErResult)or(DataType=kt_rd_M) then Exit;
+// case DataType of
+//   kt_rd_MS,kt_rd_MST:fMeasureChanNumber:=round(FloatDataFromRow(Str,2));
+//   kt_rd_MT:fTimeValue:=StringToMeasureTime(DeleteStringDataFromRow(Str,1));
+// end;
+// if DataType=kt_rd_MST then fTimeValue:=StringToMeasureTime(DeleteStringDataFromRow(DeleteStringDataFromRow(Str,1),1));
+//end;
 
 //function TDMM6500.StringToMeasureFunction(Str: string): boolean;
 //  var i:TKeitley_Measure;

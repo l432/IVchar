@@ -127,14 +127,16 @@ type
                                  вимірювань, для збереження якоїсь зовнішньої
                                  інформації}
                       kt_bs_fwrite);// два зовнішніх значення на запис
-TKt2450_BufferFillMode=(kt_fm_cont,kt_fm_once);
+TKeitley_BufferFillMode=(kt_fm_cont,kt_fm_once);
 {в першому випадку при досягнення кінці запис продовжується спочатку,
 в другому - виникає помилка}
 
 {що саме хочемо отримати від приладу}
-TKt2450_ReturnedData=(kt_rd_MS,{результат виміру та значення джерела}
+TKeitley_ReturnedData=(kt_rd_MS,{результат виміру та щось додаткове
+                                 (для Kt2450 - значення джерела,
+                                 для DMM6500 - номер каналу}
                       kt_rd_MT,{результат виміру та його час}
-                      kt_rd_MST, {результат виміру, джерело, час}
+                      kt_rd_MST, {результат виміру, ще щось, час}
                       kt_rd_M);{результат виміру}
 
 TKt2450_DigLines=1..6;
@@ -238,7 +240,7 @@ const
           ('From, ','To, ', 'Delay, s', 'Step, ',
            'Times to run','Used range');
 
-Kt2450_PartInRespond:array[TKt2450_ReturnedData] of integer=
+Keitley_PartInRespond:array[TKeitley_ReturnedData] of integer=
                (2,3,4,1);
 
 Kt2450_DigLineTypeCommand:array[TKt2450_DigLineType]of string=
