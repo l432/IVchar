@@ -13,6 +13,8 @@ type
  TDMM6500=class(TKeitley)
   private
    fMeasureChanNumber:byte;
+   function ChanelToString(ChanNumber:byte):string;overload;
+   function ChanelToString(ChanNumberLow,ChanNumberHigh:byte):string;overload;
   protected
    procedure ProcessingStringByRootNode(Str:string);override;
    procedure PrepareStringByRootNode;override;
@@ -37,7 +39,7 @@ var
 implementation
 
 uses
-  Dialogs, SysUtils, Keitley2450Device, OlegFunction, OlegType;
+  Dialogs, SysUtils, Keitley2450Device, OlegFunction, OlegType, Math;
 
 { TKt_2450 }
 
@@ -64,6 +66,20 @@ begin
   inherited BufferCreate(Style);
 end;
 
+function TDMM6500.ChanelToString(ChanNumber: byte): string;
+begin
+ Result:='(@'+inttostr(ChanNumber)+')';
+end;
+
+function TDMM6500.ChanelToString(ChanNumberLow, ChanNumberHigh: byte): string;
+begin
+ if ChanNumberLow=ChanNumberHigh
+    then Result:=ChanelToString(ChanNumberLow)
+    else Result:='(@'
+        +inttostr(min(ChanNumberLow,ChanNumberHigh))
+        +':'+inttostr(max(ChanNumberLow,ChanNumberHigh))+')';
+end;
+
 constructor TDMM6500.Create(Telnet: TIdTelnet; IPAdressShow: TIPAdressShow;
   Nm: string);
 begin
@@ -81,25 +97,32 @@ end;
 procedure TDMM6500.GetParametersFromDevice;
 begin
   inherited;
-  if not(GetMeasureFunction()) then Exit;
+//  if not(GetMeasureFunction()) then Exit;
 end;
 
 procedure TDMM6500.MyTraining;
 // var i:integer;
 begin
 
-BufferDataArrayExtended(2,5,kt_rd_M);
-showmessage(DataVector.XYtoString+#10#10+DataTimeVector.XYtoString);
+// if GetMeasureFunction then
+//   showmessage('ura!!!'+DMM65000_MeasureLabel[MeasureFunction]);
 
-BufferDataArrayExtended(1,5,kt_rd_MST);
-showmessage(DataVector.XYtoString+#10#10+DataTimeVector.XYtoString);
 
-BufferDataArrayExtended(1,5,kt_rd_MT);
-showmessage(DataVector.XYtoString+#10#10+DataTimeVector.XYtoString);
+//for I := ord(Low(TKeitley_Measure)) to ord(High(TKeitley_Measure)) do
+// SetMeasureFunction(TKeitley_Measure(i));
+
+//BufferDataArrayExtended(2,5,kt_rd_M);
+//showmessage(DataVector.XYtoString+#10#10+DataTimeVector.XYtoString);
 //
+//BufferDataArrayExtended(1,5,kt_rd_MST);
+//showmessage(DataVector.XYtoString+#10#10+DataTimeVector.XYtoString);
 //
-BufferDataArrayExtended(1,5,kt_rd_MS);
-showmessage(DataVector.XYtoString+#10#10+DataTimeVector.XYtoString);
+//BufferDataArrayExtended(1,5,kt_rd_MT);
+//showmessage(DataVector.XYtoString+#10#10+DataTimeVector.XYtoString);
+////
+////
+//BufferDataArrayExtended(1,5,kt_rd_MS);
+//showmessage(DataVector.XYtoString+#10#10+DataTimeVector.XYtoString);
 
 
 //BufferLastDataExtended(kt_rd_MST,KeitleyDefBuffer);

@@ -66,7 +66,7 @@ type
 //   fSourceDevice:TKT2450_SourceDevice;
    fDisplayState:TKeitley_DisplayState;
 //   fHookForTrigDataObtain: TSimpleEvent;
-//   fTrigBlockNumber:word;
+//
 //   fDragonBackTime:double;
 //   fToUseDragonBackTime:boolean;
 //   fImax:double;
@@ -100,14 +100,17 @@ type
    fIPAdressShow: TIPAdressShow;
    fMeasureFunction:TKeitley_Measure;
    fTimeValue:double;
+   fTrigBlockNumber:word;
    procedure PrepareString;override;
    procedure PrepareStringByRootNode;virtual;
    procedure DeviceCreate(Nm:string);override;
    procedure ProcessingStringByRootNode(Str:string);virtual;
    procedure DefaultSettings;override;
    function StringToMeasureFunction(Str:string):boolean;//virtual;
+   function StringToDigMeasureFunction(Str:string):boolean;
    function MeasureToRootNodeNumber(Measure:TKeitley_Measure):byte;
    function MeasureToRootNodeStr(Measure:TKeitley_Measure):string;
+   function MeasureToFunctString(Measure:TKeitley_Measure):string;
    procedure StringToMesuredData(Str:string;DataType:TKeitley_ReturnedData);
    procedure AdditionalDataFromString(Str:string);virtual;abstract;
    procedure StringToMesuredDataArray(Str:string;DataType:TKeitley_ReturnedData);
@@ -261,7 +264,7 @@ type
 //   при цьому вихід виключається OutPut=Off}
 //   function GetSourceType():boolean;
 //
-   procedure SetMeasureFunction(MeasureFunction:TKeitley_Measure=kt_mCurDC);virtual;
+   procedure SetMeasureFunction(MeasureFunc:TKeitley_Measure=kt_mCurDC);virtual;
    {що саме буде вимірювати прилад}
    function GetMeasureFunction():boolean;
     {повертає тип вимірювання, обробка залежить
@@ -433,25 +436,18 @@ type
    procedure Beep(Freq:word=600;Duration:double=0.1);
    {звук частотою Freq Гц протягом Duration секунд}
 
-//   procedure ConfigMeasureCreate(ListName:string=MyMeasList);
-//   procedure ConfigSourceCreate(ListName:string=MySourceList);
-//   procedure ConfigMeasureDelete(ListName:string=MyMeasList;ItemIndex:word=0);
-//   {якщо ItemIndex=0, то видаляється весь список}
+   procedure ConfigMeasureCreate(ListName:string=MyMeasList);
+   procedure ConfigMeasureDelete(ListName:string=MyMeasList;ItemIndex:word=0);
+   {якщо ItemIndex=0, то видаляється весь список}
 //   procedure ConfigSourceDelete(ListName:string=MySourceList;ItemIndex:word=0);
-//   procedure ConfigMeasureRecall(ListName:string=MyMeasList;ItemIndex:word=1);
-//   {завантаження налаштувань, записаних в ItemIndex;
-//   якщо потрібно викликати налаштування і для джерела,
-//   і для вимірювача - спочатку завантажувати треба для джерела}
-//   procedure ConfigSourceRecall(ListName:string=MySourceList;ItemIndex:word=1);
-//   procedure ConfigBothRecall(SourceListName:string=MySourceList;
-//                              MeasListName:string=MyMeasList;
-//                              SourceItemIndex:word=1;
-//                              MeasItemIndex:word=1);
-//   procedure ConfigMeasureStore(ListName:string=MyMeasList;ItemIndex:word=0);
-//   {запис налаштувань у список;
-//   якщо ItemIndex=0, то записується у кінець списку}
-//   procedure ConfigSourceStore(ListName:string=MySourceList;ItemIndex:word=0);
-//
+   procedure ConfigMeasureRecall(ListName:string=MyMeasList;ItemIndex:word=1);
+   {завантаження налаштувань, записаних в ItemIndex;
+   якщо потрібно викликати налаштування і для джерела,
+   і для вимірювача - спочатку завантажувати треба для джерела}
+   procedure ConfigMeasureStore(ListName:string=MyMeasList;ItemIndex:word=0);
+   {запис налаштувань у список;
+   якщо ItemIndex=0, то записується у кінець списку}
+
    Procedure GetParametersFromDevice;virtual;
 //
 //   Procedure MeasureSimple();overload;
@@ -474,60 +470,58 @@ type
    Procedure Init;
    Procedure Abort;
    Procedure Wait;
-//   Procedure TrigPause;
-//   Procedure TrigResume;
+   Procedure TrigPause;
+   Procedure TrigResume;
    Procedure InitWait;
-//   Procedure TrigEventGenerate;
-//   {generates a trigger event }
-//
-//   Procedure TrigForIVCreate;
-//   Procedure TrigNewCreate;
-//   {any blocks that have been defined in the trigger model
-//   are cleared so the trigger model has no blocks defined}
-//   Procedure TrigBufferClear(BufName:string=Kt2450DefBuffer);
-//   Procedure TrigConfigListRecall(ListName:string;Index:integer=1);
-//   Procedure TrigConfigListNext(ListName:string);overload;
-//   Procedure TrigConfigListNext(ListName1,ListName2:string);overload;
-//   Procedure TrigOutPutChange(toOn:boolean);
-//   Procedure TrigAlwaysTransition(TransitionBlockNumber:word);
-//   Procedure TrigDelay(DelayTime:double);
-//   Procedure TrigMeasure(BufName:string=Kt2450DefBuffer;Count:word=1);
-//   {при досягненні цього блоку прилад вимірює Count разів,
-//   після чого виконується наступний блок;
-//   Count=0 може використовуватися для зупинки нескінченних вимірювань
-//   - див. далі;
-//   результати заносяться в BufName}
-//   Procedure TrigMeasureInf(BufName:string=Kt2450DefBuffer);
-//   {при досягненні цього блоку прилад починає
-//   виміри і виконується наступний блок; виміри продовжуються доти,
-//   поки не зустрінеться новий вимірювальний блок чи не буде кінець моделі}
-//   Procedure TrigMeasureCountDevice(BufName:string=Kt2450DefBuffer);
-//   {при досягненні цього блоку прилад вимірює стільки разів, скільки
-//   передбачено попередньо встановленою властивістю Count,
-//   після чого виконується наступний блок}
-//
-//   Procedure TrigMeasureResultTransition(LimitType:TK2450_TrigLimitType;
-//                    LimA,LimB:double;TransitionBlockNumber:word;
-//                    MeasureBlockNumber:word=0);
-//   {якщо вимірювання задовольняє умові, яка передбачена в LimitType,
-//   то відбувається перехід на блок TransitionBlockNumber;
-//   при MeasureBlockNumber=0 береться до уваги останнє
-//   вимірювання, інакше те, яке відбулося в блоці з номером MeasureBlockNumber;
-//   якщо задати LimA>LimB, то прилад автоматично їх поміняє місцями
-//   умова виконується, якщо результат (MeasureResult)
-//   при kt_tlt_above: MeasureResult > LimB
-//   kt_tlt_below: MeasureResult < LimA
-//   kt_tlt_inside: LimA < MeasureResult < LimB  (про <= не знаю, треба експерементувати)
-//   kt_tlt_outside:  MeasureResult не належить [LimA, LimB]
-//   }
-//   Procedure TrigCounterTransition(TargetCount,TransitionBlockNumber:word);
-//   {якщо кількість приходів на цей блок менша TargetCount, то відбувається
-//   перехід на блок TransitionBlockNumber}
-//   Procedure TrigEventTransition(TransitionBlockNumber:word;
-//                                 EventType:TK2450_TriggerEvents=kt_te_comm;
-//                                 EventNumber:word=1);
-//   {якщо до того, як дійшли на цей блок, відбулася подія EventType,
-//   то відбувається перехід на TransitionBlockNumber}
+   Procedure TrigEventGenerate;
+   {generates a trigger event }
+
+   Procedure TrigNewCreate;
+   {any blocks that have been defined in the trigger model
+   are cleared so the trigger model has no blocks defined}
+   Procedure TrigBufferClear(BufName:string=KeitleyDefBuffer);
+   Procedure TrigConfigListRecall(ListName:string;Index:integer=1);
+   Procedure TrigConfigListNext(ListName:string);overload;
+   Procedure TrigConfigListNext(ListName1,ListName2:string);overload;
+   Procedure TrigAlwaysTransition(TransitionBlockNumber:word);
+   Procedure TrigDelay(DelayTime:double);
+   Procedure TrigMeasure(BufName:string=KeitleyDefBuffer;Count:word=1);
+   {при досягненні цього блоку прилад вимірює Count разів,
+   після чого виконується наступний блок;
+   Count=0 може використовуватися для зупинки нескінченних вимірювань
+   - див. далі;
+   результати заносяться в BufName}
+   Procedure TrigMeasureInf(BufName:string=KeitleyDefBuffer);
+   {при досягненні цього блоку прилад починає
+   виміри і виконується наступний блок; виміри продовжуються доти,
+   поки не зустрінеться новий вимірювальний блок чи не буде кінець моделі}
+   Procedure TrigMeasureCountDevice(BufName:string=KeitleyDefBuffer);
+   {при досягненні цього блоку прилад вимірює стільки разів, скільки
+   передбачено попередньо встановленою властивістю Count,
+   після чого виконується наступний блок}
+
+   Procedure TrigMeasureResultTransition(LimitType:TKeitley_TrigLimitType;
+                    LimA,LimB:double;TransitionBlockNumber:word;
+                    MeasureBlockNumber:word=0);
+   {якщо вимірювання задовольняє умові, яка передбачена в LimitType,
+   то відбувається перехід на блок TransitionBlockNumber;
+   при MeasureBlockNumber=0 береться до уваги останнє
+   вимірювання, інакше те, яке відбулося в блоці з номером MeasureBlockNumber;
+   якщо задати LimA>LimB, то прилад автоматично їх поміняє місцями
+   умова виконується, якщо результат (MeasureResult)
+   при kt_tlt_above: MeasureResult > LimB
+   kt_tlt_below: MeasureResult < LimA
+   kt_tlt_inside: LimA < MeasureResult < LimB  (про <= не знаю, треба експерементувати)
+   kt_tlt_outside:  MeasureResult не належить [LimA, LimB]
+   }
+   Procedure TrigCounterTransition(TargetCount,TransitionBlockNumber:word);
+   {якщо кількість приходів на цей блок менша TargetCount, то відбувається
+   перехід на блок TransitionBlockNumber}
+   Procedure TrigEventTransition(TransitionBlockNumber:word;
+                                 EventType:TKeitley_TriggerEvents=kt_te_comm;
+                                 EventNumber:word=1);
+   {якщо до того, як дійшли на цей блок, відбулася подія EventType,
+   то відбувається перехід на TransitionBlockNumber}
 
  end;
 
@@ -535,7 +529,7 @@ type
 implementation
 
 uses
-  OlegType, Dialogs, SysUtils, StrUtils, OlegFunction;
+  OlegType, Dialogs, SysUtils, StrUtils, OlegFunction, Math;
 
 { TKeitleyDevice }
 
@@ -765,6 +759,39 @@ begin
  SetupOperation(6,3,0,false);
 end;
 
+procedure TKeitley.ConfigMeasureCreate(ListName: string);
+begin
+//:CONF:LIST:CRE "<name>"
+ fAdditionalString:=StringToInvertedCommas(ListName);
+ SetupOperation(24,23,0);
+end;
+
+procedure TKeitley.ConfigMeasureDelete(ListName: string; ItemIndex: word);
+begin
+//:CONF:LIST:DEL "<name>", <index>
+ fAdditionalString:=StringToInvertedCommas(ListName);
+ if ItemIndex<>0 then fAdditionalString:=fAdditionalString+PartDelimiter+
+                                         IntToStr(ItemIndex);
+ SetupOperation(24,23,1);
+end;
+
+procedure TKeitley.ConfigMeasureRecall(ListName: string; ItemIndex: word);
+begin
+//:CONF:LIST:REC "<name>", <index>
+ fAdditionalString:=StringToInvertedCommas(ListName)+PartDelimiter
+                    +IntToStr(max(ItemIndex,1));
+ SetupOperation(24,23,2);
+end;
+
+procedure TKeitley.ConfigMeasureStore(ListName: string; ItemIndex: word);
+begin
+//:CONF:LIST:STOR "<name>", <index>
+ fAdditionalString:=StringToInvertedCommas(ListName);
+ if ItemIndex<>0 then fAdditionalString:=fAdditionalString+PartDelimiter+
+                                         IntToStr(ItemIndex);
+ SetupOperation(24,23,3);
+end;
+
 constructor TKeitley.Create(Telnet: TIdTelnet; IPAdressShow: TIPAdressShow;
   Nm: string);
 begin
@@ -829,7 +856,7 @@ begin
 // fDLActive:=1;
 
  fDisplayState:=kt_ds_on25;
-// fTrigBlockNumber:=1;
+ fTrigBlockNumber:=1;
 // fSweepWasCreated:=False;
 
 
@@ -858,6 +885,9 @@ function TKeitley.GetMeasureFunction: boolean;
 begin
 // :FUNC?
  QuireOperation(15);
+ if fDevice.Value>ord(kt_mVoltRat)
+   then QuireOperation(23,15);
+
  Result:=(fDevice.Value<>ErResult);
 end;
 
@@ -866,7 +896,7 @@ begin
 // if not(GetVoltageProtection()) then Exit;
 // if not(GetVoltageLimit()) then Exit;
 // if not(GetCurrentLimit()) then Exit;
-// if not(GetSourceType()) then Exit;  //GetDeviceMode
+if not(GetMeasureFunction()) then Exit;
 // if not(IsResistanceCompencateOn()) then Exit;  //має бути після GetMeasureFunction
 //
  if not(GetTerminal()) then Exit;
@@ -923,6 +953,13 @@ begin
   SetupOperation(7,4);
 end;
 
+function TKeitley.MeasureToFunctString(Measure: TKeitley_Measure): string;
+begin
+ if Measure<kt_DigCur
+   then Result:=StringToInvertedCommas(DeleteSubstring(MeasureToRootNodeStr(Measure)))
+   else Result:=StringToInvertedCommas(DeleteSubstring(RootNodeKeitley[ord(Measure)-1]));
+end;
+
 function TKeitley.MeasureToRootNodeNumber(Measure: TKeitley_Measure): byte;
 begin
  case Measure of
@@ -938,7 +975,6 @@ end;
 
 procedure TKeitley.MyTraining;
 begin
-
 end;
 
 procedure TKeitley.PrepareString;
@@ -1038,36 +1074,37 @@ begin
   22:case fFirstLevelNode of
        1:JoinToStringToSend(Buffer.Get);
      end; // fRootNode=22
-//  23:case fFirstLevelNode of
+  23:case fFirstLevelNode of
+          15:JoinToStringToSend (RootNodeKeitley[fFirstLevelNode]);
 //        36,37:JoinToStringToSend(AnsiReplaceStr(FirstNodeKt_2450[fFirstLevelNode],'#',inttostr(fDLActive)));
-//     end; // fRootNode=23
-//  24:begin
-//        JoinToStringToSend(FirstNodeKt_2450[fFirstLevelNode]);
-//        JoinToStringToSend(ConfLeafNodeKt_2450[fLeafNode]);
-//     end; // fRootNode=24
-//  26:case fFirstLevelNode of
-//        38,44,43:JoinToStringToSend(FirstNodeKt_2450[fFirstLevelNode]);
-//        40,41,21:begin
-//            JoinToStringToSend(FirstNodeKt_2450[39]);
-//            JoinToStringToSend(FirstNodeKt_2450[fFirstLevelNode]);
-//            JoinToStringToSend(TrigLeafNodeKt_2450[fLeafNode]);
-//            fAdditionalString:=IntTostr(fTrigBlockNumber)+PartDelimiter+fAdditionalString;
-//            inc(fTrigBlockNumber);
-//           end;
-//        24,11:begin
-//            JoinToStringToSend(FirstNodeKt_2450[39]);
-//            JoinToStringToSend(RootNoodKt_2450[fFirstLevelNode]);
-//            JoinToStringToSend(TrigLeafNodeKt_2450[fLeafNode]);
-//            fAdditionalString:=IntTostr(fTrigBlockNumber)+PartDelimiter+fAdditionalString;
-//            inc(fTrigBlockNumber);
-//           end;
-//         42:begin
-//             JoinToStringToSend(FirstNodeKt_2450[39]);
-//             JoinToStringToSend(FirstNodeKt_2450[fFirstLevelNode]);
-//             fAdditionalString:=IntTostr(fTrigBlockNumber)+PartDelimiter+fAdditionalString;
-//             inc(fTrigBlockNumber);
-//            end;
-//     end;// fRootNode=26
+     end; // fRootNode=23
+  24:begin
+        JoinToStringToSend(FirstNodeKt_2450[fFirstLevelNode]);
+        JoinToStringToSend(ConfLeafNodeKeitley[fLeafNode]);
+     end; // fRootNode=24
+  26:case fFirstLevelNode of
+        44,43,38:JoinToStringToSend(FirstNodeKt_2450[fFirstLevelNode]);
+        40,41,21:begin
+            JoinToStringToSend(FirstNodeKt_2450[39]);
+            JoinToStringToSend(FirstNodeKt_2450[fFirstLevelNode]);
+            JoinToStringToSend(TrigLeafNodeKeitley[fLeafNode]);
+            fAdditionalString:=IntTostr(fTrigBlockNumber)+PartDelimiter+fAdditionalString;
+            inc(fTrigBlockNumber);
+           end;
+        24,11:begin
+            JoinToStringToSend(FirstNodeKt_2450[39]);
+            JoinToStringToSend(RootNodeKeitley[fFirstLevelNode]);
+            JoinToStringToSend(TrigLeafNodeKeitley[fLeafNode]);
+            fAdditionalString:=IntTostr(fTrigBlockNumber)+PartDelimiter+fAdditionalString;
+            inc(fTrigBlockNumber);
+           end;
+         42:begin
+             JoinToStringToSend(FirstNodeKt_2450[39]);
+             JoinToStringToSend(FirstNodeKt_2450[fFirstLevelNode]);
+             fAdditionalString:=IntTostr(fTrigBlockNumber)+PartDelimiter+fAdditionalString;
+             inc(fTrigBlockNumber);
+            end;
+     end;// fRootNode=26
  end;
 
 end;
@@ -1140,10 +1177,11 @@ begin
        0,1:fDevice.Value:=SCPI_StringToValue(Str);
        2..5:StringToMesuredData(AnsiReplaceStr(Str,',',' '),TKeitley_ReturnedData(fFirstLevelNode-2));
       end;  //fRootNode=22
-//   23:case fFirstLevelNode of
+   23:case fFirstLevelNode of
+        15:StringToDigMeasureFunction(AnsiLowerCase(Str));
 //       36:StringToDigLineStatus(AnsiLowerCase(Str));
 //       37:fDevice.Value:=StrToInt(Str);
-//      end;
+      end;
  end;
 end;
 
@@ -1175,14 +1213,15 @@ begin
  SetupOperation(6,30)
 end;
 
-procedure TKeitley.SetMeasureFunction(MeasureFunction: TKeitley_Measure);
+procedure TKeitley.SetMeasureFunction(MeasureFunc: TKeitley_Measure);
 begin
+ fAdditionalString:=MeasureToFunctString(MeasureFunc);
+ if MeasureFunc>kt_mVoltRat
+//:DIG:FUNC "VOLT"|"CURR"
+   then SetupOperation(23,15)
 // :FUNC "VOLT"|"CURR"
- if MeasureFunction>kt_mVoltRat then Exit;
- 
- fAdditionalString:=StringToInvertedCommas(DeleteSubstring(MeasureToRootNodeStr(MeasureFunction)));
- SetupOperation(15);
- fMeasureFunction:=MeasureFunction;
+   else SetupOperation(15);
+ fMeasureFunction:=MeasureFunc;
 end;
 
 function TKeitley.StringToBufferIndexies(Str: string): boolean;
@@ -1191,6 +1230,22 @@ begin
  Buffer.StartIndex:=round(FloatDataFromRow(Str,1));
  Buffer.EndIndex:=round(FloatDataFromRow(Str,2));
  Result:=(Buffer.StartIndex<>ErResult)and(Buffer.EndIndex<>ErResult);
+end;
+
+function TKeitley.StringToDigMeasureFunction(Str: string): boolean;
+  var i:TKeitley_Measure;
+begin
+// Result:=False;
+ for I := kt_DigCur to kt_DigVolt do
+   begin
+    Result:=pos(DeleteSubstring(RootNodeKeitley[ord(i)-1]),Str)<>0;
+    if Result then
+      begin
+       fMeasureFunction:=i;
+       fDevice.Value:=ord(fMeasureFunction);
+       Break;
+      end;
+   end;
 end;
 
 function TKeitley.StringToDisplayBrightness(Str: string): boolean;
@@ -1222,8 +1277,8 @@ begin
 //       kt_mVoltRat: Result:=pos(DeleteSubstring(RootNodeKeitley[ord(i)+25]),Str)<>0;
       kt_mCurDC..
        kt_mVoltRat: Result:=pos(DeleteSubstring(MeasureToRootNodeStr(i)),Str)<>0;
-      kt_DigVolt..
-      kt_DigCur:  Result:=pos('none',Str)<>0;
+      kt_DigCur..
+      kt_DigVolt:  Result:=pos('none',Str)<>0;
     end;
     if Result then
       begin
@@ -1330,6 +1385,146 @@ begin
      fAdditionalString:=StringToInvertedCommas(bottom_text);
      SetupOperation(6,2);
    end;
+end;
+
+procedure TKeitley.TrigAlwaysTransition(TransitionBlockNumber: word);
+begin
+//:TRIG:BLOC:BRAN:ALW <blockNumber>, <branchToBlock>
+ if TransitionBlockNumber=0 then exit;
+ fAdditionalString:=IntToStr(TransitionBlockNumber);
+ SetupOperation(26,41,4);
+end;
+
+procedure TKeitley.TrigBufferClear(BufName: string);
+begin
+//:TRIG:BLOC:BUFF:CLE <blockNumber>, "<bufferName>"
+ fAdditionalString:=StringToInvertedCommas(BufName);
+ SetupOperation(26,40,0);
+end;
+
+procedure TKeitley.TrigConfigListNext(ListName: string);
+begin
+//:TRIG:BLOC:CONF:NEXT <blockNumber>, "<configurationList>"
+ fAdditionalString:=StringToInvertedCommas(ListName);
+ SetupOperation(26,24,2);
+end;
+
+procedure TKeitley.TrigConfigListNext(ListName1, ListName2: string);
+begin
+//:TRIG:BLOC:CONF::NEXT <blockNumber>, "<configurationList>", "<configurationList2>"
+ fAdditionalString:=StringToInvertedCommas(ListName1)+PartDelimiter
+                    +StringToInvertedCommas(ListName2);
+ SetupOperation(26,24,2);
+end;
+
+procedure TKeitley.TrigConfigListRecall(ListName: string; Index: integer);
+begin
+//:TRIG:BLOC:CONF:REC <blockNumber>, "<configurationList>", <index>
+ fAdditionalString:=StringToInvertedCommas(ListName)+PartDelimiter+
+                    inttostr(Index);
+ SetupOperation(26,24,1);
+end;
+
+procedure TKeitley.TrigCounterTransition(TargetCount,
+  TransitionBlockNumber: word);
+begin
+//:TRIG:BLOC:BRAN:COUN <blockNumber>, <targetCount>, <branchToBlock>
+ if (TransitionBlockNumber=0)or(TargetCount=0) then Exit;
+ fAdditionalString:=IntToStr(TargetCount)+PartDelimiter
+                    + IntToStr(TransitionBlockNumber);
+  SetupOperation(26,41,7);
+end;
+
+procedure TKeitley.TrigDelay(DelayTime: double);
+begin
+//:TRIG:BLOC:DEL:CONS <blockNumber>, <time>
+ fAdditionalString:=floattostr(NumberMap(DelayTime,Keitley_TrigDelayLimits));
+ SetupOperation(26,21,5);
+end;
+
+procedure TKeitley.TrigEventGenerate;
+begin
+// *TRG
+ SetupOperation(27,0,0,False);
+end;
+
+procedure TKeitley.TrigEventTransition(TransitionBlockNumber: word;
+  EventType: TKeitley_TriggerEvents; EventNumber: word);
+begin
+//:TRIG:BLOC:BRAN:EVEN <blockNumber>, <event>, <branchToBlock>
+ if (TransitionBlockNumber=0)or(EventNumber=0) then Exit;
+ if (EventType=kt_te_timer)and(EventNumber>4) then Exit;
+ if (EventType=kt_te_notify)and(EventNumber>8) then Exit;
+ if (EventType=kt_te_lan)and(EventNumber>8) then Exit;
+ if (EventType=kt_te_dig)and(EventNumber>6) then Exit;
+ if (EventType=kt_te_blend)and(EventNumber>2) then Exit;
+ if (EventType=kt_te_tspl)and(EventNumber>3) then Exit;
+
+ fAdditionalString:=Kt2450_TriggerEventsCommand[EventType];
+ if EventType in [kt_te_timer..kt_te_tspl] then
+   fAdditionalString:=fAdditionalString + IntToStr(EventNumber);
+ fAdditionalString:=fAdditionalString+PartDelimiter
+                    + IntToStr(TransitionBlockNumber);
+ SetupOperation(26,41,8);
+end;
+
+procedure TKeitley.TrigMeasure(BufName: string; Count: word);
+begin
+//:TRIG:BLOC:MDIG <blockNumber>, "<bufferName>", <count>
+ fAdditionalString:=StringToInvertedCommas(BufName)+PartDelimiter
+                    +IntToStr(Count);
+ SetupOperation(26,42);
+end;
+
+procedure TKeitley.TrigMeasureCountDevice(BufName: string);
+begin
+//:TRIG:BLOC:MDIG <blockNumber>, "<bufferName>", AUTO
+ fAdditionalString:=StringToInvertedCommas(BufName)+PartDelimiter
+                    +'auto';
+ SetupOperation(26,42);
+end;
+
+procedure TKeitley.TrigMeasureInf(BufName: string);
+begin
+//:TRIG:BLOC:MDIG <blockNumber>, "<bufferName>", INF
+ fAdditionalString:=StringToInvertedCommas(BufName)+PartDelimiter
+                    +'inf';
+ SetupOperation(26,42);
+end;
+
+procedure TKeitley.TrigMeasureResultTransition(
+  LimitType: TKeitley_TrigLimitType; LimA, LimB: double; TransitionBlockNumber,
+  MeasureBlockNumber: word);
+begin
+//:TRIG:BLOC:BRAN:LIM:CONS <blockNumber>, <limitType>, <limitA>, <limitB>,
+//<branchToBlock>, <measureDigitizeBlock>
+ if TransitionBlockNumber=0 then Exit;
+ fAdditionalString:=Kt2450_TrigLimitTypeCommand[LimitType]+PartDelimiter
+                    +floattostr(LimA)+PartDelimiter
+                    +floattostr(LimB)+PartDelimiter
+                    +IntTostr(TransitionBlockNumber)+PartDelimiter
+                    +IntTostr(MeasureBlockNumber);
+ SetupOperation(26,41,6);
+end;
+
+procedure TKeitley.TrigNewCreate;
+begin
+//:TRIGger:LOAD "Empty"
+ fTrigBlockNumber:=1;
+ fAdditionalString:=StringToInvertedCommas('Empty');
+ SetupOperation(26,38);
+end;
+
+procedure TKeitley.TrigPause;
+begin
+//:TRIG:PAUS
+ SetupOperation(26,44,0,False);
+end;
+
+procedure TKeitley.TrigResume;
+begin
+//:TRIG:RES
+ SetupOperation(26,43,0,False);
 end;
 
 procedure TKeitley.UnloadSetupPowerOn;

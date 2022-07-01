@@ -23,7 +23,7 @@ const
 //   18      19      20      21      22      23    24      25     26      27
   ':curr:ac',':volt:ac',':fres',':diod',':cap',':temp',':cont',':freq',':per',
 //    28        29       30       31      32     33      34      35     36
-  ':volt:dc:rat',':dig:volt',':dig:curr');
+  ':volt:dc:rat',':dig:curr',':dig:volt');
 //    37             38         39
 
   SuffixKt_2450:array[0..7]of string=('on','off','rst','def',
@@ -45,10 +45,10 @@ const
    ':line#:stat',':load', ':bloc',':buff',':bran',':mdig',':res',':paus');
 //      37         38        39      40      41      42      43      44
 
- ConfLeafNodeKt_2450:array[0..3]of string=
+ ConfLeafNodeKeitley:array[0..3]of string=
  (':cre',':del',':rec',':stor');
 
- TrigLeafNodeKt_2450:array[0..8]of string=
+ TrigLeafNodeKeitley:array[0..8]of string=
  (':cle',':rec',':next',':stat',':alw',':cons',':lim:cons',':coun',':even');
 //   0      1       2       3      4      5         6         7       8
 
@@ -67,7 +67,7 @@ type
                    kt_mCurAC,kt_mVolAC,kt_mRes4W,
                    kt_mDiod,kt_mCap,kt_mTemp,
                    kt_mCont,kt_mFreq,kt_mPer,
-                   kt_mVoltRat,kt_DigVolt,kt_DigCur);
+                   kt_mVoltRat,kt_DigCur,kt_DigVolt);
  TKt2450_Measure=kt_mCurDC..kt_mRes2W;
 
  TKt2450_Sense=(kt_s4wire,kt_s2wire);
@@ -163,8 +163,8 @@ TKt2450_DigLineDirections=array[TKt2450_DigLines] of  TKt2450_DigLineDirection;
 TKeitley_DisplayState=(kt_ds_on100,kt_ds_on75,kt_ds_on50,kt_ds_on25,
                       kt_ds_off,kt_ds_black);
 
-TK2450_TrigLimitType=(kt_tlt_above, kt_tlt_below, kt_tlt_inside, kt_tlt_outside);
-TK2450_TriggerEvents=(kt_te_comm,//подія через command interface
+TKeitley_TrigLimitType=(kt_tlt_above, kt_tlt_below, kt_tlt_inside, kt_tlt_outside);
+TKeitley_TriggerEvents=(kt_te_comm,//подія через command interface
                       kt_te_disp,//натискування кнопки "TRIGGER" на панелі
                       kt_te_none,//відсутність події
                       kt_te_slim,//Source limit condition occurs
@@ -173,7 +173,9 @@ TK2450_TriggerEvents=(kt_te_comm,//подія через command interface
                       kt_te_lan,//LXI trigger packet is received on LAN trigger object
                       kt_te_dig,//щось відбулося на цифрових лініях
                       kt_te_blend,//Trigger event blender, which combines trigger events
-                      kt_te_tspl);//Line edge detected on TSP-Link synchronization line
+                      kt_te_tspl,//Line edge detected on TSP-Link synchronization line
+                      kt_te_atr,//Analog trigger
+                      kt_te_ext);//External in trigger
 
 const
  Keitley_TerminalsName:array [TKeitley_OutputTerminals]
@@ -201,7 +203,7 @@ const
 
  Kt_2450_SourceDelayLimits:TLimitValues=(0,1e3);
  Kt_2450_SweepDelayLimits:TLimitValues=(5e-5,1e3);
- Kt_2450_TrigDelayLimits:TLimitValues=(1.67e-7,1e3);
+ Keitley_TrigDelayLimits:TLimitValues=(1.67e-7,1e3);
 
  Kt_2450_MeasureTimeLimits:TLimitValues=(0.01,10);
  Keitley_MeaureTimeConvertConst=20;
@@ -256,19 +258,19 @@ Keitley_DisplayStateLabel:array[TKeitley_DisplayState]of string=
        ('Full brightness','75% brightness','50% brightness',
         '25% brightness','Display off','Display & indicators off');
 
-Kt2450_TrigLimitTypeCommand:array[TK2450_TrigLimitType]of string=
+Kt2450_TrigLimitTypeCommand:array[TKeitley_TrigLimitType]of string=
        ('abov','bel','in','out');
 
-Kt2450_TriggerEventsCommand:array[TK2450_TriggerEvents]of string=
+Kt2450_TriggerEventsCommand:array[TKeitley_TriggerEvents]of string=
        ('comm','disp','none','slim','tim','not',
-        'lan','dig','blen','tspl');
+        'lan','dig','blen','tspl','atr','ext');
 
  Keitley_MeasureLabel:array[TKeitley_Measure]of string=
           ('Current DC','Voltage DC','Resistance 2W',
            'Current AC','Voltage AC','Resistance 4W',
            'Diode','Capacitance','Temperature',
            'Continuity','Frequency','Period',
-           'Voltage Ratio','Dig Voltage','Dig Current');
+           'Voltage Ratio','Dig Current','Dig Voltage');
 
 
 implementation

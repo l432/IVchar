@@ -10,18 +10,6 @@ uses
 
 type
 
-// TKeitleyDevice=class(TTelnetMeterDeviceSingle)
-//  private
-//   fSCPI:TSCPInew;
-//  protected
-//   procedure UpDate();override;
-//  public
-//   Constructor Create(SCPInew:TSCPInew;Telnet:TIdTelnet;IPAdressShow: TIPAdressShow;
-//               Nm:string);
-// end;
-
-//TKt_2450=class;
-
 TKt_2450_SweepParameters=class(TSimpleFreeAndAiniObject)
  private
   fSource:TKt2450_Source;
@@ -82,14 +70,10 @@ TKT2450_Meter=class;
 TKT2450_SourceMeter=class;
 TKT2450_SourceDevice=class;
 
-// TKt_2450=class(TSCPInew)
  TKt_2450=class(TKeitley)
   private
-//   fTelnet:TIdTelnet;
-//   fIPAdressShow: TIPAdressShow;
    fIsTripped:boolean;
 
-//   fTerminal:TKeitley_OutputTerminals;
    fOutPutOn:boolean;
    fResistanceCompencateOn:TKt2450_MeasureBool;
    fAzeroState:TKt2450_MeasureBool;
@@ -99,7 +83,6 @@ TKT2450_SourceDevice=class;
    fMeasureUnits:TKt_2450_MeasureUnits;
    fOutputOffState:TKt_2450_OutputOffStates;
    fSourceType:TKt2450_Source;
-//   fMeasureFunction:TKt2450_Measure;
    fVoltageProtection:TKt_2450_VoltageProtection;
    fVoltageLimit:double;
    fCurrentLimit:double;
@@ -111,30 +94,19 @@ TKT2450_SourceDevice=class;
    fMeasureVoltageLowRange:TKt2450VoltageRange;
    fMeasureCurrentLowRange:TKt2450CurrentRange;
    fSourceDelay:TKt2450_SourceDouble;
-//   fSourceDelay2:TKt2450_SourceDouble;
-   {це поле для шаманства...}
    fSourceValue:TKt2450_SourceDouble;
    fSourceDelayAuto:TKt2450_SourceBool;
    fMeasureTime:TKt2450_MeasureDouble;
    fDisplayDN:TKt2450_MeasureDisplayDN;
-//   fDataVector:TVector;
-   {X - значення джерела; Y - результат виміру}
-//   fDataTimeVector:TVector;
-   {X - час виміру (мілісекунди з початку доби); Y - результат виміру}
-//   fBuffer:TKeitley_Buffer;
    fCount:integer;
    fSourceMeasuredValue:double;
-//   fTimeValue:double;
-   {час виміру, в мілісекундах з початку доби}
    fDigitLineType:TKt2450_DigLineTypes;
    fDigitLineDirec:TKt2450_DigLineDirections;
    fDLActive:TKt2450_DigLines;
    fMeter:TKT2450_Meter;
    fSourceMeter:TKT2450_SourceMeter;
    fSourceDevice:TKT2450_SourceDevice;
-//   fDisplayState:TKeitley_DisplayState;
    fHookForTrigDataObtain: TSimpleEvent;
-   fTrigBlockNumber:word;
    fDragonBackTime:double;
    fToUseDragonBackTime:boolean;
    fImax:double;
@@ -144,17 +116,10 @@ TKT2450_SourceDevice=class;
    procedure OnOffFromBool(toOn:boolean);
    function StringToVoltageProtection(Str:string;var vp:TKt_2450_VoltageProtection):boolean;
    function StringToSourceType(Str:string):boolean;
-//   function StringToMeasureFunction(Str:string):boolean;
-//   function StringToTerminals(Str:string):boolean;
    function StringToOutPutState(Str:string):boolean;
    function StringToMeasureUnit(Str:string):boolean;
-//   function StringToBufferIndexies(Str:string):boolean;
-//   function StringToDisplayBrightness(Str:string):boolean;
    procedure StringToDigLineStatus(Str:string);
    procedure StringToArray(Str:string);
-//   procedure StringToMesuredData(Str:string;DataType:TKeitley_ReturnedData);
-//   procedure StringToMesuredDataArray(Str:string;DataType:TKeitley_ReturnedData);
-//   function StringToMeasureTime(Str:string):double;
    function IsLimitExcided(FirstLevelNode,LeafNode:byte):boolean;
    {типова функція для запиту, чи ввімкнув прилад певні захисти}
    function ModeDetermination:TKt_2450_Mode;
@@ -165,27 +130,18 @@ TKT2450_SourceDevice=class;
    procedure SetCountNumber(Value:integer);
    procedure TrigIVLoop(i: Integer);
   protected
-//   procedure PrepareString;override;
    procedure PrepareStringByRootNode;override;
    procedure ProcessingStringByRootNode(Str:string);override;
-//   procedure DeviceCreate(Nm:string);override;
    procedure DefaultSettings;override;
-//   function StringToMeasureFunction(Str:string):boolean;override;
-//   procedure StringToMesuredData(Str:string;DataType:TKeitley_ReturnedData);override;
    procedure AdditionalDataFromString(Str:string);override;
    procedure AdditionalDataToArrayFromString;override;
   public
    SweepParameters:array[TKt2450_Source]of TKt_2450_SweepParameters;
-//   IVDependence:TFastIVDependence;
    property HookForTrigDataObtain:TSimpleEvent read fHookForTrigDataObtain write fHookForTrigDataObtain;
-//   property DataVector:TVector read fDataVector;
-//   property DataTimeVector:TVector read fDataTimeVector;
    property SourceType:TKt2450_Source read fSourceType;
-//   property MeasureFunction:TKt2450_Measure read fMeasureFunction;
    property VoltageProtection:TKt_2450_VoltageProtection read fVoltageProtection;
    property VoltageLimit:double read fVoltageLimit;
    property CurrentLimit:double read fCurrentLimit;
-//   property Terminal:TKeitley_OutputTerminals read fTerminal;
    property OutPutOn:boolean read fOutPutOn write fOutPutOn;
    property ResistanceCompencateOn:TKt2450_MeasureBool read fResistanceCompencateOn;
    property ReadBack:TKt2450_SourceBool read fReadBack;
@@ -206,16 +162,13 @@ TKT2450_SourceDevice=class;
    property SourceDelayAuto:TKt2450_SourceBool read fSourceDelayAuto;
    property DisplayDN:TKt2450_MeasureDisplayDN read fDisplayDN;
    property MeasureTime:TKt2450_MeasureDouble read fMeasureTime;
-//   property Buffer:TKeitley_Buffer read fBuffer;
    property Count:integer read fCount write SetCountNumber;
    property SourceMeasuredValue:double read fSourceMeasuredValue;
-//   property TimeValue:double read fTimeValue;
    property DigitLineType:TKt2450_DigLineTypes read fDigitLineType;
    property DigitLineTypeDirec:TKt2450_DigLineDirections read fDigitLineDirec;
    property Meter:TKT2450_Meter read fMeter;
    property SourceMeter:TKT2450_SourceMeter read fSourceMeter;
    property SourceDevice:TKT2450_SourceDevice read fSourceDevice;
-//   property DisplayState:TKeitley_DisplayState read fDisplayState;
    property DragonBackTime:double read fDragonBackTime write fDragonBackTime;
    property ToUseDragonBackTime:boolean read fToUseDragonBackTime write fToUseDragonBackTime;
    property Imax:double read fImax write fImax;
@@ -226,9 +179,6 @@ TKT2450_SourceDevice=class;
                Nm:string='Keitley2450');
    destructor Destroy; override;
 
-//   function Test():boolean;override;
-//   procedure ProcessingString(Str:string);override;
-//   procedure ResetSetting();
    procedure MyTraining();override;
 
    procedure OutPutChange(toOn:boolean);
@@ -238,18 +188,7 @@ TKT2450_SourceDevice=class;
    procedure SetInterlockStatus(toOn:boolean);
    function IsInterlockOn():boolean;
 
-//   procedure ClearUserScreen();
-//   procedure TextToUserScreen(top_text:string='';bottom_text:string='');
-
-//   procedure SaveSetup(SlotNumber:TKeitley_SetupMemorySlot);
-//   procedure LoadSetup(SlotNumber:TKeitley_SetupMemorySlot);
-//   procedure LoadSetupPowerOn(SlotNumber:TKeitley_SetupMemorySlot);
-//   procedure UnloadSetupPowerOn();
-//   procedure RunningMacroScript(ScriptName:string);
-
    procedure SetTerminal(TerminalType:TKeitley_OutputTerminals);
-   {вихід на передню чи задню панель}
-//   function GetTerminal():boolean;
    {вихід на передню чи задню панель}
 
    procedure SetSense(MeasureType:TKt2450_Measure;Sense:TKt2450_Sense);
@@ -323,11 +262,9 @@ TKT2450_SourceDevice=class;
    при цьому вихід виключається OutPut=Off}
    function GetSourceType():boolean;
 
-//   procedure SetMeasureFunction(MeasureFunction:TKt2450_Measure=kt_mCurrent);
    procedure SetMeasureFunction(MeasureFunction:TKt2450_Measure=kt_mCurDC);reintroduce;overload;
 //   procedure SetMeasureFunction(MeasureFunction:TKt2450_Measure=kt_mCurDC);overload;
    {прилад вимірює напругу чи струм}
-//   function GetMeasureFunction():boolean;
 
    procedure SetMeasureUnit(Measure:TKt2450_Measure; MeasureUnit:TKt_2450_MeasureUnit);
    {що буде вимірювати (розраховувати) при реальних вимірах Measure}
@@ -426,58 +363,6 @@ TKT2450_SourceDevice=class;
    procedure SwepListCreate(StartIndex:word=1);
    procedure SwepLogStepCreate();
 
-//   procedure BufferCreate();overload;
-//   procedure BufferCreate(Name:string);overload;
-//   procedure BufferCreate(Name:string;Size:integer);overload;
-//   procedure BufferCreate(Name:string;Size:integer;Style:TKt2450_BufferStyle);overload;
-//   procedure BufferCreate(Style:TKt2450_BufferStyle);overload;
-//   procedure BufferDelete();overload;
-//   procedure BufferDelete(Name:string);overload;
-//   procedure BufferClear();overload;
-//   procedure BufferClear(BufName:string);overload;
-
-//   procedure BufferReSize(NewSize:integer);overload;
-   {змінює можливу кількість записів у буфері,
-   при цьому він очищується}
-//   procedure BufferReSize(BufName:string;NewSize:integer);overload;
-//   function BufferGetSize():integer;overload;
-//   function BufferGetSize(BufName:string):integer;overload;
-//   function BufferGetReadingNumber(BufName:string=KeitleyDefBuffer):integer;
-   {повертає існуючу кількість записів у буфері}
-//   function BufferGetStartEndIndex(BufName:string=KeitleyDefBuffer):boolean;
-   {повертає початковий та кінцевий індекси існуючих
-   в буфері записів, якщо все добре вони знаходяться
-   в Buffer.StartIndex та Buffer.EndIndex}
-
-//   procedure BufferSetFillMode(FillMode:TKeitley_BufferFillMode);overload;
-//   procedure BufferSetFillMode(BufName:string;FillMode:TKeitley_BufferFillMode);overload;
-//   function BufferGetFillMode():boolean;overload;
-//   function BufferGetFillMode(BufName:string):boolean;overload;
-
-//   Procedure BufferLastDataSimple();overload;
-//   {без вимірювання видобувається результат останнього
-//   вимірювання, що зберігається у defbuffer1,
-//   розміщується в fDevice.Value}
-//   Procedure BufferLastDataSimple(BufName:string);overload;
-//   {отримання останнього збереженого результату
-//   вимірювань з буфера BufName}
-//   Procedure BufferLastDataExtended(DataType:TKeitley_ReturnedData=kt_rd_MS;
-//                            BufName:string=KeitleyDefBuffer);
-//   {як попередні, проте повертає більше даних
-//   (див. TKeitley_ReturnedData) щодо останнього виміру}
-//   Procedure BufferDataArrayExtended(SIndex,EIndex:integer;
-//                     DataType:TKeitley_ReturnedData=kt_rd_MS;
-//                     BufName:string=KeitleyDefBuffer);
-   {зчитування з буферу BufName результатів, збережених за
-   індексами в діапазоні від SIndex до EIndex,
-   що саме повертається залежить від DataType,
-   результати вимірювань в DataVector.Y,
-   значення джерела в DataVector.Х,
-   якщо берем час вимірювання, то він в  DataTimeVector.X,
-   а результат виміру в  DataTimeVector.Y,
-   якщо DataType=kt_rd_M, то вимір і в  DataVector.Х}
-   {треба оцінити час передачі}
-
    procedure SetCount(Cnt:integer);
    {кількість повторних вимірювань, коли прилад просять поміряти}
    function GetCount():boolean;
@@ -496,30 +381,20 @@ TKT2450_SourceDevice=class;
          0 якщо низький
         -1 якщо не отримали відповідь}
 
-//   procedure SetDisplayBrightness(State:TKeitley_DisplayState);
-//   function GetDisplayBrightness():boolean;
-
-//   procedure Beep(Freq:word=600;Duration:double=0.1);
-//   {звук частотою Freq Гц протягом Duration секунд}
-
-   procedure ConfigMeasureCreate(ListName:string=MyMeasList);
    procedure ConfigSourceCreate(ListName:string=MySourceList);
-   procedure ConfigMeasureDelete(ListName:string=MyMeasList;ItemIndex:word=0);
-   {якщо ItemIndex=0, то видаляється весь список}
    procedure ConfigSourceDelete(ListName:string=MySourceList;ItemIndex:word=0);
-   procedure ConfigMeasureRecall(ListName:string=MyMeasList;ItemIndex:word=1);
+//   {якщо ItemIndex=0, то видаляється весь список}
+   procedure ConfigSourceRecall(ListName:string=MySourceList;ItemIndex:word=1);
    {завантаження налаштувань, записаних в ItemIndex;
    якщо потрібно викликати налаштування і для джерела,
    і для вимірювача - спочатку завантажувати треба для джерела}
-   procedure ConfigSourceRecall(ListName:string=MySourceList;ItemIndex:word=1);
    procedure ConfigBothRecall(SourceListName:string=MySourceList;
                               MeasListName:string=MyMeasList;
                               SourceItemIndex:word=1;
                               MeasItemIndex:word=1);
-   procedure ConfigMeasureStore(ListName:string=MyMeasList;ItemIndex:word=0);
+   procedure ConfigSourceStore(ListName:string=MySourceList;ItemIndex:word=0);
    {запис налаштувань у список;
    якщо ItemIndex=0, то записується у кінець списку}
-   procedure ConfigSourceStore(ListName:string=MySourceList;ItemIndex:word=0);
 
    Procedure GetParametersFromDevice;override;
 
@@ -539,65 +414,8 @@ TKT2450_SourceDevice=class;
    {як попередні, проте повертає більше даних
    (див. TKt2450_ReturnedData) щодо останнього виміру}
 
-
-//   Procedure Init;
-//   Procedure Abort;
-//   Procedure Wait;
-   Procedure TrigPause;
-   Procedure TrigResume;
-//   Procedure InitWait;
-   Procedure TrigEventGenerate;
-   {generates a trigger event }
-
    Procedure TrigForIVCreate;
-   Procedure TrigNewCreate;
-   {any blocks that have been defined in the trigger model
-   are cleared so the trigger model has no blocks defined}
-   Procedure TrigBufferClear(BufName:string=KeitleyDefBuffer);
-   Procedure TrigConfigListRecall(ListName:string;Index:integer=1);
-   Procedure TrigConfigListNext(ListName:string);overload;
-   Procedure TrigConfigListNext(ListName1,ListName2:string);overload;
    Procedure TrigOutPutChange(toOn:boolean);
-   Procedure TrigAlwaysTransition(TransitionBlockNumber:word);
-   Procedure TrigDelay(DelayTime:double);
-   Procedure TrigMeasure(BufName:string=KeitleyDefBuffer;Count:word=1);
-   {при досягненні цього блоку прилад вимірює Count разів,
-   після чого виконується наступний блок;
-   Count=0 може використовуватися для зупинки нескінченних вимірювань
-   - див. далі;
-   результати заносяться в BufName}
-   Procedure TrigMeasureInf(BufName:string=KeitleyDefBuffer);
-   {при досягненні цього блоку прилад починає
-   виміри і виконується наступний блок; виміри продовжуються доти,
-   поки не зустрінеться новий вимірювальний блок чи не буде кінець моделі}
-   Procedure TrigMeasureCountDevice(BufName:string=KeitleyDefBuffer);
-   {при досягненні цього блоку прилад вимірює стільки разів, скільки
-   передбачено попередньо встановленою властивістю Count,
-   після чого виконується наступний блок}
-
-   Procedure TrigMeasureResultTransition(LimitType:TK2450_TrigLimitType;
-                    LimA,LimB:double;TransitionBlockNumber:word;
-                    MeasureBlockNumber:word=0);
-   {якщо вимірювання задовольняє умові, яка передбачена в LimitType,
-   то відбувається перехід на блок TransitionBlockNumber;
-   при MeasureBlockNumber=0 береться до уваги останнє
-   вимірювання, інакше те, яке відбулося в блоці з номером MeasureBlockNumber;
-   якщо задати LimA>LimB, то прилад автоматично їх поміняє місцями
-   умова виконується, якщо результат (MeasureResult)
-   при kt_tlt_above: MeasureResult > LimB
-   kt_tlt_below: MeasureResult < LimA
-   kt_tlt_inside: LimA < MeasureResult < LimB  (про <= не знаю, треба експерементувати)
-   kt_tlt_outside:  MeasureResult не належить [LimA, LimB]
-   }
-   Procedure TrigCounterTransition(TargetCount,TransitionBlockNumber:word);
-   {якщо кількість приходів на цей блок менша TargetCount, то відбувається
-   перехід на блок TransitionBlockNumber}
-   Procedure TrigEventTransition(TransitionBlockNumber:word;
-                                 EventType:TK2450_TriggerEvents=kt_te_comm;
-                                 EventNumber:word=1);
-   {якщо до того, як дійшли на цей блок, відбулася подія EventType,
-   то відбувається перехід на TransitionBlockNumber}
-
  end;
 
 TKT2450_Measurement=class(TMeasurementSimple)
@@ -611,7 +429,6 @@ TKT2450_Measurement=class(TMeasurementSimple)
 end;
 
 
-//TKT2450_Meter=class(TMeasurementSimple)
 TKT2450_Meter=class(TKT2450_Measurement)
  private
   fTimer:TTimer;
@@ -658,12 +475,6 @@ uses
 
 { TKt_2450 }
 
-//procedure TKt_2450.Abort;
-//begin
-////:ABOR
-// SetupOperation(18,0,0,False);
-//end;
-
 procedure TKt_2450.AdditionalDataFromString(Str: string);
 begin
  fSourceMeasuredValue:=FloatDataFromRow(Str,2);
@@ -680,24 +491,6 @@ begin
  SetupOperation(16,0,0,False);
 end;
 
-//procedure TKt_2450.BufferCreate(Name: string);
-//begin
-// Buffer.SetName(Name);
-// BufferCreate;
-//end;
-
-//procedure TKt_2450.BufferCreate;
-//begin
-// fAdditionalString:=Buffer.CreateStr;
-// SetupOperation(19,29);
-//end;
-
-//procedure TKt_2450.ClearUserScreen;
-//begin
-//// :DISP:CLE
-// SetupOperation(6,3,0,false);
-//end;
-
 procedure TKt_2450.ConfigBothRecall(SourceListName, MeasListName: string;
   SourceItemIndex, MeasItemIndex: word);
 begin
@@ -707,39 +500,6 @@ begin
                     +StringToInvertedCommas(MeasListName)+PartDelimiter
                     +IntToStr(max(MeasItemIndex,1));
  SetupOperation(11,24,2);
-end;
-
-procedure TKt_2450.ConfigMeasureCreate(ListName: string);
-begin
-//:CONF:LIST:CRE "<name>"
- fAdditionalString:=StringToInvertedCommas(ListName);
- SetupOperation(24,23,0);
-end;
-
-procedure TKt_2450.ConfigMeasureDelete(ListName: string;ItemIndex:word);
-begin
-//:CONF:LIST:DEL "<name>", <index>
- fAdditionalString:=StringToInvertedCommas(ListName);
- if ItemIndex<>0 then fAdditionalString:=fAdditionalString+PartDelimiter+
-                                         IntToStr(ItemIndex);
- SetupOperation(24,23,1);
-end;
-
-procedure TKt_2450.ConfigMeasureRecall(ListName: string; ItemIndex: word);
-begin
-//:CONF:LIST:REC "<name>", <index>
- fAdditionalString:=StringToInvertedCommas(ListName)+PartDelimiter
-                    +IntToStr(max(ItemIndex,1));
- SetupOperation(24,23,2);
-end;
-
-procedure TKt_2450.ConfigMeasureStore(ListName: string; ItemIndex: word);
-begin
-//:CONF:LIST:STOR "<name>", <index>
- fAdditionalString:=StringToInvertedCommas(ListName);
- if ItemIndex<>0 then fAdditionalString:=fAdditionalString+PartDelimiter+
-                                         IntToStr(ItemIndex);
- SetupOperation(24,23,3);
 end;
 
 procedure TKt_2450.ConfigSourceCreate(ListName: string);
@@ -778,11 +538,7 @@ end;
 constructor TKt_2450.Create(Telnet: TIdTelnet; IPAdressShow: TIPAdressShow;
   Nm: string);
 begin
-// fTelnet:=Telnet;
-// fIPAdressShow:=IPAdressShow;
-// inherited Create(Nm);
  inherited Create(Telnet,IPAdressShow,Nm);
-// fBuffer:=TKeitley_Buffer.Create;
  fMeter:=TKT2450_Meter.Create(Self);
  fSourceMeter:=TKT2450_SourceMeter.Create(Self);
  fSourceDevice:=TKT2450_SourceDevice.Create(Self);
@@ -792,19 +548,6 @@ function TKt_2450.CurrentRangeToString(Range: TKt2450CurrentRange): string;
 begin
  Result:=floattostr(1e-8*Power(10,ord(Range)-1));
 end;
-
-//procedure TKt_2450.ResetSetting;
-//begin
-////  *RST
-//  SetupOperation(2,0,0,False);
-//end;
-
-//procedure TKt_2450.RunningMacroScript(ScriptName: string);
-//begin
-////  SCR:RUN "ScriptName"
-//  fAdditionalString:=StringToInvertedCommas(ScriptName);
-//  SetupOperation(8);
-//end;
 
 procedure TKt_2450.DefaultSettings;
  var i:integer;
@@ -863,7 +606,7 @@ begin
  fDLActive:=1;
 
 // fDisplayState:=kt_ds_on25;
- fTrigBlockNumber:=1;
+// fTrigBlockNumber:=1;
  fSweepWasCreated:=False;
 end;
 
@@ -881,11 +624,6 @@ begin
   inherited;
 end;
 
-//procedure TKt_2450.DeviceCreate(Nm: string);
-//begin
-// fDevice:=TKeitleyDevice.Create(Self,fTelnet,fIPAdressShow,Nm);
-//end;
-
 function TKt_2450.GetAzeroStates: boolean;
  var i:TKt2450_Measure;
 begin
@@ -893,51 +631,6 @@ begin
  for I := Low(TKt2450_Measure) to High(TKt2450_Measure) do
    Result:=Result and IsAzeroStateOn(i);
 end;
-
-//function TKt_2450.BufferGetSize(BufName: string): integer;
-//begin
-//// :TRAC:POIN? "<bufferName>"
-// Buffer.SetName(BufName);
-// Result:=BufferGetSize();
-//end;
-
-//function TKt_2450.BufferGetStartEndIndex(BufName: string): boolean;
-//begin
-// Buffer.SetName(BufName);
-// QuireOperation(19,35,2,False);
-// Result:=(fDevice.Value=1);
-//end;
-
-//procedure TKt_2450.BufferLastDataExtended(DataType: TKeitley_ReturnedData;
-//  BufName: string);
-//begin
-// // :FETC? "<bufferName>", <bufferElements>
-// Buffer.SetName(BufName);
-// QuireOperation(22,ord(DataType)+2,0,False);
-//end;
-
-//procedure TKt_2450.BufferLastDataSimple;
-//begin
-//  QuireOperation(22);
-//end;
-//
-//procedure TKt_2450.BufferLastDataSimple(BufName: string);
-//begin
-// Buffer.SetName(BufName);
-// QuireOperation(22,1,0,False);
-//end;
-
-//function TKt_2450.BufferGetSize: integer;
-//begin
-////  SetupOperation(19,31);
-// QuireOperation(19,31,1,False);
-// if fDevice.isReceived then
-//     begin
-//       Result:=round(fDevice.Value);
-//       Buffer.CountMax:=Result
-//     end       else
-//       Result:=-1;
-//end;
 
 function TKt_2450.GetCount: boolean;
 begin
@@ -985,13 +678,6 @@ begin
  QuireOperation(23,36);
  Result:=(fDevice.Value=2);
 end;
-
-//function TKt_2450.GetDisplayBrightness: boolean;
-//begin
-// QuireOperation(6,30);
-// Result:=(fDevice.Value<>ErResult);
-//// if Result then fSourceDelay[Source]:=fDevice.Value;
-//end;
 
 function TKt_2450.GetDisplayDigitsNumber: boolean;
 begin
@@ -1050,13 +736,6 @@ begin
    end;
 end;
 
-//function TKt_2450.GetMeasureFunction: boolean;
-//begin
-// QuireOperation(15);
-// Result:=(fDevice.Value<>ErResult);
-//// showmessage('measure '+inttostr(ord(fMeasureFunction)))
-//end;
-
 function TKt_2450.GetMeasureLowRanges: boolean;
 begin
  Result:=GetMeasureVoltageLowRange() and GetMeasureCurrentLowRange();
@@ -1082,8 +761,6 @@ end;
 
 function TKt_2450.GetMeasureTimes: boolean;
 begin
-// Result:= GetMeasureTime(kt_mCurrent)
-//         and GetMeasureTime(kt_mVoltage);
  Result:= GetMeasureTime(kt_mCurDC)
          and GetMeasureTime(kt_mVolDC);
 end;
@@ -1091,21 +768,15 @@ end;
 function TKt_2450.GetMeasureUnit(Measure: TKt2450_Measure): boolean;
 begin
  Result:=False;
-// if Measure>kt_mVoltage then Exit;
  if Measure>kt_mVolDC then Exit;
  QuireOperation(ord(Measure)+12,14);
  Result:=(fDevice.Value<>ErResult);
-// showmessage('measure2 '+inttostr(ord(Measure)));
-//  showmessage('unit '+inttostr(ord(fMeasureUnits[Measure])))
-
 end;
 
 function TKt_2450.GetMeasureUnits: boolean;
  var i:TKt2450_Measure;
 begin
  Result:=True;
-// for I := kt_mCurrent to kt_mVoltage do
-//   Result:=Result and GetMeasureUnit(i);
  for I := kt_mCurDC to kt_mVolDC do
    Result:=Result and GetMeasureUnit(i);
 end;
@@ -1162,7 +833,7 @@ begin
  if not(GetVoltageLimit()) then Exit;
  if not(GetCurrentLimit()) then Exit;
  if not(GetSourceType()) then Exit;  //GetDeviceMode
- if not(GetMeasureFunction()) then Exit; //GetDeviceMode
+// if not(GetMeasureFunction()) then Exit; //GetDeviceMode
  if not(IsResistanceCompencateOn()) then Exit;  //має бути після GetMeasureFunction
 
 // if not(GetTerminal()) then Exit;
@@ -1183,7 +854,6 @@ begin
  if not(GetHighCapacitanceStates()) then Exit;
  if not(GetDisplayDNs()) then Exit;
  if not(GetCount()) then Exit;
-// if not(GetDisplayBrightness()) then Exit;
 end;
 
 function TKt_2450.IsReadBackOn(Source: TKt2450_Source): boolean;
@@ -1307,18 +977,11 @@ begin
     try
     QuireOperation(11,13,15);
     fSourceVoltageRange:=ValueToVoltageRange(fDevice.Value);
-//    TKt2450VoltageRange(round(Log10(fDevice.Value/2e-2))+1);
     except
     result:=false
     end;
    end;
 end;
-
-//function TKt_2450.GetTerminal: boolean;
-//begin
-// QuireOperation(9,6);
-// Result:=(fDevice.Value<>ErResult);
-//end;
 
 function TKt_2450.GetVoltageLimit: boolean;
 begin
@@ -1339,19 +1002,6 @@ begin
  Result:=(fDevice.Value=1);
  fAzeroState[Measure]:=Result;
 end;
-
-//procedure TKt_2450.Init;
-//begin
-//// INIT
-// SetupOperation(17,0,0,False);
-//end;
-
-//procedure TKt_2450.InitWait;
-//begin
-//// INIT; *WAI
-// fAdditionalString:=CommandDelimiter+RootNoodKeitley[25];
-// SetupOperation(17,1,0,False);
-//end;
 
 function TKt_2450.IsAzeroStateOn: boolean;
 begin
@@ -1398,8 +1048,6 @@ end;
 function TKt_2450.IsResistanceCompencateOn: boolean;
 begin
  case fMeasureFunction of
-//   kt_mCurrent: QuireOperation(12,9);
-//   kt_mVoltage: QuireOperation(13,9);
    kt_mCurDC: QuireOperation(12,9);
    kt_mVolDC: QuireOperation(13,9);
  end;
@@ -1428,20 +1076,6 @@ function TKt_2450.IsVoltageProtectionActive: boolean;
 begin
  Result:=IsLimitExcided(13,10);
 end;
-
-//procedure TKt_2450.LoadSetup(SlotNumber: TKeitley_SetupMemorySlot);
-//begin
-//// *RCL <n>
-// fAdditionalString:=inttostr(SlotNumber);
-// SetupOperation(1);
-//end;
-
-//procedure TKt_2450.LoadSetupPowerOn(SlotNumber: TKeitley_SetupMemorySlot);
-//begin
-////  SYST:POS SAV1
-//  fAdditionalString:='sav'+inttostr(SlotNumber);
-//  SetupOperation(7,4);
-//end;
 
 procedure TKt_2450.MeasureSimple;
 begin
@@ -1475,6 +1109,9 @@ procedure TKt_2450.MyTraining;
 // var str:string;
 //  var ArrDouble: TArrSingle;
 begin
+// TrigEventTransition(5);
+//TrigResume;
+//TrigPause;
 //  (fDevice as TTelnetMeterDeviceSingle).SetStringToSend('TRIG:LAN1:OUT:IP:ADDR "192.168.2.2"');
 //  fDevice.Request();
 //  (fDevice as TTelnetMeterDeviceSingle).SetStringToSend(':TRIG:LAN1:OUT:CONN:STAT ON');
@@ -1490,12 +1127,13 @@ begin
 //TrigBufferClear;
 //TrigConfigListRecall(MyMeasList);
 //TrigConfigListRecall(MySourceList);
-//TrigConfigListNext(MySourceList);
+//TrigConfigListNext(MySourceList,MyMeasList);
 //TrigOutPutChange(True);
 //TrigOutPutChange(False);
 //TrigAlwaysTransition(7);
 //TrigDelay(5e-2);
 //TrigMeasure;
+//TrigMeasureCountDevice;
 //TrigMeasureResultTransition(kt_tlt_outside,-2e-3,0.01,8);
 //TrigCounterTransition(3,4);
 
@@ -1563,18 +1201,18 @@ begin
 //showmessage(fDataVector.XYtoString+#10#10+fDataTimeVector.XYtoString);
 
 
-BufferDataArrayExtended(2,5,kt_rd_M);
-showmessage(DataVector.XYtoString+#10#10+DataTimeVector.XYtoString);
-
-BufferDataArrayExtended(1,5,kt_rd_MST);
-showmessage(DataVector.XYtoString+#10#10+DataTimeVector.XYtoString);
-
-BufferDataArrayExtended(1,5,kt_rd_MT);
-showmessage(DataVector.XYtoString+#10#10+DataTimeVector.XYtoString);
+//BufferDataArrayExtended(2,5,kt_rd_M);
+//showmessage(DataVector.XYtoString+#10#10+DataTimeVector.XYtoString);
 //
+//BufferDataArrayExtended(1,5,kt_rd_MST);
+//showmessage(DataVector.XYtoString+#10#10+DataTimeVector.XYtoString);
 //
-BufferDataArrayExtended(1,5,kt_rd_MS);
-showmessage(DataVector.XYtoString+#10#10+DataTimeVector.XYtoString);
+//BufferDataArrayExtended(1,5,kt_rd_MT);
+//showmessage(DataVector.XYtoString+#10#10+DataTimeVector.XYtoString);
+////
+////
+//BufferDataArrayExtended(1,5,kt_rd_MS);
+//showmessage(DataVector.XYtoString+#10#10+DataTimeVector.XYtoString);
 
 
 //BufferLastDataExtended(kt_rd_MST,MyBuffer);
@@ -1932,8 +1570,6 @@ end;
 procedure TKt_2450.OnOffFromBool(toOn: boolean);
 begin
  fAdditionalString:=TKt_2450_SweepParameters.BoolToOnOffString(toOn);
-// if toOn then fAdditionalString:=SuffixKt_2450[0]
-//         else fAdditionalString:=SuffixKt_2450[1];
 end;
 
 procedure TKt_2450.OutPutChange(toOn: boolean);
@@ -1944,11 +1580,8 @@ begin
  fOutPutOn:=toOn;
 end;
 
-//procedure TKt_2450.PrepareString;
 procedure TKt_2450.PrepareStringByRootNode;
 begin
-// (fDevice as TKeitleyDevice).ClearStringToSend;
-// (fDevice as TKeitleyDevice).SetStringToSend(RootNoodKeitley[fRootNode]);
  inherited;
 
  case fRootNode of
@@ -1968,8 +1601,6 @@ begin
         end;
       else JoinToStringToSend(FirstNodeKt_2450[fFirstLevelNode]);
      end;  // fRootNode=6
-//  7,
-//  9:JoinToStringToSend(FirstNodeKt_2450[fFirstLevelNode]);
   11:case fFirstLevelNode of
        12..13:case fLeafNode of
                 0:JoinToStringToSend(RootNodeKeitley[fFirstLevelNode]);
@@ -1996,7 +1627,7 @@ begin
         24:begin
             JoinToStringToSend(RootNodeKeitley[fFirstLevelNode]);
             JoinToStringToSend(FirstNodeKt_2450[23]);
-            JoinToStringToSend(ConfLeafNodeKt_2450[fLeafNode]);
+            JoinToStringToSend(ConfLeafNodeKeitley[fLeafNode]);
            end;
         25:begin
             JoinToStringToSend(FirstNodeKt_2450[fFirstLevelNode]);
@@ -2015,7 +1646,6 @@ begin
           18,19:JoinToStringToSend(FirstNodeKt_2450[fLeafNode]);
          end;
        end; // fRootNode=12..14
-//  17:if fFirstLevelNode=1 then JoinToStringToSend(fAdditionalString);
   19:begin
 //       JoinToStringToSend(FirstNodeKt_2450[fFirstLevelNode]);
        case fFirstLevelNode of
@@ -2041,43 +1671,12 @@ begin
   23:case fFirstLevelNode of
         36,37:JoinToStringToSend(AnsiReplaceStr(FirstNodeKt_2450[fFirstLevelNode],'#',inttostr(fDLActive)));
      end; // fRootNode=23
-  24:begin
-        JoinToStringToSend(FirstNodeKt_2450[fFirstLevelNode]);
-        JoinToStringToSend(ConfLeafNodeKt_2450[fLeafNode]);
-     end; // fRootNode=24
-  26:case fFirstLevelNode of
-        38,44,43:JoinToStringToSend(FirstNodeKt_2450[fFirstLevelNode]);
-        40,41,21:begin
-            JoinToStringToSend(FirstNodeKt_2450[39]);
-            JoinToStringToSend(FirstNodeKt_2450[fFirstLevelNode]);
-            JoinToStringToSend(TrigLeafNodeKt_2450[fLeafNode]);
-            fAdditionalString:=IntTostr(fTrigBlockNumber)+PartDelimiter+fAdditionalString;
-            inc(fTrigBlockNumber);
-           end;
-        24,11:begin
-            JoinToStringToSend(FirstNodeKt_2450[39]);
-            JoinToStringToSend(RootNodeKeitley[fFirstLevelNode]);
-            JoinToStringToSend(TrigLeafNodeKt_2450[fLeafNode]);
-            fAdditionalString:=IntTostr(fTrigBlockNumber)+PartDelimiter+fAdditionalString;
-            inc(fTrigBlockNumber);
-           end;
-         42:begin
-             JoinToStringToSend(FirstNodeKt_2450[39]);
-             JoinToStringToSend(FirstNodeKt_2450[fFirstLevelNode]);
-             fAdditionalString:=IntTostr(fTrigBlockNumber)+PartDelimiter+fAdditionalString;
-             inc(fTrigBlockNumber);
-            end;
-     end;// fRootNode=26
  end;
-
-// if fIsSuffix then JoinAddString;
 
 end;
 
-//procedure TKt_2450.ProcessingString(Str: string);
 procedure TKt_2450.ProcessingStringByRootNode(Str: string);
 begin
-// Str:=Trim(Str);
  inherited;
 
  case fRootNode of
@@ -2089,16 +1688,6 @@ begin
             then fDevice.Value:=ord(fOutputOffState[TKt2450_Source(fFirstLevelNode)]);
           end;
     end; //fRootNode=5
-//  6:if fFirstLevelNode=30
-//       then
-//        begin
-//        if StringToDisplayBrightness(AnsiLowerCase(Str))
-//            then fDevice.Value:=ord(fDisplayState);
-//
-//        end
-//       else fDevice.Value:=StrToInt(Str);
-//  9:if StringToTerminals(AnsiLowerCase(Str))
-//          then fDevice.Value:=ord(fTerminal);
   11:case fFirstLevelNode of
         23:begin
            StringToArray(Str);
@@ -2119,39 +1708,17 @@ begin
                     then fDevice.Value:=ord(fMeasureUnits[TKt2450_Measure(fFirstLevelNode-12)]);
              16,15,26:fDevice.Value:=SCPI_StringToValue(Str);
           end;   //fRootNode=12..14
-//   15:if StringToMeasureFunction(AnsiLowerCase(Str)) then fDevice.Value:=ord(fMeasureFunction);
-//   19:case fFirstLevelNode of
-//          31: fDevice.Value:=StrToInt(Str);
-//          32:if Buffer.StringToFillMode(AnsiLowerCase(Str))
-//                then fDevice.Value:=ord(TKeitley_BufferFillMode(Buffer.FillMode));
-//          33:StringToMesuredDataArray(AnsiReplaceStr(Str,',',' '),TKeitley_ReturnedData(fLeafNode));
-//          35:case fLeafNode of
-//              0,1:fDevice.Value:=StrToInt(Str);
-//              2:if StringToBufferIndexies(Str) then fDevice.Value:=1;
-//             end;
-//      end; //fRootNode=19
    20:fDevice.Value:=StrToInt(Str);
    21:case fFirstLevelNode of
        0,1:fDevice.Value:=SCPI_StringToValue(Str);
        2..5:StringToMesuredData(AnsiReplaceStr(Str,',',' '),TKeitley_ReturnedData(fFirstLevelNode-2));
        end; //fRootNode=21
-//   22:case fFirstLevelNode of
-//       0,1:fDevice.Value:=SCPI_StringToValue(Str);
-//       2..5:StringToMesuredData(AnsiReplaceStr(Str,',',' '),TKeitley_ReturnedData(fFirstLevelNode-2));
-//      end;  //fRootNode=22
    23:case fFirstLevelNode of
        36:StringToDigLineStatus(AnsiLowerCase(Str));
        37:fDevice.Value:=StrToInt(Str);
       end;
  end;
 end;
-
-//procedure TKt_2450.SaveSetup(SlotNumber: TKeitley_SetupMemorySlot);
-//begin
-//// *SAV <n>
-// fAdditionalString:=inttostr(SlotNumber);
-// SetupOperation(3);
-//end;
 
 procedure TKt_2450.SetAzeroState(Measure: TKt2450_Measure; toOn: boolean);
 begin
@@ -2233,14 +1800,6 @@ begin
  SetupOperation(23,36);
 end;
 
-//procedure TKt_2450.SetDisplayBrightness(State: TKeitley_DisplayState);
-//begin
-////:DISP:LIGH:STAT <brightness>
-// fDisplayState:=State;
-// fAdditionalString:=Keitley_DisplayStateCommand[State];
-// SetupOperation(6,30);
-//end;
-
 procedure TKt_2450.SetDisplayDigitsNumber(Number: Kt2450DisplayDigitsNumber);
 begin
   SetDisplayDigitsNumber(fMeasureFunction,Number);
@@ -2296,17 +1855,6 @@ begin
 // :FUNC "VOLT"|"CURR"
  if MeasureFunction=kt_mRes2W then Exit;
  inherited SetMeasureFunction(MeasureFunction);
-// case MeasureFunction of
-////  kt_mCurrent:fAdditionalString:=StringToInvertedCommas(DeleteSubstring(RootNoodKeitley[12]));
-////  kt_mVoltage:fAdditionalString:=StringToInvertedCommas(DeleteSubstring(RootNoodKeitley[13]));
-////  kt_mResistance:Exit;
-//  kt_mCurDC:fAdditionalString:=StringToInvertedCommas(DeleteSubstring(RootNodeKeitley[12]));
-//  kt_mVolDC:fAdditionalString:=StringToInvertedCommas(DeleteSubstring(RootNodeKeitley[13]));
-//  kt_mRes2W:Exit;
-// end;
-//
-// SetupOperation(15);
-// fMeasureFunction:=MeasureFunction;
 end;
 
 procedure TKt_2450.SetMeasureTime(Measure: TKt2450_Measure; Value: double);
@@ -2322,22 +1870,10 @@ begin
   SetMeasureTime(fMeasureFunction,Value);
 end;
 
-//procedure TKt_2450.SetMeasureHighRange(Value: double);
-//begin
-////:VOLT|CURR|RES:RANG:AUTO:ULIM <value>
-// fAdditionalString:=NumberToStrLimited(Value, Kt_2450_RangesLimits[fMeasureFunction]);
-// SetupOperation(ord(fMeasureFunction)+12,16,19);
-//end;
-
 procedure TKt_2450.SetMeasureUnit(Measure: TKt2450_Measure;
      MeasureUnit: TKt_2450_MeasureUnit);
 begin
 // :VOLT|CURR:UNIT VOLT|AMP|OHM|WATT
-//  if Measure>kt_mVoltage then Exit;
-//  if (Measure=kt_mVoltage)and(MeasureUnit=kt_mu_amp)
-//                  then Exit;
-//  if (Measure=kt_mCurrent)and(MeasureUnit=kt_mu_volt)
-//                 then Exit;
   if Measure>kt_mVolDC then Exit;
   if (Measure=kt_mVolDC)and(MeasureUnit=kt_mu_amp)
                   then Exit;
@@ -2351,7 +1887,6 @@ end;
 procedure TKt_2450.SetMeasureVoltageLowRange(Range: TKt2450VoltageRange);
 begin
 //:VOLT:RANG:AUTO:LLIM  <value>
-
  fAdditionalString:=VoltageRangeToString(Range);
  SetupOperation(13,16,18);
  fMeasureVoltageLowRange:=Range;
@@ -2377,17 +1912,8 @@ procedure TKt_2450.SetMode(Mode: TKt_2450_Mode);
 begin
  if Mode in [kt_md_sVmC,kt_md_sVmR,kt_md_sVmP,kt_md_sImC]
      then SetMeasureFunction()
-//     else SetMeasureFunction(kt_mVoltage);
      else SetMeasureFunction(kt_mVolDC);
  case Mode of
-//  kt_md_sVmC:SetMeasureUnit(kt_mCurrent,kt_mu_amp);
-//  kt_md_sVmV:SetMeasureUnit(kt_mVoltage,kt_mu_volt);
-//  kt_md_sVmR:SetMeasureUnit(kt_mCurrent,kt_mu_ohm);
-//  kt_md_sVmP:SetMeasureUnit(kt_mCurrent,kt_mu_watt);
-//  kt_md_sImC:SetMeasureUnit(kt_mCurrent,kt_mu_amp);
-//  kt_md_sImV:SetMeasureUnit(kt_mVoltage,kt_mu_volt);
-//  kt_md_sImR:SetMeasureUnit(kt_mVoltage,kt_mu_ohm);
-//  kt_md_sImP:SetMeasureUnit(kt_mVoltage,kt_mu_watt);
   kt_md_sVmC:SetMeasureUnit(kt_mCurDC,kt_mu_amp);
   kt_md_sVmV:SetMeasureUnit(kt_mVolDC,kt_mu_volt);
   kt_md_sVmR:SetMeasureUnit(kt_mCurDC,kt_mu_ohm);
@@ -2430,8 +1956,6 @@ begin
 // RES:OCOM ON|OFF
  OnOffFromBool(toOn);
  case fMeasureFunction of
-//   kt_mCurrent: SetupOperation(12,9);
-//   kt_mVoltage: SetupOperation(13,9);
    kt_mCurDC: SetupOperation(12,9);
    kt_mVolDC: SetupOperation(13,9);
  end;
@@ -2520,7 +2044,6 @@ if Range=kt_vrAuto then
        end         else
        begin
          fAdditionalString:=VoltageRangeToString(Range);
-//         fAdditionalString:=floattostr(2e-2*Power(10,ord(Range)-1));
          SetupOperation(11,13,15);
        end;
 fSourceVoltageRange:=Range;
@@ -2534,17 +2057,8 @@ begin
  Terminal:=TerminalType;
 end;
 
-//procedure TKt_2450.UnloadSetupPowerOn;
-//begin
-////SYST:POS RST
-//  fAdditionalString:=DeleteSubstring(RootNoodKeitley[2],'*');
-//  SetupOperation(7,4);
-//end;
-
-
 function TKt_2450.ValueToCurrentRange(Value: double): TKt2450CurrentRange;
 begin
-// showmessage(floattostr(Value));
  Result:=TKt2450CurrentRange(round(Log10(Value/1e-8))+1);
 end;
 
@@ -2557,12 +2071,6 @@ function TKt_2450.VoltageRangeToString(Range: TKt2450VoltageRange): string;
 begin
   Result:=floattostr(2e-2*Power(10,ord(Range)-1));
 end;
-
-//procedure TKt_2450.Wait;
-//begin
-//// *WAI
-// SetupOperation(25,0,0,False);
-//end;
 
 procedure TKt_2450.SetVoltageLimit(Value: double);
 begin
@@ -2631,14 +2139,6 @@ begin
  DataVector.DeleteErResult;
 end;
 
-//function TKt_2450.StringToBufferIndexies(Str: string): boolean;
-//begin
-// Str:=AnsiReplaceStr(Str,';',' ');
-// Buffer.StartIndex:=round(FloatDataFromRow(Str,1));
-// Buffer.EndIndex:=round(FloatDataFromRow(Str,2));
-// Result:=(Buffer.StartIndex<>ErResult)and(Buffer.EndIndex<>ErResult);
-//end;
-
 procedure TKt_2450.StringToDigLineStatus(Str: string);
  var i:integer;
      tempStr:string;
@@ -2662,50 +2162,12 @@ begin
      end;
 end;
 
-//function TKt_2450.StringToDisplayBrightness(Str: string): boolean;
-//  var i:TKeitley_DisplayState;
-//begin
-// Result:=False;
-// for I := Low(TKeitley_DisplayState) to High(TKeitley_DisplayState) do
-//  begin
-//   if Str=Keitley_DisplayStateCommand[i] then
-//     begin
-//       fDisplayState:=i;
-//       Result:=True;
-//       Break;
-//     end;
-//  end;
-//end;
-
-//function TKt_2450.StringToMeasureFunction(Str: string): boolean;
-//  var i:TKt2450_Measure;
-//begin
-// Result:=False;
-// for I := Low(TKt2450_Measure) to kt_mResistance do
-//   if pos(DeleteSubstring(RootNoodKeitley[ord(i)+12]),Str)<>0 then
-//     begin
-//       fMeasureFunction:=i;
-//       Result:=True;
-//       fDevice.Value:=ord(fMeasureFunction);
-//       Break;
-//     end;
-//end;
-
-//function TKt_2450.StringToMeasureTime(Str: string): double;
-//begin
-// Str:=AnsiReplaceStr(Str,':',' ');
-// Result:=(FloatDataFromRow(Str,4)+FloatDataFromRow(Str,3)
-//         +60*FloatDataFromRow(Str,2)+3600*FloatDataFromRow(Str,1))*1e3;
-//end;
-
 function TKt_2450.StringToMeasureUnit(Str: string): boolean;
   var i:TKt_2450_MeasureUnit;
 begin
  Result:=False;
  for I := Low(TKt_2450_MeasureUnit) to High(TKt_2450_MeasureUnit) do
   begin
-//   showmessage('StringToMeasureUnit '+Str+' '+SuffixKt_2450[ord(i)+4]);
-//   showmessage(inttostr(fFirstLevelNode));
    if Str=SuffixKt_2450[ord(i)+4] then
      begin
        fMeasureUnits[TKt2450_Measure(fRootNode-12)]:=i;
@@ -2715,69 +2177,19 @@ begin
   end;
 end;
 
-
-//procedure TKt_2450.StringToMesuredData(Str: string;DataType:TKeitley_ReturnedData);
-//begin
-// fDevice.Value:=FloatDataFromRow(Str,1);
-// if (fDevice.Value=ErResult)or(DataType=kt_rd_M) then Exit;
-// case DataType of
-//   kt_rd_MS,kt_rd_MST:fSourceMeasuredValue:=FloatDataFromRow(Str,2);
-//   kt_rd_MT:fTimeValue:=StringToMeasureTime(DeleteStringDataFromRow(Str,1));
-// end;
-// if DataType=kt_rd_MST then fTimeValue:=StringToMeasureTime(DeleteStringDataFromRow(DeleteStringDataFromRow(Str,1),1));
-//end;
-
-//procedure TKt_2450.StringToMesuredDataArray(Str: string;
-//  DataType: TKeitley_ReturnedData);
-//  var partStr:string;
-//      PartNumbers,i:integer;
-//      NumbersArray:TArrInteger;
-//begin
-// DataVector.Clear;
-// DataTimeVector.Clear;
-// PartNumbers:=NumberOfSubstringInRow(Str);
-// SetLength(NumbersArray,Keitley_PartInRespond[DataType]);
-// for I := 0 to High(NumbersArray) do
-//  NumbersArray[i]:=i+1;
-//
-// while PartNumbers>=Keitley_PartInRespond[DataType] do
-//  begin
-//   partStr:=NewStringByNumbers(Str,NumbersArray);
-//   StringToMesuredData(partStr,DataType);
-//   case DataType of
-//    kt_rd_MS:DataVector.Add(fSourceMeasuredValue,fDevice.Value);
-//    kt_rd_MT:DataTimeVector.Add(fTimeValue,fDevice.Value);
-//    kt_rd_MST:begin
-//               DataVector.Add(fSourceMeasuredValue,fDevice.Value);
-//               DataTimeVector.Add(fTimeValue,fDevice.Value);
-//              end;
-//    kt_rd_M:DataVector.Add(fDevice.Value,fDevice.Value);
-//   end;
-//   PartNumbers:=PartNumbers-Keitley_PartInRespond[DataType];
-//   for I := 1 to Keitley_PartInRespond[DataType] do
-//    Str:=DeleteStringDataFromRow(Str,1);
-//  end;
-// if DataVector.Count<>(Buffer.EndIndex-Buffer.StartIndex+1) then
-//    fDevice.Value:=ErResult;
-//end;
-
 function TKt_2450.StringToOutPutState(Str: string): boolean;
   var i:TKt_2450_OutputOffState;
 begin
  Result:=False;
  for I := Low(TKt_2450_OutputOffState) to High(TKt_2450_OutputOffState) do
    begin
-//   showmessage('StringToOutPutState  '+Str+' '+Kt_2450_OutputOffStateName[i]);
-//   showmessage('source '+inttostr(1-fFirstLevelNode));
    if Str=Kt_2450_OutputOffStateName[i] then
      begin
        fOutputOffState[TKt2450_Source(1-fFirstLevelNode)]:=i;
        Result:=True;
-//       showmessage('source type'+inttostr(ord(i)));
        Break;
      end;
    end;
-// showmessage('curr '+inttostr(ord(fOutputOffState[kt_sCurr])));
 end;
 
 function TKt_2450.StringToSourceType(Str: string): boolean;
@@ -2792,19 +2204,6 @@ begin
        Break;
      end;
 end;
-
-//function TKt_2450.StringToTerminals(Str: string): boolean;
-//  var i:TKeitley_OutputTerminals;
-//begin
-// Result:=False;
-// for I := Low(TKeitley_OutputTerminals) to High(TKeitley_OutputTerminals) do
-//   if Str=Keitley_TerminalsName[i] then
-//     begin
-//       fTerminal:=i;
-//       Result:=True;
-//       Break;
-//     end;
-//end;
 
 function TKt_2450.StringToVoltageProtection(Str: string;
     var vp: TKt_2450_VoltageProtection): boolean;
@@ -2844,83 +2243,6 @@ begin
   SetupOperation(11,25,4,False);
 end;
 
-//function TKt_2450.Test: boolean;
-//begin
-//// *IDN?
-// QuireOperation(0,0,0,False);
-// Result:=(fDevice.Value=314);
-//end;
-
-//procedure TKt_2450.TextToUserScreen(top_text, bottom_text: string);
-//begin
-////DISP:SCR SWIPE_USER
-////DISP:USER1:TEXT "top_text"
-////DISP:USER2:TEXT "Tbottom_text"
-// fAdditionalString:='SWIPE_USER';
-// SetupOperation(6,0);
-// if top_text<>'' then
-//   begin
-//     if Length(top_text)>20 then SetLength(top_text,20);
-//     fAdditionalString:=StringToInvertedCommas(top_text);
-//     SetupOperation(6,1);
-//   end;
-// if bottom_text<>'' then
-//   begin
-//     if Length(bottom_text)>32 then SetLength(bottom_text,32);
-//     fAdditionalString:=StringToInvertedCommas(bottom_text);
-//     SetupOperation(6,2);
-//   end;
-//end;
-
-procedure TKt_2450.TrigAlwaysTransition(TransitionBlockNumber: word);
-begin
-//:TRIG:BLOC:BRAN:ALW <blockNumber>, <branchToBlock>
- if TransitionBlockNumber=0 then exit;
- fAdditionalString:=IntToStr(TransitionBlockNumber);
- SetupOperation(26,41,4);
-end;
-
-procedure TKt_2450.TrigBufferClear(BufName: string);
-begin
-//:TRIG:BLOC:BUFF:CLE <blockNumber>, "<bufferName>"
- fAdditionalString:=StringToInvertedCommas(BufName);
- SetupOperation(26,40,0);
-// inc(fTrigBranchNumber);
-end;
-
-procedure TKt_2450.TrigConfigListNext(ListName: string);
-begin
-//:TRIG:BLOC:CONF:NEXT <blockNumber>, "<configurationList>"
- fAdditionalString:=StringToInvertedCommas(ListName);
- SetupOperation(26,24,2);
-end;
-
-procedure TKt_2450.TrigConfigListNext(ListName1, ListName2: string);
-begin
-//:TRIG:BLOC:CONF::NEXT <blockNumber>, "<configurationList>", "<configurationList2>"
- fAdditionalString:=StringToInvertedCommas(ListName1)+PartDelimiter
-                    +StringToInvertedCommas(ListName2);
- SetupOperation(26,24,2);
-end;
-
-procedure TKt_2450.TrigConfigListRecall(ListName: string; Index: integer);
-begin
-//:TRIG:BLOC:CONF:REC <blockNumber>, "<configurationList>", <index>
- fAdditionalString:=StringToInvertedCommas(ListName)+PartDelimiter+
-                    inttostr(Index);
- SetupOperation(26,24,1);
-end;
-
-procedure TKt_2450.TrigCounterTransition(TargetCount,
-  TransitionBlockNumber: word);
-begin
-//:TRIG:BLOC:BRAN:COUN <blockNumber>, <targetCount>, <branchToBlock>
- if (TransitionBlockNumber=0)or(TargetCount=0) then Exit;
- fAdditionalString:=IntToStr(TargetCount)+PartDelimiter
-                    + IntToStr(TransitionBlockNumber);
-  SetupOperation(26,41,7);
-end;
-
 procedure TKt_2450.TrigIVLoop(i: Integer);
 var
   LoopTransitionNumber: Word;
@@ -2941,44 +2263,10 @@ begin
   TrigCounterTransition(i, LoopTransitionNumber);
 end;
 
-procedure TKt_2450.TrigDelay(DelayTime: double);
-begin
-//:TRIG:BLOC:DEL:CONS <blockNumber>, <time>
- fAdditionalString:=floattostr(NumberMap(DelayTime,Kt_2450_TrigDelayLimits));
- SetupOperation(26,21,5);
-end;
-
-procedure TKt_2450.TrigEventGenerate;
-begin
-// *TRG
- SetupOperation(27,0,0,False);
-end;
-
-procedure TKt_2450.TrigEventTransition(TransitionBlockNumber: word;
-  EventType: TK2450_TriggerEvents; EventNumber: word);
-begin
-//:TRIG:BLOC:BRAN:EVEN <blockNumber>, <event>, <branchToBlock>
- if (TransitionBlockNumber=0)or(EventNumber=0) then Exit;
- if (EventType=kt_te_timer)and(EventNumber>4) then Exit;
- if (EventType=kt_te_notify)and(EventNumber>8) then Exit;
- if (EventType=kt_te_lan)and(EventNumber>8) then Exit;
- if (EventType=kt_te_dig)and(EventNumber>6) then Exit;
- if (EventType=kt_te_blend)and(EventNumber>2) then Exit;
- if (EventType=kt_te_tspl)and(EventNumber>3) then Exit;
-
- fAdditionalString:=Kt2450_TriggerEventsCommand[EventType];
- if EventType in [kt_te_timer..kt_te_tspl] then
-   fAdditionalString:=fAdditionalString + IntToStr(EventNumber);
- fAdditionalString:=fAdditionalString+PartDelimiter
-                    + IntToStr(TransitionBlockNumber);
- SetupOperation(26,41,8);
-end;
-
 procedure TKt_2450.TrigForIVCreate;
  var SourceValueTemp:double;
      i,BranchesLimitIndex:integer;
      PlaceForTrigEvent1,PlaceForTrigEvent2:integer;
-//     LoopTransitionNumber:word;
 begin
  HookForTrigDataObtain();
 // showmessage(DataVector.XYtoString);
@@ -3041,7 +2329,6 @@ begin
     end
    else
      TrigConfigListRecall(MySourceList,DataVector.Count);
-// TrigConfigListNext(MySourceList);
  TrigOutPutChange(False);
 
  i:=fTrigBlockNumber-2;
@@ -3055,52 +2342,6 @@ begin
 
 end;
 
-procedure TKt_2450.TrigMeasure(BufName: string; Count: word);
-begin
-//:TRIG:BLOC:MDIG <blockNumber>, "<bufferName>", <count>
- fAdditionalString:=StringToInvertedCommas(BufName)+PartDelimiter
-                    +IntToStr(Count);
- SetupOperation(26,42);
-end;
-
-procedure TKt_2450.TrigMeasureCountDevice(BufName: string);
-begin
-//:TRIG:BLOC:MDIG <blockNumber>, "<bufferName>", AUTO
- fAdditionalString:=StringToInvertedCommas(BufName)+PartDelimiter
-                    +'auto';
- SetupOperation(26,42);
-end;
-
-procedure TKt_2450.TrigMeasureInf(BufName: string);
-begin
-//:TRIG:BLOC:MDIG <blockNumber>, "<bufferName>", INF
- fAdditionalString:=StringToInvertedCommas(BufName)+PartDelimiter
-                    +'inf';
- SetupOperation(26,42);
-end;
-
-procedure TKt_2450.TrigMeasureResultTransition(LimitType: TK2450_TrigLimitType;
-  LimA, LimB: double; TransitionBlockNumber, MeasureBlockNumber: word);
-begin
-//:TRIG:BLOC:BRAN:LIM:CONS <blockNumber>, <limitType>, <limitA>, <limitB>,
-//<branchToBlock>, <measureDigitizeBlock>
- if TransitionBlockNumber=0 then Exit;
- fAdditionalString:=Kt2450_TrigLimitTypeCommand[LimitType]+PartDelimiter
-                    +floattostr(LimA)+PartDelimiter
-                    +floattostr(LimB)+PartDelimiter
-                    +IntTostr(TransitionBlockNumber)+PartDelimiter
-                    +IntTostr(MeasureBlockNumber);
- SetupOperation(26,41,6);
-end;
-
-procedure TKt_2450.TrigNewCreate;
-begin
-//:TRIGger:LOAD "Empty"
- fTrigBlockNumber:=1;
- fAdditionalString:=StringToInvertedCommas('Empty');
- SetupOperation(26,38);
-end;
-
 procedure TKt_2450.TrigOutPutChange(toOn: boolean);
 begin
 //:TRIG:BLOC:SOUR:STAT <blockNumber>, ON|OFF
@@ -3108,174 +2349,6 @@ begin
  SetupOperation(26,11,3);
 end;
 
-procedure TKt_2450.TrigPause;
-begin
-//:TRIG:PAUS
- SetupOperation(26,44,0,False);
-end;
-
-procedure TKt_2450.TrigResume;
-begin
-//:TRIG:RES
- SetupOperation(26,43,0,False);
-end;
-
-//procedure TKt_2450.BufferCreate(Name: string; Size: integer);
-//begin
-// Buffer.CountMax:=Size;
-// BufferCreate(Name);
-//end;
-
-//procedure TKt_2450.BufferCreate(Name: string; Size: integer;
-//  Style: TKt2450_BufferStyle);
-//begin
-//// :TRAC:MAKE "<bufferName>", <bufferSize>, <bufferStyle>
-// Buffer.Style:=Style;
-// BufferCreate(Name,Size);
-//end;
-
-//procedure TKt_2450.BufferClear;
-//begin
-//  fAdditionalString:=Buffer.Name;
-//  SetupOperation(19,3);
-//end;
-
-//procedure TKt_2450.Beep(Freq: word; Duration: double);
-//begin
-////:SYST:BEEP <frequency>, <duration>
-//fAdditionalString:=IntToStr(NumberMap(Freq,Keitley_BeepFrequancyLimits))
-//                   +PartDelimiter
-//                   +floattostr(NumberMap(Duration,Keitley_BeepDurationLimits));
-// SetupOperation(7,34);
-//end;
-
-//procedure TKt_2450.BufferClear(BufName: string);
-//begin
-////:TRAC:CLE "<bufferName>"
-// Buffer.SetName(BufName);
-// fAdditionalString:=Buffer.Name;
-// SetupOperation(19,3);
-//end;
-
-//procedure TKt_2450.BufferCreate(Style: TKt2450_BufferStyle);
-//begin
-// Buffer.Style:=Style;
-// BufferCreate();
-//end;
-
-//procedure TKt_2450.BufferDelete;
-//begin
-// fAdditionalString:=Buffer.Name;
-// SetupOperation(19,21);
-//end;
-
-//procedure TKt_2450.BufferDataArrayExtended(SIndex, EIndex: integer;
-//  DataType: TKeitley_ReturnedData; BufName: string);
-//begin
-//// :TRAC:DATA? <startIndex>, <endIndex>, "<bufferName>", <bufferElements>
-// DataVector.Clear;
-// DataTimeVector.Clear;
-// Buffer.SetName(BufName);
-// Buffer.StartIndex:=SIndex;
-// Buffer.EndIndex:=EIndex;
-// QuireOperation(19,33,ord(DataType),False);
-//end;
-
-//procedure TKt_2450.BufferDelete(Name: string);
-//begin
-//// :TRAC:DEL "testData"
-// Buffer.SetName(Name);
-// BufferDelete();
-//end;
-
-//function TKt_2450.BufferGetFillMode: boolean;
-//begin
-//  QuireOperation(19,32,1,False);
-//  Result:=(fDevice.Value<>ErResult);
-//end;
-
-//function TKt_2450.BufferGetFillMode(BufName: string): boolean;
-//begin
-//// :TRAC:FILL:MODE? "<bufferName>"
-// Buffer.SetName(BufName);
-// Result:=BufferGetFillMode();
-//end;
-
-//
-//function TKt_2450.BufferGetReadingNumber(BufName: string): integer;
-//begin
-//// :TRAC:ACT? "<bufferName>"
-// if BufName=KeitleyDefBuffer
-//      then QuireOperation(19,35)
-//      else begin
-//           Buffer.SetName(BufName);
-//           QuireOperation(19,35,1,False);
-//           end;
-// if fDevice.isReceived
-//    then Result:=round(fDevice.Value)
-//    else Result:=-1;
-//end;
-
-//procedure TKt_2450.BufferReSize(BufName: string; NewSize: integer);
-//begin
-//// :TRAC:POIN <newSize>, "<bufferName>"
-// Buffer.SetName(BufName);
-// BufferReSize(NewSize);
-//end;
-
-//procedure TKt_2450.BufferSetFillMode(BufName: string;
-//  FillMode: TKeitley_BufferFillMode);
-//begin
-//// :TRACe:FILL:MODE ONCE|CONT, "<bufferName>"
-// Buffer.SetName(BufName);
-// BufferSetFillMode(FillMode);
-//end;
-
-//procedure TKt_2450.BufferSetFillMode(FillMode: TKeitley_BufferFillMode);
-//begin
-// Buffer.FillMode:=FillMode;
-// SetupOperation(19,32);
-//end;
-
-//procedure TKt_2450.BufferReSize(NewSize: integer);
-//begin
-// Buffer.CountMax:=NewSize;
-// SetupOperation(19,31);
-//end;
-
-{ TKt_2450Device }
-
-//constructor TKeitleyDevice.Create(SCPInew:TSCPInew;Telnet: TIdTelnet;
-//  IPAdressShow: TIPAdressShow; Nm: string);
-//begin
-// inherited Create(Telnet,IPAdressShow,Nm);
-// fSCPI:=SCPInew;
-// fMinDelayTime:=0;
-// fDelayTimeStep:=10;
-// fDelayTimeMax:=200;
-//
-////   fMinDelayTime:integer;
-////  {інтервал очікування перед початком перевірки
-////  вхідного буфера, []=мс, за замовчуванням 0}
-////   fDelayTimeStep:integer;
-////   {проміжок часу, через який перевіряється
-////   надходження даних, []=мс, за замовчуванням 10}
-////   fDelayTimeMax:integer;
-////   {максимальна кількість перевірок
-////   надходження даних, []=штук, за замовчуванням 130,
-////   тобто за замовчуванням інтервал очікуввання
-////   складає 0+10*130=1300 мс}
-//
-//end;
-//
-//procedure TKeitleyDevice.UpDate;
-//begin
-//// showmessage('recived');
-// fSCPI.ProcessingString(fDataSubject.ReceivedString);
-// if fValue<>ErResult then
-//     fIsReceived:=True;
-// if TestShowEthernet then showmessage('recived:  '+fDataSubject.ReceivedString);
-//end;
 
 { TKt_2450_SweepParameters }
 
@@ -3401,18 +2474,6 @@ begin
  FreeAndNil(fTimer);
  inherited;
 end;
-
-//function TKT2450_Meter.GetData: double;
-//begin
-// if (fParentModule.Sences[fParentModule.MeasureFunction]=kt_s4wire)
-//    or(fParentModule.Mode in [kt_md_sVmR,kt_md_sImR])
-//    or (fParentModule.OutputOffState[fParentModule.SourceType] =kt_oos_himp)
-//     then fParentModule.OutPutChange(true);
-// fParentModule.MeasureSimple;
-// fValue:=fParentModule.Device.Value;
-// Result:=fValue;
-// fNewData:=fParentModule.Device.NewData;
-//end;
 
 function TKT2450_Meter.GetMeasureModeLabel: string;
 begin
