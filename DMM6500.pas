@@ -15,6 +15,10 @@ type
    fMeasureChanNumber:byte;
    function ChanelToString(ChanNumber:byte):string;overload;
    function ChanelToString(ChanNumberLow,ChanNumberHigh:byte):string;overload;
+   function ChanelToString(ChanNumbers:array of byte):string;overload;
+   function ChanelNumberIsCorrect(ChanNumber:byte):boolean;overload;
+   function ChanelNumberIsCorrect(ChanNumberLow,ChanNumberHigh:byte):boolean;overload;
+   function ChanelNumberIsCorrect(ChanNumbers:array of byte):boolean;overload;
   protected
    procedure ProcessingStringByRootNode(Str:string);override;
    procedure PrepareStringByRootNode;override;
@@ -204,40 +208,43 @@ begin
 
 end;
 
-//procedure TDMM6500.StringToMesuredData(Str: string;
-//  DataType: TKeitley_ReturnedData);
-//begin
-// fDevice.Value:=FloatDataFromRow(Str,1);
-// if (fDevice.Value=ErResult)or(DataType=kt_rd_M) then Exit;
-// case DataType of
-//   kt_rd_MS,kt_rd_MST:fMeasureChanNumber:=round(FloatDataFromRow(Str,2));
-//   kt_rd_MT:fTimeValue:=StringToMeasureTime(DeleteStringDataFromRow(Str,1));
-// end;
-// if DataType=kt_rd_MST then fTimeValue:=StringToMeasureTime(DeleteStringDataFromRow(DeleteStringDataFromRow(Str,1),1));
-//end;
 
-//function TDMM6500.StringToMeasureFunction(Str: string): boolean;
-//  var i:TKeitley_Measure;
-//begin
-// Result:=False;
-// for I := High(TKeitley_Measure) downto Low(TKeitley_Measure) do
-//   begin
-//    case i of
-//      dm_mCurDC..
-//       dm_mRes2W:
-//        Result:=pos(DeleteSubstring(RootNoodKeitley[ord(i)+12]),Str)<>0;
-//      dm_mCurAC..
-//       dm_mVoltRat: Result:=pos(DeleteSubstring(RootNoodKeitley[ord(i)+25]),Str)<>0;
-//      dm_DigVolt..
-//      dm_DigCur:  Result:=pos('none',Str)<>0;
-//    end;
-//    if Result then
-//      begin
-//       fMeasureFunction:=i;
-//       fDevice.Value:=ord(fMeasureFunction);
-//       Break;
-//      end;
-//   end;
-//end;
+function TDMM6500.ChanelNumberIsCorrect(ChanNumber: byte): boolean;
+begin
+ Result:=ChanNumber in [1..10];
+end;
+
+function TDMM6500.ChanelNumberIsCorrect(ChanNumberLow,
+  ChanNumberHigh: byte): boolean;
+begin
+ Result:=ChanelNumberIsCorrect(ChanNumberLow)
+         and ChanelNumberIsCorrect(ChanNumberHigh);
+end;
+
+function TDMM6500.ChanelToString(ChanNumbers: array of byte): string;
+ var i:byte;
+begin
+ Result:='(@';
+ for I := Low(ChanNumbers) to High(ChanNumbers) do
+   begin
+   Result:=Result+inttostr(ChanNumbers[i]);
+   if i<>High(ChanNumbers)
+     then Result:=Result+PartDelimiter;
+   end;
+ Result:=Result+')';
+end;
+
+function TDMM6500.ChanelNumberIsCorrect(ChanNumbers: array of byte): boolean;
+ var i:byte;
+begin
+  Result:=True;
+  for I := Low(ChanNumbers) to High(ChanNumbers) do
+    if not(ChanelNumberIsCorrect(ChanNumbers[i]))
+      then
+       begin
+         Result:=False;
+         Exit;
+       end;
+end;
 
 end.
