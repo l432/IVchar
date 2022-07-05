@@ -33,6 +33,12 @@ type
 
 const
  DMM6500_Test='KEITHLEY INSTRUMENTS,MODEL DMM6500';
+ SCAN2000_Test='2000,10-Chan Mux';
+// TCSCAN2001_Test='2000,10-Chan Mux';
+ Pseudocard_Test='2000,Pseudo 10Ch Mux';
+
+ CardeafNodeDMM6500:array[0..3]of string=
+ (':vch',':star',':end',':vmax');
 
  DMM6500_VoltageDCRangeLabels:array[TDMM6500_VoltageDCRange]of string=
          ('Auto','100 mV', '1 V', '10 V', '100 V', '1000 V');

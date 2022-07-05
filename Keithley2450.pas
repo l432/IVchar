@@ -944,7 +944,7 @@ end;
 
 function TKt_2450.GetSourceType: boolean;
 begin
- QuireOperation(11,55,55);
+ QuireOperation(11,155,155);
  Result:=(fDevice.Value<>ErResult);
 end;
 
@@ -1035,7 +1035,7 @@ end;
 
 function TKt_2450.IsOutPutOn: boolean;
 begin
- QuireOperation(5,55);
+ QuireOperation(5,155);
  Result:=(fDevice.Value=1);
  fOutPutOn:=Result;
 end;
@@ -1576,7 +1576,7 @@ procedure TKt_2450.OutPutChange(toOn: boolean);
 begin
 // :OUTP ON|Off
  OnOffFromBool(toOn);
- SetupOperation(5,55);
+ SetupOperation(5,155);
  fOutPutOn:=toOn;
 end;
 
@@ -1611,9 +1611,9 @@ begin
                     if fIsTripped then JoinToStringToSend(FirstNodeKt_2450[11]);
                    end;
               end;
-       55:JoinToStringToSend(RootNodeKeitley[15]);
+       155:JoinToStringToSend(RootNodeKeitley[15]);
        23:case fLeafNode of
-             79,80:begin
+             179,180:begin
                    JoinToStringToSend(FirstNodeKt_2450[fFirstLevelNode]);
                    JoinToStringToSend(RootNodeKeitley[fLeafNode-79+12]);
                    JoinToStringToSend(FirstNodeKt_2450[24]);
@@ -1682,7 +1682,7 @@ begin
  case fRootNode of
   0:if pos(Kt_2450_Test,Str)<>0 then fDevice.Value:=314;
   5:case fFirstLevelNode of
-     5,55:fDevice.Value:=StrToInt(Str);
+     5,155:fDevice.Value:=StrToInt(Str);
      0..1:begin
           if StringToOutPutState(AnsiLowerCase(Str))
             then fDevice.Value:=ord(fOutputOffState[TKt2450_Source(fFirstLevelNode)]);
@@ -1698,7 +1698,7 @@ begin
             10:if StringToVoltageProtection(AnsiLowerCase(Str),fVoltageProtection)
                 then fDevice.Value:=ord(fVoltageProtection);
             0,12..13,15,21:fDevice.Value:=SCPI_StringToValue(Str);
-            55:if StringToSourceType(AnsiLowerCase(Str)) then fDevice.Value:=ord(fSourceType);
+            155:if StringToSourceType(AnsiLowerCase(Str)) then fDevice.Value:=ord(fSourceType);
             16,17,22,27:fDevice.Value:=StrToInt(Str);
            end;
      end; //fRootNode=11
@@ -2016,7 +2016,7 @@ procedure TKt_2450.SetSourceType(SourseType: TKt2450_Source);
 begin
 // SOUR:FUNC CURR|VOLT
  fAdditionalString:=Kt2450_SourceName[SourseType];
- SetupOperation(11,55);
+ SetupOperation(11,155);
  fSourceType:=SourseType;
 end;
 
@@ -2108,7 +2108,7 @@ begin
 //   :SOUR:LIST:CURR|VOLT:APP <list>
  fAdditionalString:=NumbersArrayToStrLimited(ListValues,
                          Kt_2450_SourceSweepLimits[Source]);
- SetupOperation(11,23,55+24+1-ord(Source));//79,80
+ SetupOperation(11,23,155+24+1-ord(Source));//179,180
 end;
 
 procedure TKt_2450.SourceListAppend(ListValues: TArrSingle);

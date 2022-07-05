@@ -2191,7 +2191,7 @@ end;
 
 procedure TKt2450FastIVstate.ButtonStopClick;
 begin
-//  fFastIV.Kt2450.TrigEventGenerate;
+  fFastIV.Kt2450.TrigEventGenerate;
 end;
 
 procedure TKt2450FastIVstate.MeasuringState;
@@ -2200,13 +2200,20 @@ begin
  if not(fFastIV.Kt2450.SweepWasCreated) then Exit;
 
  fFastIV.Kt2450.AzeroOnce;
- fFastIV.Kt2450.InitWait;
- fFastIV.Kt2450.Beep;
+// fFastIV.Kt2450.InitWait;
+ fFastIV.Kt2450.Init;
  fFastIV.Kt2450.Device.DelayTimeStep:=round(fFastIV.Kt2450.DragonBackTime);
- NumberInBuffer:=fFastIV.Kt2450.BufferGetReadingsNumber;
+
+ while(fFastIV.Kt2450.GetTrigerState) do
+   if not((fFastIV.Kt2450.TrigerState=kt_ts_running)
+          or(fFastIV.Kt2450.TrigerState=kt_ts_waiting)) then Break;
+
+ fFastIV.Kt2450.Beep;
+// fFastIV.Kt2450.Device.DelayTimeStep:=round(fFastIV.Kt2450.DragonBackTime);
  fFastIV.Kt2450.Device.DelayTimeStep:=10;
+ NumberInBuffer:=fFastIV.Kt2450.BufferGetReadingsNumber;
+// fFastIV.Kt2450.Device.DelayTimeStep:=10;
  fFastIV.Kt2450.BufferDataArrayExtended(1,NumberInBuffer,kt_rd_MST);
-// fFastIV.Kt2450.BufferDataArrayExtended(1,43,kt_rd_MST);
  fFastIV.Kt2450.DataVector.CopyTo(fFastIV.Results);
  if fFastIV.fDiodOrientationVoltageFactor<1 then
    begin

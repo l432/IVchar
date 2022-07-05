@@ -22,7 +22,7 @@ const
   ':abor',':trac',':coun',':read',':fetc',':dig',':conf','*wai',':trig','*trg',
 //   18      19      20      21      22      23    24      25     26      27
   ':curr:ac',':volt:ac',':fres',':diod',':cap',':temp',':cont',':freq',':per',
-//    28        29       30       31      32     33      34      35     36
+//    28        29        30       31      32     33      34      35     36
   ':volt:dc:rat',':dig:curr',':dig:volt');
 //    37             38         39
 
@@ -31,7 +31,7 @@ const
  'amp','volt','ohm','watt' );
 //   4     5    6      7
 
-  FirstNodeKt_2450:array[0..44]of string=
+  FirstNodeKt_2450:array[0..46]of string=
   (':scr',':user1:text',':user2:text',':cle',':pos',':int:stat',':term',
 //     0       1             2          3      4        5         6
    ':rsen',':smod',':ocom',':prot',':trip',':vlim',':ilim',':unit',
@@ -42,8 +42,10 @@ const
 //      22        23      24     25     26        27       28      29
    ':ligh:stat',':poin',':fill:mode',':data',':beep',':act',':line#:mode',
 //     30          31         32         33     34      35        36
-   ':line#:stat',':load', ':bloc',':buff',':bran',':mdig',':res',':paus');
+   ':line#:stat',':load', ':bloc',':buff',':bran',':mdig',':res',':paus',
 //      37         38        39      40      41      42      43      44
+   ':card1',':pcar1');
+//   45       46
 
  ConfLeafNodeKeitley:array[0..3]of string=
  (':cre',':del',':rec',':stor');
@@ -177,6 +179,10 @@ TKeitley_TriggerEvents=(kt_te_comm,//подія через command interface
                       kt_te_atr,//Analog trigger
                       kt_te_ext);//External in trigger
 
+ TKeitley_TriggerState=(kt_ts_idle,kt_ts_running,kt_ts_waiting,kt_ts_empty,
+                        kt_ts_paused,kt_ts_building,kt_ts_failed,kt_ts_aborting,
+                        kt_ts_aborted);
+
 const
  Keitley_TerminalsName:array [TKeitley_OutputTerminals]
             of string=('fron', 'rear');
@@ -261,16 +267,20 @@ Keitley_DisplayStateLabel:array[TKeitley_DisplayState]of string=
 Kt2450_TrigLimitTypeCommand:array[TKeitley_TrigLimitType]of string=
        ('abov','bel','in','out');
 
-Kt2450_TriggerEventsCommand:array[TKeitley_TriggerEvents]of string=
+Keitley_TriggerEventsCommand:array[TKeitley_TriggerEvents]of string=
        ('comm','disp','none','slim','tim','not',
         'lan','dig','blen','tspl','atr','ext');
 
- Keitley_MeasureLabel:array[TKeitley_Measure]of string=
+Keitley_MeasureLabel:array[TKeitley_Measure]of string=
           ('Current DC','Voltage DC','Resistance 2W',
            'Current AC','Voltage AC','Resistance 4W',
            'Diode','Capacitance','Temperature',
            'Continuity','Frequency','Period',
            'Voltage Ratio','Dig Current','Dig Voltage');
+
+Keitley_TriggerStateCommand:array[TKeitley_TriggerState]of string=
+  ('idle','running','waiting','empty','paused','building',
+   'failed','aborting','aborted');
 
 
 implementation

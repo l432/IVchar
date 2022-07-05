@@ -73,6 +73,7 @@ type
 //   fImin:double;
 //   FCurrentValueLimitEnable:boolean;
 //   fSweepWasCreated:boolean;
+     fTrigerState:TKeitley_TriggerState;
 //   procedure OnOffFromBool(toOn:boolean);
 //   function StringToVoltageProtection(Str:string;var vp:TKt_2450_VoltageProtection):boolean;
 //   function StringToSourceType(Str:string):boolean;
@@ -108,6 +109,7 @@ type
    procedure DefaultSettings;override;
    function StringToMeasureFunction(Str:string):boolean;//virtual;
    function StringToDigMeasureFunction(Str:string):boolean;
+   function StringToTrigerState(Str:string):boolean;
    function MeasureToRootNodeNumber(Measure:TKeitley_Measure):byte;
    function MeasureToRootNodeStr(Measure:TKeitley_Measure):string;
    function MeasureToFunctString(Measure:TKeitley_Measure):string;
@@ -165,6 +167,7 @@ type
 //   property Imin:double read FImin write FImin;
 //   property CurrentValueLimitEnable:boolean read FCurrentValueLimitEnable write FCurrentValueLimitEnable;
 //   property SweepWasCreated:boolean read fSweepWasCreated write fSweepWasCreated;
+   property TrigerState:TKeitley_TriggerState read fTrigerState;
    Constructor Create(Telnet:TIdTelnet;IPAdressShow: TIPAdressShow;
                Nm:string);
    destructor Destroy; override;
@@ -522,6 +525,7 @@ type
                                  EventNumber:word=1);
    {якщо до того, як дійшли на цей блок, відбулася подія EventType,
    то відбувається перехід на TransitionBlockNumber}
+   function GetTrigerState:boolean;
 
  end;
 
@@ -858,7 +862,7 @@ begin
  fDisplayState:=kt_ds_on25;
  fTrigBlockNumber:=1;
 // fSweepWasCreated:=False;
-
+ fTrigerState:=kt_ts_empty;
 
 end;
 
@@ -923,6 +927,13 @@ end;
 function TKeitley.GetTerminal: boolean;
 begin
  QuireOperation(9,6);
+ Result:=(fDevice.Value<>ErResult);
+end;
+
+function TKeitley.GetTrigerState: boolean;
+begin
+//:TRIG:STAT?
+ QuireOperation(26,3);
  Result:=(fDevice.Value<>ErResult);
 end;
 
@@ -1017,9 +1028,9 @@ begin
 //                    if fIsTripped then JoinToStringToSend(FirstNodeKt_2450[11]);
 //                   end;
 //              end;
-//       55:JoinToStringToSend(RootNoodKt_2450[15]);
+//       155:JoinToStringToSend(RootNoodKt_2450[15]);
 //       23:case fLeafNode of
-//             79,80:begin
+//             179,180:begin
 //                   JoinToStringToSend(FirstNodeKt_2450[fFirstLevelNode]);
 //                   JoinToStringToSend(RootNoodKt_2450[fLeafNode-79+12]);
 //                   JoinToStringToSend(FirstNodeKt_2450[24]);
@@ -1083,6 +1094,7 @@ begin
         JoinToStringToSend(ConfLeafNodeKeitley[fLeafNode]);
      end; // fRootNode=24
   26:case fFirstLevelNode of
+        3:JoinToStringToSend(TrigLeafNodeKeitley[fFirstLevelNode]);
         44,43,38:JoinToStringToSend(FirstNodeKt_2450[fFirstLevelNode]);
         40,41,21:begin
             JoinToStringToSend(FirstNodeKt_2450[39]);
@@ -1121,7 +1133,7 @@ begin
  case fRootNode of
 //  0:if pos(Kt_2450_Test,Str)<>0 then fDevice.Value:=314;
 //  5:case fFirstLevelNode of
-//     5,55:fDevice.Value:=StrToInt(Str);
+//     5,155:fDevice.Value:=StrToInt(Str);
 //     0..1:begin
 //          if StringToOutPutState(AnsiLowerCase(Str))
 //            then fDevice.Value:=ord(fOutputOffState[TKt2450_Source(fFirstLevelNode)]);
@@ -1147,7 +1159,7 @@ begin
 //            10:if StringToVoltageProtection(AnsiLowerCase(Str),fVoltageProtection)
 //                then fDevice.Value:=ord(fVoltageProtection);
 //            0,12..13,15,21:fDevice.Value:=SCPI_StringToValue(Str);
-//            55:if StringToSourceType(AnsiLowerCase(Str)) then fDevice.Value:=ord(fSourceType);
+//            155:if StringToSourceType(AnsiLowerCase(Str)) then fDevice.Value:=ord(fSourceType);
 //            16,17,22,27:fDevice.Value:=StrToInt(Str);
 //           end;
 //     end; //fRootNode=11
@@ -1181,6 +1193,9 @@ begin
         15:StringToDigMeasureFunction(AnsiLowerCase(Str));
 //       36:StringToDigLineStatus(AnsiLowerCase(Str));
 //       37:fDevice.Value:=StrToInt(Str);
+      end;
+   26:case fFirstLevelNode of
+       3:StringToTrigerState(AnsiLowerCase(Str));
       end;
  end;
 end;
@@ -1299,6 +1314,7 @@ end;
 procedure TKeitley.StringToMesuredData(Str: string;
   DataType: TKeitley_ReturnedData);
 begin
+// showmessage(STR);
  fDevice.Value:=FloatDataFromRow(Str,1);
  if (fDevice.Value=ErResult)or(DataType=kt_rd_M) then Exit;
  case DataType of
@@ -1329,7 +1345,10 @@ begin
    case DataType of
 //    kt_rd_MS:DataVector.Add(fSourceMeasuredValue,fDevice.Value);
     kt_rd_MS:AdditionalDataToArrayFromString;
-    kt_rd_MT:DataTimeVector.Add(fTimeValue,fDevice.Value);
+    kt_rd_MT:begin
+             DataTimeVector.Add(fTimeValue,fDevice.Value);
+              DataVector.Add(fTimeValue,fDevice.Value);
+             end;
     kt_rd_MST:begin
 //               DataVector.Add(fSourceMeasuredValue,fDevice.Value);
                AdditionalDataToArrayFromString;
@@ -1355,6 +1374,20 @@ begin
      begin
        fTerminal:=i;
        Result:=True;
+       Break;
+     end;
+end;
+
+function TKeitley.StringToTrigerState(Str: string): boolean;
+  var i:TKeitley_TriggerState;
+begin
+ Result:=False;
+ for I := Low(TKeitley_TriggerState) to High(TKeitley_TriggerState) do
+   if Pos(Keitley_TriggerStateCommand[i],Str)<>0 then
+     begin
+       fTrigerState:=i;
+       Result:=True;
+       fDevice.Value:=ord(i);
        Break;
      end;
 end;
@@ -1460,7 +1493,7 @@ begin
  if (EventType=kt_te_blend)and(EventNumber>2) then Exit;
  if (EventType=kt_te_tspl)and(EventNumber>3) then Exit;
 
- fAdditionalString:=Kt2450_TriggerEventsCommand[EventType];
+ fAdditionalString:=Keitley_TriggerEventsCommand[EventType];
  if EventType in [kt_te_timer..kt_te_tspl] then
    fAdditionalString:=fAdditionalString + IntToStr(EventNumber);
  fAdditionalString:=fAdditionalString+PartDelimiter
