@@ -24,7 +24,6 @@ type
 //   fIsTripped:boolean;
 //
    fTerminal:TKeitley_OutputTerminals;
-//   fMeasureFunction:TKeitley_Measure;
 //   fOutPutOn:boolean;
 //   fResistanceCompencateOn:TKt2450_MeasureBool;
 //   fAzeroState:TKt2450_MeasureBool;
@@ -119,6 +118,7 @@ type
    procedure AdditionalDataToArrayFromString;virtual;abstract;
 
    function StringToMeasureTime(Str:string):double;
+   function GetMeasureFunctionValue:TKeitley_Measure;virtual;
   public
 //   SweepParameters:array[TKt2450_Source]of TKt_2450_SweepParameters;
 //   property HookForTrigDataObtain:TSimpleEvent read fHookForTrigDataObtain write fHookForTrigDataObtain;
@@ -129,7 +129,7 @@ type
 //   property VoltageProtection:TKt_2450_VoltageProtection read fVoltageProtection;
 //   property VoltageLimit:double read fVoltageLimit;
 //   property CurrentLimit:double read fCurrentLimit;
-   property MeasureFunction:TKeitley_Measure read fMeasureFunction;
+   property MeasureFunction:TKeitley_Measure read GetMeasureFunctionValue;
    property Terminal:TKeitley_OutputTerminals read fTerminal write fTerminal;
 //   property OutPutOn:boolean read fOutPutOn write fOutPutOn;
 //   property ResistanceCompencateOn:TKt2450_MeasureBool read fResistanceCompencateOn;
@@ -269,7 +269,7 @@ type
 //
    procedure SetMeasureFunction(MeasureFunc:TKeitley_Measure=kt_mCurDC);virtual;
    {що саме буде вимірювати прилад}
-   function GetMeasureFunction():boolean;
+   function GetMeasureFunction():boolean;virtual;
     {повертає тип вимірювання, обробка залежить
     від типу приладу}
 //
@@ -812,7 +812,7 @@ procedure TKeitley.DefaultSettings;
 begin
 // fIsTripped:=False;
 // fSourceType:=kt_sVolt;
-// fMeasureFunction:=kt_mCurrent;
+//  fMeasureFunction:=kt_mVolDC;
 // fVoltageProtection:=kt_vpnone;
 // fVoltageLimit:=Kt_2450_VoltageLimDef;
 // fCurrentLimit:=Kt_2450_CurrentLimDef;
@@ -893,6 +893,11 @@ begin
    then QuireOperation(23,15);
 
  Result:=(fDevice.Value<>ErResult);
+end;
+
+function TKeitley.GetMeasureFunctionValue: TKeitley_Measure;
+begin
+ Result:=fMeasureFunction;
 end;
 
 procedure TKeitley.GetParametersFromDevice;
@@ -1285,11 +1290,6 @@ begin
  for I := High(TKeitley_Measure) downto Low(TKeitley_Measure) do
    begin
     case i of
-//      kt_mCurDC..
-//       kt_mRes2W:
-//        Result:=pos(DeleteSubstring(RootNodeKeitley[ord(i)+12]),Str)<>0;
-//      kt_mCurAC..
-//       kt_mVoltRat: Result:=pos(DeleteSubstring(RootNodeKeitley[ord(i)+25]),Str)<>0;
       kt_mCurDC..
        kt_mVoltRat: Result:=pos(DeleteSubstring(MeasureToRootNodeStr(i)),Str)<>0;
       kt_DigCur..

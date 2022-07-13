@@ -5,10 +5,10 @@ interface
 uses
   IdTelnet, ShowTypes, OlegTypePart2, RS232deviceNew;
 
-const
+//const
 //  TestShowEthernet=False;
-  TestShowEthernet=True;
-  DeviceEthernetisAbsent=False;
+//  TestShowEthernet=True;
+//  DeviceEthernetisAbsent=False;
 //  DeviceEthernetisAbsent=True;
 
 type
@@ -60,8 +60,10 @@ TTelnetMeterDeviceSingle=class(TMeterDevice)
   procedure CreateDataRequest;
   function GetIPAdressShow:TIPAdressShow;
   function GetMessageError:string;override;
+  function GetStringToSendActual:string;
  public
   property IPAdressShow:TIPAdressShow read GetIPAdressShow;
+  property StringToSendActual:string read GetStringToSendActual;
   Constructor Create(Telnet:TIdTelnet;IPAdressShow: TIPAdressShow;Nm:string);
   destructor Destroy;override;
   Procedure Request();override;
@@ -70,6 +72,9 @@ TTelnetMeterDeviceSingle=class(TMeterDevice)
   procedure JoinToStringToSend(AdditionalString:string);override;
   function GetData():double;override;
 end;
+
+var
+ TestShowEthernet,DeviceEthernetisAbsent:boolean;
 
 implementation
 
@@ -265,6 +270,11 @@ end;
 function TTelnetMeterDeviceSingle.GetMessageError: string;
 begin
  Result:=fName+' on '+fDataSubject.fTelnet.Telnet.Host+ErrorMes;
+end;
+
+function TTelnetMeterDeviceSingle.GetStringToSendActual: string;
+begin
+ Result:=fDataRequest.fTelnet.fStringToSend;
 end;
 
 procedure TTelnetMeterDeviceSingle.JoinToStringToSend(AdditionalString: string);

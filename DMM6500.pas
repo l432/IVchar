@@ -16,19 +16,29 @@ type
    fFirstChannelInSlot:byte;
    fLastChannelInSlot:byte;
    fChannelMaxVoltage:double;
+   fRealCardPresent:boolean;
+   fChansMeasureFunction:array of TKeitley_Measure;
+   fTerminalMeasureFunction:array [TKeitley_OutputTerminals] of TKeitley_Measure;
+   fChanOperation:boolean;
+   fChanOperationString:string;
    function ChanelToString(ChanNumber:byte):string;overload;
    function ChanelToString(ChanNumberLow,ChanNumberHigh:byte):string;overload;
    function ChanelToString(ChanNumbers:array of byte):string;overload;
    function ChanelNumberIsCorrect(ChanNumber:byte):boolean;overload;
    function ChanelNumberIsCorrect(ChanNumberLow,ChanNumberHigh:byte):boolean;overload;
    function ChanelNumberIsCorrect(ChanNumbers:array of byte):boolean;overload;
+   procedure ChansMeasureFunctionInit;
+   function IsPermittedMeasureFuncForChan(MeasureFunc:TKeitley_Measure;
+                                    ChanNumber:byte):boolean;
   protected
    procedure ProcessingStringByRootNode(Str:string);override;
+   procedure PrepareString;override;
    procedure PrepareStringByRootNode;override;
    procedure DefaultSettings;override;
 //   procedure StringToMesuredData(Str:string;DataType:TKeitley_ReturnedData);override;
    procedure AdditionalDataFromString(Str:string);override;
    procedure AdditionalDataToArrayFromString;override;
+   function GetMeasureFunctionValue:TKeitley_Measure;override;
   public
    Constructor Create(Telnet:TIdTelnet;IPAdressShow: TIPAdressShow;
                Nm:string='DMM6500');
@@ -46,7 +56,19 @@ type
    Function  GetLastChannelInSlot:boolean;
    Function  GetChannelMaxVoltage:boolean;
 
+   procedure SetMeasureFunction(MeasureFunc:TKeitley_Measure=kt_mCurDC);override;
+   procedure SetMeasureFunctionChan(ChanNumber:byte;
+                    MeasureFunc:TKeitley_Measure=kt_mVolDC);overload;
+   procedure SetMeasureFunctionChan(ChanNumberLow,ChanNumberHigh:byte;
+                    MeasureFunc:TKeitley_Measure=kt_mVolDC);overload;
+   procedure SetMeasureFunctionChan(ChanNumbers:array of byte;
+                    MeasureFunc:TKeitley_Measure=kt_mVolDC);overload;
+
+   function GetMeasureFunction():boolean;override;
+   function GetMeasureFunctionChan(ChanNumber:byte):boolean;
+
    Procedure GetParametersFromDevice;override;
+   Procedure GetCardParametersFromDevice;
  end;
 
 var
@@ -112,13 +134,33 @@ end;
 
 procedure TDMM6500.DefaultSettings;
 begin
- inherited;
+ inherited DefaultSettings;
  fMeasureChanNumber:=0;
  fFirstChannelInSlot:=1;
  fLastChannelInSlot:=10;
  fChannelMaxVoltage:=25;
-// fMeasureFunction:=dm_mVolDC;
+ fRealCardPresent:=false;
 
+ fMeasureFunction:=kt_mVolDC;
+ ChansMeasureFunctionInit();
+ fTerminalMeasureFunction[kt_otFront]:=kt_mVolDC;
+ fTerminalMeasureFunction[kt_otRear]:=kt_mVolDC;
+
+ fChanOperation:=false;
+ fChanOperationString:='';
+
+end;
+
+procedure TDMM6500.GetCardParametersFromDevice;
+begin
+  if TestRealCard_Presence then
+  begin
+    GetFirstChannelInSlot();
+    GetLastChannelInSlot();
+    GetChannelMaxVoltage();
+    if High(fChansMeasureFunction)<> fLastChannelInSlot-fFirstChannelInSlot
+      then ChansMeasureFunctionInit();
+  end;
 end;
 
 function TDMM6500.GetChannelMaxVoltage: boolean;
@@ -145,16 +187,38 @@ begin
  if Result then fLastChannelInSlot:=round(fDevice.Value);
 end;
 
+function TDMM6500.GetMeasureFunction: boolean;
+begin
+ Result:= inherited GetMeasureFunction;
+ if Result then fTerminalMeasureFunction[Terminal]:=MeasureFunction;
+
+end;
+
+function TDMM6500.GetMeasureFunctionChan(ChanNumber: byte): boolean;
+begin
+
+end;
+
+function TDMM6500.GetMeasureFunctionValue: TKeitley_Measure;
+begin
+ Result:=fTerminalMeasureFunction[Terminal];
+end;
+
 procedure TDMM6500.GetParametersFromDevice;
 begin
-  inherited;
-  if TestRealCard_Presence then
-  begin
-    if not(GetFirstChannelInSlot()) then Exit;
-    if not(GetLastChannelInSlot()) then Exit;
-    if not(GetChannelMaxVoltage()) then Exit;
+  inherited GetParametersFromDevice;
+  GetCardParametersFromDevice;
 
-  end;
+end;
+
+function TDMM6500.IsPermittedMeasureFuncForChan(MeasureFunc: TKeitley_Measure;
+  ChanNumber: byte): boolean;
+begin
+ Result:=False;
+ if MeasureFunc in [kt_mCurDC,kt_mCurAC,kt_DigCur] then Exit;
+ if (ChanNumber in [6..10])and(MeasureFunc in [kt_mRes4W,kt_mVoltRat]) then Exit;
+ Result:=True;
+
 end;
 
 procedure TDMM6500.MyTraining;
@@ -164,8 +228,19 @@ begin
 //  fDevice.Request();
 //  fDevice.GetData;
 
- if  GetTrigerState then
-  showmessage('ura! '+Keitley_TriggerStateCommand[TrigerState]);
+
+SetMeasureFunctionChan(2);
+SetMeasureFunctionChan(1,kt_mCurAC);
+//SetMeasureFunctionChan(11,kt_mTemp);
+//SetMeasureFunctionChan(5,kt_mTemp);
+SetMeasureFunctionChan(2,4,kt_mRes4W);
+SetMeasureFunctionChan(2,4,kt_mCurDC);
+SetMeasureFunctionChan([9,3,5],kt_mFreq);
+SetMeasureFunctionChan([9,3,5],kt_mVoltRat);
+
+//showmessage('kkk='+booltostr(TestShowEthernet,True));
+// if  GetTrigerState then
+//  showmessage('ura! '+Keitley_TriggerStateCommand[TrigerState]);
 
 // if  GetFirstChannelInSlot then
 //  showmessage('ura! '+inttostr(fFirstChannelInSlot));
@@ -266,6 +341,13 @@ begin
 // Test();
 end;
 
+procedure TDMM6500.PrepareString;
+begin
+ inherited PrepareString;
+ if fChanOperation then fDevice.JoinToStringToSend(fChanOperationString);
+ fChanOperation:=(Pos('?',(fDevice  as TKeitleyDevice).StringToSendActual)<>0);
+end;
+
 procedure TDMM6500.PrepareStringByRootNode;
 begin
  inherited;
@@ -320,11 +402,76 @@ begin
  SetupOperation(7,46);
 end;
 
+procedure TDMM6500.SetMeasureFunction(MeasureFunc: TKeitley_Measure);
+begin
+ inherited SetMeasureFunction(MeasureFunc);
+ fTerminalMeasureFunction[Terminal]:=MeasureFunction;
+end;
+
+
+procedure TDMM6500.SetMeasureFunctionChan(ChanNumberLow, ChanNumberHigh: byte;
+  MeasureFunc: TKeitley_Measure);
+ var i:byte;
+     tempbool:boolean;
+begin
+ tempbool:=True;
+ for I := ChanNumberLow to ChanNumberHigh do
+    if not(IsPermittedMeasureFuncForChan(MeasureFunc,i)) then
+     begin
+      tempbool:=False;
+      Break;
+     end;
+ if ChanelNumberIsCorrect(ChanNumberLow, ChanNumberHigh) and tempbool then
+   begin
+     fChanOperationString:=PartDelimiter+ChanelToString(ChanNumberLow, ChanNumberHigh);
+     fChanOperation:=True;
+     inherited SetMeasureFunction(MeasureFunc);
+     for I := ChanNumberLow-1 to ChanNumberHigh-1 do
+       fChansMeasureFunction[i]:=MeasureFunc;
+   end;
+end;
+
+procedure TDMM6500.SetMeasureFunctionChan(ChanNumbers: array of byte;
+  MeasureFunc: TKeitley_Measure);
+ var i:byte;
+     tempbool:boolean;
+begin
+ tempbool:=True;
+ for I := 0 to High(ChanNumbers) do
+    if not(IsPermittedMeasureFuncForChan(MeasureFunc,ChanNumbers[i])) then
+     begin
+      tempbool:=False;
+      Break;
+     end;
+
+ if ChanelNumberIsCorrect(ChanNumbers) and tempbool then
+   begin
+     fChanOperationString:=PartDelimiter+ChanelToString(ChanNumbers);
+     fChanOperation:=True;
+     inherited SetMeasureFunction(MeasureFunc);
+     for I := 0 to High(ChanNumbers) do
+       fChansMeasureFunction[ChanNumbers[i]-fFirstChannelInSlot]:=MeasureFunc;
+   end;
+end;
+
+procedure TDMM6500.SetMeasureFunctionChan(ChanNumber: byte;
+  MeasureFunc: TKeitley_Measure);
+begin
+ if ChanelNumberIsCorrect(ChanNumber) and IsPermittedMeasureFuncForChan(MeasureFunc,ChanNumber) then
+   begin
+     fChanOperationString:=PartDelimiter+ChanelToString(ChanNumber);
+     fChanOperation:=True;
+     inherited SetMeasureFunction(MeasureFunc);
+     fChansMeasureFunction[ChanNumber-fFirstChannelInSlot]:=MeasureFunc;
+   end;
+end;
+
 function TDMM6500.TestRealCard_Presence: boolean;
 begin
 // :SYST:CARD1:IDN?
  QuireOperation(7,45,50,False);
  Result:=(fDevice.Value=314);
+ fRealCardPresent:=Result;
 end;
 
 
@@ -336,7 +483,7 @@ end;
 
 function TDMM6500.ChanelNumberIsCorrect(ChanNumber: byte): boolean;
 begin
- Result:=ChanNumber in [1..10];
+ Result:=(ChanNumber in [fFirstChannelInSlot..fLastChannelInSlot]){or(DeviceEthernetisAbsent)};
 end;
 
 function TDMM6500.ChanelNumberIsCorrect(ChanNumberLow,
@@ -357,6 +504,16 @@ begin
      then Result:=Result+PartDelimiter;
    end;
  Result:=Result+')';
+end;
+
+procedure TDMM6500.ChansMeasureFunctionInit;
+ var i:byte;
+begin
+ if (fFirstChannelInSlot=0)or(fLastChannelInSlot=0)
+   then SetLength(fChansMeasureFunction,0)
+   else SetLength(fChansMeasureFunction,fLastChannelInSlot-fFirstChannelInSlot+1);
+ for I := 0 to High(fChansMeasureFunction) do
+   fChansMeasureFunction[i]:=kt_mVolDC;
 end;
 
 function TDMM6500.ChanelNumberIsCorrect(ChanNumbers: array of byte): boolean;

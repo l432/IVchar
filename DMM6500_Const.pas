@@ -6,6 +6,9 @@ uses
   Keitley2450Const;
 
 type
+ TDMM6500_State=(dm_st_front,dm_st_rare,dm_st_ch1,dm_st_ch2,dm_st_ch3,
+                 dm_st_ch4,dm_st_ch5,dm_st_ch6,dm_st_ch7,dm_st_ch8,
+                 dm_st_ch9,dm_st_ch10);
 
  TDMM6500_VoltageDCRange=(dm_vdrAuto,dm_vdr100mV,dm_vdr1V,dm_vdr10V,
                          dm_vdr100V,dm_vdr1000V);

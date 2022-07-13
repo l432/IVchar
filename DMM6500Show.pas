@@ -123,7 +123,7 @@ var
 implementation
 
 uses
-  Keitley2450Const;
+  Keitley2450Const, TelnetDevice;
 
 { TDMM6500_Show }
 
@@ -144,8 +144,11 @@ end;
 
 procedure TDMM6500_Show.GetSettingButtonClick(Sender: TObject);
 begin
-//  if not(DeviceEthernetisAbsent) then
-//    begin
+  if not(DeviceEthernetisAbsent) then
+    begin
+     fDMM6500.GetCardParametersFromDevice;
+
+
 //    fKt_2450.IsOutPutOn();
 //    fKt_2450.GetVoltageProtection;
 //    fKt_2450.GetDeviceMode;
@@ -166,14 +169,14 @@ begin
 //    fKt_2450.IsHighCapacitanceOn();
 //    fKt_2450.GetDisplayDigitsNumber();
 //    fKt_2450.GetCount();
-//    end;
+    end;
 
-  inherited;
+  inherited GetSettingButtonClick(Sender);
 end;
 
 procedure TDMM6500_Show.ObjectToSetting;
 begin
-  inherited;
+  inherited ObjectToSetting;
   fTerminalState.Caption:=Keitlay_TerminalsButtonName[fDMM6500.Terminal];
 end;
 

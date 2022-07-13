@@ -2205,9 +2205,12 @@ begin
  fFastIV.Kt2450.Device.DelayTimeStep:=round(fFastIV.Kt2450.DragonBackTime);
 
  while(fFastIV.Kt2450.GetTrigerState) do
-   if not((fFastIV.Kt2450.TrigerState=kt_ts_running)
+   begin
+    if not((fFastIV.Kt2450.TrigerState=kt_ts_running)
           or(fFastIV.Kt2450.TrigerState=kt_ts_waiting)) then Break;
-
+    Application.ProcessMessages;
+    sleep(fFastIV.Kt2450.Device.DelayTimeStep);
+   end;
  fFastIV.Kt2450.Beep;
 // fFastIV.Kt2450.Device.DelayTimeStep:=round(fFastIV.Kt2450.DragonBackTime);
  fFastIV.Kt2450.Device.DelayTimeStep:=10;

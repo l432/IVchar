@@ -743,6 +743,9 @@ type
     CBuseKT2450: TCheckBox;
     TS_DM6500: TTabSheet;
     B_DM6500drive: TButton;
+    GBTelnetParam: TGroupBox;
+    CBTelnetStrShow: TCheckBox;
+    CBTelnetDevAbsent: TCheckBox;
 
     procedure FormCreate(Sender: TObject);
     procedure BConnectClick(Sender: TObject);
@@ -788,6 +791,7 @@ type
     procedure B_Kt2450driveClick(Sender: TObject);
     procedure CBuseKT2450Click(Sender: TObject);
     procedure B_DM6500driveClick(Sender: TObject);
+    procedure CBTelnetStrShowClick(Sender: TObject);
   private
     procedure ComponentView;
     {початкове налаштування різних компонентів}
@@ -1081,7 +1085,8 @@ implementation
 
 uses
   ArduinoADC, OlegFunction, AD5752R, IT6332B, Keithley2450Show, FormKT2450, 
-  PsevdoMainForm, Keitley2450Const, FormDMM6500, DMM6500, DMM6500Show;
+  PsevdoMainForm, Keitley2450Const, FormDMM6500, DMM6500, DMM6500Show, 
+  TelnetDevice;
 
 {$R *.dfm}
 
@@ -1955,6 +1960,15 @@ begin
  if Key=MeasIVonTemper
      then MeasurementsLabelCaption(['Voc', 'T (K)', 'isotermal time']);
 
+end;
+
+procedure TIVchar.CBTelnetStrShowClick(Sender: TObject);
+begin
+ if ((Sender as TCheckBox).Name='CBTelnetStrShow') then
+      TestShowEthernet:=CBTelnetStrShow.Checked;
+
+ if ((Sender as TCheckBox).Name='CBTelnetDevAbsent') then
+      DeviceEthernetisAbsent:=CBTelnetDevAbsent.Checked;
 end;
 
 procedure TIVchar.CBuseKT2450Click(Sender: TObject);
@@ -3620,6 +3634,8 @@ begin
     end;
  finally
  end;
+//  TestShowEthernet:=CBTelnetStrShow.Checked;
+
 
   RGDO.ItemIndex:= ConfigFile.ReadInteger('Box', RGDO.Name,0);
   RGIscVocMode.ItemIndex:= ConfigFile.ReadInteger('Box', RGIscVocMode.Name,0);

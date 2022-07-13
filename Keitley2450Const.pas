@@ -179,7 +179,7 @@ TKeitley_TriggerEvents=(kt_te_comm,//подія через command interface
                       kt_te_atr,//Analog trigger
                       kt_te_ext);//External in trigger
 
- TKeitley_TriggerState=(kt_ts_idle,kt_ts_running,kt_ts_waiting,kt_ts_empty,
+TKeitley_TriggerState=(kt_ts_idle,kt_ts_running,kt_ts_waiting,kt_ts_empty,
                         kt_ts_paused,kt_ts_building,kt_ts_failed,kt_ts_aborting,
                         kt_ts_aborted);
 
