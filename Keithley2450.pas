@@ -98,7 +98,7 @@ TKT2450_SourceDevice=class;
    fSourceDelayAuto:TKt2450_SourceBool;
    fMeasureTime:TKt2450_MeasureDouble;
    fDisplayDN:TKt2450_MeasureDisplayDN;
-   fCount:integer;
+//   fCount:integer;
    fSourceMeasuredValue:double;
    fDigitLineType:TKt2450_DigLineTypes;
    fDigitLineDirec:TKt2450_DigLineDirections;
@@ -127,7 +127,7 @@ TKT2450_SourceDevice=class;
    function VoltageRangeToString(Range:TKt2450VoltageRange):string;
    function ValueToCurrentRange(Value:double):TKt2450CurrentRange;
    function CurrentRangeToString(Range:TKt2450CurrentRange):string;
-   procedure SetCountNumber(Value:integer);
+//   procedure SetCountNumber(Value:integer);
    procedure TrigIVLoop(i: Integer);
   protected
    procedure PrepareStringByRootNode;override;
@@ -162,7 +162,7 @@ TKT2450_SourceDevice=class;
    property SourceDelayAuto:TKt2450_SourceBool read fSourceDelayAuto;
    property DisplayDN:TKt2450_MeasureDisplayDN read fDisplayDN;
    property MeasureTime:TKt2450_MeasureDouble read fMeasureTime;
-   property Count:integer read fCount write SetCountNumber;
+//   property Count:integer read fCount write SetCountNumber;
    property SourceMeasuredValue:double read fSourceMeasuredValue;
    property DigitLineType:TKt2450_DigLineTypes read fDigitLineType;
    property DigitLineTypeDirec:TKt2450_DigLineDirections read fDigitLineDirec;
@@ -278,10 +278,10 @@ TKT2450_SourceDevice=class;
    function GetMeasureTime():boolean;overload;
    function GetMeasureTimes():boolean;
 
-   procedure SetDisplayDigitsNumber(Measure:TKt2450_Measure; Number:Kt2450DisplayDigitsNumber);overload;
+   procedure SetDisplayDigitsNumber(Measure:TKt2450_Measure; Number:KeitleyDisplayDigitsNumber);overload;
    {кількість цифр, що відображаються на екрані,
      на точність самого вимірювання не впливає}
-   procedure SetDisplayDigitsNumber(Number:Kt2450DisplayDigitsNumber);overload;
+   procedure SetDisplayDigitsNumber(Number:KeitleyDisplayDigitsNumber);overload;
    function GetDisplayDigitsNumber(Measure:TKt2450_Measure):boolean;overload;
    function GetDisplayDigitsNumber():boolean;overload;
    function GetDisplayDNs():boolean;
@@ -363,9 +363,9 @@ TKT2450_SourceDevice=class;
    procedure SwepListCreate(StartIndex:word=1);
    procedure SwepLogStepCreate();
 
-   procedure SetCount(Cnt:integer);
-   {кількість повторних вимірювань, коли прилад просять поміряти}
-   function GetCount():boolean;
+//   procedure SetCount(Cnt:integer);
+//   {кількість повторних вимірювань, коли прилад просять поміряти}
+//   function GetCount():boolean;
 
    procedure SetDigLineMode(LineNumber:TKt2450_DigLines;
                             LineType:TKt2450_DigLineType;
@@ -632,12 +632,12 @@ begin
    Result:=Result and IsAzeroStateOn(i);
 end;
 
-function TKt_2450.GetCount: boolean;
-begin
- QuireOperation(20);
- Result:=fDevice.isReceived;
- if Result then Count:=round(fDevice.Value);
-end;
+//function TKt_2450.GetCount: boolean;
+//begin
+// QuireOperation(20);
+// Result:=fDevice.isReceived;
+// if Result then Count:=round(fDevice.Value);
+//end;
 
 function TKt_2450.GetCurrentLimit: boolean;
 begin
@@ -853,7 +853,7 @@ begin
  if not(GetMeasureTimes()) then Exit;
  if not(GetHighCapacitanceStates()) then Exit;
  if not(GetDisplayDNs()) then Exit;
- if not(GetCount()) then Exit;
+// if not(GetCount()) then Exit;
 end;
 
 function TKt_2450.IsReadBackOn(Source: TKt2450_Source): boolean;
@@ -1253,7 +1253,7 @@ begin
 
 //if GetCount() then showmessage('Count='+inttostr(Count));
 
-//SetCount(10);
+//SetCount(400000);
 //SetCount(-56);
 
 //if BufferGetFillMode() then
@@ -1708,7 +1708,7 @@ begin
                     then fDevice.Value:=ord(fMeasureUnits[TKt2450_Measure(fFirstLevelNode-12)]);
              16,15,26:fDevice.Value:=SCPI_StringToValue(Str);
           end;   //fRootNode=12..14
-   20:fDevice.Value:=StrToInt(Str);
+//   20:fDevice.Value:=StrToInt(Str);
    21:case fFirstLevelNode of
        0,1:fDevice.Value:=SCPI_StringToValue(Str);
        2..5:StringToMesuredData(AnsiReplaceStr(Str,',',' '),TKeitley_ReturnedData(fFirstLevelNode-2));
@@ -1733,19 +1733,19 @@ begin
   SetAzeroState(fMeasureFunction,toOn);
 end;
 
-procedure TKt_2450.SetCount(Cnt: integer);
-begin
-// :COUN <n>
- Count:=Cnt;
- fAdditionalString:=IntToStr(Count);
- SetupOperation(20);
-end;
+//procedure TKt_2450.SetCount(Cnt: integer);
+//begin
+//// :COUN <n>
+// Count:=Cnt;
+// fAdditionalString:=IntToStr(Count);
+// SetupOperation(20);
+//end;
 
-procedure TKt_2450.SetCountNumber(Value: integer);
- const CountLimits:TLimitValues=(1,300000);
-begin
- fCount:=NumberMap(Value,CountLimits);
-end;
+//procedure TKt_2450.SetCountNumber(Value: integer);
+// const CountLimits:TLimitValues=(1,300000);
+//begin
+// fCount:=NumberMap(Value,CountLimits);
+//end;
 
 procedure TKt_2450.SetCurrentLimit(Value: double);
 begin
@@ -1764,7 +1764,7 @@ if Value=0 then
 end;
 
 procedure TKt_2450.SetDisplayDigitsNumber(Measure: TKt2450_Measure;
-  Number: Kt2450DisplayDigitsNumber);
+  Number: KeitleyDisplayDigitsNumber);
 begin
 //:DISP:CURR|VOLT|RES:DIG n
  fAdditionalString:=inttostr(Number);
@@ -1800,7 +1800,7 @@ begin
  SetupOperation(23,36);
 end;
 
-procedure TKt_2450.SetDisplayDigitsNumber(Number: Kt2450DisplayDigitsNumber);
+procedure TKt_2450.SetDisplayDigitsNumber(Number: KeitleyDisplayDigitsNumber);
 begin
   SetDisplayDigitsNumber(fMeasureFunction,Number);
 end;

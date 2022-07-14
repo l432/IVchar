@@ -53,7 +53,7 @@ type
    fDataTimeVector:TVector;
    {X - час виміру (мілісекунди з початку доби); Y - результат виміру}
    fBuffer:TKeitley_Buffer;
-//   fCount:integer;
+
 //   fSourceMeasuredValue:double;
 
 //   {час виміру, в мілісекундах з початку доби}
@@ -93,7 +93,6 @@ type
 //   function VoltageRangeToString(Range:TKt2450VoltageRange):string;
 //   function ValueToCurrentRange(Value:double):TKt2450CurrentRange;
 //   function CurrentRangeToString(Range:TKt2450CurrentRange):string;
-//   procedure SetCountNumber(Value:integer);
 //   procedure TrigIVLoop(i: Integer);
   protected
    fTelnet:TIdTelnet;
@@ -101,6 +100,7 @@ type
    fMeasureFunction:TKeitley_Measure;
    fTimeValue:double;
    fTrigBlockNumber:word;
+   fCount:integer;
    procedure PrepareString;override;
    procedure PrepareStringByRootNode;virtual;
    procedure DeviceCreate(Nm:string);override;
@@ -119,6 +119,7 @@ type
 
    function StringToMeasureTime(Str:string):double;
    function GetMeasureFunctionValue:TKeitley_Measure;virtual;
+   procedure SetCountNumber(Value:integer);virtual;
   public
 //   SweepParameters:array[TKt2450_Source]of TKt_2450_SweepParameters;
 //   property HookForTrigDataObtain:TSimpleEvent read fHookForTrigDataObtain write fHookForTrigDataObtain;
@@ -152,7 +153,7 @@ type
 //   property DisplayDN:TKt2450_MeasureDisplayDN read fDisplayDN;
 //   property MeasureTime:TKt2450_MeasureDouble read fMeasureTime;
    property Buffer:TKeitley_Buffer read fBuffer;
-//   property Count:integer read fCount write SetCountNumber;
+   property Count:integer read fCount write SetCountNumber;
 //   property SourceMeasuredValue:double read fSourceMeasuredValue;
    property TimeValue:double read fTimeValue;
 //   property DigitLineType:TKt2450_DigLineTypes read fDigitLineType;
@@ -415,10 +416,10 @@ type
    якщо DataType=kt_rd_M, то вимір і в  DataVector.Х}
    {треба оцінити час передачі}
 
-//   procedure SetCount(Cnt:integer);
-//   {кількість повторних вимірювань, коли прилад просять поміряти}
-//   function GetCount():boolean;
-//
+   procedure SetCount(Cnt:integer);
+   {кількість повторних вимірювань, коли прилад просять поміряти}
+   function GetCount():boolean;
+
 //   procedure SetDigLineMode(LineNumber:TKt2450_DigLines;
 //                            LineType:TKt2450_DigLineType;
 //                            Direction:TKt2450_DigLineDirection);
@@ -879,6 +880,13 @@ begin
   fDevice:=TKeitleyDevice.Create(Self,fTelnet,fIPAdressShow,Nm);
 end;
 
+function TKeitley.GetCount: boolean;
+begin
+ QuireOperation(20);
+ Result:=fDevice.isReceived;
+ if Result then Count:=round(fDevice.Value);
+end;
+
 function TKeitley.GetDisplayBrightness: boolean;
 begin
  QuireOperation(6,30);
@@ -889,7 +897,7 @@ function TKeitley.GetMeasureFunction: boolean;
 begin
 // :FUNC?
  QuireOperation(15);
- if fDevice.Value>ord(kt_mVoltRat)
+ if (fDevice.Value>ord(kt_mVoltRat))and(fDevice.Value<>ErResult)
    then QuireOperation(23,15);
 
  Result:=(fDevice.Value<>ErResult);
@@ -925,7 +933,7 @@ if not(GetMeasureFunction()) then Exit;
 // if not(GetMeasureTimes()) then Exit;
 // if not(GetHighCapacitanceStates()) then Exit;
 // if not(GetDisplayDNs()) then Exit;
-// if not(GetCount()) then Exit;
+ if not(GetCount()) then Exit;
  if not(GetDisplayBrightness()) then Exit;
 end;
 
@@ -1185,7 +1193,7 @@ begin
               2:if StringToBufferIndexies(Str) then fDevice.Value:=1;
              end;
       end; //fRootNode=19
-//   20:fDevice.Value:=StrToInt(Str);
+   20:fDevice.Value:=StrToInt(Str);
 //   21:case fFirstLevelNode of
 //       0,1:fDevice.Value:=SCPI_StringToValue(Str);
 //       2..5:StringToMesuredData(AnsiReplaceStr(Str,',',' '),TKt2450_ReturnedData(fFirstLevelNode-2));
@@ -1223,6 +1231,21 @@ begin
 // *SAV <n>
  fAdditionalString:=inttostr(SlotNumber);
  SetupOperation(3);
+end;
+
+procedure TKeitley.SetCount(Cnt: integer);
+begin
+// :COUN <n>
+ Count:=Cnt;
+ fAdditionalString:=IntToStr(Count);
+ SetupOperation(20);
+end;
+
+
+procedure TKeitley.SetCountNumber(Value: integer);
+ const CountLimits:TLimitValues=(1,300000);
+begin
+ fCount:=NumberMap(Value,CountLimits);
 end;
 
 procedure TKeitley.SetDisplayBrightness(State: TKeitley_DisplayState);

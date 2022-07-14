@@ -611,7 +611,7 @@ begin
     fKt_2450.GetMeasureTime();
     fKt_2450.IsHighCapacitanceOn();
     fKt_2450.GetDisplayDigitsNumber();
-    fKt_2450.GetCount();
+//    fKt_2450.GetCount();
 //    fKt_2450.GetDisplayBrightness();
     end;
 
@@ -1379,7 +1379,7 @@ begin
   fSettingsShowSL[kt_ms_rescomp].Add(SuffixKt_2450[i]);
  for I := 0 to ord(High(TKt2450_Sense)) do
     fSettingsShowSL[kt_ms_sense].Add(KT2450_SenseLabels[TKt2450_Sense(i)]);
- for I := Low(Kt2450DisplayDigitsNumber) to High(Kt2450DisplayDigitsNumber) do
+ for I := Low(KeitleyDisplayDigitsNumber) to High(KeitleyDisplayDigitsNumber) do
     fSettingsShowSL[kt_ms_displaydn].Add(inttostr(i)+Kt2450DisplayDNLabel);
 end;
 

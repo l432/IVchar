@@ -105,8 +105,8 @@ type
                       kt_cr10uA,kt_cr100uA,kt_cr1mA,kt_cr10mA,
                       kt_cr100mA,kt_cr1A);
 
- Kt2450DisplayDigitsNumber=3..6;
- TKt2450_MeasureDisplayDN=array[TKt2450_Measure]of Kt2450DisplayDigitsNumber;
+ KeitleyDisplayDigitsNumber=3..6;
+ TKt2450_MeasureDisplayDN=array[TKt2450_Measure]of KeitleyDisplayDigitsNumber;
 
  TKt2450_SweepRangeType=(kt_srt_Auto,kt_srt_Best,kt_srt_Fixed);
 

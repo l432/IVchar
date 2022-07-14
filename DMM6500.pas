@@ -27,22 +27,25 @@ type
    function ChanelNumberIsCorrect(ChanNumber:byte):boolean;overload;
    function ChanelNumberIsCorrect(ChanNumberLow,ChanNumberHigh:byte):boolean;overload;
    function ChanelNumberIsCorrect(ChanNumbers:array of byte):boolean;overload;
-   procedure ChansMeasureFunctionInit;
+   procedure ChansMeasureCreate;
    function IsPermittedMeasureFuncForChan(MeasureFunc:TKeitley_Measure;
                                     ChanNumber:byte):boolean;
   protected
    procedure ProcessingStringByRootNode(Str:string);override;
    procedure PrepareString;override;
    procedure PrepareStringByRootNode;override;
+   procedure ProcessingStringChanOperation;
    procedure DefaultSettings;override;
 //   procedure StringToMesuredData(Str:string;DataType:TKeitley_ReturnedData);override;
    procedure AdditionalDataFromString(Str:string);override;
    procedure AdditionalDataToArrayFromString;override;
    function GetMeasureFunctionValue:TKeitley_Measure;override;
+   procedure SetCountNumber(Value:integer);override;
   public
    Constructor Create(Telnet:TIdTelnet;IPAdressShow: TIPAdressShow;
                Nm:string='DMM6500');
    procedure MyTraining();override;
+   procedure ProcessingString(Str:string);override;
 
    procedure BufferCreate(Name:string;Size:integer;Style:TKt2450_BufferStyle);overload;override;
    procedure BufferCreate(Style:TKt2450_BufferStyle);overload;override;
@@ -56,20 +59,48 @@ type
    Function  GetLastChannelInSlot:boolean;
    Function  GetChannelMaxVoltage:boolean;
 
-   procedure SetMeasureFunction(MeasureFunc:TKeitley_Measure=kt_mCurDC);override;
-   procedure SetMeasureFunctionChan(ChanNumber:byte;
-                    MeasureFunc:TKeitley_Measure=kt_mVolDC);overload;
-   procedure SetMeasureFunctionChan(ChanNumberLow,ChanNumberHigh:byte;
-                    MeasureFunc:TKeitley_Measure=kt_mVolDC);overload;
-   procedure SetMeasureFunctionChan(ChanNumbers:array of byte;
-                    MeasureFunc:TKeitley_Measure=kt_mVolDC);overload;
+   procedure SetMeasureFunction(MeasureFunc:TKeitley_Measure=kt_mVolDC);overload;override;
+   procedure SetMeasureFunction(ChanNumber:byte;MeasureFunc:TKeitley_Measure=kt_mVolDC);reintroduce;overload;
+   procedure SetMeasureFunction(ChanNumberLow,ChanNumberHigh:byte;
+                    MeasureFunc:TKeitley_Measure=kt_mVolDC);reintroduce;overload;
+   procedure SetMeasureFunction(ChanNumbers:array of byte;
+                    MeasureFunc:TKeitley_Measure=kt_mVolDC);reintroduce;overload;
 
-   function GetMeasureFunction():boolean;override;
-   function GetMeasureFunctionChan(ChanNumber:byte):boolean;
+//   procedure SetMeasureFunctionChan(ChanNumber:byte;
+//                    MeasureFunc:TKeitley_Measure=kt_mVolDC);overload;
+//   procedure SetMeasureFunctionChan(ChanNumberLow,ChanNumberHigh:byte;
+//                    MeasureFunc:TKeitley_Measure=kt_mVolDC);overload;
+//   procedure SetMeasureFunctionChan(ChanNumbers:array of byte;
+//                    MeasureFunc:TKeitley_Measure=kt_mVolDC);overload;
+
+   function GetMeasureFunction():boolean;overload;override;
+   function GetMeasureFunction(ChanNumber:byte):boolean;reintroduce;overload;
+
+   procedure SetCount(ChanNumber:byte;Cnt:integer=1);reintroduce;overload;
 
    Procedure GetParametersFromDevice;override;
    Procedure GetCardParametersFromDevice;
  end;
+
+TDMM6500MeasPar_Base=class
+ private
+//  fCount:integer;
+  fDisplayDN:KeitleyDisplayDigitsNumber;
+//  procedure SetCountNumber(Value: integer);virtual;
+ public
+//  property Count:integer read fCount write SetCountNumber;
+  property DisplayDN:KeitleyDisplayDigitsNumber read fDisplayDN write fDisplayDN;
+  constructor Create;
+end;
+
+TDMM6500MeasPar_BaseDelay=class(TDMM6500MeasPar_Base)
+ private
+  fAutoDelay:boolean;
+ public
+  property AutoDelay: boolean read fAutoDelay write fAutoDelay;
+  constructor Create;
+end;
+
 
 var
   DMM_6500:TDMM6500;
@@ -78,7 +109,7 @@ implementation
 
 uses
   Dialogs, SysUtils, Keitley2450Device, OlegFunction, OlegType, Math, 
-  TelnetDevice;
+  TelnetDevice, SCPI;
 
 { TKt_2450 }
 
@@ -142,7 +173,7 @@ begin
  fRealCardPresent:=false;
 
  fMeasureFunction:=kt_mVolDC;
- ChansMeasureFunctionInit();
+ ChansMeasureCreate();
  fTerminalMeasureFunction[kt_otFront]:=kt_mVolDC;
  fTerminalMeasureFunction[kt_otRear]:=kt_mVolDC;
 
@@ -159,7 +190,7 @@ begin
     GetLastChannelInSlot();
     GetChannelMaxVoltage();
     if High(fChansMeasureFunction)<> fLastChannelInSlot-fFirstChannelInSlot
-      then ChansMeasureFunctionInit();
+      then ChansMeasureCreate();
   end;
 end;
 
@@ -191,11 +222,20 @@ function TDMM6500.GetMeasureFunction: boolean;
 begin
  Result:= inherited GetMeasureFunction;
  if Result then fTerminalMeasureFunction[Terminal]:=MeasureFunction;
-
 end;
 
-function TDMM6500.GetMeasureFunctionChan(ChanNumber: byte): boolean;
+
+function TDMM6500.GetMeasureFunction(ChanNumber: byte): boolean;
 begin
+ if ChanelNumberIsCorrect(ChanNumber) then
+   begin
+     fMeasureChanNumber:=ChanNumber;
+     fChanOperationString:=' '+ChanelToString(ChanNumber);
+     fChanOperation:=True;
+     Result := inherited GetMeasureFunction;
+     fChanOperation:=False;
+   end                                else
+     Result:=False;
 
 end;
 
@@ -228,15 +268,34 @@ begin
 //  fDevice.Request();
 //  fDevice.GetData;
 
+if GetCount() then showmessage('Count='+inttostr(Count));
 
-SetMeasureFunctionChan(2);
-SetMeasureFunctionChan(1,kt_mCurAC);
-//SetMeasureFunctionChan(11,kt_mTemp);
-//SetMeasureFunctionChan(5,kt_mTemp);
-SetMeasureFunctionChan(2,4,kt_mRes4W);
-SetMeasureFunctionChan(2,4,kt_mCurDC);
-SetMeasureFunctionChan([9,3,5],kt_mFreq);
-SetMeasureFunctionChan([9,3,5],kt_mVoltRat);
+SetCount(400000);
+
+//GetMeasureFunction();
+//if GetMeasureFunction(2) then
+//  showmessage (Keitley_MeasureLabel[fChansMeasureFunction[2]])
+//                         else
+//  showmessage('ups :(');                        ;
+//SetMeasureFunction(3,kt_DigVolt);
+//if GetMeasureFunction(3) then
+//  showmessage (Keitley_MeasureLabel[fChansMeasureFunction[3]])
+//                         else
+//  showmessage('ups :(');                        ;
+
+//SetMeasureFunction;
+//SetMeasureFunction(2);
+//showmessage('uuu'+Keitley_MeasureLabel[MeasureFunction]);
+//SetMeasureFunction(1,kt_mCurAC);
+//SetMeasureFunction(11,kt_mTemp);
+//SetMeasureFunction(5,kt_mTemp);
+//showmessage('uuu'+Keitley_MeasureLabel[MeasureFunction]);
+//SetMeasureFunction(2,4,kt_mRes4W);
+//SetMeasureFunction(2,4,kt_mCurDC);
+//SetMeasureFunction([9,3,5],kt_mFreq);
+//SetMeasureFunction([9,3,5],kt_mVoltRat);
+
+//---------------------------------------------------------------------------
 
 //showmessage('kkk='+booltostr(TestShowEthernet,True));
 // if  GetTrigerState then
@@ -371,6 +430,12 @@ begin
  end;
 end;
 
+procedure TDMM6500.ProcessingString(Str: string);
+begin
+ inherited ProcessingString(Str);
+ if fChanOperation then ProcessingStringChanOperation;
+end;
+
 procedure TDMM6500.ProcessingStringByRootNode(Str: string);
 begin
  inherited;
@@ -387,6 +452,24 @@ begin
 
 end;
 
+
+procedure TDMM6500.ProcessingStringChanOperation;
+begin
+// fChanOperation:=False;
+ if fDevice.Value=ErResult then Exit;
+
+ case fRootNode of
+  15:if fDevice.Value<=ord(kt_mVoltRat)
+        then fChansMeasureFunction[fMeasureChanNumber]:=fMeasureFunction;
+//       if fDevice.Value>ord(kt_mVoltRat)
+//        then fChanOperation:=True
+//        else fChansMeasureFunction[fMeasureChanNumber]:=fMeasureFunction;
+  23:case fFirstLevelNode of
+        15:fChansMeasureFunction[fMeasureChanNumber]:=fMeasureFunction;
+      end;
+ end;
+
+end;
 
 procedure TDMM6500.PseudocardInstall;
 begin
@@ -409,7 +492,8 @@ begin
 end;
 
 
-procedure TDMM6500.SetMeasureFunctionChan(ChanNumberLow, ChanNumberHigh: byte;
+//procedure TDMM6500.SetMeasureFunctionChan(ChanNumberLow, ChanNumberHigh: byte;
+procedure TDMM6500.SetMeasureFunction(ChanNumberLow, ChanNumberHigh: byte;
   MeasureFunc: TKeitley_Measure);
  var i:byte;
      tempbool:boolean;
@@ -431,7 +515,36 @@ begin
    end;
 end;
 
-procedure TDMM6500.SetMeasureFunctionChan(ChanNumbers: array of byte;
+procedure TDMM6500.SetMeasureFunction(ChanNumber: byte;
+  MeasureFunc: TKeitley_Measure);
+begin
+ if ChanelNumberIsCorrect(ChanNumber) and IsPermittedMeasureFuncForChan(MeasureFunc,ChanNumber) then
+   begin
+     fChanOperationString:=PartDelimiter+ChanelToString(ChanNumber);
+     fChanOperation:=True;
+     inherited SetMeasureFunction(MeasureFunc);
+     fChansMeasureFunction[ChanNumber-fFirstChannelInSlot]:=MeasureFunc;
+   end;
+end;
+
+procedure TDMM6500.SetCount(ChanNumber: byte; Cnt: integer);
+begin
+ if ChanelNumberIsCorrect(ChanNumber) then
+   begin
+     fChanOperationString:=PartDelimiter+ChanelToString(ChanNumber);
+     fChanOperation:=True;
+     inherited SetCount(Cnt);
+//     fChansMeasureFunction[ChanNumber-fFirstChannelInSlot]:=MeasureFunc;
+   end;
+end;
+
+procedure TDMM6500.SetCountNumber(Value: integer);
+ const CountLimits:TLimitValues=(1,1000000);
+begin
+ fCount:=TSCPInew.NumberMap(Value,CountLimits);
+end;
+
+procedure TDMM6500.SetMeasureFunction(ChanNumbers: array of byte;
   MeasureFunc: TKeitley_Measure);
  var i:byte;
      tempbool:boolean;
@@ -454,17 +567,17 @@ begin
    end;
 end;
 
-procedure TDMM6500.SetMeasureFunctionChan(ChanNumber: byte;
-  MeasureFunc: TKeitley_Measure);
-begin
- if ChanelNumberIsCorrect(ChanNumber) and IsPermittedMeasureFuncForChan(MeasureFunc,ChanNumber) then
-   begin
-     fChanOperationString:=PartDelimiter+ChanelToString(ChanNumber);
-     fChanOperation:=True;
-     inherited SetMeasureFunction(MeasureFunc);
-     fChansMeasureFunction[ChanNumber-fFirstChannelInSlot]:=MeasureFunc;
-   end;
-end;
+//procedure TDMM6500.SetMeasureFunctionChan(ChanNumber: byte;
+//  MeasureFunc: TKeitley_Measure);
+//begin
+// if ChanelNumberIsCorrect(ChanNumber) and IsPermittedMeasureFuncForChan(MeasureFunc,ChanNumber) then
+//   begin
+//     fChanOperationString:=PartDelimiter+ChanelToString(ChanNumber);
+//     fChanOperation:=True;
+//     inherited SetMeasureFunction(MeasureFunc);
+//     fChansMeasureFunction[ChanNumber-fFirstChannelInSlot]:=MeasureFunc;
+//   end;
+//end;
 
 function TDMM6500.TestRealCard_Presence: boolean;
 begin
@@ -506,7 +619,7 @@ begin
  Result:=Result+')';
 end;
 
-procedure TDMM6500.ChansMeasureFunctionInit;
+procedure TDMM6500.ChansMeasureCreate;
  var i:byte;
 begin
  if (fFirstChannelInSlot=0)or(fLastChannelInSlot=0)
@@ -527,6 +640,29 @@ begin
          Result:=False;
          Exit;
        end;
+end;
+
+{ TDMM6500MeasPar_Base }
+
+constructor TDMM6500MeasPar_Base.Create;
+begin
+ inherited;
+// fCount:=1;
+ fDisplayDN:=6;
+end;
+
+//procedure TDMM6500MeasPar_Base.SetCountNumber(Value: integer);
+// const CountLimits:TLimitValues=(1,1000000);
+//begin
+// fCount:=TSCPInew.NumberMap(Value,CountLimits);
+//end;
+
+{ TDMM6500MeasPar_BaseDelay }
+
+constructor TDMM6500MeasPar_BaseDelay.Create;
+begin
+ inherited;
+ fAutoDelay:=true;
 end;
 
 end.
