@@ -14,6 +14,7 @@ type
                          dm_vdr100V,dm_vdr1000V);
  {TDMM6500_VoltageRatio}
  {DMM6500_VoltageDigRange - без Auto}
+ TDMM6500_VoltageDigRange=dm_vdr100mV..dm_vdr1000V;
 
  TDMM6500_VoltageACRange=(dm_vcrAuto,dm_vcr100mV,dm_vcr1V,dm_vcr10V,
                          dm_vcr100V,dm_vcr750V);
@@ -25,6 +26,7 @@ type
                          dm_car1mA,dm_car10mA,dm_car100mA,
                          dm_car1A,dm_car3A);
  {DMM6500_CurrentDigRange - без Auto}
+ TDMM6500_CurrentDigRange=dm_cdr100uA..dm_cdr3A;
 
  TDMM6500_CapacitanceRange=(dm_crAuto,dm_cr1nF,dm_cr10nF,
                      dm_cr100nF,dm_cr1uF,dm_cr10uF,dm_cr100uF);
@@ -33,6 +35,16 @@ type
        dm_r2r1k,dm_r2r10k,dm_r2r100k,dm_r2r1M,dm_r2r10M,dm_r2r100M);
  TDMM6500_Resistance4WRange=(dm_r4rAuto,dm_r4r1,dm_r4r10,dm_r4r100,
        dm_r4r1k,dm_r4r10k,dm_r4r100k,dm_r4r1M,dm_r4r10M,dm_r4r100M);
+
+ TDMM6500_DigSampleRate=1000..1000000;
+
+ TDMM6500_VoltageUnits=(dm_vuVolt, dm_vuDB, dm_vuDBM);
+
+ TDMM6500_TempUnits=(dm_tuKelv, dm_tuCels, dm_tuFahr);
+
+ TDMM6500_InputImpedance=(dm_iiAuto, dm_ii10M);
+
+ TQuireFunction=Function():boolean of object;
 
 const
  DMM6500_Test='KEITHLEY INSTRUMENTS,MODEL DMM6500';
@@ -61,6 +73,14 @@ const
  DMM6500_Resistance4WRangeLabels:array[TDMM6500_Resistance4WRange]of string=
     ('Auto', '1 Ohm','10 Ohm', '100 Ohm','1 kOhm','10 kOhm','100 kOhm',
     '1 MOhm','10 MOhm','100 MOhm');
+
+
+ DMM6500_VoltageUnitsCommand:array[TDMM6500_VoltageUnits]of string=
+ ('volt', 'db', 'dbm');
+ DMM6500_TempUnitsCommand:array[TDMM6500_TempUnits]of string=
+ ('kelv', 'cels', 'fahr');
+ DMM6500_InputImpedanceCommand:array[TDMM6500_InputImpedance]of string=
+ ('auto', 'mohm10');
 
 
 //VOLTage[:DC]  RESistance  TEMPerature  VOLTage[:DC]:RATio

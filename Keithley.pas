@@ -418,7 +418,7 @@ type
 
    procedure SetCount(Cnt:integer);
    {кількість повторних вимірювань, коли прилад просять поміряти}
-   function GetCount():boolean;
+   function GetCount:boolean;
 
 //   procedure SetDigLineMode(LineNumber:TKt2450_DigLines;
 //                            LineType:TKt2450_DigLineType;
