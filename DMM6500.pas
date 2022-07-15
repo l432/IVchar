@@ -155,6 +155,38 @@ TDMM6500MeasPar_BaseVoltDC=class(TDMM6500MeasPar_BaseVolt)
   constructor Create;
 end;
 
+TDMM6500MeasPar_BaseAC=class(TDMM6500MeasPar_BaseDelay)
+ private
+  fDetectorBW:TDMM6500_DetectorBandwidth;
+ public
+  property DetectorBW: TDMM6500_DetectorBandwidth read fDetectorBW write fDetectorBW;
+  constructor Create;
+end;
+
+TDMM6500MeasPar_BaseDelayMT=class(TDMM6500MeasPar_BaseDelay)
+ private
+  fMTLimits:TLimitValues;
+  fMeaureTime:double;
+  {час вимірювання, мс, для більшості 0,02-240}
+  procedure SetMeaureTime(Value:double);
+ public
+  property MeaureTime: double read fMeaureTime write SetMeaureTime;
+  constructor Create;
+end;
+
+
+TDMM6500MeasPar_BaseMajority=class(TDMM6500MeasPar_BaseDelayMT)
+ private
+  fAzeroState:boolean;
+  fLineSync:boolean;
+ public
+  property AzeroState: boolean read fAzeroState write fAzeroState;
+  property LineSync: boolean read fLineSync write fLineSync;
+  constructor Create;
+end;
+
+//*******************************************************
+
 TDMM6500MeasPar_DigVolt=class(TDMM6500MeasPar_BaseDig)
  private
   fRange:TDMM6500_VoltageDigRange;
@@ -186,6 +218,79 @@ TDMM6500MeasPar_DigCur=class(TDMM6500MeasPar_BaseDig)
   constructor Create;
 end;
 
+TDMM6500MeasPar_Capac=class(TDMM6500MeasPar_BaseDelay)
+ private
+  fRange:TDMM6500_CapacitanceRange;
+ public
+  property Range: TDMM6500_CapacitanceRange read fRange write fRange;
+  constructor Create;
+end;
+
+TDMM6500MeasPar_CurAC=class(TDMM6500MeasPar_BaseAC)
+ private
+  fRange:TDMM6500_CurrentACRange;
+ public
+  property Range: TDMM6500_CurrentACRange read fRange write fRange;
+  constructor Create;
+end;
+
+TDMM6500MeasPar_VoltAC=class(TDMM6500MeasPar_BaseAC)
+ private
+  fRange:TDMM6500_VoltageACRange;
+  fBaseVolt:TDMM6500MeasPar_BaseVolt;
+  function GetUnits: TDMM6500_VoltageUnits;
+  procedure SetUnits(const Value: TDMM6500_VoltageUnits);
+  function GetDB: double;
+  function GetDBM: integer;
+  procedure SSetDB(const Value: double);
+  procedure SSetDBM(const Value: integer);
+ public
+  property Range: TDMM6500_VoltageACRange read fRange write fRange;
+  property Units: TDMM6500_VoltageUnits read GetUnits write SetUnits;
+  property DB:double read GetDB write SSetDB;
+  property DBM:integer read GetDBM write SSetDBM;
+  constructor Create;
+  destructor Destroy; override;
+end;
+
+
+TDMM6500MeasPar_FreqPeriod=class(TDMM6500MeasPar_BaseDelayMT)
+ private
+  fThresholdRange:TDMM6500_VoltageACRange;
+ public
+  property ThresholdRange: TDMM6500_VoltageACRange read fThresholdRange write fThresholdRange;
+  constructor Create;
+end;
+
+TDMM6500MeasPar_CurDC=class(TDMM6500MeasPar_BaseMajority)
+ private
+  fRange:TDMM6500_CurrentDCRange;
+ public
+  property Range: TDMM6500_CurrentDCRange read fRange write fRange;
+  constructor Create;
+end;
+
+TDMM6500MeasPar_VoltDC=class(TDMM6500MeasPar_BaseMajority)
+ private
+  fRange:TDMM6500_VoltageDCRange;
+  fBaseVolt:TDMM6500MeasPar_BaseVoltDC;
+  function GetInputImpedance: TDMM6500_InputImpedance;
+  procedure SetInputImpedance(const Value: TDMM6500_InputImpedance);
+  function GetUnits: TDMM6500_VoltageUnits;
+  procedure SetUnits(const Value: TDMM6500_VoltageUnits);
+  function GetDB: double;
+  function GetDBM: integer;
+  procedure SSetDB(const Value: double);
+  procedure SSetDBM(const Value: integer);
+ public
+  property Range: TDMM6500_VoltageDCRange read fRange write fRange;
+  property InputImpedance: TDMM6500_InputImpedance read GetInputImpedance write SetInputImpedance;
+  property Units: TDMM6500_VoltageUnits read GetUnits write SetUnits;
+  property DB:double read GetDB write SSetDB;
+  property DBM:integer read GetDBM write SSetDBM;
+  constructor Create;
+  destructor Destroy; override;
+end;
 
 var
   DMM_6500:TDMM6500;
@@ -917,6 +1022,170 @@ constructor TDMM6500MeasPar_BaseVoltDC.Create;
 begin
  inherited Create;
  fInputImpedance:=dm_ii10M;
+end;
+
+{ TDMM6500MeasPar_Capac }
+
+constructor TDMM6500MeasPar_Capac.Create;
+begin
+ inherited Create;
+ fRange:=dm_crAuto;
+end;
+
+{ TDMM6500MeasPar_BaseAC }
+
+constructor TDMM6500MeasPar_BaseAC.Create;
+begin
+ inherited Create;
+ fDetectorBW:=dm_dbw3Hz;
+end;
+
+{ TDMM6500MeasPar_CurACc }
+
+constructor TDMM6500MeasPar_CurAC.Create;
+begin
+ inherited Create;
+ fRange:=dm_carAuto;
+end;
+
+{ TDMM6500MeasPar_VoltAC }
+
+constructor TDMM6500MeasPar_VoltAC.Create;
+begin
+  inherited Create;
+  fBaseVolt:=TDMM6500MeasPar_BaseVolt.Create;
+  fBaseVolt.fDBLimits[lvMax]:=750;
+end;
+
+destructor TDMM6500MeasPar_VoltAC.Destroy;
+begin
+  fBaseVolt.Free;
+  inherited;
+end;
+
+function TDMM6500MeasPar_VoltAC.GetDB: double;
+begin
+  Result:=fBaseVolt.DB;
+end;
+
+function TDMM6500MeasPar_VoltAC.GetDBM: integer;
+begin
+ Result:=fBaseVolt.DBM;
+end;
+
+function TDMM6500MeasPar_VoltAC.GetUnits: TDMM6500_VoltageUnits;
+begin
+ Result:=fBaseVolt.Units;
+end;
+
+procedure TDMM6500MeasPar_VoltAC.SetUnits(const Value: TDMM6500_VoltageUnits);
+begin
+  fBaseVolt.Units:=Value;
+end;
+
+procedure TDMM6500MeasPar_VoltAC.SSetDB(const Value: double);
+begin
+  fBaseVolt.DB:=Value;
+end;
+
+procedure TDMM6500MeasPar_VoltAC.SSetDBM(const Value: integer);
+begin
+  fBaseVolt.DBM:=Value;
+end;
+
+{ TDMM6500MeasPar_BaseDelayMT }
+
+constructor TDMM6500MeasPar_BaseDelayMT.Create;
+begin
+ inherited Create;
+ fMTLimits[lvMin]:=0.01;
+ fMTLimits[lvMax]:=240;
+end;
+
+procedure TDMM6500MeasPar_BaseDelayMT.SetMeaureTime(Value: double);
+begin
+  fMeaureTime:=TSCPInew.NumberMap(Value,fMTLimits);
+end;
+
+{ TDMM6500MeasPar_BasePeriod }
+
+constructor TDMM6500MeasPar_FreqPeriod.Create;
+begin
+ inherited Create;
+ fThresholdRange:=dm_vcrAuto;
+end;
+
+{ TDMM6500MeasPar_BaseMajority }
+
+constructor TDMM6500MeasPar_BaseMajority.Create;
+begin
+ inherited Create;
+ fAzeroState:=True;
+ fLineSync:=False;
+end;
+
+{ TDMM6500MeasPar_CurDC }
+
+constructor TDMM6500MeasPar_CurDC.Create;
+begin
+ inherited Create;
+ fRange:=dm_cdrAuto;
+end;
+
+{ TDMM6500MeasPar_VoltDC }
+
+constructor TDMM6500MeasPar_VoltDC.Create;
+begin
+ inherited Create;
+ fRange:=dm_vdrAuto;
+ fBaseVolt:=TDMM6500MeasPar_BaseVoltDC.Create;
+end;
+
+destructor TDMM6500MeasPar_VoltDC.Destroy;
+begin
+ fBaseVolt.Free;
+ inherited;
+end;
+
+function TDMM6500MeasPar_VoltDC.GetDB: double;
+begin
+ Result:=fBaseVolt.DB;
+end;
+
+function TDMM6500MeasPar_VoltDC.GetDBM: integer;
+begin
+ Result:=fBaseVolt.DBM;
+end;
+
+function TDMM6500MeasPar_VoltDC.GetInputImpedance: TDMM6500_InputImpedance;
+begin
+ Result:=fBaseVolt.InputImpedance;
+end;
+
+function TDMM6500MeasPar_VoltDC.GetUnits: TDMM6500_VoltageUnits;
+begin
+  Result:=fBaseVolt.Units;
+end;
+
+procedure TDMM6500MeasPar_VoltDC.SetInputImpedance(
+  const Value: TDMM6500_InputImpedance);
+begin
+  fBaseVolt.InputImpedance:=Value;
+end;
+
+procedure TDMM6500MeasPar_VoltDC.SetUnits(const Value: TDMM6500_VoltageUnits);
+begin
+  fBaseVolt.Units:=Value;
+end;
+
+procedure TDMM6500MeasPar_VoltDC.SSetDB(const Value: double);
+begin
+  fBaseVolt.DB:=Value;
+end;
+
+procedure TDMM6500MeasPar_VoltDC.SSetDBM(const Value: integer);
+begin
+  fBaseVolt.DBM:=Value;
 end;
 
 end.

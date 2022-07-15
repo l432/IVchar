@@ -44,6 +44,8 @@ type
 
  TDMM6500_InputImpedance=(dm_iiAuto, dm_ii10M);
 
+ TDMM6500_DetectorBandwidth=(dm_dbw3Hz, dm_dbw30Hz, dm_dbw300Hz);
+
  TQuireFunction=Function():boolean of object;
 
 const
@@ -75,12 +77,22 @@ const
     '1 MOhm','10 MOhm','100 MOhm');
 
 
- DMM6500_VoltageUnitsCommand:array[TDMM6500_VoltageUnits]of string=
- ('volt', 'db', 'dbm');
+// DMM6500_VoltageUnitsCommand:array[TDMM6500_VoltageUnits]of string=
+// ('volt', 'db', 'dbm');
+ DMM6500_VoltageUnitsLabel:array[TDMM6500_VoltageUnits]of string=
+ ('Volt', 'dB', 'dBm');
  DMM6500_TempUnitsCommand:array[TDMM6500_TempUnits]of string=
  ('kelv', 'cels', 'fahr');
+ DMM6500_TempUnitsLabel:array[TDMM6500_TempUnits]of string=
+ ('Kelvin', 'Celsius', 'Fahrenheit');
  DMM6500_InputImpedanceCommand:array[TDMM6500_InputImpedance]of string=
  ('auto', 'mohm10');
+ DMM6500_InputImpedanceLabel:array[TDMM6500_InputImpedance]of string=
+ ('Auto', '10 MOhm');
+ DMM6500_DetectorBandwidthCommand:array[TDMM6500_DetectorBandwidth]of integer=
+ (3, 30, 300);
+ DMM6500_DetectorBandwidthLabel:array[TDMM6500_DetectorBandwidth]of string=
+ ('3 Hz', '30 Hz', '300 Hz');
 
 
 //VOLTage[:DC]  RESistance  TEMPerature  VOLTage[:DC]:RATio

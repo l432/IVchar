@@ -1359,8 +1359,8 @@ begin
                                         'Measure time, ms',
                                         1);
  fTimeShow.Limits.SetLimits(
-                        Kt_2450_MeasureTimeLimits[lvMin],
-                        Kt_2450_MeasureTimeLimits[lvMax]);
+                        Kt_2450_MeasureTimeLimits[lvMin]*Keitley_MeaureTimeConvertConst,
+                        Kt_2450_MeasureTimeLimits[lvMax]*Keitley_MeaureTimeConvertConst);
  fTimeShow.HookParameterClick:=TimeOkClick;
 
 end;
