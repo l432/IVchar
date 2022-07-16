@@ -46,6 +46,10 @@ type
 
  TDMM6500_DetectorBandwidth=(dm_dbw3Hz, dm_dbw30Hz, dm_dbw300Hz);
 
+ TDMM6500_VoltageRatioMethod=(dm_vrmRes, dm_vrmPart);
+
+ TDMM6500_OffsetCompen=(dm_ocOff, dm_ocOn, dm_ocAuto);
+
  TQuireFunction=Function():boolean of object;
 
 const
@@ -93,6 +97,14 @@ const
  (3, 30, 300);
  DMM6500_DetectorBandwidthLabel:array[TDMM6500_DetectorBandwidth]of string=
  ('3 Hz', '30 Hz', '300 Hz');
+
+  DMM6500_VoltageRatioMethodCommand:array[TDMM6500_VoltageRatioMethod]of string=
+ ('res', 'part');
+  DMM6500_VoltageRatioMethodLabel:array[TDMM6500_VoltageRatioMethod]of string=
+ ('Result', 'Parts');
+
+  DMM6500_OffsetCompenLabel:array[TDMM6500_OffsetCompen]of string=
+ ('Off', 'On','Auto');
 
 
 //VOLTage[:DC]  RESistance  TEMPerature  VOLTage[:DC]:RATio

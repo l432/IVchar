@@ -185,6 +185,16 @@ TDMM6500MeasPar_BaseMajority=class(TDMM6500MeasPar_BaseDelayMT)
   constructor Create;
 end;
 
+TDMM6500MeasPar_Base4WT=class(TDMM6500MeasPar_BaseMajority)
+ private
+  fOffComp:TDMM6500_OffsetCompen;
+  fOpenLD:boolean;
+ public
+  property OffsetComp: TDMM6500_OffsetCompen read fOffComp write fOffComp;
+  property OpenLeadDetector: boolean read fOpenLD write fOpenLD;
+  constructor Create;
+end;
+
 //*******************************************************
 
 TDMM6500MeasPar_DigVolt=class(TDMM6500MeasPar_BaseDig)
@@ -291,6 +301,33 @@ TDMM6500MeasPar_VoltDC=class(TDMM6500MeasPar_BaseMajority)
   constructor Create;
   destructor Destroy; override;
 end;
+
+TDMM6500MeasPar_VoltRat=class(TDMM6500MeasPar_BaseMajority)
+ private
+  fRange:TDMM6500_VoltageDCRange;
+  fMethod:TDMM6500_VoltageRatioMethod;
+ public
+  property Range: TDMM6500_VoltageDCRange read fRange write fRange;
+  property VRMethod:TDMM6500_VoltageRatioMethod read fMethod write fMethod;
+  constructor Create;
+end;
+
+TDMM6500MeasPar_Res2W=class(TDMM6500MeasPar_BaseMajority)
+ private
+  fRange:TDMM6500_Resistance2WRange;
+ public
+  property Range: TDMM6500_Resistance2WRange read fRange write fRange;
+  constructor Create;
+end;
+
+TDMM6500MeasPar_Res4W=class(TDMM6500MeasPar_Base4WT)
+ private
+  fRange:TDMM6500_Resistance4WRange;
+ public
+  property Range: TDMM6500_Resistance4WRange read fRange write fRange;
+  constructor Create;
+end;
+
 
 var
   DMM_6500:TDMM6500;
@@ -1186,6 +1223,40 @@ end;
 procedure TDMM6500MeasPar_VoltDC.SSetDBM(const Value: integer);
 begin
   fBaseVolt.DBM:=Value;
+end;
+
+{ TDMM6500MeasPar_VoltRat }
+
+constructor TDMM6500MeasPar_VoltRat.Create;
+begin
+ inherited Create;
+ fRange:=dm_vdrAuto;
+ fMethod:=dm_vrmPart;
+end;
+
+{ TDMM6500MeasPar_Res2W }
+
+constructor TDMM6500MeasPar_Res2W.Create;
+begin
+ inherited Create;
+ fRange:=dm_r2rAuto;
+end;
+
+{ TDMM6500MeasPar_Base4WT }
+
+constructor TDMM6500MeasPar_Base4WT.Create;
+begin
+ inherited Create;
+ fOffComp:=dm_ocAuto;
+ fOpenLD:=False;
+end;
+
+{ TDMM6500MeasPar_Res4W }
+
+constructor TDMM6500MeasPar_Res4W.Create;
+begin
+ inherited Create;
+ fRange:=dm_r4rAuto;
 end;
 
 end.
