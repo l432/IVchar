@@ -63,6 +63,8 @@ type
  TDMM6500_TCoupleType=(dm_tctB,dm_tctE,dm_tctJ,dm_tctK,
                       dm_tctN,dm_tctR,dm_tctS,dm_tctT);
 
+ TDMM6500_DiodeBiasLevel=(dm_dbl10uA,dm_dbl100uA,dm_dbl1mA,dm_dbl10mA);
+
  TQuireFunction=Function():boolean of object;
 
 const
@@ -137,6 +139,9 @@ const
 
   DMM6500_TCoupleTypeLabel:array[TDMM6500_TCoupleType]of string=
  ('B', 'E','J','K','N','R','S','T');
+
+  DMM6500_DiodeBiasLevelLabel:array[TDMM6500_DiodeBiasLevel]of string=
+ ('10 mkA', '100 mkA','1 mA','10 mAK');
 
 
  DMM6500_RTDAlphaLimits:TLimitValues=(0,0.01);

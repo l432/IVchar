@@ -175,7 +175,7 @@ TDMM6500MeasPar_BaseDelayMT=class(TDMM6500MeasPar_BaseDelay)
 end;
 
 
-TDMM6500MeasPar_BaseMajority=class(TDMM6500MeasPar_BaseDelayMT)
+TDMM6500MeasPar_Continuity=class(TDMM6500MeasPar_BaseDelayMT)
  private
   fAzeroState:boolean;
   fLineSync:boolean;
@@ -185,7 +185,7 @@ TDMM6500MeasPar_BaseMajority=class(TDMM6500MeasPar_BaseDelayMT)
   constructor Create;
 end;
 
-TDMM6500MeasPar_Base4WT=class(TDMM6500MeasPar_BaseMajority)
+TDMM6500MeasPar_Base4WT=class(TDMM6500MeasPar_Continuity)
  private
   fOffComp:TDMM6500_OffsetCompen;
   fOpenLD:boolean;
@@ -272,7 +272,7 @@ TDMM6500MeasPar_FreqPeriod=class(TDMM6500MeasPar_BaseDelayMT)
   constructor Create;
 end;
 
-TDMM6500MeasPar_CurDC=class(TDMM6500MeasPar_BaseMajority)
+TDMM6500MeasPar_CurDC=class(TDMM6500MeasPar_Continuity)
  private
   fRange:TDMM6500_CurrentDCRange;
  public
@@ -280,7 +280,7 @@ TDMM6500MeasPar_CurDC=class(TDMM6500MeasPar_BaseMajority)
   constructor Create;
 end;
 
-TDMM6500MeasPar_VoltDC=class(TDMM6500MeasPar_BaseMajority)
+TDMM6500MeasPar_VoltDC=class(TDMM6500MeasPar_Continuity)
  private
   fRange:TDMM6500_VoltageDCRange;
   fBaseVolt:TDMM6500MeasPar_BaseVoltDC;
@@ -302,7 +302,7 @@ TDMM6500MeasPar_VoltDC=class(TDMM6500MeasPar_BaseMajority)
   destructor Destroy; override;
 end;
 
-TDMM6500MeasPar_VoltRat=class(TDMM6500MeasPar_BaseMajority)
+TDMM6500MeasPar_VoltRat=class(TDMM6500MeasPar_Continuity)
  private
   fRange:TDMM6500_VoltageDCRange;
   fMethod:TDMM6500_VoltageRatioMethod;
@@ -312,7 +312,7 @@ TDMM6500MeasPar_VoltRat=class(TDMM6500MeasPar_BaseMajority)
   constructor Create;
 end;
 
-TDMM6500MeasPar_Res2W=class(TDMM6500MeasPar_BaseMajority)
+TDMM6500MeasPar_Res2W=class(TDMM6500MeasPar_Continuity)
  private
   fRange:TDMM6500_Resistance2WRange;
  public
@@ -365,7 +365,15 @@ TDMM6500MeasPar_Temper=class(TDMM6500MeasPar_Base4WT)
   constructor Create;
 end;
 
+TDMM6500MeasPar_Diode=class(TDMM6500MeasPar_Continuity)
+ private
+  fBiasLevel:TDMM6500_DiodeBiasLevel;
+ public
+  property BiasLevel: TDMM6500_DiodeBiasLevel read fBiasLevel write fBiasLevel;
+  constructor Create;
+end;
 
+function  DMM6500MeasParFactory(MeasureType:TKeitley_Measure):TDMM6500MeasPar_Base;
 
 var
   DMM_6500:TDMM6500;
@@ -375,6 +383,28 @@ implementation
 uses
   Dialogs, SysUtils, Keitley2450Device, OlegFunction, OlegType, Math, 
   TelnetDevice;
+
+function  DMM6500MeasParFactory(MeasureType:TKeitley_Measure):TDMM6500MeasPar_Base;
+begin
+ case MeasureType of
+   kt_mCurDC: Result:=TDMM6500MeasPar_CurDC.Create;
+   kt_mVolDC: Result:=TDMM6500MeasPar_VoltDC.Create;
+   kt_mRes2W: Result:=TDMM6500MeasPar_Res2W.Create;
+   kt_mCurAC: Result:=TDMM6500MeasPar_CurAC.Create;
+   kt_mVolAC: Result:=TDMM6500MeasPar_VoltAC.Create;
+   kt_mRes4W: Result:=TDMM6500MeasPar_Res4W.Create;
+   kt_mDiod: Result:=TDMM6500MeasPar_Diode.Create;
+   kt_mCap: Result:=TDMM6500MeasPar_Capac.Create;
+   kt_mTemp: Result:=TDMM6500MeasPar_Temper.Create;
+   kt_mCont: Result:=TDMM6500MeasPar_Diode.Create;
+   kt_mFreq: Result:=TDMM6500MeasPar_FreqPeriod.Create;
+   kt_mPer: Result:=TDMM6500MeasPar_FreqPeriod.Create;
+   kt_mVoltRat: Result:=TDMM6500MeasPar_VoltRat.Create;
+   kt_DigCur: Result:=TDMM6500MeasPar_DigCur.Create;
+   else Result:=TDMM6500MeasPar_DigVolt.Create;
+ end;
+end;
+
 
 { TKt_2450 }
 
@@ -1192,7 +1222,7 @@ end;
 
 { TDMM6500MeasPar_BaseMajority }
 
-constructor TDMM6500MeasPar_BaseMajority.Create;
+constructor TDMM6500MeasPar_Continuity.Create;
 begin
  inherited Create;
  fAzeroState:=True;
@@ -1340,6 +1370,14 @@ end;
 procedure TDMM6500MeasPar_Temper.SetRTDZero(Value: integer);
 begin
  fRTDZero:=TSCPInew.NumberMap(Value,DMM6500_RTDZeroLimits);
+end;
+
+{ TDMM6500MeasPar_Diode }
+
+constructor TDMM6500MeasPar_Diode.Create;
+begin
+ inherited Create;
+ fBiasLevel:=dm_dbl1mA;
 end;
 
 end.
