@@ -328,6 +328,44 @@ TDMM6500MeasPar_Res4W=class(TDMM6500MeasPar_Base4WT)
   constructor Create;
 end;
 
+TDMM6500MeasPar_Temper=class(TDMM6500MeasPar_Base4WT)
+ private
+  fTransdType:TDMM6500_TempTransducer;
+  fRefJunction:TDMM6500_TCoupleRefJunct;
+  fRTDAlpha:double;
+  fRTDBeta:double;
+  fRTDDelta:double;
+  fRTDZero:integer;
+  fW2RTDType:TDMM6500_RTDType;
+  fW3RTDType:TDMM6500_RTDType;
+  fW4RTDType:TDMM6500_RTDType;
+  fThermistorType:TDMM6500_ThermistorType;
+  fTCoupleType:TDMM6500_TCoupleType;
+  fUnits:TDMM6500_TempUnits;
+  fSimRefTemp:double;
+  Procedure SetRTDAlpha(Value:Double);
+  Procedure SetRTDBeta(Value:Double);
+  Procedure SetRTDDelta(Value:Double);
+  Procedure SetRTDZero(Value:integer);
+  Procedure SetRefTemperature(Value:Double);
+ public
+  property TransdType: TDMM6500_TempTransducer read fTransdType write fTransdType;
+  property RefJunction:TDMM6500_TCoupleRefJunct read fRefJunction write fRefJunction;
+  property RTD_Alpha:double read fRTDAlpha write SetRTDAlpha;
+  property RTD_Beta:double read fRTDBeta write SetRTDBeta;
+  property RTD_Delta:double read fRTDDelta write SetRTDDelta;
+  property RTD_Zero:integer read fRTDZero write SetRTDZero;
+  property W2RTDType:TDMM6500_RTDType read fW2RTDType write fW2RTDType;
+  property W3RTDType:TDMM6500_RTDType read fW3RTDType write fW3RTDType;
+  property W4RTDType:TDMM6500_RTDType read fW4RTDType write fW4RTDType;
+  property ThermistorType:TDMM6500_ThermistorType read fThermistorType write fThermistorType;
+  property TCoupleType:TDMM6500_TCoupleType read fTCoupleType write fTCoupleType;
+  property Units: TDMM6500_TempUnits read fUnits write fUnits;
+  property RefTemperature:double read fSimRefTemp write SetRefTemperature;
+  constructor Create;
+end;
+
+
 
 var
   DMM_6500:TDMM6500;
@@ -1257,6 +1295,51 @@ constructor TDMM6500MeasPar_Res4W.Create;
 begin
  inherited Create;
  fRange:=dm_r4rAuto;
+end;
+
+{ TDMM6500MeasPar_Temper }
+
+constructor TDMM6500MeasPar_Temper.Create;
+begin
+ inherited Create;
+ fTransdType:=dm_ttCouple;
+ fRefJunction:=dm_trjSim;
+ fRTDAlpha:=0.00385055;
+ fRTDBeta:=0.10863;
+ fRTDDelta:=1.4999;
+ fRTDZero:=100;
+ fW2RTDType:=dm_rtdPT100;
+ fW3RTDType:=dm_rtdPT100;
+ fW4RTDType:=dm_rtdPT100;
+ fThermistorType:=dm_tt5000;
+ fTCoupleType:=dm_tctK;
+ fUnits:=dm_tuCels;
+ fSimRefTemp:=23;
+end;
+
+procedure TDMM6500MeasPar_Temper.SetRefTemperature(Value: Double);
+begin
+ fSimRefTemp:=TSCPInew.NumberMap(Value,DMM6500_RefTempLimits[fUnits]);
+end;
+
+procedure TDMM6500MeasPar_Temper.SetRTDAlpha(Value: Double);
+begin
+ fRTDAlpha:=TSCPInew.NumberMap(Value,DMM6500_RTDAlphaLimits);
+end;
+
+procedure TDMM6500MeasPar_Temper.SetRTDBeta(Value: Double);
+begin
+ fRTDBeta:=TSCPInew.NumberMap(Value,DMM6500_RTDBetaLimits);
+end;
+
+procedure TDMM6500MeasPar_Temper.SetRTDDelta(Value: Double);
+begin
+ fRTDDelta:=TSCPInew.NumberMap(Value,DMM6500_RTDDeltaLimits);
+end;
+
+procedure TDMM6500MeasPar_Temper.SetRTDZero(Value: integer);
+begin
+ fRTDZero:=TSCPInew.NumberMap(Value,DMM6500_RTDZeroLimits);
 end;
 
 end.

@@ -3,7 +3,7 @@ unit DMM6500_Const;
 interface
 
 uses
-  Keitley2450Const;
+  Keitley2450Const, SCPI;
 
 type
  TDMM6500_State=(dm_st_front,dm_st_rare,dm_st_ch1,dm_st_ch2,dm_st_ch3,
@@ -49,6 +49,19 @@ type
  TDMM6500_VoltageRatioMethod=(dm_vrmRes, dm_vrmPart);
 
  TDMM6500_OffsetCompen=(dm_ocOff, dm_ocOn, dm_ocAuto);
+
+ TDMM6500_TempTransducer=(dm_ttCouple,dm_ttTherm,dm_tt2WRTD,dm_tt3WRTD,
+                          dm_tt4WRTD,dm_ttCJC);
+
+ TDMM6500_TCoupleRefJunct=(dm_trjSim,dm_trjExt);
+
+ TDMM6500_RTDType=(dm_rtdPT100,dm_rtdPT385,dm_rtdPT3916,
+                      dm_rtdD100,dm_rtdF100,dm_rtdUser);
+
+ TDMM6500_ThermistorType=(dm_tt2252,dm_tt5000,dm_tt10000);
+
+ TDMM6500_TCoupleType=(dm_tctB,dm_tctE,dm_tctJ,dm_tctK,
+                      dm_tctN,dm_tctR,dm_tctS,dm_tctT);
 
  TQuireFunction=Function():boolean of object;
 
@@ -106,11 +119,34 @@ const
   DMM6500_OffsetCompenLabel:array[TDMM6500_OffsetCompen]of string=
  ('Off', 'On','Auto');
 
+ DMM6500_TempTransducerCommand:array[TDMM6500_TempTransducer]of string=
+ ('tc', 'ther','rtd','trtd','frtd','cjc2001');
+ DMM6500_TempTransducerLabel:array[TDMM6500_TempTransducer]of string=
+ ('TCouple', 'Thermistor','2W-RTD','3W-RTD','4W-RTD','2001-TCSCAN');
 
-//VOLTage[:DC]  RESistance  TEMPerature  VOLTage[:DC]:RATio
-//VOLTage:AC  FRESistance  CONTinuity  DIGitize:VOLTage
-//CURRent[:DC]  DIODe  FREQuency[:VOLTage]  DIGitize:CURRent
-//CURRent:AC  CAPacitance  PERiod[:VOLTage]
+ DMM6500_TCoupleRefJunctCommand:array[TDMM6500_TCoupleRefJunct]of string=
+ ('sim', 'ext');
+ DMM6500_TCoupleRefJunctLabel:array[TDMM6500_TCoupleRefJunct]of string=
+ ('Simulated', 'External');
+
+  DMM6500_W2RTDTypeLabel:array[TDMM6500_RTDType]of string=
+ ('PT100', 'PT385','PT3916','D100','F100','User');
+
+  DMM6500_ThermistorTypeLabel:array[TDMM6500_ThermistorType]of string=
+ ('2252 Ohm', '5000 Ohm','10000 Ohm');
+
+  DMM6500_TCoupleTypeLabel:array[TDMM6500_TCoupleType]of string=
+ ('B', 'E','J','K','N','R','S','T');
+
+
+ DMM6500_RTDAlphaLimits:TLimitValues=(0,0.01);
+ DMM6500_RTDBetaLimits:TLimitValues=(0,1);
+ DMM6500_RTDDeltaLimits:TLimitValues=(0,5);
+ DMM6500_RTDZeroLimits:TLimitValues=(0,10000);
+
+ DMM6500_RefTempLimits:array[TDMM6500_TempUnits] of TLimitValues=
+  ((273.15,338.15),(0,65),(32,149));
+
 
 implementation
 
