@@ -113,7 +113,7 @@ TKT2450_SourceDevice=class;
    fImin:double;
    FCurrentValueLimitEnable:boolean;
    fSweepWasCreated:boolean;
-   procedure OnOffFromBool(toOn:boolean);
+//   procedure OnOffFromBool(toOn:boolean);
    function StringToVoltageProtection(Str:string;var vp:TKt_2450_VoltageProtection):boolean;
    function StringToSourceType(Str:string):boolean;
    function StringToOutPutState(Str:string):boolean;
@@ -278,12 +278,13 @@ TKT2450_SourceDevice=class;
    function GetMeasureTime():boolean;overload;
    function GetMeasureTimes():boolean;
 
-   procedure SetDisplayDigitsNumber(Measure:TKt2450_Measure; Number:KeitleyDisplayDigitsNumber);overload;
+//   procedure SetDisplayDigitsNumber(Measure:TKt2450_Measure; Number:KeitleyDisplayDigitsNumber);overload;
+   procedure SetDisplayDigitsNumber(Measure:TKt2450_Measure; Number:KeitleyDisplayDigitsNumber);reintroduce;overload;
    {кількість цифр, що відображаються на екрані,
      на точність самого вимірювання не впливає}
-   procedure SetDisplayDigitsNumber(Number:KeitleyDisplayDigitsNumber);overload;
-   function GetDisplayDigitsNumber(Measure:TKt2450_Measure):boolean;overload;
-   function GetDisplayDigitsNumber():boolean;overload;
+   procedure SetDisplayDigitsNumber(Number:KeitleyDisplayDigitsNumber);override;
+   function GetDisplayDigitsNumber(Measure:TKt2450_Measure):boolean;reintroduce;overload;
+   function GetDisplayDigitsNumber():boolean;override;
    function GetDisplayDNs():boolean;
 
 
@@ -686,13 +687,16 @@ end;
 
 function TKt_2450.GetDisplayDigitsNumber(Measure: TKt2450_Measure): boolean;
 begin
- QuireOperation(6,ord(Measure)+12,28);
- try
-  fDisplayDN[Measure]:=round(fDevice.Value);
-  result:=True;
- except
-  Result:=False;
- end;
+ Result:=inherited GetDisplayDigitsNumber(Measure);
+ if Result then fDisplayDN[Measure]:=round(fDevice.Value);
+
+// QuireOperation(6,ord(Measure)+12,28);
+// try
+//  fDisplayDN[Measure]:=round(fDevice.Value);
+//  result:=True;
+// except
+//  Result:=False;
+// end;
 end;
 
 function TKt_2450.GetHighCapacitanceStates: boolean;
@@ -1284,12 +1288,12 @@ begin
 
 //if GetDisplayDigitsNumber then
 //  showmessage(inttostr(fDisplayDN[fMeasureFunction])+Kt2450DisplayDNLabel);
-//if GetDisplayDigitsNumber(kt_mCurrent) then
-//  showmessage(inttostr(fDisplayDN[kt_mCurrent])+Kt2450DisplayDNLabel);
+//if GetDisplayDigitsNumber(kt_mCurDC) then
+//  showmessage(inttostr(fDisplayDN[kt_mCurDC])+Kt2450DisplayDNLabel);
 
 // SetDisplayDigitsNumber(4);
-// SetDisplayDigitsNumber(kt_mVoltage,3);
-// SetDisplayDigitsNumber(kt_mCurrent,6);
+// SetDisplayDigitsNumber(kt_mVolDC,3);
+// SetDisplayDigitsNumber(kt_mCurDC,6);
 
 // showmessage(booltostr(IsHighCapacitanceOn(),True));
 // SetHighCapacitanceState(False);
@@ -1567,10 +1571,10 @@ begin
 
 end;
 
-procedure TKt_2450.OnOffFromBool(toOn: boolean);
-begin
- fAdditionalString:=TKt_2450_SweepParameters.BoolToOnOffString(toOn);
-end;
+//procedure TKt_2450.OnOffFromBool(toOn: boolean);
+//begin
+// fAdditionalString:=TKt_2450_SweepParameters.BoolToOnOffString(toOn);
+//end;
 
 procedure TKt_2450.OutPutChange(toOn: boolean);
 begin
@@ -1592,15 +1596,15 @@ begin
            JoinToStringToSend(FirstNodeKt_2450[fLeafNode]);
           end;
     end;  // fRootNode=5
-  6:case fFirstLevelNode of
-      30,0,1,2,3:;
-      12,13,14:
-        begin
-        JoinToStringToSend(RootNodeKeitley[fFirstLevelNode]);
-        JoinToStringToSend(FirstNodeKt_2450[fLeafNode]);
-        end;
-      else JoinToStringToSend(FirstNodeKt_2450[fFirstLevelNode]);
-     end;  // fRootNode=6
+//  6:case fFirstLevelNode of
+//      30,0,1,2,3:;
+//      12,13,14:
+//        begin
+//        JoinToStringToSend(RootNodeKeitley[fFirstLevelNode]);
+//        JoinToStringToSend(FirstNodeKt_2450[fLeafNode]);
+//        end;
+//      else JoinToStringToSend(FirstNodeKt_2450[fFirstLevelNode]);
+//     end;  // fRootNode=6
   11:case fFirstLevelNode of
        12..13:case fLeafNode of
                 0:JoinToStringToSend(RootNodeKeitley[fFirstLevelNode]);
@@ -1640,12 +1644,12 @@ begin
            end;
      end;// fRootNode=11
   12..14:
-       begin
-         JoinToStringToSend(FirstNodeKt_2450[fFirstLevelNode]);
+//       begin
+//         JoinToStringToSend(FirstNodeKt_2450[fFirstLevelNode]);
          case fLeafNode of
           18,19:JoinToStringToSend(FirstNodeKt_2450[fLeafNode]);
          end;
-       end; // fRootNode=12..14
+//       end; // fRootNode=12..14
   19:begin
 //       JoinToStringToSend(FirstNodeKt_2450[fFirstLevelNode]);
        case fFirstLevelNode of
@@ -1767,9 +1771,11 @@ procedure TKt_2450.SetDisplayDigitsNumber(Measure: TKt2450_Measure;
   Number: KeitleyDisplayDigitsNumber);
 begin
 //:DISP:CURR|VOLT|RES:DIG n
- fAdditionalString:=inttostr(Number);
- SetupOperation(6,ord(Measure)+12,28);
+ inherited SetDisplayDigitsNumber(Measure,Number);
+// fAdditionalString:=inttostr(Number);
+// SetupOperation(6,ord(Measure)+12,28);
  fDisplayDN[Measure]:=Number;
+// showmessage('kkk');
 end;
 
 procedure TKt_2450.SetDidLinOut(LineNumber: TKt2450_DigLines;

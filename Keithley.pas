@@ -73,7 +73,7 @@ type
 //   FCurrentValueLimitEnable:boolean;
 //   fSweepWasCreated:boolean;
      fTrigerState:TKeitley_TriggerState;
-//   procedure OnOffFromBool(toOn:boolean);
+
 //   function StringToVoltageProtection(Str:string;var vp:TKt_2450_VoltageProtection):boolean;
 //   function StringToSourceType(Str:string):boolean;
 //   function StringToMeasureFunction(Str:string):boolean;
@@ -120,6 +120,7 @@ type
    function StringToMeasureTime(Str:string):double;
    function GetMeasureFunctionValue:TKeitley_Measure;virtual;
    procedure SetCountNumber(Value:integer);virtual;
+   procedure OnOffFromBool(toOn:boolean);
   public
 //   SweepParameters:array[TKt2450_Source]of TKt_2450_SweepParameters;
 //   property HookForTrigDataObtain:TSimpleEvent read fHookForTrigDataObtain write fHookForTrigDataObtain;
@@ -286,12 +287,12 @@ type
 //   function GetMeasureTime():boolean;overload;
 //   function GetMeasureTimes():boolean;
 //
-//   procedure SetDisplayDigitsNumber(Measure:TKt2450_Measure; Number:Kt2450DisplayDigitsNumber);overload;
-//   {кількість цифр, що відображаються на екрані,
-//     на точність самого вимірювання не впливає}
-//   procedure SetDisplayDigitsNumber(Number:Kt2450DisplayDigitsNumber);overload;
-//   function GetDisplayDigitsNumber(Measure:TKt2450_Measure):boolean;overload;
-//   function GetDisplayDigitsNumber():boolean;overload;
+   procedure SetDisplayDigitsNumber(Measure:TKeitley_Measure; Number:KeitleyDisplayDigitsNumber);overload;virtual;
+   {кількість цифр, що відображаються на екрані,
+     на точність самого вимірювання не впливає}
+   procedure SetDisplayDigitsNumber(Number:KeitleyDisplayDigitsNumber);overload;virtual;
+   function GetDisplayDigitsNumber(Measure:TKeitley_Measure):boolean;overload;virtual;
+   function GetDisplayDigitsNumber():boolean;overload;virtual;
 //   function GetDisplayDNs():boolean;
 //
 //
@@ -889,8 +890,28 @@ end;
 
 function TKeitley.GetDisplayBrightness: boolean;
 begin
- QuireOperation(6,30);
+ QuireOperation(6,230);
  Result:=(fDevice.Value<>ErResult);
+end;
+
+function TKeitley.GetDisplayDigitsNumber(Measure: TKeitley_Measure): boolean;
+begin
+ QuireOperation(6,MeasureToRootNodeNumber(Measure),28);
+ Result:=(round(fDevice.Value)<=Low(KeitleyDisplayDigitsNumber))
+         and(round(fDevice.Value)>=High(KeitleyDisplayDigitsNumber));
+//
+//
+// try
+//  fDisplayDN[Measure]:=round(fDevice.Value);
+//  result:=True;
+// except
+//  Result:=False;
+// end;
+end;
+
+function TKeitley.GetDisplayDigitsNumber: boolean;
+begin
+  Result:=GetDisplayDigitsNumber(MeasureFunction);
 end;
 
 function TKeitley.GetMeasureFunction: boolean;
@@ -1001,6 +1022,12 @@ procedure TKeitley.MyTraining;
 begin
 end;
 
+procedure TKeitley.OnOffFromBool(toOn: boolean);
+begin
+ if toOn then fAdditionalString:=SuffixKt_2450[0]
+         else fAdditionalString:=SuffixKt_2450[1];
+end;
+
 procedure TKeitley.PrepareString;
 begin
  (fDevice as TKeitleyDevice).ClearStringToSend;
@@ -1022,13 +1049,14 @@ begin
 //          end;
 //    end;  // fRootNode=5
   6:case fFirstLevelNode of
-     30,0..3:JoinToStringToSend(FirstNodeKt_2450[fFirstLevelNode]);
-//      12,13,14:
-//        begin
-//        JoinToStringToSend(RootNoodKt_2450[fFirstLevelNode]);
-//        JoinToStringToSend(FirstNodeKt_2450[fLeafNode]);
-//        end;
-//      else JoinToStringToSend(FirstNodeKt_2450[fFirstLevelNode]);
+     0..3:JoinToStringToSend(FirstNodeKt_2450[fFirstLevelNode]);
+     230: JoinToStringToSend(FirstNodeKt_2450[fFirstLevelNode-200]);
+     12..14,28..39:
+        begin
+        JoinToStringToSend(RootNodeKeitley[fFirstLevelNode]);
+        JoinToStringToSend(FirstNodeKt_2450[fLeafNode]);
+        end;
+      else JoinToStringToSend(FirstNodeKt_2450[fFirstLevelNode]);
      end;  // fRootNode=6
   7,9:JoinToStringToSend(FirstNodeKt_2450[fFirstLevelNode]);
 //  11:case fFirstLevelNode of
@@ -1069,9 +1097,9 @@ begin
 //            end;
 //           end;
 //     end;// fRootNode=11
-//  12..14:
+  12..14,28..39:
 //       begin
-//         JoinToStringToSend(FirstNodeKt_2450[fFirstLevelNode]);
+         JoinToStringToSend(FirstNodeKt_2450[fFirstLevelNode]);
 //         case fLeafNode of
 //          18,19:JoinToStringToSend(FirstNodeKt_2450[fLeafNode]);
 //         end;
@@ -1152,7 +1180,7 @@ begin
 //            then fDevice.Value:=ord(fOutputOffState[TKt2450_Source(fFirstLevelNode)]);
 //          end;
 //    end; //fRootNode=5
-  6:if fFirstLevelNode=30
+  6:if fFirstLevelNode=230
        then
         begin
         if StringToDisplayBrightness(AnsiLowerCase(Str))
@@ -1176,12 +1204,14 @@ begin
 //            16,17,22,27:fDevice.Value:=StrToInt(Str);
 //           end;
 //     end; //fRootNode=11
-//   12..14:case fFirstLevelNode of
+   12..14,
+   28..39:case fFirstLevelNode of
+             22:fDevice.Value:=StrToInt(Str);
 //             7,9,20: fDevice.Value:=StrToInt(Str);
 //             14: if StringToMeasureUnit(AnsiLowerCase(Str))
 //                    then fDevice.Value:=ord(fMeasureUnits[TKt2450_Measure(fFirstLevelNode-12)]);
 //             16,15,26:fDevice.Value:=SCPI_StringToValue(Str);
-//          end;   //fRootNode=12..14
+          end;   //fRootNode=12..14,28..39
    15:StringToMeasureFunction(AnsiLowerCase(Str));
    19:case fFirstLevelNode of
           31: fDevice.Value:=StrToInt(Str);
@@ -1253,7 +1283,21 @@ begin
 //:DISP:LIGH:STAT <brightness>
  fDisplayState:=State;
  fAdditionalString:=Keitley_DisplayStateCommand[State];
- SetupOperation(6,30)
+ SetupOperation(6,230)
+end;
+
+procedure TKeitley.SetDisplayDigitsNumber(Measure: TKeitley_Measure;
+  Number: KeitleyDisplayDigitsNumber);
+begin
+//:DISP:CURR|VOLT|RES:DIG n
+ fAdditionalString:=inttostr(Number);
+ SetupOperation(6,MeasureToRootNodeNumber(Measure),28);
+// fDisplayDN[Measure]:=Number;
+end;
+
+procedure TKeitley.SetDisplayDigitsNumber(Number: KeitleyDisplayDigitsNumber);
+begin
+ SetDisplayDigitsNumber(fMeasureFunction,Number);
 end;
 
 procedure TKeitley.SetMeasureFunction(MeasureFunc: TKeitley_Measure);

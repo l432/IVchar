@@ -10,6 +10,7 @@ uses
 
 type
  TDMM6500=class;
+ TDMM6500MeasPar_Base=class;
 
  TDMM6500Channel=class
   private
@@ -17,13 +18,18 @@ type
    FMeasureFunction: TKeitley_Measure;
    fDMM6500:TDMM6500;
    fCount:integer;
+   fMeasParameters:array [TKeitley_Measure] of TDMM6500MeasPar_Base;
    procedure SetCountNumber(Value:integer);
+   function GetMeasParameters:TDMM6500MeasPar_Base;
+   Procedure MeasParametersDestroy;
   public
    property Number:byte read FNumber;
    property MeasureFunction:TKeitley_Measure read FMeasureFunction write FMeasureFunction;
    property DMM6500:TDMM6500 read fDMM6500;
    property Count:integer read fCount write SetCountNumber;
+   property MeasParameters:TDMM6500MeasPar_Base read GetMeasParameters;
    constructor Create(ChanNumber:byte;DMM6500:TDMM6500);
+   destructor Destroy; override;
  end;
 
  TDMM6500=class(TKeitley)
@@ -38,16 +44,23 @@ type
    fTerminalMeasureFunction:array [TKeitley_OutputTerminals] of TKeitley_Measure;
    fChanOperation:boolean;
    fChanOperationString:string;
+   fMeasParameters:array [TKeitley_Measure] of TDMM6500MeasPar_Base;
+   function GetMeasParameters:TDMM6500MeasPar_Base;
    function ChanelToString(ChanNumber:byte):string;overload;
    function ChanelToString(ChanNumberLow,ChanNumberHigh:byte):string;overload;
    function ChanelToString(ChanNumbers:array of byte):string;overload;
    function ChanelNumberIsCorrect(ChanNumber:byte):boolean;overload;
    function ChanelNumberIsCorrect(ChanNumberLow,ChanNumberHigh:byte):boolean;overload;
    function ChanelNumberIsCorrect(ChanNumbers:array of byte):boolean;overload;
+   
    procedure ChansMeasureCreate;
+   procedure ChansMeasureDestroy;
    function IsPermittedMeasureFuncForChan(MeasureFunc:TKeitley_Measure;
                                     ChanNumber:byte):boolean;
    function ChanQuire (ChanNumber:byte;QuireFunc:TQuireFunction):boolean;
+   function ChanSetupBegin(ChanNumber:byte):boolean;
+   function ChanQuireBegin(ChanNumber:byte):boolean;
+   Procedure MeasParametersDestroy;
   protected
    procedure ProcessingStringByRootNode(Str:string);override;
    procedure PrepareString;override;
@@ -60,8 +73,10 @@ type
    function GetMeasureFunctionValue:TKeitley_Measure;override;
    procedure SetCountNumber(Value:integer);override;
   public
+   property MeasParameters:TDMM6500MeasPar_Base read GetMeasParameters;
    Constructor Create(Telnet:TIdTelnet;IPAdressShow: TIPAdressShow;
                Nm:string='DMM6500');
+   destructor Destroy; override;
    procedure MyTraining();override;
    procedure ProcessingString(Str:string);override;
 
@@ -96,6 +111,23 @@ type
 
    procedure SetCount(ChanNumber:byte;Cnt:integer);reintroduce;overload;
    function GetCount(ChanNumber:byte):boolean;reintroduce;overload;
+
+   procedure SetDisplayDigitsNumber(Measure:TKeitley_Measure; Number:KeitleyDisplayDigitsNumber);override;
+   procedure SetDisplayDigitsNumber(Number:KeitleyDisplayDigitsNumber);override;
+   procedure SetDisplayDigitsNumber(ChanNumber:byte;Number:KeitleyDisplayDigitsNumber);reintroduce;overload;
+   function GetDisplayDigitsNumber(Measure:TKeitley_Measure):boolean;override;
+   function GetDisplayDigitsNumber():boolean;override;
+   function GetDisplayDigitsNumber(ChanNumber:byte):boolean;reintroduce;overload;
+
+   function SetDelayAutoAction(Measure:TKeitley_Measure;toOn:boolean):boolean;
+   procedure SetDelayAuto(Measure:TKeitley_Measure;toOn:boolean);overload;
+{   This command enables or disables the automatic delay that occurs before each measurement}
+   procedure SetDelayAuto(toOn:boolean);overload;
+   procedure SetDelayAuto(ChanNumber:byte;toOn:boolean);overload;
+   function GetDelayAutoAction(Measure:TKeitley_Measure):boolean;
+   function GetDelayAutoOn(Measure:TKeitley_Measure):boolean;overload;
+   function GetDelayAutoOn():boolean;overload;
+   function GetDelayAutoOn(ChanNumber:byte):boolean;overload;
 
    Procedure GetParametersFromDevice;override;
    Procedure GetCardParametersFromDevice;
@@ -477,6 +509,13 @@ begin
 
 end;
 
+destructor TDMM6500.Destroy;
+begin
+  MeasParametersDestroy;
+  ChansMeasureDestroy;
+  inherited;
+end;
+
 procedure TDMM6500.GetCardParametersFromDevice;
 begin
   if TestRealCard_Presence then
@@ -503,18 +542,64 @@ begin
  tempCount:=Count;
 // Result:=ChanQuire(ChanNumber,GetCount);
 
- if ChanelNumberIsCorrect(ChanNumber) then
-   begin
-     fMeasureChanNumber:=ChanNumber;
-     fChanOperationString:=' '+ChanelToString(ChanNumber);
-     fChanOperation:=True;
-     Result := GetCount;
-     fChanOperation:=False;
-   end                                else
-     Result:=False;
+ if ChanQuireBegin(ChanNumber) then
+  begin
+    Result := GetCount;
+    fChanOperation:=False;
+  end                          else
+    Result:=False;
+
+// if ChanelNumberIsCorrect(ChanNumber) then
+//   begin
+//     fMeasureChanNumber:=ChanNumber;
+//     fChanOperationString:=' '+ChanelToString(ChanNumber);
+//     fChanOperation:=True;
+//     Result := GetCount;
+//     fChanOperation:=False;
+//   end                                else
+//     Result:=False;
 
  if Result then fChansMeasure[ChanNumber-fFirstChannelInSlot].Count:=Count;
  Count:=tempCount;
+end;
+
+function TDMM6500.GetDelayAutoAction(Measure: TKeitley_Measure): boolean;
+begin
+ if Measure<kt_DigCur then
+  begin
+   QuireOperation(MeasureToRootNodeNumber(Measure),22);
+   Result:=(fDevice.Value<>ErResult);
+  end                   else
+   Result:=False;
+end;
+
+function TDMM6500.GetDisplayDigitsNumber(ChanNumber: byte): boolean;
+begin
+ if ChanQuireBegin(ChanNumber) then
+  begin
+    Result := inherited GetDisplayDigitsNumber(fChansMeasure[ChanNumber-fFirstChannelInSlot].MeasureFunction);
+    fChanOperation:=False;
+  end                          else
+    Result:=False;
+ if Result then fChansMeasure[ChanNumber-fFirstChannelInSlot].MeasParameters.DisplayDN:=round(fDevice.Value);
+end;
+
+function TDMM6500.GetDisplayDigitsNumber: boolean;
+begin
+ Result:=inherited GetDisplayDigitsNumber(MeasureFunction);
+ if Result then
+  MeasParameters.DisplayDN:=round(fDevice.Value);
+end;
+
+function TDMM6500.GetDisplayDigitsNumber(Measure: TKeitley_Measure): boolean;
+begin
+  Result:=inherited GetDisplayDigitsNumber(Measure);
+  if Result then 
+   begin
+    if not(assigned(fMeasParameters[Measure])) then
+     fMeasParameters[Measure]:=DMM6500MeasParFactory(Measure);
+    fMeasParameters[Measure].DisplayDN:=round(fDevice.Value);
+   end;
 end;
 
 function TDMM6500.GetFirstChannelInSlot: boolean;
@@ -539,6 +624,13 @@ begin
  if Result then fTerminalMeasureFunction[Terminal]:=MeasureFunction;
 end;
 
+
+function TDMM6500.GetMeasParameters: TDMM6500MeasPar_Base;
+begin
+ if not(Assigned(fMeasParameters[FMeasureFunction]))
+  then fMeasParameters[FMeasureFunction]:=DMM6500MeasParFactory(FMeasureFunction);
+ Result:=fMeasParameters[FMeasureFunction];
+end;
 
 function TDMM6500.GetMeasureFunction(ChanNumber: byte): boolean;
 begin
@@ -566,6 +658,33 @@ begin
 
 end;
 
+function TDMM6500.GetDelayAutoOn(Measure: TKeitley_Measure): boolean;
+begin
+ Result:=GetDelayAutoAction(Measure);
+ if Result then
+    if assigned(fMeasParameters[Measure]) then
+     (fMeasParameters[Measure] as TDMM6500MeasPar_BaseDelay).AutoDelay:=(fDevice.Value=1);
+end;
+
+function TDMM6500.GetDelayAutoOn: boolean;
+begin
+ Result:=GetDelayAutoAction(fMeasureFunction);
+ if Result then
+   (MeasParameters as TDMM6500MeasPar_BaseDelay).AutoDelay:=(fDevice.Value=1);
+end;
+
+function TDMM6500.GetDelayAutoOn(ChanNumber: byte): boolean;
+begin
+ if ChanQuireBegin(ChanNumber) then
+  begin
+    Result := GetDelayAutoAction(fChansMeasure[ChanNumber-fFirstChannelInSlot].MeasureFunction);
+    fChanOperation:=False;
+  end                          else
+    Result:=False;
+ if Result then
+  (fChansMeasure[ChanNumber-fFirstChannelInSlot].MeasParameters as TDMM6500MeasPar_BaseDelay).AutoDelay:=(fDevice.Value=1);
+end;
+
 function TDMM6500.IsPermittedMeasureFuncForChan(MeasureFunc: TKeitley_Measure;
   ChanNumber: byte): boolean;
 begin
@@ -576,6 +695,14 @@ begin
 
 end;
 
+procedure TDMM6500.MeasParametersDestroy;
+ var i:TKeitley_Measure;
+begin
+ for I := Low(TKeitley_Measure) to High(TKeitley_Measure) do
+  if Assigned(fMeasParameters[i])then
+    fMeasParameters[i].Free;
+end;
+
 procedure TDMM6500.MyTraining;
 // var i:integer;
 begin
@@ -583,13 +710,38 @@ begin
 //  fDevice.Request();
 //  fDevice.GetData;
 
+if GetDelayAutoOn()
+ then showmessage('ura! '+ booltostr((MeasParameters as TDMM6500MeasPar_BaseDelay).AutoDelay,True));
+GetDelayAutoOn(kt_mCurAC);
+if GetDelayAutoOn(5) then
+ showmessage('ura! '+ booltostr((fChansMeasure[5].MeasParameters as TDMM6500MeasPar_BaseDelay).AutoDelay,True));
 
-SetCount(1,200);
-if GetCount(1) then showmessage('Chan 1, Count='+inttostr(fChansMeasure[0].Count));
+//SetDelayAuto(kt_DigCur,True);
+//SetDelayAuto(kt_mCurAC,False);
+//SetDelayAuto(False);
+//SetDelayAuto(5,True);
 
-if GetCount() then showmessage('Count='+inttostr(Count));
 
-SetCount(400000);
+//if GetDisplayDigitsNumber then
+//  showmessage(inttostr(MeasParameters.DisplayDN)+Kt2450DisplayDNLabel);
+//GetDisplayDigitsNumber(kt_mCurAC);
+//GetDisplayDigitsNumber(3);
+
+
+// SetDisplayDigitsNumber(2,4);
+
+// SetDisplayDigitsNumber(4);
+// SetDisplayDigitsNumber(kt_mVolDC,3);
+// SetDisplayDigitsNumber(kt_mTemp,6);
+// SetDisplayDigitsNumber(kt_DigVolt,5);
+
+
+//SetCount(1,200);
+//if GetCount(1) then showmessage('Chan 1, Count='+inttostr(fChansMeasure[0].Count));
+//
+//if GetCount() then showmessage('Count='+inttostr(Count));
+//
+//SetCount(400000);
 
 //GetMeasureFunction();
 //if GetMeasureFunction(2) then
@@ -852,19 +1004,80 @@ end;
 
 procedure TDMM6500.SetCount(ChanNumber: byte; Cnt: integer);
 begin
- if ChanelNumberIsCorrect(ChanNumber) then
-   begin
-     fChanOperationString:=PartDelimiter+ChanelToString(ChanNumber);
-     fChanOperation:=True;
-     inherited SetCount(Cnt);
-     fChansMeasure[ChanNumber-fFirstChannelInSlot].Count:=Self.Count;
-   end;
+ if ChanSetupBegin(ChanNumber) then
+  begin
+    inherited SetCount(Cnt);
+    fChansMeasure[ChanNumber-fFirstChannelInSlot].Count:=Self.Count;
+  end;
+
+
+// if ChanelNumberIsCorrect(ChanNumber) then
+//   begin
+//     fChanOperationString:=PartDelimiter+ChanelToString(ChanNumber);
+//     fChanOperation:=True;
+//     inherited SetCount(Cnt);
+//     fChansMeasure[ChanNumber-fFirstChannelInSlot].Count:=Self.Count;
+//   end;
 end;
 
 procedure TDMM6500.SetCountNumber(Value: integer);
  const CountLimits:TLimitValues=(1,1000000);
 begin
  fCount:=TSCPInew.NumberMap(Value,CountLimits);
+end;
+
+procedure TDMM6500.SetDelayAuto(Measure: TKeitley_Measure; toOn: boolean);
+begin
+//:<function>:DEL:AUTO ON|OFF
+ if SetDelayAutoAction(Measure,toOn) then
+  if assigned(fMeasParameters[Measure]) then
+    (fMeasParameters[Measure] as TDMM6500MeasPar_BaseDelay).AutoDelay:=toOn;
+end;
+
+procedure TDMM6500.SetDelayAuto(toOn: boolean);
+begin
+ if SetDelayAutoAction(fMeasureFunction,toOn) then
+  (MeasParameters as TDMM6500MeasPar_BaseDelay).AutoDelay:=toOn;
+end;
+
+function TDMM6500.SetDelayAutoAction(Measure: TKeitley_Measure; toOn: boolean):boolean;
+begin
+//:<function>:DEL:AUTO ON|OFF
+ if Measure<kt_DigCur then
+  begin
+   OnOffFromBool(toOn);
+   SetupOperation(MeasureToRootNodeNumber(Measure),22);
+   Result:=True;
+  end                   else
+   Result:=False;
+end;
+
+procedure TDMM6500.SetDisplayDigitsNumber(ChanNumber: byte;
+  Number: KeitleyDisplayDigitsNumber);
+begin
+ if ChanSetupBegin(ChanNumber) then
+  begin
+    inherited SetDisplayDigitsNumber(fChansMeasure[ChanNumber-fFirstChannelInSlot].MeasureFunction,Number);
+    fChansMeasure[ChanNumber-fFirstChannelInSlot].MeasParameters.DisplayDN:=Number;
+  end;
+
+end;
+
+procedure TDMM6500.SetDisplayDigitsNumber(Number: KeitleyDisplayDigitsNumber);
+begin
+ inherited SetDisplayDigitsNumber(fMeasureFunction,Number);
+ MeasParameters.DisplayDN:=Number;
+end;
+
+
+procedure TDMM6500.SetDisplayDigitsNumber(Measure: TKeitley_Measure;
+  Number: KeitleyDisplayDigitsNumber);
+begin
+  inherited SetDisplayDigitsNumber(Measure,Number);
+  if assigned(fMeasParameters[Measure]) then
+    fMeasParameters[Measure].DisplayDN:=Number;
+
+//  showmessage('ggg');
 end;
 
 procedure TDMM6500.SetMeasureFunction(ChanNumbers: array of byte;
@@ -956,6 +1169,29 @@ begin
      Result:=False;
 end;
 
+function TDMM6500.ChanQuireBegin(ChanNumber: byte): boolean;
+begin
+ if ChanelNumberIsCorrect(ChanNumber) then
+   begin
+     fMeasureChanNumber:=ChanNumber;
+     fChanOperationString:=' '+ChanelToString(ChanNumber);
+     fChanOperation:=True;
+     Result:=True;
+   end                                else
+     Result:=False;
+end;
+
+function TDMM6500.ChanSetupBegin(ChanNumber: byte): boolean;
+begin
+ if ChanelNumberIsCorrect(ChanNumber) then
+   begin
+     fChanOperationString:=PartDelimiter+ChanelToString(ChanNumber);
+     fChanOperation:=True;
+     Result:=True;
+   end                                else
+     Result:=False;
+end;
+
 procedure TDMM6500.ChansMeasureCreate;
  var i:byte;
 begin
@@ -967,6 +1203,13 @@ begin
    else SetLength(fChansMeasure,fLastChannelInSlot-fFirstChannelInSlot+1);
  for I := 0 to High(fChansMeasure) do
    fChansMeasure[i]:=TDMM6500Channel.Create(i+1,Self);
+end;
+
+procedure TDMM6500.ChansMeasureDestroy;
+ var i:byte;
+begin
+ for I := 0 to High(fChansMeasure) do
+   fChansMeasure[i].Free;
 end;
 
 function TDMM6500.ChanelNumberIsCorrect(ChanNumbers: array of byte): boolean;
@@ -1014,6 +1257,27 @@ begin
  fDMM6500:=DMM6500;
  FMeasureFunction:=kt_mVolDC;
  fCount:=1;
+end;
+
+destructor TDMM6500Channel.Destroy;
+begin
+  MeasParametersDestroy;
+  inherited;
+end;
+
+function TDMM6500Channel.GetMeasParameters: TDMM6500MeasPar_Base;
+begin
+ if not(Assigned(fMeasParameters[FMeasureFunction]))
+  then fMeasParameters[FMeasureFunction]:=DMM6500MeasParFactory(FMeasureFunction);
+ Result:=fMeasParameters[FMeasureFunction];
+end;
+
+procedure TDMM6500Channel.MeasParametersDestroy;
+ var i:TKeitley_Measure;
+begin
+ for I := Low(TKeitley_Measure) to High(TKeitley_Measure) do
+  if Assigned(fMeasParameters[i]) then
+    fMeasParameters[i].Free;
 end;
 
 procedure TDMM6500Channel.SetCountNumber(Value: integer);
@@ -1378,6 +1642,13 @@ constructor TDMM6500MeasPar_Diode.Create;
 begin
  inherited Create;
  fBiasLevel:=dm_dbl1mA;
+end;
+
+procedure TDMM6500.SetDelayAuto(ChanNumber: byte; toOn: boolean);
+begin
+ if ChanSetupBegin(ChanNumber) then
+    if SetDelayAutoAction(fChansMeasure[ChanNumber-fFirstChannelInSlot].MeasureFunction,toOn) then
+     (fChansMeasure[ChanNumber-fFirstChannelInSlot].MeasParameters as TDMM6500MeasPar_BaseDelay).AutoDelay:=toOn;
 end;
 
 end.
