@@ -31,7 +31,7 @@ const
  'amp','volt','ohm','watt' );
 //   4     5    6      7
 
-  FirstNodeKt_2450:array[0..46]of string=
+  FirstNodeKt_2450:array[0..49]of string=
   (':scr',':user1:text',':user2:text',':cle',':pos',':int:stat',':term',
 //     0       1             2          3      4        5         6
    ':rsen',':smod',':ocom',':prot',':trip',':vlim',':ilim',':unit',
@@ -44,8 +44,8 @@ const
 //     30          31         32         33     34      35        36
    ':line#:stat',':load', ':bloc',':buff',':bran',':mdig',':res',':paus',
 //      37         38        39      40      41      42      43      44
-   ':card1',':pcar1');
-//   45       46
+   ':card1',':pcar1',':srat',':db:ref',':dbm:ref');
+//   45       46       47        48        49
 
  ConfLeafNodeKeitley:array[0..3]of string=
  (':cre',':del',':rec',':stor');
@@ -69,7 +69,7 @@ type
                    kt_mCurAC,kt_mVolAC,kt_mRes4W,
                    kt_mDiod,kt_mCap,kt_mTemp,
                    kt_mCont,kt_mFreq,kt_mPer,
-                   kt_mVoltRat,kt_DigCur,kt_DigVolt);
+                   kt_mVoltRat,kt_mDigCur,kt_mDigVolt);
  TKt2450_Measure=kt_mCurDC..kt_mRes2W;
 
  TKt2450_Sense=(kt_s4wire,kt_s2wire);

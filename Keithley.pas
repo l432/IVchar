@@ -1000,7 +1000,7 @@ end;
 
 function TKeitley.MeasureToFunctString(Measure: TKeitley_Measure): string;
 begin
- if Measure<kt_DigCur
+ if Measure<kt_mDigCur
    then Result:=StringToInvertedCommas(DeleteSubstring(MeasureToRootNodeStr(Measure)))
    else Result:=StringToInvertedCommas(DeleteSubstring(RootNodeKeitley[ord(Measure)-1]));
 end;
@@ -1206,7 +1206,8 @@ begin
 //     end; //fRootNode=11
    12..14,
    28..39:case fFirstLevelNode of
-             22:fDevice.Value:=StrToInt(Str);
+             22,47:fDevice.Value:=StrToInt(Str);
+             48:fDevice.Value:=SCPI_StringToValue(Str);
 //             7,9,20: fDevice.Value:=StrToInt(Str);
 //             14: if StringToMeasureUnit(AnsiLowerCase(Str))
 //                    then fDevice.Value:=ord(fMeasureUnits[TKt2450_Measure(fFirstLevelNode-12)]);
@@ -1323,7 +1324,7 @@ function TKeitley.StringToDigMeasureFunction(Str: string): boolean;
   var i:TKeitley_Measure;
 begin
 // Result:=False;
- for I := kt_DigCur to kt_DigVolt do
+ for I := kt_mDigCur to kt_mDigVolt do
    begin
     Result:=pos(DeleteSubstring(RootNodeKeitley[ord(i)-1]),Str)<>0;
     if Result then
@@ -1359,8 +1360,8 @@ begin
     case i of
       kt_mCurDC..
        kt_mVoltRat: Result:=pos(DeleteSubstring(MeasureToRootNodeStr(i)),Str)<>0;
-      kt_DigCur..
-      kt_DigVolt:  Result:=pos('none',Str)<>0;
+      kt_mDigCur..
+      kt_mDigVolt:  Result:=pos('none',Str)<>0;
     end;
     if Result then
       begin
