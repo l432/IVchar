@@ -2202,20 +2202,27 @@ begin
  fFastIV.Kt2450.AzeroOnce;
 // fFastIV.Kt2450.InitWait;
  fFastIV.Kt2450.Init;
- fFastIV.Kt2450.Device.DelayTimeStep:=round(fFastIV.Kt2450.DragonBackTime);
+
+// fFastIV.Kt2450.Device.DelayTimeStep:=round(fFastIV.Kt2450.DragonBackTime);
 
  while(fFastIV.Kt2450.GetTrigerState) do
    begin
     if not((fFastIV.Kt2450.TrigerState=kt_ts_running)
           or(fFastIV.Kt2450.TrigerState=kt_ts_waiting)) then Break;
     Application.ProcessMessages;
-    sleep(fFastIV.Kt2450.Device.DelayTimeStep);
+//    sleep(fFastIV.Kt2450.Device.DelayTimeStep);
+    sleep(round(fFastIV.Kt2450.DragonBackTime));
    end;
+// showmessage('ll');
+
  fFastIV.Kt2450.Beep;
-// fFastIV.Kt2450.Device.DelayTimeStep:=round(fFastIV.Kt2450.DragonBackTime);
- fFastIV.Kt2450.Device.DelayTimeStep:=10;
- NumberInBuffer:=fFastIV.Kt2450.BufferGetReadingsNumber;
+ fFastIV.Kt2450.Device.DelayTimeStep:=round(fFastIV.Kt2450.DragonBackTime);
 // fFastIV.Kt2450.Device.DelayTimeStep:=10;
+// showmessage('ll2333');
+ NumberInBuffer:=fFastIV.Kt2450.BufferGetReadingsNumber;
+ if NumberInBuffer=-1 then NumberInBuffer:=fFastIV.Kt2450.BufferGetReadingsNumber;
+
+ fFastIV.Kt2450.Device.DelayTimeStep:=10;
  fFastIV.Kt2450.BufferDataArrayExtended(1,NumberInBuffer,kt_rd_MST);
  fFastIV.Kt2450.DataVector.CopyTo(fFastIV.Results);
  if fFastIV.fDiodOrientationVoltageFactor<1 then

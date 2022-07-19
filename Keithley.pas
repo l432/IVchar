@@ -897,8 +897,8 @@ end;
 function TKeitley.GetDisplayDigitsNumber(Measure: TKeitley_Measure): boolean;
 begin
  QuireOperation(6,MeasureToRootNodeNumber(Measure),28);
- Result:=(round(fDevice.Value)<=Low(KeitleyDisplayDigitsNumber))
-         and(round(fDevice.Value)>=High(KeitleyDisplayDigitsNumber));
+ Result:=(round(fDevice.Value)>=Low(KeitleyDisplayDigitsNumber))
+         and(round(fDevice.Value)<=High(KeitleyDisplayDigitsNumber));
 //
 //
 // try
@@ -1127,7 +1127,7 @@ begin
        1:JoinToStringToSend(Buffer.Get);
      end; // fRootNode=22
   23:case fFirstLevelNode of
-          15:JoinToStringToSend (RootNodeKeitley[fFirstLevelNode]);
+          15,20:JoinToStringToSend (RootNodeKeitley[fFirstLevelNode]);
 //        36,37:JoinToStringToSend(AnsiReplaceStr(FirstNodeKt_2450[fFirstLevelNode],'#',inttostr(fDLActive)));
      end; // fRootNode=23
   24:begin
@@ -1206,7 +1206,7 @@ begin
 //     end; //fRootNode=11
    12..14,
    28..39:case fFirstLevelNode of
-             22,47:fDevice.Value:=StrToInt(Str);
+             47:fDevice.Value:=StrToInt(Str);
              48:fDevice.Value:=SCPI_StringToValue(Str);
 //             7,9,20: fDevice.Value:=StrToInt(Str);
 //             14: if StringToMeasureUnit(AnsiLowerCase(Str))
@@ -1235,6 +1235,7 @@ begin
       end;  //fRootNode=22
    23:case fFirstLevelNode of
         15:StringToDigMeasureFunction(AnsiLowerCase(Str));
+        20:fDevice.Value:=StrToInt(Str);
 //       36:StringToDigLineStatus(AnsiLowerCase(Str));
 //       37:fDevice.Value:=StrToInt(Str);
       end;
@@ -1353,20 +1354,42 @@ end;
 
 function TKeitley.StringToMeasureFunction(Str: string): boolean;
   var i:TKeitley_Measure;
+      dodanok:integer;
 begin
  Result:=False;
+ dodanok:=0;
  for I := High(TKeitley_Measure) downto Low(TKeitley_Measure) do
    begin
     case i of
       kt_mCurDC..
        kt_mVoltRat: Result:=pos(DeleteSubstring(MeasureToRootNodeStr(i)),Str)<>0;
       kt_mDigCur..
-      kt_mDigVolt:  Result:=pos('none',Str)<>0;
+      kt_mDigVolt:begin
+                   if (pos('none',Str)<>0) then Result:=True;
+                   if (pos('curr:dig',Str)<>0)
+                       or(pos('volt:dig',Str)<>0)  then
+                         begin
+                          Result:=True;
+                          dodanok:=3;
+                         end;
+                  end;
+
+//      kt_mDigCur:Result:=(pos('none',Str)<>0)
+//                           or(pos(':curr:dig',Str)<>0);
+//      kt_mDigVolt:Result:=(pos('none',Str)<>0)
+//                           or(pos(':volt:dig',Str)<>0);
+//        begin
+//        showmessage(Str+'  '+DeleteSubstring(MeasureToRootNodeStr(i)));
+//        Result:=(pos('none',Str)<>0)
+//                           or(pos(DeleteSubstring(MeasureToRootNodeStr(i)),Str)<>0);
+//        showmessage('Result='+booltostr(Result,True));
+//        end;
     end;
     if Result then
       begin
        fMeasureFunction:=i;
-       fDevice.Value:=ord(fMeasureFunction);
+       fDevice.Value:=ord(fMeasureFunction)-dodanok;
+//       showmessage('jjj '+Keitley_MeasureLabel[fMeasureFunction]);
        Break;
       end;
    end;
