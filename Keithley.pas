@@ -1206,7 +1206,7 @@ begin
 //     end; //fRootNode=11
    12..14,
    28..39:case fFirstLevelNode of
-             47:fDevice.Value:=StrToInt(Str);
+             47,49:fDevice.Value:=StrToInt(Str);
              48:fDevice.Value:=SCPI_StringToValue(Str);
 //             7,9,20: fDevice.Value:=StrToInt(Str);
 //             14: if StringToMeasureUnit(AnsiLowerCase(Str))

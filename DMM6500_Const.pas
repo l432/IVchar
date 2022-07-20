@@ -148,6 +148,8 @@ const
  DMM6500_RTDBetaLimits:TLimitValues=(0,1);
  DMM6500_RTDDeltaLimits:TLimitValues=(0,5);
  DMM6500_RTDZeroLimits:TLimitValues=(0,10000);
+ DMM6500_CountDigLimits:TLimitValues=(1,55000000);
+ DMM6500_CountLimits:TLimitValues=(1,1000000);
 
  DMM6500_RefTempLimits:array[TDMM6500_TempUnits] of TLimitValues=
   ((273.15,338.15),(0,65),(32,149));
