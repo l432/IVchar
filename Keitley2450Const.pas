@@ -44,7 +44,7 @@ const
 //     30          31         32         33     34      35        36
    ':line#:stat',':load', ':bloc',':buff',':bran',':mdig',':res',':paus',
 //      37         38        39      40      41      42      43      44
-   ':card1',':pcar1',':srat',':db:ref',':dbm:ref','unit');
+   ':card1',':pcar1',':srat',':db:ref',':dbm:ref',':unit');
 //   45       46       47        48        49       50
 
  ConfLeafNodeKeitley:array[0..3]of string=

@@ -34,5 +34,6 @@
     <Transaction>2022.06.28 12:55:13.218.pas,D:\Oleg\Shottky_Program\IVchar\Unit1.pas=D:\Oleg\Shottky_Program\IVchar\KeitleyShow.pas</Transaction>
     <Transaction>2022.06.28 13:04:28.015.pas,D:\Oleg\Shottky_Program\IVchar\Unit1.pas=D:\Oleg\Shottky_Program\IVchar\DMM6500Show.pas</Transaction>
     <Transaction>2022.06.29 11:57:36.046.pas,D:\Oleg\Shottky_Program\IVchar\Unit1.pas=D:\Oleg\Shottky_Program\IVchar\DMM6500_Const.pas</Transaction>
+    <Transaction>2022.07.20 16:09:39.307.pas,\\vmware-host\Shared Folders\oleg\IVchar\Unit1.pas=\\vmware-host\Shared Folders\oleg\IVchar\DMM6500_MeasParam.pas</Transaction>
   </Transactions>
 </BorlandProject>

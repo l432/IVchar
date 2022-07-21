@@ -65,7 +65,7 @@ type
 
  TDMM6500_DiodeBiasLevel=(dm_dbl10uA,dm_dbl100uA,dm_dbl1mA,dm_dbl10mA);
 
- TQuireFunction=Function():boolean of object;
+
 
 const
  DMM6500_Test='KEITHLEY INSTRUMENTS,MODEL DMM6500';
