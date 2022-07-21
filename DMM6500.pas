@@ -106,21 +106,19 @@ type
    Function  GetLastChannelInSlot:boolean;
    Function  GetChannelMaxVoltage:boolean;
 
-   procedure SetMeasureFunction(ChanNumber:byte;MeasureFunc:TKeitley_Measure=kt_mVolDC);reintroduce;overload;
+   procedure SetMeasureFunction(MeasureFunc: TKeitley_Measure; ChanNumber: Byte);reintroduce;overload;
    procedure SetMeasureFunction(ChanNumberLow,ChanNumberHigh:byte;
                     MeasureFunc:TKeitley_Measure=kt_mVolDC);reintroduce;overload;
    procedure SetMeasureFunction(ChanNumbers:array of byte;
                     MeasureFunc:TKeitley_Measure=kt_mVolDC);reintroduce;overload;
    function GetMeasureFunction(ChanNumber:byte):boolean;reintroduce;overload;
 
-   procedure SetCount(ChanNumber:byte;Cnt:integer);reintroduce;overload;
+   procedure SetCount(Cnt: Integer; ChanNumber: Byte);reintroduce;overload;
    function GetCount(ChanNumber:byte):boolean;reintroduce;overload;
 
    procedure SetCountDigAction(DeviceCountDig,NewCountDig:integer);
-//   procedure SetCountDig(Cnt:integer);overload;
    procedure SetCountDig(Cnt: Integer; ChanNumber: Byte=0);//overload;
    function GetCountDigAction(DeviceCountDig:integer):boolean;
-//   function GetCountDig:boolean;overload;
    function GetCountDig(ChanNumber:byte=0):boolean;//overload;
 
 
@@ -311,28 +309,20 @@ end;
 function TDMM6500.GetCount(ChanNumber: byte): boolean;
  var tempCount:integer;
 begin
- tempCount:=Count;
-// Result:=ChanQuire(ChanNumber,GetCount);
-
- if ChanQuireBegin(ChanNumber) then
-  begin
-    Result := GetCount;
-    fChanOperation:=False;
-  end                          else
-    Result:=False;
-
-// if ChanelNumberIsCorrect(ChanNumber) then
-//   begin
-//     fMeasureChanNumber:=ChanNumber;
-//     fChanOperationString:=' '+ChanelToString(ChanNumber);
-//     fChanOperation:=True;
-//     Result := GetCount;
-//     fChanOperation:=False;
-//   end                                else
-//     Result:=False;
-
- if Result then fChansMeasure[ChanNumber-fFirstChannelInSlot].Count:=Count;
- Count:=tempCount;
+ if ChanNumber=0
+   then Result:=GetCount()
+   else
+    begin
+     tempCount:=Count;
+     if ChanQuireBegin(ChanNumber) then
+      begin
+        Result := GetCount;
+        fChanOperation:=False;
+      end                          else
+        Result:=False;
+     if Result then fChansMeasure[ChanNumber-fFirstChannelInSlot].Count:=Count;
+     Count:=tempCount;
+    end;
 end;
 
 function TDMM6500.GetCountDig(ChanNumber: byte): boolean;
@@ -583,16 +573,21 @@ end;
 
 function TDMM6500.GetMeasureFunction(ChanNumber: byte): boolean;
 begin
- if ChanelNumberIsCorrect(ChanNumber) then
-   begin
-     fMeasureChanNumber:=ChanNumber;
-     fChanOperationString:=' '+ChanelToString(ChanNumber);
-     fChanOperation:=True;
-     Result := inherited GetMeasureFunction;
-     fChanOperation:=False;
-   end                                else
-     Result:=False;
- if Result then fChansMeasure[ChanNumber-fFirstChannelInSlot].MeasureFunction:=MeasureFunction;
+ if ChanNumber=0
+ then Result:=GetMeasureFunction()
+ else
+  begin
+   if ChanelNumberIsCorrect(ChanNumber) then
+     begin
+       fMeasureChanNumber:=ChanNumber;
+       fChanOperationString:=' '+ChanelToString(ChanNumber);
+       fChanOperation:=True;
+       Result := inherited GetMeasureFunction;
+       fChanOperation:=False;
+     end                                else
+       Result:=False;
+   if Result then fChansMeasure[ChanNumber-fFirstChannelInSlot].MeasureFunction:=MeasureFunction;
+  end;
 end;
 
 
@@ -794,11 +789,11 @@ begin
 //SetUnits(dm_tuFahr);
 //if GetUnits then
 // showmessage('ura! '+ DMM6500_TempUnitsLabel[(fMeasParameters[FMeasureFunction] as TDMM6500MeasPar_Temper).Units]);
-//SetMeasureFunction(1,kt_mTemp);
+//SetMeasureFunction(kt_mTemp,1);
 //SetUnits(dm_tuKelv);
 //if GetUnits(1) then
 // showmessage('ura! '+ DMM6500_TempUnitsLabel[(fChansMeasure[0].fMeasParameters[FMeasureFunction] as TDMM6500MeasPar_Temper).Units]);
-//SetMeasureFunction(3,kt_mVolDC);
+//SetMeasureFunction(kt_mVolDC,3);
 //SetUnits(dm_vuVolt);
 //if GetUnits(3) then
 // showmessage('ura! '+ DMM6500_VoltageUnitsLabel[(fChansMeasure[2].fMeasParameters[FMeasureFunction] as TDMM6500MeasPar_VoltDC).Units]);
@@ -810,9 +805,9 @@ begin
 //SetUnits(dm_tuFahr);
 //SetMeasureFunction(kt_mTemp);
 //SetUnits(dm_tuFahr);
-//SetMeasureFunction(1,kt_mDigVolt);
+//SetMeasureFunction(kt_mDigVolt,1);
 //SetUnits(dm_vuDB);
-//SetMeasureFunction(2,kt_mTemp);
+//SetMeasureFunction(kt_mTemp,2);
 //SetUnits(dm_tuKelv,2);
 
 
@@ -821,14 +816,14 @@ begin
 // SetDbmWReference(-2);
 // if GetDbmWReference() then
 //  showmessage('ura! '+floattostr((fMeasParameters[FMeasureFunction] as TDMM6500MeasPar_VoltDC).DBM));
-// SetMeasureFunction(2,kt_mVolAC);
+// SetMeasureFunction(kt_mVolAC,2);
 // if GetDbmWReference(2) then
 //  showmessage('ura! '+floattostr((fChansMeasure[1].fMeasParameters[FMeasureFunction] as TDMM6500MeasPar_VoltAC).DBM));
 
 
 // SetDbmWReference(15);
 // SetDbmWReference(-2);
-// SetMeasureFunction(2,kt_mVolAC);
+// SetMeasureFunction(kt_mVolAC,2);
 // SetDbmWReference(100,2);
 
 
@@ -839,28 +834,28 @@ begin
 //  showmessage('ura! '+floattostr((fMeasParameters[FMeasureFunction] as TDMM6500MeasPar_VoltDC).DB));
 // if GetDecibelReference(2) then
 //  showmessage('ura! '+ floattostr((fChansMeasure[1].fMeasParameters[FMeasureFunction] as TDMM6500MeasPar_VoltDC).DB));
-// SetMeasureFunction(2,kt_mVolAC);
+// SetMeasureFunction(kt_mVolAC,2);
 // if GetDecibelReference(2) then
 //  showmessage('ura! '+ floattostr((fChansMeasure[1].fMeasParameters[FMeasureFunction] as TDMM6500MeasPar_VoltAC).DB))
 //  else showmessage('no ura! ');
 
 // SetDecibelReference(0.5);
 // SetDecibelReference(1e-9);
-// SetMeasureFunction(2,kt_mVolAC);
+// SetMeasureFunction(kt_mVolAC,2);
 // SetDecibelReference(50,2);
 
 // SetMeasureFunction(kt_mDigVolt);
 // if GetSampleRate then
 //  showmessage('ura! '+ inttostr((MeasParameters as TDMM6500MeasPar_BaseDig).SampleRate));
 // GetSampleRate(kt_mDigCur);
-// SetMeasureFunction(2,kt_mDigVolt);
+// SetMeasureFunction(kt_mDigVolt,2);
 // if GetSampleRate(2) then
 //  showmessage('ura! '+ inttostr((fChansMeasure[1].MeasParameters as TDMM6500MeasPar_BaseDig).SampleRate));
 
 //SetMeasureFunction(kt_mDigVolt);
 //SetSampleRate(2000);
 //SetSampleRate(kt_mDigCur,20000);
-//SetMeasureFunction(2,kt_mDigVolt);
+//SetMeasureFunction(kt_mDigVolt,2);
 //SetSampleRate(200000,2);
 
 
@@ -906,6 +901,43 @@ begin
 //SetCountDig(10000);
 //SetCountDig(35000,1);
 //SetCountDig(30000,2);
+
+//if GetCount(1) then showmessage('Chan 1, Count='+inttostr(fChansMeasure[0].Count));
+//SetCount(200,1);
+//if GetCount(1) then showmessage('Chan 1, Count='+inttostr(fChansMeasure[0].Count));
+//if GetCount(0) then showmessage('Count='+inttostr(Count));
+//SetCount(400000);
+//if GetCount() then showmessage('Count='+inttostr(Count));
+
+
+//if GetMeasureFunction() then
+//  showmessage ('ura  '+Keitley_MeasureLabel[FMeasureFunction])
+//                         else
+//  showmessage('ups :(');
+//
+//if GetMeasureFunction(2) then
+//  showmessage (Keitley_MeasureLabel[fChansMeasure[1].MeasureFunction])
+//                         else
+//  showmessage('ups :(');
+//
+// SetMeasureFunction(kt_mDigVolt,3);
+//
+// if GetMeasureFunction(3) then
+//  showmessage ('ura  '+ Keitley_MeasureLabel[fChansMeasure[2].MeasureFunction])
+//                         else
+//  showmessage('ups :(');                        
+
+//SetMeasureFunction;
+//SetMeasureFunction(kt_mVolDC,2);
+//showmessage('uuu'+Keitley_MeasureLabel[MeasureFunction]);
+//SetMeasureFunction(kt_mCurAC,1);
+//SetMeasureFunction(kt_mTemp,11);
+//SetMeasureFunction(kt_mTemp,5);
+//showmessage('uuu'+Keitley_MeasureLabel[MeasureFunction]);
+//SetMeasureFunction(2,4,kt_mRes4W);
+//SetMeasureFunction(2,4,kt_mCurDC);
+//SetMeasureFunction([9,3,5],kt_mFreq);
+//SetMeasureFunction([9,3,5],kt_mVoltRat);
 //------------------------------------------------------
 
 
@@ -930,45 +962,6 @@ begin
 // SetDecibelReference(1e-9);
 // SetDecibelReference(2,50);
 
-
-//if GetCount(1) then showmessage('Chan 1, Count='+inttostr(fChansMeasure[0].Count));
-//
-//SetCount(1,200);
-//if GetCount(1) then showmessage('Chan 1, Count='+inttostr(fChansMeasure[0].Count));
-//
-//if GetCount() then showmessage('Count='+inttostr(Count));
-//
-//SetCount(400000);
-//if GetCount() then showmessage('Count='+inttostr(Count));
-
-//if GetMeasureFunction() then
-//  showmessage ('ura  '+Keitley_MeasureLabel[FMeasureFunction])
-//                         else
-//  showmessage('ups :(');                        ;
-//
-//if GetMeasureFunction(2) then
-//  showmessage (Keitley_MeasureLabel[fChansMeasure[2].MeasureFunction])
-//                         else
-//  showmessage('ups :(');                        ;
-//
-// SetMeasureFunction(3,kt_mDigVolt);
-//
-// if GetMeasureFunction(3) then
-//  showmessage ('ura  '+ Keitley_MeasureLabel[fChansMeasure[3].MeasureFunction])
-//                         else
-//  showmessage('ups :(');                        ;
-
-//SetMeasureFunction;
-//SetMeasureFunction(2);
-//showmessage('uuu'+Keitley_MeasureLabel[MeasureFunction]);
-//SetMeasureFunction(1,kt_mCurAC);
-//SetMeasureFunction(11,kt_mTemp);
-//SetMeasureFunction(5,kt_mTemp);
-//showmessage('uuu'+Keitley_MeasureLabel[MeasureFunction]);
-//SetMeasureFunction(2,4,kt_mRes4W);
-//SetMeasureFunction(2,4,kt_mCurDC);
-//SetMeasureFunction([9,3,5],kt_mFreq);
-//SetMeasureFunction([9,3,5],kt_mVoltRat);
 
 
 //showmessage('kkk='+booltostr(TestShowEthernet,True));
@@ -1207,19 +1200,23 @@ begin
    end;
 end;
 
-procedure TDMM6500.SetMeasureFunction(ChanNumber: byte;
-  MeasureFunc: TKeitley_Measure);
+procedure TDMM6500.SetMeasureFunction(MeasureFunc: TKeitley_Measure; ChanNumber: Byte);
 begin
- if ChanelNumberIsCorrect(ChanNumber) and IsPermittedMeasureFuncForChan(MeasureFunc,ChanNumber) then
-   begin
-     fChanOperationString:=PartDelimiter+ChanelToString(ChanNumber);
-     fChanOperation:=True;
-     inherited SetMeasureFunction(MeasureFunc);
-     fChansMeasure[ChanNumber-fFirstChannelInSlot].MeasureFunction:=MeasureFunc;
-   end;
+ if ChanNumber=0
+  then SetMeasureFunction(MeasureFunc)
+  else
+    begin
+     if ChanelNumberIsCorrect(ChanNumber) and IsPermittedMeasureFuncForChan(MeasureFunc,ChanNumber) then
+       begin
+         fChanOperationString:=PartDelimiter+ChanelToString(ChanNumber);
+         fChanOperation:=True;
+         inherited SetMeasureFunction(MeasureFunc);
+         fChansMeasure[ChanNumber-fFirstChannelInSlot].MeasureFunction:=MeasureFunc;
+       end;
+    end;
 end;
 
-procedure TDMM6500.SetCount(ChanNumber: byte; Cnt: integer);
+procedure TDMM6500.SetCount(Cnt: Integer; ChanNumber: Byte);
  var tempCount:integer;
 begin
 
