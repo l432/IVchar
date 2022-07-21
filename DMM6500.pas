@@ -71,6 +71,7 @@ type
    Procedure MeasParametersDestroy;
    procedure StrToTempUnit(Str:string);
    procedure StrToVoltUnit(Str:string);
+   procedure StringToInputImpedance(Str:string);
   protected
    procedure ProcessingStringByRootNode(Str:string);override;
    procedure PrepareString;override;
@@ -85,6 +86,7 @@ type
    procedure SetCountNumber(Value:integer);override;
    procedure SetCountDigNumber(Value:integer);
    function GetMeasPar_BaseVolt(FM:TKeitley_Measure;PM:TDMM6500MeasPar_Base):IMeasPar_BaseVolt;
+   function GetMeasPar_BaseVoltDC(FM:TKeitley_Measure;PM:TDMM6500MeasPar_Base):IMeasPar_BaseVoltDC;
   public
    property MeasParameters:TDMM6500MeasPar_Base read GetMeasParameters;
    property CountDig:integer read fCountDig write SetCountDigNumber;
@@ -156,6 +158,10 @@ type
    function GetSampleRate(Measure:TKeitley_Measure):boolean;overload;
    function GetSampleRate(ChanNumber:byte=0):boolean;overload;
 
+   procedure SetApertureAutoAction(Measure:TKeitley_Measure);
+   procedure SetApertureAuto(ChanNumber:byte=0);
+
+
 
    procedure SetDecibelReferenceAction(FM: TKeitley_Measure;
                                        PM: TDMM6500MeasPar_Base;
@@ -185,6 +191,14 @@ type
    function GetUnitsAction(FM: TKeitley_Measure;
                                    PM: TDMM6500MeasPar_Base):boolean;
    function GetUnits(ChanNumber:byte=0):boolean;//overload;
+
+   procedure SetInputImpedanceAction(FM: TKeitley_Measure;
+                                PM: TDMM6500MeasPar_Base;
+                                InIm:TDMM6500_InputImpedance);
+   procedure SetInputImpedance(InIm:TDMM6500_InputImpedance;ChanNumber: Byte=0);
+   function GetInputImpedanceAction(FM: TKeitley_Measure;
+                                      PM: TDMM6500MeasPar_Base):boolean;
+   function GetInputImpedance(ChanNumber:byte=0):boolean;
 
 
    Procedure GetParametersFromDevice;override;
@@ -354,6 +368,7 @@ begin
  QuireOperation(23,20);
  Result:=fDevice.isReceived;
  if Result then DeviceCountDig:=round(fDevice.Value);
+ sin(DeviceCountDig);
 end;
 
 //function TDMM6500.GetCountDig: boolean;
@@ -537,6 +552,25 @@ begin
  if Result then fFirstChannelInSlot:=round(fDevice.Value);
 end;
 
+function TDMM6500.GetInputImpedance(ChanNumber: byte): boolean;
+begin
+ Result:=GetShablon(GetInputImpedanceAction,ChanNumber);
+end;
+
+function TDMM6500.GetInputImpedanceAction(FM: TKeitley_Measure;
+  PM: TDMM6500MeasPar_Base): boolean;
+  var BaseV:IMeasPar_BaseVoltDC;
+begin
+  BaseV:=GetMeasPar_BaseVoltDC(FM,PM);
+  if BaseV<>nil then
+   begin
+    QuireOperation(MeasureToRootNodeNumber(FM),51);
+    Result:=fDevice.Value<>ErResult;
+    if Result then BaseV.InputImpedance:=TDMM6500_InputImpedance(round(fDevice.Value));
+   end          else
+    Result:=False;
+end;
+
 function TDMM6500.GetLastChannelInSlot: boolean;
 begin
 //:SYST:CARD1:VCH:END?
@@ -566,6 +600,16 @@ begin
  case FM of
    kt_mVolDC:Result:=(PM as TDMM6500MeasPar_VoltDC);
    kt_mVolAC:Result:=(PM as TDMM6500MeasPar_VoltAC);
+   kt_mDigVolt:Result:=(PM as TDMM6500MeasPar_DigVolt);
+   else Result:=nil;
+ end;
+end;
+
+function TDMM6500.GetMeasPar_BaseVoltDC(FM: TKeitley_Measure;
+  PM: TDMM6500MeasPar_Base): IMeasPar_BaseVoltDC;
+begin
+ case FM of
+   kt_mVolDC:Result:=(PM as TDMM6500MeasPar_VoltDC);
    kt_mDigVolt:Result:=(PM as TDMM6500MeasPar_DigVolt);
    else Result:=nil;
  end;
@@ -781,22 +825,32 @@ begin
 //  (fDevice as TTelnetMeterDeviceSingle).SetStringToSend(':DIG:COUN?');
 //  fDevice.GetData;
 
+//SetMeasureFunction(kt_mVolDC);
+//SetInputImpedance(dm_ii10M);
+//if GetInputImpedance then
+// showmessage('ura! '+ DMM6500_InputImpedanceLabel[(MeasParameters as TDMM6500MeasPar_VoltDC).InputImpedance]);
+//SetMeasureFunction(kt_mDigVolt,3);
+//SetInputImpedance(dm_ii10M,3);
+//if GetInputImpedance(3) then
+// showmessage('ura! '+ DMM6500_InputImpedanceLabel[(fChansMeasure[2].MeasParameters as TDMM6500MeasPar_DigVolt).InputImpedance]);
+
+
 //SetMeasureFunction(kt_mVolAC);
 //SetUnits(dm_vuDBM);
 //if GetUnits then
-// showmessage('ura! '+ DMM6500_VoltageUnitsLabel[(fMeasParameters[FMeasureFunction] as TDMM6500MeasPar_VoltAC).Units]);
+// showmessage('ura! '+ DMM6500_VoltageUnitsLabel[(MeasParameters as TDMM6500MeasPar_VoltAC).Units]);
 //SetMeasureFunction(kt_mTemp);
 //SetUnits(dm_tuFahr);
 //if GetUnits then
-// showmessage('ura! '+ DMM6500_TempUnitsLabel[(fMeasParameters[FMeasureFunction] as TDMM6500MeasPar_Temper).Units]);
+// showmessage('ura! '+ DMM6500_TempUnitsLabel[(MeasParameters as TDMM6500MeasPar_Temper).Units]);
 //SetMeasureFunction(kt_mTemp,1);
 //SetUnits(dm_tuKelv);
 //if GetUnits(1) then
-// showmessage('ura! '+ DMM6500_TempUnitsLabel[(fChansMeasure[0].fMeasParameters[FMeasureFunction] as TDMM6500MeasPar_Temper).Units]);
+// showmessage('ura! '+ DMM6500_TempUnitsLabel[(fChansMeasure[0].MeasParameters as TDMM6500MeasPar_Temper).Units]);
 //SetMeasureFunction(kt_mVolDC,3);
 //SetUnits(dm_vuVolt);
 //if GetUnits(3) then
-// showmessage('ura! '+ DMM6500_VoltageUnitsLabel[(fChansMeasure[2].fMeasParameters[FMeasureFunction] as TDMM6500MeasPar_VoltDC).Units]);
+// showmessage('ura! '+ DMM6500_VoltageUnitsLabel[(fChansMeasure[2].MeasParameters as TDMM6500MeasPar_VoltDC).Units]);
 
 
 
@@ -812,13 +866,13 @@ begin
 
 
 // if GetDbmWReference() then
-//  showmessage('ura! '+floattostr((fMeasParameters[FMeasureFunction] as TDMM6500MeasPar_VoltDC).DBM));
+//  showmessage('ura! '+floattostr((MeasParameters as TDMM6500MeasPar_VoltDC).DBM));
 // SetDbmWReference(-2);
 // if GetDbmWReference() then
-//  showmessage('ura! '+floattostr((fMeasParameters[FMeasureFunction] as TDMM6500MeasPar_VoltDC).DBM));
+//  showmessage('ura! '+floattostr((MeasParameters as TDMM6500MeasPar_VoltDC).DBM));
 // SetMeasureFunction(kt_mVolAC,2);
 // if GetDbmWReference(2) then
-//  showmessage('ura! '+floattostr((fChansMeasure[1].fMeasParameters[FMeasureFunction] as TDMM6500MeasPar_VoltAC).DBM));
+//  showmessage('ura! '+floattostr((fChansMeasure[1].MeasParameters as TDMM6500MeasPar_VoltAC).DBM));
 
 
 // SetDbmWReference(15);
@@ -828,15 +882,15 @@ begin
 
 
 // if GetDecibelReference() then
-//  showmessage('ura! '+floattostr((fMeasParameters[FMeasureFunction] as TDMM6500MeasPar_VoltDC).DB));
+//  showmessage('ura! '+floattostr((MeasParameters as TDMM6500MeasPar_VoltDC).DB));
 // SetDecibelReference(1e-9);
 // if GetDecibelReference() then
-//  showmessage('ura! '+floattostr((fMeasParameters[FMeasureFunction] as TDMM6500MeasPar_VoltDC).DB));
+//  showmessage('ura! '+floattostr((MeasParameters as TDMM6500MeasPar_VoltDC).DB));
 // if GetDecibelReference(2) then
-//  showmessage('ura! '+ floattostr((fChansMeasure[1].fMeasParameters[FMeasureFunction] as TDMM6500MeasPar_VoltDC).DB));
+//  showmessage('ura! '+ floattostr((fChansMeasure[1].fMeasParameters as TDMM6500MeasPar_VoltDC).DB));
 // SetMeasureFunction(kt_mVolAC,2);
 // if GetDecibelReference(2) then
-//  showmessage('ura! '+ floattostr((fChansMeasure[1].fMeasParameters[FMeasureFunction] as TDMM6500MeasPar_VoltAC).DB))
+//  showmessage('ura! '+ floattostr((fChansMeasure[1].MeasParameters as TDMM6500MeasPar_VoltAC).DB))
 //  else showmessage('no ura! ');
 
 // SetDecibelReference(0.5);
@@ -1132,6 +1186,7 @@ begin
               1:StrToTempUnit(AnsiLowerCase(Str));
               2:StrToVoltUnit(AnsiLowerCase(Str));
              end;
+          52:StringToInputImpedance(AnsiLowerCase(Str));
           end;
  end;
 
@@ -1214,6 +1269,27 @@ begin
          fChansMeasure[ChanNumber-fFirstChannelInSlot].MeasureFunction:=MeasureFunc;
        end;
     end;
+end;
+
+procedure TDMM6500.SetApertureAuto(ChanNumber: byte);
+begin
+  if ChanNumber=0
+   then  SetApertureAutoAction(fMeasureFunction)
+   else
+     if ChanSetupBegin(ChanNumber) then
+     begin
+       SetApertureAutoAction(fChansMeasure[ChanNumber-fFirstChannelInSlot].MeasureFunction);
+     end;
+end;
+
+procedure TDMM6500.SetApertureAutoAction(Measure: TKeitley_Measure);
+begin
+//:<function>:APER AUTO
+ if Measure>kt_mVoltRat then
+  begin
+   fAdditionalString:=SuffixKt_2450[8];
+   SetupOperation(MeasureToRootNodeNumber(Measure),51);
+  end
 end;
 
 procedure TDMM6500.SetCount(Cnt: Integer; ChanNumber: Byte);
@@ -1334,6 +1410,30 @@ begin
  PM.DisplayDN:=Number;
 end;
 
+procedure TDMM6500.SetInputImpedance(InIm: TDMM6500_InputImpedance;
+  ChanNumber: Byte);
+begin
+ if ChanNumber=0
+   then  SetInputImpedanceAction(fMeasureFunction,MeasParameters,InIm)
+   else
+     if ChanSetupBegin(ChanNumber) then
+       SetInputImpedanceAction(fChansMeasure[ChanNumber-fFirstChannelInSlot].MeasureFunction,
+                       fChansMeasure[ChanNumber-fFirstChannelInSlot].MeasParameters,
+                       InIm);
+end;
+
+procedure TDMM6500.SetInputImpedanceAction(FM: TKeitley_Measure;
+  PM: TDMM6500MeasPar_Base; InIm: TDMM6500_InputImpedance);
+  var BaseV:IMeasPar_BaseVoltDC;
+begin
+//:<function>:INP MOHM10|AUTO
+ BaseV:=GetMeasPar_BaseVoltDC(FM,PM);
+ if BaseV=nil then Exit;
+ fAdditionalString:=DMM6500_InputImpedanceCommand[InIm];
+ SetupOperation(MeasureToRootNodeNumber(FM),51);
+ BaseV.InputImpedance:=InIm;
+end;
+
 procedure TDMM6500.SetDisplayDigitsNumber(Number: KeitleyDisplayDigitsNumber);
 begin
  SetDisplayDigitsNumberAction(fMeasureFunction,MeasParameters,Number);
@@ -1381,7 +1481,8 @@ procedure TDMM6500.SetSampleRate(Measure: TKeitley_Measure;
   SR: TDMM6500_DigSampleRate);
 begin
  MeasParameterCreate(Measure);
- SetSampleRateAction(Measure,fMeasParameters[Measure],SR)
+ SetSampleRateAction(Measure,fMeasParameters[Measure],SR);
+ SetApertureAutoAction(Measure);
 end;
 
 //procedure TDMM6500.SetSampleRate(SR: TDMM6500_DigSampleRate);
@@ -1402,7 +1503,7 @@ begin
                        fChansMeasure[ChanNumber-fFirstChannelInSlot].MeasParameters,
                        SR);
      end;
-
+ SetApertureAuto(ChanNumber);
 // if ChanSetupBegin(ChanNumber) then
 //    if SetSampleRateAction(fChansMeasure[ChanNumber-fFirstChannelInSlot].MeasureFunction,SR) then
 //     (fChansMeasure[ChanNumber-fFirstChannelInSlot].MeasParameters as TDMM6500MeasPar_BaseDig).SampleRate:=SR;
@@ -1779,6 +1880,19 @@ begin
  fAdditionalString:=DMM6500_VoltageUnitsLabel[Un];
  SetupOperation(MeasureToRootNodeNumber(FM),50);
  BaseV.Units:=Un;
+end;
+
+procedure TDMM6500.StringToInputImpedance(Str: string);
+  var i:TDMM6500_InputImpedance;
+begin
+ for I := Low(TDMM6500_InputImpedance) to High(TDMM6500_InputImpedance) do
+  begin
+   if Str=DMM6500_InputImpedanceCommand[i] then
+     begin
+       fDevice.Value:=ord(i);
+       Break;
+     end;
+  end;
 end;
 
 procedure TDMM6500.StrToTempUnit(Str: string);

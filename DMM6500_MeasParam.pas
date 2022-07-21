@@ -19,6 +19,13 @@ IMeasPar_BaseVolt = interface
  property DBM:integer read GetDBM write SetDBM;
 end;
 
+IMeasPar_BaseVoltDC = interface
+  ['{103051CD-4585-45BF-9D0D-D4C60A31FDAD}']
+ function GetInputImpedance:TDMM6500_InputImpedance;
+ procedure SetInputImpedance(const Value:TDMM6500_InputImpedance);
+ property InputImpedance: TDMM6500_InputImpedance read GetInputImpedance write SetInputImpedance;
+end;
+
 TDMM6500MeasPar_Base=class(TSimpleFreeAndAiniObject)
 //TDMM6500MeasPar_Base=class(TInterfacedObject)
  private
@@ -115,7 +122,7 @@ end;
 
 //*******************************************************
 
-TDMM6500MeasPar_DigVolt=class(TDMM6500MeasPar_BaseDig,IMeasPar_BaseVolt)
+TDMM6500MeasPar_DigVolt=class(TDMM6500MeasPar_BaseDig,IMeasPar_BaseVolt,IMeasPar_BaseVoltDC)
  private
   fRange:TDMM6500_VoltageDigRange;
   fBaseVolt:TDMM6500MeasPar_BaseVoltDC;
@@ -198,7 +205,7 @@ TDMM6500MeasPar_CurDC=class(TDMM6500MeasPar_Continuity)
   constructor Create;
 end;
 
-TDMM6500MeasPar_VoltDC=class(TDMM6500MeasPar_Continuity,IMeasPar_BaseVolt)
+TDMM6500MeasPar_VoltDC=class(TDMM6500MeasPar_Continuity,IMeasPar_BaseVolt,IMeasPar_BaseVoltDC)
  private
   fRange:TDMM6500_VoltageDCRange;
   fBaseVolt:TDMM6500MeasPar_BaseVoltDC;

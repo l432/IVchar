@@ -26,12 +26,12 @@ const
   ':volt:dc:rat',':dig:curr',':dig:volt');
 //    37             38         39
 
-  SuffixKt_2450:array[0..7]of string=('on','off','rst','def',
+  SuffixKt_2450:array[0..8]of string=('on','off','rst','def',
 //                                      0    1     2     3
- 'amp','volt','ohm','watt' );
-//   4     5    6      7
+ 'amp','volt','ohm','watt','auto' );
+//   4     5    6      7     8
 
-  FirstNodeKt_2450:array[0..50]of string=
+  FirstNodeKt_2450:array[0..52]of string=
   (':scr',':user1:text',':user2:text',':cle',':pos',':int:stat',':term',
 //     0       1             2          3      4        5         6
    ':rsen',':smod',':ocom',':prot',':trip',':vlim',':ilim',':unit',
@@ -44,8 +44,8 @@ const
 //     30          31         32         33     34      35        36
    ':line#:stat',':load', ':bloc',':buff',':bran',':mdig',':res',':paus',
 //      37         38        39      40      41      42      43      44
-   ':card1',':pcar1',':srat',':db:ref',':dbm:ref',':unit');
-//   45       46       47        48        49       50
+   ':card1',':pcar1',':srat',':db:ref',':dbm:ref',':unit',':aper',':inp');
+//   45       46       47        48        49       50       51      52
 
  ConfLeafNodeKeitley:array[0..3]of string=
  (':cre',':del',':rec',':stor');
