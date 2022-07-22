@@ -92,7 +92,7 @@ TDMM6500MeasPar_BaseDelayMT=class(TDMM6500MeasPar_BaseDelay)
  private
   fMTLimits:TLimitValues;
   fMeaureTime:double;
-  {час вимірювання, мс, для більшості 0,02-240}
+  {час вимірювання, []=мс, для більшості 0,02-240}
   procedure SetMeaureTime(Value:double);
  public
   property MeaureTime: double read fMeaureTime write SetMeaureTime;
@@ -544,6 +544,8 @@ constructor TDMM6500MeasPar_FreqPeriod.Create;
 begin
  inherited Create;
  fThresholdRange:=dm_vcrAuto;
+ fMTLimits[lvMin]:=2;
+ fMTLimits[lvMax]:=273;
 end;
 
 { TDMM6500MeasPar_BaseMajority }

@@ -72,6 +72,7 @@ type
    procedure StrToTempUnit(Str:string);
    procedure StrToVoltUnit(Str:string);
    procedure StringToInputImpedance(Str:string);
+   procedure StringToDetectorBW(Str:string);
   protected
    procedure ProcessingStringByRootNode(Str:string);override;
    procedure PrepareString;override;
@@ -199,6 +200,14 @@ type
    function GetInputImpedanceAction(FM: TKeitley_Measure;
                                       PM: TDMM6500MeasPar_Base):boolean;
    function GetInputImpedance(ChanNumber:byte=0):boolean;
+
+   procedure SetDetectorBWAction(FM: TKeitley_Measure;
+                                PM: TDMM6500MeasPar_Base;
+                                DecBW:TDMM6500_DetectorBandwidth);
+   procedure SetDetectorBW(DecBW:TDMM6500_DetectorBandwidth;ChanNumber: Byte=0);
+   function GetDetectorBWAction(FM: TKeitley_Measure;
+                                 PM: TDMM6500MeasPar_Base):boolean;
+   function GetDetectorBW(ChanNumber:byte=0):boolean;
 
 
    Procedure GetParametersFromDevice;override;
@@ -564,7 +573,7 @@ begin
   BaseV:=GetMeasPar_BaseVoltDC(FM,PM);
   if BaseV<>nil then
    begin
-    QuireOperation(MeasureToRootNodeNumber(FM),51);
+    QuireOperation(MeasureToRootNodeNumber(FM),52);
     Result:=fDevice.Value<>ErResult;
     if Result then BaseV.InputImpedance:=TDMM6500_InputImpedance(round(fDevice.Value));
    end          else
@@ -792,6 +801,24 @@ begin
 //  (fChansMeasure[ChanNumber-fFirstChannelInSlot].MeasParameters as TDMM6500MeasPar_BaseDelay).AutoDelay:=(fDevice.Value=1);
 end;
 
+function TDMM6500.GetDetectorBW(ChanNumber: byte): boolean;
+begin
+ Result:=GetShablon(GetDetectorBWAction,ChanNumber);
+end;
+
+function TDMM6500.GetDetectorBWAction(FM: TKeitley_Measure;
+  PM: TDMM6500MeasPar_Base): boolean;
+begin
+  if FM in [kt_mCurAC,kt_mVolAC] then
+   begin
+    QuireOperation(MeasureToRootNodeNumber(FM),53);
+    Result:=(fDevice.Value<>ErResult);
+    if Result then
+      (PM as TDMM6500MeasPar_BaseAC).DetectorBW:=TDMM6500_DetectorBandwidth(round(fDevice.Value));
+   end                           else
+    Result:=False;
+end;
+
 function TDMM6500.IsPermittedMeasureFuncForChan(MeasureFunc: TKeitley_Measure;
   ChanNumber: byte): boolean;
 begin
@@ -824,6 +851,18 @@ begin
 //  fDevice.GetData;
 //  (fDevice as TTelnetMeterDeviceSingle).SetStringToSend(':DIG:COUN?');
 //  fDevice.GetData;
+
+
+//SetDetectorBW(dm_dbw30Hz);
+//SetMeasureFunction(kt_mCurAC);
+//SetDetectorBW(dm_dbw30Hz);
+//if GetDetectorBW then
+// showmessage('ura! '+ DMM6500_DetectorBandwidthLabel[(MeasParameters as TDMM6500MeasPar_BaseAC).DetectorBW]);
+//SetMeasureFunction(kt_mVolAC,3);
+//SetDetectorBW(dm_dbw300Hz,3);
+//if GetDetectorBW(3) then
+// showmessage('ura! '+ DMM6500_DetectorBandwidthLabel[(fChansMeasure[2].MeasParameters as TDMM6500MeasPar_BaseAC).DetectorBW]);
+
 
 //SetMeasureFunction(kt_mVolDC);
 //SetInputImpedance(dm_ii10M);
@@ -1187,6 +1226,7 @@ begin
               2:StrToVoltUnit(AnsiLowerCase(Str));
              end;
           52:StringToInputImpedance(AnsiLowerCase(Str));
+          53:StringToDetectorBW(Str);
           end;
  end;
 
@@ -1382,6 +1422,28 @@ begin
   end;
 end;
 
+procedure TDMM6500.SetDetectorBW(DecBW: TDMM6500_DetectorBandwidth;
+  ChanNumber: Byte);
+begin
+ if ChanNumber=0
+ then  SetDetectorBWAction(fMeasureFunction,MeasParameters,DecBW)
+ else
+   if ChanSetupBegin(ChanNumber) then
+     SetDetectorBWAction(fChansMeasure[ChanNumber-fFirstChannelInSlot].MeasureFunction,
+                     fChansMeasure[ChanNumber-fFirstChannelInSlot].MeasParameters,
+                     DecBW);
+end;
+
+procedure TDMM6500.SetDetectorBWAction(FM: TKeitley_Measure;
+  PM: TDMM6500MeasPar_Base; DecBW: TDMM6500_DetectorBandwidth);
+begin
+// :<function>:DET:BAND <n>
+ if not(FM in [kt_mCurAC,kt_mVolAC]) then Exit;
+ fAdditionalString:=inttostr(DMM6500_DetectorBandwidthCommand[DecBW]);
+ SetupOperation(MeasureToRootNodeNumber(FM),53);
+ (PM as TDMM6500MeasPar_BaseAC).DetectorBW:=DecBW;
+end;
+
 procedure TDMM6500.SetDisplayDigitsNumber(Number: KeitleyDisplayDigitsNumber; ChanNumber: Byte);
 begin
    if ChanNumber=0
@@ -1430,7 +1492,7 @@ begin
  BaseV:=GetMeasPar_BaseVoltDC(FM,PM);
  if BaseV=nil then Exit;
  fAdditionalString:=DMM6500_InputImpedanceCommand[InIm];
- SetupOperation(MeasureToRootNodeNumber(FM),51);
+ SetupOperation(MeasureToRootNodeNumber(FM),52);
  BaseV.InputImpedance:=InIm;
 end;
 
@@ -1880,6 +1942,22 @@ begin
  fAdditionalString:=DMM6500_VoltageUnitsLabel[Un];
  SetupOperation(MeasureToRootNodeNumber(FM),50);
  BaseV.Units:=Un;
+end;
+
+procedure TDMM6500.StringToDetectorBW(Str: string);
+  var i:TDMM6500_DetectorBandwidth;
+begin
+ try
+  fDevice.Value:=StrToInt(Str);
+  for I := Low(TDMM6500_DetectorBandwidth) to High(TDMM6500_DetectorBandwidth) do
+   if fDevice.Value=DMM6500_DetectorBandwidthCommand[i] then
+     begin
+       fDevice.Value:=ord(i);
+       Break;
+     end;
+ except
+  fDevice.Value:=ErResult;
+ end;
 end;
 
 procedure TDMM6500.StringToInputImpedance(Str: string);

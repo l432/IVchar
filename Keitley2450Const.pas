@@ -31,7 +31,7 @@ const
  'amp','volt','ohm','watt','auto' );
 //   4     5    6      7     8
 
-  FirstNodeKt_2450:array[0..52]of string=
+  FirstNodeKt_2450:array[0..53]of string=
   (':scr',':user1:text',':user2:text',':cle',':pos',':int:stat',':term',
 //     0       1             2          3      4        5         6
    ':rsen',':smod',':ocom',':prot',':trip',':vlim',':ilim',':unit',
@@ -44,8 +44,10 @@ const
 //     30          31         32         33     34      35        36
    ':line#:stat',':load', ':bloc',':buff',':bran',':mdig',':res',':paus',
 //      37         38        39      40      41      42      43      44
-   ':card1',':pcar1',':srat',':db:ref',':dbm:ref',':unit',':aper',':inp');
+   ':card1',':pcar1',':srat',':db:ref',':dbm:ref',':unit',':aper',':inp',
 //   45       46       47        48        49       50       51      52
+   ':det:band');
+//      53
 
  ConfLeafNodeKeitley:array[0..3]of string=
  (':cre',':del',':rec',':stor');
@@ -212,6 +214,7 @@ const
  Keitley_TrigDelayLimits:TLimitValues=(1.67e-7,1e3);
 
  Kt_2450_MeasureTimeLimits:TLimitValues=(0.01,10);
+ {в циклах напруги живлення}
  Keitley_MeaureTimeConvertConst=20;
 
  Kt_2450_SourceSweepLimits:array[TKt2450_Source] of TLimitValues=
