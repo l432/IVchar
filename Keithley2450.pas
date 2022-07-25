@@ -222,16 +222,15 @@ TKT2450_SourceDevice=class;
    function IsHighCapacitanceOn():boolean;overload;
    function GetHighCapacitanceStates():boolean;
 
-
    procedure SetAzeroState(Measure:TKt2450_Measure;
-                              toOn:boolean);overload;
+                              toOn:boolean);reintroduce;overload;
    {чи перевіряються опорні значення перед кожним виміром}
-   procedure SetAzeroState(toOn:boolean);overload;
+   procedure SetAzeroState(toOn:boolean);override;
    function IsAzeroStateOn(Measure:TKt2450_Measure):boolean;overload;
    function IsAzeroStateOn():boolean;overload;
    function GetAzeroStates():boolean;
-   procedure AzeroOnce();
-   {примусова перевірка опорного значення}
+//   procedure AzeroOnce();
+//   {примусова перевірка опорного значення}
 
    procedure SetResistanceCompencate(toOn:boolean);
    {ввімкнення/вимкнення компенсації опору}
@@ -486,11 +485,11 @@ begin
  DataVector.Add(fSourceMeasuredValue,fDevice.Value);
 end;
 
-procedure TKt_2450.AzeroOnce;
-begin
-//:AZERo:ONCE
- SetupOperation(16,0,0,False);
-end;
+//procedure TKt_2450.AzeroOnce;
+//begin
+////:AZERo:ONCE
+// SetupOperation(16,0,0,False);
+//end;
 
 procedure TKt_2450.ConfigBothRecall(SourceListName, MeasListName: string;
   SourceItemIndex, MeasItemIndex: word);
@@ -1377,7 +1376,11 @@ begin
 // SetAzeroState(False);
 // showmessage(booltostr(IsAzeroStateOn(),True));
 
+//SetAzeroState(kt_mVolDC,False);
+//showmessage(booltostr(fAzeroState[kt_mVolDC],True));
 //SetAzeroState(False);
+//showmessage(booltostr(fAzeroState[kt_mCurDC],True));
+
 //SetAzeroState(True);
 //SetAzeroState(kt_mCurrent,False);
 //SetAzeroState(kt_mVoltage,True);
@@ -1710,7 +1713,7 @@ begin
              7,9,20: fDevice.Value:=StrToInt(Str);
              14: if StringToMeasureUnit(AnsiLowerCase(Str))
                     then fDevice.Value:=ord(fMeasureUnits[TKt2450_Measure(fFirstLevelNode-12)]);
-             16,15,26:fDevice.Value:=SCPI_StringToValue(Str);
+             16,15{,26}:fDevice.Value:=SCPI_StringToValue(Str);
           end;   //fRootNode=12..14
 //   20:fDevice.Value:=StrToInt(Str);
    21:case fFirstLevelNode of
@@ -1727,8 +1730,9 @@ end;
 procedure TKt_2450.SetAzeroState(Measure: TKt2450_Measure; toOn: boolean);
 begin
 //CURR|VOLT|RES:AZER OFF ON|OFF
- OnOffFromBool(toOn);
- SetupOperation(ord(Measure)+12,20);
+ inherited SetAzeroState(Measure,toOn);
+// OnOffFromBool(toOn);
+// SetupOperation(ord(Measure)+12,20);
  fAzeroState[Measure]:=toOn;
 end;
 

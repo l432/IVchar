@@ -153,7 +153,7 @@ const
 
  DMM6500_RefTempLimits:array[TDMM6500_TempUnits] of TLimitValues=
   ((273.15,338.15),(0,65),(32,149));
-
+ DMM6500_NPLCLimits:TLimitValues=(0.0005,12);
 
 implementation
 

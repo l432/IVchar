@@ -161,8 +161,29 @@ type
 
    procedure SetApertureAutoAction(Measure:TKeitley_Measure);
    procedure SetApertureAuto(ChanNumber:byte=0);
+   function  ApertValueToString(FM: TKeitley_Measure;
+                              ApertValue:double):string;
+   procedure SetApertureAction(FM: TKeitley_Measure;
+                              ApertValue:double);
+   procedure SetAperture(ApertValue:double;ChanNumber:byte=0);
+   function GetApertureAction(FM: TKeitley_Measure):boolean;
+   function GetAperture(ChanNumber:byte=0):boolean;
+   {результат в fDevice.Value}
 
+   procedure SetNPLCAction(FM: TKeitley_Measure;
+                           NPLCvalue:double);
+   procedure SetNPLC(NPLCvalue:double;ChanNumber:byte=0);
+   function GetNPLCAction(FM: TKeitley_Measure):boolean;
+   function GetNPLC(ChanNumber:byte=0):boolean;
+   {результат в fDevice.Value}
 
+   procedure SetMeasureTimeAction(FM: TKeitley_Measure;
+                                  PM: TDMM6500MeasPar_Base;
+                                  MT:double);
+   procedure SetMeasureTime(MT:double;ChanNumber:byte=0);
+   function GetMeasureTimeAction(FM: TKeitley_Measure;
+                                  PM: TDMM6500MeasPar_Base):boolean;
+   function GetMeasureTime(ChanNumber:byte=0):boolean;
 
    procedure SetDecibelReferenceAction(FM: TKeitley_Measure;
                                        PM: TDMM6500MeasPar_Base;
@@ -209,6 +230,14 @@ type
                                  PM: TDMM6500MeasPar_Base):boolean;
    function GetDetectorBW(ChanNumber:byte=0):boolean;
 
+   procedure SetAzeroStateAction(FM: TKeitley_Measure;
+                                 PM: TDMM6500MeasPar_Base;
+                                 toOn:boolean);
+   procedure SetAzeroState(toOn:boolean);override;
+   procedure SetAzeroState(toOn:boolean;ChanNumber: Byte);reintroduce;overload;
+   function GetAzeroStateAction(FM: TKeitley_Measure;
+                                      PM: TDMM6500MeasPar_Base):boolean;
+   function GetAzeroState(ChanNumber:byte=0):boolean;
 
    Procedure GetParametersFromDevice;override;
    Procedure GetCardParametersFromDevice;
@@ -253,6 +282,28 @@ end;
 procedure TDMM6500.AdditionalDataToArrayFromString;
 begin
  DataVector.Add(fMeasureChanNumber,fDevice.Value);
+end;
+
+function TDMM6500.ApertValueToString(FM: TKeitley_Measure;
+  ApertValue: double): string;
+ const ApertLimits:TLimitValues=(1e-5,0.24);
+       ApertLimitsPerFr:TLimitValues=(2e-3,0.273);
+       ApertLimitsDig:TLimitValues=(1e-6,1e-3);
+begin
+case FM of
+  kt_mCurDC,
+  kt_mVolDC,
+  kt_mRes2W,
+  kt_mRes4W,
+  kt_mDiod,
+  kt_mTemp,
+  kt_mVoltRat: Result:=NumberToStrLimited(ApertValue,ApertLimits);
+  kt_mFreq,
+  kt_mPer: Result:=NumberToStrLimited(ApertValue,ApertLimitsPerFr);
+  kt_mDigCur,
+  kt_mDigVolt: Result:=NumberToStrLimited(round(ApertValue*1e6)/1e6,ApertLimitsDig);
+  else Result:='';
+end;
 end;
 
 procedure TDMM6500.BufferCreate(Style: TKt2450_BufferStyle);
@@ -307,6 +358,54 @@ begin
   MeasParametersDestroy;
   ChansMeasureDestroy;
   inherited;
+end;
+
+function TDMM6500.GetAperture(ChanNumber: byte): boolean;
+begin
+ if ChanNumber=0
+    then Result:=GetApertureAction(fMeasureFunction)
+    else
+     begin
+       if ChanQuireBegin(ChanNumber) then
+        begin
+          Result:=GetApertureAction(fChansMeasure[ChanNumber-fFirstChannelInSlot].MeasureFunction);
+          fChanOperation:=False;
+        end                          else
+          Result:=False;
+     end;
+end;
+
+function TDMM6500.GetApertureAction(FM: TKeitley_Measure): boolean;
+begin
+ if FM in [kt_mCurDC,kt_mVolDC,kt_mRes2W,
+                   kt_mRes4W,
+                   kt_mDiod,kt_mTemp,
+                   kt_mFreq,kt_mPer,
+                   kt_mVoltRat,kt_mDigCur,kt_mDigVolt] then
+  begin
+   QuireOperation(MeasureToRootNodeNumber(FM),51);
+   Result:=(fDevice.Value<>ErResult);
+  end                                       else
+  Result:=False;
+end;
+
+function TDMM6500.GetAzeroState(ChanNumber: byte): boolean;
+begin
+  Result:=GetShablon(GetAzeroStateAction,ChanNumber);
+end;
+
+function TDMM6500.GetAzeroStateAction(FM: TKeitley_Measure;
+  PM: TDMM6500MeasPar_Base): boolean;
+begin
+ if FM in [kt_mCurDC,kt_mVolDC,kt_mRes2W,
+      kt_mRes4W,kt_mDiod,kt_mTemp,kt_mVoltRat] then
+  begin
+   QuireOperation(MeasureToRootNodeNumber(FM),20);
+   Result:=(fDevice.Value<>ErResult);
+   if Result then
+     (PM as TDMM6500MeasPar_Continuity).AzeroState:=(fDevice.Value=1);
+  end                   else
+   Result:=False;
 end;
 
 procedure TDMM6500.GetCardParametersFromDevice;
@@ -645,6 +744,64 @@ end;
 
 
 
+function TDMM6500.GetMeasureTime(ChanNumber: byte): boolean;
+begin
+ Result:=GetShablon(GetMeasureTimeAction,ChanNumber);
+end;
+
+function TDMM6500.GetMeasureTimeAction(FM: TKeitley_Measure;
+  PM: TDMM6500MeasPar_Base): boolean;
+begin
+ case FM of
+  kt_mCurDC,
+  kt_mVolDC,
+  kt_mRes2W,
+  kt_mRes4W,
+  kt_mDiod,
+  kt_mTemp,
+  kt_mVoltRat,
+  kt_mFreq,
+  kt_mPer:
+      begin
+       Result:=GetApertureAction(FM);
+       if Result then (PM as TDMM6500MeasPar_BaseDelayMT).MeaureTime:=fDevice.Value*1e-3;
+      end;
+//  kt_mCont:
+//      begin
+//       Result:=GetNPLCAction(FM);
+//       if Result then
+//        (PM as TDMM6500MeasPar_BaseDelayMT).MeaureTime:=fDevice.Value*Keitley_MeaureTimeConvertConst;
+//      end;
+  else Result:=False;
+end;
+end;
+
+function TDMM6500.GetNPLC(ChanNumber: byte): boolean;
+begin
+ if ChanNumber=0
+    then Result:=GetNPLCAction(fMeasureFunction)
+    else
+     begin
+       if ChanQuireBegin(ChanNumber) then
+        begin
+          Result:=GetNPLCAction(fChansMeasure[ChanNumber-fFirstChannelInSlot].MeasureFunction);
+          fChanOperation:=False;
+        end                          else
+          Result:=False;
+     end;
+end;
+
+function TDMM6500.GetNPLCAction(FM: TKeitley_Measure): boolean;
+begin
+ if FM in [kt_mCurDC,kt_mVolDC,kt_mRes2W,
+   kt_mRes4W,kt_mDiod,kt_mTemp,kt_mVoltRat] then
+  begin
+   QuireOperation(MeasureToRootNodeNumber(FM),26);
+   Result:=(fDevice.Value<>ErResult);
+  end                                       else
+  Result:=False;
+end;
+
 procedure TDMM6500.GetParametersFromDevice;
 begin
   inherited GetParametersFromDevice;
@@ -851,6 +1008,61 @@ begin
 //  fDevice.GetData;
 //  (fDevice as TTelnetMeterDeviceSingle).SetStringToSend(':DIG:COUN?');
 //  fDevice.GetData;
+
+
+SetAzeroState(False);
+if GetAzeroState then
+ showmessage('ura! '+booltostr((MeasParameters as TDMM6500MeasPar_Continuity).AzeroState,True));
+SetMeasureFunction(kt_mCap);
+SetAzeroState(False);
+if GetAzeroState then
+ showmessage('ura! '+booltostr((MeasParameters as TDMM6500MeasPar_Continuity).AzeroState,True));
+SetMeasureFunction(kt_mRes2W,3);
+SetAzeroState(False,3);
+if GetAzeroState(3) then
+ showmessage('ura! '+booltostr((fChansMeasure[2].MeasParameters as TDMM6500MeasPar_Continuity).AzeroState,True));
+
+
+//AzeroOnce;
+
+//SetMeasureTime(2);
+//if GetMeasureTime then
+// showmessage('ura! '+floattostr((MeasParameters as TDMM6500MeasPar_BaseDelayMT).MeaureTime));
+//SetMeasureFunction(kt_mCont);
+//SetMeasureTime(0.1);
+//if GetMeasureTime then
+// showmessage('ura! '+floattostr((MeasParameters as TDMM6500MeasPar_BaseDelayMT).MeaureTime));
+//SetMeasureFunction(kt_mDiod,3);
+//SetMeasureTime(10,3);
+//if GetMeasureTime(3) then
+// showmessage('ura! '+floattostr((fChansMeasure[2].MeasParameters as TDMM6500MeasPar_BaseDelayMT).MeaureTime));
+
+
+//SetAperture(2);
+//if GetAperture then
+// showmessage(floattostr(fDevice.Value));
+//SetMeasureFunction(kt_mCap);
+//SetAperture(0.06);
+//if GetAperture then
+// showmessage(floattostr(fDevice.Value));
+//SetMeasureFunction(kt_mTemp,3);
+//SetAperture(0.004,3);
+//if GetAperture(3) then
+// showmessage(floattostr(fDevice.Value));
+
+
+//SetNPLC(2);
+//if GetNPLC then
+// showmessage(floattostr(fDevice.Value));
+//SetMeasureFunction(kt_mVolAC);
+//SetNPLC(0.06);
+//if GetNPLC then
+// showmessage(floattostr(fDevice.Value));
+//SetMeasureFunction(kt_mTemp,3);
+//SetNPLC(0.004,3);
+//if GetNPLC(3) then
+// showmessage(floattostr(fDevice.Value));
+
 
 
 //SetDetectorBW(dm_dbw30Hz);
@@ -1220,7 +1432,7 @@ begin
     end;
   12..14,
    28..39:case fFirstLevelNode of
-          22:OffOnToValue(AnsiLowerCase(Str));
+          22,20:OffOnToValue(AnsiLowerCase(Str));
           50:case fLeafNode of
               1:StrToTempUnit(AnsiLowerCase(Str));
               2:StrToVoltUnit(AnsiLowerCase(Str));
@@ -1311,6 +1523,32 @@ begin
     end;
 end;
 
+procedure TDMM6500.SetAperture(ApertValue: double; ChanNumber: byte);
+begin
+  if ChanNumber=0
+   then  SetApertureAction(fMeasureFunction,ApertValue)
+   else
+     if ChanSetupBegin(ChanNumber) then
+     begin
+       SetApertureAction(fChansMeasure[ChanNumber-fFirstChannelInSlot].MeasureFunction,
+                     ApertValue);
+     end;
+end;
+
+procedure TDMM6500.SetApertureAction(FM: TKeitley_Measure; ApertValue: double);
+begin
+//:<function>:APER <n>
+ if FM in [kt_mCurDC,kt_mVolDC,kt_mRes2W,
+                   kt_mRes4W,
+                   kt_mDiod,kt_mTemp,
+                   kt_mFreq,kt_mPer,
+                   kt_mVoltRat,kt_mDigCur,kt_mDigVolt] then
+  begin
+   fAdditionalString:=ApertValueToString(FM,ApertValue);
+   SetupOperation(MeasureToRootNodeNumber(FM),51);
+  end
+end;
+
 procedure TDMM6500.SetApertureAuto(ChanNumber: byte);
 begin
   if ChanNumber=0
@@ -1330,6 +1568,31 @@ begin
    fAdditionalString:=SuffixKt_2450[8];
    SetupOperation(MeasureToRootNodeNumber(Measure),51);
   end
+end;
+
+procedure TDMM6500.SetAzeroState(toOn: boolean; ChanNumber: Byte);
+begin
+ if ChanNumber=0
+ then  SetAzeroStateAction(fMeasureFunction,MeasParameters,toOn)
+ else
+   if ChanSetupBegin(ChanNumber) then
+     SetAzeroStateAction(fChansMeasure[ChanNumber-fFirstChannelInSlot].MeasureFunction,
+                     fChansMeasure[ChanNumber-fFirstChannelInSlot].MeasParameters,
+                     toOn);
+end;
+
+procedure TDMM6500.SetAzeroState(toOn: boolean);
+begin
+  SetAzeroState(toOn,0);
+end;
+
+procedure TDMM6500.SetAzeroStateAction(FM: TKeitley_Measure;
+  PM: TDMM6500MeasPar_Base; toOn: boolean);
+begin
+ inherited  SetAzeroState(FM,toOn);
+ if FM in [kt_mCurDC,kt_mVolDC,kt_mRes2W,
+      kt_mRes4W,kt_mDiod,kt_mTemp,kt_mVoltRat] then
+    (PM as TDMM6500MeasPar_Continuity).AzeroState:=toOn;
 end;
 
 procedure TDMM6500.SetCount(Cnt: Integer; ChanNumber: Byte);
@@ -1537,6 +1800,71 @@ begin
      for I := 0 to High(ChanNumbers) do
        fChansMeasure[ChanNumbers[i]-fFirstChannelInSlot].MeasureFunction:=MeasureFunc;
    end;
+end;
+
+procedure TDMM6500.SetMeasureTime(MT: double; ChanNumber: byte);
+begin
+ if ChanNumber=0
+   then  SetMeasureTimeAction(fMeasureFunction,MeasParameters,MT)
+   else
+     if ChanSetupBegin(ChanNumber) then
+     begin
+       SetMeasureTimeAction(fChansMeasure[ChanNumber-fFirstChannelInSlot].MeasureFunction,
+                       fChansMeasure[ChanNumber-fFirstChannelInSlot].MeasParameters,
+                       MT);
+     end;
+end;
+
+procedure TDMM6500.SetMeasureTimeAction(FM: TKeitley_Measure;
+  PM: TDMM6500MeasPar_Base; MT: double);
+begin
+ case FM of
+  kt_mCurDC,
+  kt_mVolDC,
+  kt_mRes2W,
+  kt_mRes4W,
+  kt_mDiod,
+  kt_mTemp,
+  kt_mVoltRat,
+  kt_mFreq,
+  kt_mPer:
+      begin
+       (PM as TDMM6500MeasPar_BaseDelayMT).MeaureTime:=MT;
+       SetApertureAction(FM,(PM as TDMM6500MeasPar_BaseDelayMT).MeaureTime*1e-3);
+      end;
+//  kt_mCont:
+//      begin
+//       (PM as TDMM6500MeasPar_BaseDelayMT).MeaureTime:=MT;
+//       SetNPLCAction(FM,(PM as TDMM6500MeasPar_BaseDelayMT).MeaureTime/Keitley_MeaureTimeConvertConst);
+//      end;
+  else ;
+end;
+
+end;
+
+procedure TDMM6500.SetNPLC(NPLCvalue: double;
+  ChanNumber: byte);
+begin
+  if ChanNumber=0
+   then  SetNPLCAction(fMeasureFunction,NPLCvalue)
+   else
+     if ChanSetupBegin(ChanNumber) then
+     begin
+       SetNPLCAction(fChansMeasure[ChanNumber-fFirstChannelInSlot].MeasureFunction,
+                     NPLCvalue);
+     end;
+end;
+
+procedure TDMM6500.SetNPLCAction(FM: TKeitley_Measure;
+  NPLCvalue: double);
+begin
+//:<function>:NPLC <n>
+ if FM in [kt_mCurDC,kt_mVolDC,kt_mRes2W,
+   kt_mRes4W,kt_mDiod,kt_mTemp,kt_mVoltRat] then
+  begin
+   fAdditionalString:=NumberToStrLimited(NPLCvalue,DMM6500_NPLCLimits);
+   SetupOperation(MeasureToRootNodeNumber(FM),26);
+  end
 end;
 
 procedure TDMM6500.SetSampleRate(Measure: TKeitley_Measure;

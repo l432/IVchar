@@ -230,15 +230,15 @@ type
 //   function GetHighCapacitanceStates():boolean;
 //
 //
-//   procedure SetAzeroState(Measure:TKt2450_Measure;
-//                              toOn:boolean);overload;
-//   {чи перев≥р€ютьс€ опорн≥ значенн€ перед кожним вим≥ром}
-//   procedure SetAzeroState(toOn:boolean);overload;
+   procedure SetAzeroState(Measure:TKeitley_Measure;
+                              toOn:boolean);overload;
+   {чи перев≥р€ютьс€ опорн≥ значенн€ перед кожним вим≥ром}
+   procedure SetAzeroState(toOn:boolean);overload;virtual;
 //   function IsAzeroStateOn(Measure:TKt2450_Measure):boolean;overload;
 //   function IsAzeroStateOn():boolean;overload;
 //   function GetAzeroStates():boolean;
-//   procedure AzeroOnce();
-//   {примусова перев≥рка опорного значенн€}
+   procedure AzeroOnce();
+   {примусова перев≥рка опорного значенн€}
 //
 //   procedure SetResistanceCompencate(toOn:boolean);
 //   {вв≥мкненн€/вимкненн€ компенсац≥њ опору}
@@ -577,6 +577,12 @@ procedure TKeitley.Abort;
 begin
 //:ABOR
  SetupOperation(18,0,0,False);
+end;
+
+procedure TKeitley.AzeroOnce;
+begin
+//:AZERo:ONCE
+ SetupOperation(16,0,0,False);
 end;
 
 procedure TKeitley.Beep(Freq: word; Duration: double);
@@ -1207,11 +1213,11 @@ begin
    12..14,
    28..39:case fFirstLevelNode of
              47,49:fDevice.Value:=StrToInt(Str);
-             48:fDevice.Value:=SCPI_StringToValue(Str);
-//             7,9,20: fDevice.Value:=StrToInt(Str);
+             48,26,51:fDevice.Value:=SCPI_StringToValue(Str);
+//             7,9: fDevice.Value:=StrToInt(Str);
 //             14: if StringToMeasureUnit(AnsiLowerCase(Str))
 //                    then fDevice.Value:=ord(fMeasureUnits[TKt2450_Measure(fFirstLevelNode-12)]);
-//             16,15,26:fDevice.Value:=SCPI_StringToValue(Str);
+//             16,15:fDevice.Value:=SCPI_StringToValue(Str);
           end;   //fRootNode=12..14,28..39
    15:StringToMeasureFunction(AnsiLowerCase(Str));
    19:case fFirstLevelNode of
@@ -1263,6 +1269,22 @@ begin
 // *SAV <n>
  fAdditionalString:=inttostr(SlotNumber);
  SetupOperation(3);
+end;
+
+procedure TKeitley.SetAzeroState(Measure: TKeitley_Measure; toOn: boolean);
+begin
+//<function>:AZER OFF ON|OFF
+ if Measure in [kt_mCurDC,kt_mVolDC,kt_mRes2W,
+      kt_mRes4W,kt_mDiod,kt_mTemp,kt_mVoltRat] then
+ begin
+   OnOffFromBool(toOn);
+   SetupOperation(MeasureToRootNodeNumber(Measure),20);
+ end;
+end;
+
+procedure TKeitley.SetAzeroState(toOn: boolean);
+begin
+ SetAzeroState(fMeasureFunction,toOn);
 end;
 
 procedure TKeitley.SetCount(Cnt: integer);
