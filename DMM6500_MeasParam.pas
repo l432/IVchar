@@ -88,19 +88,8 @@ TDMM6500MeasPar_BaseAC=class(TDMM6500MeasPar_BaseDelay)
   constructor Create;
 end;
 
-TDMM6500MeasPar_BaseDelayMT=class(TDMM6500MeasPar_BaseDelay)
- private
-  fMTLimits:TLimitValues;
-  fMeaureTime:double;
-  {час вимірювання, []=мс, для більшості 0,02-240}
-  procedure SetMeaureTime(Value:double);
- public
-  property MeaureTime: double read fMeaureTime write SetMeaureTime;
-  constructor Create;
-end;
-
-
-TDMM6500MeasPar_Continuity=class(TDMM6500MeasPar_BaseDelayMT)
+//TDMM6500MeasPar_Continuity=class(TDMM6500MeasPar_BaseDelayMT)
+TDMM6500MeasPar_Continuity=class(TDMM6500MeasPar_BaseDelay)
  private
   fAzeroState:boolean;
   fLineSync:boolean;
@@ -110,7 +99,25 @@ TDMM6500MeasPar_Continuity=class(TDMM6500MeasPar_BaseDelayMT)
   constructor Create;
 end;
 
-TDMM6500MeasPar_Base4WT=class(TDMM6500MeasPar_Continuity)
+//TDMM6500MeasPar_BaseDelayMT=class(TDMM6500MeasPar_BaseDelay)
+TDMM6500MeasPar_BaseDelayMT=class(TDMM6500MeasPar_Continuity)
+ private
+  fMTLimits:TLimitValues;
+  fMeaureTime:double;
+  {час вимірювання, []=мс, для більшості 0,02-240}
+//  fOffComp:TDMM6500_OffsetCompen;
+//  fOpenLD:boolean;
+  procedure SetMeaureTime(Value:double);
+ public
+  property MeaureTime: double read fMeaureTime write SetMeaureTime;
+//  property OffsetComp: TDMM6500_OffsetCompen read fOffComp write fOffComp;
+//  property OpenLeadDetector: boolean read fOpenLD write fOpenLD;
+  constructor Create;
+end;
+
+
+//TDMM6500MeasPar_Base4WT=class(TDMM6500MeasPar_Continuity)
+TDMM6500MeasPar_Base4WT=class(TDMM6500MeasPar_BaseDelayMT)
  private
   fOffComp:TDMM6500_OffsetCompen;
   fOpenLD:boolean;
@@ -299,6 +306,7 @@ TDMM6500MeasPar_Diode=class(TDMM6500MeasPar_Continuity)
 end;
 
 TQuireFunction=Function(FM: TKeitley_Measure;PM: TDMM6500MeasPar_Base):boolean of object;
+TSetProcedureBool=Procedure(FM: TKeitley_Measure;PM: TDMM6500MeasPar_Base;toOn:boolean) of object;
 
  function  DMM6500MeasParFactory(MeasureType:TKeitley_Measure):TDMM6500MeasPar_Base;
 
@@ -531,6 +539,8 @@ begin
  inherited Create;
  fMTLimits[lvMin]:=0.01;
  fMTLimits[lvMax]:=240;
+// fOffComp:=dm_ocAuto;
+// fOpenLD:=False;
 end;
 
 procedure TDMM6500MeasPar_BaseDelayMT.SetMeaureTime(Value: double);
@@ -543,7 +553,7 @@ end;
 constructor TDMM6500MeasPar_FreqPeriod.Create;
 begin
  inherited Create;
- fThresholdRange:=dm_vcrAuto;
+ fThresholdRange:=dm_varAuto;
  fMTLimits[lvMin]:=2;
  fMTLimits[lvMax]:=273;
 end;
@@ -673,6 +683,7 @@ begin
  fTCoupleType:=dm_tctK;
  fUnits:=dm_tuCels;
  fSimRefTemp:=23;
+ fOpenLD:=True;
 end;
 
 procedure TDMM6500MeasPar_Temper.SetRefTemperature(Value: Double);

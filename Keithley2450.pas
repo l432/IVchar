@@ -1713,7 +1713,7 @@ begin
              7,9,20: fDevice.Value:=StrToInt(Str);
              14: if StringToMeasureUnit(AnsiLowerCase(Str))
                     then fDevice.Value:=ord(fMeasureUnits[TKt2450_Measure(fFirstLevelNode-12)]);
-             16,15{,26}:fDevice.Value:=SCPI_StringToValue(Str);
+             16{,15{,26}:fDevice.Value:=SCPI_StringToValue(Str);
           end;   //fRootNode=12..14
 //   20:fDevice.Value:=StrToInt(Str);
    21:case fFirstLevelNode of
