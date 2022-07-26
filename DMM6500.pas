@@ -90,6 +90,8 @@ type
    function ValueToResistance2WRange(Value:double):TDMM6500_Resistance2WRange;
    function ValueToResistance4WRange(Value:double):TDMM6500_Resistance4WRange;
    function ValueToCapacitanceRange(Value:double):TDMM6500_CapacitanceRange;
+   function BiasLevelToString(BL:TDMM6500_DiodeBiasLevel):string;
+   function ValueToBiasLevel(Value:double):TDMM6500_DiodeBiasLevel;
   protected
    procedure ProcessingStringByRootNode(Str:string);override;
    procedure PrepareString;override;
@@ -326,6 +328,13 @@ type
    function GetVRMethodAction(FM:TKeitley_Measure;PM:TDMM6500MeasPar_Base):boolean;
    function GetVRMethod(ChanNumber:byte=0):boolean;
 
+   procedure SetBiasLevelAction(FM: TKeitley_Measure;
+                                PM: TDMM6500MeasPar_Base;
+                                BL:TDMM6500_DiodeBiasLevel);
+   procedure SetBiasLevel(BL:TDMM6500_DiodeBiasLevel;ChanNumber: Byte=0);
+   function GetBiasLevelAction(FM:TKeitley_Measure;PM:TDMM6500MeasPar_Base):boolean;
+   function GetBiasLevel(ChanNumber:byte=0):boolean;
+
    Procedure GetParametersFromDevice;override;
    Procedure GetCardParametersFromDevice;
  end;
@@ -391,6 +400,11 @@ case FM of
   kt_mDigVolt: Result:=NumberToStrLimited(round(ApertValue*1e6)/1e6,ApertLimitsDig);
   else Result:='';
 end;
+end;
+
+function TDMM6500.BiasLevelToString(BL: TDMM6500_DiodeBiasLevel): string;
+begin
+ Result:=floattostr(1e-5*Power(10,ord(BL)));
 end;
 
 procedure TDMM6500.BufferCreate(Style: TKt2450_BufferStyle);
@@ -493,6 +507,28 @@ begin
      (PM as TDMM6500MeasPar_Continuity).AzeroState:=(fDevice.Value=1);
   end                   else
    Result:=False;
+end;
+
+function TDMM6500.GetBiasLevel(ChanNumber: byte): boolean;
+begin
+ Result:=GetShablon(GetBiasLevelAction,ChanNumber);
+end;
+
+function TDMM6500.GetBiasLevelAction(FM: TKeitley_Measure;
+  PM: TDMM6500MeasPar_Base): boolean;
+begin
+ if FM=kt_mDiod then
+  begin
+    try
+      QuireOperation(MeasureToRootNodeNumber(FM),58);
+      Result:=(fDevice.Value<>ErResult);
+      if Result then
+         (PM as TDMM6500MeasPar_Diode).BiasLevel:=ValueToBiasLevel(fDevice.Value);
+    except
+     Result:=False;
+    end;
+  end           else
+  Result:=False;
 end;
 
 procedure TDMM6500.GetCardParametersFromDevice;
@@ -1225,6 +1261,22 @@ begin
 //  fDevice.GetData;
 
 
+
+//SetMeasureFunction(kt_mDiod);
+//if GetBiasLevel then
+//  showmessage('ura!  '+DMM6500_DiodeBiasLevelLabel[(MeasParameters as TDMM6500MeasPar_Diode).BiasLevel]);
+//SetBiasLevel(dm_dbl100uA);
+//if GetBiasLevel then
+//  showmessage('ura!  '+DMM6500_DiodeBiasLevelLabel[(MeasParameters as TDMM6500MeasPar_Diode).BiasLevel]);
+//SetMeasureFunction(kt_mDiod,2);
+//SetBiasLevel(dm_dbl10mA,2);
+//if GetBiasLevel(2) then
+//  showmessage('ura!  '+DMM6500_DiodeBiasLevelLabel[(fChansMeasure[1].MeasParameters as TDMM6500MeasPar_Diode).BiasLevel]);
+//SetBiasLevel(dm_dbl1mA,2);
+//if GetBiasLevel(2) then
+//  showmessage('ura!  '+DMM6500_DiodeBiasLevelLabel[(fChansMeasure[1].MeasParameters as TDMM6500MeasPar_Diode).BiasLevel]);
+
+
 //SetMeasureFunction(kt_mVoltRat);
 //if GetVRMethod then
 //  showmessage('ura!  '+DMM6500_VoltageRatioMethodLabel[(MeasParameters as TDMM6500MeasPar_VoltRat).VRMethod]);
@@ -1921,6 +1973,7 @@ begin
               1:fDevice.Value:=SCPI_StringToValue(Str);
              end;
           57:StringToVoltageRatioMethod(AnsiLowerCase(Str));
+          58:fDevice.Value:=SCPI_StringToValue(Str);
           end;
  end;
 
@@ -2102,6 +2155,27 @@ begin
  if FM in [kt_mCurDC,kt_mVolDC,kt_mRes2W,
       kt_mRes4W,kt_mDiod,kt_mTemp,kt_mVoltRat] then
     (PM as TDMM6500MeasPar_Continuity).AzeroState:=toOn;
+end;
+
+procedure TDMM6500.SetBiasLevel(BL: TDMM6500_DiodeBiasLevel; ChanNumber: Byte);
+begin
+ if ChanNumber=0
+ then  SetBiasLevelAction(fMeasureFunction,MeasParameters,BL)
+ else
+   if ChanSetupBegin(ChanNumber) then
+     SetBiasLevelAction(fChansMeasure[ChanNumber-fFirstChannelInSlot].MeasureFunction,
+                     fChansMeasure[ChanNumber-fFirstChannelInSlot].MeasParameters,
+                     BL);
+end;
+
+procedure TDMM6500.SetBiasLevelAction(FM: TKeitley_Measure;
+  PM: TDMM6500MeasPar_Base; BL: TDMM6500_DiodeBiasLevel);
+begin
+//:DIOD:BIAS:LEV <n>
+ if FM<>kt_mDiod then Exit;
+ fAdditionalString:=BiasLevelToString(BL);
+ SetupOperation(MeasureToRootNodeNumber(FM),58);
+ (PM as TDMM6500MeasPar_Diode).BiasLevel:=BL;
 end;
 
 procedure TDMM6500.SetCount(Cnt: Integer; ChanNumber: Byte);
@@ -2680,6 +2754,11 @@ begin
      Exit;
    end;
  Result:=TDMM6500_VoltageACRange(round(Log10(Value/0.1))+1);
+end;
+
+function TDMM6500.ValueToBiasLevel(Value: double): TDMM6500_DiodeBiasLevel;
+begin
+ Result:=TDMM6500_DiodeBiasLevel(round(Log10(Value/1e-5)));
 end;
 
 function TDMM6500.ValueToCapacitanceRange(

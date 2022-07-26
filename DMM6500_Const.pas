@@ -142,7 +142,7 @@ const
  ('B', 'E','J','K','N','R','S','T');
 
   DMM6500_DiodeBiasLevelLabel:array[TDMM6500_DiodeBiasLevel]of string=
- ('10 mkA', '100 mkA','1 mA','10 mAK');
+ ('10 mkA', '100 mkA','1 mA','10 mA');
 
 
  DMM6500_RTDAlphaLimits:TLimitValues=(0,0.01);
