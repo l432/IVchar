@@ -57,6 +57,12 @@ type
 
  TDMM6500_RTDType=(dm_rtdPT100,dm_rtdPT385,dm_rtdPT3916,
                       dm_rtdD100,dm_rtdF100,dm_rtdUser);
+ TDMM6500_RTDPropertyNumber=4..6;
+ TDMM6500_TempParameters=(dm_tp_TransdType,dm_tp_RefJunction,
+    dm_tp_RTDAlpha,dm_tp_RTDBeta,dm_tp_RTDDelta,dm_tp_RTDZero,
+    dm_tp_W2RTDType,dm_tp_W3RTDType,dm_tp_W4RTDType,dm_tp_ThermistorType,
+    dm_tp_TCoupleType,dm_tp_SimRefTemp);
+
 
  TDMM6500_ThermistorType=(dm_tt2252,dm_tt5000,dm_tt10000);
 
@@ -74,8 +80,14 @@ const
 // TCSCAN2001_Test='2000,10-Chan Mux';
  Pseudocard_Test='2000,Pseudo 10Ch Mux';
 
- CardeafNodeDMM6500:array[0..3]of string=
+ CardLeafNodeDMM6500:array[0..3]of string=
  (':vch',':star',':end',':vmax');
+
+ RTDLeafNode:array[0..6]of string=
+ (':alph',':beta',':delt',':zero',':two',':thr',':four');
+
+ TermoCoupleLeafNode:array[0..2]of string=
+ (':rjun:sim',':rjun:rsel',':type');
 
  DMM6500_VoltageDCRangeLabels:array[TDMM6500_VoltageDCRange]of string=
          ('Auto','100 mV', '1 V', '10 V', '100 V', '1000 V');
@@ -132,11 +144,14 @@ const
  DMM6500_TCoupleRefJunctLabel:array[TDMM6500_TCoupleRefJunct]of string=
  ('Simulated', 'External');
 
-  DMM6500_W2RTDTypeLabel:array[TDMM6500_RTDType]of string=
+  DMM6500_WiRTDTypeLabel:array[TDMM6500_RTDType]of string=
  ('PT100', 'PT385','PT3916','D100','F100','User');
 
-  DMM6500_ThermistorTypeLabel:array[TDMM6500_ThermistorType]of string=
- ('2252 Ohm', '5000 Ohm','10000 Ohm');
+//  DMM6500_ThermistorTypeLabel:array[TDMM6500_ThermistorType]of string=
+// ('2252 Ohm', '5000 Ohm','10000 Ohm');
+  DMM6500_ThermistorTypeValues:array[TDMM6500_ThermistorType]of integer=
+ (2252,5000,10000);
+  DMM6500_ThermistorTypeSyffix=' Ohm';
 
   DMM6500_TCoupleTypeLabel:array[TDMM6500_TCoupleType]of string=
  ('B', 'E','J','K','N','R','S','T');

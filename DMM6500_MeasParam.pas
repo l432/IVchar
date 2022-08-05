@@ -306,7 +306,18 @@ TDMM6500MeasPar_Diode=class(TDMM6500MeasPar_Continuity)
 end;
 
 TQuireFunction=Function(FM: TKeitley_Measure;PM: TDMM6500MeasPar_Base):boolean of object;
+//TQuireFunctionRTDType=Function(FM: TKeitley_Measure;PM: TDMM6500MeasPar_Base;
+//                               WiType:TDMM6500_RTDPropertyNumber):boolean of object;
+TPermittedMeasureFunction=Function(FM: TKeitley_Measure):boolean of object;
+TGetActionProc=Procedure(PM: TDMM6500MeasPar_Base)of object;
+
+
 TSetProcedureBool=Procedure(FM: TKeitley_Measure;PM: TDMM6500MeasPar_Base;toOn:boolean) of object;
+TSetProcedureDouble=Procedure(FM: TKeitley_Measure;PM: TDMM6500MeasPar_Base;Value:double) of object;
+TSetProcedureDoubleGeneral=Procedure(FM: TKeitley_Measure;Value:double) of object;
+TSetProcedureInteger=Procedure(FM: TKeitley_Measure;PM: TDMM6500MeasPar_Base;Value:integer) of object;
+TSetProcedureRTDType=Procedure(FM: TKeitley_Measure;PM: TDMM6500MeasPar_Base;RTDType:TDMM6500_RTDType;
+                                WiType:TDMM6500_RTDPropertyNumber) of object;
 
  function  DMM6500MeasParFactory(MeasureType:TKeitley_Measure):TDMM6500MeasPar_Base;
 

@@ -65,8 +65,22 @@ type
    procedure ChansMeasureDestroy;
    function IsPermittedMeasureFuncForChan(MeasureFunc:TKeitley_Measure;
                                     ChanNumber:byte):boolean;
-   function GetShablon (QuireFunc:TQuireFunction;ChanNumber:byte):boolean;
-   procedure OpenShablonBool(SetProcedureBool:TSetProcedureBool;toOn:boolean;ChanNumber:byte);
+   function GetShablon (QuireFunc:TQuireFunction;ChanNumber:byte):boolean;overload;
+//   function GetShablon (QuireFunc:TQuireFunctionRTDType;WiType:TDMM6500_RTDPropertyNumber;ChanNumber:byte):boolean;overload;
+   function GetActionShablon(FM:TKeitley_Measure;PM:TDMM6500MeasPar_Base;
+                             PermitFunc:TPermittedMeasureFunction;GetActionProc:TGetActionProc;
+                             FirstLevelNode:byte;LeafNode:byte=0):boolean;overload;
+   function GetActionShablon(FM:TKeitley_Measure;PM:TDMM6500MeasPar_Base;
+                             TempPar:TDMM6500_TempParameters):boolean;overload;
+   function GetShablon(PermitFunc:TPermittedMeasureFunction;GetActionProc:TGetActionProc;
+                             FirstLevelNode,LeafNode,ChanNumber:byte):boolean;overload;
+   function GetShablon(TempPar:TDMM6500_TempParameters;ChanNumber:byte):boolean;overload;
+
+   procedure SetupShablon(SetProcedureBool:TSetProcedureBool;toOn:boolean;ChanNumber:byte);overload;
+   procedure SetupShablon(SetProcedureDouble:TSetProcedureDouble;Value:double;ChanNumber:byte);overload;
+   procedure SetupShablon(SetProcedureDoubleGeneral:TSetProcedureDoubleGeneral;Value:double;ChanNumber:byte);overload;
+   procedure SetupShablon(SetProcedureInteger:TSetProcedureInteger;Value:Integer;ChanNumber:byte);overload;
+   procedure SetupShablon(SetProcedure:TSetProcedureRTDType;RTDType:TDMM6500_RTDType;WiType:TDMM6500_RTDPropertyNumber;ChanNumber:byte);overload;
    function ChanSetupBegin(ChanNumber:byte):boolean;
    function ChanQuireBegin(ChanNumber:byte):boolean;
    Procedure MeasParametersDestroy;
@@ -76,6 +90,11 @@ type
    procedure StringToVoltageRatioMethod(Str:string);
    procedure StringToDetectorBW(Str:string);
    procedure StringToOffsetComp(Str:string);
+   procedure StringToRTDType(Str:string);
+   procedure StringToCoupleRefJunct(Str:string);
+   procedure StringToTCoupleType(Str:string);
+   procedure StringToThermistorType(Str:string);
+   procedure StringToTempTransducer(Str:string);
    function RangeToString(Range:TDMM6500_VoltageDCRange):string;overload;
    function RangeToString(Range:TDMM6500_VoltageACRange):string;overload;
    function RangeToString(Range:TDMM6500_CurrentDCRange):string;overload;
@@ -92,6 +111,11 @@ type
    function ValueToCapacitanceRange(Value:double):TDMM6500_CapacitanceRange;
    function BiasLevelToString(BL:TDMM6500_DiodeBiasLevel):string;
    function ValueToBiasLevel(Value:double):TDMM6500_DiodeBiasLevel;
+
+   function PermitTemp(FM: TKeitley_Measure):boolean;
+   function TempParToFLNode(TempPar:TDMM6500_TempParameters):byte;
+   function TempParToLeafNode(TempPar:TDMM6500_TempParameters):byte;
+   procedure GetActionProcTemp(PM: TDMM6500MeasPar_Base;TempPar:TDMM6500_TempParameters);
   protected
    procedure ProcessingStringByRootNode(Str:string);override;
    procedure PrepareString;override;
@@ -328,12 +352,97 @@ type
    function GetVRMethodAction(FM:TKeitley_Measure;PM:TDMM6500MeasPar_Base):boolean;
    function GetVRMethod(ChanNumber:byte=0):boolean;
 
+   function PermitDiode(FM: TKeitley_Measure):boolean;
    procedure SetBiasLevelAction(FM: TKeitley_Measure;
                                 PM: TDMM6500MeasPar_Base;
                                 BL:TDMM6500_DiodeBiasLevel);
    procedure SetBiasLevel(BL:TDMM6500_DiodeBiasLevel;ChanNumber: Byte=0);
-   function GetBiasLevelAction(FM:TKeitley_Measure;PM:TDMM6500MeasPar_Base):boolean;
+//   function GetBiasLevelAction(FM:TKeitley_Measure;PM:TDMM6500MeasPar_Base):boolean;
+   procedure GetBiasLevelAction(PM:TDMM6500MeasPar_Base);
    function GetBiasLevel(ChanNumber:byte=0):boolean;
+
+   procedure SetRTDAlphaAction(FM: TKeitley_Measure;
+                                PM: TDMM6500MeasPar_Base;
+                                Value:Double);
+   procedure SetRTDAlpha(Value:Double;ChanNumber: Byte=0);
+//   function GetRTDAlphaAction(FM:TKeitley_Measure;PM:TDMM6500MeasPar_Base):boolean;
+   function GetRTDAlpha(ChanNumber:byte=0):boolean;
+
+   procedure SetRTDBetaAction(FM: TKeitley_Measure;
+                                PM: TDMM6500MeasPar_Base;
+                                Value:Double);
+   procedure SetRTDBeta(Value:Double;ChanNumber: Byte=0);
+//   function GetRTDBetaAction(FM:TKeitley_Measure;PM:TDMM6500MeasPar_Base):boolean;
+   function GetRTDBeta(ChanNumber:byte=0):boolean;
+
+   procedure SetRTDDeltaAction(FM: TKeitley_Measure;
+                                PM: TDMM6500MeasPar_Base;
+                                Value:Double);
+   procedure SetRTDDelta(Value:Double;ChanNumber: Byte=0);
+//   function GetRTDDeltaAction(FM:TKeitley_Measure;PM:TDMM6500MeasPar_Base):boolean;
+   function GetRTDDelta(ChanNumber:byte=0):boolean;
+
+   procedure SetRTDZeroAction(FM: TKeitley_Measure;
+                                PM: TDMM6500MeasPar_Base;
+                                Value:integer);
+   procedure SetRTDZero(Value:integer;ChanNumber: Byte=0);
+//   function GetRTDZeroAction(FM:TKeitley_Measure;PM:TDMM6500MeasPar_Base):boolean;
+   function GetRTDZero(ChanNumber:byte=0):boolean;
+
+   procedure SetRefTemperatureaAction(FM: TKeitley_Measure;
+                                PM: TDMM6500MeasPar_Base;
+                                Value:Double);
+   procedure SetRefTemperature(Value:Double;ChanNumber: Byte=0);
+//   function GetRefTemperatureAction(FM:TKeitley_Measure;PM:TDMM6500MeasPar_Base):boolean;
+   function GetRefTemperature(ChanNumber:byte=0):boolean;
+
+
+   procedure SetWiRTDTypeAction(FM: TKeitley_Measure;
+                                PM: TDMM6500MeasPar_Base;
+                                RTDType:TDMM6500_RTDType;
+                                WiType:TDMM6500_RTDPropertyNumber);
+   procedure SetW2RTDType(RTDType:TDMM6500_RTDType;ChanNumber: Byte=0);
+   procedure SetW3RTDType(RTDType:TDMM6500_RTDType;ChanNumber: Byte=0);
+   procedure SetW4RTDType(RTDType:TDMM6500_RTDType;ChanNumber: Byte=0);
+//   function GetW2RTDTypeAction(FM:TKeitley_Measure;PM:TDMM6500MeasPar_Base;
+//                               WiType:TDMM6500_RTDPropertyNumber):boolean;
+   function GetW2RTDType(ChanNumber:byte=0):boolean;
+   function GetW3RTDType(ChanNumber:byte=0):boolean;
+   function GetW4RTDType(ChanNumber:byte=0):boolean;
+
+   procedure SetRefJunctionAction(FM: TKeitley_Measure;
+                                PM: TDMM6500MeasPar_Base;
+                                Value:TDMM6500_TCoupleRefJunct);
+   procedure SetRefJunction(Value:TDMM6500_TCoupleRefJunct;ChanNumber: Byte=0);
+//   function GetRefJunctionAction(FM:TKeitley_Measure;PM:TDMM6500MeasPar_Base):boolean;
+//   procedure GetRefJunctionAction(PM:TDMM6500MeasPar_Base);
+   function GetRefJunction(ChanNumber:byte=0):boolean;
+
+   procedure SetTCoupleTypeAction(FM: TKeitley_Measure;
+                                PM: TDMM6500MeasPar_Base;
+                                Value:TDMM6500_TCoupleType);
+   procedure SetTCoupleType(Value:TDMM6500_TCoupleType;ChanNumber: Byte=0);
+//   function GetTCoupleTypeAction(FM:TKeitley_Measure;PM:TDMM6500MeasPar_Base):boolean;
+//   procedure GetTCoupleTypeAction(PM:TDMM6500MeasPar_Base);
+   function GetTCoupleType(ChanNumber:byte=0):boolean;
+
+   procedure SetThermistorTypeAction(FM: TKeitley_Measure;
+                                PM: TDMM6500MeasPar_Base;
+                                Value:TDMM6500_ThermistorType);
+   procedure SetThermistorType(Value:TDMM6500_ThermistorType;ChanNumber: Byte=0);
+//   function GetThermistorTypeAction(FM:TKeitley_Measure;PM:TDMM6500MeasPar_Base):boolean;
+//   procedure GetThermistorTypeAction(PM:TDMM6500MeasPar_Base);
+   function GetThermistorType(ChanNumber:byte=0):boolean;
+
+   procedure SetTransdTypeAction(FM: TKeitley_Measure;
+                                PM: TDMM6500MeasPar_Base;
+                                Value:TDMM6500_TempTransducer);
+   procedure SetTransdType(Value:TDMM6500_TempTransducer;ChanNumber: Byte=0);
+//   function GetTransdTypeAction(FM:TKeitley_Measure;PM:TDMM6500MeasPar_Base):boolean;
+//   procedure GetTransdTypeAction(PM:TDMM6500MeasPar_Base);
+   function GetTransdType(ChanNumber:byte=0):boolean;
+
+
 
    Procedure GetParametersFromDevice;override;
    Procedure GetCardParametersFromDevice;
@@ -461,6 +570,58 @@ begin
   inherited;
 end;
 
+procedure TDMM6500.GetActionProcTemp(PM: TDMM6500MeasPar_Base;
+  TempPar: TDMM6500_TempParameters);
+begin
+ case TempPar of
+   dm_tp_TransdType: (PM as TDMM6500MeasPar_Temper).TransdType:=TDMM6500_TempTransducer(round(fDevice.Value));
+   dm_tp_RefJunction: (PM as TDMM6500MeasPar_Temper).RefJunction:=TDMM6500_TCoupleRefJunct(round(fDevice.Value));
+   dm_tp_RTDAlpha: (PM as TDMM6500MeasPar_Temper).RTD_Alpha:=fDevice.Value;
+   dm_tp_RTDBeta: (PM as TDMM6500MeasPar_Temper).RTD_Beta:=fDevice.Value;
+   dm_tp_RTDDelta: (PM as TDMM6500MeasPar_Temper).RTD_Delta:=fDevice.Value;
+   dm_tp_RTDZero: (PM as TDMM6500MeasPar_Temper).RTD_Zero:=round(fDevice.Value);
+   dm_tp_W2RTDType: (PM as TDMM6500MeasPar_Temper).W2RTDType:=TDMM6500_RTDType(round(fDevice.Value));
+   dm_tp_W3RTDType: (PM as TDMM6500MeasPar_Temper).W3RTDType:=TDMM6500_RTDType(round(fDevice.Value));
+   dm_tp_W4RTDType: (PM as TDMM6500MeasPar_Temper).W4RTDType:=TDMM6500_RTDType(round(fDevice.Value));
+   dm_tp_ThermistorType: (PM as TDMM6500MeasPar_Temper).ThermistorType:=TDMM6500_ThermistorType(round(fDevice.Value));
+   dm_tp_TCoupleType: (PM as TDMM6500MeasPar_Temper).TCoupleType:=TDMM6500_TCoupleType(round(fDevice.Value));
+   dm_tp_SimRefTemp: (PM as TDMM6500MeasPar_Temper).RefJunction:=TDMM6500_TCoupleRefJunct(round(fDevice.Value));
+ end;
+end;
+
+function TDMM6500.GetActionShablon(FM: TKeitley_Measure;
+  PM: TDMM6500MeasPar_Base; TempPar: TDMM6500_TempParameters): boolean;
+begin
+ if PermitTemp(FM) then
+  begin
+    try
+      QuireOperation(MeasureToRootNodeNumber(FM),TempParToFLNode(TempPar),TempParToLeafNode(TempPar));
+      Result:=fDevice.isReceived;
+      if Result then GetActionProcTemp(PM,TempPar);
+    except
+     Result:=False;
+    end;
+  end           else
+  Result:=False;
+end;
+
+function TDMM6500.GetActionShablon(FM: TKeitley_Measure;
+  PM: TDMM6500MeasPar_Base; PermitFunc: TPermittedMeasureFunction;
+  GetActionProc: TGetActionProc; FirstLevelNode, LeafNode: byte): boolean;
+begin
+ if PermitFunc(FM) then
+  begin
+    try
+      QuireOperation(MeasureToRootNodeNumber(FM),FirstLevelNode,LeafNode);
+      Result:=fDevice.isReceived;
+      if Result then GetActionProc(PM);
+    except
+     Result:=False;
+    end;
+  end           else
+  Result:=False;
+end;
+
 function TDMM6500.GetAperture(ChanNumber: byte): boolean;
 begin
  if ChanNumber=0
@@ -511,24 +672,26 @@ end;
 
 function TDMM6500.GetBiasLevel(ChanNumber: byte): boolean;
 begin
- Result:=GetShablon(GetBiasLevelAction,ChanNumber);
+ Result:=GetShablon(PermitDiode,GetBiasLevelAction,58,0,ChanNumber);
+// Result:=GetShablon(GetBiasLevelAction,ChanNumber);
 end;
 
-function TDMM6500.GetBiasLevelAction(FM: TKeitley_Measure;
-  PM: TDMM6500MeasPar_Base): boolean;
+//function TDMM6500.GetBiasLevelAction(FM: TKeitley_Measure;
+//  PM: TDMM6500MeasPar_Base): boolean;
+procedure TDMM6500.GetBiasLevelAction(PM: TDMM6500MeasPar_Base);
 begin
- if FM=kt_mDiod then
-  begin
-    try
-      QuireOperation(MeasureToRootNodeNumber(FM),58);
-      Result:=(fDevice.Value<>ErResult);
-      if Result then
+// if FM=kt_mDiod then
+//  begin
+//    try
+//      QuireOperation(MeasureToRootNodeNumber(FM),58);
+//      Result:=(fDevice.Value<>ErResult);
+//      if Result then
          (PM as TDMM6500MeasPar_Diode).BiasLevel:=ValueToBiasLevel(fDevice.Value);
-    except
-     Result:=False;
-    end;
-  end           else
-  Result:=False;
+//    except
+//     Result:=False;
+//    end;
+//  end           else
+//  Result:=False;
 end;
 
 procedure TDMM6500.GetCardParametersFromDevice;
@@ -1042,6 +1205,145 @@ begin
   end;
 end;
 
+function TDMM6500.GetRefJunction(ChanNumber: byte): boolean;
+begin
+ Result:=GetShablon(dm_tp_RefJunction,ChanNumber);
+// Result:=GetShablon(GetRefJunctionAction,ChanNumber);
+end;
+
+//function TDMM6500.GetRefJunctionAction(FM: TKeitley_Measure;
+//  PM: TDMM6500MeasPar_Base): boolean;
+//procedure TDMM6500.GetRefJunctionAction(PM: TDMM6500MeasPar_Base);
+//begin
+// if FM=kt_mTemp then
+//  begin
+//    try
+//      QuireOperation(33,60,1);
+//      Result:=(fDevice.Value<>ErResult);
+//      if Result then
+//        (PM as TDMM6500MeasPar_Temper).RefJunction:=TDMM6500_TCoupleRefJunct(round(fDevice.Value));
+//    except
+//     Result:=False;
+//    end;
+//  end           else
+//  Result:=False;
+//end;
+
+function TDMM6500.GetRefTemperature(ChanNumber: byte): boolean;
+begin
+ Result:=GetShablon(dm_tp_SimRefTemp,ChanNumber);
+// Result:=GetShablon(GetRefTemperatureAction,ChanNumber);
+end;
+
+//function TDMM6500.GetRefTemperatureAction(FM: TKeitley_Measure;
+//  PM: TDMM6500MeasPar_Base): boolean;
+//begin
+// if FM=kt_mTemp then
+//  begin
+//    try
+//      QuireOperation(33,60,0);
+//      Result:=(fDevice.Value<>ErResult);
+//      if Result then
+//         (PM as TDMM6500MeasPar_Temper).RefTemperature:=fDevice.Value;
+//    except
+//     Result:=False;
+//    end;
+//  end           else
+//  Result:=False;
+//end;
+
+function TDMM6500.GetRTDAlpha(ChanNumber: byte): boolean;
+begin
+ Result:=GetShablon(dm_tp_RTDAlpha,ChanNumber);
+// Result:=GetShablon(GetRTDAlphaAction,ChanNumber);
+end;
+
+//function TDMM6500.GetRTDAlphaAction(FM: TKeitley_Measure;
+//  PM: TDMM6500MeasPar_Base): boolean;
+//begin
+// if FM=kt_mTemp then
+//  begin
+//    try
+//      QuireOperation(33,59,0);
+//      Result:=(fDevice.Value<>ErResult);
+//      if Result then
+//         (PM as TDMM6500MeasPar_Temper).RTD_Alpha:=fDevice.Value;
+//    except
+//     Result:=False;
+//    end;
+//  end           else
+//  Result:=False;
+//end;
+
+function TDMM6500.GetRTDBeta(ChanNumber: byte): boolean;
+begin
+ Result:=GetShablon(dm_tp_RTDBeta,ChanNumber);
+// Result:=GetShablon(GetRTDBetaAction,ChanNumber);
+end;
+
+//function TDMM6500.GetRTDBetaAction(FM: TKeitley_Measure;
+//  PM: TDMM6500MeasPar_Base): boolean;
+//begin
+// if FM=kt_mTemp then
+//  begin
+//    try
+//      QuireOperation(33,59,1);
+//      Result:=(fDevice.Value<>ErResult);
+//      if Result then
+//         (PM as TDMM6500MeasPar_Temper).RTD_Beta:=fDevice.Value;
+//    except
+//     Result:=False;
+//    end;
+//  end           else
+//  Result:=False;
+//end;
+
+function TDMM6500.GetRTDDelta(ChanNumber: byte): boolean;
+begin
+ Result:=GetShablon(dm_tp_RTDDelta,ChanNumber);
+// Result:=GetShablon(GetRTDDeltaAction,ChanNumber);
+end;
+
+//function TDMM6500.GetRTDDeltaAction(FM: TKeitley_Measure;
+//  PM: TDMM6500MeasPar_Base): boolean;
+//begin
+// if FM=kt_mTemp then
+//  begin
+//    try
+//      QuireOperation(33,59,2);
+//      Result:=(fDevice.Value<>ErResult);
+//      if Result then
+//         (PM as TDMM6500MeasPar_Temper).RTD_Delta:=fDevice.Value;
+//    except
+//     Result:=False;
+//    end;
+//  end           else
+//  Result:=False;
+//end;
+
+function TDMM6500.GetRTDZero(ChanNumber: byte): boolean;
+begin
+ Result:=GetShablon(dm_tp_RTDZero,ChanNumber);
+// Result:=GetShablon(GetRTDZeroAction,ChanNumber);
+end;
+
+//function TDMM6500.GetRTDZeroAction(FM: TKeitley_Measure;
+//  PM: TDMM6500MeasPar_Base): boolean;
+//begin
+// if FM=kt_mTemp then
+//  begin
+//    try
+//      QuireOperation(33,59,3);
+//      Result:=fDevice.isReceived;
+//      if Result then
+//         (PM as TDMM6500MeasPar_Temper).RTD_Zero:=round(fDevice.Value);
+//    except
+//     Result:=False;
+//    end;
+//  end           else
+//  Result:=False;
+//end;
+
 function TDMM6500.GetSampleRate(Measure: TKeitley_Measure): boolean;
 begin
  MeasParameterCreate(Measure);
@@ -1082,6 +1384,43 @@ begin
   end                   else
    Result:=False;
 end;
+
+function TDMM6500.GetShablon(PermitFunc: TPermittedMeasureFunction;
+  GetActionProc: TGetActionProc; FirstLevelNode, LeafNode,
+  ChanNumber: byte): boolean;
+begin
+ if ChanNumber=0
+    then Result:=GetActionShablon(fMeasureFunction,MeasParameters,
+                     PermitFunc,GetActionProc,FirstLevelNode,LeafNode)
+    else
+     begin
+       if ChanQuireBegin(ChanNumber) then
+        begin
+          Result:=GetActionShablon(fChansMeasure[ChanNumber-fFirstChannelInSlot].MeasureFunction,
+                         fChansMeasure[ChanNumber-fFirstChannelInSlot].MeasParameters,
+                         PermitFunc,GetActionProc,FirstLevelNode,LeafNode);
+          fChanOperation:=False;
+        end                          else
+          Result:=False;
+     end;
+end;
+
+//function TDMM6500.GetShablon(QuireFunc: TQuireFunctionRTDType;
+//  WiType: TDMM6500_RTDPropertyNumber; ChanNumber: byte): boolean;
+//begin
+// if ChanNumber=0
+//    then Result:=QuireFunc(fMeasureFunction,MeasParameters,WiType)
+//    else
+//     begin
+//       if ChanQuireBegin(ChanNumber) then
+//        begin
+//          Result:=QuireFunc(fChansMeasure[ChanNumber-fFirstChannelInSlot].MeasureFunction,
+//                         fChansMeasure[ChanNumber-fFirstChannelInSlot].MeasParameters,WiType);
+//          fChanOperation:=False;
+//        end                          else
+//          Result:=False;
+//     end;
+//end;
 
 //function TDMM6500.GetUnits: boolean;
 //  var BaseV:IMeasPar_BaseVolt;
@@ -1177,6 +1516,47 @@ begin
     Result:=False;
 end;
 
+function TDMM6500.GetW2RTDType(ChanNumber: byte): boolean;
+begin
+ Result:=GetShablon(dm_tp_W2RTDType,ChanNumber);
+// Result:=GetShablon(GetW2RTDTypeAction,4,ChanNumber);
+end;
+
+//function TDMM6500.GetW2RTDTypeAction(FM: TKeitley_Measure;
+//  PM: TDMM6500MeasPar_Base; WiType:TDMM6500_RTDPropertyNumber): boolean;
+//begin
+// if FM=kt_mTemp then
+//  begin
+//    try
+//      QuireOperation(33,59,WiType);
+//      Result:=(fDevice.Value<>ErResult);
+//      if Result then
+//        begin
+//         case WiType of
+//           4:(PM as TDMM6500MeasPar_Temper).W2RTDType:=TDMM6500_RTDType(round(fDevice.Value));
+//           5:(PM as TDMM6500MeasPar_Temper).W3RTDType:=TDMM6500_RTDType(round(fDevice.Value));
+//           6:(PM as TDMM6500MeasPar_Temper).W4RTDType:=TDMM6500_RTDType(round(fDevice.Value));
+//         end;
+//        end;
+//    except
+//     Result:=False;
+//    end;
+//  end           else
+//  Result:=False;
+//end;
+
+function TDMM6500.GetW3RTDType(ChanNumber: byte): boolean;
+begin
+ Result:=GetShablon(dm_tp_W3RTDType,ChanNumber);
+// Result:=GetShablon(GetW2RTDTypeAction,5,ChanNumber);
+end;
+
+function TDMM6500.GetW4RTDType(ChanNumber: byte): boolean;
+begin
+ Result:=GetShablon(dm_tp_W4RTDType,ChanNumber);
+// Result:=GetShablon(GetW2RTDTypeAction,6,ChanNumber);
+end;
+
 function TDMM6500.GetDelayAutoOn(Measure: TKeitley_Measure): boolean;
 begin
  MeasParameterCreate(Measure);
@@ -1260,7 +1640,137 @@ begin
 //  (fDevice as TTelnetMeterDeviceSingle).SetStringToSend(':DIG:COUN?');
 //  fDevice.GetData;
 
+//SetMeasureFunction(kt_mTemp);
+//if GetTransdType then
+//  showmessage('ura!  TransdType='+DMM6500_TempTransducerLabel[(MeasParameters as TDMM6500MeasPar_Temper).TransdType]);
+//SetTransdType(dm_tt2WRTD);
+//if GetTransdType then
+//  showmessage('ura!  TransdType='+DMM6500_TempTransducerLabel[(MeasParameters as TDMM6500MeasPar_Temper).TransdType]);
+//SetMeasureFunction(kt_mTemp,2);
+//SetTransdType(dm_ttTherm,2);
+//if GetTransdType(2) then
+//  showmessage('ura!  TransdType='+DMM6500_TempTransducerLabel[(fChansMeasure[1].MeasParameters as TDMM6500MeasPar_Temper).TransdType]);
 
+
+//SetMeasureFunction(kt_mTemp);
+//if GetThermistorType then
+//  showmessage('ura!  ThermistorType='+inttostr(DMM6500_ThermistorTypeValues[(MeasParameters as TDMM6500MeasPar_Temper).ThermistorType]));
+//SetThermistorType(dm_tt2252);
+//if GetThermistorType then
+//  showmessage('ura!  ThermistorType='+inttostr(DMM6500_ThermistorTypeValues[(MeasParameters as TDMM6500MeasPar_Temper).ThermistorType]));
+//SetMeasureFunction(kt_mTemp,2);
+//SetThermistorType(dm_tt10000,2);
+//if GetThermistorType(2) then
+//  showmessage('ura!  ThermistorType='+inttostr(DMM6500_ThermistorTypeValues[(fChansMeasure[1].MeasParameters as TDMM6500MeasPar_Temper).ThermistorType]));
+
+//SetMeasureFunction(kt_mTemp);
+//if GetTCoupleType then
+//  showmessage('ura!  TCoupleType='+DMM6500_TCoupleTypeLabel[(MeasParameters as TDMM6500MeasPar_Temper).TCoupleType]);
+//SetTCoupleType(dm_tctJ);
+//if GetTCoupleType then
+//  showmessage('ura!  TCoupleType='+DMM6500_TCoupleTypeLabel[(MeasParameters as TDMM6500MeasPar_Temper).TCoupleType]);
+//SetMeasureFunction(kt_mTemp,2);
+//SetTCoupleType(dm_tctN,2);
+//if GetTCoupleType(2) then
+//  showmessage('ura!  TCoupleType='+DMM6500_TCoupleTypeLabel[(fChansMeasure[1].MeasParameters as TDMM6500MeasPar_Temper).TCoupleType]);
+
+
+//SetMeasureFunction(kt_mTemp);
+//if GetRefJunction then
+//  showmessage('ura!  RefJunction='+DMM6500_TCoupleRefJunctLabel[(MeasParameters as TDMM6500MeasPar_Temper).RefJunction]);
+//SetRefJunction(dm_trjExt);
+//if GetRefJunction then
+//  showmessage('ura!  RefJunction='+DMM6500_TCoupleRefJunctLabel[(MeasParameters as TDMM6500MeasPar_Temper).RefJunction]);
+//SetMeasureFunction(kt_mTemp,2);
+//SetRefJunction(dm_trjSim,2);
+//if GetRefJunction(2) then
+//  showmessage('ura!  RefJunction='+DMM6500_TCoupleRefJunctLabel[(fChansMeasure[1].MeasParameters as TDMM6500MeasPar_Temper).RefJunction]);
+
+
+//SetMeasureFunction(kt_mTemp);
+//if GetW2RTDType then
+//  showmessage('ura!  W2RTDType='+DMM6500_WiRTDTypeLabel[(MeasParameters as TDMM6500MeasPar_Temper).W2RTDType]);
+//if GetW3RTDType then
+//  showmessage('ura!  W3RTDType='+DMM6500_WiRTDTypeLabel[(MeasParameters as TDMM6500MeasPar_Temper).W3RTDType]);
+//if GetW4RTDType then
+//  showmessage('ura!  W2RTDType='+DMM6500_WiRTDTypeLabel[(MeasParameters as TDMM6500MeasPar_Temper).W4RTDType]);
+//SetW2RTDType(dm_rtdPT385);
+//if GetW2RTDType then
+//  showmessage('ura!  W2RTDType='+DMM6500_WiRTDTypeLabel[(MeasParameters as TDMM6500MeasPar_Temper).W2RTDType]);
+//SetW3RTDType(dm_rtdPT3916);
+//if GetW3RTDType then
+//  showmessage('ura!  W3RTDType='+DMM6500_WiRTDTypeLabel[(MeasParameters as TDMM6500MeasPar_Temper).W3RTDType]);
+//SetW4RTDType(dm_rtdD100);
+//if GetW4RTDType then
+//  showmessage('ura!  W4RTDType='+DMM6500_WiRTDTypeLabel[(MeasParameters as TDMM6500MeasPar_Temper).W4RTDType]);
+//SetMeasureFunction(kt_mTemp,2);
+//SetW2RTDType(dm_rtdF100,2);
+//if GetW2RTDType(2) then
+//  showmessage('ura!  W2RTDType='+DMM6500_WiRTDTypeLabel[(fChansMeasure[1].MeasParameters as TDMM6500MeasPar_Temper).W2RTDType]);
+//SetW3RTDType(dm_rtdUser,2);
+//if GetW3RTDType(2) then
+//  showmessage('ura!  W2RTDType='+DMM6500_WiRTDTypeLabel[(fChansMeasure[1].MeasParameters as TDMM6500MeasPar_Temper).W3RTDType]);
+//SetW4RTDType(dm_rtdPT385,2);
+//if GetW4RTDType(2) then
+//  showmessage('ura!  W2RTDType='+DMM6500_WiRTDTypeLabel[(fChansMeasure[1].MeasParameters as TDMM6500MeasPar_Temper).W4RTDType]);
+
+
+//SetMeasureFunction(kt_mTemp);
+//if GetRTDZero then
+//  showmessage('ura!  RTDZero='+floattostr((MeasParameters as TDMM6500MeasPar_Temper).RTD_Zero));
+//SetRTDZero(555);
+//if GetRTDZero then
+//  showmessage('ura!  RTDZero='+floattostr((MeasParameters as TDMM6500MeasPar_Temper).RTD_Zero));
+//SetMeasureFunction(kt_mTemp,2);
+//SetRTDZero(200,2);
+//if GetRTDZero(2) then
+//  showmessage('ura!  RTDZero='+floattostr((fChansMeasure[1].MeasParameters as TDMM6500MeasPar_Temper).RTD_Zero));
+
+
+//SetMeasureFunction(kt_mTemp);
+//if GetRefTemperature then
+//  showmessage('ura!  RefTemperature='+floattostr((MeasParameters as TDMM6500MeasPar_Temper).RefTemperature));
+//SetRefTemperature(27.8);
+//if GetRefTemperature then
+//  showmessage('ura!  RefTemperature='+floattostr((MeasParameters as TDMM6500MeasPar_Temper).RefTemperature));
+//SetMeasureFunction(kt_mTemp,2);
+//SetRefTemperature(2.088,2);
+//if GetRefTemperature(2) then
+//  showmessage('ura!  RefTemperature='+floattostr((fChansMeasure[1].MeasParameters as TDMM6500MeasPar_Temper).RefTemperature));
+
+//SetMeasureFunction(kt_mTemp);
+//if GetRTDDelta then
+//  showmessage('ura!  RTD_Delta='+floattostr((MeasParameters as TDMM6500MeasPar_Temper).RTD_Delta));
+//SetRTDDelta(0.5673);
+//if GetRTDDelta then
+//  showmessage('ura!  RTD_Delta='+floattostr((MeasParameters as TDMM6500MeasPar_Temper).RTD_Delta));
+//SetMeasureFunction(kt_mTemp,2);
+//SetRTDDelta(2.088,2);
+//if GetRTDDelta(2) then
+//  showmessage('ura!  RTD_Delta='+floattostr((fChansMeasure[1].MeasParameters as TDMM6500MeasPar_Temper).RTD_Delta));
+
+//SetMeasureFunction(kt_mTemp);
+//if GetRTDBeta then
+//  showmessage('ura!  RTD_Beta='+floattostr((MeasParameters as TDMM6500MeasPar_Temper).RTD_Beta));
+//SetRTDBeta(0.03850);
+//if GetRTDBeta then
+//  showmessage('ura!  RTD_Beta='+floattostr((MeasParameters as TDMM6500MeasPar_Temper).RTD_Beta));
+//SetMeasureFunction(kt_mTemp,2);
+//SetRTDBeta(2.088,2);
+//if GetRTDBeta(2) then
+//  showmessage('ura!  RTD_Beta='+floattostr((fChansMeasure[1].MeasParameters as TDMM6500MeasPar_Temper).RTD_Beta));
+
+
+//SetMeasureFunction(kt_mTemp);
+//if GetRTDAlpha then
+//  showmessage('ura!  RTD_Alpha='+floattostr((MeasParameters as TDMM6500MeasPar_Temper).RTD_Alpha));
+//SetRTDAlpha(0.00385088);
+//if GetRTDAlpha then
+//  showmessage('ura!  RTD_Alpha='+floattostr((MeasParameters as TDMM6500MeasPar_Temper).RTD_Alpha));
+//SetMeasureFunction(kt_mTemp,2);
+//SetRTDAlpha(2.00385088,2);
+//if GetRTDAlpha(2) then
+//  showmessage('ura!  RTD_Alpha='+floattostr((fChansMeasure[1].MeasParameters as TDMM6500MeasPar_Temper).RTD_Alpha));
 
 //SetMeasureFunction(kt_mDiod);
 //if GetBiasLevel then
@@ -1888,7 +2398,7 @@ begin
  if Str= SuffixKt_2450[1] then fDevice.Value:=0;
 end;
 
-procedure TDMM6500.OpenShablonBool(SetProcedureBool: TSetProcedureBool;toOn:boolean;
+procedure TDMM6500.SetupShablon(SetProcedureBool: TSetProcedureBool;toOn:boolean;
   ChanNumber: byte);
 begin
  if ChanNumber=0
@@ -1898,6 +2408,16 @@ begin
      SetProcedureBool(fChansMeasure[ChanNumber-fFirstChannelInSlot].MeasureFunction,
                      fChansMeasure[ChanNumber-fFirstChannelInSlot].MeasParameters,
                      toOn);
+end;
+
+function TDMM6500.PermitDiode(FM: TKeitley_Measure): boolean;
+begin
+ Result:=(FM=kt_mDiod);
+end;
+
+function TDMM6500.PermitTemp(FM: TKeitley_Measure): boolean;
+begin
+ Result:=(FM=kt_mTemp);
 end;
 
 procedure TDMM6500.PrepareString;
@@ -1917,18 +2437,22 @@ begin
  case fRootNode of
   7:case fLeafNode of
      1,2:begin
-          JoinToStringToSend(CardeafNodeDMM6500[0]);
-          JoinToStringToSend(CardeafNodeDMM6500[fLeafNode]);
+          JoinToStringToSend(CardLeafNodeDMM6500[0]);
+          JoinToStringToSend(CardLeafNodeDMM6500[fLeafNode]);
          end;
-     3:JoinToStringToSend(CardeafNodeDMM6500[fLeafNode]);
+     3:JoinToStringToSend(CardLeafNodeDMM6500[fLeafNode]);
      50..52:JoinToStringToSend(':'+DeleteSubstring(RootNodeKeitley[0],'*'));
     end;
   12..14,28..39:
-     if fFirstLevelNode=56 then
-      begin
-       JoinToStringToSend(FirstNodeKt_2450[15]);
-       if fLeafNode=0 then JoinToStringToSend(':'+SuffixKt_2450[8]);
-      end;
+     case fFirstLevelNode of
+       56: begin
+           JoinToStringToSend(FirstNodeKt_2450[15]);
+           if fLeafNode=0 then JoinToStringToSend(':'+SuffixKt_2450[8]);
+           end;
+       59: JoinToStringToSend(RTDLeafNode[fLeafNode]);
+       60: JoinToStringToSend(TermoCoupleLeafNode[fLeafNode]);
+     end;
+
   19:begin
        case fFirstLevelNode of
         33:JoinToStringToSend(Buffer.DataDemandDM6500Array(TKeitley_ReturnedData(fLeafNode)));
@@ -1974,6 +2498,18 @@ begin
              end;
           57:StringToVoltageRatioMethod(AnsiLowerCase(Str));
           58:fDevice.Value:=SCPI_StringToValue(Str);
+          59:case fLeafNode of
+              0,1,2:fDevice.Value:=SCPI_StringToValue(Str);
+              3:fDevice.Value:=StrToInt(Str);
+              4..6:StringToRTDType(AnsiLowerCase(Str));
+             end;
+          60:case fLeafNode of
+              0:fDevice.Value:=SCPI_StringToValue(Str);
+              1:StringToCoupleRefJunct(AnsiLowerCase(Str));
+              2:StringToTCoupleType(Str);
+             end;
+           61:StringToThermistorType(Str);
+           62:StringToTempTransducer(AnsiLowerCase(Str));
           end;
  end;
 
@@ -2087,14 +2623,15 @@ end;
 
 procedure TDMM6500.SetAperture(ApertValue: double; ChanNumber: byte);
 begin
-  if ChanNumber=0
-   then  SetApertureAction(fMeasureFunction,ApertValue)
-   else
-     if ChanSetupBegin(ChanNumber) then
-     begin
-       SetApertureAction(fChansMeasure[ChanNumber-fFirstChannelInSlot].MeasureFunction,
-                     ApertValue);
-     end;
+ SetupShablon(SetApertureAction,ApertValue,ChanNumber);
+//  if ChanNumber=0
+//   then  SetApertureAction(fMeasureFunction,ApertValue)
+//   else
+//     if ChanSetupBegin(ChanNumber) then
+//     begin
+//       SetApertureAction(fChansMeasure[ChanNumber-fFirstChannelInSlot].MeasureFunction,
+//                     ApertValue);
+//     end;
 end;
 
 procedure TDMM6500.SetApertureAction(FM: TKeitley_Measure; ApertValue: double);
@@ -2344,7 +2881,7 @@ end;
 
 procedure TDMM6500.SetLineSync(toOn: boolean; ChanNumber: Byte);
 begin
- OpenShablonBool(SetLineSyncAction,toOn,ChanNumber);
+ SetupShablon(SetLineSyncAction,toOn,ChanNumber);
 // if ChanNumber=0
 // then  SetLineSyncAction(fMeasureFunction,MeasParameters,toOn)
 // else
@@ -2412,15 +2949,17 @@ end;
 
 procedure TDMM6500.SetMeasureTime(MT: double; ChanNumber: byte);
 begin
- if ChanNumber=0
-   then  SetMeasureTimeAction(fMeasureFunction,MeasParameters,MT)
-   else
-     if ChanSetupBegin(ChanNumber) then
-     begin
-       SetMeasureTimeAction(fChansMeasure[ChanNumber-fFirstChannelInSlot].MeasureFunction,
-                       fChansMeasure[ChanNumber-fFirstChannelInSlot].MeasParameters,
-                       MT);
-     end;
+ SetupShablon(SetMeasureTimeAction,MT,ChanNumber);
+//
+// if ChanNumber=0
+//   then  SetMeasureTimeAction(fMeasureFunction,MeasParameters,MT)
+//   else
+//     if ChanSetupBegin(ChanNumber) then
+//     begin
+//       SetMeasureTimeAction(fChansMeasure[ChanNumber-fFirstChannelInSlot].MeasureFunction,
+//                       fChansMeasure[ChanNumber-fFirstChannelInSlot].MeasParameters,
+//                       MT);
+//     end;
 end;
 
 procedure TDMM6500.SetMeasureTimeAction(FM: TKeitley_Measure;
@@ -2453,14 +2992,16 @@ end;
 procedure TDMM6500.SetNPLC(NPLCvalue: double;
   ChanNumber: byte);
 begin
-  if ChanNumber=0
-   then  SetNPLCAction(fMeasureFunction,NPLCvalue)
-   else
-     if ChanSetupBegin(ChanNumber) then
-     begin
-       SetNPLCAction(fChansMeasure[ChanNumber-fFirstChannelInSlot].MeasureFunction,
-                     NPLCvalue);
-     end;
+  SetupShablon(SetNPLCAction,NPLCvalue,ChanNumber);
+
+//  if ChanNumber=0
+//   then  SetNPLCAction(fMeasureFunction,NPLCvalue)
+//   else
+//     if ChanSetupBegin(ChanNumber) then
+//     begin
+//       SetNPLCAction(fChansMeasure[ChanNumber-fFirstChannelInSlot].MeasureFunction,
+//                     NPLCvalue);
+//     end;
 end;
 
 procedure TDMM6500.SetNPLCAction(FM: TKeitley_Measure;
@@ -2500,7 +3041,7 @@ end;
 
 procedure TDMM6500.SetOpenLD(toOn: boolean; ChanNumber: Byte);
 begin
- OpenShablonBool(SetOpenLDAction,toOn,ChanNumber);
+ SetupShablon(SetOpenLDAction,toOn,ChanNumber);
 end;
 
 procedure TDMM6500.SetOpenLDAction(FM: TKeitley_Measure;
@@ -2641,6 +3182,54 @@ begin
   end
 end;
 
+procedure TDMM6500.SetTCoupleType(Value: TDMM6500_TCoupleType;
+  ChanNumber: Byte);
+begin
+ if ChanNumber=0
+ then  SetTCoupleTypeAction(fMeasureFunction,MeasParameters,Value)
+ else
+   if ChanSetupBegin(ChanNumber) then
+     SetTCoupleTypeAction(fChansMeasure[ChanNumber-fFirstChannelInSlot].MeasureFunction,
+                     fChansMeasure[ChanNumber-fFirstChannelInSlot].MeasParameters,
+                     Value);
+end;
+
+procedure TDMM6500.SetTCoupleTypeAction(FM: TKeitley_Measure;
+  PM: TDMM6500MeasPar_Base; Value: TDMM6500_TCoupleType);
+begin
+//:<function>:TC:RJUN:TYPE <identifier>
+ if FM=kt_mTemp then
+  begin
+   fAdditionalString:=DMM6500_TCoupleTypeLabel[Value];
+   SetupOperation(33,60,2);
+   (PM as TDMM6500MeasPar_Temper).TCoupleType:=Value;
+  end
+end;
+
+procedure TDMM6500.SetThermistorType(Value: TDMM6500_ThermistorType;
+  ChanNumber: Byte);
+begin
+ if ChanNumber=0
+ then  SetThermistorTypeAction(fMeasureFunction,MeasParameters,Value)
+ else
+   if ChanSetupBegin(ChanNumber) then
+     SetThermistorTypeAction(fChansMeasure[ChanNumber-fFirstChannelInSlot].MeasureFunction,
+                     fChansMeasure[ChanNumber-fFirstChannelInSlot].MeasParameters,
+                     Value);
+end;
+
+procedure TDMM6500.SetThermistorTypeAction(FM: TKeitley_Measure;
+  PM: TDMM6500MeasPar_Base; Value: TDMM6500_ThermistorType);
+begin
+//:<function>:THER <n>
+ if FM=kt_mTemp then
+  begin
+   fAdditionalString:=IntToStr(DMM6500_ThermistorTypeValues[Value]);
+   SetupOperation(33,61);
+   (PM as TDMM6500MeasPar_Temper).ThermistorType:=Value;
+  end
+end;
+
 procedure TDMM6500.SetThresholdRange(Range: TDMM6500_VoltageACRange;
   ChanNumber: Byte);
 begin
@@ -2669,6 +3258,30 @@ begin
          SetupOperation(MeasureToRootNodeNumber(FM),56,1);
        end;
  (PM as TDMM6500MeasPar_FreqPeriod).ThresholdRange:=Range;
+end;
+
+procedure TDMM6500.SetTransdType(Value: TDMM6500_TempTransducer;
+  ChanNumber: Byte);
+begin
+ if ChanNumber=0
+ then  SetTransdTypeAction(fMeasureFunction,MeasParameters,Value)
+ else
+   if ChanSetupBegin(ChanNumber) then
+     SetTransdTypeAction(fChansMeasure[ChanNumber-fFirstChannelInSlot].MeasureFunction,
+                     fChansMeasure[ChanNumber-fFirstChannelInSlot].MeasParameters,
+                     Value);
+end;
+
+procedure TDMM6500.SetTransdTypeAction(FM: TKeitley_Measure;
+  PM: TDMM6500MeasPar_Base; Value: TDMM6500_TempTransducer);
+begin
+//:<function>::TRAN <type>
+ if FM=kt_mTemp then
+  begin
+   fAdditionalString:=DMM6500_TempTransducerCommand[Value];
+   SetupOperation(33,62);
+   (PM as TDMM6500MeasPar_Temper).TransdType:=Value;
+  end
 end;
 
 //procedure TDMM6500.SetUnits(Un: TDMM6500_VoltageUnits);
@@ -2807,6 +3420,39 @@ begin
  end;
 end;
 
+function TDMM6500.TempParToFLNode(TempPar: TDMM6500_TempParameters): byte;
+begin
+ case TempPar of
+   dm_tp_SimRefTemp,
+   dm_tp_TCoupleType,
+   dm_tp_RefJunction: Result:=60;
+   dm_tp_RTDAlpha,
+   dm_tp_RTDBeta,
+   dm_tp_RTDDelta,
+   dm_tp_RTDZero,
+   dm_tp_W2RTDType,
+   dm_tp_W3RTDType,
+   dm_tp_W4RTDType: Result:=59;
+   dm_tp_ThermistorType: Result:=61;
+   else  Result:=62; // dm_tp_TransdType
+ end;
+end;
+
+function TDMM6500.TempParToLeafNode(TempPar: TDMM6500_TempParameters): byte;
+begin
+ case TempPar of
+   dm_tp_RefJunction,
+   dm_tp_RTDBeta: Result:=1;
+   dm_tp_TCoupleType,
+   dm_tp_RTDDelta: Result:=2;
+   dm_tp_RTDZero: Result:=3;
+   dm_tp_W2RTDType: Result:=4;
+   dm_tp_W3RTDType: Result:=5;
+   dm_tp_W4RTDType: Result:=6;
+   else  Result:=0;
+ end;
+end;
+
 function TDMM6500.TestPseudocard_Presence: boolean;
 begin
  QuireOperation(7,45,52,False);
@@ -2854,6 +3500,54 @@ begin
      end;
 end;
 
+function TDMM6500.GetTCoupleType(ChanNumber: byte): boolean;
+begin
+ Result:=GetShablon(dm_tp_TCoupleType,ChanNumber);
+// Result:=GetShablon(GetTCoupleTypeAction,ChanNumber);
+end;
+
+//function TDMM6500.GetTCoupleTypeAction(FM: TKeitley_Measure;
+//  PM: TDMM6500MeasPar_Base): boolean;
+//procedure TDMM6500.GetTCoupleTypeAction(PM: TDMM6500MeasPar_Base);
+//begin
+// if FM=kt_mTemp then
+//  begin
+//    try
+//      QuireOperation(33,60,2);
+//      Result:=(fDevice.Value<>ErResult);
+//      if Result then
+//        (PM as TDMM6500MeasPar_Temper).TCoupleType:=TDMM6500_TCoupleType(round(fDevice.Value));
+//    except
+//     Result:=False;
+//    end;
+//  end           else
+//  Result:=False;
+//end;
+
+function TDMM6500.GetThermistorType(ChanNumber: byte): boolean;
+begin
+ Result:=GetShablon(dm_tp_ThermistorType,ChanNumber);
+// Result:=GetShablon(GetThermistorTypeAction,ChanNumber);
+end;
+
+//function TDMM6500.GetThermistorTypeAction(FM: TKeitley_Measure;
+//  PM: TDMM6500MeasPar_Base): boolean;
+//procedure TDMM6500.GetThermistorTypeAction(PM: TDMM6500MeasPar_Base);
+//begin
+// if FM=kt_mTemp then
+//  begin
+//    try
+//      QuireOperation(33,61);
+//      Result:=(fDevice.Value<>ErResult);
+//      if Result then
+//        (PM as TDMM6500MeasPar_Temper).ThermistorType:=TDMM6500_ThermistorType(round(fDevice.Value));
+//    except
+//     Result:=False;
+//    end;
+//  end           else
+//  Result:=False;
+//end;
+
 function TDMM6500.GetThresholdRange(ChanNumber: byte): boolean;
 begin
  Result:=GetShablon(GetThresholdRangeAction,ChanNumber);
@@ -2883,6 +3577,34 @@ begin
     end;
   end;
 end;
+
+function TDMM6500.GetTransdType(ChanNumber: byte): boolean;
+begin
+ Result:=GetShablon(dm_tp_TransdType,ChanNumber);
+// Result:=GetShablon(GetTransdTypeAction,ChanNumber);
+end;
+
+//function TDMM6500.GetTransdTypeAction(FM: TKeitley_Measure;
+//  PM: TDMM6500MeasPar_Base): boolean;
+//begin
+// if FM=kt_mTemp then
+//  begin
+//    try
+//      QuireOperation(33,62);
+//      Result:=(fDevice.Value<>ErResult);
+//      if Result then
+//        (PM as TDMM6500MeasPar_Temper).TransdType:=TDMM6500_TempTransducer(round(fDevice.Value));
+//    except
+//     Result:=False;
+//    end;
+//  end           else
+//  Result:=False;
+//end;
+
+//procedure TDMM6500.GetTransdTypeAction(PM: TDMM6500MeasPar_Base);
+//begin
+// (PM as TDMM6500MeasPar_Temper).TransdType:=TDMM6500_TempTransducer(round(fDevice.Value));
+//end;
 
 function TDMM6500.ChanQuireBegin(ChanNumber: byte): boolean;
 begin
@@ -3017,15 +3739,16 @@ end;
 procedure TDMM6500.SetDbmWReference(DBMvalue: Integer; ChanNumber: Byte);
 //   var BaseV:IMeasPar_BaseVolt;
 begin
- if ChanNumber=0
-   then  SetDbmWReferenceAction(fMeasureFunction,MeasParameters,DBMvalue)
-   else
-     if ChanSetupBegin(ChanNumber) then
-     begin
-       SetDbmWReferenceAction(fChansMeasure[ChanNumber-fFirstChannelInSlot].MeasureFunction,
-                       fChansMeasure[ChanNumber-fFirstChannelInSlot].MeasParameters,
-                       DBMvalue);
-     end;
+  SetupShablon(SetDbmWReferenceAction,DBMvalue,ChanNumber);
+// if ChanNumber=0
+//   then  SetDbmWReferenceAction(fMeasureFunction,MeasParameters,DBMvalue)
+//   else
+//     if ChanSetupBegin(ChanNumber) then
+//     begin
+//       SetDbmWReferenceAction(fChansMeasure[ChanNumber-fFirstChannelInSlot].MeasureFunction,
+//                       fChansMeasure[ChanNumber-fFirstChannelInSlot].MeasParameters,
+//                       DBMvalue);
+//     end;
 end;
 
 procedure TDMM6500.SetDbmWReferenceAction(FM: TKeitley_Measure;
@@ -3043,15 +3766,16 @@ end;
 
 procedure TDMM6500.SetDecibelReference(DBvalue: double;ChanNumber: byte);
 begin
- if ChanNumber=0
-   then  SetDecibelReferenceAction(fMeasureFunction,MeasParameters,DBvalue)
-   else
-     if ChanSetupBegin(ChanNumber) then
-     begin
-       SetDecibelReferenceAction(fChansMeasure[ChanNumber-fFirstChannelInSlot].MeasureFunction,
-                       fChansMeasure[ChanNumber-fFirstChannelInSlot].MeasParameters,
-                       DBvalue);
-     end;
+ SetupShablon(SetDecibelReferenceAction,DBvalue,ChanNumber);
+// if ChanNumber=0
+//   then  SetDecibelReferenceAction(fMeasureFunction,MeasParameters,DBvalue)
+//   else
+//     if ChanSetupBegin(ChanNumber) then
+//     begin
+//       SetDecibelReferenceAction(fChansMeasure[ChanNumber-fFirstChannelInSlot].MeasureFunction,
+//                       fChansMeasure[ChanNumber-fFirstChannelInSlot].MeasParameters,
+//                       DBvalue);
+//     end;
 end;
 
 procedure TDMM6500.SetDecibelReferenceAction(FM: TKeitley_Measure;
@@ -3137,6 +3861,30 @@ begin
  BaseV.Units:=Un;
 end;
 
+procedure TDMM6500.SetupShablon(
+  SetProcedureDoubleGeneral: TSetProcedureDoubleGeneral; Value: double;
+  ChanNumber: byte);
+begin
+ if ChanNumber=0
+   then  SetProcedureDoubleGeneral(fMeasureFunction,Value)
+   else
+     if ChanSetupBegin(ChanNumber) then
+       SetProcedureDoubleGeneral(fChansMeasure[ChanNumber-fFirstChannelInSlot].MeasureFunction,
+                       Value);
+end;
+
+procedure TDMM6500.SetupShablon(SetProcedureDouble: TSetProcedureDouble;
+  Value: double; ChanNumber: byte);
+begin
+ if ChanNumber=0
+ then  SetProcedureDouble(fMeasureFunction,MeasParameters,Value)
+ else
+   if ChanSetupBegin(ChanNumber) then
+     SetProcedureDouble(fChansMeasure[ChanNumber-fFirstChannelInSlot].MeasureFunction,
+                     fChansMeasure[ChanNumber-fFirstChannelInSlot].MeasParameters,
+                     Value);
+end;
+
 procedure TDMM6500.SetVRMethod(VRM: TDMM6500_VoltageRatioMethod;
   ChanNumber: Byte);
 begin
@@ -3158,6 +3906,51 @@ begin
    fAdditionalString:=DMM6500_VoltageRatioMethodCommand[VRM];
    SetupOperation(MeasureToRootNodeNumber(FM),57);
    (PM as TDMM6500MeasPar_VoltRat).VRMethod:=VRM;
+  end;
+end;
+
+procedure TDMM6500.SetW2RTDType(RTDType: TDMM6500_RTDType; ChanNumber: Byte);
+begin
+ SetupShablon(SetWiRTDTypeAction,RTDType,4,ChanNumber);
+end;
+
+procedure TDMM6500.SetW3RTDType(RTDType: TDMM6500_RTDType; ChanNumber: Byte);
+begin
+ SetupShablon(SetWiRTDTypeAction,RTDType,5,ChanNumber);
+end;
+
+procedure TDMM6500.SetW4RTDType(RTDType: TDMM6500_RTDType; ChanNumber: Byte);
+begin
+ SetupShablon(SetWiRTDTypeAction,RTDType,6,ChanNumber);
+end;
+
+procedure TDMM6500.SetWiRTDTypeAction(FM: TKeitley_Measure;
+  PM: TDMM6500MeasPar_Base; RTDType: TDMM6500_RTDType;
+  WiType: TDMM6500_RTDPropertyNumber);
+begin
+//:<function>:RTD:TWO|THR|FOUR <type>
+ if FM=kt_mTemp then
+  begin
+   fAdditionalString:=DMM6500_WiRTDTypeLabel[RTDType];
+   SetupOperation(33,59,WiType);
+   case WiType of
+     4:(PM as TDMM6500MeasPar_Temper).W2RTDType:=RTDType;
+     5:(PM as TDMM6500MeasPar_Temper).W3RTDType:=RTDType;
+     6:(PM as TDMM6500MeasPar_Temper).W4RTDType:=RTDType;
+   end;
+  end;
+end;
+
+procedure TDMM6500.StringToCoupleRefJunct(Str: string);
+  var i:TDMM6500_TCoupleRefJunct;
+begin
+ for I := Low(TDMM6500_TCoupleRefJunct) to High(TDMM6500_TCoupleRefJunct) do
+  begin
+   if Str=DMM6500_TCoupleRefJunctCommand[i] then
+     begin
+       fDevice.Value:=ord(i);
+       Break;
+     end;
   end;
 end;
 
@@ -3203,6 +3996,45 @@ begin
   end;
 end;
 
+procedure TDMM6500.StringToRTDType(Str: string);
+  var i:TDMM6500_RTDType;
+begin
+ for I := Low(TDMM6500_RTDType) to High(TDMM6500_RTDType) do
+  begin
+   if Str=AnsiLowerCase(DMM6500_WiRTDTypeLabel[i]) then
+     begin
+       fDevice.Value:=ord(i);
+       Break;
+     end;
+  end;
+end;
+
+procedure TDMM6500.StringToTCoupleType(Str: string);
+  var i:TDMM6500_TCoupleType;
+begin
+ for I := Low(TDMM6500_TCoupleType) to High(TDMM6500_TCoupleType) do
+  begin
+   if Str=DMM6500_TCoupleTypeLabel[i] then
+     begin
+       fDevice.Value:=ord(i);
+       Break;
+     end;
+  end;
+end;
+
+procedure TDMM6500.StringToTempTransducer(Str: string);
+  var i:TDMM6500_TempTransducer;
+begin
+ for I := Low(TDMM6500_TempTransducer) to High(TDMM6500_TempTransducer) do
+  begin
+   if Str=DMM6500_TempTransducerCommand[i] then
+     begin
+       fDevice.Value:=ord(i);
+       Break;
+     end;
+  end;
+end;
+
 procedure TDMM6500.StringToVoltageRatioMethod(Str: string);
   var i:TDMM6500_VoltageRatioMethod;
 begin
@@ -3225,6 +4057,21 @@ begin
        fDevice.Value:=ord(i);
        Break;
      end;
+end;
+
+procedure TDMM6500.StringToThermistorType(Str: string);
+  var i:TDMM6500_ThermistorType;
+      Val:integer;
+begin
+ Val:=StrToInt(Str);
+ for I := Low(TDMM6500_ThermistorType) to High(TDMM6500_ThermistorType) do
+  begin
+   if Val=DMM6500_ThermistorTypeValues[i] then
+     begin
+       fDevice.Value:=ord(i);
+       Break;
+     end;
+  end;
 end;
 
 procedure TDMM6500.StrToVoltUnit(Str: string);
@@ -3335,6 +4182,115 @@ begin
  (PM as TDMM6500MeasPar_Capac).Range:=Range;
 end;
 
+procedure TDMM6500.SetRefJunction(Value: TDMM6500_TCoupleRefJunct;
+  ChanNumber: Byte);
+begin
+ if ChanNumber=0
+ then  SetRefJunctionAction(fMeasureFunction,MeasParameters,Value)
+ else
+   if ChanSetupBegin(ChanNumber) then
+     SetRefJunctionAction(fChansMeasure[ChanNumber-fFirstChannelInSlot].MeasureFunction,
+                     fChansMeasure[ChanNumber-fFirstChannelInSlot].MeasParameters,
+                     Value);
+end;
+
+procedure TDMM6500.SetRefJunctionAction(FM: TKeitley_Measure;
+  PM: TDMM6500MeasPar_Base; Value: TDMM6500_TCoupleRefJunct);
+begin
+//:<function>:TC:RJUN:RSEL <type>
+ if FM=kt_mTemp then
+  begin
+   fAdditionalString:=DMM6500_TCoupleRefJunctCommand[Value];
+   SetupOperation(33,60,1);
+   (PM as TDMM6500MeasPar_Temper).RefJunction:=Value;
+  end
+end;
+
+procedure TDMM6500.SetRefTemperature(Value: Double; ChanNumber: Byte);
+begin
+ SetupShablon(SetRefTemperatureaAction,Value,ChanNumber);
+end;
+
+procedure TDMM6500.SetRefTemperatureaAction(FM: TKeitley_Measure;
+  PM: TDMM6500MeasPar_Base; Value: Double);
+begin
+//:<function>:TC:RJUN:SIM <tempValue>
+ if FM=kt_mTemp then
+  begin
+   (PM as TDMM6500MeasPar_Temper).RefTemperature:=Value;
+   fAdditionalString:=FloatToStrF((PM as TDMM6500MeasPar_Temper).RefTemperature,ffExponent,3,0);
+   SetupOperation(33,60,0);
+  end
+end;
+
+procedure TDMM6500.SetRTDAlpha(Value: Double; ChanNumber: Byte);
+begin
+ SetupShablon(SetRTDAlphaAction,Value,ChanNumber);
+end;
+
+procedure TDMM6500.SetRTDAlphaAction(FM: TKeitley_Measure;
+  PM: TDMM6500MeasPar_Base; Value: Double);
+begin
+//:<function>:RTD:ALPH <n>
+ if FM=kt_mTemp then
+  begin
+   (PM as TDMM6500MeasPar_Temper).RTD_Alpha:=Value;
+   fAdditionalString:=FloatToStrF((PM as TDMM6500MeasPar_Temper).RTD_Alpha,ffExponent,9,0);
+   SetupOperation(33,59,0);
+  end
+end;
+
+procedure TDMM6500.SetRTDBeta(Value: Double; ChanNumber: Byte);
+begin
+ SetupShablon(SetRTDBetaAction,Value,ChanNumber);
+end;
+
+procedure TDMM6500.SetRTDBetaAction(FM: TKeitley_Measure;
+  PM: TDMM6500MeasPar_Base; Value: Double);
+begin
+//:<function>:RTD:BETA <n>
+ if FM=kt_mTemp then
+  begin
+   (PM as TDMM6500MeasPar_Temper).RTD_Beta:=Value;
+   fAdditionalString:=FloatToStrF((PM as TDMM6500MeasPar_Temper).RTD_Beta,ffExponent,9,0);
+   SetupOperation(33,59,1);
+  end
+end;
+
+procedure TDMM6500.SetRTDDelta(Value: Double; ChanNumber: Byte);
+begin
+ SetupShablon(SetRTDDeltaAction,Value,ChanNumber);
+end;
+
+procedure TDMM6500.SetRTDDeltaAction(FM: TKeitley_Measure;
+  PM: TDMM6500MeasPar_Base; Value: Double);
+begin
+//:<function>:RTD:DELT <n>
+ if FM=kt_mTemp then
+  begin
+   (PM as TDMM6500MeasPar_Temper).RTD_Delta:=Value;
+   fAdditionalString:=FloatToStrF((PM as TDMM6500MeasPar_Temper).RTD_Delta,ffExponent,5,0);;
+   SetupOperation(33,59,2);
+  end
+end;
+
+procedure TDMM6500.SetRTDZero(Value: integer; ChanNumber: Byte);
+begin
+  SetupShablon(SetRTDZeroAction,Value,ChanNumber);
+end;
+
+procedure TDMM6500.SetRTDZeroAction(FM: TKeitley_Measure;
+  PM: TDMM6500MeasPar_Base; Value: integer);
+begin
+//:<function>:RTD:ZERO <n>
+ if FM=kt_mTemp then
+  begin
+   (PM as TDMM6500MeasPar_Temper).RTD_Zero:=Value;
+   fAdditionalString:=IntToStr((PM as TDMM6500MeasPar_Temper).RTD_Zero);
+   SetupOperation(33,59,3);
+  end
+end;
+
 function TDMM6500.RangeToString(Range: TDMM6500_CapacitanceRange): string;
 begin
  case Range of
@@ -3398,6 +4354,49 @@ begin
      SetRangeAction(fChansMeasure[ChanNumber-fFirstChannelInSlot].MeasureFunction,
                      fChansMeasure[ChanNumber-fFirstChannelInSlot].MeasParameters,
                      Range);
+end;
+
+procedure TDMM6500.SetupShablon(SetProcedureInteger: TSetProcedureInteger;
+  Value: Integer; ChanNumber: byte);
+begin
+ if ChanNumber=0
+ then  SetProcedureInteger(fMeasureFunction,MeasParameters,Value)
+ else
+   if ChanSetupBegin(ChanNumber) then
+     SetProcedureInteger(fChansMeasure[ChanNumber-fFirstChannelInSlot].MeasureFunction,
+                     fChansMeasure[ChanNumber-fFirstChannelInSlot].MeasParameters,
+                     Value);
+end;
+
+procedure TDMM6500.SetupShablon(SetProcedure: TSetProcedureRTDType;
+  RTDType: TDMM6500_RTDType; WiType: TDMM6500_RTDPropertyNumber;
+  ChanNumber: byte);
+begin
+ if ChanNumber=0
+ then  SetProcedure(fMeasureFunction,MeasParameters,RTDType,WiType)
+ else
+   if ChanSetupBegin(ChanNumber) then
+     SetProcedure(fChansMeasure[ChanNumber-fFirstChannelInSlot].MeasureFunction,
+                     fChansMeasure[ChanNumber-fFirstChannelInSlot].MeasParameters,
+                     RTDType,WiType);
+end;
+
+function TDMM6500.GetShablon(TempPar: TDMM6500_TempParameters;
+  ChanNumber: byte): boolean;
+begin
+ if ChanNumber=0
+    then Result:=GetActionShablon(fMeasureFunction,MeasParameters,TempPar)
+    else
+     begin
+       if ChanQuireBegin(ChanNumber) then
+        begin
+          Result:=GetActionShablon(fChansMeasure[ChanNumber-fFirstChannelInSlot].MeasureFunction,
+                         fChansMeasure[ChanNumber-fFirstChannelInSlot].MeasParameters,
+                         TempPar);
+          fChanOperation:=False;
+        end                          else
+          Result:=False;
+     end;
 end;
 
 end.
