@@ -58,10 +58,16 @@ type
  TDMM6500_RTDType=(dm_rtdPT100,dm_rtdPT385,dm_rtdPT3916,
                       dm_rtdD100,dm_rtdF100,dm_rtdUser);
  TDMM6500_RTDPropertyNumber=4..6;
- TDMM6500_TempParameters=(dm_tp_TransdType,dm_tp_RefJunction,
+ TDMM6500_MeasParameters=(dm_tp_TransdType,dm_tp_RefJunction,
     dm_tp_RTDAlpha,dm_tp_RTDBeta,dm_tp_RTDDelta,dm_tp_RTDZero,
     dm_tp_W2RTDType,dm_tp_W3RTDType,dm_tp_W4RTDType,dm_tp_ThermistorType,
-    dm_tp_TCoupleType,dm_tp_SimRefTemp);
+    dm_tp_TCoupleType,dm_tp_SimRefTemp,dm_dp_BiasLevel,dm_vrp_VRMethod,
+    dm_pp_OffsetCompen,dm_pp_OpenLeadDetector,dm_pp_LineSync,
+    dm_pp_AzeroState,dm_pp_DetectorBW,dm_pp_InputImpedance,
+    dm_pp_Units,dm_pp_DbmWReference,dm_pp_DecibelReference,
+    dm_pp_Aperture,dm_pp_MeasureTime,dm_pp_NPLC,
+    dm_pp_SampleRate,dm_pp_DelayAuto,dm_pp_Range,
+    dm_pp_ThresholdRange);
 
 
  TDMM6500_ThermistorType=(dm_tt2252,dm_tt5000,dm_tt10000);

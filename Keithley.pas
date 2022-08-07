@@ -1217,7 +1217,7 @@ begin
 //             7: fDevice.Value:=StrToInt(Str);
 //             14: if StringToMeasureUnit(AnsiLowerCase(Str))
 //                    then fDevice.Value:=ord(fMeasureUnits[TKt2450_Measure(fFirstLevelNode-12)]);
-             {16,}15:fDevice.Value:=SCPI_StringToValue(Str);
+//             {16,}15:fDevice.Value:=SCPI_StringToValue(Str);
           end;   //fRootNode=12..14,28..39
    15:StringToMeasureFunction(AnsiLowerCase(Str));
    19:case fFirstLevelNode of
