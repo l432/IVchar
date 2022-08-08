@@ -316,8 +316,8 @@ TSetProcedureBool=Procedure(FM: TKeitley_Measure;PM: TDMM6500MeasPar_Base;toOn:b
 TSetProcedureDouble=Procedure(FM: TKeitley_Measure;PM: TDMM6500MeasPar_Base;Value:double) of object;
 TSetProcedureDoubleGeneral=Procedure(FM: TKeitley_Measure;Value:double) of object;
 TSetProcedureInteger=Procedure(FM: TKeitley_Measure;PM: TDMM6500MeasPar_Base;Value:integer) of object;
-TSetProcedureRTDType=Procedure(FM: TKeitley_Measure;PM: TDMM6500MeasPar_Base;RTDType:TDMM6500_RTDType;
-                                WiType:TDMM6500_RTDPropertyNumber) of object;
+//TSetProcedureRTDType=Procedure(FM: TKeitley_Measure;PM: TDMM6500MeasPar_Base;RTDType:TDMM6500_RTDType;
+//                                WiType:TDMM6500_RTDPropertyNumber) of object;
 
  function  DMM6500MeasParFactory(MeasureType:TKeitley_Measure):TDMM6500MeasPar_Base;
 

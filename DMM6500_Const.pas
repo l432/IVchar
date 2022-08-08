@@ -67,8 +67,10 @@ type
     dm_pp_Units,dm_pp_DbmWReference,dm_pp_DecibelReference,
     dm_pp_Aperture,dm_pp_MeasureTime,dm_pp_NPLC,
     dm_pp_SampleRate,dm_pp_DelayAuto,dm_pp_Range,
-    dm_pp_ThresholdRange);
-
+    dm_pp_ThresholdRange,dm_pp_RangeVoltDC,dm_pp_RangeVoltAC,
+    dm_pp_RangeCurrentDC,dm_pp_RangeCurrentAC,
+    dm_pp_RangeResistance2W,dm_pp_RangeResistance4W,
+    dm_pp_RangeCapacitance);
 
  TDMM6500_ThermistorType=(dm_tt2252,dm_tt5000,dm_tt10000);
 
