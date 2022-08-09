@@ -85,26 +85,32 @@ type
    procedure SetActionRangeShablon(FM:TKeitley_Measure;PM:TDMM6500MeasPar_Base;
                               P:Pointer;MParam:TDMM6500_MeasParameters);
 
-   procedure SetShablon(MParam:TDMM6500_MeasParameters;P:Pointer;ChanNumber:byte);
-   procedure SetupShablon(SetProcedureBool:TSetProcedureBool;toOn:boolean;ChanNumber:byte);overload;
-   procedure SetupShablon(SetProcedureDouble:TSetProcedureDouble;Value:double;ChanNumber:byte);overload;
-   procedure SetupShablon(SetProcedureDoubleGeneral:TSetProcedureDoubleGeneral;Value:double;ChanNumber:byte);overload;
-   procedure SetupShablon(SetProcedureInteger:TSetProcedureInteger;Value:Integer;ChanNumber:byte);overload;
+   procedure SetShablon(MParam:TDMM6500_MeasParameters;P:Pointer;ChanNumber:byte);overload;
+   procedure SetShablon(MParam:TDMM6500_MeasParameters;P:Pointer;Measure:TKeitley_Measure);overload;
+
+//   procedure SetupShablon(SetProcedureBool:TSetProcedureBool;toOn:boolean;ChanNumber:byte);overload;
+//   procedure SetupShablon(SetProcedureDouble:TSetProcedureDouble;Value:double;ChanNumber:byte);overload;
+//   procedure SetupShablon(SetProcedureDoubleGeneral:TSetProcedureDoubleGeneral;Value:double;ChanNumber:byte);overload;
+//   procedure SetupShablon(SetProcedureInteger:TSetProcedureInteger;Value:Integer;ChanNumber:byte);overload;
 //   procedure SetupShablon(SetProcedure:TSetProcedureRTDType;RTDType:TDMM6500_RTDType;WiType:TDMM6500_RTDPropertyNumber;ChanNumber:byte);overload;
    function ChanSetupBegin(ChanNumber:byte):boolean;
    function ChanQuireBegin(ChanNumber:byte):boolean;
    Procedure MeasParametersDestroy;
-   procedure StrToTempUnit(Str:string);
-   procedure StrToVoltUnit(Str:string);
-   procedure StringToInputImpedance(Str:string);
-   procedure StringToVoltageRatioMethod(Str:string);
-   procedure StringToDetectorBW(Str:string);
-   procedure StringToOffsetComp(Str:string);
-   procedure StringToRTDType(Str:string);
-   procedure StringToCoupleRefJunct(Str:string);
-   procedure StringToTCoupleType(Str:string);
-   procedure StringToThermistorType(Str:string);
-   procedure StringToTempTransducer(Str:string);
+//   procedure StrToTempUnit(Str:string);
+//   procedure StrToVoltUnit(Str:string);
+//   procedure StringToInputImpedance(Str:string);
+//   procedure StringToVoltageRatioMethod(Str:string);
+//   procedure StringToDetectorBW(Str:string);
+//   procedure StringToOffsetComp(Str:string);
+//   procedure StringToRTDType(Str:string);
+//   procedure StringToCoupleRefJunct(Str:string);
+//   procedure StringToTCoupleType(Str:string);
+//   procedure StringToThermistorType(Str:string);
+//   procedure StringToTempTransducer(Str:string);
+   procedure StringToOrd(Str:string);
+   function HighForStrParsing:byte;
+   function ItIsRequiredStr(Str:string;i:byte):boolean;
+
 //   function RangeToString(Range:TDMM6500_VoltageDCRange):string;overload;
 //   function RangeToString(Range:TDMM6500_VoltageACRange):string;overload;
 //   function RangeToString(Range:TDMM6500_CurrentDCRange):string;overload;
@@ -113,16 +119,19 @@ type
 //   function RangeToString(Range:TDMM6500_Resistance4WRange):string;overload;
 //   function RangeToString(Range:TDMM6500_CapacitanceRange):string;overload;
    function RangeToString(P:pointer;MParam:TDMM6500_MeasParameters):string;//overload;
-
-   function ValueToDCVoltageRange(Value:double):TDMM6500_VoltageDCRange;
-   function ValueToACVoltageRange(Value:double):TDMM6500_VoltageACRange;
-   function ValueToDCCurrentRange(Value:double):TDMM6500_CurrentDCRange;
-   function ValueToACCurrentRange(Value:double):TDMM6500_CurrentACRange;
-   function ValueToResistance2WRange(Value:double):TDMM6500_Resistance2WRange;
-   function ValueToResistance4WRange(Value:double):TDMM6500_Resistance4WRange;
-   function ValueToCapacitanceRange(Value:double):TDMM6500_CapacitanceRange;
+   function ApertValueToString(FM: TKeitley_Measure;ApertValue:double):string;
    function BiasLevelToString(BL:TDMM6500_DiodeBiasLevel):string;
-   function ValueToBiasLevel(Value:double):TDMM6500_DiodeBiasLevel;
+
+//   function ValueToDCVoltageRange(Value:double):TDMM6500_VoltageDCRange;
+//   function ValueToACVoltageRange(Value:double):TDMM6500_VoltageACRange;
+//   function ValueToDCCurrentRange(Value:double):TDMM6500_CurrentDCRange;
+//   function ValueToACCurrentRange(Value:double):TDMM6500_CurrentACRange;
+//   function ValueToResistance2WRange(Value:double):TDMM6500_Resistance2WRange;
+//   function ValueToResistance4WRange(Value:double):TDMM6500_Resistance4WRange;
+//   function ValueToCapacitanceRange(Value:double):TDMM6500_CapacitanceRange;
+//   function ValueToBiasLevel(Value:double):TDMM6500_DiodeBiasLevel;
+   function ValueToOrd(Value:double;FM: TKeitley_Measure):integer;
+
 
    function PermitForParameter(FM: TKeitley_Measure; MParam: TDMM6500_MeasParameters;P:Pointer=nil;
                               PM: TDMM6500MeasPar_Base=nil):boolean;
@@ -200,9 +209,9 @@ type
    function GetDisplayDigitsNumber(ChanNumber:byte):boolean;reintroduce;overload;
 
 
-   procedure SetDelayAutoAction(Measure:TKeitley_Measure;
-                                PM: TDMM6500MeasPar_Base;
-                                toOn:boolean);
+//   procedure SetDelayAutoAction(Measure:TKeitley_Measure;
+//                                PM: TDMM6500MeasPar_Base;
+//                                toOn:boolean);
    procedure SetDelayAuto(Measure:TKeitley_Measure;toOn:boolean);overload;
 {   This command enables or disables the automatic delay that occurs before each measurement}
    procedure SetDelayAuto(toOn: Boolean; ChanNumber: Byte=0);overload;
@@ -211,9 +220,9 @@ type
    function GetDelayAutoOn(ChanNumber:byte=0):boolean;overload;
 
 
-   procedure SetSampleRateAction(Measure:TKeitley_Measure;
-                                 PM: TDMM6500MeasPar_Base;
-                                 SR:TDMM6500_DigSampleRate);
+//   procedure SetSampleRateAction(Measure:TKeitley_Measure;
+//                                 PM: TDMM6500MeasPar_Base;
+//                                 SR:TDMM6500_DigSampleRate);
    procedure SetSampleRate(Measure:TKeitley_Measure;SR:TDMM6500_DigSampleRate);overload;
    procedure SetSampleRate(SR: TDMM6500_DigSampleRate; ChanNumber: Byte=0);overload;
 //   function GetSampleRateAction(Measure:TKeitley_Measure;PM: TDMM6500MeasPar_Base):boolean;
@@ -221,80 +230,79 @@ type
    function GetSampleRate(ChanNumber:byte=0):boolean;overload;
 
 
-   procedure SetApertureAutoAction(Measure:TKeitley_Measure);
+//   procedure SetApertureAutoAction(Measure:TKeitley_Measure);
    procedure SetApertureAuto(ChanNumber:byte=0);
-   function  ApertValueToString(FM: TKeitley_Measure;
-                              ApertValue:double):string;
-   procedure SetApertureAction(FM: TKeitley_Measure;
-                              ApertValue:double);
+
+//   procedure SetApertureAction(FM: TKeitley_Measure;
+//                              ApertValue:double);
    procedure SetAperture(ApertValue:double;ChanNumber:byte=0);
 //   function GetApertureAction(FM: TKeitley_Measure):boolean;
    function GetAperture(ChanNumber:byte=0):boolean;
    {результат в fDevice.Value}
 
-   procedure SetNPLCAction(FM: TKeitley_Measure;
-                           NPLCvalue:double);
+//   procedure SetNPLCAction(FM: TKeitley_Measure;
+//                           NPLCvalue:double);
    procedure SetNPLC(NPLCvalue:double;ChanNumber:byte=0);
 //   function GetNPLCAction(FM: TKeitley_Measure):boolean;
    function GetNPLC(ChanNumber:byte=0):boolean;
    {результат в fDevice.Value}
 
-   procedure SetMeasureTimeAction(FM: TKeitley_Measure;
-                                  PM: TDMM6500MeasPar_Base;
-                                  MT:double);
+//   procedure SetMeasureTimeAction(FM: TKeitley_Measure;
+//                                  PM: TDMM6500MeasPar_Base;
+//                                  MT:double);
    procedure SetMeasureTime(MT:double;ChanNumber:byte=0);
 //   function GetMeasureTimeAction(FM: TKeitley_Measure;
 //                                  PM: TDMM6500MeasPar_Base):boolean;
    function GetMeasureTime(ChanNumber:byte=0):boolean;
 
-   procedure SetDecibelReferenceAction(FM: TKeitley_Measure;
-                                       PM: TDMM6500MeasPar_Base;
-                                       DBvalue:double);
+//   procedure SetDecibelReferenceAction(FM: TKeitley_Measure;
+//                                       PM: TDMM6500MeasPar_Base;
+//                                       DBvalue:double);
    procedure SetDecibelReference(DBvalue:double;ChanNumber:byte=0);//overload;
 //   function GetDecibelReferenceAction(FM: TKeitley_Measure;
 //                                      PM: TDMM6500MeasPar_Base):boolean;
    function GetDecibelReference(ChanNumber:byte=0):boolean;//overload;
 
 
-   procedure SetDbmWReferenceAction(FM: TKeitley_Measure;
-                                       PM: TDMM6500MeasPar_Base;
-                                       DBMvalue:integer);
+//   procedure SetDbmWReferenceAction(FM: TKeitley_Measure;
+//                                       PM: TDMM6500MeasPar_Base;
+//                                       DBMvalue:integer);
    procedure SetDbmWReference(DBMvalue: Integer; ChanNumber: Byte=0);//overload;
 //   function GetDbmWReferenceAction(FM: TKeitley_Measure;
 //                                   PM: TDMM6500MeasPar_Base):boolean;
    function GetDbmWReference(ChanNumber:byte=0):boolean;//overload;
 
-   procedure SetUnitsVoltAction(FM: TKeitley_Measure;
-                                PM: TDMM6500MeasPar_Base;
-                                Un:TDMM6500_VoltageUnits);
+//   procedure SetUnitsVoltAction(FM: TKeitley_Measure;
+//                                PM: TDMM6500MeasPar_Base;
+//                                Un:TDMM6500_VoltageUnits);
    procedure SetUnits(Un: TDMM6500_VoltageUnits; ChanNumber: Byte=0);overload;
-   procedure SetUnitsTempAction(FM: TKeitley_Measure;
-                                PM: TDMM6500MeasPar_Base;
-                                Un:TDMM6500_TempUnits);
+//   procedure SetUnitsTempAction(FM: TKeitley_Measure;
+//                                PM: TDMM6500MeasPar_Base;
+//                                Un:TDMM6500_TempUnits);
    procedure SetUnits(Un: TDMM6500_TempUnits; ChanNumber: Byte=0);overload;
 //   function GetUnitsAction(FM: TKeitley_Measure;
 //                                   PM: TDMM6500MeasPar_Base):boolean;
    function GetUnits(ChanNumber:byte=0):boolean;//overload;
 
-   procedure SetInputImpedanceAction(FM: TKeitley_Measure;
-                                PM: TDMM6500MeasPar_Base;
-                                InIm:TDMM6500_InputImpedance);
+//   procedure SetInputImpedanceAction(FM: TKeitley_Measure;
+//                                PM: TDMM6500MeasPar_Base;
+//                                InIm:TDMM6500_InputImpedance);
    procedure SetInputImpedance(InIm:TDMM6500_InputImpedance;ChanNumber: Byte=0);
 //   function GetInputImpedanceAction(FM: TKeitley_Measure;
 //                                      PM: TDMM6500MeasPar_Base):boolean;
    function GetInputImpedance(ChanNumber:byte=0):boolean;
 
-   procedure SetDetectorBWAction(FM: TKeitley_Measure;
-                                PM: TDMM6500MeasPar_Base;
-                                DecBW:TDMM6500_DetectorBandwidth);
+//   procedure SetDetectorBWAction(FM: TKeitley_Measure;
+//                                PM: TDMM6500MeasPar_Base;
+//                                DecBW:TDMM6500_DetectorBandwidth);
    procedure SetDetectorBW(DecBW:TDMM6500_DetectorBandwidth;ChanNumber: Byte=0);
 //   function GetDetectorBWAction(FM: TKeitley_Measure;
 //                                 PM: TDMM6500MeasPar_Base):boolean;
    function GetDetectorBW(ChanNumber:byte=0):boolean;
 
-   procedure SetAzeroStateAction(FM: TKeitley_Measure;
-                                 PM: TDMM6500MeasPar_Base;
-                                 toOn:boolean);
+//   procedure SetAzeroStateAction(FM: TKeitley_Measure;
+//                                 PM: TDMM6500MeasPar_Base;
+//                                 toOn:boolean);
    procedure SetAzeroState(toOn:boolean);override;
    procedure SetAzeroState(toOn:boolean;ChanNumber: Byte);reintroduce;overload;
 //   function GetAzeroStateAction(FM: TKeitley_Measure;
@@ -302,23 +310,23 @@ type
    function GetAzeroState(ChanNumber:byte=0):boolean;
 
 
-   procedure SetLineSyncAction(FM: TKeitley_Measure;
-                                PM: TDMM6500MeasPar_Base;
-                                toOn:boolean);
+//   procedure SetLineSyncAction(FM: TKeitley_Measure;
+//                                PM: TDMM6500MeasPar_Base;
+//                                toOn:boolean);
    procedure SetLineSync(toOn:boolean;ChanNumber: Byte=0);
 //   function GetLineSyncAction(FM: TKeitley_Measure;PM: TDMM6500MeasPar_Base):boolean;
    function GetLineSync(ChanNumber:byte=0):boolean;
 
-   procedure SetOpenLDAction(FM: TKeitley_Measure;
-                                PM: TDMM6500MeasPar_Base;
-                                toOn:boolean);
+//   procedure SetOpenLDAction(FM: TKeitley_Measure;
+//                                PM: TDMM6500MeasPar_Base;
+//                                toOn:boolean);
    procedure SetOpenLD(toOn:boolean;ChanNumber: Byte=0);
 //   function GetOpenLDAction(FM: TKeitley_Measure;PM: TDMM6500MeasPar_Base):boolean;
    function GetOpenLD(ChanNumber:byte=0):boolean;
 
-   procedure SetOffsetCompAction(FM: TKeitley_Measure;
-                                PM: TDMM6500MeasPar_Base;
-                                OC:TDMM6500_OffsetCompen);
+//   procedure SetOffsetCompAction(FM: TKeitley_Measure;
+//                                PM: TDMM6500MeasPar_Base;
+//                                OC:TDMM6500_OffsetCompen);
    procedure SetOffsetComp(OC:TDMM6500_OffsetCompen;ChanNumber: Byte=0);
 //   function GetOffsetCompAction(FM: TKeitley_Measure;
 //                                      PM: TDMM6500MeasPar_Base):boolean;
@@ -606,7 +614,7 @@ begin
    dm_tp_ThermistorType: (PM as TDMM6500MeasPar_Temper).ThermistorType:=TDMM6500_ThermistorType(round(fDevice.Value));
    dm_tp_TCoupleType: (PM as TDMM6500MeasPar_Temper).TCoupleType:=TDMM6500_TCoupleType(round(fDevice.Value));
    dm_tp_SimRefTemp: (PM as TDMM6500MeasPar_Temper).RefJunction:=TDMM6500_TCoupleRefJunct(round(fDevice.Value));
-   dm_dp_BiasLevel:(PM as TDMM6500MeasPar_Diode).BiasLevel:=ValueToBiasLevel(fDevice.Value);
+   dm_dp_BiasLevel:(PM as TDMM6500MeasPar_Diode).BiasLevel:=TDMM6500_DiodeBiasLevel(ValueToOrd(fDevice.Value,kt_mDiod));
    dm_vrp_VRMethod:(PM as TDMM6500MeasPar_VoltRat).VRMethod:=TDMM6500_VoltageRatioMethod(round(fDevice.Value));
    dm_pp_OffsetCompen:(PM as TDMM6500MeasPar_Base4WT).OffsetComp:=TDMM6500_OffsetCompen(round(fDevice.Value));
    dm_pp_OpenLeadDetector:(PM as TDMM6500MeasPar_Base4WT).OpenLeadDetector:=(fDevice.Value=1);
@@ -621,21 +629,21 @@ begin
                end;
    dm_pp_DbmWReference:GetMeasPar_BaseVolt(FM,PM).DBM:=round(fDevice.Value);
    dm_pp_DecibelReference:GetMeasPar_BaseVolt(FM,PM).DB:=fDevice.Value;
-   dm_pp_MeasureTime:(PM as TDMM6500MeasPar_BaseDelayMT).MeaureTime:=fDevice.Value*1e-3;
+   dm_pp_MeasureTime:(PM as TDMM6500MeasPar_BaseDelayMT).MeaureTime:=fDevice.Value*1e3;
    dm_pp_SampleRate: (PM as TDMM6500MeasPar_BaseDig).SampleRate:=round(fDevice.Value);
    dm_pp_DelayAuto:(PM as TDMM6500MeasPar_BaseDelay).AutoDelay:=(fDevice.Value=1);
-   dm_pp_ThresholdRange:(PM as TDMM6500MeasPar_FreqPeriod).ThresholdRange:=ValueToACVoltageRange(fDevice.Value);
+   dm_pp_ThresholdRange:(PM as TDMM6500MeasPar_FreqPeriod).ThresholdRange:=TDMM6500_VoltageACRange(ValueToOrd(fDevice.Value,FM));
    dm_pp_Range: case FM of
-                   kt_mVolDC:(PM as TDMM6500MeasPar_VoltDC).Range:=ValueToDCVoltageRange(fDevice.Value);
-                   kt_mVoltRat: (PM as TDMM6500MeasPar_VoltRat).Range:=ValueToDCVoltageRange(fDevice.Value);
-                   kt_mVolAC: (PM as TDMM6500MeasPar_VoltAC).Range:=ValueToACVoltageRange(fDevice.Value);
-                   kt_mCurDC: (PM as TDMM6500MeasPar_CurDC).Range:=ValueToDCCurrentRange(fDevice.Value);
-                   kt_mCurAC: (PM as TDMM6500MeasPar_CurAC).Range:=ValueToACCurrentRange(fDevice.Value);
-                   kt_mRes2W: (PM as TDMM6500MeasPar_Res2W).Range:=ValueToResistance2WRange(fDevice.Value);
-                   kt_mRes4W: (PM as TDMM6500MeasPar_Res4W).Range:=ValueToResistance4WRange(fDevice.Value);
-                   kt_mCap: (PM as TDMM6500MeasPar_Capac).Range:=ValueToCapacitanceRange(fDevice.Value);
-                   kt_mDigCur:(PM as TDMM6500MeasPar_DigCur).Range:=ValueToDCCurrentRange(fDevice.Value);
-                   kt_mDigVolt:(PM as TDMM6500MeasPar_DigVolt).Range:=ValueToDCVoltageRange(fDevice.Value);
+                   kt_mVolDC:(PM as TDMM6500MeasPar_VoltDC).Range:=TDMM6500_VoltageDCRange(ValueToOrd(fDevice.Value,FM));
+                   kt_mVoltRat: (PM as TDMM6500MeasPar_VoltRat).Range:=TDMM6500_VoltageDCRange(ValueToOrd(fDevice.Value,FM));
+                   kt_mVolAC: (PM as TDMM6500MeasPar_VoltAC).Range:=TDMM6500_VoltageACRange(ValueToOrd(fDevice.Value,FM));
+                   kt_mCurDC: (PM as TDMM6500MeasPar_CurDC).Range:=TDMM6500_CurrentDCRange(ValueToOrd(fDevice.Value,FM));
+                   kt_mCurAC: (PM as TDMM6500MeasPar_CurAC).Range:=TDMM6500_CurrentACRange(ValueToOrd(fDevice.Value,FM));
+                   kt_mRes2W: (PM as TDMM6500MeasPar_Res2W).Range:=TDMM6500_Resistance2WRange(ValueToOrd(fDevice.Value,FM));
+                   kt_mRes4W: (PM as TDMM6500MeasPar_Res4W).Range:=TDMM6500_Resistance4WRange(ValueToOrd(fDevice.Value,FM));
+                   kt_mCap: (PM as TDMM6500MeasPar_Capac).Range:=TDMM6500_CapacitanceRange(ValueToOrd(fDevice.Value,FM));
+                   kt_mDigCur:(PM as TDMM6500MeasPar_DigCur).Range:=TDMM6500_CurrentDCRange(ValueToOrd(fDevice.Value,FM));
+                   kt_mDigVolt:(PM as TDMM6500MeasPar_DigVolt).Range:=TDMM6500_VoltageDCRange(ValueToOrd(fDevice.Value,FM));
                 end;
  end;
 end;
@@ -1688,6 +1696,33 @@ begin
 // Result:=GetShablon(GetW2RTDTypeAction,6,ChanNumber);
 end;
 
+function TDMM6500.HighForStrParsing: byte;
+begin
+ Result:=0;
+ case fRootNode of
+  12..14,
+   28..39:case fFirstLevelNode of
+          9:Result:=ord(High(TDMM6500_OffsetCompen));
+          50:case fLeafNode of
+              1:Result:=ord(High(TDMM6500_TempUnits));
+              2:Result:=ord(High(TDMM6500_VoltageUnits));
+             end;
+          52:Result:=ord(High(TDMM6500_InputImpedance));
+          53:Result:=ord(High(TDMM6500_DetectorBandwidth));
+          57:Result:=ord(High(TDMM6500_VoltageRatioMethod));
+          59:case fLeafNode of
+              4..6:Result:=ord(High(TDMM6500_RTDType));
+             end;
+          60:case fLeafNode of
+              1:Result:=ord(High(TDMM6500_TCoupleRefJunct));
+              2:Result:=ord(High(TDMM6500_TCoupleType));
+             end;
+          61:Result:=ord(High(TDMM6500_ThermistorType));
+          62:Result:=ord(High(TDMM6500_TempTransducer));
+         end;
+ end;
+end;
+
 function TDMM6500.GetDelayAutoOn(Measure: TKeitley_Measure): boolean;
 begin
  Result:=GetShablon(dm_pp_DelayAuto,Measure);
@@ -1749,6 +1784,33 @@ begin
  if (ChanNumber in [6..10])and(MeasureFunc in [kt_mRes4W,kt_mVoltRat]) then Exit;
  Result:=True;
 
+end;
+
+function TDMM6500.ItIsRequiredStr(Str: string; i: byte): boolean;
+begin
+ Result:=False;
+ case fRootNode of
+  12..14,
+   28..39:case fFirstLevelNode of
+          9:Result:=(Str=AnsiLowerCase(DMM6500_OffsetCompenLabel[TDMM6500_OffsetCompen(i)]));
+          50:case fLeafNode of
+              1:Result:=(Pos(DMM6500_TempUnitsCommand[TDMM6500_TempUnits(i)],Str)<>0);
+              2:Result:=(Pos(AnsiLowerCase(DMM6500_VoltageUnitsLabel[TDMM6500_VoltageUnits(i)]),Str)<>0);
+             end;
+          52:Result:=(Str=DMM6500_InputImpedanceCommand[TDMM6500_InputImpedance(i)]);
+          53:Result:=(Str=IntToStr(DMM6500_DetectorBandwidthCommand[TDMM6500_DetectorBandwidth(i)]));
+          57:Result:=(Pos(DMM6500_VoltageRatioMethodCommand[TDMM6500_VoltageRatioMethod(i)],Str)<>0);
+          59:case fLeafNode of
+              4..6:Result:=(Str=AnsiLowerCase(DMM6500_WiRTDTypeLabel[TDMM6500_RTDType(i)]));
+             end;
+          60:case fLeafNode of
+              1:Result:=(Str=DMM6500_TCoupleRefJunctCommand[TDMM6500_TCoupleRefJunct(i)]);
+              2:Result:=(Str=DMM6500_TCoupleTypeLabel[TDMM6500_TCoupleType(i)]);
+             end;
+          61:Result:=(Str=IntToStr(DMM6500_ThermistorTypeValues[TDMM6500_ThermistorType(i)]));
+          62:Result:=(Str=DMM6500_TempTransducerCommand[TDMM6500_TempTransducer(i)]);
+         end;
+ end;
 end;
 
 procedure TDMM6500.MeasParameterCreate(Measure: TKeitley_Measure);
@@ -1861,16 +1923,16 @@ begin
 //  showmessage('ura!  RTDZero='+floattostr((fChansMeasure[1].MeasParameters as TDMM6500MeasPar_Temper).RTD_Zero));
 
 
-SetMeasureFunction(kt_mTemp);
-if GetRefTemperature then
-  showmessage('ura!  RefTemperature='+floattostr((MeasParameters as TDMM6500MeasPar_Temper).RefTemperature));
-SetRefTemperature(27.8);
-if GetRefTemperature then
-  showmessage('ura!  RefTemperature='+floattostr((MeasParameters as TDMM6500MeasPar_Temper).RefTemperature));
-SetMeasureFunction(kt_mTemp,2);
-SetRefTemperature(2.088,2);
-if GetRefTemperature(2) then
-  showmessage('ura!  RefTemperature='+floattostr((fChansMeasure[1].MeasParameters as TDMM6500MeasPar_Temper).RefTemperature));
+//SetMeasureFunction(kt_mTemp);
+//if GetRefTemperature then
+//  showmessage('ura!  RefTemperature='+floattostr((MeasParameters as TDMM6500MeasPar_Temper).RefTemperature));
+//SetRefTemperature(27.8);
+//if GetRefTemperature then
+//  showmessage('ura!  RefTemperature='+floattostr((MeasParameters as TDMM6500MeasPar_Temper).RefTemperature));
+//SetMeasureFunction(kt_mTemp,2);
+//SetRefTemperature(2.088,2);
+//if GetRefTemperature(2) then
+//  showmessage('ura!  RefTemperature='+floattostr((fChansMeasure[1].MeasParameters as TDMM6500MeasPar_Temper).RefTemperature));
 
 //SetMeasureFunction(kt_mTemp);
 //if GetRTDDelta then
@@ -2532,17 +2594,17 @@ begin
  if Str= SuffixKt_2450[1] then fDevice.Value:=0;
 end;
 
-procedure TDMM6500.SetupShablon(SetProcedureBool: TSetProcedureBool;toOn:boolean;
-  ChanNumber: byte);
-begin
- if ChanNumber=0
- then  SetProcedureBool(fMeasureFunction,MeasParameters,toOn)
- else
-   if ChanSetupBegin(ChanNumber) then
-     SetProcedureBool(fChansMeasure[ChanNumber-fFirstChannelInSlot].MeasureFunction,
-                     fChansMeasure[ChanNumber-fFirstChannelInSlot].MeasParameters,
-                     toOn);
-end;
+//procedure TDMM6500.SetupShablon(SetProcedureBool: TSetProcedureBool;toOn:boolean;
+//  ChanNumber: byte);
+//begin
+// if ChanNumber=0
+// then  SetProcedureBool(fMeasureFunction,MeasParameters,toOn)
+// else
+//   if ChanSetupBegin(ChanNumber) then
+//     SetProcedureBool(fChansMeasure[ChanNumber-fFirstChannelInSlot].MeasureFunction,
+//                     fChansMeasure[ChanNumber-fFirstChannelInSlot].MeasParameters,
+//                     toOn);
+//end;
 
 //function TDMM6500.PermitDiode(FM: TKeitley_Measure): boolean;
 //begin
@@ -2570,6 +2632,7 @@ begin
                                   kt_mRes4W,kt_mDiod,kt_mTemp,
                                   kt_mFreq,kt_mPer,
                                   kt_mVoltRat,kt_mDigCur,kt_mDigVolt]);
+   dm_pp_ApertureAuto:Result:=(FM>kt_mVoltRat);
    dm_pp_MeasureTime:Result:=(FM in [kt_mCurDC,kt_mVolDC,kt_mRes2W,
                                   kt_mRes4W,kt_mDiod,kt_mTemp,
                                   kt_mFreq,kt_mPer,
@@ -2595,6 +2658,8 @@ begin
                         and(not(((PM as TDMM6500MeasPar_Res4W).OffsetComp=dm_ocOn)
                                   and(TDMM6500_Resistance4WRange(P)>dm_r4r10k)));
    dm_pp_RangeCapacitance:Result:=(FM=kt_mCap);
+   dm_tp_UnitsTemp:Result:=(FM=kt_mTemp);
+   dm_pp_UnitsVolt:Result:=(FM in [kt_mVolDC,kt_mVolAC,kt_mDigVolt]);
    else  Result:=(FM=kt_mTemp);
  end;
 end;
@@ -2680,32 +2745,32 @@ begin
     end;
   12..14,
    28..39:case fFirstLevelNode of
-          9:StringToOffsetComp(Str);
+          9:StringToOrd(AnsiLowerCase(Str));//StringToOffsetComp(Str);
           22,20,54,55,16:OffOnToValue(AnsiLowerCase(Str));
           50:case fLeafNode of
-              1:StrToTempUnit(AnsiLowerCase(Str));
-              2:StrToVoltUnit(AnsiLowerCase(Str));
+              1:StringToOrd(AnsiLowerCase(Str));//StrToTempUnit(AnsiLowerCase(Str));
+              2:StringToOrd(AnsiLowerCase(Str));//StrToVoltUnit(AnsiLowerCase(Str));
              end;
-          52:StringToInputImpedance(AnsiLowerCase(Str));
-          53:StringToDetectorBW(Str);
+          52:StringToOrd(AnsiLowerCase(Str));//StringToInputImpedance(AnsiLowerCase(Str));
+          53:StringToOrd(Str);//StringToDetectorBW(Str);
           15,56:case fLeafNode of
               0:OffOnToValue(AnsiLowerCase(Str));
               1:fDevice.Value:=SCPI_StringToValue(Str);
              end;
-          57:StringToVoltageRatioMethod(AnsiLowerCase(Str));
+          57:StringToOrd(AnsiLowerCase(Str));//StringToVoltageRatioMethod(AnsiLowerCase(Str));
           58:fDevice.Value:=SCPI_StringToValue(Str);
           59:case fLeafNode of
               0,1,2:fDevice.Value:=SCPI_StringToValue(Str);
               3:fDevice.Value:=StrToInt(Str);
-              4..6:StringToRTDType(AnsiLowerCase(Str));
+              4..6:StringToOrd(AnsiLowerCase(Str));//StringToRTDType(AnsiLowerCase(Str));
              end;
           60:case fLeafNode of
               0:fDevice.Value:=SCPI_StringToValue(Str);
-              1:StringToCoupleRefJunct(AnsiLowerCase(Str));
-              2:StringToTCoupleType(Str);
+              1:StringToOrd(AnsiLowerCase(Str));//StringToCoupleRefJunct(AnsiLowerCase(Str));
+              2:StringToOrd(Str);//StringToTCoupleType(Str);
              end;
-          61:StringToThermistorType(Str);
-          62:StringToTempTransducer(AnsiLowerCase(Str));
+          61:StringToOrd(Str);//StringToThermistorType(Str);
+          62:StringToOrd(AnsiLowerCase(Str));//StringToTempTransducer(AnsiLowerCase(Str));
          end;
  end;
 
@@ -2878,35 +2943,52 @@ begin
      (PM as TDMM6500MeasPar_VoltRat).VRMethod:=TDMM6500_VoltageRatioMethod(P);
                     end;
    dm_pp_OffsetCompen: begin
+     fAdditionalString:=DMM6500_OffsetCompenLabel[TDMM6500_OffsetCompen(P)];
+     (PM as TDMM6500MeasPar_Base4WT).OffsetComp:=TDMM6500_OffsetCompen(P);
                        end;
    dm_pp_OpenLeadDetector: begin
+    OnOffFromBool(PBoolean(P)^);
+    (PM as TDMM6500MeasPar_Base4WT).OpenLeadDetector:=PBoolean(P)^;
                            end;
    dm_pp_LineSync: begin
+    OnOffFromBool(PBoolean(P)^);
+    (PM as TDMM6500MeasPar_Continuity).LineSync:=PBoolean(P)^;
                    end;
    dm_pp_AzeroState: begin
+     OnOffFromBool(PBoolean(P)^);
+     (PM as TDMM6500MeasPar_Continuity).AzeroState:=PBoolean(P)^;
                      end;
    dm_pp_DetectorBW: begin
+     fAdditionalString:=inttostr(DMM6500_DetectorBandwidthCommand[TDMM6500_DetectorBandwidth(P)]);
+     (PM as TDMM6500MeasPar_BaseAC).DetectorBW:=TDMM6500_DetectorBandwidth(P);
                      end;
    dm_pp_InputImpedance: begin
+     fAdditionalString:=DMM6500_InputImpedanceCommand[TDMM6500_InputImpedance(P)];
+     GetMeasPar_BaseVoltDC(FM,PM).InputImpedance:=TDMM6500_InputImpedance(P);
                          end;
-   dm_pp_Units: begin
-                end;
    dm_pp_DbmWReference: begin
+     GetMeasPar_BaseVolt(FM,PM).DBM:=PInteger(P)^;
+     fAdditionalString:=Inttostr(GetMeasPar_BaseVolt(FM,PM).DBM);
                         end;
    dm_pp_DecibelReference: begin
+     GetMeasPar_BaseVolt(FM,PM).DB:=PDouble(P)^;
+     fAdditionalString:=FloatToStrF(GetMeasPar_BaseVolt(FM,PM).DB,ffExponent,4,0);
                            end;
-   dm_pp_Aperture: begin
-                   end;
+   dm_pp_Aperture:fAdditionalString:=ApertValueToString(FM,PDouble(P)^);
+   dm_pp_ApertureAuto:fAdditionalString:=SuffixKt_2450[8];
    dm_pp_MeasureTime: begin
+       (PM as TDMM6500MeasPar_BaseDelayMT).MeaureTime:=PDouble(P)^;
+       fAdditionalString:=ApertValueToString(FM,(PM as TDMM6500MeasPar_BaseDelayMT).MeaureTime*1e-3);
                       end;
-   dm_pp_NPLC: begin
-               end;
+   dm_pp_NPLC: fAdditionalString:=NumberToStrLimited(PDouble(P)^,DMM6500_NPLCLimits);
    dm_pp_SampleRate: begin
+     fAdditionalString:=IntToStr(TDMM6500_DigSampleRate(P));
+    (PM as TDMM6500MeasPar_BaseDig).SampleRate:=TDMM6500_DigSampleRate(P);
                      end;
    dm_pp_DelayAuto: begin
+     OnOffFromBool(PBoolean(P)^);
+     (PM as TDMM6500MeasPar_BaseDelay).AutoDelay:=PBoolean(P)^;
                     end;
-   dm_pp_Range: begin
-                end;
    dm_pp_ThresholdRange:
     (PM as TDMM6500MeasPar_FreqPeriod).ThresholdRange:=TDMM6500_VoltageACRange(P);
    dm_pp_RangeVoltDC:
@@ -2922,14 +3004,18 @@ begin
        kt_mCurDC: (PM as TDMM6500MeasPar_CurDC).Range:=TDMM6500_CurrentDCRange(P);
        kt_mDigCur: (PM as TDMM6500MeasPar_DigCur).Range:=TDMM6500_CurrentDCRange(P);
      end;
-   dm_pp_RangeCurrentAC:
-    (PM as TDMM6500MeasPar_CurAC).Range:=TDMM6500_CurrentACRange(P);
-   dm_pp_RangeResistance2W:
-    (PM as TDMM6500MeasPar_Res2W).Range:=TDMM6500_Resistance2WRange(P);
-   dm_pp_RangeResistance4W:
-    (PM as TDMM6500MeasPar_Res4W).Range:=TDMM6500_Resistance4WRange(P);
-   dm_pp_RangeCapacitance:
-    (PM as TDMM6500MeasPar_Capac).Range:=TDMM6500_CapacitanceRange(P);
+   dm_pp_RangeCurrentAC:(PM as TDMM6500MeasPar_CurAC).Range:=TDMM6500_CurrentACRange(P);
+   dm_pp_RangeResistance2W:(PM as TDMM6500MeasPar_Res2W).Range:=TDMM6500_Resistance2WRange(P);
+   dm_pp_RangeResistance4W:(PM as TDMM6500MeasPar_Res4W).Range:=TDMM6500_Resistance4WRange(P);
+   dm_pp_RangeCapacitance:(PM as TDMM6500MeasPar_Capac).Range:=TDMM6500_CapacitanceRange(P);
+   dm_tp_UnitsTemp:begin
+     fAdditionalString:=DMM6500_TempUnitsCommand[TDMM6500_TempUnits(P)];
+     (PM as TDMM6500MeasPar_Temper).Units:=TDMM6500_TempUnits(P);
+                   end;
+   dm_pp_UnitsVolt:begin
+     fAdditionalString:=DMM6500_VoltageUnitsLabel[TDMM6500_VoltageUnits(P)];
+     GetMeasPar_BaseVolt(FM,PM).Units:=TDMM6500_VoltageUnits(P);
+                   end;
  end;
 end;
 
@@ -2981,7 +3067,9 @@ end;
 
 procedure TDMM6500.SetAperture(ApertValue: double; ChanNumber: byte);
 begin
- SetupShablon(SetApertureAction,ApertValue,ChanNumber);
+//:<function>:APER <n>
+ SetShablon(dm_pp_Aperture,@ApertValue,ChanNumber);
+// SetupShablon(SetApertureAction,ApertValue,ChanNumber);
 //  if ChanNumber=0
 //   then  SetApertureAction(fMeasureFunction,ApertValue)
 //   else
@@ -2992,50 +3080,53 @@ begin
 //     end;
 end;
 
-procedure TDMM6500.SetApertureAction(FM: TKeitley_Measure; ApertValue: double);
-begin
-//:<function>:APER <n>
- if FM in [kt_mCurDC,kt_mVolDC,kt_mRes2W,
-                   kt_mRes4W,
-                   kt_mDiod,kt_mTemp,
-                   kt_mFreq,kt_mPer,
-                   kt_mVoltRat,kt_mDigCur,kt_mDigVolt] then
-  begin
-   fAdditionalString:=ApertValueToString(FM,ApertValue);
-   SetupOperation(MeasureToRootNodeNumber(FM),51);
-  end
-end;
+//procedure TDMM6500.SetApertureAction(FM: TKeitley_Measure; ApertValue: double);
+//begin
+////:<function>:APER <n>
+// if FM in [kt_mCurDC,kt_mVolDC,kt_mRes2W,
+//                   kt_mRes4W,
+//                   kt_mDiod,kt_mTemp,
+//                   kt_mFreq,kt_mPer,
+//                   kt_mVoltRat,kt_mDigCur,kt_mDigVolt] then
+//  begin
+//   fAdditionalString:=ApertValueToString(FM,ApertValue);
+//   SetupOperation(MeasureToRootNodeNumber(FM),51);
+//  end
+//end;
 
 procedure TDMM6500.SetApertureAuto(ChanNumber: byte);
 begin
-  if ChanNumber=0
-   then  SetApertureAutoAction(fMeasureFunction)
-   else
-     if ChanSetupBegin(ChanNumber) then
-     begin
-       SetApertureAutoAction(fChansMeasure[ChanNumber-fFirstChannelInSlot].MeasureFunction);
-     end;
+//:<function>:APER AUTO
+ SetShablon(dm_pp_ApertureAuto,nil,ChanNumber);
+//  if ChanNumber=0
+//   then  SetApertureAutoAction(fMeasureFunction)
+//   else
+//     if ChanSetupBegin(ChanNumber) then
+//     begin
+//       SetApertureAutoAction(fChansMeasure[ChanNumber-fFirstChannelInSlot].MeasureFunction);
+//     end;
 end;
 
-procedure TDMM6500.SetApertureAutoAction(Measure: TKeitley_Measure);
-begin
-//:<function>:APER AUTO
- if Measure>kt_mVoltRat then
-  begin
-   fAdditionalString:=SuffixKt_2450[8];
-   SetupOperation(MeasureToRootNodeNumber(Measure),51);
-  end
-end;
+//procedure TDMM6500.SetApertureAutoAction(Measure: TKeitley_Measure);
+//begin
+////:<function>:APER AUTO
+// if Measure>kt_mVoltRat then
+//  begin
+//   fAdditionalString:=SuffixKt_2450[8];
+//   SetupOperation(MeasureToRootNodeNumber(Measure),51);
+//  end
+//end;
 
 procedure TDMM6500.SetAzeroState(toOn: boolean; ChanNumber: Byte);
 begin
- if ChanNumber=0
- then  SetAzeroStateAction(fMeasureFunction,MeasParameters,toOn)
- else
-   if ChanSetupBegin(ChanNumber) then
-     SetAzeroStateAction(fChansMeasure[ChanNumber-fFirstChannelInSlot].MeasureFunction,
-                     fChansMeasure[ChanNumber-fFirstChannelInSlot].MeasParameters,
-                     toOn);
+ SetShablon(dm_pp_AzeroState,@toOn,ChanNumber);
+// if ChanNumber=0
+// then  SetAzeroStateAction(fMeasureFunction,MeasParameters,toOn)
+// else
+//   if ChanSetupBegin(ChanNumber) then
+//     SetAzeroStateAction(fChansMeasure[ChanNumber-fFirstChannelInSlot].MeasureFunction,
+//                     fChansMeasure[ChanNumber-fFirstChannelInSlot].MeasParameters,
+//                     toOn);
 end;
 
 procedure TDMM6500.SetAzeroState(toOn: boolean);
@@ -3043,14 +3134,14 @@ begin
   SetAzeroState(toOn,0);
 end;
 
-procedure TDMM6500.SetAzeroStateAction(FM: TKeitley_Measure;
-  PM: TDMM6500MeasPar_Base; toOn: boolean);
-begin
- inherited  SetAzeroState(FM,toOn);
- if FM in [kt_mCurDC,kt_mVolDC,kt_mRes2W,
-      kt_mRes4W,kt_mDiod,kt_mTemp,kt_mVoltRat] then
-    (PM as TDMM6500MeasPar_Continuity).AzeroState:=toOn;
-end;
+//procedure TDMM6500.SetAzeroStateAction(FM: TKeitley_Measure;
+//  PM: TDMM6500MeasPar_Base; toOn: boolean);
+//begin
+// inherited  SetAzeroState(FM,toOn);
+// if FM in [kt_mCurDC,kt_mVolDC,kt_mRes2W,
+//      kt_mRes4W,kt_mDiod,kt_mTemp,kt_mVoltRat] then
+//    (PM as TDMM6500MeasPar_Continuity).AzeroState:=toOn;
+//end;
 
 procedure TDMM6500.SetBiasLevel(BL: TDMM6500_DiodeBiasLevel; ChanNumber: Byte);
 begin
@@ -3142,8 +3233,9 @@ end;
 procedure TDMM6500.SetDelayAuto(Measure: TKeitley_Measure; toOn: boolean);
 begin
 //:<function>:DEL:AUTO ON|OFF
- MeasParameterCreate(Measure);
- SetDelayAutoAction(Measure,fMeasParameters[Measure],toOn);
+ SetShablon(dm_pp_DelayAuto,@toOn,Measure);
+// MeasParameterCreate(Measure);
+// SetDelayAutoAction(Measure,fMeasParameters[Measure],toOn);
 end;
 
 //procedure TDMM6500.SetDelayAuto(toOn: boolean);
@@ -3152,40 +3244,42 @@ end;
 //  (MeasParameters as TDMM6500MeasPar_BaseDelay).AutoDelay:=toOn;
 //end;
 
-procedure TDMM6500.SetDelayAutoAction(Measure:TKeitley_Measure;
-                                PM: TDMM6500MeasPar_Base;
-                                toOn:boolean);
-begin
-//:<function>:DEL:AUTO ON|OFF
- if Measure<kt_mDigCur then
-  begin
-   OnOffFromBool(toOn);
-   SetupOperation(MeasureToRootNodeNumber(Measure),22);
-   (PM as TDMM6500MeasPar_BaseDelay).AutoDelay:=toOn;
-  end;
-end;
+//procedure TDMM6500.SetDelayAutoAction(Measure:TKeitley_Measure;
+//                                PM: TDMM6500MeasPar_Base;
+//                                toOn:boolean);
+//begin
+////:<function>:DEL:AUTO ON|OFF
+// if Measure<kt_mDigCur then
+//  begin
+//   OnOffFromBool(toOn);
+//   SetupOperation(MeasureToRootNodeNumber(Measure),22);
+//   (PM as TDMM6500MeasPar_BaseDelay).AutoDelay:=toOn;
+//  end;
+//end;
 
 procedure TDMM6500.SetDetectorBW(DecBW: TDMM6500_DetectorBandwidth;
   ChanNumber: Byte);
 begin
- if ChanNumber=0
- then  SetDetectorBWAction(fMeasureFunction,MeasParameters,DecBW)
- else
-   if ChanSetupBegin(ChanNumber) then
-     SetDetectorBWAction(fChansMeasure[ChanNumber-fFirstChannelInSlot].MeasureFunction,
-                     fChansMeasure[ChanNumber-fFirstChannelInSlot].MeasParameters,
-                     DecBW);
+// :<function>:DET:BAND <n>
+ SetShablon(dm_pp_DetectorBW,Pointer(DecBW),ChanNumber);
+// if ChanNumber=0
+// then  SetDetectorBWAction(fMeasureFunction,MeasParameters,DecBW)
+// else
+//   if ChanSetupBegin(ChanNumber) then
+//     SetDetectorBWAction(fChansMeasure[ChanNumber-fFirstChannelInSlot].MeasureFunction,
+//                     fChansMeasure[ChanNumber-fFirstChannelInSlot].MeasParameters,
+//                     DecBW);
 end;
 
-procedure TDMM6500.SetDetectorBWAction(FM: TKeitley_Measure;
-  PM: TDMM6500MeasPar_Base; DecBW: TDMM6500_DetectorBandwidth);
-begin
-// :<function>:DET:BAND <n>
- if not(FM in [kt_mCurAC,kt_mVolAC]) then Exit;
- fAdditionalString:=inttostr(DMM6500_DetectorBandwidthCommand[DecBW]);
- SetupOperation(MeasureToRootNodeNumber(FM),53);
- (PM as TDMM6500MeasPar_BaseAC).DetectorBW:=DecBW;
-end;
+//procedure TDMM6500.SetDetectorBWAction(FM: TKeitley_Measure;
+//  PM: TDMM6500MeasPar_Base; DecBW: TDMM6500_DetectorBandwidth);
+//begin
+//// :<function>:DET:BAND <n>
+// if not(FM in [kt_mCurAC,kt_mVolAC]) then Exit;
+// fAdditionalString:=inttostr(DMM6500_DetectorBandwidthCommand[DecBW]);
+// SetupOperation(MeasureToRootNodeNumber(FM),53);
+// (PM as TDMM6500MeasPar_BaseAC).DetectorBW:=DecBW;
+//end;
 
 procedure TDMM6500.SetDisplayDigitsNumber(Number: KeitleyDisplayDigitsNumber; ChanNumber: Byte);
 begin
@@ -3218,30 +3312,34 @@ end;
 procedure TDMM6500.SetInputImpedance(InIm: TDMM6500_InputImpedance;
   ChanNumber: Byte);
 begin
- if ChanNumber=0
-   then  SetInputImpedanceAction(fMeasureFunction,MeasParameters,InIm)
-   else
-     if ChanSetupBegin(ChanNumber) then
-       SetInputImpedanceAction(fChansMeasure[ChanNumber-fFirstChannelInSlot].MeasureFunction,
-                       fChansMeasure[ChanNumber-fFirstChannelInSlot].MeasParameters,
-                       InIm);
+//:<function>:INP MOHM10|AUTO
+ SetShablon(dm_pp_InputImpedance,Pointer(InIm),ChanNumber);
+// if ChanNumber=0
+//   then  SetInputImpedanceAction(fMeasureFunction,MeasParameters,InIm)
+//   else
+//     if ChanSetupBegin(ChanNumber) then
+//       SetInputImpedanceAction(fChansMeasure[ChanNumber-fFirstChannelInSlot].MeasureFunction,
+//                       fChansMeasure[ChanNumber-fFirstChannelInSlot].MeasParameters,
+//                       InIm);
 end;
 
-procedure TDMM6500.SetInputImpedanceAction(FM: TKeitley_Measure;
-  PM: TDMM6500MeasPar_Base; InIm: TDMM6500_InputImpedance);
-  var BaseV:IMeasPar_BaseVoltDC;
-begin
-//:<function>:INP MOHM10|AUTO
- BaseV:=GetMeasPar_BaseVoltDC(FM,PM);
- if BaseV=nil then Exit;
- fAdditionalString:=DMM6500_InputImpedanceCommand[InIm];
- SetupOperation(MeasureToRootNodeNumber(FM),52);
- BaseV.InputImpedance:=InIm;
-end;
+//procedure TDMM6500.SetInputImpedanceAction(FM: TKeitley_Measure;
+//  PM: TDMM6500MeasPar_Base; InIm: TDMM6500_InputImpedance);
+//  var BaseV:IMeasPar_BaseVoltDC;
+//begin
+////:<function>:INP MOHM10|AUTO
+// BaseV:=GetMeasPar_BaseVoltDC(FM,PM);
+// if BaseV=nil then Exit;
+// fAdditionalString:=DMM6500_InputImpedanceCommand[InIm];
+// SetupOperation(MeasureToRootNodeNumber(FM),52);
+// BaseV.InputImpedance:=InIm;
+//end;
 
 procedure TDMM6500.SetLineSync(toOn: boolean; ChanNumber: Byte);
 begin
- SetupShablon(SetLineSyncAction,toOn,ChanNumber);
+//:<function>:LINE:Y ON|OFF
+ SetShablon(dm_pp_LineSync,@toOn,ChanNumber);
+// SetupShablon(SetLineSyncAction,toOn,ChanNumber);
 // if ChanNumber=0
 // then  SetLineSyncAction(fMeasureFunction,MeasParameters,toOn)
 // else
@@ -3251,18 +3349,18 @@ begin
 //                     toOn);
 end;
 
-procedure TDMM6500.SetLineSyncAction(FM: TKeitley_Measure;
-  PM: TDMM6500MeasPar_Base; toOn: boolean);
-begin
-//:<function>:LINE:Y ON|OFF
- if FM in [kt_mCurDC,kt_mVolDC,kt_mRes2W,
-      kt_mRes4W,kt_mTemp,kt_mCont,kt_mVoltRat] then
-   begin
-    OnOffFromBool(toOn);
-    SetupOperation(MeasureToRootNodeNumber(FM),54);
-    (PM as TDMM6500MeasPar_Continuity).LineSync:=toOn;
-   end;
-end;
+//procedure TDMM6500.SetLineSyncAction(FM: TKeitley_Measure;
+//  PM: TDMM6500MeasPar_Base; toOn: boolean);
+//begin
+////:<function>:LINE:Y ON|OFF
+// if FM in [kt_mCurDC,kt_mVolDC,kt_mRes2W,
+//      kt_mRes4W,kt_mTemp,kt_mCont,kt_mVoltRat] then
+//   begin
+//    OnOffFromBool(toOn);
+//    SetupOperation(MeasureToRootNodeNumber(FM),54);
+//    (PM as TDMM6500MeasPar_Continuity).LineSync:=toOn;
+//   end;
+//end;
 
 procedure TDMM6500.SetDisplayDigitsNumber(Number: KeitleyDisplayDigitsNumber);
 begin
@@ -3309,7 +3407,8 @@ end;
 
 procedure TDMM6500.SetMeasureTime(MT: double; ChanNumber: byte);
 begin
- SetupShablon(SetMeasureTimeAction,MT,ChanNumber);
+ SetShablon(dm_pp_MeasureTime,@MT,ChanNumber);
+// SetupShablon(SetMeasureTimeAction,MT,ChanNumber);
 //
 // if ChanNumber=0
 //   then  SetMeasureTimeAction(fMeasureFunction,MeasParameters,MT)
@@ -3322,37 +3421,39 @@ begin
 //     end;
 end;
 
-procedure TDMM6500.SetMeasureTimeAction(FM: TKeitley_Measure;
-  PM: TDMM6500MeasPar_Base; MT: double);
-begin
- case FM of
-  kt_mCurDC,
-  kt_mVolDC,
-  kt_mRes2W,
-  kt_mRes4W,
-  kt_mDiod,
-  kt_mTemp,
-  kt_mVoltRat,
-  kt_mFreq,
-  kt_mPer:
-      begin
-       (PM as TDMM6500MeasPar_BaseDelayMT).MeaureTime:=MT;
-       SetApertureAction(FM,(PM as TDMM6500MeasPar_BaseDelayMT).MeaureTime*1e-3);
-      end;
-//  kt_mCont:
+//procedure TDMM6500.SetMeasureTimeAction(FM: TKeitley_Measure;
+//  PM: TDMM6500MeasPar_Base; MT: double);
+//begin
+// case FM of
+//  kt_mCurDC,
+//  kt_mVolDC,
+//  kt_mRes2W,
+//  kt_mRes4W,
+//  kt_mDiod,
+//  kt_mTemp,
+//  kt_mVoltRat,
+//  kt_mFreq,
+//  kt_mPer:
 //      begin
 //       (PM as TDMM6500MeasPar_BaseDelayMT).MeaureTime:=MT;
-//       SetNPLCAction(FM,(PM as TDMM6500MeasPar_BaseDelayMT).MeaureTime/Keitley_MeaureTimeConvertConst);
+//       SetApertureAction(FM,(PM as TDMM6500MeasPar_BaseDelayMT).MeaureTime*1e-3);
 //      end;
-  else ;
-end;
+////  kt_mCont:
+////      begin
+////       (PM as TDMM6500MeasPar_BaseDelayMT).MeaureTime:=MT;
+////       SetNPLCAction(FM,(PM as TDMM6500MeasPar_BaseDelayMT).MeaureTime/Keitley_MeaureTimeConvertConst);
+////      end;
+//  else ;
+//end;
 
-end;
+//end;
 
 procedure TDMM6500.SetNPLC(NPLCvalue: double;
   ChanNumber: byte);
 begin
-  SetupShablon(SetNPLCAction,NPLCvalue,ChanNumber);
+//:<function>:NPLC <n>
+ SetShablon(dm_pp_NPLC,@NPLCvalue,ChanNumber);
+//  SetupShablon(SetNPLCAction,NPLCvalue,ChanNumber);
 
 //  if ChanNumber=0
 //   then  SetNPLCAction(fMeasureFunction,NPLCvalue)
@@ -3364,57 +3465,61 @@ begin
 //     end;
 end;
 
-procedure TDMM6500.SetNPLCAction(FM: TKeitley_Measure;
-  NPLCvalue: double);
-begin
-//:<function>:NPLC <n>
- if FM in [kt_mCurDC,kt_mVolDC,kt_mRes2W,
-   kt_mRes4W,kt_mDiod,kt_mTemp,kt_mVoltRat] then
-  begin
-   fAdditionalString:=NumberToStrLimited(NPLCvalue,DMM6500_NPLCLimits);
-   SetupOperation(MeasureToRootNodeNumber(FM),26);
-  end
-end;
+//procedure TDMM6500.SetNPLCAction(FM: TKeitley_Measure;
+//  NPLCvalue: double);
+//begin
+////:<function>:NPLC <n>
+// if FM in [kt_mCurDC,kt_mVolDC,kt_mRes2W,
+//   kt_mRes4W,kt_mDiod,kt_mTemp,kt_mVoltRat] then
+//  begin
+//   fAdditionalString:=NumberToStrLimited(NPLCvalue,DMM6500_NPLCLimits);
+//   SetupOperation(MeasureToRootNodeNumber(FM),26);
+//  end
+//end;
 
 procedure TDMM6500.SetOffsetComp(OC: TDMM6500_OffsetCompen; ChanNumber: Byte);
 begin
- if ChanNumber=0
- then  SetOffsetCompAction(fMeasureFunction,MeasParameters,OC)
- else
-   if ChanSetupBegin(ChanNumber) then
-     SetOffsetCompAction(fChansMeasure[ChanNumber-fFirstChannelInSlot].MeasureFunction,
-                     fChansMeasure[ChanNumber-fFirstChannelInSlot].MeasParameters,
-                     OC);
+//:<function>:OCOM OFF|ON|AUTO
+ SetShablon(dm_pp_OffsetCompen,Pointer(OC),ChanNumber);
+// if ChanNumber=0
+// then  SetOffsetCompAction(fMeasureFunction,MeasParameters,OC)
+// else
+//   if ChanSetupBegin(ChanNumber) then
+//     SetOffsetCompAction(fChansMeasure[ChanNumber-fFirstChannelInSlot].MeasureFunction,
+//                     fChansMeasure[ChanNumber-fFirstChannelInSlot].MeasParameters,
+//                     OC);
 end;
 
-procedure TDMM6500.SetOffsetCompAction(FM: TKeitley_Measure;
-  PM: TDMM6500MeasPar_Base; OC: TDMM6500_OffsetCompen);
-begin
-//:<function>:OCOM OFF|ON|AUTO
- if FM in [kt_mRes4W,kt_mTemp] then
-  begin
-   fAdditionalString:=DMM6500_OffsetCompenLabel[OC];
-   SetupOperation(MeasureToRootNodeNumber(FM),9);
-   (PM as TDMM6500MeasPar_Base4WT).OffsetComp:=OC;
-  end;
-end;
+//procedure TDMM6500.SetOffsetCompAction(FM: TKeitley_Measure;
+//  PM: TDMM6500MeasPar_Base; OC: TDMM6500_OffsetCompen);
+//begin
+////:<function>:OCOM OFF|ON|AUTO
+// if FM in [kt_mRes4W,kt_mTemp] then
+//  begin
+//   fAdditionalString:=DMM6500_OffsetCompenLabel[OC];
+//   SetupOperation(MeasureToRootNodeNumber(FM),9);
+//   (PM as TDMM6500MeasPar_Base4WT).OffsetComp:=OC;
+//  end;
+//end;
 
 procedure TDMM6500.SetOpenLD(toOn: boolean; ChanNumber: Byte);
 begin
- SetupShablon(SetOpenLDAction,toOn,ChanNumber);
+//:<function>:ODET ON|OFF
+ SetShablon(dm_pp_OpenLeadDetector,@toOn,ChanNumber);
+// SetupShablon(SetOpenLDAction,toOn,ChanNumber);
 end;
 
-procedure TDMM6500.SetOpenLDAction(FM: TKeitley_Measure;
-  PM: TDMM6500MeasPar_Base; toOn: boolean);
-begin
-//:<function>:ODET ON|OFF
- if FM in [kt_mRes4W,kt_mTemp] then
-   begin
-    OnOffFromBool(toOn);
-    SetupOperation(MeasureToRootNodeNumber(FM),55);
-    (PM as TDMM6500MeasPar_Base4WT).OpenLeadDetector:=toOn;
-   end;
-end;
+//procedure TDMM6500.SetOpenLDAction(FM: TKeitley_Measure;
+//  PM: TDMM6500MeasPar_Base; toOn: boolean);
+//begin
+////:<function>:ODET ON|OFF
+// if FM in [kt_mRes4W,kt_mTemp] then
+//   begin
+//    OnOffFromBool(toOn);
+//    SetupOperation(MeasureToRootNodeNumber(FM),55);
+//    (PM as TDMM6500MeasPar_Base4WT).OpenLeadDetector:=toOn;
+//   end;
+//end;
 
 //procedure TDMM6500.SetRangeAction(FM: TKeitley_Measure;
 //  PM: TDMM6500MeasPar_Base; Range: TDMM6500_Resistance2WRange);
@@ -3500,9 +3605,12 @@ end;
 procedure TDMM6500.SetSampleRate(Measure: TKeitley_Measure;
   SR: TDMM6500_DigSampleRate);
 begin
- MeasParameterCreate(Measure);
- SetSampleRateAction(Measure,fMeasParameters[Measure],SR);
- SetApertureAutoAction(Measure);
+ SetShablon(dm_pp_SampleRate,Pointer(SR),Measure);
+ SetShablon(dm_pp_ApertureAuto,nil,Measure);
+//
+// MeasParameterCreate(Measure);
+// SetSampleRateAction(Measure,fMeasParameters[Measure],SR);
+// SetApertureAutoAction(Measure);
 end;
 
 //procedure TDMM6500.SetSampleRate(SR: TDMM6500_DigSampleRate);
@@ -3514,32 +3622,41 @@ end;
 
 procedure TDMM6500.SetSampleRate(SR: TDMM6500_DigSampleRate; ChanNumber: Byte);
 begin
-  if ChanNumber=0
-   then  SetSampleRateAction(fMeasureFunction,MeasParameters,SR)
-   else
-     if ChanSetupBegin(ChanNumber) then
-     begin
-       SetSampleRateAction(fChansMeasure[ChanNumber-fFirstChannelInSlot].MeasureFunction,
-                       fChansMeasure[ChanNumber-fFirstChannelInSlot].MeasParameters,
-                       SR);
-     end;
+//:<function>:SRAT <n>
+ SetShablon(dm_pp_SampleRate,Pointer(SR),ChanNumber);
+//  if ChanNumber=0
+//   then  SetSampleRateAction(fMeasureFunction,MeasParameters,SR)
+//   else
+//     if ChanSetupBegin(ChanNumber) then
+//     begin
+//       SetSampleRateAction(fChansMeasure[ChanNumber-fFirstChannelInSlot].MeasureFunction,
+//                       fChansMeasure[ChanNumber-fFirstChannelInSlot].MeasParameters,
+//                       SR);
+//     end;
  SetApertureAuto(ChanNumber);
 // if ChanSetupBegin(ChanNumber) then
 //    if SetSampleRateAction(fChansMeasure[ChanNumber-fFirstChannelInSlot].MeasureFunction,SR) then
 //     (fChansMeasure[ChanNumber-fFirstChannelInSlot].MeasParameters as TDMM6500MeasPar_BaseDig).SampleRate:=SR;
 end;
 
-procedure TDMM6500.SetSampleRateAction(Measure: TKeitley_Measure;
-                                       PM: TDMM6500MeasPar_Base;
-                                       SR: TDMM6500_DigSampleRate);
+//procedure TDMM6500.SetSampleRateAction(Measure: TKeitley_Measure;
+//                                       PM: TDMM6500MeasPar_Base;
+//                                       SR: TDMM6500_DigSampleRate);
+//begin
+////:<function>:SRAT <n>
+// if Measure>kt_mVoltRat then
+//  begin
+//   fAdditionalString:=IntToStr(SR);
+//   SetupOperation(MeasureToRootNodeNumber(Measure),47);
+//  (PM as TDMM6500MeasPar_BaseDig).SampleRate:=SR;
+//  end
+//end;
+
+procedure TDMM6500.SetShablon(MParam: TDMM6500_MeasParameters; P: Pointer;
+  Measure: TKeitley_Measure);
 begin
-//:<function>:SRAT <n>
- if Measure>kt_mVoltRat then
-  begin
-   fAdditionalString:=IntToStr(SR);
-   SetupOperation(MeasureToRootNodeNumber(Measure),47);
-  (PM as TDMM6500MeasPar_BaseDig).SampleRate:=SR;
-  end
+ MeasParameterCreate(Measure);
+ SetActionShablon(Measure,MeasParameters,P,MParam);
 end;
 
 procedure TDMM6500.SetShablon(MParam: TDMM6500_MeasParameters; P: Pointer;
@@ -3698,15 +3815,17 @@ end;
 procedure TDMM6500.SetUnits(Un: TDMM6500_VoltageUnits; ChanNumber: Byte);
 //   var BaseV:IMeasPar_BaseVolt;
 begin
-  if ChanNumber=0
-   then  SetUnitsVoltAction(fMeasureFunction,MeasParameters,Un)
-   else
-     if ChanSetupBegin(ChanNumber) then
-     begin
-       SetUnitsVoltAction(fChansMeasure[ChanNumber-fFirstChannelInSlot].MeasureFunction,
-                       fChansMeasure[ChanNumber-fFirstChannelInSlot].MeasParameters,
-                       Un);
-     end;
+//:<function>:UNIT <unitOfMeasure>
+ SetShablon(dm_pp_UnitsVolt,Pointer(Un),ChanNumber);
+//  if ChanNumber=0
+//   then  SetUnitsVoltAction(fMeasureFunction,MeasParameters,Un)
+//   else
+//     if ChanSetupBegin(ChanNumber) then
+//     begin
+//       SetUnitsVoltAction(fChansMeasure[ChanNumber-fFirstChannelInSlot].MeasureFunction,
+//                       fChansMeasure[ChanNumber-fFirstChannelInSlot].MeasParameters,
+//                       Un);
+//     end;
 
 
 // if ChanSetupBegin(ChanNumber) then
@@ -3743,73 +3862,108 @@ begin
 end;
 
 
-function TDMM6500.ValueToACCurrentRange(Value: double): TDMM6500_CurrentACRange;
+//function TDMM6500.ValueToACCurrentRange(Value: double): TDMM6500_CurrentACRange;
+//begin
+// if round(Value)=3 then
+//   begin
+//     Result:=dm_car3A;
+//     Exit;
+//   end;
+// if round(Value)=10 then
+//   begin
+//     Result:=dm_car10A;
+//     Exit;
+//   end;
+// Result:=TDMM6500_CurrentACRange(round(Log10(Value/1e-4))+1);
+//end;
+
+//function TDMM6500.ValueToACVoltageRange(Value: double): TDMM6500_VoltageACRange;
+//begin
+// if round(Value)=750 then
+//   begin
+//     Result:=dm_var750V;
+//     Exit;
+//   end;
+// Result:=TDMM6500_VoltageACRange(round(Log10(Value/0.1))+1);
+//end;
+
+//function TDMM6500.ValueToBiasLevel(Value: double): TDMM6500_DiodeBiasLevel;
+//begin
+// Result:=TDMM6500_DiodeBiasLevel(round(Log10(Value/1e-5)));
+//end;
+
+//function TDMM6500.ValueToCapacitanceRange(
+//  Value: double): TDMM6500_CapacitanceRange;
+//begin
+// Result:=TDMM6500_CapacitanceRange(round(Log10(Value/1e-9))+1);
+//end;
+
+//function TDMM6500.ValueToDCCurrentRange(Value: double): TDMM6500_CurrentDCRange;
+//begin
+// if round(Value)=3 then
+//   begin
+//     Result:=dm_cdr3A;
+//     Exit;
+//   end;
+// if round(Value)=10 then
+//   begin
+//     Result:=dm_cdr10A;
+//     Exit;
+//   end;
+// Result:=TDMM6500_CurrentDCRange(round(Log10(Value/1e-5))+1);
+//end;
+
+//function TDMM6500.ValueToDCVoltageRange(Value: double): TDMM6500_VoltageDCRange;
+//begin
+// Result:=TDMM6500_VoltageDCRange(round(Log10(Value/0.1))+1);
+//end;
+
+function TDMM6500.ValueToOrd(Value: double; FM: TKeitley_Measure): integer;
 begin
- if round(Value)=3 then
-   begin
-     Result:=dm_car3A;
-     Exit;
-   end;
- if round(Value)=10 then
-   begin
-     Result:=dm_car10A;
-     Exit;
-   end;
- Result:=TDMM6500_CurrentACRange(round(Log10(Value/1e-4))+1);
+  case FM of
+   kt_mVolAC:if  round(Value)=750
+              then Result:=5
+              else Result:=round(Log10(Value/0.1))+1;
+   kt_mDigCur,
+   kt_mCurDC: begin
+                if round(Value)=3 then
+                 begin
+                   Result:=7;
+                   Exit;
+                 end;
+                if round(Value)=10
+                  then Result:=8
+                  else Result:=round(Log10(Value/1e-5))+1;
+              end;
+   kt_mCurAC: begin
+                if round(Value)=3 then
+                 begin
+                   Result:=6;
+                   Exit;
+                 end;
+                if round(Value)=10
+                  then Result:=7
+                  else Result:=round(Log10(Value/1e-4))+1;
+              end;
+   kt_mRes4W,
+   kt_mRes2W: Result:=round(Log10(Value/10))+1;
+   kt_mCap: Result:=round(Log10(Value/1e-9))+1;
+   kt_mDiod: Result:=round(Log10(Value/1e-5));
+   else Result:=round(Log10(Value/0.1))+1;
+  end;
 end;
 
-function TDMM6500.ValueToACVoltageRange(Value: double): TDMM6500_VoltageACRange;
-begin
- if round(Value)=750 then
-   begin
-     Result:=dm_var750V;
-     Exit;
-   end;
- Result:=TDMM6500_VoltageACRange(round(Log10(Value/0.1))+1);
-end;
+//function TDMM6500.ValueToResistance2WRange(
+//  Value: double): TDMM6500_Resistance2WRange;
+//begin
+// Result:=TDMM6500_Resistance2WRange(round(Log10(Value/10))+1);
+//end;
 
-function TDMM6500.ValueToBiasLevel(Value: double): TDMM6500_DiodeBiasLevel;
-begin
- Result:=TDMM6500_DiodeBiasLevel(round(Log10(Value/1e-5)));
-end;
-
-function TDMM6500.ValueToCapacitanceRange(
-  Value: double): TDMM6500_CapacitanceRange;
-begin
- Result:=TDMM6500_CapacitanceRange(round(Log10(Value/1e-9))+1);
-end;
-
-function TDMM6500.ValueToDCCurrentRange(Value: double): TDMM6500_CurrentDCRange;
-begin
- if round(Value)=3 then
-   begin
-     Result:=dm_cdr3A;
-     Exit;
-   end;
- if round(Value)=10 then
-   begin
-     Result:=dm_cdr10A;
-     Exit;
-   end;
- Result:=TDMM6500_CurrentDCRange(round(Log10(Value/1e-5))+1);
-end;
-
-function TDMM6500.ValueToDCVoltageRange(Value: double): TDMM6500_VoltageDCRange;
-begin
- Result:=TDMM6500_VoltageDCRange(round(Log10(Value/0.1))+1);
-end;
-
-function TDMM6500.ValueToResistance2WRange(
-  Value: double): TDMM6500_Resistance2WRange;
-begin
- Result:=TDMM6500_Resistance2WRange(round(Log10(Value/10))+1);
-end;
-
-function TDMM6500.ValueToResistance4WRange(
-  Value: double): TDMM6500_Resistance4WRange;
-begin
- Result:=TDMM6500_Resistance4WRange(round(Log10(Value))+1);
-end;
+//function TDMM6500.ValueToResistance4WRange(
+//  Value: double): TDMM6500_Resistance4WRange;
+//begin
+// Result:=TDMM6500_Resistance4WRange(round(Log10(Value))+1);
+//end;
 
 //function TDMM6500.RangeToString(Range:TDMM6500_VoltageDCRange): string;
 //begin
@@ -3841,9 +3995,12 @@ begin
    dm_pp_AzeroState:Result:=20;
    dm_pp_DetectorBW:Result:=53;
    dm_pp_InputImpedance:Result:=52;
+   dm_tp_UnitsTemp,
+   dm_pp_UnitsVolt,
    dm_pp_Units:Result:=50;
    dm_pp_DbmWReference:Result:=49;
    dm_pp_DecibelReference:Result:=48;
+   dm_pp_ApertureAuto,
    dm_pp_MeasureTime,
    dm_pp_Aperture:Result:=51;
    dm_pp_NPLC:Result:=26;
@@ -4167,7 +4324,9 @@ end;
 procedure TDMM6500.SetDbmWReference(DBMvalue: Integer; ChanNumber: Byte);
 //   var BaseV:IMeasPar_BaseVolt;
 begin
-  SetupShablon(SetDbmWReferenceAction,DBMvalue,ChanNumber);
+//:<function>:DBM:REF <n>
+ SetShablon(dm_pp_DbmWReference,@DBMValue,ChanNumber);
+//  SetupShablon(SetDbmWReferenceAction,DBMvalue,ChanNumber);
 // if ChanNumber=0
 //   then  SetDbmWReferenceAction(fMeasureFunction,MeasParameters,DBMvalue)
 //   else
@@ -4179,22 +4338,23 @@ begin
 //     end;
 end;
 
-procedure TDMM6500.SetDbmWReferenceAction(FM: TKeitley_Measure;
-  PM: TDMM6500MeasPar_Base; DBMvalue: integer);
-  var BaseV:IMeasPar_BaseVolt;
-begin
-//:<function>:DBM:REF <n>
- BaseV:=GetMeasPar_BaseVolt(FM,PM);
- if BaseV=nil then Exit;
-
- BaseV.DBM:=DBMvalue;
- fAdditionalString:=Inttostr(BaseV.DBM);
- SetupOperation(MeasureToRootNodeNumber(FM),49);
-end;
+//procedure TDMM6500.SetDbmWReferenceAction(FM: TKeitley_Measure;
+//  PM: TDMM6500MeasPar_Base; DBMvalue: integer);
+//  var BaseV:IMeasPar_BaseVolt;
+//begin
+////:<function>:DBM:REF <n>
+// BaseV:=GetMeasPar_BaseVolt(FM,PM);
+// if BaseV=nil then Exit;
+//
+// BaseV.DBM:=DBMvalue;
+// fAdditionalString:=Inttostr(BaseV.DBM);
+// SetupOperation(MeasureToRootNodeNumber(FM),49);
+//end;
 
 procedure TDMM6500.SetDecibelReference(DBvalue: double;ChanNumber: byte);
 begin
- SetupShablon(SetDecibelReferenceAction,DBvalue,ChanNumber);
+ SetShablon(dm_pp_DecibelReference,@DBValue,ChanNumber);
+// SetupShablon(SetDecibelReferenceAction,DBvalue,ChanNumber);
 // if ChanNumber=0
 //   then  SetDecibelReferenceAction(fMeasureFunction,MeasParameters,DBvalue)
 //   else
@@ -4206,30 +4366,31 @@ begin
 //     end;
 end;
 
-procedure TDMM6500.SetDecibelReferenceAction(FM: TKeitley_Measure;
-  PM: TDMM6500MeasPar_Base; DBvalue: double);
-  var BaseV:IMeasPar_BaseVolt;
-begin
- BaseV:=GetMeasPar_BaseVolt(FM,PM);
- if BaseV<>nil then
-  begin
-   BaseV.DB:=DBvalue;
-   fAdditionalString:=FloatToStrF(BaseV.DB,ffExponent,4,0);
-   SetupOperation(MeasureToRootNodeNumber(FM),48);
-  end;
-end;
+//procedure TDMM6500.SetDecibelReferenceAction(FM: TKeitley_Measure;
+//  PM: TDMM6500MeasPar_Base; DBvalue: double);
+//  var BaseV:IMeasPar_BaseVolt;
+//begin
+// BaseV:=GetMeasPar_BaseVolt(FM,PM);
+// if BaseV<>nil then
+//  begin
+//   BaseV.DB:=DBvalue;
+//   fAdditionalString:=FloatToStrF(BaseV.DB,ffExponent,4,0);
+//   SetupOperation(MeasureToRootNodeNumber(FM),48);
+//  end;
+//end;
 
 procedure TDMM6500.SetDelayAuto(toOn: Boolean; ChanNumber: Byte);
 begin
-  if ChanNumber=0
-   then  SetDelayAutoAction(fMeasureFunction,MeasParameters,toOn)
-   else
-     if ChanSetupBegin(ChanNumber) then
-     begin
-       SetDelayAutoAction(fChansMeasure[ChanNumber-fFirstChannelInSlot].MeasureFunction,
-                       fChansMeasure[ChanNumber-fFirstChannelInSlot].MeasParameters,
-                       toOn);
-     end;
+  SetShablon(dm_pp_DelayAuto,@toOn,ChanNumber);
+//  if ChanNumber=0
+//   then  SetDelayAutoAction(fMeasureFunction,MeasParameters,toOn)
+//   else
+//     if ChanSetupBegin(ChanNumber) then
+//     begin
+//       SetDelayAutoAction(fChansMeasure[ChanNumber-fFirstChannelInSlot].MeasureFunction,
+//                       fChansMeasure[ChanNumber-fFirstChannelInSlot].MeasParameters,
+//                       toOn);
+//     end;
 //
 // if ChanSetupBegin(ChanNumber) then
 //    if SetDelayAutoAction(fChansMeasure[ChanNumber-fFirstChannelInSlot].MeasureFunction,toOn) then
@@ -4247,15 +4408,16 @@ end;
 
 procedure TDMM6500.SetUnits(Un: TDMM6500_TempUnits; ChanNumber: Byte);
 begin
- if ChanNumber=0
- then  SetUnitsTempAction(fMeasureFunction,MeasParameters,Un)
- else
-   if ChanSetupBegin(ChanNumber) then
-   begin
-     SetUnitsTempAction(fChansMeasure[ChanNumber-fFirstChannelInSlot].MeasureFunction,
-                     fChansMeasure[ChanNumber-fFirstChannelInSlot].MeasParameters,
-                     Un);
-   end;
+  SetShablon(dm_tp_UnitsTemp,Pointer(Un),ChanNumber);
+// if ChanNumber=0
+// then  SetUnitsTempAction(fMeasureFunction,MeasParameters,Un)
+// else
+//   if ChanSetupBegin(ChanNumber) then
+//   begin
+//     SetUnitsTempAction(fChansMeasure[ChanNumber-fFirstChannelInSlot].MeasureFunction,
+//                     fChansMeasure[ChanNumber-fFirstChannelInSlot].MeasParameters,
+//                     Un);
+//   end;
 
 // if ChanSetupBegin(ChanNumber) then
 // begin
@@ -4266,52 +4428,52 @@ begin
 // end;
 end;
 
-procedure TDMM6500.SetUnitsTempAction(FM: TKeitley_Measure;
-  PM: TDMM6500MeasPar_Base; Un: TDMM6500_TempUnits);
-begin
- if FM<>kt_mTemp then Exit;
+//procedure TDMM6500.SetUnitsTempAction(FM: TKeitley_Measure;
+//  PM: TDMM6500MeasPar_Base; Un: TDMM6500_TempUnits);
+//begin
+// if FM<>kt_mTemp then Exit;
+//
+// fAdditionalString:=DMM6500_TempUnitsCommand[Un];
+// SetupOperation(MeasureToRootNodeNumber(FM),50);
+// (PM as TDMM6500MeasPar_Temper).Units:=Un;
+//end;
 
- fAdditionalString:=DMM6500_TempUnitsCommand[Un];
- SetupOperation(MeasureToRootNodeNumber(FM),50);
- (PM as TDMM6500MeasPar_Temper).Units:=Un;
-end;
+//procedure TDMM6500.SetUnitsVoltAction(FM: TKeitley_Measure;
+//  PM: TDMM6500MeasPar_Base; Un: TDMM6500_VoltageUnits);
+//  var BaseV:IMeasPar_BaseVolt;
+//begin
+////:<function>:UNIT <unitOfMeasure>
+// BaseV:=GetMeasPar_BaseVolt(FM,PM);
+// if BaseV=nil then Exit;
+//
+// fAdditionalString:=DMM6500_VoltageUnitsLabel[Un];
+// SetupOperation(MeasureToRootNodeNumber(FM),50);
+// BaseV.Units:=Un;
+//end;
 
-procedure TDMM6500.SetUnitsVoltAction(FM: TKeitley_Measure;
-  PM: TDMM6500MeasPar_Base; Un: TDMM6500_VoltageUnits);
-  var BaseV:IMeasPar_BaseVolt;
-begin
-//:<function>:UNIT <unitOfMeasure>
- BaseV:=GetMeasPar_BaseVolt(FM,PM);
- if BaseV=nil then Exit;
+//procedure TDMM6500.SetupShablon(
+//  SetProcedureDoubleGeneral: TSetProcedureDoubleGeneral; Value: double;
+//  ChanNumber: byte);
+//begin
+// if ChanNumber=0
+//   then  SetProcedureDoubleGeneral(fMeasureFunction,Value)
+//   else
+//     if ChanSetupBegin(ChanNumber) then
+//       SetProcedureDoubleGeneral(fChansMeasure[ChanNumber-fFirstChannelInSlot].MeasureFunction,
+//                       Value);
+//end;
 
- fAdditionalString:=DMM6500_VoltageUnitsLabel[Un];
- SetupOperation(MeasureToRootNodeNumber(FM),50);
- BaseV.Units:=Un;
-end;
-
-procedure TDMM6500.SetupShablon(
-  SetProcedureDoubleGeneral: TSetProcedureDoubleGeneral; Value: double;
-  ChanNumber: byte);
-begin
- if ChanNumber=0
-   then  SetProcedureDoubleGeneral(fMeasureFunction,Value)
-   else
-     if ChanSetupBegin(ChanNumber) then
-       SetProcedureDoubleGeneral(fChansMeasure[ChanNumber-fFirstChannelInSlot].MeasureFunction,
-                       Value);
-end;
-
-procedure TDMM6500.SetupShablon(SetProcedureDouble: TSetProcedureDouble;
-  Value: double; ChanNumber: byte);
-begin
- if ChanNumber=0
- then  SetProcedureDouble(fMeasureFunction,MeasParameters,Value)
- else
-   if ChanSetupBegin(ChanNumber) then
-     SetProcedureDouble(fChansMeasure[ChanNumber-fFirstChannelInSlot].MeasureFunction,
-                     fChansMeasure[ChanNumber-fFirstChannelInSlot].MeasParameters,
-                     Value);
-end;
+//procedure TDMM6500.SetupShablon(SetProcedureDouble: TSetProcedureDouble;
+//  Value: double; ChanNumber: byte);
+//begin
+// if ChanNumber=0
+// then  SetProcedureDouble(fMeasureFunction,MeasParameters,Value)
+// else
+//   if ChanSetupBegin(ChanNumber) then
+//     SetProcedureDouble(fChansMeasure[ChanNumber-fFirstChannelInSlot].MeasureFunction,
+//                     fChansMeasure[ChanNumber-fFirstChannelInSlot].MeasParameters,
+//                     Value);
+//end;
 
 procedure TDMM6500.SetVRMethod(VRM: TDMM6500_VoltageRatioMethod;
   ChanNumber: Byte);
@@ -4376,149 +4538,164 @@ end;
 //  end;
 //end;
 
-procedure TDMM6500.StringToCoupleRefJunct(Str: string);
-  var i:TDMM6500_TCoupleRefJunct;
-begin
- for I := Low(TDMM6500_TCoupleRefJunct) to High(TDMM6500_TCoupleRefJunct) do
-  begin
-   if Str=DMM6500_TCoupleRefJunctCommand[i] then
-     begin
-       fDevice.Value:=ord(i);
-       Break;
-     end;
-  end;
-end;
+//procedure TDMM6500.StringToCoupleRefJunct(Str: string);
+//  var i:TDMM6500_TCoupleRefJunct;
+//begin
+// for I := Low(TDMM6500_TCoupleRefJunct) to High(TDMM6500_TCoupleRefJunct) do
+//  begin
+//   if Str=DMM6500_TCoupleRefJunctCommand[i] then
+//     begin
+//       fDevice.Value:=ord(i);
+//       Break;
+//     end;
+//  end;
+//end;
 
-procedure TDMM6500.StringToDetectorBW(Str: string);
-  var i:TDMM6500_DetectorBandwidth;
+//procedure TDMM6500.StringToDetectorBW(Str: string);
+//  var i:TDMM6500_DetectorBandwidth;
+//begin
+// try
+//  fDevice.Value:=StrToInt(Str);
+//  for I := Low(TDMM6500_DetectorBandwidth) to High(TDMM6500_DetectorBandwidth) do
+//   if fDevice.Value=DMM6500_DetectorBandwidthCommand[i] then
+//     begin
+//       fDevice.Value:=ord(i);
+//       Break;
+//     end;
+// except
+//  fDevice.Value:=ErResult;
+// end;
+//end;
+
+//procedure TDMM6500.StringToInputImpedance(Str: string);
+//  var i:TDMM6500_InputImpedance;
+//begin
+// for I := Low(TDMM6500_InputImpedance) to High(TDMM6500_InputImpedance) do
+//  begin
+//   if Str=DMM6500_InputImpedanceCommand[i] then
+//     begin
+//       fDevice.Value:=ord(i);
+//       Break;
+//     end;
+//  end;
+//end;
+
+//procedure TDMM6500.StringToOffsetComp(Str: string);
+//  var i:TDMM6500_OffsetCompen;
+//begin
+// for I := Low(TDMM6500_OffsetCompen) to High(TDMM6500_OffsetCompen) do
+//  begin
+//   if Str=DMM6500_OffsetCompenLabel[i] then
+//     begin
+//       fDevice.Value:=ord(i);
+//       Break;
+//     end;
+//  end;
+//end;
+
+procedure TDMM6500.StringToOrd(Str: string);
+  var i:byte;
 begin
  try
-  fDevice.Value:=StrToInt(Str);
-  for I := Low(TDMM6500_DetectorBandwidth) to High(TDMM6500_DetectorBandwidth) do
-   if fDevice.Value=DMM6500_DetectorBandwidthCommand[i] then
-     begin
-       fDevice.Value:=ord(i);
-       Break;
-     end;
+   for I := 0 to HighForStrParsing do
+     if ItIsRequiredStr(Str,i) then
+       begin
+         fDevice.Value:=i;
+         Break;
+       end;
  except
   fDevice.Value:=ErResult;
  end;
 end;
 
-procedure TDMM6500.StringToInputImpedance(Str: string);
-  var i:TDMM6500_InputImpedance;
-begin
- for I := Low(TDMM6500_InputImpedance) to High(TDMM6500_InputImpedance) do
-  begin
-   if Str=DMM6500_InputImpedanceCommand[i] then
-     begin
-       fDevice.Value:=ord(i);
-       Break;
-     end;
-  end;
-end;
+//procedure TDMM6500.StringToRTDType(Str: string);
+//  var i:TDMM6500_RTDType;
+//begin
+// for I := Low(TDMM6500_RTDType) to High(TDMM6500_RTDType) do
+//  begin
+//   if Str=AnsiLowerCase(DMM6500_WiRTDTypeLabel[i]) then
+//     begin
+//       fDevice.Value:=ord(i);
+//       Break;
+//     end;
+//  end;
+//end;
 
-procedure TDMM6500.StringToOffsetComp(Str: string);
-  var i:TDMM6500_OffsetCompen;
-begin
- for I := Low(TDMM6500_OffsetCompen) to High(TDMM6500_OffsetCompen) do
-  begin
-   if Str=DMM6500_OffsetCompenLabel[i] then
-     begin
-       fDevice.Value:=ord(i);
-       Break;
-     end;
-  end;
-end;
+//procedure TDMM6500.StringToTCoupleType(Str: string);
+//  var i:TDMM6500_TCoupleType;
+//begin
+// for I := Low(TDMM6500_TCoupleType) to High(TDMM6500_TCoupleType) do
+//  begin
+//   if Str=DMM6500_TCoupleTypeLabel[i] then
+//     begin
+//       fDevice.Value:=ord(i);
+//       Break;
+//     end;
+//  end;
+//end;
 
-procedure TDMM6500.StringToRTDType(Str: string);
-  var i:TDMM6500_RTDType;
-begin
- for I := Low(TDMM6500_RTDType) to High(TDMM6500_RTDType) do
-  begin
-   if Str=AnsiLowerCase(DMM6500_WiRTDTypeLabel[i]) then
-     begin
-       fDevice.Value:=ord(i);
-       Break;
-     end;
-  end;
-end;
+//procedure TDMM6500.StringToTempTransducer(Str: string);
+//  var i:TDMM6500_TempTransducer;
+//begin
+// for I := Low(TDMM6500_TempTransducer) to High(TDMM6500_TempTransducer) do
+//  begin
+//   if Str=DMM6500_TempTransducerCommand[i] then
+//     begin
+//       fDevice.Value:=ord(i);
+//       Break;
+//     end;
+//  end;
+//end;
 
-procedure TDMM6500.StringToTCoupleType(Str: string);
-  var i:TDMM6500_TCoupleType;
-begin
- for I := Low(TDMM6500_TCoupleType) to High(TDMM6500_TCoupleType) do
-  begin
-   if Str=DMM6500_TCoupleTypeLabel[i] then
-     begin
-       fDevice.Value:=ord(i);
-       Break;
-     end;
-  end;
-end;
+//procedure TDMM6500.StringToVoltageRatioMethod(Str: string);
+//  var i:TDMM6500_VoltageRatioMethod;
+//begin
+// for I := Low(TDMM6500_VoltageRatioMethod) to High(TDMM6500_VoltageRatioMethod) do
+//  begin
+//   if Pos(DMM6500_VoltageRatioMethodCommand[i],Str)<>0 then
+//     begin
+//       fDevice.Value:=ord(i);
+//       Break;
+//     end;
+//  end;
+//end;
 
-procedure TDMM6500.StringToTempTransducer(Str: string);
-  var i:TDMM6500_TempTransducer;
-begin
- for I := Low(TDMM6500_TempTransducer) to High(TDMM6500_TempTransducer) do
-  begin
-   if Str=DMM6500_TempTransducerCommand[i] then
-     begin
-       fDevice.Value:=ord(i);
-       Break;
-     end;
-  end;
-end;
+//procedure TDMM6500.StrToTempUnit(Str: string);
+//  var i:TDMM6500_TempUnits;
+//begin
+// for I := Low(TDMM6500_TempUnits) to High(TDMM6500_TempUnits) do
+//   if Pos(DMM6500_TempUnitsCommand[i],Str)<>0 then
+//     begin
+//       fDevice.Value:=ord(i);
+//       Break;
+//     end;
+//end;
 
-procedure TDMM6500.StringToVoltageRatioMethod(Str: string);
-  var i:TDMM6500_VoltageRatioMethod;
-begin
- for I := Low(TDMM6500_VoltageRatioMethod) to High(TDMM6500_VoltageRatioMethod) do
-  begin
-   if Pos(DMM6500_VoltageRatioMethodCommand[i],Str)<>0 then
-     begin
-       fDevice.Value:=ord(i);
-       Break;
-     end;
-  end;
-end;
+//procedure TDMM6500.StringToThermistorType(Str: string);
+//  var i:TDMM6500_ThermistorType;
+//      Val:integer;
+//begin
+// Val:=StrToInt(Str);
+// for I := Low(TDMM6500_ThermistorType) to High(TDMM6500_ThermistorType) do
+//  begin
+//   if Val=DMM6500_ThermistorTypeValues[i] then
+//     begin
+//       fDevice.Value:=ord(i);
+//       Break;
+//     end;
+//  end;
+//end;
 
-procedure TDMM6500.StrToTempUnit(Str: string);
-  var i:TDMM6500_TempUnits;
-begin
- for I := Low(TDMM6500_TempUnits) to High(TDMM6500_TempUnits) do
-   if Pos(DMM6500_TempUnitsCommand[i],Str)<>0 then
-     begin
-       fDevice.Value:=ord(i);
-       Break;
-     end;
-end;
-
-procedure TDMM6500.StringToThermistorType(Str: string);
-  var i:TDMM6500_ThermistorType;
-      Val:integer;
-begin
- Val:=StrToInt(Str);
- for I := Low(TDMM6500_ThermistorType) to High(TDMM6500_ThermistorType) do
-  begin
-   if Val=DMM6500_ThermistorTypeValues[i] then
-     begin
-       fDevice.Value:=ord(i);
-       Break;
-     end;
-  end;
-end;
-
-procedure TDMM6500.StrToVoltUnit(Str: string);
-  var i:TDMM6500_VoltageUnits;
-begin
- for I := Low(TDMM6500_VoltageUnits) to High(TDMM6500_VoltageUnits) do
-   if Pos(AnsiLowerCase(DMM6500_VoltageUnitsLabel[i]),Str)<>0 then
-     begin
-       fDevice.Value:=ord(i);
-       Break;
-     end;
-end;
+//procedure TDMM6500.StrToVoltUnit(Str: string);
+//  var i:TDMM6500_VoltageUnits;
+//begin
+// for I := Low(TDMM6500_VoltageUnits) to High(TDMM6500_VoltageUnits) do
+//   if Pos(AnsiLowerCase(DMM6500_VoltageUnitsLabel[i]),Str)<>0 then
+//     begin
+//       fDevice.Value:=ord(i);
+//       Break;
+//     end;
+//end;
 
 
 function TDMM6500.SuccessfulGet(MParam: TDMM6500_MeasParameters): boolean;
@@ -4823,17 +5000,17 @@ begin
 //                     Range);
 end;
 
-procedure TDMM6500.SetupShablon(SetProcedureInteger: TSetProcedureInteger;
-  Value: Integer; ChanNumber: byte);
-begin
- if ChanNumber=0
- then  SetProcedureInteger(fMeasureFunction,MeasParameters,Value)
- else
-   if ChanSetupBegin(ChanNumber) then
-     SetProcedureInteger(fChansMeasure[ChanNumber-fFirstChannelInSlot].MeasureFunction,
-                     fChansMeasure[ChanNumber-fFirstChannelInSlot].MeasParameters,
-                     Value);
-end;
+//procedure TDMM6500.SetupShablon(SetProcedureInteger: TSetProcedureInteger;
+//  Value: Integer; ChanNumber: byte);
+//begin
+// if ChanNumber=0
+// then  SetProcedureInteger(fMeasureFunction,MeasParameters,Value)
+// else
+//   if ChanSetupBegin(ChanNumber) then
+//     SetProcedureInteger(fChansMeasure[ChanNumber-fFirstChannelInSlot].MeasureFunction,
+//                     fChansMeasure[ChanNumber-fFirstChannelInSlot].MeasParameters,
+//                     Value);
+//end;
 
 //procedure TDMM6500.SetupShablon(SetProcedure: TSetProcedureRTDType;
 //  RTDType: TDMM6500_RTDType; WiType: TDMM6500_RTDPropertyNumber;

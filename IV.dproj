@@ -47,6 +47,7 @@
     <DCCReference Include="DMM6500Show.pas" />
     <DCCReference Include="DMM6500_Const.pas" />
     <DCCReference Include="DMM6500_MeasParam.pas" />
+    <DCCReference Include="DMM6500_MeasParamShow.pas" />
     <DCCReference Include="ET1255.pas" />
     <DCCReference Include="FormDMM6500.pas">
       <Form>DMM6500Form</Form>

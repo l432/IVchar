@@ -50,7 +50,8 @@ uses
   KeitleyShow in 'KeitleyShow.pas',
   DMM6500Show in 'DMM6500Show.pas',
   DMM6500_Const in 'DMM6500_Const.pas',
-  DMM6500_MeasParam in 'DMM6500_MeasParam.pas';
+  DMM6500_MeasParam in 'DMM6500_MeasParam.pas',
+  DMM6500_MeasParamShow in 'DMM6500_MeasParamShow.pas';
 
 {$R *.res}
 

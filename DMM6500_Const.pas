@@ -70,7 +70,8 @@ type
     dm_pp_ThresholdRange,dm_pp_RangeVoltDC,dm_pp_RangeVoltAC,
     dm_pp_RangeCurrentDC,dm_pp_RangeCurrentAC,
     dm_pp_RangeResistance2W,dm_pp_RangeResistance4W,
-    dm_pp_RangeCapacitance);
+    dm_pp_RangeCapacitance,dm_tp_UnitsTemp,
+    dm_pp_UnitsVolt,dm_pp_ApertureAuto);
 
  TDMM6500_ThermistorType=(dm_tt2252,dm_tt5000,dm_tt10000);
 
