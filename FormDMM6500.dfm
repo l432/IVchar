@@ -272,6 +272,21 @@ object DMM6500Form: TDMM6500Form
       TabOrder = 5
     end
   end
+  object ST_DM6500MeasureMode: TStaticText
+    Left = 15
+    Top = 101
+    Width = 163
+    Height = 27
+    Caption = 'Resistance 4W'
+    Font.Charset = RUSSIAN_CHARSET
+    Font.Color = clMaroon
+    Font.Height = -19
+    Font.Name = 'Verdana'
+    Font.Style = [fsBold]
+    ParentFont = False
+    ShowAccelChar = False
+    TabOrder = 4
+  end
   object TelnetDMM6500: TIdTelnet
     Terminal = 'dumb'
     Left = 526

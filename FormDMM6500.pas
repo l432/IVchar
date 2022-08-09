@@ -31,6 +31,7 @@ type
     ST_DM6500_DispBr: TStaticText;
     L_DM6500_DispBr: TLabel;
     ST_DM6500_Terminals: TStaticText;
+    ST_DM6500MeasureMode: TStaticText;
     procedure BCloseClick(Sender: TObject);
     procedure FormPaint(Sender: TObject);
   private

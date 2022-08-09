@@ -3,13 +3,13 @@ unit DMM6500_MeasParamShow;
 interface
 
 uses
-  OlegShowTypes, Classes, DMM6500, StdCtrls;
+  OlegShowTypes, Classes, DMM6500, StdCtrls, Keitley2450Const;
 
 type
 
 TDMM6500_StringParameterShow=class(TStringParameterShow)
-  private
-    procedure CreateHeader(DMM6500: TDMM6500; ChanNumber: Byte);
+ private
+  procedure CreateHeader(DMM6500: TDMM6500; ChanNumber: Byte);//virtual;
  protected
   fSettingsShowSL:TStringList;
   fDMM6500:TDMM6500;
@@ -17,7 +17,7 @@ TDMM6500_StringParameterShow=class(TStringParameterShow)
 //  fCaption:string;
   procedure OkClick();virtual;abstract;
   procedure SettingsShowSLFilling();virtual;abstract;
-//  procedure SomeAction();virtual;abstract;
+  procedure SomeAction();virtual;
  public
   Constructor Create(ST:TStaticText;ParametrCaption: string;
            DMM6500:TDMM6500;ChanNumber:byte=0);overload;
@@ -28,13 +28,19 @@ TDMM6500_StringParameterShow=class(TStringParameterShow)
 end;
 
 TDMM6500_MeasurementType=class(TDMM6500_StringParameterShow)
+ private
+  fPermitedMeasFunction:array of TKeitley_Measure;
+//  procedure CreateHeader(DMM6500: TDMM6500; ChanNumber: Byte);override;
+  procedure PermitedMeasFunctionFilling;
+  function MeasureToOrd(FM: TKeitley_Measure):ShortInt;
  protected
-//  procedure OkClick();override;
-//  procedure SettingsShowSLFilling();override;
+  procedure OkClick();override;
+  procedure SettingsShowSLFilling();override;
+  procedure SomeAction();override;
  public
   Constructor Create(ST:TStaticText;
            DMM6500:TDMM6500;ChanNumber:byte=0);
-//  procedure ObjectToSetting;override;
+  procedure ObjectToSetting;override;
 end;
 
 implementation
@@ -55,6 +61,10 @@ begin
   inherited;
 end;
 
+procedure TDMM6500_StringParameterShow.SomeAction;
+begin
+end;
+
 constructor TDMM6500_StringParameterShow.Create(ST: TStaticText; LCap: TLabel;
   ParametrCaption: string; DMM6500: TDMM6500; ChanNumber: byte);
 begin
@@ -67,7 +77,7 @@ procedure TDMM6500_StringParameterShow.CreateHeader(DMM6500: TDMM6500; ChanNumbe
 begin
   fDMM6500 := DMM6500;
   fChanNumber := ChanNumber;
-  //  SomeAction();
+  SomeAction();
   fSettingsShowSL := TStringList.Create;
   SettingsShowSLFilling;
 end;
@@ -100,6 +110,56 @@ begin
 // if (ChanNumber in [6..10])and(MeasureFunc in [kt_mRes4W,kt_mVoltRat]) then Exit;
 // Result:=True;
 
+end;
+
+
+function TDMM6500_MeasurementType.MeasureToOrd(FM: TKeitley_Measure): ShortInt;
+ var i:byte;
+begin
+ for I := 0 to High(fPermitedMeasFunction) do
+  if fPermitedMeasFunction[i]=FM then
+   begin
+     Result:=i;
+     Exit;
+   end;
+ Result:=-1;
+end;
+
+procedure TDMM6500_MeasurementType.ObjectToSetting;
+begin
+ if fChanNumber=0
+   then Data:=MeasureToOrd(fDMM6500.MeasureFunction)
+   else Data:=MeasureToOrd(fDMM6500.ChansMeasure[fChanNumber-1].MeasureFunction);
+// Data:=ord(fKeitley.MeasureFunction);
+end;
+
+procedure TDMM6500_MeasurementType.OkClick;
+begin
+  fDMM6500.SetMeasureFunction(fPermitedMeasFunction[Data],fChanNumber);
+end;
+
+procedure TDMM6500_MeasurementType.PermitedMeasFunctionFilling;
+ var i:TKeitley_Measure;
+begin
+ for I := Low(TKeitley_Measure) to High(TKeitley_Measure) do
+  if fDMM6500.IsPermittedMeasureFuncForChan(i,fChanNumber) then
+    begin
+      SetLength(fPermitedMeasFunction,High(fPermitedMeasFunction)+2);
+      fPermitedMeasFunction[High(fPermitedMeasFunction)]:=i;
+    end;
+end;
+
+procedure TDMM6500_MeasurementType.SettingsShowSLFilling;
+ var i:byte;
+begin
+ for I := 0 to High(fPermitedMeasFunction) do
+    fSettingsShowSL.Add(Keitley_MeasureLabel[fPermitedMeasFunction[i]]);
+end;
+
+procedure TDMM6500_MeasurementType.SomeAction;
+begin
+  inherited;
+  PermitedMeasFunctionFilling;
 end;
 
 end.

@@ -38,6 +38,8 @@ type
    destructor Destroy; override;
  end;
 
+ TTDMM6500ChannelArr=array of TDMM6500Channel;
+
  TDMM6500=class(TKeitley)
   private
    fMeasureChanNumber:byte;
@@ -46,7 +48,7 @@ type
    fChannelMaxVoltage:double;
    fRealCardPresent:boolean;
 //   fChansMeasureFunction:array of TKeitley_Measure;
-   fChansMeasure:array of TDMM6500Channel;
+   fChansMeasure:TTDMM6500ChannelArr;
 //   fTerminalMeasureFunction:array [TKeitley_OutputTerminals] of TKeitley_Measure;
    fChanOperation:boolean;
    fChanOperationString:string;
@@ -63,8 +65,7 @@ type
    
    procedure ChansMeasureCreate;
    procedure ChansMeasureDestroy;
-   function IsPermittedMeasureFuncForChan(MeasureFunc:TKeitley_Measure;
-                                    ChanNumber:byte):boolean;
+
 //   function GetShablon (QuireFunc:TQuireFunction;ChanNumber:byte):boolean;overload;
 //   function GetShablon (QuireFunc:TQuireFunctionRTDType;WiType:TDMM6500_RTDPropertyNumber;ChanNumber:byte):boolean;overload;
 //   function GetActionShablon(FM:TKeitley_Measure;PM:TDMM6500MeasPar_Base;
@@ -161,9 +162,12 @@ type
   public
    property MeasParameters:TDMM6500MeasPar_Base read GetMeasParameters;
    property CountDig:integer read fCountDig write SetCountDigNumber;
+   property ChansMeasure:TTDMM6500ChannelArr read fChansMeasure;
    Constructor Create(Telnet:TIdTelnet;IPAdressShow: TIPAdressShow;
                Nm:string='DMM6500');
    destructor Destroy; override;
+   function IsPermittedMeasureFuncForChan(MeasureFunc:TKeitley_Measure;
+                                    ChanNumber:byte):boolean;
    procedure MyTraining();override;
    procedure ProcessingString(Str:string);override;
 
@@ -1779,6 +1783,12 @@ end;
 function TDMM6500.IsPermittedMeasureFuncForChan(MeasureFunc: TKeitley_Measure;
   ChanNumber: byte): boolean;
 begin
+ if ChanNumber=0 then
+   begin
+    Result:=True;
+    Exit;
+   end;
+
  Result:=False;
  if MeasureFunc in [kt_mCurDC,kt_mCurAC,kt_mDigCur] then Exit;
  if (ChanNumber in [6..10])and(MeasureFunc in [kt_mRes4W,kt_mVoltRat]) then Exit;

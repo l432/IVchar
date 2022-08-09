@@ -3,7 +3,8 @@ unit DMM6500Show;
 interface
 
 uses
-  OlegTypePart2, DMM6500, KeitleyShow, StdCtrls, ExtCtrls;
+  OlegTypePart2, DMM6500, KeitleyShow, StdCtrls, ExtCtrls, 
+  DMM6500_MeasParamShow;
 
 type
 
@@ -11,6 +12,7 @@ type
   private
    fDMM6500:TDMM6500;
    fTerminalState:TStaticText;
+   fMeasureTypeShow:TDMM6500_MeasurementType;
 //   fSettingsShow:array of TParameterShowNew;
 //   fSettingsShowSL:array of TStringList;
 //   BTest:TButton;
@@ -105,7 +107,7 @@ type
 //                      MeasureMeterB:TButton;
 //                      AutoMMeterB:TSpeedButton);
 //
-//  destructor Destroy;override;
+  destructor Destroy;override;
 //  procedure ReadFromIniFile(ConfigFile:TIniFile);override;
 //  procedure WriteToIniFile(ConfigFile:TIniFile);override;
 //  procedure SettingToObject;
@@ -138,8 +140,14 @@ begin
                    STexts[0]);
   fDMM6500:=DMM6500;
   fTerminalState:=STexts[1];
-
+  fMeasureTypeShow:=TDMM6500_MeasurementType.Create(STexts[2],fDMM6500);
   ObjectToSetting();
+end;
+
+destructor TDMM6500_Show.Destroy;
+begin
+  fMeasureTypeShow.Free;
+  inherited;
 end;
 
 procedure TDMM6500_Show.GetSettingButtonClick(Sender: TObject);
@@ -178,6 +186,7 @@ procedure TDMM6500_Show.ObjectToSetting;
 begin
   inherited ObjectToSetting;
   fTerminalState.Caption:=Keitlay_TerminalsButtonName[fDMM6500.Terminal];
+  fMeasureTypeShow.ObjectToSetting;
 end;
 
 end.
