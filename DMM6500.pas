@@ -168,6 +168,7 @@ type
    destructor Destroy; override;
    function IsPermittedMeasureFuncForChan(MeasureFunc:TKeitley_Measure;
                                     ChanNumber:byte):boolean;
+   function MeasParamByCN(ChanNumber:byte):TDMM6500MeasPar_Base;
    procedure MyTraining();override;
    procedure ProcessingString(Str:string);override;
 
@@ -202,10 +203,10 @@ type
 
    procedure SetDisplayDigitsNumberAction(Measure:TKeitley_Measure;
                                 PM: TDMM6500MeasPar_Base;
-                                Number:KeitleyDisplayDigitsNumber);
-   procedure SetDisplayDigitsNumber(Measure:TKeitley_Measure; Number:KeitleyDisplayDigitsNumber);override;
-   procedure SetDisplayDigitsNumber(Number:KeitleyDisplayDigitsNumber);override;
-   procedure SetDisplayDigitsNumber(Number: KeitleyDisplayDigitsNumber; ChanNumber: Byte);reintroduce;overload;
+                                Number:TKeitleyDisplayDigitsNumber);
+   procedure SetDisplayDigitsNumber(Measure:TKeitley_Measure; Number:TKeitleyDisplayDigitsNumber);override;
+   procedure SetDisplayDigitsNumber(Number:TKeitleyDisplayDigitsNumber);override;
+   procedure SetDisplayDigitsNumber(Number: TKeitleyDisplayDigitsNumber; ChanNumber: Byte);reintroduce;overload;
 
    function GetDisplayDigitsNumberAction(Measure:TKeitley_Measure;PM: TDMM6500MeasPar_Base):boolean;
    function GetDisplayDigitsNumber(Measure:TKeitley_Measure):boolean;override;
@@ -1139,6 +1140,19 @@ begin
 // if not(Assigned(fMeasParameters[FMeasureFunction]))
 //  then fMeasParameters[FMeasureFunction]:=DMM6500MeasParFactory(FMeasureFunction);
  Result:=fMeasParameters[FMeasureFunction];
+end;
+
+function TDMM6500.MeasParamByCN(
+  ChanNumber: byte): TDMM6500MeasPar_Base;
+begin
+   if ChanNumber=0
+   then result:=MeasParameters
+   else
+     begin
+      if ChanelNumberIsCorrect(ChanNumber)
+       then Result:=fChansMeasure[ChanNumber-fFirstChannelInSlot].MeasParameters
+       else Result:=nil;
+     end;
 end;
 
 function TDMM6500.GetMeasPar_BaseVolt(FM: TKeitley_Measure;
@@ -3291,7 +3305,7 @@ end;
 // (PM as TDMM6500MeasPar_BaseAC).DetectorBW:=DecBW;
 //end;
 
-procedure TDMM6500.SetDisplayDigitsNumber(Number: KeitleyDisplayDigitsNumber; ChanNumber: Byte);
+procedure TDMM6500.SetDisplayDigitsNumber(Number: TKeitleyDisplayDigitsNumber; ChanNumber: Byte);
 begin
    if ChanNumber=0
    then  SetDisplayDigitsNumberAction(fMeasureFunction,MeasParameters,Number)
@@ -3313,7 +3327,7 @@ begin
 end;
 
 procedure TDMM6500.SetDisplayDigitsNumberAction(Measure: TKeitley_Measure;
-  PM: TDMM6500MeasPar_Base; Number: KeitleyDisplayDigitsNumber);
+  PM: TDMM6500MeasPar_Base; Number: TKeitleyDisplayDigitsNumber);
 begin
  inherited SetDisplayDigitsNumber(Measure,Number);
  PM.DisplayDN:=Number;
@@ -3372,7 +3386,7 @@ end;
 //   end;
 //end;
 
-procedure TDMM6500.SetDisplayDigitsNumber(Number: KeitleyDisplayDigitsNumber);
+procedure TDMM6500.SetDisplayDigitsNumber(Number: TKeitleyDisplayDigitsNumber);
 begin
  SetDisplayDigitsNumberAction(fMeasureFunction,MeasParameters,Number);
 // inherited SetDisplayDigitsNumber(fMeasureFunction,Number);
@@ -3381,7 +3395,7 @@ end;
 
 
 procedure TDMM6500.SetDisplayDigitsNumber(Measure: TKeitley_Measure;
-  Number: KeitleyDisplayDigitsNumber);
+  Number: TKeitleyDisplayDigitsNumber);
 begin
   MeasParameterCreate(Measure);
   SetDisplayDigitsNumberAction(Measure,fMeasParameters[Measure],Number);

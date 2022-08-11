@@ -12,7 +12,10 @@ type
   private
    fDMM6500:TDMM6500;
    fTerminalState:TStaticText;
-   fMeasureTypeShow:TDMM6500_MeasurementType;
+   fMeasureTypeShow:TDMM6500_MeasurementTypeShow;
+   fControlChannels:TDMM6500ControlChannels;
+   fGBControlChannels:TGroupBox;
+
 //   fSettingsShow:array of TParameterShowNew;
 //   fSettingsShowSL:array of TStringList;
 //   BTest:TButton;
@@ -83,6 +86,7 @@ type
 //   procedure ModeOkClick();
 //   procedure CountOkClick();
 //    procedure ReCreateElements;
+    procedure   ControlChannelsCreate;
   protected
     procedure GetSettingButtonClick(Sender:TObject);override;
   public
@@ -90,7 +94,8 @@ type
    Constructor Create(DMM6500:TDMM6500;
                       ButtonsKeitley:Array of TButton;
                       PanelsSetting:Array of TPanel;
-                      STexts:array of TStaticText);
+                      STexts:array of TStaticText;
+                      GBs:array of TGroupBox);
 //                      SpeedButtons:Array of TSpeedButton;
 //                      Panels:Array of TPanel;
 //                      STexts:array of TStaticText;
@@ -125,14 +130,28 @@ var
 implementation
 
 uses
-  Keitley2450Const, TelnetDevice;
+  Keitley2450Const, TelnetDevice, SysUtils;
 
 { TDMM6500_Show }
+
+procedure TDMM6500_Show.ControlChannelsCreate;
+begin
+ if fControlChannels=nil
+   then fControlChannels:=TDMM6500ControlChannels.Create(fGBControlChannels,fDMM6500)
+   else
+    if fControlChannels.ChanCount<>High(fDMM6500.ChansMeasure)+1 then
+      begin
+        FreeAndNil(fControlChannels);
+        fControlChannels:=TDMM6500ControlChannels.Create(fGBControlChannels,fDMM6500);
+      end;
+
+end;
 
 constructor TDMM6500_Show.Create(DMM6500: TDMM6500;
                   ButtonsKeitley: array of TButton;
                   PanelsSetting:Array of TPanel;
-                  STexts:array of TStaticText);
+                  STexts:array of TStaticText;
+                  GBs:array of TGroupBox);
 begin
 
   inherited Create(DMM6500,ButtonsKeitley,
@@ -140,7 +159,10 @@ begin
                    STexts[0]);
   fDMM6500:=DMM6500;
   fTerminalState:=STexts[1];
-  fMeasureTypeShow:=TDMM6500_MeasurementType.Create(STexts[2],fDMM6500);
+  fMeasureTypeShow:=TDMM6500_MeasurementTypeShow.Create(STexts[2],fDMM6500);
+  fGBControlChannels:=GBs[0];
+
+
   ObjectToSetting();
 end;
 
@@ -187,6 +209,7 @@ begin
   inherited ObjectToSetting;
   fTerminalState.Caption:=Keitlay_TerminalsButtonName[fDMM6500.Terminal];
   fMeasureTypeShow.ObjectToSetting;
+  ControlChannelsCreate;
 end;
 
 end.

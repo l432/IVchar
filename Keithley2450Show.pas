@@ -1379,8 +1379,8 @@ begin
   fSettingsShowSL[kt_ms_rescomp].Add(SuffixKt_2450[i]);
  for I := 0 to ord(High(TKt2450_Sense)) do
     fSettingsShowSL[kt_ms_sense].Add(KT2450_SenseLabels[TKt2450_Sense(i)]);
- for I := Low(KeitleyDisplayDigitsNumber) to High(KeitleyDisplayDigitsNumber) do
-    fSettingsShowSL[kt_ms_displaydn].Add(inttostr(i)+Kt2450DisplayDNLabel);
+ for I := Low(TKeitleyDisplayDigitsNumber) to High(TKeitleyDisplayDigitsNumber) do
+    fSettingsShowSL[kt_ms_displaydn].Add(inttostr(i)+KeitleyDisplayDNLabel);
 end;
 
 procedure TKt_2450_MeasurementShow.TimeOkClick;

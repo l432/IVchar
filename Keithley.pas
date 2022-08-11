@@ -287,10 +287,10 @@ type
 //   function GetMeasureTime():boolean;overload;
 //   function GetMeasureTimes():boolean;
 //
-   procedure SetDisplayDigitsNumber(Measure:TKeitley_Measure; Number:KeitleyDisplayDigitsNumber);overload;virtual;
+   procedure SetDisplayDigitsNumber(Measure:TKeitley_Measure; Number:TKeitleyDisplayDigitsNumber);overload;virtual;
    {кількість цифр, що відображаються на екрані,
      на точність самого вимірювання не впливає}
-   procedure SetDisplayDigitsNumber(Number:KeitleyDisplayDigitsNumber);overload;virtual;
+   procedure SetDisplayDigitsNumber(Number:TKeitleyDisplayDigitsNumber);overload;virtual;
    function GetDisplayDigitsNumber(Measure:TKeitley_Measure):boolean;overload;virtual;
    function GetDisplayDigitsNumber():boolean;overload;virtual;
 //   function GetDisplayDNs():boolean;
@@ -903,8 +903,8 @@ end;
 function TKeitley.GetDisplayDigitsNumber(Measure: TKeitley_Measure): boolean;
 begin
  QuireOperation(6,MeasureToRootNodeNumber(Measure),28);
- Result:=(round(fDevice.Value)>=Low(KeitleyDisplayDigitsNumber))
-         and(round(fDevice.Value)<=High(KeitleyDisplayDigitsNumber));
+ Result:=(round(fDevice.Value)>=Low(TKeitleyDisplayDigitsNumber))
+         and(round(fDevice.Value)<=High(TKeitleyDisplayDigitsNumber));
 //
 //
 // try
@@ -1311,7 +1311,7 @@ begin
 end;
 
 procedure TKeitley.SetDisplayDigitsNumber(Measure: TKeitley_Measure;
-  Number: KeitleyDisplayDigitsNumber);
+  Number: TKeitleyDisplayDigitsNumber);
 begin
 //:DISP:CURR|VOLT|RES:DIG n
  fAdditionalString:=inttostr(Number);
@@ -1319,7 +1319,7 @@ begin
 // fDisplayDN[Measure]:=Number;
 end;
 
-procedure TKeitley.SetDisplayDigitsNumber(Number: KeitleyDisplayDigitsNumber);
+procedure TKeitley.SetDisplayDigitsNumber(Number: TKeitleyDisplayDigitsNumber);
 begin
  SetDisplayDigitsNumber(fMeasureFunction,Number);
 end;

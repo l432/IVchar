@@ -30,11 +30,11 @@ TDMM6500MeasPar_Base=class(TSimpleFreeAndAiniObject)
 //TDMM6500MeasPar_Base=class(TInterfacedObject)
  private
 //  fCount:integer;
-  fDisplayDN:KeitleyDisplayDigitsNumber;
+  fDisplayDN:TKeitleyDisplayDigitsNumber;
 //  procedure SetCountNumber(Value: integer);virtual;
  public
 //  property Count:integer read fCount write SetCountNumber;
-  property DisplayDN:KeitleyDisplayDigitsNumber read fDisplayDN write fDisplayDN;
+  property DisplayDN:TKeitleyDisplayDigitsNumber read fDisplayDN write fDisplayDN;
   constructor Create;
 end;
 

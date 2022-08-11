@@ -32,6 +32,8 @@ type
     L_DM6500_DispBr: TLabel;
     ST_DM6500_Terminals: TStaticText;
     ST_DM6500MeasureMode: TStaticText;
+    GB_DM6500Param: TGroupBox;
+    GB_DM6500Chan: TGroupBox;
     procedure BCloseClick(Sender: TObject);
     procedure FormPaint(Sender: TObject);
   private

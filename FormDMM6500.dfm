@@ -287,6 +287,34 @@ object DMM6500Form: TDMM6500Form
     ShowAccelChar = False
     TabOrder = 4
   end
+  object GB_DM6500Param: TGroupBox
+    Left = 8
+    Top = 147
+    Width = 316
+    Height = 246
+    Caption = 'Options'
+    Font.Charset = RUSSIAN_CHARSET
+    Font.Color = clMaroon
+    Font.Height = -13
+    Font.Name = 'Arial'
+    Font.Style = [fsBold]
+    ParentFont = False
+    TabOrder = 5
+  end
+  object GB_DM6500Chan: TGroupBox
+    Left = 334
+    Top = 128
+    Width = 292
+    Height = 297
+    Caption = 'Chanels'
+    Font.Charset = RUSSIAN_CHARSET
+    Font.Color = clMaroon
+    Font.Height = -13
+    Font.Name = 'Arial'
+    Font.Style = [fsBold]
+    ParentFont = False
+    TabOrder = 6
+  end
   object TelnetDMM6500: TIdTelnet
     Terminal = 'dumb'
     Left = 526

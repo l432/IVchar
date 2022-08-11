@@ -278,10 +278,10 @@ TKT2450_SourceDevice=class;
    function GetMeasureTimes():boolean;
 
 //   procedure SetDisplayDigitsNumber(Measure:TKt2450_Measure; Number:KeitleyDisplayDigitsNumber);overload;
-   procedure SetDisplayDigitsNumber(Measure:TKt2450_Measure; Number:KeitleyDisplayDigitsNumber);reintroduce;overload;
+   procedure SetDisplayDigitsNumber(Measure:TKt2450_Measure; Number:TKeitleyDisplayDigitsNumber);reintroduce;overload;
    {кількість цифр, що відображаються на екрані,
      на точність самого вимірювання не впливає}
-   procedure SetDisplayDigitsNumber(Number:KeitleyDisplayDigitsNumber);override;
+   procedure SetDisplayDigitsNumber(Number:TKeitleyDisplayDigitsNumber);override;
    function GetDisplayDigitsNumber(Measure:TKt2450_Measure):boolean;reintroduce;overload;
    function GetDisplayDigitsNumber():boolean;override;
    function GetDisplayDNs():boolean;
@@ -1772,7 +1772,7 @@ if Value=0 then
 end;
 
 procedure TKt_2450.SetDisplayDigitsNumber(Measure: TKt2450_Measure;
-  Number: KeitleyDisplayDigitsNumber);
+  Number: TKeitleyDisplayDigitsNumber);
 begin
 //:DISP:CURR|VOLT|RES:DIG n
  inherited SetDisplayDigitsNumber(Measure,Number);
@@ -1810,7 +1810,7 @@ begin
  SetupOperation(23,36);
 end;
 
-procedure TKt_2450.SetDisplayDigitsNumber(Number: KeitleyDisplayDigitsNumber);
+procedure TKt_2450.SetDisplayDigitsNumber(Number: TKeitleyDisplayDigitsNumber);
 begin
   SetDisplayDigitsNumber(fMeasureFunction,Number);
 end;
