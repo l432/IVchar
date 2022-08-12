@@ -221,8 +221,8 @@ type
 {   This command enables or disables the automatic delay that occurs before each measurement}
    procedure SetDelayAuto(toOn: Boolean; ChanNumber: Byte=0);overload;
 //   function GetDelayAutoAction(Measure:TKeitley_Measure;PM: TDMM6500MeasPar_Base):boolean;
-   function GetDelayAutoOn(Measure:TKeitley_Measure):boolean;overload;
-   function GetDelayAutoOn(ChanNumber:byte=0):boolean;overload;
+   function GetDelayAuto(Measure:TKeitley_Measure):boolean;overload;
+   function GetDelayAuto(ChanNumber:byte=0):boolean;overload;
 
 
 //   procedure SetSampleRateAction(Measure:TKeitley_Measure;
@@ -1741,7 +1741,7 @@ begin
  end;
 end;
 
-function TDMM6500.GetDelayAutoOn(Measure: TKeitley_Measure): boolean;
+function TDMM6500.GetDelayAuto(Measure: TKeitley_Measure): boolean;
 begin
  Result:=GetShablon(dm_pp_DelayAuto,Measure);
 // MeasParameterCreate(Measure);
@@ -1760,7 +1760,7 @@ end;
 //   (MeasParameters as TDMM6500MeasPar_BaseDelay).AutoDelay:=(fDevice.Value=1);
 //end;
 
-function TDMM6500.GetDelayAutoOn(ChanNumber: byte): boolean;
+function TDMM6500.GetDelayAuto(ChanNumber: byte): boolean;
 begin
  Result:=GetShablon(dm_pp_DelayAuto,ChanNumber);
 // Result:=GetShablon(GetDelayAutoAction,ChanNumber);
@@ -2404,11 +2404,11 @@ begin
 //SetSampleRate(200000,2);
 
 
-//if GetDelayAutoOn()
+//if GetDelayAuto()
 // then showmessage('ura! '+ booltostr((MeasParameters as TDMM6500MeasPar_BaseDelay).AutoDelay,True));
-//if GetDelayAutoOn(kt_mCurAC) then
+//if GetDelayAuto(kt_mCurAC) then
 // showmessage('ura! '+ booltostr((fMeasParameters[kt_mCurAC] as TDMM6500MeasPar_BaseDelay).AutoDelay,True));
-//if GetDelayAutoOn(5) then
+//if GetDelayAuto(5) then
 // showmessage('ura! '+ booltostr((fChansMeasure[4].MeasParameters as TDMM6500MeasPar_BaseDelay).AutoDelay,True));
 
 

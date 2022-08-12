@@ -4,30 +4,57 @@ interface
 
 uses
   OlegShowTypes, Classes, DMM6500, StdCtrls, Keitley2450Const, OlegType, SCPI, 
-  Controls;
+  Controls, Windows;
 
 type
 
-TDMM6500_ParameterShow=class
+
+TDMM6500_ParameterShowBase=class
  private
-  fParamShow:TParameterShowNew;
+//  fParamShow:TParameterShowNew;
   fDMM6500:TDMM6500;
   fChanNumber:byte;
+ protected
+  procedure GetDataFromDevice;virtual;abstract;
+ public
+  Constructor Create(DMM6500:TDMM6500;ChanNumber:byte=0);overload;
+  procedure ObjectToSetting;virtual;abstract;
+  procedure UpDate;
+end;
+
+TDMM6500_BoolParameterShow=class(TDMM6500_ParameterShowBase)
+ private
+  fCB:TCheckBox;
+  procedure Click(Sender:TObject);virtual;abstract;
+  procedure SetValue(Value:Boolean);
+ public
+  Constructor Create(CB:TCheckBox;ParametrCaption: string;
+           DMM6500:TDMM6500;ChanNumber:byte=0);overload;
+ destructor Destroy;override;
+end;
+
+TDMM6500_ParameterShow=class(TDMM6500_ParameterShowBase)
+ private
+  fParamShow:TParameterShowNew;
+//  fDMM6500:TDMM6500;
+//  fChanNumber:byte;
 //  procedure CreateHeader(DMM6500: TDMM6500; ChanNumber: Byte);//virtual;
  protected
 //  fSettingsShowSL:TStringList;
 
-  procedure OkClick();virtual;abstract;
-  procedure GetDataFromDevice;virtual;abstract;
+//  procedure OkClick();virtual;abstract;
+//  procedure GetDataFromDevice;virtual;abstract;
 //  procedure SettingsShowSLFilling();virtual;abstract;
 //  procedure SomeAction();virtual;
+  procedure OkClick();virtual;abstract;
+  procedure SetLimits(LimitV:TLimitValues);
  public
-  Constructor Create(DMM6500:TDMM6500;ChanNumber:byte=0);overload;
+//  Constructor Create(DMM6500:TDMM6500;ChanNumber:byte=0);overload;
 //  Constructor Create(ST:TStaticText;LCap:TLabel;ParametrCaption: string;
 //           DMM6500:TDMM6500;ChanNumber:byte=0);overload;
   destructor Destroy;override;
-  procedure ObjectToSetting;virtual;abstract;
-  procedure UpDate;
+//  procedure ObjectToSetting;virtual;abstract;
+//  procedure UpDate;
 end;
 
 
@@ -54,12 +81,12 @@ TDMM6500_StringParameterShow=class(TDMM6500_ParameterShow)
 //  procedure ObjectToSetting;virtual;abstract;
 end;
 
-TDMM6500_LimitedParameterShow=class(TDMM6500_ParameterShow)
- private
-  procedure SetLimits(LimitV:TLimitValues);
-end;
+//TDMM6500_LimitedParameterShow=class(TDMM6500_ParameterShow)
+// private
+//  procedure SetLimits(LimitV:TLimitValues);
+//end;
 
-TDMM6500_DoubleParameterShow=class(TDMM6500_LimitedParameterShow)
+TDMM6500_DoubleParameterShow=class(TDMM6500_ParameterShow)
  private
   function GetData: double;
   procedure SetDat(const Value: double);
@@ -73,7 +100,7 @@ TDMM6500_DoubleParameterShow=class(TDMM6500_LimitedParameterShow)
                       DN:byte=3);
 end;
 
-TDMM6500_IntegerParameterShow=class(TDMM6500_LimitedParameterShow)
+TDMM6500_IntegerParameterShow=class(TDMM6500_ParameterShow)
   private
     function GetData: integer;
     procedure SetDat(const Value: integer);
@@ -173,6 +200,7 @@ TDMM6500MeasPar_BaseShow=class(TDMM6500_MeasParShow)
   procedure DestroyControls;override;
   procedure CountShowCreate;virtual;
   procedure GetDataFromDevice;override;
+  procedure DesignElements;override;
  public
   STCount:TStaticText;
   LCount:TLabel;
@@ -180,7 +208,15 @@ TDMM6500MeasPar_BaseShow=class(TDMM6500_MeasParShow)
   procedure ObjectToSetting;override;
 end;
 
-
+TDMM6500_AutoDelayShow=class(TDMM6500_BoolParameterShow)
+ protected
+  procedure Click(Sender:TObject);override;
+  procedure GetDataFromDevice;override;
+ public
+  Constructor Create(CB:TCheckBox;
+           DMM6500:TDMM6500;ChanNumber:byte=0);
+  procedure ObjectToSetting;override;
+end;
 
 
 TDMM6500ControlChannels=class(TControlElements)
@@ -205,7 +241,7 @@ end;
 implementation
 
 uses
-  SysUtils, DMM6500_Const;
+  SysUtils, DMM6500_Const, Graphics, OlegFunction, DMM6500_MeasParam;
 
 { TDMM6500_StringParameterShow }
 
@@ -434,11 +470,11 @@ end;
 
 { TDMM6500_ParameterShow }
 
-constructor TDMM6500_ParameterShow.Create(DMM6500: TDMM6500; ChanNumber: byte);
-begin
-  fDMM6500 := DMM6500;
-  fChanNumber := ChanNumber;
-end;
+//constructor TDMM6500_ParameterShow.Create(DMM6500: TDMM6500; ChanNumber: byte);
+//begin
+//  fDMM6500 := DMM6500;
+//  fChanNumber := ChanNumber;
+//end;
 
 destructor TDMM6500_ParameterShow.Destroy;
 begin
@@ -447,19 +483,28 @@ begin
   inherited;
 end;
 
-procedure TDMM6500_ParameterShow.UpDate;
+procedure TDMM6500_ParameterShow.SetLimits(LimitV: TLimitValues);
 begin
- GetDataFromDevice;
- ObjectToSetting;
-end;
-
-{ TDMM6500_LimitedParameterShow }
-
-procedure TDMM6500_LimitedParameterShow.SetLimits(LimitV:TLimitValues);
-begin
+ try
 // (fParamShow as TLimitedParameterShow).Limits.SetLimits(LowLimit,HighLimit);
  (fParamShow as TLimitedParameterShow).Limits.SetLimits(LimitV[lvMin],LimitV[lvMax]);
+ except
+ end;
 end;
+
+//procedure TDMM6500_ParameterShow.UpDate;
+//begin
+// GetDataFromDevice;
+// ObjectToSetting;
+//end;
+
+//{ TDMM6500_LimitedParameterShow }
+//
+//procedure TDMM6500_LimitedParameterShow.SetLimits(LimitV:TLimitValues);
+//begin
+//// (fParamShow as TLimitedParameterShow).Limits.SetLimits(LowLimit,HighLimit);
+// (fParamShow as TLimitedParameterShow).Limits.SetLimits(LimitV[lvMin],LimitV[lvMax]);
+//end;
 
 { TDMM6500_DoubleParameterShow }
 
@@ -615,6 +660,12 @@ begin
   STDisplayDN.Parent:=fParent;
 end;
 
+procedure TDMM6500MeasPar_BaseShow.DesignElements;
+begin
+  STCount.Font.Color:=clGreen;
+  LCount.Font.Color:=clGreen;
+end;
+
 procedure TDMM6500MeasPar_BaseShow.DestroyControls;
 begin
  FreeAndNil(fDisplayDNShow);
@@ -656,6 +707,68 @@ constructor TDMM6500_MeasParShow.Create(Parent: TGroupBox; DMM6500: TDMM6500;
 begin
   fChanNumber:=ChanNumber;
   inherited Create(Parent,DMM6500);
+end;
+
+{ TDMM6500_ParameterShowBase }
+
+constructor TDMM6500_ParameterShowBase.Create(DMM6500: TDMM6500;
+  ChanNumber: byte);
+begin
+ inherited Create;
+  fDMM6500 := DMM6500;
+  fChanNumber := ChanNumber;
+end;
+
+procedure TDMM6500_ParameterShowBase.UpDate;
+begin
+ GetDataFromDevice;
+ ObjectToSetting;
+end;
+
+{ TDMM6500_BoolParameterShow }
+
+constructor TDMM6500_BoolParameterShow.Create(CB: TCheckBox;
+  ParametrCaption: string; DMM6500: TDMM6500; ChanNumber: byte);
+begin
+ inherited Create(DMM6500,ChanNumber);
+ fCB:=CB;
+ fCB.OnClick:=Click;
+ fCB.Caption:=ParametrCaption;
+ fCB.WordWrap:=False;
+end;
+
+destructor TDMM6500_BoolParameterShow.Destroy;
+begin
+  fCB.OnClick:=nil;
+  inherited;
+end;
+
+procedure TDMM6500_BoolParameterShow.SetValue(Value: Boolean);
+begin
+ AccurateCheckBoxCheckedChange(fCB,Value);
+end;
+
+{ TDMM6500_AutoDelayShow }
+
+procedure TDMM6500_AutoDelayShow.Click(Sender: TObject);
+begin
+ fDMM6500.SetDelayAuto(fCB.Checked,fChanNumber)
+end;
+
+constructor TDMM6500_AutoDelayShow.Create(CB: TCheckBox; DMM6500: TDMM6500;
+  ChanNumber: byte);
+begin
+ inherited Create(CB,'Auto Delay',DMM6500,ChanNumber);
+end;
+
+procedure TDMM6500_AutoDelayShow.GetDataFromDevice;
+begin
+ fDMM6500.GetDelayAuto(fChanNumber)
+end;
+
+procedure TDMM6500_AutoDelayShow.ObjectToSetting;
+begin
+ SetValue((fDMM6500.MeasParamByCN(fChanNumber) as TDMM6500MeasPar_BaseDelay).AutoDelay);
 end;
 
 end.
