@@ -116,6 +116,7 @@ end;
 TDMM6500_MeasurementTypeShow=class(TDMM6500_StringParameterShow)
  private
   fPermitedMeasFunction:array of TKeitley_Measure;
+  fHookParameterClick: TSimpleEvent;
   procedure PermitedMeasFunctionFilling;
   function MeasureToOrd(FM: TKeitley_Measure):ShortInt;
  protected
@@ -124,6 +125,7 @@ TDMM6500_MeasurementTypeShow=class(TDMM6500_StringParameterShow)
   procedure SomeAction();override;
   procedure GetDataFromDevice;override;
  public
+  property HookParameterClick:TSimpleEvent read fHookParameterClick write fHookParameterClick;
   Constructor Create(ST:TStaticText;
            DMM6500:TDMM6500;ChanNumber:byte=0);
   procedure ObjectToSetting;override;
@@ -175,18 +177,23 @@ end;
 TDMM6500_MeasParShow=class(TControlElements)
  private
   fChanNumber:byte;
+  fShowElements:array of TDMM6500_ParameterShowBase;
+  fWinElements:array of TControl;
+  procedure Add(ShowElements:TDMM6500_ParameterShowBase);overload;
+  procedure Add(WinElements:TControl);overload;
+  procedure CreateAndAddElement(Element:TControl);
 //  fDMM6500:TDMM6500;
 //  fParent:TWinControl;
  protected
 //  procedure CreateElements;virtual;abstract;
 //  procedure CreateControls;virtual;abstract;
-//  procedure DestroyElements;virtual;abstract;
-//  procedure DestroyControls;virtual;abstract;
-  procedure GetDataFromDevice;virtual;abstract;
+  procedure DestroyElements;override;
+  procedure DestroyControls;override;
+  procedure GetDataFromDevice;
  public
   Constructor Create(Parent:TGroupBox;DMM6500:TDMM6500;ChanNumber:byte=0);
 //  destructor Destroy;override;
-  procedure ObjectToSetting;virtual;abstract;
+  procedure ObjectToSetting;
 end;
 
 TDMM6500MeasPar_BaseShow=class(TDMM6500_MeasParShow)
@@ -196,16 +203,12 @@ TDMM6500MeasPar_BaseShow=class(TDMM6500_MeasParShow)
  protected
   procedure CreateElements;override;
   procedure CreateControls;override;
-  procedure DestroyElements;override;
-  procedure DestroyControls;override;
   procedure CountShowCreate;virtual;
-  procedure GetDataFromDevice;override;
   procedure DesignElements;override;
  public
   STCount:TStaticText;
   LCount:TLabel;
   STDisplayDN:TStaticText;
-  procedure ObjectToSetting;override;
 end;
 
 TDMM6500_AutoDelayShow=class(TDMM6500_BoolParameterShow)
@@ -218,6 +221,16 @@ TDMM6500_AutoDelayShow=class(TDMM6500_BoolParameterShow)
   procedure ObjectToSetting;override;
 end;
 
+
+TDMM6500MeasPar_BaseDelayShow=class(TDMM6500MeasPar_BaseShow)
+ private
+  fAutoDelayShow:TDMM6500_AutoDelayShow;
+ protected
+  procedure CreateElements;override;
+  procedure CreateControls;override;
+ public
+  CBAutoDelay:TCheckBox;
+end;
 
 TDMM6500ControlChannels=class(TControlElements)
  private
@@ -333,6 +346,7 @@ end;
 procedure TDMM6500_MeasurementTypeShow.OkClick;
 begin
   fDMM6500.SetMeasureFunction(fPermitedMeasFunction[Data],fChanNumber);
+  fHookParameterClick;
 end;
 
 procedure TDMM6500_MeasurementTypeShow.PermitedMeasFunctionFilling;
@@ -648,47 +662,30 @@ procedure TDMM6500MeasPar_BaseShow.CreateControls;
 begin
  fDisplayDNShow:=TDMM6500_DisplayDNShow.Create(STDisplayDN,fDMM6500,fChanNumber);
  CountShowCreate;
+ Add(fDisplayDNShow);
+ Add(fCountShow);
 end;
 
 procedure TDMM6500MeasPar_BaseShow.CreateElements;
 begin
-  STCount:=TStaticText.Create(fParent);
-  LCount:=TLabel.Create(fParent);
-  STDisplayDN:=TStaticText.Create(fParent);
-  STCount.Parent:=fParent;
-  LCount.Parent:=fParent;
-  STDisplayDN.Parent:=fParent;
+  CreateAndAddElement(STCount);
+  CreateAndAddElement(LCount);
+  CreateAndAddElement(STDisplayDN);
+//  STCount:=TStaticText.Create(fParent);
+//  LCount:=TLabel.Create(fParent);
+//  STDisplayDN:=TStaticText.Create(fParent);
+//  STCount.Parent:=fParent;
+//  LCount.Parent:=fParent;
+//  STDisplayDN.Parent:=fParent;
+//  Add(STCount);
+//  Add(LCount);
+//  Add(STDisplayDN);
 end;
 
 procedure TDMM6500MeasPar_BaseShow.DesignElements;
 begin
   STCount.Font.Color:=clGreen;
   LCount.Font.Color:=clGreen;
-end;
-
-procedure TDMM6500MeasPar_BaseShow.DestroyControls;
-begin
- FreeAndNil(fDisplayDNShow);
- FreeAndNil(fCountShow);
-end;
-
-procedure TDMM6500MeasPar_BaseShow.DestroyElements;
-begin
-  STCount.Free;
-  LCount.Free;
-  STDisplayDN.Free;
-end;
-
-procedure TDMM6500MeasPar_BaseShow.GetDataFromDevice;
-begin
- fCountShow.GetDataFromDevice;
- fDisplayDNShow.GetDataFromDevice;
-end;
-
-procedure TDMM6500MeasPar_BaseShow.ObjectToSetting;
-begin
- fCountShow.ObjectToSetting;
- fDisplayDNShow.ObjectToSetting;
 end;
 
 { TDMM6500_MeasParChanShow }
@@ -702,11 +699,60 @@ end;
 
 { TDMM6500_MeasParShow }
 
+procedure TDMM6500_MeasParShow.Add(ShowElements: TDMM6500_ParameterShowBase);
+begin
+ SetLength(fShowElements,High(fShowElements)+1);
+ fShowElements[High(fShowElements)]:=ShowElements;
+end;
+
+procedure TDMM6500_MeasParShow.Add(WinElements: TControl);
+begin
+ SetLength(fShowElements,High(fWinElements)+1);
+ fWinElements[High(fWinElements)]:=WinElements;
+end;
+
 constructor TDMM6500_MeasParShow.Create(Parent: TGroupBox; DMM6500: TDMM6500;
   ChanNumber: byte);
 begin
   fChanNumber:=ChanNumber;
   inherited Create(Parent,DMM6500);
+end;
+
+procedure TDMM6500_MeasParShow.CreateAndAddElement(Element: TControl);
+begin
+ if (Element is TStaticText) then Element:=TStaticText.Create(fParent);
+ if (Element is TLabel) then Element:=TLabel.Create(fParent);
+ if (Element is TCheckBox) then Element:=TCheckBox.Create(fParent);
+ Element.Parent:=fParent;
+ Add(Element);
+end;
+
+procedure TDMM6500_MeasParShow.DestroyControls;
+ var i:integer;
+begin
+ for i := 0 to High(fShowElements) do
+  FreeAndNil(fShowElements[i])
+end;
+
+procedure TDMM6500_MeasParShow.DestroyElements;
+ var i:integer;
+begin
+ for i := 0 to High(fShowElements) do
+  fWinElements[i].Free;
+end;
+
+procedure TDMM6500_MeasParShow.GetDataFromDevice;
+ var i:integer;
+begin
+ for i := 0 to High(fShowElements) do
+   fShowElements[i].GetDataFromDevice;
+end;
+
+procedure TDMM6500_MeasParShow.ObjectToSetting;
+ var i:integer;
+begin
+ for i := 0 to High(fShowElements) do
+   fShowElements[i].ObjectToSetting;
 end;
 
 { TDMM6500_ParameterShowBase }
@@ -770,5 +816,24 @@ procedure TDMM6500_AutoDelayShow.ObjectToSetting;
 begin
  SetValue((fDMM6500.MeasParamByCN(fChanNumber) as TDMM6500MeasPar_BaseDelay).AutoDelay);
 end;
+
+{ TDMM6500MeasPar_BaseDelayShow }
+
+procedure TDMM6500MeasPar_BaseDelayShow.CreateControls;
+begin
+  inherited CreateControls;
+  fAutoDelayShow:=TDMM6500_AutoDelayShow.Create(CBAutoDelay,fDMM6500,fChanNumber);
+  Add(fAutoDelayShow);
+end;
+
+procedure TDMM6500MeasPar_BaseDelayShow.CreateElements;
+begin
+  inherited CreateElements;
+  CreateAndAddElement(CBAutoDelay);
+//  CBAutoDelay:=TCheckBox.Create(fParent);
+//  CBAutoDelay.Parent:=fParent;
+//  Add(CBAutoDelay);
+end;
+
 
 end.
