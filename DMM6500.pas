@@ -157,8 +157,6 @@ type
 //   function GetMeasureFunctionValue:TKeitley_Measure;override;
    procedure SetCountNumber(Value:integer);override;
    procedure SetCountDigNumber(Value:integer);
-   function GetMeasPar_BaseVolt(FM:TKeitley_Measure;PM:TDMM6500MeasPar_Base):IMeasPar_BaseVolt;
-   function GetMeasPar_BaseVoltDC(FM:TKeitley_Measure;PM:TDMM6500MeasPar_Base):IMeasPar_BaseVoltDC;
   public
    property MeasParameters:TDMM6500MeasPar_Base read GetMeasParameters;
    property CountDig:integer read fCountDig write SetCountDigNumber;
@@ -169,6 +167,9 @@ type
    function IsPermittedMeasureFuncForChan(MeasureFunc:TKeitley_Measure;
                                     ChanNumber:byte):boolean;
    function MeasParamByCN(ChanNumber:byte):TDMM6500MeasPar_Base;
+   function MeasFuncByCN(ChanNumber:byte):TKeitley_Measure;
+   function GetMeasPar_BaseVolt(FM:TKeitley_Measure;PM:TDMM6500MeasPar_Base):IMeasPar_BaseVolt;
+   function GetMeasPar_BaseVoltDC(FM:TKeitley_Measure;PM:TDMM6500MeasPar_Base):IMeasPar_BaseVoltDC;
    procedure MyTraining();override;
    procedure ProcessingString(Str:string);override;
 
@@ -1140,6 +1141,18 @@ begin
 // if not(Assigned(fMeasParameters[FMeasureFunction]))
 //  then fMeasParameters[FMeasureFunction]:=DMM6500MeasParFactory(FMeasureFunction);
  Result:=fMeasParameters[FMeasureFunction];
+end;
+
+function TDMM6500.MeasFuncByCN(ChanNumber: byte): TKeitley_Measure;
+begin
+   if ChanNumber=0
+   then result:=MeasureFunction
+   else
+     begin
+      if ChanelNumberIsCorrect(ChanNumber)
+       then Result:=fChansMeasure[ChanNumber-fFirstChannelInSlot].MeasureFunction
+       else Result:=MeasureFunction;
+     end;
 end;
 
 function TDMM6500.MeasParamByCN(

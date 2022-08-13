@@ -11,12 +11,16 @@ IMeasPar_BaseVolt = interface
  function GetUnits:TDMM6500_VoltageUnits;
  function GetDB:double;
  function GetDBM:integer;
+ function GetDBLimits:TLimitValues;
+ function GetDBMLimits:TLimitValues;
  procedure SetUnits(const Value:TDMM6500_VoltageUnits);
  procedure SetDB(const Value:double);
  procedure SetDBM(const Value:integer);
  property Units: TDMM6500_VoltageUnits read GetUnits write SetUnits;
  property DB:double read GetDB write SetDB;
  property DBM:integer read GetDBM write SetDBM;
+ property DBLimits:TLimitValues read GetDBLimits;
+ property DBMLimits:TLimitValues read GetDBMLimits;
 end;
 
 IMeasPar_BaseVoltDC = interface
@@ -69,6 +73,8 @@ TDMM6500MeasPar_BaseVolt=class
   property Units: TDMM6500_VoltageUnits read fUnits write fUnits;
   property DB:double read fDB write SetDB;
   property DBM:integer read fDBM write SetDBM;
+  property DBLimits:TLimitValues read fDBLimits;
+  property DBMLimits:TLimitValues read fDBMLimits;
   constructor Create;
 end;
 
@@ -139,6 +145,8 @@ TDMM6500MeasPar_DigVolt=class(TDMM6500MeasPar_BaseDig,IMeasPar_BaseVolt,IMeasPar
   procedure SetUnits(const Value: TDMM6500_VoltageUnits);
   function GetDB: double;
   function GetDBM: integer;
+  function GetDBLimits:TLimitValues;
+  function GetDBMLimits:TLimitValues;
   procedure SetDB(const Value: double);
   procedure SetDBM(const Value: integer);
  public
@@ -147,6 +155,8 @@ TDMM6500MeasPar_DigVolt=class(TDMM6500MeasPar_BaseDig,IMeasPar_BaseVolt,IMeasPar
   property Units: TDMM6500_VoltageUnits read GetUnits write SetUnits;
   property DB:double read GetDB write SetDB;
   property DBM:integer read GetDBM write SetDBM;
+  property DBLimits:TLimitValues read GetDBLimits;
+  property DBMLimits:TLimitValues read GetDBMLimits;
   constructor Create;
   destructor Destroy; override;
 end;
@@ -186,11 +196,15 @@ TDMM6500MeasPar_VoltAC=class(TDMM6500MeasPar_BaseAC,IMeasPar_BaseVolt)
   function GetDBM: integer;
   procedure SetDB(const Value: double);
   procedure SetDBM(const Value: integer);
+  function GetDBLimits:TLimitValues;
+  function GetDBMLimits:TLimitValues;
  public
   property Range: TDMM6500_VoltageACRange read fRange write fRange;
   property Units: TDMM6500_VoltageUnits read GetUnits write SetUnits;
   property DB:double read GetDB write SetDB;
   property DBM:integer read GetDBM write SetDBM;
+  property DBLimits:TLimitValues read GetDBLimits;
+  property DBMLimits:TLimitValues read GetDBMLimits;
   constructor Create;
   destructor Destroy; override;
 end;
@@ -222,6 +236,8 @@ TDMM6500MeasPar_VoltDC=class(TDMM6500MeasPar_Continuity,IMeasPar_BaseVolt,IMeasP
   procedure SetUnits(const Value: TDMM6500_VoltageUnits);
   function GetDB: double;
   function GetDBM: integer;
+  function GetDBLimits:TLimitValues;
+  function GetDBMLimits:TLimitValues;
   procedure SetDB(const Value: double);
   procedure SetDBM(const Value: integer);
  public
@@ -230,6 +246,8 @@ TDMM6500MeasPar_VoltDC=class(TDMM6500MeasPar_Continuity,IMeasPar_BaseVolt,IMeasP
   property Units: TDMM6500_VoltageUnits read GetUnits write SetUnits;
   property DB:double read GetDB write SetDB;
   property DBM:integer read GetDBM write SetDBM;
+  property DBLimits:TLimitValues read GetDBLimits;
+  property DBMLimits:TLimitValues read GetDBMLimits;
   constructor Create;
   destructor Destroy; override;
 end;
@@ -397,9 +415,19 @@ begin
  Result:=fBaseVolt.DB;
 end;
 
+function TDMM6500MeasPar_DigVolt.GetDBLimits: TLimitValues;
+begin
+ Result:=fBaseVolt.DBLimits;
+end;
+
 function TDMM6500MeasPar_DigVolt.GetDBM: integer;
 begin
  Result:=fBaseVolt.DBM;
+end;
+
+function TDMM6500MeasPar_DigVolt.GetDBMLimits: TLimitValues;
+begin
+ Result:=fBaseVolt.DBMLimits;
 end;
 
 function TDMM6500MeasPar_DigVolt.GetInputImpedance: TDMM6500_InputImpedance;
@@ -518,9 +546,19 @@ begin
   Result:=fBaseVolt.DB;
 end;
 
+function TDMM6500MeasPar_VoltAC.GetDBLimits: TLimitValues;
+begin
+   Result:=fBaseVolt.DBLimits;
+end;
+
 function TDMM6500MeasPar_VoltAC.GetDBM: integer;
 begin
  Result:=fBaseVolt.DBM;
+end;
+
+function TDMM6500MeasPar_VoltAC.GetDBMLimits: TLimitValues;
+begin
+  Result:=fBaseVolt.DBMLimits;
 end;
 
 function TDMM6500MeasPar_VoltAC.GetUnits: TDMM6500_VoltageUnits;
@@ -606,9 +644,19 @@ begin
  Result:=fBaseVolt.DB;
 end;
 
+function TDMM6500MeasPar_VoltDC.GetDBLimits: TLimitValues;
+begin
+ Result:=fBaseVolt.DBLimits;
+end;
+
 function TDMM6500MeasPar_VoltDC.GetDBM: integer;
 begin
  Result:=fBaseVolt.DBM;
+end;
+
+function TDMM6500MeasPar_VoltDC.GetDBMLimits: TLimitValues;
+begin
+ Result:=fBaseVolt.DBMLimits;
 end;
 
 function TDMM6500MeasPar_VoltDC.GetInputImpedance: TDMM6500_InputImpedance;
