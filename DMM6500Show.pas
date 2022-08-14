@@ -4,7 +4,7 @@ interface
 
 uses
   OlegTypePart2, DMM6500, KeitleyShow, StdCtrls, ExtCtrls, 
-  DMM6500_MeasParamShow;
+  DMM6500_MeasParamShow, Keitley2450Const;
 
 type
 
@@ -15,6 +15,10 @@ type
    fMeasureTypeShow:TDMM6500_MeasurementTypeShow;
    fControlChannels:TDMM6500ControlChannels;
    fGBControlChannels:TGroupBox;
+   fGBParametrShow:TGroupBox;
+   fMeasParShow:TDMM6500_MeasParShow;
+
+
 
 //   fSettingsShow:array of TParameterShowNew;
 //   fSettingsShowSL:array of TStringList;
@@ -87,6 +91,11 @@ type
 //   procedure CountOkClick();
 //    procedure ReCreateElements;
     procedure   ControlChannelsCreate;
+//    function MeasParShowFactory(MeasureType:TKeitley_Measure;
+//                Parent:TGroupBox;DMM6500:TDMM6500;
+//                ChanNumber:byte=0):TDMM6500_MeasParShow;
+    procedure MeasureParamShowCreate;
+    procedure MeasureParamShowDestroy;
   protected
     procedure GetSettingButtonClick(Sender:TObject);override;
   public
@@ -130,7 +139,7 @@ var
 implementation
 
 uses
-  Keitley2450Const, TelnetDevice, SysUtils;
+  TelnetDevice, SysUtils, Dialogs, Graphics, Controls;
 
 { TDMM6500_Show }
 
@@ -159,15 +168,20 @@ begin
                    STexts[0]);
   fDMM6500:=DMM6500;
   fTerminalState:=STexts[1];
-  fMeasureTypeShow:=TDMM6500_MeasurementTypeShow.Create(STexts[2],fDMM6500);
   fGBControlChannels:=GBs[0];
+  fGBParametrShow:=GBs[1];
+
+  fMeasureTypeShow:=TDMM6500_MeasurementTypeShow.Create(STexts[2],fDMM6500);
+  fMeasureTypeShow.HookParameterClick:=MeasureParamShowCreate;
 
 
   ObjectToSetting();
 end;
 
+
 destructor TDMM6500_Show.Destroy;
 begin
+  MeasureParamShowDestroy;
   fMeasureTypeShow.Free;
   inherited;
 end;
@@ -204,12 +218,53 @@ begin
   inherited GetSettingButtonClick(Sender);
 end;
 
+//function TDMM6500_Show.MeasParShowFactory(MeasureType: TKeitley_Measure;
+//  Parent: TGroupBox; DMM6500: TDMM6500; ChanNumber: byte): TDMM6500_MeasParShow;
+//begin
+// case MeasureType of
+//   kt_mCurDC: Result:=nil;
+////   kt_mVolDC: Result:=nil;
+//   kt_mVolDC: Result:=TDMM6500MeasPar_BaseShow.Create(Parent,DMM6500,ChanNumber);
+//   kt_mRes2W: Result:=nil;
+//   kt_mCurAC: Result:=nil;
+//   kt_mVolAC: Result:=nil;
+//   kt_mRes4W: Result:=nil;
+//   kt_mDiod: Result:=nil;
+//   kt_mCap: Result:=nil;
+//   kt_mTemp: Result:=nil;
+//   kt_mCont: Result:=nil;
+//   kt_mFreq: Result:=nil;
+//   kt_mPer: Result:=nil;
+//   kt_mVoltRat: Result:=nil;
+//   kt_mDigCur: Result:=nil;
+////   else Result:=TDMM6500MeasPar_BaseShow.Create(Parent,DMM6500,ChanNumber);
+//   else Result:=TDMM6500MeasPar_DigVoltShow.Create(Parent,DMM6500,ChanNumber);
+// end;
+//end;
+
 procedure TDMM6500_Show.ObjectToSetting;
 begin
   inherited ObjectToSetting;
   fTerminalState.Caption:=Keitlay_TerminalsButtonName[fDMM6500.Terminal];
   fMeasureTypeShow.ObjectToSetting;
   ControlChannelsCreate;
+  MeasureParamShowCreate;
+end;
+
+procedure TDMM6500_Show.MeasureParamShowCreate;
+begin
+// showmessage(fGBParametrShow.Name);
+ MeasureParamShowDestroy;
+ fMeasParShow:=MeasParShowFactory(fDMM6500.MeasureFunction,
+                fGBParametrShow,fDMM6500,0);
+// if fMeasParShow<>nil then fMeasParShow.DesignElements;
+
+end;
+
+procedure TDMM6500_Show.MeasureParamShowDestroy;
+begin
+  if fMeasParShow <> nil then
+    fMeasParShow.Free;
 end;
 
 end.

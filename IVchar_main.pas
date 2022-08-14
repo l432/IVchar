@@ -4471,7 +4471,7 @@ begin
                                      [PDM6500SaveSetup,PDM6500LoadSetup],
                                      [ST_DM6500_DispBr,ST_DM6500_Terminals,
                                      ST_DM6500MeasureMode],
-                                     [GB_DM6500Chan]);
+                                     [GB_DM6500Chan,GB_DM6500Param]);
 //                                     [SB_Kt2450_OutPut,SB_Kt2450_Termin],
 //                                     [PKt2450SaveSetup,PKt2450LoadSetup],
 //                                     [ST_KT2450VolProt,ST_KT2450Mode,

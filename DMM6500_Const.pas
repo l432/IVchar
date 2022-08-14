@@ -80,6 +80,8 @@ type
 
  TDMM6500_DiodeBiasLevel=(dm_dbl10uA,dm_dbl100uA,dm_dbl1mA,dm_dbl10mA);
 
+// TDMM6500_ControlElementType=(dm_cetST,dm_cetL,dm_cetCB);
+
 // TDMM6500_Types=class of (TDMM6500_DiodeBiasLevel,TDMM6500_TCoupleType);
  // TFitFunctionNew_Class=class of TFitFunctionNew;
 

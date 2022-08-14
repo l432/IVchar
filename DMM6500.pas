@@ -2460,12 +2460,12 @@ begin
 //SetCountDig(35000,1);
 //SetCountDig(30000,2);
 
-//if GetCount(1) then showmessage('Chan 1, Count='+inttostr(fChansMeasure[0].Count));
-//SetCount(200,1);
-//if GetCount(1) then showmessage('Chan 1, Count='+inttostr(fChansMeasure[0].Count));
-//if GetCount(0) then showmessage('Count='+inttostr(Count));
-//SetCount(400000);
-//if GetCount() then showmessage('Count='+inttostr(Count));
+if GetCount(1) then showmessage('Chan 1, Count='+inttostr(fChansMeasure[0].Count));
+SetCount(200,1);
+if GetCount(1) then showmessage('Chan 1, Count='+inttostr(fChansMeasure[0].Count));
+if GetCount(0) then showmessage('Count='+inttostr(Count));
+SetCount(400000);
+if GetCount() then showmessage('Count='+inttostr(Count));
 
 
 //if GetMeasureFunction() then

@@ -105,6 +105,14 @@ TDMM6500MeasPar_Continuity=class(TDMM6500MeasPar_BaseDelay)
   constructor Create;
 end;
 
+TDMM6500MeasPar_BaseVoltDCRange=class(TDMM6500MeasPar_Continuity)
+ private
+  fRange:TDMM6500_VoltageDCRange;
+ public
+  property Range: TDMM6500_VoltageDCRange read fRange write fRange;
+  constructor Create;
+end;
+
 //TDMM6500MeasPar_BaseDelayMT=class(TDMM6500MeasPar_BaseDelay)
 TDMM6500MeasPar_BaseDelayMT=class(TDMM6500MeasPar_Continuity)
  private
@@ -226,9 +234,9 @@ TDMM6500MeasPar_CurDC=class(TDMM6500MeasPar_Continuity)
   constructor Create;
 end;
 
-TDMM6500MeasPar_VoltDC=class(TDMM6500MeasPar_Continuity,IMeasPar_BaseVolt,IMeasPar_BaseVoltDC)
+TDMM6500MeasPar_VoltDC=class(TDMM6500MeasPar_BaseVoltDCRange,IMeasPar_BaseVolt,IMeasPar_BaseVoltDC)
  private
-  fRange:TDMM6500_VoltageDCRange;
+//  fRange:TDMM6500_VoltageDCRange;
   fBaseVolt:TDMM6500MeasPar_BaseVoltDC;
   function GetInputImpedance: TDMM6500_InputImpedance;
   procedure SetInputImpedance(const Value: TDMM6500_InputImpedance);
@@ -241,7 +249,7 @@ TDMM6500MeasPar_VoltDC=class(TDMM6500MeasPar_Continuity,IMeasPar_BaseVolt,IMeasP
   procedure SetDB(const Value: double);
   procedure SetDBM(const Value: integer);
  public
-  property Range: TDMM6500_VoltageDCRange read fRange write fRange;
+//  property Range: TDMM6500_VoltageDCRange read fRange write fRange;
   property InputImpedance: TDMM6500_InputImpedance read GetInputImpedance write SetInputImpedance;
   property Units: TDMM6500_VoltageUnits read GetUnits write SetUnits;
   property DB:double read GetDB write SetDB;
@@ -252,12 +260,12 @@ TDMM6500MeasPar_VoltDC=class(TDMM6500MeasPar_Continuity,IMeasPar_BaseVolt,IMeasP
   destructor Destroy; override;
 end;
 
-TDMM6500MeasPar_VoltRat=class(TDMM6500MeasPar_Continuity)
+TDMM6500MeasPar_VoltRat=class(TDMM6500MeasPar_BaseVoltDCRange)
  private
-  fRange:TDMM6500_VoltageDCRange;
+//  fRange:TDMM6500_VoltageDCRange;
   fMethod:TDMM6500_VoltageRatioMethod;
  public
-  property Range: TDMM6500_VoltageDCRange read fRange write fRange;
+//  property Range: TDMM6500_VoltageDCRange read fRange write fRange;
   property VRMethod:TDMM6500_VoltageRatioMethod read fMethod write fMethod;
   constructor Create;
 end;
@@ -629,7 +637,7 @@ end;
 constructor TDMM6500MeasPar_VoltDC.Create;
 begin
  inherited Create;
- fRange:=dm_vdrAuto;
+// fRange:=dm_vdrAuto;
  fBaseVolt:=TDMM6500MeasPar_BaseVoltDC.Create;
 end;
 
@@ -695,7 +703,7 @@ end;
 constructor TDMM6500MeasPar_VoltRat.Create;
 begin
  inherited Create;
- fRange:=dm_vdrAuto;
+// fRange:=dm_vdrAuto;
  fMethod:=dm_vrmPart;
 end;
 
@@ -779,5 +787,13 @@ begin
 end;
 
 
+
+{ TDMM6500MeasPar_BaseVoltDCRange }
+
+constructor TDMM6500MeasPar_BaseVoltDCRange.Create;
+begin
+ inherited Create;
+ fRange:=dm_vdrAuto;
+end;
 
 end.
