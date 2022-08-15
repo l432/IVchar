@@ -448,6 +448,8 @@ TDMM6500MeasPar_BaseVoltShow=class(TDMM6500_MeasParShow)
   LVoltageUnit:TLabel;
   STDB_DBM:TStaticText;
   LDB_DBM:TLabel;
+  procedure ObjectToSetting;override;
+  procedure GetDataFromDevice;override;
 end;
 
 
@@ -511,8 +513,8 @@ begin
    kt_mPer: Result:=nil;
    kt_mVoltRat: Result:=nil;
    kt_mDigCur: Result:=nil;         
-   else Result:=TDMM6500MeasPar_BaseDigShow.Create(Parent,DMM6500,ChanNumber);
-//   else Result:=TDMM6500MeasPar_DigVoltShow.Create(Parent,DMM6500,ChanNumber);
+//   else Result:=TDMM6500MeasPar_BaseDigShow.Create(Parent,DMM6500,ChanNumber);
+   else Result:=TDMM6500MeasPar_DigVoltShow.Create(Parent,DMM6500,ChanNumber);
  end;
 end;
 
@@ -1354,6 +1356,7 @@ end;
 procedure TDMM6500MeasPar_BaseDigShow.CreateControls;
 begin
   inherited CreateControls;
+  fCountShow.CountType:=1;
   fSampleRateShow:=TDMM6500_SampleRateShow.Create(STSampleRate,LSampleRate,fDMM6500,fChanNumber);
   Add(fSampleRateShow);
   fSampleRateShow.HookParameterClick:=HookParameterClickSampleRate;
@@ -1390,7 +1393,7 @@ end;
 constructor TDMM6500_VoltageUnitShow.Create(ST: TStaticText; L: Tlabel;
   DMM6500: TDMM6500; ChanNumber: byte);
 begin
- inherited Create(ST,L,'Unit',DMM6500,ChanNumber);
+ inherited Create(ST,L,'Unit:',DMM6500,ChanNumber);
 end;
 
 procedure TDMM6500_VoltageUnitShow.GetDataFromDevice;
@@ -1421,7 +1424,8 @@ end;
 constructor TDMM6500_DecibelReferenceShow.Create(STD: TStaticText; STC: TLabel;
   DMM6500: TDMM6500; ChanNumber: byte);
 begin
- inherited Create(DMM6500,ChanNumber,STD,STC,'Ref for decibel, V',1);
+ inherited Create(DMM6500,ChanNumber,STD,STC,'Ref. Value, V',1);
+ STC.WordWrap:=False;
  SetLimits(GetBaseVolt.DBLimits);
 end;
 
@@ -1445,7 +1449,8 @@ end;
 constructor TDMM6500_DecibelmWReferenceShow.Create(STD: TStaticText;
   STC: TLabel; DMM6500: TDMM6500; ChanNumber: byte);
 begin
- inherited Create(DMM6500,ChanNumber,STD,STC,'Ref for decibel-mW',1);
+ inherited Create(DMM6500,ChanNumber,STD,STC,'Ref. Value',1);
+ STC.WordWrap:=False;
  SetLimits(GetBaseVolt.DBMLimits);
 end;
 
@@ -1476,23 +1481,30 @@ end;
 
 procedure TDMM6500MeasPar_BaseVoltShow.CreateElements;
 begin
-  inherited CreateElements;
+//  inherited CreateElements;
   STVoltageUnit:=TStaticText.Create(fParent);
-  STVoltageUnit.Parent:=fParent;
+//  STVoltageUnit.Parent:=fParent;
   Add(STVoltageUnit);
   LVoltageUnit:=TLabel.Create(fParent);
-  LVoltageUnit.Parent:=fParent;
+//  LVoltageUnit.Parent:=fParent;
   Add(LVoltageUnit);
   STDB_DBM:=TStaticText.Create(fParent);
-  STDB_DBM.Parent:=fParent;
+//  STDB_DBM.Parent:=fParent;
   Add(STDB_DBM);
   LDB_DBM:=TLabel.Create(fParent);
-  LDB_DBM.Parent:=fParent;
+//  LDB_DBM.Parent:=fParent;
+//  LDB_DBM.WordWrap:=True;
+  LDB_DBM.Caption:='Ref. Value, V';
+
   Add(LDB_DBM);
 end;
 
 procedure TDMM6500MeasPar_BaseVoltShow.DesignElements;
 begin
+  inherited DesignElements;
+//  STDB_DBM.Visible:=True;
+//  LDB_DBM.Visible:=True;
+
   case fVoltageUnitShow.GetBaseVolt.Units of
     dm_vuVolt:begin
                STDB_DBM.Enabled:=False;
@@ -1507,7 +1519,7 @@ end;
 
 procedure TDMM6500MeasPar_BaseVoltShow.DestroyControls;
 begin
-  inherited;
+  inherited DestroyControls;
   DestroyControlsVariant;
 end;
 
@@ -1519,10 +1531,28 @@ begin
     FreeAndNil(fDecibelmWReferenceShow);
 end;
 
+procedure TDMM6500MeasPar_BaseVoltShow.GetDataFromDevice;
+begin
+ inherited;
+  if fDecibelReferenceShow <> nil then
+    fDecibelReferenceShow.GetDataFromDevice;
+  if fDecibelmWReferenceShow <> nil then
+    fDecibelmWReferenceShow.GetDataFromDevice;
+end;
+
 procedure TDMM6500MeasPar_BaseVoltShow.Hook;
 begin
  CreateControlsVariate;
  DesignElements;
+end;
+
+procedure TDMM6500MeasPar_BaseVoltShow.ObjectToSetting;
+begin
+ inherited ObjectToSetting;
+  if fDecibelReferenceShow <> nil then
+    fDecibelReferenceShow.ObjectToSetting;
+  if fDecibelmWReferenceShow <> nil then
+    fDecibelmWReferenceShow.ObjectToSetting;
 end;
 
 procedure TDMM6500MeasPar_BaseVoltShow.CreateControlsVariate;
@@ -1533,13 +1563,19 @@ begin
             if fDecibelmWReferenceShow <> nil then
                 FreeAndNil(fDecibelmWReferenceShow);
             if fDecibelReferenceShow=nil then
+               begin
                fDecibelReferenceShow:=TDMM6500_DecibelReferenceShow.Create(STDB_DBM,LDB_DBM,fDMM6500,fChanNumber);
+               fDecibelReferenceShow.ObjectToSetting;
+               end;
             end;
     dm_vuDBM:begin
             if fDecibelReferenceShow <> nil then
                 FreeAndNil(fDecibelReferenceShow);
             if fDecibelmWReferenceShow=nil then
+               begin
                fDecibelmWReferenceShow:=TDMM6500_DecibelmWReferenceShow.Create(STDB_DBM,LDB_DBM,fDMM6500,fChanNumber);
+               fDecibelmWReferenceShow.ObjectToSetting;
+               end;
              end;
   end;
 end;
@@ -1549,7 +1585,7 @@ end;
 constructor TDMM6500_InputImpedanceShow.Create(ST: TStaticText; L: Tlabel;
   DMM6500: TDMM6500; ChanNumber: byte);
 begin
- inherited Create(ST,L,'Input Impedance',DMM6500,ChanNumber);
+ inherited Create(ST,L,'Input Impedance:',DMM6500,ChanNumber);
 end;
 
 procedure TDMM6500_InputImpedanceShow.GetDataFromDevice;
@@ -1580,6 +1616,7 @@ procedure TDMM6500MeasPar_BaseVoltDCShow.CreateControls;
 begin
  inherited;
  fInputImpedanceShow:=TDMM6500_InputImpedanceShow.Create(STInputImpedance,LInputImpedance,fDMM6500,fChanNumber);
+ LInputImpedance.WordWrap:=False;
  Add(fInputImpedanceShow);
 end;
 
@@ -1587,10 +1624,10 @@ procedure TDMM6500MeasPar_BaseVoltDCShow.CreateElements;
 begin
  inherited CreateElements;
   STInputImpedance:=TStaticText.Create(fParent);
-  STInputImpedance.Parent:=fParent;
+//  STInputImpedance.Parent:=fParent;
   Add(STInputImpedance);
   LInputImpedance:=TLabel.Create(fParent);
-  LInputImpedance.Parent:=fParent;
+//  LInputImpedance.Parent:=fParent;
   Add(LInputImpedance);
 end;
 
@@ -1783,7 +1820,7 @@ end;
 procedure TDMM6500MeasPar_DigVoltShow.CreateControls;
 begin
   inherited;
-  fCountShow.CountType:=1;
+
   fRangeShow:=TDMM6500_VoltageDigRangeShow.Create(STRange,fDMM6500,fChanNumber);
   Add(fRangeShow);
   fBaseVoltDCShow:=TDMM6500MeasPar_BaseVoltDCShow.Create(fParent,fDMM6500,fChanNumber);
@@ -1793,26 +1830,36 @@ procedure TDMM6500MeasPar_DigVoltShow.CreateElements;
 begin
  inherited CreateElements;
   STRange:=TStaticText.Create(fParent);
-  STRange.Parent:=fParent;
+//  STRange.Parent:=fParent;
   Add(STRange);
 end;
 
 procedure TDMM6500MeasPar_DigVoltShow.DesignElements;
 begin
   inherited DesignElements;
+  fBaseVoltDCShow.DesignElements;
   RelativeLocation(STDisplayDN,STRange,oRow,Marginbetween);
+   STRange.Font.Color:=clNavy;
+
+  Resize(fBaseVoltDCShow.LVoltageUnit);
   RelativeLocation(STRange,fBaseVoltDCShow.LVoltageUnit,oRow,Marginbetween);
-  fBaseVoltDCShow.LVoltageUnit.Left:=STRange.Left+Marginbetween+LCount.Canvas.TextWidth('1000 V');
+//  fBaseVoltDCShow.LVoltageUnit.Left:=STRange.Left+Marginbetween+LCount.Canvas.TextWidth('1000 V');
+  fBaseVoltDCShow.LVoltageUnit.Top:=STRange.Top-2;
   RelativeLocation(fBaseVoltDCShow.LVoltageUnit,fBaseVoltDCShow.STVoltageUnit,oRow,MarginBetweenLST);
+  fBaseVoltDCShow.STVoltageUnit.Top:=STRange.Top;
 
+//  RelativeLocation(LCount,STCount,oCol,MarginBetweenLST);
   RelativeLocation(STCount,fBaseVoltDCShow.LInputImpedance,oCol,MarginBetweenLST);
+  fBaseVoltDCShow.LInputImpedance.Left:=MarginLeft;
   RelativeLocation(fBaseVoltDCShow.LInputImpedance,fBaseVoltDCShow.STInputImpedance,oRow,MarginBetweenLST);
+  fBaseVoltDCShow.STInputImpedance.Top:=fBaseVoltDCShow.LInputImpedance.Top;
 
-  RelativeLocation(LSampleRate,fBaseVoltDCShow.LDB_DBM,oCol,Marginbetween);
+  Resize(fBaseVoltDCShow.LDB_DBM);
+  RelativeLocation(LSampleRate,fBaseVoltDCShow.LDB_DBM,oRow,Marginbetween);
   RelativeLocation(fBaseVoltDCShow.LDB_DBM,fBaseVoltDCShow.STDB_DBM,oCol,MarginBetweenLST);
 
-  fParent.Width:=MarginRight+fBaseVoltDCShow.STVoltageUnit.Left+fBaseVoltDCShow.STVoltageUnit.Width;
-  fParent.Height:=MarginTop+fBaseVoltDCShow.STDB_DBM.Top+fBaseVoltDCShow.STDB_DBM.Height;
+  fParent.Width:=MarginRight+fBaseVoltDCShow.LDB_DBM.Left+fBaseVoltDCShow.LDB_DBM.Width;
+  fParent.Height:=MarginTop+fBaseVoltDCShow.LInputImpedance.Top+fBaseVoltDCShow.LInputImpedance.Height;
 
 
 end;

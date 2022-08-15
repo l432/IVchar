@@ -482,8 +482,8 @@ end;
 constructor TDMM6500MeasPar_BaseVolt.Create;
 begin
  inherited Create;
-// fUnits:=dm_vuVolt;
- fUnits:=dm_vuDB;
+ fUnits:=dm_vuVolt;
+// fUnits:=dm_vuDB;
  fDB:=1;
  fDBM:=1;
  fDBMLimits[lvMin]:=1;
