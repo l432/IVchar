@@ -191,7 +191,8 @@ begin
   if not(DeviceEthernetisAbsent) then
     begin
      fDMM6500.GetCardParametersFromDevice;
-
+     if fMeasParShow<>nil then
+       fMeasParShow.GetDataFromDevice;
 
 //    fKt_2450.IsOutPutOn();
 //    fKt_2450.GetVoltageProtection;
@@ -248,16 +249,19 @@ begin
   fTerminalState.Caption:=Keitlay_TerminalsButtonName[fDMM6500.Terminal];
   fMeasureTypeShow.ObjectToSetting;
   ControlChannelsCreate;
-  MeasureParamShowCreate;
+  MeasureParamShowDestroy;
+  fMeasParShow:=MeasParShowFactory(fDMM6500.MeasureFunction,
+                fGBParametrShow,fDMM6500,0);
+//  MeasureParamShowCreate;
 end;
 
 procedure TDMM6500_Show.MeasureParamShowCreate;
 begin
-// showmessage(fGBParametrShow.Name);
  MeasureParamShowDestroy;
  fMeasParShow:=MeasParShowFactory(fDMM6500.MeasureFunction,
                 fGBParametrShow,fDMM6500,0);
-// if fMeasParShow<>nil then fMeasParShow.DesignElements;
+// if fMeasParShow<>nil then
+//   fMeasParShow.GetDataFromDevice;
 
 end;
 
