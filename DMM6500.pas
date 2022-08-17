@@ -3064,11 +3064,11 @@ begin
    if PermitForRangeAuto(P,MParam) then
      begin
        OnOffFromBool(True);
-       SetupOperation(MeasureToRootNodeNumber(FM),ParametrToFLNode(MParam),1);
+       SetupOperation(MeasureToRootNodeNumber(FM),ParametrToFLNode(MParam),0);
      end                           else
      begin
        fAdditionalString:=RangeToString(P,MParam);
-       SetupOperation(MeasureToRootNodeNumber(FM),ParametrToFLNode(MParam),0);
+       SetupOperation(MeasureToRootNodeNumber(FM),ParametrToFLNode(MParam),1);
      end;
    SetActionProcedureByMParam(FM,PM,P,MParam);
   end
