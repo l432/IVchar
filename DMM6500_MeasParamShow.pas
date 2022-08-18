@@ -524,13 +524,14 @@ TDMM6500MeasPar_BaseACShow=class(TDMM6500MeasPar_BaseDelayShow)
   LDetectorBW:TLabel;
 end;
 
-//TDMM6500MeasPar_CurAC=class(TDMM6500MeasPar_BaseAC)
-// private
-//  fRange:TDMM6500_CurrentACRange;
-// public
-//  property Range: TDMM6500_CurrentACRange read fRange write fRange;
-//  constructor Create;
-//end;
+TDMM6500MeasPar_CurACShow=class(TDMM6500MeasPar_BaseACShow)
+ private
+  fRangeShow:TDMM6500_CurrentACRangeShow;
+ protected
+  procedure CreateControls;override;
+  procedure DesignElements;override;
+ public
+end;
 
 // 88888888888888888888888888888888888888888888888888888888888888888
 
@@ -552,7 +553,7 @@ begin
 //   kt_mVolDC: Result:=nil;
    kt_mVolDC: Result:=TDMM6500MeasPar_BaseDelayShow.Create(Parent,DMM6500,ChanNumber);
    kt_mRes2W: Result:=nil;
-   kt_mCurAC: Result:=nil;
+   kt_mCurAC: Result:=TDMM6500MeasPar_CurACShow.Create(Parent,DMM6500,ChanNumber);
    kt_mVolAC: Result:=nil;
    kt_mRes4W: Result:=nil;
    kt_mDiod: Result:=nil;
@@ -1767,6 +1768,7 @@ end;
 
 procedure TDMM6500_CurrentACRangeShow.OkClick;
 begin
+ showmessage(DMM6500_CurrentACRangeLabels[TDMM6500_CurrentACRange(Data)]);
  fDMM6500.SetRange(TDMM6500_CurrentACRange(Data),fChanNumber);
 end;
 
@@ -2036,6 +2038,24 @@ end;
 procedure TDMM6500MeasPar_BaseACShow.HookParameterClickDetectorBW;
 begin
  RelativeLocation(LDetectorBW,STDetectorBW,oCol,MarginBetweenLST);
+end;
+
+{ TDMM6500MeasPar_CurACShow }
+
+procedure TDMM6500MeasPar_CurACShow.CreateControls;
+begin
+  inherited;
+  fRangeShow:=TDMM6500_CurrentACRangeShow.Create(STRange,fDMM6500,fChanNumber);
+  Add(fRangeShow);
+end;
+
+procedure TDMM6500MeasPar_CurACShow.DesignElements;
+begin
+  inherited DesignElements;
+
+  fParent.Width:=MarginRight+LDetectorBW.Left+LDetectorBW.Width;
+  fParent.Height:=MarginTop+STDetectorBW.Top+STDetectorBW.Height;
+
 end;
 
 end.
