@@ -729,6 +729,7 @@ begin
  inherited Create;
  fOffComp:=dm_ocAuto;
  fOpenLD:=False;
+ fAzeroState:=True;
 end;
 
 { TDMM6500MeasPar_Res4W }
@@ -791,7 +792,7 @@ constructor TDMM6500MeasPar_Diode.Create;
 begin
  inherited Create;
  fBiasLevel:=dm_dbl1mA;
- fLineSync:=False;
+// fLineSync:=False;
  fAzeroState:=True;
 end;
 
