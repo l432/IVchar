@@ -46,7 +46,7 @@ const
 //      37         38        39      40      41      42      43      44
    ':card1',':pcar1',':srat',':db:ref',':dbm:ref',':unit',':aper',':inp',
 //   45       46       47        48        49       50       51      52
-   ':det:band',':line:y',':odet',':thr',':rel:meth',':bias:lev',':rtd',
+   ':det:band',':line:sync',':odet',':thr',':rel:meth',':bias:lev',':rtd',
 //      53         54       55     56        57          58        59
    ':tc',':ther',':tran');
 //  60      61      62

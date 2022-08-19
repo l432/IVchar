@@ -3374,7 +3374,7 @@ end;
 
 procedure TDMM6500.SetLineSync(toOn: boolean; ChanNumber: Byte);
 begin
-//:<function>:LINE:Y ON|OFF
+//:<function>:LINE:SYNC ON|OFF
  SetShablon(dm_pp_LineSync,@toOn,ChanNumber);
 // SetupShablon(SetLineSyncAction,toOn,ChanNumber);
 // if ChanNumber=0

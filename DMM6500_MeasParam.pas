@@ -94,8 +94,25 @@ TDMM6500MeasPar_BaseAC=class(TDMM6500MeasPar_BaseDelay)
   constructor Create;
 end;
 
-//TDMM6500MeasPar_Continuity=class(TDMM6500MeasPar_BaseDelayMT)
-TDMM6500MeasPar_Continuity=class(TDMM6500MeasPar_BaseDelay)
+TDMM6500MeasPar_BaseDelayMT=class(TDMM6500MeasPar_BaseDelay)
+//TDMM6500MeasPar_BaseDelayMT=class(TDMM6500MeasPar_Continuity)
+ private
+  fMTLimits:TLimitValues;
+  fMeaureTime:double;
+  {час вимірювання, []=мс, для більшості 0,02-240}
+//  fOffComp:TDMM6500_OffsetCompen;
+//  fOpenLD:boolean;
+  procedure SetMeaureTime(Value:double);
+ public
+  property MTLimits:TLimitValues read fMTLimits;
+  property MeaureTime: double read fMeaureTime write SetMeaureTime;
+//  property OffsetComp: TDMM6500_OffsetCompen read fOffComp write fOffComp;
+//  property OpenLeadDetector: boolean read fOpenLD write fOpenLD;
+  constructor Create;
+end;
+
+TDMM6500MeasPar_Continuity=class(TDMM6500MeasPar_BaseDelayMT)
+//TDMM6500MeasPar_Continuity=class(TDMM6500MeasPar_BaseDelay)
  private
   fAzeroState:boolean;
   fLineSync:boolean;
@@ -113,25 +130,11 @@ TDMM6500MeasPar_BaseVoltDCRange=class(TDMM6500MeasPar_Continuity)
   constructor Create;
 end;
 
-//TDMM6500MeasPar_BaseDelayMT=class(TDMM6500MeasPar_BaseDelay)
-TDMM6500MeasPar_BaseDelayMT=class(TDMM6500MeasPar_Continuity)
- private
-  fMTLimits:TLimitValues;
-  fMeaureTime:double;
-  {час вимірювання, []=мс, для більшості 0,02-240}
-//  fOffComp:TDMM6500_OffsetCompen;
-//  fOpenLD:boolean;
-  procedure SetMeaureTime(Value:double);
- public
-  property MeaureTime: double read fMeaureTime write SetMeaureTime;
-//  property OffsetComp: TDMM6500_OffsetCompen read fOffComp write fOffComp;
-//  property OpenLeadDetector: boolean read fOpenLD write fOpenLD;
-  constructor Create;
-end;
 
 
-//TDMM6500MeasPar_Base4WT=class(TDMM6500MeasPar_Continuity)
-TDMM6500MeasPar_Base4WT=class(TDMM6500MeasPar_BaseDelayMT)
+
+TDMM6500MeasPar_Base4WT=class(TDMM6500MeasPar_Continuity)
+//TDMM6500MeasPar_Base4WT=class(TDMM6500MeasPar_BaseDelayMT)
  private
   fOffComp:TDMM6500_OffsetCompen;
   fOpenLD:boolean;
@@ -363,7 +366,7 @@ begin
    kt_mDiod: Result:=TDMM6500MeasPar_Diode.Create;
    kt_mCap: Result:=TDMM6500MeasPar_Capac.Create;
    kt_mTemp: Result:=TDMM6500MeasPar_Temper.Create;
-   kt_mCont: Result:=TDMM6500MeasPar_Diode.Create;
+   kt_mCont: Result:=TDMM6500MeasPar_Continuity.Create;
    kt_mFreq: Result:=TDMM6500MeasPar_FreqPeriod.Create;
    kt_mPer: Result:=TDMM6500MeasPar_FreqPeriod.Create;
    kt_mVoltRat: Result:=TDMM6500MeasPar_VoltRat.Create;
@@ -596,6 +599,8 @@ begin
  inherited Create;
  fMTLimits[lvMin]:=0.01;
  fMTLimits[lvMax]:=240;
+ fMeaureTime:=1;
+// fAzeroState:=True;
 // fOffComp:=dm_ocAuto;
 // fOpenLD:=False;
 end;
@@ -620,7 +625,7 @@ end;
 constructor TDMM6500MeasPar_Continuity.Create;
 begin
  inherited Create;
- fAzeroState:=True;
+ fAzeroState:=False;
  fLineSync:=False;
 end;
 
@@ -630,6 +635,7 @@ constructor TDMM6500MeasPar_CurDC.Create;
 begin
  inherited Create;
  fRange:=dm_cdrAuto;
+ fAzeroState:=True;
 end;
 
 { TDMM6500MeasPar_VoltDC }
@@ -713,6 +719,7 @@ constructor TDMM6500MeasPar_Res2W.Create;
 begin
  inherited Create;
  fRange:=dm_r2rAuto;
+ fAzeroState:=True;
 end;
 
 { TDMM6500MeasPar_Base4WT }
@@ -784,6 +791,8 @@ constructor TDMM6500MeasPar_Diode.Create;
 begin
  inherited Create;
  fBiasLevel:=dm_dbl1mA;
+ fLineSync:=False;
+ fAzeroState:=True;
 end;
 
 
@@ -794,6 +803,7 @@ constructor TDMM6500MeasPar_BaseVoltDCRange.Create;
 begin
  inherited Create;
  fRange:=dm_vdrAuto;
+ fAzeroState:=True;
 end;
 
 end.
