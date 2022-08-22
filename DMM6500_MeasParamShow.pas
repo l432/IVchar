@@ -49,31 +49,17 @@ end;
 TDMM6500_ParameterShow=class(TDMM6500_ParameterShowBase)
  private
   fParamShow:TParameterShowNew;
-//  fDMM6500:TDMM6500;
-//  fChanNumber:byte;
-//  procedure CreateHeader(DMM6500: TDMM6500; ChanNumber: Byte);//virtual;
  protected
-//  fSettingsShowSL:TStringList;
-
-//  procedure GetDataFromDevice;virtual;abstract;
-//  procedure SettingsShowSLFilling();virtual;abstract;
-//  procedure SomeAction();virtual;
   procedure OkClick();virtual;
   procedure SetLimits(LimitV:TLimitValues);overload;
   procedure SetLimits(LowLimit:double=ErResult;HighLimit:double=ErResult);overload;
  public
-//  Constructor Create(DMM6500:TDMM6500;ChanNumber:byte=0);overload;
-//  Constructor Create(ST:TStaticText;LCap:TLabel;ParametrCaption: string;
-//           DMM6500:TDMM6500;ChanNumber:byte=0);overload;
   destructor Destroy;override;
-//  procedure ObjectToSetting;virtual;abstract;
-//  procedure UpDate;
 end;
 
 
 
 
-//TDMM6500_StringParameterShow=class(TStringParameterShow)
 TDMM6500_StringParameterShow=class(TDMM6500_ParameterShow)
  private
   procedure CreateHeader{(DMM6500: TDMM6500; ChanNumber: Byte)};
@@ -81,9 +67,6 @@ TDMM6500_StringParameterShow=class(TDMM6500_ParameterShow)
     procedure SetDat(const Value: integer);//virtual;
  protected
   fSettingsShowSL:TStringList;
-//  fDMM6500:TDMM6500;
-//  fChanNumber:byte;
-//  procedure OkClick();virtual;abstract;
   procedure SettingsShowSLFilling();virtual;abstract;
   procedure SomeAction();virtual;
  public
@@ -93,13 +76,8 @@ TDMM6500_StringParameterShow=class(TDMM6500_ParameterShow)
   Constructor Create(ST:TStaticText;LCap:TLabel;ParametrCaption: string;
            DMM6500:TDMM6500;ChanNumber:byte=0);overload;
   destructor Destroy;override;
-//  procedure ObjectToSetting;virtual;abstract;
 end;
 
-//TDMM6500_LimitedParameterShow=class(TDMM6500_ParameterShow)
-// private
-//  procedure SetLimits(LimitV:TLimitValues);
-//end;
 
 TDMM6500_DoubleParameterShow=class(TDMM6500_ParameterShow)
  private
@@ -236,6 +214,16 @@ TDMM6500_VoltageUnitShow=class(TDMM6500_StringParameterShow)
   procedure ObjectToSetting;override;
 end;
 
+TDMM6500_TemperatureUnitShow=class(TDMM6500_StringParameterShow)
+ protected
+  procedure OkClick();override;
+  procedure SettingsShowSLFilling();override;
+  procedure GetDataFromDevice;override;
+ public
+  Constructor Create(ST:TStaticText;DMM6500:TDMM6500;ChanNumber:byte=0);
+  procedure ObjectToSetting;override;
+end;
+
 TDMM6500_DecibelReferenceShow=class(TDMM6500_DoubleParameterShow)
  private
  protected
@@ -260,7 +248,68 @@ TDMM6500_MeaureTimeShow=class(TDMM6500_DoubleParameterShow)
   procedure ObjectToSetting;override;
 end;
 
+
+TDMM6500_SimRefTempShow=class(TDMM6500_DoubleParameterShow)
+ private
+ protected
+  procedure OkClick();override;
+  procedure GetDataFromDevice;override;
+ public
+  Constructor Create(STD:TStaticText;
+                     STC:TLabel;
+                     DMM6500:TDMM6500;ChanNumber:byte=0);
+  procedure ObjectToSetting;override;
+end;
+
+TDMM6500_RTDAlphaShow=class(TDMM6500_DoubleParameterShow)
+ private
+ protected
+  procedure OkClick();override;
+  procedure GetDataFromDevice;override;
+ public
+  Constructor Create(STD:TStaticText;
+                     STC:TLabel;
+                     DMM6500:TDMM6500;ChanNumber:byte=0);
+  procedure ObjectToSetting;override;
+end;
+
+TDMM6500_RTDBetaShow=class(TDMM6500_DoubleParameterShow)
+ private
+ protected
+  procedure OkClick();override;
+  procedure GetDataFromDevice;override;
+ public
+  Constructor Create(STD:TStaticText;
+                     STC:TLabel;
+                     DMM6500:TDMM6500;ChanNumber:byte=0);
+  procedure ObjectToSetting;override;
+end;
+
+TDMM6500_RTDDeltaShow=class(TDMM6500_DoubleParameterShow)
+ private
+ protected
+  procedure OkClick();override;
+  procedure GetDataFromDevice;override;
+ public
+  Constructor Create(STD:TStaticText;
+                     STC:TLabel;
+                     DMM6500:TDMM6500;ChanNumber:byte=0);
+  procedure ObjectToSetting;override;
+end;
+
 TDMM6500_DecibelmWReferenceShow=class(TDMM6500_IntegerParameterShow)
+ private
+ protected
+  procedure OkClick();override;
+  procedure GetDataFromDevice;override;
+ public
+  Constructor Create(STD:TStaticText;
+                     STC:TLabel;
+                     DMM6500:TDMM6500;ChanNumber:byte=0);
+  procedure ObjectToSetting;override;
+end;
+
+TDMM6500_RTDZeroShow=class(TDMM6500_IntegerParameterShow)
  private
  protected
   procedure OkClick();override;
@@ -326,6 +375,84 @@ TDMM6500_VoltageRatioMethodShow=class(TDMM6500_StringParameterShow)
            DMM6500:TDMM6500;ChanNumber:byte=0);
   procedure ObjectToSetting;override;
 end;
+
+TDMM6500_TempTransdTypeShow=class(TDMM6500_StringParameterShow)
+ protected
+  procedure OkClick();override;
+  procedure SettingsShowSLFilling();override;
+  procedure GetDataFromDevice;override;
+ public
+  Constructor Create(ST:TStaticText;L:Tlabel;
+           DMM6500:TDMM6500;ChanNumber:byte=0);
+  procedure ObjectToSetting;override;
+end;
+
+TDMM6500_TempTypeShow=class(TDMM6500_StringParameterShow)
+ protected
+ public
+  Constructor Create(ST:TStaticText;L:Tlabel;
+           DMM6500:TDMM6500;ChanNumber:byte=0);
+end;
+
+TDMM6500_TCoupleShow=class(TDMM6500_TempTypeShow)
+ protected
+  procedure OkClick();override;
+  procedure SettingsShowSLFilling();override;
+  procedure GetDataFromDevice;override;
+ public
+  procedure ObjectToSetting;override;
+end;
+
+TDMM6500_ThermistorTypeShow=class(TDMM6500_TempTypeShow)
+ protected
+  procedure OkClick();override;
+  procedure SettingsShowSLFilling();override;
+  procedure GetDataFromDevice;override;
+ public
+  procedure ObjectToSetting;override;
+end;
+
+TDMM6500_RTDTypeShow=class(TDMM6500_TempTypeShow)
+ protected
+  procedure SettingsShowSLFilling();override;
+ public
+end;
+
+TDMM6500_W2RTDTypeShow=class(TDMM6500_RTDTypeShow)
+ protected
+  procedure OkClick();override;
+  procedure GetDataFromDevice;override;
+ public
+  procedure ObjectToSetting;override;
+end;
+
+TDMM6500_W3RTDTypeShow=class(TDMM6500_RTDTypeShow)
+ protected
+  procedure OkClick();override;
+  procedure GetDataFromDevice;override;
+ public
+  procedure ObjectToSetting;override;
+end;
+
+TDMM6500_W4RTDTypeShow=class(TDMM6500_RTDTypeShow)
+ protected
+  procedure OkClick();override;
+  procedure GetDataFromDevice;override;
+ public
+  procedure ObjectToSetting;override;
+end;
+
+TDMM6500_TCoupleRefJunctShow=class(TDMM6500_StringParameterShow)
+ protected
+  procedure OkClick();override;
+  procedure SettingsShowSLFilling();override;
+  procedure GetDataFromDevice;override;
+ public
+  Constructor Create(ST:TStaticText;L:Tlabel;
+           DMM6500:TDMM6500;ChanNumber:byte=0);
+  procedure ObjectToSetting;override;
+end;
+
 
 TDMM6500_RangeShow=class(TDMM6500_StringParameterShow)
  protected
@@ -753,6 +880,69 @@ TDMM6500MeasPar_VoltRatShow=class(TDMM6500MeasPar_BaseVoltDCRangeShow)
   LVRMethod:TLabel;
 end;
 
+TDMM6500MeasPar_VoltDCShow=class(TDMM6500MeasPar_BaseVoltDCRangeShow)
+ private
+  fBaseVoltDCShow:TDMM6500MeasPar_BaseVoltDCShow;
+ protected
+  procedure CreateControls;override;
+  procedure DestroyControls;override;
+  procedure DesignElements;override;
+ public
+  procedure ObjectToSetting;override;
+  procedure GetDataFromDevice;override;
+end;
+
+TDMM6500MeasPar_TemperShow=class(TDMM6500MeasPar_Base4WTShow)
+ private
+  fTransdTypeShow:TDMM6500_TempTransdTypeShow;
+  fRefJunctionShow:TDMM6500_TCoupleRefJunctShow;
+  fRTDAlphaShow:TDMM6500_RTDAlphaShow;
+  fRTDBetaShow:TDMM6500_RTDBetaShow;
+  fRTDDeltaShow:TDMM6500_RTDDeltaShow;
+  fRTDZeroShow:TDMM6500_RTDZeroShow;
+  fW2RTDTypeShow:TDMM6500_W2RTDTypeShow;
+  fW3RTDTypeShow:TDMM6500_W3RTDTypeShow;
+  fW4RTDTypeShow:TDMM6500_W4RTDTypeShow;
+  fThermistorTypeShow:TDMM6500_ThermistorTypeShow;
+  fTCoupleTypeShow:TDMM6500_TCoupleShow;
+  fUnits:TDMM6500_TemperatureUnitShow;
+  fSimRefTemp:TDMM6500_SimRefTempShow;
+  procedure CreateControlsVariate;
+  procedure DestroyControlsVariant;
+  procedure Hook;
+  procedure HookParameterClickZero;
+  procedure HookParameterClickDelta;
+  procedure HookParameterClickRefJun_Alpha;
+  procedure HookParameterClickRefTemp_Beta;
+  procedure HookParameterClickUnits;
+  procedure HookParameterClickType;
+  procedure SetTypeEnable(Value:boolean);
+  procedure SetAlphaBetaEnable(Value:boolean);
+  procedure SetDeltaZeroEnable(Value:boolean);
+  procedure SetAllRTDEnable(Value:boolean);
+  procedure HookParameterClickRTDType;
+ protected
+  procedure CreateElements;override;
+  procedure CreateControls;override;
+  procedure DesignElements;override;
+  procedure DestroyControls;override;
+ public
+  STTransdType:TStaticText;
+  LTransdType:TLabel;
+  STType:TStaticText;
+  LType:TLabel;
+  STRefTemp_Beta:TStaticText;
+  LRefTemp_Beta:TLabel;
+  STRefJunc_Alpha:TStaticText;
+  LRefJunc_Alpha:TLabel;
+  STDelta:TStaticText;
+  LDelta:TLabel;
+  STZero:TStaticText;
+  LZero:TLabel;
+  procedure ObjectToSetting;override;
+  procedure GetDataFromDevice;override;
+end;
+
 // 88888888888888888888888888888888888888888888888888888888888888888
 
 function MeasParShowFactory(MeasureType:TKeitley_Measure;
@@ -770,15 +960,15 @@ function MeasParShowFactory(MeasureType:TKeitley_Measure;
 begin
  case MeasureType of
    kt_mCurDC: Result:=TDMM6500MeasPar_CurDCShow.Create(Parent,DMM6500,ChanNumber);
-   kt_mVolDC: Result:=TDMM6500MeasPar_ContinuityBaseShow.Create(Parent,DMM6500,ChanNumber);
-//   kt_mVolDC: Result:=TDMM6500MeasPar_BaseVoltDCRangeShow.Create(Parent,DMM6500,ChanNumber);
+//   kt_mVolDC: Result:=TDMM6500MeasPar_ContinuityBaseShow.Create(Parent,DMM6500,ChanNumber);
+   kt_mVolDC: Result:=TDMM6500MeasPar_VoltDCShow.Create(Parent,DMM6500,ChanNumber);
    kt_mRes2W: Result:=TDMM6500MeasPar_Res2WShow.Create(Parent,DMM6500,ChanNumber);
    kt_mCurAC: Result:=TDMM6500MeasPar_CurACShow.Create(Parent,DMM6500,ChanNumber);
    kt_mVolAC: Result:=TDMM6500MeasPar_VoltACShow.Create(Parent,DMM6500,ChanNumber);
    kt_mRes4W: Result:=TDMM6500MeasPar_Res4WShow.Create(Parent,DMM6500,ChanNumber);
    kt_mDiod: Result:=TDMM6500MeasPar_DiodeShow.Create(Parent,DMM6500,ChanNumber);
    kt_mCap: Result:=TDMM6500MeasPar_CapacShow.Create(Parent,DMM6500,ChanNumber);
-   kt_mTemp: Result:=nil;
+   kt_mTemp: Result:=TDMM6500MeasPar_TemperShow.Create(Parent,DMM6500,ChanNumber);
    kt_mCont: Result:=TDMM6500MeasPar_ContinuityShow.Create(Parent,DMM6500,ChanNumber);
    kt_mFreq: Result:=TDMM6500MeasPar_FreqPeriodShow.Create(Parent,DMM6500,ChanNumber);
    kt_mPer: Result:=TDMM6500MeasPar_FreqPeriodShow.Create(Parent,DMM6500,ChanNumber);
@@ -1816,10 +2006,12 @@ end;
 procedure TDMM6500MeasPar_BaseVoltShow.GetDataFromDevice;
 begin
  inherited;
-  if fDecibelReferenceShow <> nil then
-    fDecibelReferenceShow.GetDataFromDevice;
-  if fDecibelmWReferenceShow <> nil then
-    fDecibelmWReferenceShow.GetDataFromDevice;
+ fDMM6500.GetDecibelReference(fChanNumber);
+ fDMM6500.GetDbmWReference(fChanNumber);
+//  if fDecibelReferenceShow <> nil then
+//    fDecibelReferenceShow.GetDataFromDevice;
+//  if fDecibelmWReferenceShow <> nil then
+//    fDecibelmWReferenceShow.GetDataFromDevice;
 end;
 
 procedure TDMM6500MeasPar_BaseVoltShow.Hook;
@@ -2850,6 +3042,795 @@ begin
 
   fParent.Width:=MarginRight+STRange.Left+LCount.Canvas.TextWidth('1000 V');
   fParent.Height:=MarginTop+LVRMethod.Top+LVRMethod.Height;
+end;
+
+{ TDMM6500_TransdTypeShow }
+
+constructor TDMM6500_TempTransdTypeShow.Create(ST: TStaticText; L: Tlabel;
+  DMM6500: TDMM6500; ChanNumber: byte);
+begin
+ inherited Create(ST,L,'Temperature Source:',DMM6500,ChanNumber);
+end;
+
+procedure TDMM6500_TempTransdTypeShow.GetDataFromDevice;
+begin
+ fDMM6500.GetTransdType(fChanNumber);
+end;
+
+procedure TDMM6500_TempTransdTypeShow.ObjectToSetting;
+begin
+  Data:=ord((fDMM6500.MeasParamByCN(fChanNumber) as TDMM6500MeasPar_Temper).TransdType);
+end;
+
+procedure TDMM6500_TempTransdTypeShow.OkClick;
+begin
+ fDMM6500.SetTransdType(TDMM6500_TempTransducer(Data),fChanNumber);
+ inherited;
+end;
+
+procedure TDMM6500_TempTransdTypeShow.SettingsShowSLFilling;
+ var i:TDMM6500_TempTransducer;
+begin
+ for I := Low(TDMM6500_TempTransducer) to High(TDMM6500_TempTransducer) do
+    fSettingsShowSL.Add(DMM6500_TempTransducerLabel[i]);
+end;
+
+{ TDMM6500_TempTypeShow }
+
+constructor TDMM6500_TempTypeShow.Create(ST: TStaticText; L: Tlabel;
+  DMM6500: TDMM6500; ChanNumber: byte);
+begin
+ inherited Create(ST,L,'Type:',DMM6500,ChanNumber);
+end;
+
+{ TDMM6500_TCoupleShow }
+
+procedure TDMM6500_TCoupleShow.GetDataFromDevice;
+begin
+ fDMM6500.GetTCoupleType(fChanNumber);
+end;
+
+procedure TDMM6500_TCoupleShow.ObjectToSetting;
+begin
+  Data:=ord((fDMM6500.MeasParamByCN(fChanNumber) as TDMM6500MeasPar_Temper).TCoupleType);
+end;
+
+procedure TDMM6500_TCoupleShow.OkClick;
+begin
+ fDMM6500.SetTCoupleType(TDMM6500_TCoupleType(Data),fChanNumber);
+ inherited;
+end;
+
+procedure TDMM6500_TCoupleShow.SettingsShowSLFilling;
+ var i:TDMM6500_TCoupleType;
+begin
+ for I := Low(TDMM6500_TCoupleType) to High(TDMM6500_TCoupleType) do
+    fSettingsShowSL.Add(DMM6500_TCoupleTypeLabel[i]);
+end;
+
+{ TDMM6500_ThermistorTypeShow }
+
+procedure TDMM6500_ThermistorTypeShow.GetDataFromDevice;
+begin
+ fDMM6500.GetThermistorType(fChanNumber);
+end;
+
+procedure TDMM6500_ThermistorTypeShow.ObjectToSetting;
+begin
+  Data:=ord((fDMM6500.MeasParamByCN(fChanNumber) as TDMM6500MeasPar_Temper).ThermistorType);
+end;
+
+procedure TDMM6500_ThermistorTypeShow.OkClick;
+begin
+ fDMM6500.SetThermistorType(TDMM6500_ThermistorType(Data),fChanNumber);
+ inherited;
+end;
+
+procedure TDMM6500_ThermistorTypeShow.SettingsShowSLFilling;
+ var i:TDMM6500_ThermistorType;
+begin
+ for I := Low(TDMM6500_ThermistorType) to High(TDMM6500_ThermistorType) do
+    fSettingsShowSL.Add(inttostr(DMM6500_ThermistorTypeValues[i])+DMM6500_ThermistorTypeSyffix);
+end;
+
+{ TDMM6500_W2RTDTypeShow }
+
+procedure TDMM6500_W2RTDTypeShow.GetDataFromDevice;
+begin
+ fDMM6500.GetW2RTDType(fChanNumber);
+end;
+
+procedure TDMM6500_W2RTDTypeShow.ObjectToSetting;
+begin
+  Data:=ord((fDMM6500.MeasParamByCN(fChanNumber) as TDMM6500MeasPar_Temper).W2RTDType);
+end;
+
+procedure TDMM6500_W2RTDTypeShow.OkClick;
+begin
+ fDMM6500.SetW2RTDType(TDMM6500_RTDType(Data),fChanNumber);
+ inherited;
+end;
+
+{ TDMM6500_RTDTypeShow }
+
+procedure TDMM6500_RTDTypeShow.SettingsShowSLFilling;
+ var i:TDMM6500_RTDType;
+begin
+ for I := Low(TDMM6500_RTDType) to High(TDMM6500_RTDType) do
+    fSettingsShowSL.Add(DMM6500_WiRTDTypeLabel[i]);
+end;
+
+{ TDMM6500_W3RTDTypeShow }
+
+procedure TDMM6500_W3RTDTypeShow.GetDataFromDevice;
+begin
+ fDMM6500.GetW3RTDType(fChanNumber);
+end;
+
+procedure TDMM6500_W3RTDTypeShow.ObjectToSetting;
+begin
+  Data:=ord((fDMM6500.MeasParamByCN(fChanNumber) as TDMM6500MeasPar_Temper).W3RTDType);
+end;
+
+procedure TDMM6500_W3RTDTypeShow.OkClick;
+begin
+ fDMM6500.SetW3RTDType(TDMM6500_RTDType(Data),fChanNumber);
+ inherited;
+end;
+
+{ TDMM6500_W4RTDTypeShow }
+
+procedure TDMM6500_W4RTDTypeShow.GetDataFromDevice;
+begin
+ fDMM6500.GetW4RTDType(fChanNumber);
+end;
+
+procedure TDMM6500_W4RTDTypeShow.ObjectToSetting;
+begin
+ Data:=ord((fDMM6500.MeasParamByCN(fChanNumber) as TDMM6500MeasPar_Temper).W4RTDType);
+end;
+
+procedure TDMM6500_W4RTDTypeShow.OkClick;
+begin
+ fDMM6500.SetW4RTDType(TDMM6500_RTDType(Data),fChanNumber);
+ inherited;
+end;
+
+{ TDMM6500_TCoupleRefJunctShow }
+
+constructor TDMM6500_TCoupleRefJunctShow.Create(ST: TStaticText; L: Tlabel;
+  DMM6500: TDMM6500; ChanNumber: byte);
+begin
+ inherited Create(ST,L,'Ref Junction:',DMM6500,ChanNumber);
+end;
+
+procedure TDMM6500_TCoupleRefJunctShow.GetDataFromDevice;
+begin
+ fDMM6500.GetRefJunction(fChanNumber);
+end;
+
+procedure TDMM6500_TCoupleRefJunctShow.ObjectToSetting;
+begin
+ Data:=ord((fDMM6500.MeasParamByCN(fChanNumber) as TDMM6500MeasPar_Temper).RefJunction);
+end;
+
+procedure TDMM6500_TCoupleRefJunctShow.OkClick;
+begin
+ fDMM6500.SetRefJunction(TDMM6500_TCoupleRefJunct(Data),fChanNumber);
+ inherited;
+end;
+
+procedure TDMM6500_TCoupleRefJunctShow.SettingsShowSLFilling;
+ var i:TDMM6500_TCoupleRefJunct;
+begin
+ for I := Low(TDMM6500_TCoupleRefJunct) to High(TDMM6500_TCoupleRefJunct) do
+    fSettingsShowSL.Add(DMM6500_TCoupleRefJunctLabel[i]);
+end;
+
+{ TDMM6500_TemperatureUnitShow }
+
+constructor TDMM6500_TemperatureUnitShow.Create(ST: TStaticText;
+  DMM6500: TDMM6500; ChanNumber: byte);
+begin
+ inherited Create(ST,'TempUnit',DMM6500,ChanNumber);
+end;
+
+procedure TDMM6500_TemperatureUnitShow.GetDataFromDevice;
+begin
+ fDMM6500.GetUnits(fChanNumber);
+end;
+
+procedure TDMM6500_TemperatureUnitShow.ObjectToSetting;
+begin
+ Data:=ord((fDMM6500.MeasParamByCN(fChanNumber) as TDMM6500MeasPar_Temper).Units);
+end;
+
+procedure TDMM6500_TemperatureUnitShow.OkClick;
+begin
+ fDMM6500.SetUnits(TDMM6500_TempUnits(Data),fChanNumber);
+ inherited;
+end;
+
+procedure TDMM6500_TemperatureUnitShow.SettingsShowSLFilling;
+ var i:TDMM6500_TempUnits;
+begin
+ for I := Low(TDMM6500_TempUnits) to High(TDMM6500_TempUnits) do
+    fSettingsShowSL.Add(DMM6500_TempUnitsLabel[i]);
+end;
+
+{ TDMM6500_SimRefTempShow }
+
+constructor TDMM6500_RTDZeroShow.Create(STD: TStaticText; STC: TLabel;
+  DMM6500: TDMM6500; ChanNumber: byte);
+begin
+ inherited Create(DMM6500,ChanNumber,STD,STC,'RTD Zero',100);
+// STC.WordWrap:=False;
+ SetLimits(DMM6500_RTDZeroLimits);
+end;
+
+procedure TDMM6500_RTDZeroShow.GetDataFromDevice;
+begin
+  fDMM6500.GetRTDZero(fChanNumber);
+end;
+
+procedure TDMM6500_RTDZeroShow.ObjectToSetting;
+begin
+  Data:=(fDMM6500.MeasParamByCN(fChanNumber) as TDMM6500MeasPar_Temper).RTD_Zero;
+end;
+
+procedure TDMM6500_RTDZeroShow.OkClick;
+begin
+  fDMM6500.SetRTDZero(Data,fChanNumber);
+  inherited;
+end;
+
+{ TDMM6500_SimRefTempShow }
+
+constructor TDMM6500_SimRefTempShow.Create(STD: TStaticText; STC: TLabel;
+  DMM6500: TDMM6500; ChanNumber: byte);
+begin
+ inherited Create(DMM6500,ChanNumber,STD,STC,'Ref Temperature',
+                DMM6500_RefTempInitValue[(DMM6500.MeasParamByCN(fChanNumber) as TDMM6500MeasPar_Temper).Units]);
+// STC.WordWrap:=True;
+ SetLimits(DMM6500_RefTempLimits[(fDMM6500.MeasParamByCN(fChanNumber) as TDMM6500MeasPar_Temper).Units]);
+end;
+
+procedure TDMM6500_SimRefTempShow.GetDataFromDevice;
+begin
+ fDMM6500.GetRefTemperature(fChanNumber);
+end;
+
+procedure TDMM6500_SimRefTempShow.ObjectToSetting;
+begin
+  Data:=(fDMM6500.MeasParamByCN(fChanNumber) as TDMM6500MeasPar_Temper).RefTemperature;
+end;
+
+procedure TDMM6500_SimRefTempShow.OkClick;
+begin
+  fDMM6500.SetRefTemperature(Data,fChanNumber);
+  inherited;
+end;
+
+{ TDMM6500_RTDAlphaShow }
+
+constructor TDMM6500_RTDAlphaShow.Create(STD: TStaticText; STC: TLabel;
+  DMM6500: TDMM6500; ChanNumber: byte);
+begin
+ inherited Create(DMM6500,ChanNumber,STD,STC,'RTD Alpha:',
+                0.00385055,8);
+// STC.WordWrap:=True;
+ SetLimits(DMM6500_RTDAlphaLimits);
+end;
+
+procedure TDMM6500_RTDAlphaShow.GetDataFromDevice;
+begin
+ fDMM6500.GetRTDAlpha(fChanNumber);
+end;
+
+procedure TDMM6500_RTDAlphaShow.ObjectToSetting;
+begin
+  Data:=(fDMM6500.MeasParamByCN(fChanNumber) as TDMM6500MeasPar_Temper).RTD_Alpha;
+end;
+
+procedure TDMM6500_RTDAlphaShow.OkClick;
+begin
+  fDMM6500.SetRTDAlpha(Data,fChanNumber);
+  inherited;
+end;
+
+{ TDMM6500_RTDBetaShow }
+
+constructor TDMM6500_RTDBetaShow.Create(STD: TStaticText; STC: TLabel;
+  DMM6500: TDMM6500; ChanNumber: byte);
+begin
+ inherited Create(DMM6500,ChanNumber,STD,STC,'RTD Beta:',
+                0.10863,5);
+// STC.WordWrap:=True;
+ SetLimits(DMM6500_RTDBetaLimits);
+end;
+
+procedure TDMM6500_RTDBetaShow.GetDataFromDevice;
+begin
+ fDMM6500.GetRTDBeta(fChanNumber);
+end;
+
+procedure TDMM6500_RTDBetaShow.ObjectToSetting;
+begin
+Data:=(fDMM6500.MeasParamByCN(fChanNumber) as TDMM6500MeasPar_Temper).RTD_Beta;
+end;
+
+procedure TDMM6500_RTDBetaShow.OkClick;
+begin
+  fDMM6500.SetRTDBeta(Data,fChanNumber);
+  inherited;
+end;
+
+{ TDMM6500_RTDDeltaShow }
+
+constructor TDMM6500_RTDDeltaShow.Create(STD: TStaticText; STC: TLabel;
+  DMM6500: TDMM6500; ChanNumber: byte);
+begin
+ inherited Create(DMM6500,ChanNumber,STD,STC,'RTD Delta:',
+                1.4999,4);
+// STC.WordWrap:=True;
+ SetLimits(DMM6500_RTDDeltaLimits);
+end;
+
+procedure TDMM6500_RTDDeltaShow.GetDataFromDevice;
+begin
+ fDMM6500.GetRTDDelta(fChanNumber);
+end;
+
+procedure TDMM6500_RTDDeltaShow.ObjectToSetting;
+begin
+Data:=(fDMM6500.MeasParamByCN(fChanNumber) as TDMM6500MeasPar_Temper).RTD_Delta;
+end;
+
+procedure TDMM6500_RTDDeltaShow.OkClick;
+begin
+  fDMM6500.SetRTDDelta(Data,fChanNumber);
+  inherited;
+end;
+
+{ TDMM6500MeasPar_VoltDCShow }
+
+procedure TDMM6500MeasPar_VoltDCShow.CreateControls;
+begin
+  inherited;
+  fBaseVoltDCShow:=TDMM6500MeasPar_BaseVoltDCShow.Create(fParent,fDMM6500,fChanNumber);
+end;
+
+procedure TDMM6500MeasPar_VoltDCShow.DesignElements;
+begin
+  inherited DesignElements;
+  fBaseVoltDCShow.DesignElements;
+
+  Resize(fBaseVoltDCShow.LVoltageUnit);
+  RelativeLocation(CBLineSync,fBaseVoltDCShow.LVoltageUnit,oCol,Marginbetween);
+  fBaseVoltDCShow.LVoltageUnit.Left:=MarginLeft;
+  RelativeLocation(fBaseVoltDCShow.LVoltageUnit,fBaseVoltDCShow.STVoltageUnit,oCol,MarginBetweenLST);
+
+  Resize(fBaseVoltDCShow.LDB_DBM);
+  RelativeLocation(fBaseVoltDCShow.LVoltageUnit,fBaseVoltDCShow.LDB_DBM,oRow,Marginbetween);
+  RelativeLocation(fBaseVoltDCShow.LDB_DBM,fBaseVoltDCShow.STDB_DBM,oCol,MarginBetweenLST);
+  fBaseVoltDCShow.LDB_DBM.Font.Color:=clTeal;
+  fBaseVoltDCShow.STDB_DBM.Font.Color:=clTeal;
+
+//  RelativeLocation(LCount,STCount,oCol,MarginBetweenLST);
+  RelativeLocation(fBaseVoltDCShow.LDB_DBM,fBaseVoltDCShow.LInputImpedance,oRow,MarginBetweenLST);
+//  fBaseVoltDCShow.LInputImpedance.Left:=MarginLeft;
+  RelativeLocation(fBaseVoltDCShow.LInputImpedance,fBaseVoltDCShow.STInputImpedance,oCol,MarginBetweenLST);
+//  fBaseVoltDCShow.STInputImpedance.Top:=fBaseVoltDCShow.LInputImpedance.Top;
+  fBaseVoltDCShow.LInputImpedance.Font.Color:=clOlive;
+  fBaseVoltDCShow.STInputImpedance.Font.Color:=clOlive;
+
+  fParent.Width:=MarginRight+fBaseVoltDCShow.LInputImpedance.Left+fBaseVoltDCShow.LInputImpedance.Width;
+  fParent.Height:=MarginTop+fBaseVoltDCShow.STDB_DBM.Top+fBaseVoltDCShow.STDB_DBM.Height;
+end;
+
+procedure TDMM6500MeasPar_VoltDCShow.DestroyControls;
+begin
+  FreeAndNil(fBaseVoltDCShow);
+  inherited;
+end;
+
+procedure TDMM6500MeasPar_VoltDCShow.GetDataFromDevice;
+begin
+  inherited;
+  fBaseVoltDCShow.GetDataFromDevice;
+end;
+
+procedure TDMM6500MeasPar_VoltDCShow.ObjectToSetting;
+begin
+  inherited;
+  fBaseVoltDCShow.ObjectToSetting;
+end;
+
+{ TDMM6500MeasPar_TemperShow }
+
+procedure TDMM6500MeasPar_TemperShow.CreateControls;
+begin
+  inherited;
+  fTransdTypeShow:=TDMM6500_TempTransdTypeShow.Create(STTransdType,LTransdType,fDMM6500,fChanNumber);
+  Add(fTransdTypeShow);
+  fTransdTypeShow.HookParameterClick:=Hook;
+
+  fRTDDeltaShow:=TDMM6500_RTDDeltaShow.Create(STDelta,LDelta,fDMM6500,fChanNumber);
+  Add(fRTDDeltaShow);
+  fRTDDeltaShow.HookParameterClick:=HookParameterClickDelta;
+
+  fRTDZeroShow:=TDMM6500_RTDZeroShow.Create(STZero,LZero,fDMM6500,fChanNumber);
+  Add(fRTDZeroShow);
+  fRTDZeroShow.HookParameterClick:=HookParameterClickZero;
+
+  fUnits:=TDMM6500_TemperatureUnitShow.Create(STRange,fDMM6500,fChanNumber);
+  Add(fUnits);
+  fUnits.HookParameterClick:=HookParameterClickUnits;
+
+  CreateControlsVariate;
+end;
+
+procedure TDMM6500MeasPar_TemperShow.CreateControlsVariate;
+begin
+  case (fDMM6500.MeasParamByCN(fChanNumber) as TDMM6500MeasPar_Temper).TransdType of
+   dm_ttCouple:begin
+                if fW2RTDTypeShow <> nil then
+                    FreeAndNil(fW2RTDTypeShow);
+                if fW3RTDTypeShow <> nil then
+                    FreeAndNil(fW3RTDTypeShow);
+                if fW4RTDTypeShow <> nil then
+                    FreeAndNil(fW4RTDTypeShow);
+                if fThermistorTypeShow <> nil then
+                    FreeAndNil(fThermistorTypeShow);
+                if fTCoupleTypeShow=nil then
+                   begin
+                   fTCoupleTypeShow:=TDMM6500_TCoupleShow.Create(STType,LType,fDMM6500,fChanNumber);
+                   fTCoupleTypeShow.ObjectToSetting;
+                   fTCoupleTypeShow.HookParameterClick:=HookParameterClickType;
+                   end;
+               end;
+   dm_ttTherm:begin
+                if fW2RTDTypeShow <> nil then
+                    FreeAndNil(fW2RTDTypeShow);
+                if fW3RTDTypeShow <> nil then
+                    FreeAndNil(fW3RTDTypeShow);
+                if fW4RTDTypeShow <> nil then
+                    FreeAndNil(fW4RTDTypeShow);
+                if fTCoupleTypeShow <> nil then
+                    FreeAndNil(fTCoupleTypeShow);
+                if fThermistorTypeShow=nil then
+                   begin
+                   fThermistorTypeShow:=TDMM6500_ThermistorTypeShow.Create(STType,LType,fDMM6500,fChanNumber);
+                   fThermistorTypeShow.ObjectToSetting;
+                   fThermistorTypeShow.HookParameterClick:=HookParameterClickType;
+                   end;
+              end;
+   dm_tt2WRTD:begin
+                if fThermistorTypeShow <> nil then
+                    FreeAndNil(fThermistorTypeShow);
+                if fW3RTDTypeShow <> nil then
+                    FreeAndNil(fW3RTDTypeShow);
+                if fW4RTDTypeShow <> nil then
+                    FreeAndNil(fW4RTDTypeShow);
+                if fTCoupleTypeShow <> nil then
+                    FreeAndNil(fTCoupleTypeShow);
+                if fW2RTDTypeShow=nil then
+                   begin
+                   fW2RTDTypeShow:=TDMM6500_W2RTDTypeShow.Create(STType,LType,fDMM6500,fChanNumber);
+                   fW2RTDTypeShow.ObjectToSetting;
+                   fW2RTDTypeShow.HookParameterClick:=HookParameterClickRTDType;
+                   end;
+               end;
+   dm_tt3WRTD:begin
+                if fThermistorTypeShow <> nil then
+                    FreeAndNil(fThermistorTypeShow);
+                if fW2RTDTypeShow <> nil then
+                    FreeAndNil(fW2RTDTypeShow);
+                if fW4RTDTypeShow <> nil then
+                    FreeAndNil(fW4RTDTypeShow);
+                if fTCoupleTypeShow <> nil then
+                    FreeAndNil(fTCoupleTypeShow);
+                if fW3RTDTypeShow=nil then
+                   begin
+                   fW3RTDTypeShow:=TDMM6500_W3RTDTypeShow.Create(STType,LType,fDMM6500,fChanNumber);
+                   fW3RTDTypeShow.ObjectToSetting;
+                   fW3RTDTypeShow.HookParameterClick:=HookParameterClickRTDType;
+                   end;
+              end;
+   dm_tt4WRTD:begin
+                if fThermistorTypeShow <> nil then
+                    FreeAndNil(fThermistorTypeShow);
+                if fW2RTDTypeShow <> nil then
+                    FreeAndNil(fW2RTDTypeShow);
+                if fW3RTDTypeShow <> nil then
+                    FreeAndNil(fW3RTDTypeShow);
+                if fTCoupleTypeShow <> nil then
+                    FreeAndNil(fTCoupleTypeShow);
+                if fW4RTDTypeShow=nil then
+                   begin
+                   fW4RTDTypeShow:=TDMM6500_W4RTDTypeShow.Create(STType,LType,fDMM6500,fChanNumber);
+                   fW4RTDTypeShow.ObjectToSetting;
+                   fW4RTDTypeShow.HookParameterClick:=HookParameterClickRTDType;
+                   end;
+              end;
+  end;
+
+  case (fDMM6500.MeasParamByCN(fChanNumber) as TDMM6500MeasPar_Temper).TransdType of
+   dm_ttCouple:begin
+                if fRTDAlphaShow <> nil then
+                    FreeAndNil(fRTDAlphaShow);
+                if fRTDBetaShow <> nil then
+                    FreeAndNil(fRTDBetaShow);
+                if fSimRefTemp=nil then
+                   begin
+                   fSimRefTemp:=TDMM6500_SimRefTempShow.Create(STRefTemp_Beta,LRefTemp_Beta,fDMM6500,fChanNumber);
+                   fSimRefTemp.ObjectToSetting;
+                   fSimRefTemp.HookParameterClick:=HookParameterClickRefTemp_Beta;
+                   end;
+                if fRefJunctionShow=nil then
+                   begin
+                   fRefJunctionShow:=TDMM6500_TCoupleRefJunctShow.Create(STRefJunc_Alpha,LRefJunc_Alpha,fDMM6500,fChanNumber);
+                   fRefJunctionShow.ObjectToSetting;
+                   fRefJunctionShow.HookParameterClick:=HookParameterClickRefJun_Alpha;
+                   end;
+               end;
+   dm_tt2WRTD,
+   dm_tt3WRTD,
+   dm_tt4WRTD:begin
+                if fSimRefTemp <> nil then
+                    FreeAndNil(fSimRefTemp);
+                if fRefJunctionShow <> nil then
+                    FreeAndNil(fRefJunctionShow);
+                if fRTDAlphaShow=nil then
+                   begin
+                   fRTDAlphaShow:=TDMM6500_RTDAlphaShow.Create(STRefJunc_Alpha,LRefJunc_Alpha,fDMM6500,fChanNumber);
+                   fRTDAlphaShow.ObjectToSetting;
+                   fRTDAlphaShow.HookParameterClick:=HookParameterClickRefTemp_Beta;
+                   end;
+                if fRTDBetaShow=nil then
+                   begin
+                   fRTDBetaShow:=TDMM6500_RTDBetaShow.Create(STRefTemp_Beta,LRefTemp_Beta,fDMM6500,fChanNumber);
+                   fRTDBetaShow.ObjectToSetting;
+                   fRTDBetaShow.HookParameterClick:=HookParameterClickRefJun_Alpha;
+                   end;
+              end;
+  end;
+
+end;
+
+procedure TDMM6500MeasPar_TemperShow.CreateElements;
+begin
+  inherited CreateElements;
+  STTransdType:=TStaticText.Create(fParent);
+  Add(STTransdType);
+  LTransdType:=TLabel.Create(fParent);
+  Add(LTransdType);
+  STType:=TStaticText.Create(fParent);
+  Add(STType);
+  LType:=TLabel.Create(fParent);
+  Add(LType);
+  STRefTemp_Beta:=TStaticText.Create(fParent);
+  Add(STRefTemp_Beta);
+  LRefTemp_Beta:=TLabel.Create(fParent);
+  Add(LRefTemp_Beta);
+  STRefJunc_Alpha:=TStaticText.Create(fParent);
+  Add(STRefJunc_Alpha);
+  LRefJunc_Alpha:=TLabel.Create(fParent);
+  Add(LRefJunc_Alpha);
+  STDelta:=TStaticText.Create(fParent);
+  Add(STDelta);
+  LDelta:=TLabel.Create(fParent);
+  Add(LDelta);
+  STZero:=TStaticText.Create(fParent);
+  Add(STZero);
+  LZero:=TLabel.Create(fParent);
+  Add(LZero);
+end;
+
+procedure TDMM6500MeasPar_TemperShow.DesignElements;
+begin
+  inherited DesignElements;
+  RelativeLocation(CBOpenLD,LTransdType,oCol,MarginBetween);
+  LTransdType.Left:=MarginLeft;
+  RelativeLocation(LTransdType,STTransdType,oCol,MarginBetweenLST);
+  LTransdType.Font.Color:=clRed;
+  STTransdType.Font.Color:=clRed;
+
+  Resize(LType);
+//  RelativeLocation(LTransdType,LType,oRow,MarginBetween);
+  HookParameterClickType;
+
+  LType.Font.Color:=clGreen;
+  STType.Font.Color:=clGreen;
+
+  Resize(LRefJunc_Alpha);
+  RelativeLocation(LType,LRefJunc_Alpha,oRow,2*MarginBetween);
+  HookParameterClickRefJun_Alpha;
+
+  Resize(LRefTemp_Beta);
+  RelativeLocation(STTransdType,LRefTemp_Beta,oCol,MarginBetween);
+  LRefTemp_Beta.Left:=MarginLeft;
+  HookParameterClickRefTemp_Beta;
+  LRefTemp_Beta.Font.Color:=clNavy;
+  STRefTemp_Beta.Font.Color:=clNavy;
+
+  RelativeLocation(LRefTemp_Beta,LDelta,oRow,MarginBetween);
+//  LDelta.Left:=MarginLeft;
+  HookParameterClickDelta;
+
+  RelativeLocation(LDelta,LZero,oRow,MarginBetween);
+  HookParameterClickZero;
+  LDelta.Font.Color:=clFuchsia;
+  STDelta.Font.Color:=clFuchsia;
+
+  SetTypeEnable((fDMM6500.MeasParamByCN(fChanNumber) as TDMM6500MeasPar_Temper).TransdType<>dm_ttCJC);
+  CBOpenLD.Enabled:=((fDMM6500.MeasParamByCN(fChanNumber) as TDMM6500MeasPar_Temper).TransdType
+                in [dm_ttTherm,dm_tt2WRTD,dm_tt3WRTD,dm_tt4WRTD]);
+  HookParameterClickRTDType;
+
+
+  fParent.Width:=MarginRight+LRefJunc_Alpha.Left+LRefJunc_Alpha.Width;
+  fParent.Height:=MarginTop+STDelta.Top+STDelta.Height;
+
+end;
+
+procedure TDMM6500MeasPar_TemperShow.DestroyControls;
+begin
+  inherited DestroyControls;
+  DestroyControlsVariant;
+end;
+
+procedure TDMM6500MeasPar_TemperShow.DestroyControlsVariant;
+begin
+  if fW2RTDTypeShow <> nil then
+    FreeAndNil(fW2RTDTypeShow);
+  if fW3RTDTypeShow <> nil then
+    FreeAndNil(fW3RTDTypeShow);
+  if fW4RTDTypeShow <> nil then
+    FreeAndNil(fW4RTDTypeShow);
+  if fThermistorTypeShow <> nil then
+    FreeAndNil(fThermistorTypeShow);
+  if fTCoupleTypeShow <> nil then
+    FreeAndNil(fTCoupleTypeShow);
+  if fRefJunctionShow <> nil then
+    FreeAndNil(fRefJunctionShow);
+  if fRTDAlphaShow <> nil then
+    FreeAndNil(fRTDAlphaShow);
+  if fRTDBetaShow <> nil then
+    FreeAndNil(fRTDBetaShow);
+  if fSimRefTemp <> nil then
+    FreeAndNil(fSimRefTemp);
+end;
+
+procedure TDMM6500MeasPar_TemperShow.GetDataFromDevice;
+begin
+ inherited;
+ fDMM6500.GetW2RTDType(fChanNumber);
+ fDMM6500.GetW3RTDType(fChanNumber);
+ fDMM6500.GetW4RTDType(fChanNumber);
+ fDMM6500.GetThermistorType(fChanNumber);
+ fDMM6500.GetTCoupleType(fChanNumber);
+ fDMM6500.GetRefTemperature(fChanNumber);
+ fDMM6500.GetRefJunction(fChanNumber);
+ fDMM6500.GetRTDAlpha(fChanNumber);
+ fDMM6500.GetRTDBeta(fChanNumber);
+ fDMM6500.GetRTDDelta(fChanNumber);
+ fDMM6500.GetRTDZero(fChanNumber);
+end;
+
+procedure TDMM6500MeasPar_TemperShow.HookParameterClickRTDType;
+begin
+  case (fDMM6500.MeasParamByCN(fChanNumber) as TDMM6500MeasPar_Temper).TransdType of
+    dm_ttCouple:
+      begin
+        SetAlphaBetaEnable(True);
+        SetDeltaZeroEnable(False);
+      end;
+    dm_ttCJC, dm_ttTherm:
+      SetAllRTDEnable(False);
+    dm_tt2WRTD:
+      SetAllRTDEnable((fDMM6500.MeasParamByCN(fChanNumber) as TDMM6500MeasPar_Temper).W2RTDType = dm_rtdUser);
+    dm_tt3WRTD:
+      SetAllRTDEnable((fDMM6500.MeasParamByCN(fChanNumber) as TDMM6500MeasPar_Temper).W3RTDType = dm_rtdUser);
+    dm_tt4WRTD:
+      SetAllRTDEnable((fDMM6500.MeasParamByCN(fChanNumber) as TDMM6500MeasPar_Temper).W4RTDType = dm_rtdUser);
+  end;
+  HookParameterClickType;
+end;
+
+procedure TDMM6500MeasPar_TemperShow.HookParameterClickType;
+begin
+ RelativeLocation(LTransdType,LType,oRow,MarginBetween);
+ RelativeLocation(LType,STType,oCol,MarginBetweenLST);
+end;
+
+procedure TDMM6500MeasPar_TemperShow.HookParameterClickUnits;
+begin
+  if fSimRefTemp<>nil then
+     begin
+     FreeAndNil(fSimRefTemp);
+     fSimRefTemp:=TDMM6500_SimRefTempShow.Create(STRefTemp_Beta,LRefTemp_Beta,fDMM6500,fChanNumber);
+     fSimRefTemp.ObjectToSetting;
+     HookParameterClickRefTemp_Beta;
+     fSimRefTemp.HookParameterClick:=HookParameterClickRefTemp_Beta;
+     end;
+end;
+
+procedure TDMM6500MeasPar_TemperShow.Hook;
+begin
+ CreateControlsVariate;
+ DesignElements;
+end;
+
+procedure TDMM6500MeasPar_TemperShow.HookParameterClickDelta;
+begin
+ RelativeLocation(LDelta,STDelta,oCol,MarginBetweenLST);
+end;
+
+procedure TDMM6500MeasPar_TemperShow.HookParameterClickRefJun_Alpha;
+begin
+ RelativeLocation(LRefJunc_Alpha,STRefJunc_Alpha,oCol,MarginBetweenLST);
+end;
+
+procedure TDMM6500MeasPar_TemperShow.HookParameterClickRefTemp_Beta;
+begin
+ RelativeLocation(LRefTemp_Beta,STRefTemp_Beta,oCol,MarginBetweenLST);
+end;
+
+procedure TDMM6500MeasPar_TemperShow.HookParameterClickZero;
+begin
+  RelativeLocation(LZero,STZero,oCol,MarginBetweenLST);
+end;
+
+procedure TDMM6500MeasPar_TemperShow.ObjectToSetting;
+begin
+ inherited ObjectToSetting;
+  if fW2RTDTypeShow <> nil then
+    fW2RTDTypeShow.ObjectToSetting;
+  if fW3RTDTypeShow <> nil then
+    fW3RTDTypeShow.ObjectToSetting;
+  if fW4RTDTypeShow <> nil then
+    fW4RTDTypeShow.ObjectToSetting;
+  if fThermistorTypeShow <> nil then
+    fThermistorTypeShow.ObjectToSetting;
+  if fTCoupleTypeShow <> nil then
+    fTCoupleTypeShow.ObjectToSetting;
+  if fRefJunctionShow <> nil then
+    fRefJunctionShow.ObjectToSetting;
+  if fRTDAlphaShow <> nil then
+    fRTDAlphaShow.ObjectToSetting;
+  if fRTDBetaShow <> nil then
+    fRTDBetaShow.ObjectToSetting;
+  if fSimRefTemp <> nil then
+    fSimRefTemp.ObjectToSetting;
+end;
+
+procedure TDMM6500MeasPar_TemperShow.SetAllRTDEnable(Value: boolean);
+begin
+  SetAlphaBetaEnable(Value);
+  SetDeltaZeroEnable(Value);
+end;
+
+procedure TDMM6500MeasPar_TemperShow.SetAlphaBetaEnable(Value: boolean);
+begin
+  STRefTemp_Beta.Enabled:=Value;
+  LRefTemp_Beta.Enabled:=Value;
+  STRefJunc_Alpha.Enabled:=Value;
+  LRefJunc_Alpha.Enabled:=Value;
+end;
+
+procedure TDMM6500MeasPar_TemperShow.SetDeltaZeroEnable(Value: boolean);
+begin
+  STDelta.Enabled:=Value;
+  LDelta.Enabled:=Value;
+  STZero.Enabled:=Value;
+  LZero.Enabled:=Value;
+end;
+
+procedure TDMM6500MeasPar_TemperShow.SetTypeEnable(Value: boolean);
+begin
+  STType.Enabled:=Value;
+  LType.Enabled:=Value;
 end;
 
 end.
