@@ -71,7 +71,8 @@ type
     dm_pp_RangeCurrentDC,dm_pp_RangeCurrentAC,
     dm_pp_RangeResistance2W,dm_pp_RangeResistance4W,
     dm_pp_RangeCapacitance,dm_tp_UnitsTemp,
-    dm_pp_UnitsVolt,dm_pp_ApertureAuto);
+    dm_pp_UnitsVolt,dm_pp_ApertureAuto,dm_pp_RangeVoltDig,
+    dm_pp_RangeCurrentDig);
 
  TDMM6500_ThermistorType=(dm_tt2252,dm_tt5000,dm_tt10000);
 
