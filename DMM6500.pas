@@ -197,9 +197,9 @@ type
    procedure SetCount(Cnt: Integer; ChanNumber: Byte);reintroduce;overload;
    function GetCount(ChanNumber:byte):boolean;reintroduce;overload;
 
-   procedure SetCountDigAction(DeviceCountDig,NewCountDig:integer);
+   procedure SetCountDigAction(NewCountDig:integer);
    procedure SetCountDig(Cnt: Integer; ChanNumber: Byte=0);//overload;
-   function GetCountDigAction(DeviceCountDig:integer):boolean;
+   function GetCountDigAction:boolean;
    function GetCountDig(ChanNumber:byte=0):boolean;//overload;
 
 
@@ -210,6 +210,7 @@ type
    procedure SetDisplayDigitsNumber(Measure:TKeitley_Measure; Number:TKeitleyDisplayDigitsNumber);override;
    procedure SetDisplayDigitsNumber(Number:TKeitleyDisplayDigitsNumber);override;
    procedure SetDisplayDigitsNumber(Number: TKeitleyDisplayDigitsNumber; ChanNumber: Byte);reintroduce;overload;
+   {остання працює, якщо правильно встановлений TKeitley_Measure}
 
    function GetDisplayDigitsNumberAction(Measure:TKeitley_Measure;PM: TDMM6500MeasPar_Base):boolean;
    function GetDisplayDigitsNumber(Measure:TKeitley_Measure):boolean;override;
@@ -868,12 +869,18 @@ end;
 function TDMM6500.GetCountDig(ChanNumber: byte): boolean;
 begin
  if ChanNumber=0
-    then Result:=GetCountDigAction(CountDig)
+    then
+     begin
+     Result:=GetCountDigAction;
+     if Result then CountDig:=round(fDevice.Value);
+     end
     else
      begin
        if ChanQuireBegin(ChanNumber) then
         begin
-          Result:=GetCountDigAction(fChansMeasure[ChanNumber-fFirstChannelInSlot].CountDig);
+          Result:=GetCountDigAction;
+          if Result then
+           fChansMeasure[ChanNumber-fFirstChannelInSlot].CountDig:=round(fDevice.Value);
           fChanOperation:=False;
         end                          else
           Result:=False;
@@ -891,12 +898,13 @@ begin
 //    Result:=False;
 end;
 
-function TDMM6500.GetCountDigAction(DeviceCountDig: integer): boolean;
+function TDMM6500.GetCountDigAction: boolean;
 begin
  QuireOperation(23,20);
  Result:=fDevice.isReceived;
- if Result then DeviceCountDig:=round(fDevice.Value);
- sin(DeviceCountDig);
+// if Result then DeviceCountDig:=round(fDevice.Value);
+// showmessage('llll '+inttostr(CountDig));
+// sin(DeviceCountDig);
 end;
 
 //function TDMM6500.GetCountDig: boolean;
@@ -1850,7 +1858,7 @@ begin
           9:Result:=(Str=AnsiLowerCase(DMM6500_OffsetCompenLabel[TDMM6500_OffsetCompen(i)]));
           50:case fLeafNode of
               1:Result:=(Pos(DMM6500_TempUnitsCommand[TDMM6500_TempUnits(i)],Str)<>0);
-              2:Result:=(Pos(AnsiLowerCase(DMM6500_VoltageUnitsLabel[TDMM6500_VoltageUnits(i)]),Str)<>0);
+              2:Result:=(Pos(AnsiLowerCase(DMM6500_VoltageUnitsLabel[TDMM6500_VoltageUnits(i)]+'s'),Str+'s')<>0);
              end;
           52:Result:=(Str=DMM6500_InputImpedanceCommand[TDMM6500_InputImpedance(i)]);
           53:Result:=(Str=IntToStr(DMM6500_DetectorBandwidthCommand[TDMM6500_DetectorBandwidth(i)]));
@@ -2204,25 +2212,28 @@ begin
 //  showmessage('ura!  '+DMM6500_Resistance2WRangeLabels[(fChansMeasure[1].MeasParameters as TDMM6500MeasPar_Res2W).Range]);
 
 
-//SetMeasureFunction(kt_mRes4W);
-//SetRange(dm_r4r100);
-//if GetRange then
-//  showmessage('ura!  '+DMM6500_Resistance4WRangeLabels[(MeasParameters as TDMM6500MeasPar_Res4W).Range]);
-//SetRange(dm_r4r1M);
-//if GetRange then
-//  showmessage('ura!  '+DMM6500_Resistance4WRangeLabels[(MeasParameters as TDMM6500MeasPar_Res4W).Range]);
-//SetOffsetComp(dm_ocOn);
-//SetRange(dm_r4r1M);
-//if GetRange then
-//  showmessage('ura!  '+DMM6500_Resistance4WRangeLabels[(MeasParameters as TDMM6500MeasPar_Res4W).Range]);
-//SetMeasureFunction(kt_mRes4W,2);
-//SetRange(dm_r4rAuto,2);
-//if GetRange(2) then
-//  showmessage('ura!  '+DMM6500_Resistance4WRangeLabels[(fChansMeasure[1].MeasParameters as TDMM6500MeasPar_Res4W).Range]);
-//SetRange(dm_r4r10k,2);
-//if GetRange(2) then
-//  showmessage('ura!  '+DMM6500_Resistance4WRangeLabels[(fChansMeasure[1].MeasParameters as TDMM6500MeasPar_Res4W).Range]);
+SetMeasureFunction(kt_mRes4W);
+if GetRange then
+  showmessage('ura!  '+DMM6500_Resistance4WRangeLabels[(MeasParameters as TDMM6500MeasPar_Res4W).Range]);
+SetRange(dm_r4r100);
+if GetRange then
+  showmessage('ura!  '+DMM6500_Resistance4WRangeLabels[(MeasParameters as TDMM6500MeasPar_Res4W).Range]);
+SetRange(dm_r4r1M);
+if GetRange then
+  showmessage('ura!  '+DMM6500_Resistance4WRangeLabels[(MeasParameters as TDMM6500MeasPar_Res4W).Range]);
+SetOffsetComp(dm_ocOn);
+SetRange(dm_r4r1M);
+if GetRange then
+  showmessage('ura!  '+DMM6500_Resistance4WRangeLabels[(MeasParameters as TDMM6500MeasPar_Res4W).Range]);
+SetMeasureFunction(kt_mRes4W,2);
+SetRange(dm_r4rAuto,2);
+if GetRange(2) then
+  showmessage('ura!  '+DMM6500_Resistance4WRangeLabels[(fChansMeasure[1].MeasParameters as TDMM6500MeasPar_Res4W).Range]);
+SetRange(dm_r4r10k,2);
+if GetRange(2) then
+  showmessage('ura!  '+DMM6500_Resistance4WRangeLabels[(fChansMeasure[1].MeasParameters as TDMM6500MeasPar_Res4W).Range]);
 
+//----------------------------------------------------------------
 
 //SetMeasureFunction(kt_mCap);
 //if GetRange then
@@ -2346,6 +2357,7 @@ begin
 //if GetDetectorBW(3) then
 // showmessage('ura! '+ DMM6500_DetectorBandwidthLabel[(fChansMeasure[2].MeasParameters as TDMM6500MeasPar_BaseAC).DetectorBW]);
 
+//if GetMeasureFunction(1) then showmessage('lll');
 
 //SetMeasureFunction(kt_mVolDC);
 //SetInputImpedance(dm_ii10M);
@@ -2366,11 +2378,11 @@ begin
 //if GetUnits then
 // showmessage('ura! '+ DMM6500_TempUnitsLabel[(MeasParameters as TDMM6500MeasPar_Temper).Units]);
 //SetMeasureFunction(kt_mTemp,1);
-//SetUnits(dm_tuKelv);
+//SetUnits(dm_tuKelv,1);
 //if GetUnits(1) then
 // showmessage('ura! '+ DMM6500_TempUnitsLabel[(fChansMeasure[0].MeasParameters as TDMM6500MeasPar_Temper).Units]);
 //SetMeasureFunction(kt_mVolDC,3);
-//SetUnits(dm_vuVolt);
+//SetUnits(dm_vuVolt,3);
 //if GetUnits(3) then
 // showmessage('ura! '+ DMM6500_VoltageUnitsLabel[(fChansMeasure[2].MeasParameters as TDMM6500MeasPar_VoltDC).Units]);
 
@@ -2382,7 +2394,7 @@ begin
 //SetMeasureFunction(kt_mTemp);
 //SetUnits(dm_tuFahr);
 //SetMeasureFunction(kt_mDigVolt,1);
-//SetUnits(dm_vuDB);
+//SetUnits(dm_vuDB,1);
 //SetMeasureFunction(kt_mTemp,2);
 //SetUnits(dm_tuKelv,2);
 
@@ -2409,7 +2421,7 @@ begin
 // if GetDecibelReference() then
 //  showmessage('ura! '+floattostr((MeasParameters as TDMM6500MeasPar_VoltDC).DB));
 // if GetDecibelReference(2) then
-//  showmessage('ura! '+ floattostr((fChansMeasure[1].fMeasParameters as TDMM6500MeasPar_VoltDC).DB));
+//  showmessage('ura! '+ floattostr((ChansMeasure[1].MeasParameters as TDMM6500MeasPar_VoltDC).DB));
 // SetMeasureFunction(kt_mVolAC,2);
 // if GetDecibelReference(2) then
 //  showmessage('ura! '+ floattostr((fChansMeasure[1].MeasParameters as TDMM6500MeasPar_VoltAC).DB))
@@ -2449,22 +2461,24 @@ begin
 //SetDelayAuto(True,5);
 
 //if GetDisplayDigitsNumber then
-//  showmessage('ura! '+inttostr(MeasParameters.DisplayDN)+Kt2450DisplayDNLabel);
+//  showmessage('ura! '+inttostr(MeasParameters.DisplayDN)+KeitleyDisplayDNLabel);
 //SetDisplayDigitsNumber(kt_mCurAC,3);
 //if GetDisplayDigitsNumber(kt_mCurAC) then
-//  showmessage('ura! '+inttostr(fMeasParameters[kt_mCurAC].DisplayDN)+Kt2450DisplayDNLabel);
+//  showmessage('ura! '+inttostr(fMeasParameters[kt_mCurAC].DisplayDN)+KeitleyDisplayDNLabel);
 //SetDisplayDigitsNumber(4,3);
 //if GetDisplayDigitsNumber(3) then
-// showmessage('ura! '+inttostr(fChansMeasure[2].MeasParameters.DisplayDN)+Kt2450DisplayDNLabel);
+// showmessage('ura! '+inttostr(fChansMeasure[2].MeasParameters.DisplayDN)+KeitleyDisplayDNLabel);
 
-
+// GetMeasureFunction(2);
 // SetDisplayDigitsNumber(4,2);
+// GetMeasureFunction(0);
 // SetDisplayDigitsNumber(4);
 // SetDisplayDigitsNumber(kt_mVolDC,3);
 // SetDisplayDigitsNumber(kt_mTemp,6);
 // SetDisplayDigitsNumber(kt_mDigVolt,5);
 
 //SetCountDig(10000);
+// showmessage('ura! '+inttostr(CountDig));
 //if GetCountDig then
 // showmessage('ura! '+inttostr(CountDig));
 //SetCountDig(35000,1);
@@ -2478,12 +2492,12 @@ begin
 //SetCountDig(35000,1);
 //SetCountDig(30000,2);
 
-if GetCount(1) then showmessage('Chan 1, Count='+inttostr(fChansMeasure[0].Count));
-SetCount(200,1);
-if GetCount(1) then showmessage('Chan 1, Count='+inttostr(fChansMeasure[0].Count));
-if GetCount(0) then showmessage('Count='+inttostr(Count));
-SetCount(400000);
-if GetCount() then showmessage('Count='+inttostr(Count));
+//if GetCount(1) then showmessage('Chan 1, Count='+inttostr(fChansMeasure[0].Count));
+//SetCount(200,1);
+//if GetCount(1) then showmessage('Chan 1, Count='+inttostr(fChansMeasure[0].Count));
+//if GetCount(0) then showmessage('Count='+inttostr(Count));
+//SetCount(400000);
+//if GetCount() then showmessage('Count='+inttostr(Count));
 
 
 //if GetMeasureFunction() then
@@ -2501,7 +2515,7 @@ if GetCount() then showmessage('Count='+inttostr(Count));
 // if GetMeasureFunction(3) then
 //  showmessage ('ura  '+ Keitley_MeasureLabel[fChansMeasure[2].MeasureFunction])
 //                         else
-//  showmessage('ups :(');                        
+//  showmessage('ups :(');
 
 //SetMeasureFunction;
 //SetMeasureFunction(kt_mVolDC,2);
@@ -2811,7 +2825,8 @@ begin
           52:StringToOrd(AnsiLowerCase(Str));//StringToInputImpedance(AnsiLowerCase(Str));
           53:StringToOrd(Str);//StringToDetectorBW(Str);
           15,56:case fLeafNode of
-              0:OffOnToValue(AnsiLowerCase(Str));
+//              0:OffOnToValue(AnsiLowerCase(Str));
+              0:fDevice.Value:=StrToInt(Str);
               1:fDevice.Value:=SCPI_StringToValue(Str);
              end;
           57:StringToOrd(AnsiLowerCase(Str));//StringToVoltageRatioMethod(AnsiLowerCase(Str));
@@ -3257,10 +3272,18 @@ procedure TDMM6500.SetCountDig(Cnt: Integer; ChanNumber: Byte);
 begin
   // :DIG:COUN <n>
    if ChanNumber=0
-   then  SetCountDigAction(CountDig,Cnt)
+   then
+    begin
+    CountDig:=Cnt;
+    SetCountDigAction(CountDig)
+    end
    else
      if ChanSetupBegin(ChanNumber)
-       then  SetCountDigAction(fChansMeasure[ChanNumber-fFirstChannelInSlot].CountDig,Cnt);
+       then
+       begin
+       fChansMeasure[ChanNumber-fFirstChannelInSlot].CountDig:=Cnt;
+       SetCountDigAction(fChansMeasure[ChanNumber-fFirstChannelInSlot].CountDig);
+       end;
 
 // if ChanSetupBegin(ChanNumber) then
 //  begin
@@ -3270,11 +3293,12 @@ begin
 //  end;
 end;
 
-procedure TDMM6500.SetCountDigAction(DeviceCountDig, NewCountDig:integer);
+procedure TDMM6500.SetCountDigAction(NewCountDig:integer);
 begin
-  DeviceCountDig:=NewCountDig;
-  fAdditionalString:=IntToStr(DeviceCountDig);
+//  DeviceCountDig:=NewCountDig;
+  fAdditionalString:=IntToStr(NewCountDig);
   SetupOperation(23,20);
+//  showmessage('kkk '+inttostr(CountDig));
 end;
 
 procedure TDMM6500.SetCountDigNumber(Value: integer);
@@ -4002,7 +4026,7 @@ begin
                   then Result:=7
                   else Result:=round(Log10(Value/1e-4))+1;
               end;
-   kt_mRes4W,
+   kt_mRes4W: Result:=round(Log10(Value))+1;
    kt_mRes2W: Result:=round(Log10(Value/10))+1;
    kt_mCap: Result:=round(Log10(Value/1e-9))+1;
    kt_mDiod: Result:=round(Log10(Value/1e-5));
