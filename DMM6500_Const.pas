@@ -179,6 +179,8 @@ const
  DMM6500_CountDigLimits:TLimitValues=(1,55000000);
  DMM6500_CountLimits:TLimitValues=(1,1000000);
 
+ DMM6500_DelayAfterCloseLimits:TLimitValues=(0,1000000);
+
  DMM6500_RefTempLimits:array[TDMM6500_TempUnits] of TLimitValues=
   ((273.15,338.15),(0,65),(32,149));
  DMM6500_RefTempInitValue:array[TDMM6500_TempUnits] of double=

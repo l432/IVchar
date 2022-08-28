@@ -1194,8 +1194,10 @@ begin
 
         end
        else fDevice.Value:=StrToInt(Str);
-  9:if StringToTerminals(AnsiLowerCase(Str))
+  9:case fFirstLevelNode of
+    6:if StringToTerminals(AnsiLowerCase(Str))
           then fDevice.Value:=ord(fTerminal);
+    end;
 //  11:case fFirstLevelNode of
 //        23:begin
 //           StringToArray(Str);

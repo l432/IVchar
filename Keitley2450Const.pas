@@ -17,7 +17,7 @@ const
   RootNodeKeitley:array[0..39]of string=
   ('*idn?','*rcl ','*rst','*sav',':acq',':outp',':disp',':syst','scr:run',
 //   0       1       2      3      4        5       6       7      8
-  'rout',':sens',':sour',':curr', ':volt', ':res',':func',':azer:once','init',
+  ':rout',':sens',':sour',':curr', ':volt', ':res',':func',':azer:once','init',
 //  9       10     11        12      13      14      15         16       17
   ':abor',':trac',':coun',':read',':fetc',':dig',':conf','*wai',':trig','*trg',
 //   18      19      20      21      22      23    24      25     26      27
@@ -31,7 +31,7 @@ const
  'amp','volt','ohm','watt','auto' );
 //   4     5    6      7     8
 
-  FirstNodeKt_2450:array[0..62]of string=
+  FirstNodeKt_2450:array[0..66]of string=
   (':scr',':user1:text',':user2:text',':cle',':pos',':int:stat',':term',
 //     0       1             2          3      4        5         6
    ':rsen',':smod',':ocom',':prot',':trip',':vlim',':ilim',':unit',
@@ -48,8 +48,8 @@ const
 //   45       46       47        48        49       50       51      52
    ':det:band',':line:sync',':odet',':thr',':rel:meth',':bias:lev',':rtd',
 //      53         54       55     56        57          58        59
-   ':tc',':ther',':tran');
-//  60      61      62
+   ':tc',':ther',':tran',':clos',':open',':mult',':stat');
+//  60      61      62      63      64      65      66
 
  ConfLeafNodeKeitley:array[0..3]of string=
  (':cre',':del',':rec',':stor');

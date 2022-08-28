@@ -191,8 +191,10 @@ begin
   if not(DeviceEthernetisAbsent) then
     begin
      fDMM6500.GetCardParametersFromDevice;
-     if fMeasParShow<>nil then
-       fMeasParShow.GetDataFromDevice;
+     fMeasureTypeShow.GetDataFromDevice;
+//     if fMeasParShow<>nil then
+//       fMeasParShow.GetDataFromDevice;
+
 
 //    fKt_2450.IsOutPutOn();
 //    fKt_2450.GetVoltageProtection;
@@ -217,6 +219,14 @@ begin
     end;
 
   inherited GetSettingButtonClick(Sender);
+
+  if not(DeviceEthernetisAbsent) then
+    begin
+     if fMeasParShow<>nil then
+       fMeasParShow.GetDataFromDeviceAndToSetting;
+     fControlChannels.GetDataFromDeviceAndToSetting;
+    end;
+
 end;
 
 //function TDMM6500_Show.MeasParShowFactory(MeasureType: TKeitley_Measure;
@@ -260,15 +270,15 @@ begin
  MeasureParamShowDestroy;
  fMeasParShow:=MeasParShowFactory(fDMM6500.MeasureFunction,
                 fGBParametrShow,fDMM6500,0);
-// if fMeasParShow<>nil then
-//   fMeasParShow.GetDataFromDevice;
-
+ if not(DeviceEthernetisAbsent) then
+   if fMeasParShow<>nil then
+     fMeasParShow.GetDataFromDeviceAndToSetting;
 end;
 
 procedure TDMM6500_Show.MeasureParamShowDestroy;
 begin
-  if fMeasParShow <> nil then
-    fMeasParShow.Free;
+  if Assigned(fMeasParShow) then
+    FreeAndNil(fMeasParShow);
 end;
 
 end.

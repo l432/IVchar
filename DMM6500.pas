@@ -23,10 +23,17 @@ type
    fCount:integer;
    fCountDig:integer;
    fMeasParameters:array [TKeitley_Measure] of TDMM6500MeasPar_Base;
+   fIsClosed:boolean;
+   fDelayAfterClose:double;
+   {додаткова затримка після замикання каналу, []=ms}
    procedure SetCountNumber(Value:integer);
    function GetMeasParameters:TDMM6500MeasPar_Base;
    Procedure MeasParametersDestroy;
    procedure SetCountDigNumber(Value:integer);
+   procedure SetDelayAfterClose(Value:double);
+   {загалом, ніяких обмежень в опису не вказано, лише
+    For most cards, the resolution of the delay is 10 µs.
+    я сам вибрав, що дозволені межі 0-1000 000 ms}
   public
    property Number:byte read FNumber;
    property MeasureFunction:TKeitley_Measure read FMeasureFunction write FMeasureFunction;
@@ -34,6 +41,8 @@ type
    property Count:integer read fCount write SetCountNumber;
    property MeasParameters:TDMM6500MeasPar_Base read GetMeasParameters;
    property CountDig:integer read fCountDig write SetCountDigNumber;
+   property IsClosed:boolean read fIsClosed write fIsClosed;
+   property DelayAfterClose:double read fDelayAfterClose write SetDelayAfterClose;
    constructor Create(ChanNumber:byte;DMM6500:TDMM6500);
    destructor Destroy; override;
  end;
@@ -62,7 +71,7 @@ type
    function ChanelNumberIsCorrect(ChanNumber:byte):boolean;overload;
    function ChanelNumberIsCorrect(ChanNumberLow,ChanNumberHigh:byte):boolean;overload;
    function ChanelNumberIsCorrect(ChanNumbers:array of byte):boolean;overload;
-   
+
    procedure ChansMeasureCreate;
    procedure ChansMeasureDestroy;
 
@@ -93,6 +102,8 @@ type
 //   procedure SetupShablon(SetProcedureInteger:TSetProcedureInteger;Value:Integer;ChanNumber:byte);overload;
 //   procedure SetupShablon(SetProcedure:TSetProcedureRTDType;RTDType:TDMM6500_RTDType;WiType:TDMM6500_RTDPropertyNumber;ChanNumber:byte);overload;
    function ChanSetupBegin(ChanNumber:byte):boolean;
+   function ChanSetupBeginShot(ChanNumber:byte):boolean;
+
    function ChanQuireBegin(ChanNumber:byte):boolean;
    Procedure MeasParametersDestroy;
 //   procedure StrToTempUnit(Str:string);
@@ -478,7 +489,15 @@ type
 //   procedure GetTransdTypeAction(PM:TDMM6500MeasPar_Base);
    function GetTransdType(ChanNumber:byte=0):boolean;
 
+   procedure SetChannelCloseHard(ChanNumber:byte);
+   procedure SetChannelOpenHard(ChanNumber:byte);
+   procedure SetChannelOpenAll;
+   function GetChannelState(ChanNumber:byte):boolean;
+   procedure SetChannelCloseSoft(ChanNumber:byte);
+   procedure SetChannelOpenSoft(ChanNumber:byte);
 
+   procedure SetDelayAfterClose(DelayTime:double;ChanNumber:byte);
+   function GetDelayAfterClose(ChanNumber:byte):boolean;
 
    Procedure GetParametersFromDevice;override;
    Procedure GetCardParametersFromDevice;
@@ -845,6 +864,18 @@ begin
  QuireOperation(7,45,3);
  Result:=fDevice.Value<>ErResult;
  if Result then fChannelMaxVoltage:=fDevice.Value;
+end;
+
+function TDMM6500.GetChannelState(ChanNumber: byte): boolean;
+begin
+  if ChanQuireBegin(ChanNumber) then
+      begin
+       QuireOperation(9,66,0);
+       Result:=(fDevice.Value<>ErResult);
+       if Result then fChansMeasure[ChanNumber-fFirstChannelInSlot].IsClosed:=(fDevice.Value=1);
+       fChanOperation:=False;
+      end                      else
+      Result:=False;
 end;
 
 function TDMM6500.GetCount(ChanNumber: byte): boolean;
@@ -1799,6 +1830,18 @@ end;
 //   (MeasParameters as TDMM6500MeasPar_BaseDelay).AutoDelay:=(fDevice.Value=1);
 //end;
 
+function TDMM6500.GetDelayAfterClose(ChanNumber: byte): boolean;
+begin
+  if ChanQuireBegin(ChanNumber) then
+      begin
+       QuireOperation(9,21);
+       Result:=(fDevice.Value<>ErResult);
+       if Result then fChansMeasure[ChanNumber-fFirstChannelInSlot].DelayAfterClose:=fDevice.Value*1e3;
+       fChanOperation:=False;
+      end                      else
+      Result:=False;
+end;
+
 function TDMM6500.GetDelayAuto(ChanNumber: byte): boolean;
 begin
  Result:=GetShablon(dm_pp_DelayAuto,ChanNumber);
@@ -1898,6 +1941,20 @@ begin
 //  fDevice.GetData;
 //  (fDevice as TTelnetMeterDeviceSingle).SetStringToSend(':DIG:COUN?');
 //  fDevice.GetData;
+
+
+SetDelayAfterClose(0.5,4);
+GetDelayAfterClose(4);
+
+//SetChannelCloseSoft(4);
+//SetChannelOpenSoft(4);
+
+//SetChannelCloseHard(4);
+//GetChannelState(4);
+//SetChannelCloseHard(5);
+//GetChannelState(4);
+//SetChannelOpenHard(4);
+//SetChannelOpenAll;
 
 //SetMeasureFunction(kt_mTemp);
 //if GetTransdType then
@@ -2212,26 +2269,26 @@ begin
 //  showmessage('ura!  '+DMM6500_Resistance2WRangeLabels[(fChansMeasure[1].MeasParameters as TDMM6500MeasPar_Res2W).Range]);
 
 
-SetMeasureFunction(kt_mRes4W);
-if GetRange then
-  showmessage('ura!  '+DMM6500_Resistance4WRangeLabels[(MeasParameters as TDMM6500MeasPar_Res4W).Range]);
-SetRange(dm_r4r100);
-if GetRange then
-  showmessage('ura!  '+DMM6500_Resistance4WRangeLabels[(MeasParameters as TDMM6500MeasPar_Res4W).Range]);
-SetRange(dm_r4r1M);
-if GetRange then
-  showmessage('ura!  '+DMM6500_Resistance4WRangeLabels[(MeasParameters as TDMM6500MeasPar_Res4W).Range]);
-SetOffsetComp(dm_ocOn);
-SetRange(dm_r4r1M);
-if GetRange then
-  showmessage('ura!  '+DMM6500_Resistance4WRangeLabels[(MeasParameters as TDMM6500MeasPar_Res4W).Range]);
-SetMeasureFunction(kt_mRes4W,2);
-SetRange(dm_r4rAuto,2);
-if GetRange(2) then
-  showmessage('ura!  '+DMM6500_Resistance4WRangeLabels[(fChansMeasure[1].MeasParameters as TDMM6500MeasPar_Res4W).Range]);
-SetRange(dm_r4r10k,2);
-if GetRange(2) then
-  showmessage('ura!  '+DMM6500_Resistance4WRangeLabels[(fChansMeasure[1].MeasParameters as TDMM6500MeasPar_Res4W).Range]);
+//SetMeasureFunction(kt_mRes4W);
+//if GetRange then
+//  showmessage('ura!  '+DMM6500_Resistance4WRangeLabels[(MeasParameters as TDMM6500MeasPar_Res4W).Range]);
+//SetRange(dm_r4r100);
+//if GetRange then
+//  showmessage('ura!  '+DMM6500_Resistance4WRangeLabels[(MeasParameters as TDMM6500MeasPar_Res4W).Range]);
+//SetRange(dm_r4r1M);
+//if GetRange then
+//  showmessage('ura!  '+DMM6500_Resistance4WRangeLabels[(MeasParameters as TDMM6500MeasPar_Res4W).Range]);
+//SetOffsetComp(dm_ocOn);
+//SetRange(dm_r4r1M);
+//if GetRange then
+//  showmessage('ura!  '+DMM6500_Resistance4WRangeLabels[(MeasParameters as TDMM6500MeasPar_Res4W).Range]);
+//SetMeasureFunction(kt_mRes4W,2);
+//SetRange(dm_r4rAuto,2);
+//if GetRange(2) then
+//  showmessage('ura!  '+DMM6500_Resistance4WRangeLabels[(fChansMeasure[1].MeasParameters as TDMM6500MeasPar_Res4W).Range]);
+//SetRange(dm_r4r10k,2);
+//if GetRange(2) then
+//  showmessage('ura!  '+DMM6500_Resistance4WRangeLabels[(fChansMeasure[1].MeasParameters as TDMM6500MeasPar_Res4W).Range]);
 
 //----------------------------------------------------------------
 
@@ -2754,6 +2811,7 @@ end;
 procedure TDMM6500.PrepareString;
 begin
  inherited PrepareString;
+
  if fChanOperation then
    begin
     fDevice.JoinToStringToSend(fChanOperationString);
@@ -2773,6 +2831,9 @@ begin
          end;
      3:JoinToStringToSend(CardLeafNodeDMM6500[fLeafNode]);
      50..52:JoinToStringToSend(':'+DeleteSubstring(RootNodeKeitley[0],'*'));
+    end;
+  9:case fFirstLevelNode of
+     65:JoinToStringToSend(FirstNodeKt_2450[fLeafNode]);
     end;
   12..14,28..39:
      case fFirstLevelNode of
@@ -2814,6 +2875,10 @@ begin
 //     51:if pos(TCSCAN2001_Test,Str)<>0 then fDevice.Value:=314;
      52:if pos(Pseudocard_Test,Str)<>0 then fDevice.Value:=314;
     end;
+  9:case fFirstLevelNode of
+    66:fDevice.Value:=StrToInt(Str);
+    21:fDevice.Value:=SCPI_StringToValue(Str);
+    end;
   12..14,
    28..39:case fFirstLevelNode of
           9:StringToOrd(AnsiLowerCase(Str));//StringToOffsetComp(Str);
@@ -2853,6 +2918,8 @@ procedure TDMM6500.ProcessingStringChanOperation;
 begin
 // fChanOperation:=False;
  if fDevice.Value=ErResult then Exit;
+
+
 
  case fRootNode of
   15:if fDevice.Value<=ord(kt_mVoltRat)
@@ -2976,7 +3043,7 @@ begin
                   end;
    dm_tp_RTDDelta: begin
      (PM as TDMM6500MeasPar_Temper).RTD_Delta:=PDouble(P)^;
-     fAdditionalString:=FloatToStrF((PM as TDMM6500MeasPar_Temper).RTD_Delta,ffExponent,5,0);;
+     fAdditionalString:=FloatToStrF((PM as TDMM6500MeasPar_Temper).RTD_Delta,ffExponent,5,0);
                    end;
    dm_tp_RTDZero: begin
      (PM as TDMM6500MeasPar_Temper).RTD_Zero:=PInteger(P)^;
@@ -3237,6 +3304,56 @@ end;
 // SetupOperation(MeasureToRootNodeNumber(FM),58);
 // (PM as TDMM6500MeasPar_Diode).BiasLevel:=BL;
 //end;
+
+procedure TDMM6500.SetChannelCloseHard(ChanNumber: byte);
+ var i:integer;
+begin
+  if ChanSetupBeginShot(ChanNumber) then
+   begin
+    SetupOperation(9,63);
+    fChansMeasure[ChanNumber-fFirstChannelInSlot].IsClosed:=True;
+    for I := 0 to High(fChansMeasure) do
+      if i<>ChanNumber-fFirstChannelInSlot
+        then fChansMeasure[i].IsClosed:=False;
+   end;
+end;
+
+procedure TDMM6500.SetChannelCloseSoft(ChanNumber: byte);
+begin
+  if ChanSetupBeginShot(ChanNumber) then
+   begin
+    SetupOperation(9,65,63);
+    fChansMeasure[ChanNumber-fFirstChannelInSlot].IsClosed:=True;
+   end;
+end;
+
+procedure TDMM6500.SetChannelOpenAll;
+  var i:integer;
+begin
+  fChanOperationString:='(@ALLSLOTS)';
+  fChanOperation:=True;
+  SetupOperation(9,64);
+  for I := 0 to High(fChansMeasure) do
+      fChansMeasure[i].IsClosed:=False;
+end;
+
+procedure TDMM6500.SetChannelOpenHard(ChanNumber:byte);
+begin
+  if ChanSetupBeginShot(ChanNumber) then
+   begin
+    SetupOperation(9,64);
+    fChansMeasure[ChanNumber-fFirstChannelInSlot].IsClosed:=False;
+   end;
+end;
+
+procedure TDMM6500.SetChannelOpenSoft(ChanNumber: byte);
+begin
+  if ChanSetupBeginShot(ChanNumber) then
+   begin
+    SetupOperation(9,65,64);
+    fChansMeasure[ChanNumber-fFirstChannelInSlot].IsClosed:=False;
+   end;
+end;
 
 procedure TDMM6500.SetCount(Cnt: Integer; ChanNumber: Byte);
  var tempCount:integer;
@@ -3561,6 +3678,11 @@ end;
 procedure TDMM6500.SetOffsetComp(OC: TDMM6500_OffsetCompen; ChanNumber: Byte);
 begin
 //:<function>:OCOM OFF|ON|AUTO
+ if (OC=dm_ocOn)
+    and(MeasFuncByCN(ChanNumber)=kt_mRes4W)
+    and((MeasParamByCN(ChanNumber) as TDMM6500MeasPar_Res4W).Range>dm_r4r10k)
+      then  SetRange(dm_r4r10k,ChanNumber);
+
  SetShablon(dm_pp_OffsetCompen,Pointer(OC),ChanNumber);
 // if ChanNumber=0
 // then  SetOffsetCompAction(fMeasureFunction,MeasParameters,OC)
@@ -4297,6 +4419,17 @@ begin
      Result:=False;
 end;
 
+function TDMM6500.ChanSetupBeginShot(ChanNumber: byte): boolean;
+begin
+ if ChanelNumberIsCorrect(ChanNumber) then
+   begin
+     fChanOperationString:=ChanelToString(ChanNumber);
+     fChanOperation:=True;
+     Result:=True;
+   end                                else
+     Result:=False;
+end;
+
 procedure TDMM6500.ChansMeasureCreate;
  var i:byte;
 begin
@@ -4341,6 +4474,8 @@ begin
  FMeasureFunction:=kt_mVolDC;
  fCount:=1;
  fCountDig:=1;
+ fIsClosed:=False;
+ fDelayAfterClose:=0;
 end;
 
 destructor TDMM6500Channel.Destroy;
@@ -4374,6 +4509,12 @@ begin
  fCount:=TSCPInew.NumberMap(Value,DMM6500_CountLimits);
 end;
 
+
+procedure TDMM6500Channel.SetDelayAfterClose(Value: double);
+begin
+ fDelayAfterClose:=TSCPInew.NumberMap(Value,DMM6500_DelayAfterCloseLimits);
+ fDelayAfterClose:=(round(fDelayAfterClose*100))/100;
+end;
 
 //procedure TDMM6500.SetDecibelReference(DBvalue: double);
 ////  var BaseV:IMeasPar_BaseVolt;
@@ -4461,6 +4602,16 @@ end;
 //   SetupOperation(MeasureToRootNodeNumber(FM),48);
 //  end;
 //end;
+
+procedure TDMM6500.SetDelayAfterClose(DelayTime: double; ChanNumber: byte);
+begin
+  if ChanSetupBegin(ChanNumber) then
+   begin
+    fChansMeasure[ChanNumber-fFirstChannelInSlot].DelayAfterClose:=DelayTime;
+    fAdditionalString:=FloatToStrF(fChansMeasure[ChanNumber-fFirstChannelInSlot].DelayAfterClose*1e-3,ffExponent,5,0);
+    SetupOperation(9,21);
+   end;
+end;
 
 procedure TDMM6500.SetDelayAuto(toOn: Boolean; ChanNumber: Byte);
 begin

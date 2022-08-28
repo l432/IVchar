@@ -25,11 +25,12 @@ TDMM6500_ParameterShowBase=class
   fMeasP:TDMM6500_MeasParameters;
   fHookParameterClick: TSimpleEvent;
  protected
-  procedure GetDataFromDevice;virtual;//abstract;
  public
   property HookParameterClick:TSimpleEvent read fHookParameterClick write fHookParameterClick;
   Constructor Create(MeasP:TDMM6500_MeasParameters;DMM6500:TDMM6500;ChanNumber:byte=0);//overload;
   procedure ObjectToSetting;virtual;abstract;
+  procedure GetDataFromDevice;virtual;//abstract;
+  procedure GetDataFromDeviceAndToSetting;
   procedure UpDate;
   function GetBaseVolt:IMeasPar_BaseVolt;
   function GetBaseVoltDC:IMeasPar_BaseVoltDC;
@@ -129,11 +130,11 @@ TDMM6500_MeasurementTypeShow=class(TDMM6500_StringParameterShow)
   procedure OkClick();override;
   procedure SettingsShowSLFilling();override;
   procedure SomeAction();override;
-  procedure GetDataFromDevice;override;
  public
   Constructor Create(ST:TStaticText;
            DMM6500:TDMM6500;ChanNumber:byte=0);
   procedure ObjectToSetting;override;
+  procedure GetDataFromDevice;override;
 end;
 
 TDMM6500_CountShow=class(TDMM6500_IntegerParameterShow)
@@ -141,7 +142,7 @@ TDMM6500_CountShow=class(TDMM6500_IntegerParameterShow)
   fCountType:byte;
  protected
   procedure OkClick();override;
-  procedure GetDataFromDevice;override;
+
   procedure SetCountType(Value:byte);
  public
   property CountType:byte write SetCountType;
@@ -149,18 +150,20 @@ TDMM6500_CountShow=class(TDMM6500_IntegerParameterShow)
               DMM6500:TDMM6500;ChanNumber:byte=0);
   {CountType = 0 - Count, else CountDig}
   procedure ObjectToSetting;override;
+  procedure GetDataFromDevice;override;
 end;
 
 TDMM6500_DisplayDNShow=class(TDMM6500_StringParameterShow)
  protected
   procedure OkClick();override;
 //  procedure SettingsShowSLFilling();override;
-  procedure GetDataFromDevice;override;
+
 //  procedure SomeAction();override;
  public
   Constructor Create(ST:TStaticText;
            DMM6500:TDMM6500;ChanNumber:byte=0);
 //  procedure ObjectToSetting;override;
+  procedure GetDataFromDevice;override;
 end;
 
 TDMM6500_AutoDelayShow=class(TDMM6500_BoolParameterShow)
@@ -201,6 +204,16 @@ TDMM6500_OpenLDShow=class(TDMM6500_BoolParameterShow)
   Constructor Create(CB:TCheckBox;
            DMM6500:TDMM6500;ChanNumber:byte=0);
 //  procedure ObjectToSetting;override;
+end;
+
+TDMM6500_ChannelCloseShow=class(TDMM6500_BoolParameterShow)
+ protected
+  procedure Click(Sender:TObject);override;
+ public
+  Constructor Create(CB:TCheckBox;
+           DMM6500:TDMM6500;ChanNumber:byte);
+  procedure GetDataFromDevice;override;
+  procedure ObjectToSetting;override;
 end;
 
 
@@ -309,6 +322,17 @@ TDMM6500_RTDDeltaShow=class(TDMM6500_DoubleParameterShow)
                      STC:TLabel;
                      DMM6500:TDMM6500;ChanNumber:byte=0);
 //  procedure ObjectToSetting;override;
+end;
+
+TDMM6500_DelayAfterCloseShow=class(TDMM6500_DoubleParameterShow)
+ protected
+  procedure OkClick();override;
+ public
+  Constructor Create(STD:TStaticText;
+                     STC:TLabel;
+                     DMM6500:TDMM6500;ChanNumber:byte);
+  procedure GetDataFromDevice;override;
+  procedure ObjectToSetting;override;
 end;
 
 TDMM6500_DecibelmWReferenceShow=class(TDMM6500_IntegerParameterShow)
@@ -592,6 +616,9 @@ TControlElements=class
  public
   Constructor Create(GB:TGroupBox;DMM6500:TDMM6500);
   destructor Destroy;override;
+  procedure ObjectToSetting;virtual;abstract;
+  procedure GetDataFromDevice;virtual;abstract;
+  procedure GetDataFromDeviceAndToSetting;
 end;
 
 TDMM6500_MeasParShow=class(TControlElements)
@@ -609,8 +636,8 @@ TDMM6500_MeasParShow=class(TControlElements)
  public
   Constructor Create(Parent:TGroupBox;DMM6500:TDMM6500;ChanNumber:byte=0);
 //  destructor Destroy;override;
-  procedure ObjectToSetting;virtual;
-  procedure GetDataFromDevice;virtual;
+  procedure ObjectToSetting;override;
+  procedure GetDataFromDevice;override;
 end;
 
 TDMM6500ControlChannels=class(TControlElements)
@@ -622,6 +649,12 @@ TDMM6500ControlChannels=class(TControlElements)
   fMeasParChanShowForm:TForm;
   fBOk:TButton;
   fGBParametrChanShow:TGroupBox;
+  fSTDelayAfterClose:TStaticText;
+  fLDelayAfterClose:TLabel;
+  fCBChannelClose:TCheckBox;
+  fDelayAfterCloseShow:TDMM6500_DelayAfterCloseShow;
+  fChannelCloseShow:TDMM6500_ChannelCloseShow;
+
   fMeasParChanShow:TDMM6500_MeasParShow;
   function GetChanCount:byte;
   procedure CreateForm(MeasureType:TKeitley_Measure;ChanNumber:byte);
@@ -637,6 +670,8 @@ TDMM6500ControlChannels=class(TControlElements)
   property ChanCount:byte read GetChanCount;
 //  Constructor Create(GB:TGroupBox;DMM6500:TDMM6500);
 //  destructor Destroy;override;
+  procedure ObjectToSetting;override;
+  procedure GetDataFromDevice;override;
 end;
 
 
@@ -649,7 +684,7 @@ TDMM6500MeasPar_BaseShow=class(TDMM6500_MeasParShow)
  protected
   procedure CreateElements;override;
   procedure CreateControls;override;
-  procedure CountShowCreate;virtual;
+//  procedure CountShowCreate;virtual;
   procedure DesignElements;override;
 
   procedure Resize(Control:TControl);
@@ -1233,7 +1268,8 @@ end;
 
 procedure TDMM6500_MeasurementTypeShow.GetDataFromDevice;
 begin
- fDMM6500.GetMeasureFunction(fChanNumber);
+ if not(fDMM6500.GetMeasureFunction(fChanNumber))
+     and (fChanNumber>0) then fDMM6500.SetMeasureFunction(kt_mVolDC);
 end;
 
 function TDMM6500_MeasurementTypeShow.MeasureToOrd(FM: TKeitley_Measure): ShortInt;
@@ -1363,21 +1399,39 @@ begin
    fBOk.ModalResult:=mrOK;
    fBOk.Caption:='OK';
 
+   fSTDelayAfterClose:=TStaticText.Create(fMeasParChanShowForm);
+   fLDelayAfterClose:=TLabel.Create(fMeasParChanShowForm);
+   fCBChannelClose:=TCheckBox.Create(fMeasParChanShowForm);
+
+
+
    fGBParametrChanShow:=TGroupBox.Create(fMeasParChanShowForm);
    fGBParametrChanShow.Width:=200;
    fGBParametrChanShow.Height:=200;
    fGBParametrChanShow.Parent:=fMeasParChanShowForm;
 
    fMeasParChanShow:=MeasParShowFactory(MeasureType,fGBParametrChanShow,fDMM6500,ChanNumber);
-//   if fMeasParChanShow<>nil then fMeasParChanShow.GetDataFromDevice;
+   if fMeasParChanShow<>nil then fMeasParChanShow.GetDataFromDeviceAndToSetting;
 
+   fDelayAfterCloseShow:=TDMM6500_DelayAfterCloseShow.Create(fSTDelayAfterClose,fLDelayAfterClose,fDMM6500,ChanNumber);
+   fChannelCloseShow:=TDMM6500_ChannelCloseShow.Create(fCBChannelClose,fDMM6500,ChanNumber);
+   fDelayAfterCloseShow.GetDataFromDeviceAndToSetting;
+   fChannelCloseShow.GetDataFromDeviceAndToSetting;
 
    fGBParametrChanShow.Top:=0;
    fGBParametrChanShow.Left:=0;
 
+   fSTDelayAfterClose.Parent:=fMeasParChanShowForm;
+   fLDelayAfterClose.Parent:=fMeasParChanShowForm;
+   fCBChannelClose.Parent:=fMeasParChanShowForm;
+   fCBChannelClose.Left:=MarginLeft;
+   fCBChannelClose.Top:=fGBParametrChanShow.Height+5;
+   RelativeLocation(fCBChannelClose,fLDelayAfterClose,oRow,Marginbetween);
+   RelativeLocation(fLDelayAfterClose,fSTDelayAfterClose,oRow,MarginBetweenLST);
+
    fBOk.Parent:=fMeasParChanShowForm;
    fBOk.Left:=round((fGBParametrChanShow.Width-fBOk.Width)/2);
-   fBOk.Top:=fGBParametrChanShow.Height+5;
+   fBOk.Top:=fSTDelayAfterClose.Height+5+fSTDelayAfterClose.Top;
 
    fMeasParChanShowForm.Width:=fGBParametrChanShow.Width+25;
    fMeasParChanShowForm.Height:=fBOk.Top+fBOk.Height+35;
@@ -1422,7 +1476,7 @@ procedure TDMM6500ControlChannels.DestroyControls;
 begin
  for I := 0 to High(fMeasurementType) do
   FreeAndNil(fMeasurementType[i]);
- end;
+end;
 
 procedure TDMM6500ControlChannels.DestroyElements;
  var i:Shortint;
@@ -1445,7 +1499,16 @@ begin
  fBOk.Parent:=nil;
  fBOk.Free;
 
+ fSTDelayAfterClose.Parent:=nil;
+ fLDelayAfterClose.Parent:=nil;
+ fCBChannelClose.Parent:=nil;
+ fSTDelayAfterClose.Free;
+ fLDelayAfterClose.Free;
+ fCBChannelClose.Free;
+
  if fMeasParChanShow<> nil then FreeAndNil(fMeasParChanShow);
+ FreeAndNil(fDelayAfterCloseShow);
+ FreeAndNil(fChannelCloseShow);
 
  fGBParametrChanShow.Parent:=nil;
  fGBParametrChanShow.Free;
@@ -1457,6 +1520,20 @@ end;
 function TDMM6500ControlChannels.GetChanCount: byte;
 begin
  Result:=High(fLabels)+1;
+end;
+
+procedure TDMM6500ControlChannels.GetDataFromDevice;
+ var i:Shortint;
+begin
+ for I := 0 to High(fMeasurementType) do
+  fMeasurementType[i].GetDataFromDevice;
+end;
+
+procedure TDMM6500ControlChannels.ObjectToSetting;
+ var i:Shortint;
+begin
+ for I := 0 to High(fMeasurementType) do
+  fMeasurementType[i].ObjectToSetting;
 end;
 
 procedure TDMM6500ControlChannels.OptionButtonClick(Sender: TObject);
@@ -1708,15 +1785,16 @@ end;
 
 { TDMM6500MeasPar_BaseShow }
 
-procedure TDMM6500MeasPar_BaseShow.CountShowCreate;
-begin
- fCountShow:=TDMM6500_CountShow.Create(STCount,LCount,fDMM6500,fChanNumber);
-end;
+//procedure TDMM6500MeasPar_BaseShow.CountShowCreate;
+//begin
+// fCountShow:=TDMM6500_CountShow.Create(STCount,LCount,fDMM6500,fChanNumber);
+//end;
 
 procedure TDMM6500MeasPar_BaseShow.CreateControls;
 begin
  fDisplayDNShow:=TDMM6500_DisplayDNShow.Create(STDisplayDN,fDMM6500,fChanNumber);
- CountShowCreate;
+ fCountShow:=TDMM6500_CountShow.Create(STCount,LCount,fDMM6500,fChanNumber);
+// CountShowCreate;
  Add(fDisplayDNShow);
  Add(fCountShow);
  fCountShow.HookParameterClick:=HookParameterClickCount;
@@ -1809,6 +1887,12 @@ begin
   DestroyControls;
   DestroyElements;
   inherited;
+end;
+
+procedure TControlElements.GetDataFromDeviceAndToSetting;
+begin
+  GetDataFromDevice;
+  ObjectToSetting;
 end;
 
 { TDMM6500_MeasParShow }
@@ -1936,6 +2020,12 @@ end;
 procedure TDMM6500_ParameterShowBase.GetDataFromDevice;
 begin
  fDMM6500.GetShablon(fMeasP,fChanNumber);
+end;
+
+procedure TDMM6500_ParameterShowBase.GetDataFromDeviceAndToSetting;
+begin
+ GetDataFromDevice;
+ ObjectToSetting;
 end;
 
 procedure TDMM6500_ParameterShowBase.UpDate;
@@ -4188,6 +4278,57 @@ procedure TDMM6500MeasPar_TemperShow.SetTypeEnable(Value: boolean);
 begin
   STType.Enabled:=Value;
   LType.Enabled:=Value;
+end;
+
+{ TDMM6500_ChannelClose }
+
+procedure TDMM6500_ChannelCloseShow.Click(Sender: TObject);
+begin
+ if fCB.Checked then fDMM6500.SetChannelCloseHard(fChanNumber)
+                else fDMM6500.SetChannelOpenHard(fChanNumber);
+ fHookParameterClick;
+end;
+
+constructor TDMM6500_ChannelCloseShow.Create(CB: TCheckBox; DMM6500: TDMM6500;
+  ChanNumber: byte);
+begin
+  inherited Create(CB,'Closed',dm_pp_OpenLeadDetector,DMM6500,ChanNumber);
+end;
+
+procedure TDMM6500_ChannelCloseShow.GetDataFromDevice;
+begin
+ fDMM6500.GetChannelState(fChanNumber);
+end;
+
+procedure TDMM6500_ChannelCloseShow.ObjectToSetting;
+begin
+ SetValue(fDMM6500.ChansMeasure[fChanNumber].IsClosed);
+end;
+
+{ TDMM6500_DelayAfterCloseShow }
+
+constructor TDMM6500_DelayAfterCloseShow.Create(STD: TStaticText; STC: TLabel;
+  DMM6500: TDMM6500; ChanNumber: byte);
+begin
+ inherited Create(dm_tp_RTDDelta,DMM6500,ChanNumber,STD,STC,'Delay After Close:',
+                0,5);
+ SetLimits(DMM6500_DelayAfterCloseLimits);
+end;
+
+procedure TDMM6500_DelayAfterCloseShow.GetDataFromDevice;
+begin
+  fDMM6500.GetDelayAfterClose(fChanNumber);
+end;
+
+procedure TDMM6500_DelayAfterCloseShow.ObjectToSetting;
+begin
+  Data:=fDMM6500.ChansMeasure[fChanNumber].DelayAfterClose;
+end;
+
+procedure TDMM6500_DelayAfterCloseShow.OkClick;
+begin
+  fDMM6500.SetDelayAfterClose(Data,fChanNumber);
+  fHookParameterClick;
 end;
 
 end.

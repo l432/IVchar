@@ -611,7 +611,7 @@ begin
     fKt_2450.GetMeasureTime();
     fKt_2450.IsHighCapacitanceOn();
     fKt_2450.GetDisplayDigitsNumber();
-//    fKt_2450.GetCount();
+    fKt_2450.GetCount();
 //    fKt_2450.GetDisplayBrightness();
     end;
 
