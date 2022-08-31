@@ -719,6 +719,10 @@ function TDMM6500.GetActionRangeShablon(FM: TKeitley_Measure;
 begin
 
  Result:=False;
+ if (FM in [kt_mDigVolt,kt_mDigCur])
+     and(MParam in [dm_pp_Range,dm_pp_RangeVoltDig,dm_pp_RangeCurrentDig])
+      then Exit;
+
  if not(PermitForParameter(FM,MParam)) then Exit;
  QuireOperation(MeasureToRootNodeNumber(FM),ParametrToFLNode(MParam),0);
  Result:=(fDevice.Value<>ErResult);
@@ -1943,8 +1947,8 @@ begin
 //  fDevice.GetData;
 
 
-SetDelayAfterClose(0.5,4);
-GetDelayAfterClose(4);
+//SetDelayAfterClose(0.5,4);
+//GetDelayAfterClose(4);
 
 //SetChannelCloseSoft(4);
 //SetChannelOpenSoft(4);
@@ -2116,7 +2120,7 @@ GetDelayAfterClose(4);
 //SetVRMethod(dm_vrmPart,2);
 //if GetVRMethod(2) then
 //  showmessage('ura!  '+DMM6500_VoltageRatioMethodLabel[(fChansMeasure[1].MeasParameters as TDMM6500MeasPar_VoltRat).VRMethod]);
-
+//-----------------------------------------------------
 
 //SetMeasureFunction(kt_mPer);
 //if GetThresholdRange then
@@ -2183,6 +2187,7 @@ GetDelayAfterClose(4);
 //SetRange(dm_var750V);
 //if GetRange then
 //  showmessage('ura!  '+DMM6500_VoltageACRangeLabels[(MeasParameters as TDMM6500MeasPar_VoltAC).Range]);
+//SetRange(dm_varAuto);
 //SetMeasureFunction(kt_mVolAC,2);
 //SetRange(dm_var1V,2);
 //if GetRange(2) then
@@ -2193,12 +2198,15 @@ GetDelayAfterClose(4);
 
 //SetMeasureFunction(kt_mCurDC);
 //SetRange(dm_cdr10uA);
+//SetRange(dm_cdrAuto);
 //if GetRange then
 //  showmessage('ura!  '+DMM6500_CurrentDCRangeLabels[(MeasParameters as TDMM6500MeasPar_CurDC).Range]);
 //SetRange(dm_cdr3A);
+//SetRange(dm_cdrAuto);
 //if GetRange then
 //  showmessage('ura!  '+DMM6500_CurrentDCRangeLabels[(MeasParameters as TDMM6500MeasPar_CurDC).Range]);
 //SetRange(dm_cdr1A);
+//SetRange(dm_cdrAuto);
 //if GetRange then
 //  showmessage('ura!  '+DMM6500_CurrentDCRangeLabels[(MeasParameters as TDMM6500MeasPar_CurDC).Range]);
 //SetRange(dm_cdr10A);
@@ -2209,31 +2217,22 @@ GetDelayAfterClose(4);
 //SetRange(dm_cdrAuto);
 //if GetRange then
 //  showmessage('ura!  '+DMM6500_CurrentDCRangeLabels[(MeasParameters as TDMM6500MeasPar_CurDC).Range]);
-//SetMeasureFunction(kt_mCurDC,2);
-//SetRange(dm_cdr1A,2);
-//if GetRange(2) then
-//  showmessage('ura!  '+DMM6500_CurrentDCRangeLabels[(fChansMeasure[1].MeasParameters as TDMM6500MeasPar_CurDC).Range]);
-//SetRange(dm_cdrAuto,2);
-//if GetRange(2) then
-//  showmessage('ura!  '+DMM6500_CurrentDCRangeLabels[(fChansMeasure[1].MeasParameters as TDMM6500MeasPar_CurDC).Range]);
 
 //SetMeasureFunction(kt_mDigCur);
-//SetRange(dm_cdr100uA);
+//SetRange(dm_cdr10uA);
 //if GetRange then
-//  showmessage('ura!  '+DMM6500_CurrentDCRangeLabels[(MeasParameters as TDMM6500MeasPar_DigCur).Range]);
+//  showmessage('ura!  '+DMM6500_CurrentDCRangeLabels[(MeasParameters as TDMM6500MeasPar_DigCur).Range])
+//            else
+//  showmessage('ups');
+//SetRange(dm_cdrAuto);
+//
 //SetRange(dm_cdr10A);
 //Terminal:=kt_otRear;
 //SetRange(dm_cdr10A);
 //if GetRange then
-//  showmessage('ura!  '+DMM6500_CurrentDCRangeLabels[(MeasParameters as TDMM6500MeasPar_DigCur).Range]);
-//SetMeasureFunction(kt_mDigCur,2);
-//SetRange(dm_cdr1A,2);
-//if GetRange(2) then
-//  showmessage('ura!  '+DMM6500_CurrentDCRangeLabels[(fChansMeasure[1].MeasParameters as TDMM6500MeasPar_DigCur).Range]);
-//SetRange(dm_cdrAuto,2);
-//if GetRange(2) then
-//  showmessage('ura!  '+DMM6500_CurrentDCRangeLabels[(fChansMeasure[1].MeasParameters as TDMM6500MeasPar_DigCur).Range]);
-
+//  showmessage('ura!  '+DMM6500_CurrentDCRangeLabels[(MeasParameters as TDMM6500MeasPar_DigCur).Range])
+//            else
+// showmessage('ups');
 
 //SetMeasureFunction(kt_mCurAC);
 //SetRange(dm_car100uA);
@@ -2256,6 +2255,7 @@ GetDelayAfterClose(4);
 //SetRange(dm_r2r100);
 //if GetRange then
 //  showmessage('ura!  '+DMM6500_Resistance2WRangeLabels[(MeasParameters as TDMM6500MeasPar_Res2W).Range]);
+//SetRange(dm_r2rAuto);
 //SetRange(dm_r2r1M);
 //if GetRange then
 //  showmessage('ura!  '+DMM6500_Resistance2WRangeLabels[(MeasParameters as TDMM6500MeasPar_Res2W).Range]);
@@ -2290,7 +2290,6 @@ GetDelayAfterClose(4);
 //if GetRange(2) then
 //  showmessage('ura!  '+DMM6500_Resistance4WRangeLabels[(fChansMeasure[1].MeasParameters as TDMM6500MeasPar_Res4W).Range]);
 
-//----------------------------------------------------------------
 
 //SetMeasureFunction(kt_mCap);
 //if GetRange then
@@ -2585,7 +2584,6 @@ GetDelayAfterClose(4);
 //SetMeasureFunction(2,4,kt_mCurDC);
 //SetMeasureFunction([9,3,5],kt_mFreq);
 //SetMeasureFunction([9,3,5],kt_mVoltRat);
-//------------------------------------------------------
 
 
 // SetMeasureFunction(kt_mDigVolt);
@@ -2770,12 +2768,14 @@ begin
    dm_pp_ThresholdRange:Result:=(FM in [kt_mFreq,kt_mPer]);
    dm_pp_Range:Result:=(FM in [kt_mCurDC,kt_mVolDC,kt_mRes2W,
                         kt_mCurAC,kt_mVolAC,kt_mRes4W,kt_mCap,
-                        kt_mVoltRat,kt_mDigCur,kt_mDigVolt]);
+                        kt_mVoltRat])
+                        or ((FM=kt_mDigCur)and(not(TDMM6500_CurrentDCRange(P)<dm_cdr100uA)))
+                        or ((FM=kt_mDigVolt)and(not(TDMM6500_VoltageDCRange(P)=dm_vdrAuto)));
    dm_pp_RangeVoltDC:Result:=(FM in [kt_mVolDC,kt_mVoltRat,kt_mDigVolt])
                             and(not((FM=kt_mDigVolt)and(TDMM6500_VoltageDCRange(P)=dm_vdrAuto)));
    dm_pp_RangeVoltAC:Result:=(FM=kt_mVolAC);
    dm_pp_RangeCurrentDC:Result:=(FM in [kt_mCurDC,kt_mDigCur])
-                     and(not((FM=kt_mDigCur)and(TDMM6500_CurrentDCRange(P)=dm_cdrAuto)))
+                     and(not((FM=kt_mDigCur)and(TDMM6500_CurrentDCRange(P)<dm_cdr100uA)))
                      and(not((Terminal=kt_otFront)and(TDMM6500_CurrentDCRange(P)=dm_cdr10A)));
    dm_pp_RangeCurrentAC:Result:=(FM=kt_mCurAC)
                         and(not((Terminal=kt_otFront)and(TDMM6500_CurrentACRange(P)=dm_car10A)));
@@ -2785,7 +2785,7 @@ begin
                                   and(TDMM6500_Resistance4WRange(P)>dm_r4r10k)));
    dm_pp_RangeCapacitance:Result:=(FM=kt_mCap);
    dm_pp_RangeVoltDig:Result:=(FM=kt_mDigVolt)and(not(TDMM6500_VoltageDCRange(P)=dm_vdrAuto));
-   dm_pp_RangeCurrentDig:Result:=(FM=kt_mDigCur)and(not(TDMM6500_CurrentDCRange(P)=dm_cdrAuto));
+   dm_pp_RangeCurrentDig:Result:=(FM=kt_mDigCur)and(not(TDMM6500_CurrentDCRange(P)<dm_cdr100uA));
    dm_tp_UnitsTemp:Result:=(FM=kt_mTemp);
    dm_pp_UnitsVolt:Result:=(FM in [kt_mVolDC,kt_mVolAC,kt_mDigVolt]);
    else  Result:=(FM=kt_mTemp);
@@ -5186,6 +5186,12 @@ end;
 
 procedure TDMM6500.SetRange(Range: TDMM6500_CurrentDCRange; ChanNumber: Byte);
 begin
+ if (Range=dm_cdrAuto)
+    and(ChanNumber=0)
+    and(MeasFuncByCN(ChanNumber)=kt_mCurDC)
+    and((MeasParamByCN(ChanNumber) as TDMM6500MeasPar_CurDC).Range=dm_cdr10A)
+     then SetRange(dm_cdr3A,ChanNumber);
+
  SetShablon(dm_pp_RangeCurrentDC,Pointer(Range),ChanNumber);
 // if ChanNumber=0
 // then  SetRangeAction(fMeasureFunction,MeasParameters,Range)
