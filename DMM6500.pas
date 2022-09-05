@@ -641,7 +641,7 @@ begin
    dm_tp_W4RTDType: (PM as TDMM6500MeasPar_Temper).W4RTDType:=TDMM6500_RTDType(round(fDevice.Value));
    dm_tp_ThermistorType: (PM as TDMM6500MeasPar_Temper).ThermistorType:=TDMM6500_ThermistorType(round(fDevice.Value));
    dm_tp_TCoupleType: (PM as TDMM6500MeasPar_Temper).TCoupleType:=TDMM6500_TCoupleType(round(fDevice.Value));
-   dm_tp_SimRefTemp: (PM as TDMM6500MeasPar_Temper).RefJunction:=TDMM6500_TCoupleRefJunct(round(fDevice.Value));
+   dm_tp_SimRefTemp: (PM as TDMM6500MeasPar_Temper).RefTemperature:=fDevice.Value;
    dm_dp_BiasLevel:(PM as TDMM6500MeasPar_Diode).BiasLevel:=TDMM6500_DiodeBiasLevel(ValueToOrd(fDevice.Value,kt_mDiod));
    dm_vrp_VRMethod:(PM as TDMM6500MeasPar_VoltRat).VRMethod:=TDMM6500_VoltageRatioMethod(round(fDevice.Value));
    dm_pp_OffsetCompen:(PM as TDMM6500MeasPar_Base4WT).OffsetComp:=TDMM6500_OffsetCompen(round(fDevice.Value));
@@ -655,6 +655,8 @@ begin
                 if (FM in [kt_mVolDC,kt_mVolAC,kt_mDigVolt]) then
                     GetMeasPar_BaseVolt(FM,PM).Units:=TDMM6500_VoltageUnits(round(fDevice.Value));
                end;
+   dm_tp_UnitsTemp:(PM as TDMM6500MeasPar_Temper).Units:=TDMM6500_TempUnits(round(fDevice.Value));
+   dm_pp_UnitsVolt:GetMeasPar_BaseVolt(FM,PM).Units:=TDMM6500_VoltageUnits(round(fDevice.Value));
    dm_pp_DbmWReference:GetMeasPar_BaseVolt(FM,PM).DBM:=round(fDevice.Value);
    dm_pp_DecibelReference:GetMeasPar_BaseVolt(FM,PM).DB:=fDevice.Value;
    dm_pp_MeasureTime:(PM as TDMM6500MeasPar_BaseDelayMT).MeaureTime:=fDevice.Value*1e3;
@@ -1251,6 +1253,7 @@ begin
 end;
 
 function TDMM6500.GetMeasureFunction(ChanNumber: byte): boolean;
+ var temp:TKeitley_Measure;
 begin
  if ChanNumber=0
  then Result:=GetMeasureFunction()
@@ -1258,14 +1261,16 @@ begin
   begin
    if ChanelNumberIsCorrect(ChanNumber) then
      begin
+       temp:=fMeasureFunction;
        fMeasureChanNumber:=ChanNumber;
        fChanOperationString:=' '+ChanelToString(ChanNumber);
        fChanOperation:=True;
        Result := inherited GetMeasureFunction;
        fChanOperation:=False;
+       fMeasureFunction:=temp;
      end                                else
        Result:=False;
-   if Result then fChansMeasure[ChanNumber-fFirstChannelInSlot].MeasureFunction:=MeasureFunction;
+//   if Result then fChansMeasure[ChanNumber-fFirstChannelInSlot].MeasureFunction:=MeasureFunction;
   end;
 end;
 
@@ -1960,6 +1965,9 @@ begin
 //SetChannelOpenHard(4);
 //SetChannelOpenAll;
 
+//-----------------------------------
+showmessage(DMM6500_TempUnitsLabel[(MeasParameters as TDMM6500MeasPar_Temper).Units]);
+
 //SetMeasureFunction(kt_mTemp);
 //if GetTransdType then
 //  showmessage('ura!  TransdType='+DMM6500_TempTransducerLabel[(MeasParameters as TDMM6500MeasPar_Temper).TransdType]);
@@ -2120,7 +2128,7 @@ begin
 //SetVRMethod(dm_vrmPart,2);
 //if GetVRMethod(2) then
 //  showmessage('ura!  '+DMM6500_VoltageRatioMethodLabel[(fChansMeasure[1].MeasParameters as TDMM6500MeasPar_VoltRat).VRMethod]);
-//-----------------------------------------------------
+
 
 //SetMeasureFunction(kt_mPer);
 //if GetThresholdRange then
@@ -2923,15 +2931,14 @@ begin
 
  case fRootNode of
   15:if fDevice.Value<=ord(kt_mVoltRat)
-        then fChansMeasure[fMeasureChanNumber].MeasureFunction:=fMeasureFunction;
+        then fChansMeasure[fMeasureChanNumber-fFirstChannelInSlot].MeasureFunction:=fMeasureFunction;
 //       if fDevice.Value>ord(kt_mVoltRat)
 //        then fChanOperation:=True
 //        else fChansMeasureFunction[fMeasureChanNumber]:=fMeasureFunction;
   23:case fFirstLevelNode of
-        15:fChansMeasure[fMeasureChanNumber].MeasureFunction:=fMeasureFunction;
+        15:fChansMeasure[fMeasureChanNumber-fFirstChannelInSlot].MeasureFunction:=fMeasureFunction;
       end;
  end;
-
 end;
 
 procedure TDMM6500.PseudocardInstall;
@@ -5274,6 +5281,10 @@ begin
     then
       case MParam of
         dm_pp_Range,
+        dm_pp_RangeVoltDC,dm_pp_RangeVoltAC,
+        dm_pp_RangeCurrentDC,dm_pp_RangeCurrentAC,
+        dm_pp_RangeResistance2W,dm_pp_RangeResistance4W,
+        dm_pp_RangeCapacitance,
         dm_pp_ThresholdRange:Result:=GetActionRangeShablon(fMeasureFunction,MeasParameters,MParam);
         else Result:=GetActionShablon(fMeasureFunction,MeasParameters,MParam);
       end
@@ -5283,6 +5294,10 @@ begin
         begin
          case MParam of
           dm_pp_Range,
+          dm_pp_RangeVoltDC,dm_pp_RangeVoltAC,
+          dm_pp_RangeCurrentDC,dm_pp_RangeCurrentAC,
+          dm_pp_RangeResistance2W,dm_pp_RangeResistance4W,
+          dm_pp_RangeCapacitance,
           dm_pp_ThresholdRange:Result:=GetActionRangeShablon(fChansMeasure[ChanNumber-fFirstChannelInSlot].MeasureFunction,
                          fChansMeasure[ChanNumber-fFirstChannelInSlot].MeasParameters,
                          MParam);

@@ -225,6 +225,7 @@ begin
      if fMeasParShow<>nil then
        fMeasParShow.GetDataFromDeviceAndToSetting;
      fControlChannels.GetDataFromDeviceAndToSetting;
+//     fControlChannels.GetDataFromDevice;
     end;
 
 end;

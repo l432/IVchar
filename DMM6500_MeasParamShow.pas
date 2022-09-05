@@ -976,6 +976,7 @@ TDMM6500MeasPar_TemperShow=class(TDMM6500MeasPar_Base4WTShow)
   fUnits:TDMM6500_TemperatureUnitShow;
   fSimRefTemp:TDMM6500_SimRefTempShow;
   procedure CreateControlsVariate;
+  procedure OpenLeadOffsetCompState;
   procedure DestroyControlsVariant;
   procedure Hook;
   procedure HookParameterClickZero;
@@ -985,6 +986,7 @@ TDMM6500MeasPar_TemperShow=class(TDMM6500MeasPar_Base4WTShow)
   procedure HookParameterClickUnits;
   procedure HookParameterClickType;
   procedure SetTypeEnable(Value:boolean);
+  procedure SetOffCompEnable(Value:boolean);
   procedure SetAlphaBetaEnable(Value:boolean);
   procedure SetDeltaZeroEnable(Value:boolean);
   procedure SetAllRTDEnable(Value:boolean);
@@ -1269,7 +1271,8 @@ end;
 procedure TDMM6500_MeasurementTypeShow.GetDataFromDevice;
 begin
  if not(fDMM6500.GetMeasureFunction(fChanNumber))
-     and (fChanNumber>0) then fDMM6500.SetMeasureFunction(kt_mVolDC);
+     and (fChanNumber>0)
+     then fDMM6500.SetMeasureFunction(kt_mVolDC,fChanNumber);
 end;
 
 function TDMM6500_MeasurementTypeShow.MeasureToOrd(FM: TKeitley_Measure): ShortInt;
@@ -1526,7 +1529,10 @@ procedure TDMM6500ControlChannels.GetDataFromDevice;
  var i:Shortint;
 begin
  for I := 0 to High(fMeasurementType) do
+//  begin
+//  showmessage(inttostr(fMeasurementType[i].fChanNumber));
   fMeasurementType[i].GetDataFromDevice;
+//  end;
 end;
 
 procedure TDMM6500ControlChannels.ObjectToSetting;
@@ -3737,7 +3743,7 @@ constructor TDMM6500_SimRefTempShow.Create(STD: TStaticText; STC: TLabel;
   DMM6500: TDMM6500; ChanNumber: byte);
 begin
  inherited Create(dm_tp_SimRefTemp,DMM6500,ChanNumber,STD,STC,'Ref Temperature',
-                DMM6500_RefTempInitValue[(DMM6500.MeasParamByCN(fChanNumber) as TDMM6500MeasPar_Temper).Units]);
+                DMM6500_RefTempInitValue[(DMM6500.MeasParamByCN(fChanNumber) as TDMM6500MeasPar_Temper).Units],4);
 // STC.WordWrap:=True;
  SetLimits(DMM6500_RefTempLimits[(fDMM6500.MeasParamByCN(fChanNumber) as TDMM6500MeasPar_Temper).Units]);
 end;
@@ -3898,6 +3904,11 @@ end;
 procedure TDMM6500MeasPar_TemperShow.CreateControls;
 begin
   inherited;
+  fUnits:=TDMM6500_TemperatureUnitShow.Create(STRange,fDMM6500,fChanNumber);
+  Add(fUnits);
+  fUnits.HookParameterClick:=HookParameterClickUnits;
+
+
   fTransdTypeShow:=TDMM6500_TempTransdTypeShow.Create(STTransdType,LTransdType,fDMM6500,fChanNumber);
   Add(fTransdTypeShow);
   fTransdTypeShow.HookParameterClick:=Hook;
@@ -3910,9 +3921,20 @@ begin
   Add(fRTDZeroShow);
   fRTDZeroShow.HookParameterClick:=HookParameterClickZero;
 
-  fUnits:=TDMM6500_TemperatureUnitShow.Create(STRange,fDMM6500,fChanNumber);
-  Add(fUnits);
-  fUnits.HookParameterClick:=HookParameterClickUnits;
+
+  if fSimRefTemp=nil then
+     begin
+     fSimRefTemp:=TDMM6500_SimRefTempShow.Create(STRefTemp_Beta,LRefTemp_Beta,fDMM6500,fChanNumber);
+     fSimRefTemp.ObjectToSetting;
+     fSimRefTemp.HookParameterClick:=HookParameterClickRefTemp_Beta;
+     end;
+  if fRefJunctionShow=nil then
+     begin
+     fRefJunctionShow:=TDMM6500_TCoupleRefJunctShow.Create(STRefJunc_Alpha,LRefJunc_Alpha,fDMM6500,fChanNumber);
+     fRefJunctionShow.ObjectToSetting;
+     fRefJunctionShow.HookParameterClick:=HookParameterClickRefJun_Alpha;
+     end;
+
 
   CreateControlsVariate;
 end;
@@ -4000,6 +4022,18 @@ begin
                    fW4RTDTypeShow.HookParameterClick:=HookParameterClickRTDType;
                    end;
               end;
+   dm_ttCJC:begin
+                if fW2RTDTypeShow <> nil then
+                    FreeAndNil(fW2RTDTypeShow);
+                if fW3RTDTypeShow <> nil then
+                    FreeAndNil(fW3RTDTypeShow);
+                if fW4RTDTypeShow <> nil then
+                    FreeAndNil(fW4RTDTypeShow);
+                if fTCoupleTypeShow <> nil then
+                    FreeAndNil(fTCoupleTypeShow);
+                if fThermistorTypeShow <> nil then
+                    FreeAndNil(fThermistorTypeShow);
+            end;
   end;
 
   case (fDMM6500.MeasParamByCN(fChanNumber) as TDMM6500MeasPar_Temper).TransdType of
@@ -4041,6 +4075,16 @@ begin
                    fRTDBetaShow.HookParameterClick:=HookParameterClickRefJun_Alpha;
                    end;
               end;
+   dm_ttCJC:begin
+                if fSimRefTemp <> nil then
+                    FreeAndNil(fSimRefTemp);
+                if fRefJunctionShow <> nil then
+                    FreeAndNil(fRefJunctionShow);
+                if fRTDAlphaShow <> nil then
+                    FreeAndNil(fRTDAlphaShow);
+                if fRTDBetaShow <> nil then
+                    FreeAndNil(fRTDBetaShow);                    
+            end;
   end;
 
 end;
@@ -4111,6 +4155,7 @@ begin
   STDelta.Font.Color:=clFuchsia;
 
   SetTypeEnable((fDMM6500.MeasParamByCN(fChanNumber) as TDMM6500MeasPar_Temper).TransdType<>dm_ttCJC);
+
   CBOpenLD.Enabled:=((fDMM6500.MeasParamByCN(fChanNumber) as TDMM6500MeasPar_Temper).TransdType
                 in [dm_ttTherm,dm_tt2WRTD,dm_tt3WRTD,dm_tt4WRTD]);
   HookParameterClickRTDType;
@@ -4206,6 +4251,7 @@ end;
 procedure TDMM6500MeasPar_TemperShow.Hook;
 begin
  CreateControlsVariate;
+ OpenLeadOffsetCompState;
  DesignElements;
 end;
 
@@ -4250,6 +4296,37 @@ begin
     fRTDBetaShow.ObjectToSetting;
   if fSimRefTemp <> nil then
     fSimRefTemp.ObjectToSetting;
+  OpenLeadOffsetCompState;
+  DesignElements;
+end;
+
+procedure TDMM6500MeasPar_TemperShow.OpenLeadOffsetCompState;
+begin
+  case (fDMM6500.MeasParamByCN(fChanNumber) as TDMM6500MeasPar_Temper).TransdType of
+   dm_ttCouple:begin
+                 CBOpenLD.Enabled:=True;
+                 SetOffCompEnable(False);
+               end;
+   dm_ttTherm,
+   dm_ttCJC :begin
+                 CBOpenLD.Enabled:=False;
+                 SetOffCompEnable(False);
+              end;
+   dm_tt2WRTD:begin
+                 CBOpenLD.Enabled:=False;
+                 SetOffCompEnable(False);
+                 (fDMM6500.MeasParamByCN(fChanNumber) as TDMM6500MeasPar_Temper).OffsetComp:=dm_ocOff;
+                 fOffCompShow.ObjectToSetting;
+                 (fDMM6500.MeasParamByCN(fChanNumber) as TDMM6500MeasPar_Temper).OpenLeadDetector:=false;
+                 fOpenLDShow.ObjectToSetting;
+               end;
+   dm_tt3WRTD,
+   dm_tt4WRTD:begin
+                CBOpenLD.Enabled:=True;
+                SetOffCompEnable(True);
+              end;
+  end;
+
 end;
 
 procedure TDMM6500MeasPar_TemperShow.SetAllRTDEnable(Value: boolean);
@@ -4272,6 +4349,13 @@ begin
   LDelta.Enabled:=Value;
   STZero.Enabled:=Value;
   LZero.Enabled:=Value;
+end;
+
+procedure TDMM6500MeasPar_TemperShow.SetOffCompEnable(Value: boolean);
+begin
+//  CBOpenLD:TCheckBox;
+  STOffComp.Enabled:=Value;
+  LOffComp.Enabled:=Value;
 end;
 
 procedure TDMM6500MeasPar_TemperShow.SetTypeEnable(Value: boolean);
