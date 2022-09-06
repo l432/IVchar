@@ -143,8 +143,8 @@ type
    function ValueToOrd(Value:double;FM: TKeitley_Measure):integer;
 
 
-   function PermitForParameter(FM: TKeitley_Measure; MParam: TDMM6500_MeasParameters;P:Pointer=nil;
-                              PM: TDMM6500MeasPar_Base=nil):boolean;
+   function PermitForParameter(FM: TKeitley_Measure; MParam: TDMM6500_MeasParameters;
+                             P:Pointer=nil{;PM: TDMM6500MeasPar_Base=nil}):boolean;
    function PermitForRangeAuto(P:Pointer; MParam: TDMM6500_MeasParameters):boolean;
    function SuccessfulGet(MParam: TDMM6500_MeasParameters):boolean;
    function ParametrToFLNode(MParam:TDMM6500_MeasParameters):byte;
@@ -675,7 +675,7 @@ begin
                    kt_mDigCur:(PM as TDMM6500MeasPar_DigCur).Range:=TDMM6500_CurrentDCRange(ValueToOrd(fDevice.Value,FM));
                    kt_mDigVolt:(PM as TDMM6500MeasPar_DigVolt).Range:=TDMM6500_VoltageDCRange(ValueToOrd(fDevice.Value,FM));
                 end;
-   dm_pp_RangeVoltDC:(PM as TDMM6500MeasPar_VoltDC).Range:=TDMM6500_VoltageDCRange(ValueToOrd(fDevice.Value,FM));
+   dm_pp_RangeVoltDC:(PM as TDMM6500MeasPar_BaseVoltDCRange).Range:=TDMM6500_VoltageDCRange(ValueToOrd(fDevice.Value,FM));
    dm_pp_RangeVoltAC: (PM as TDMM6500MeasPar_VoltAC).Range:=TDMM6500_VoltageACRange(ValueToOrd(fDevice.Value,FM));
    dm_pp_RangeCurrentDC: (PM as TDMM6500MeasPar_CurDC).Range:=TDMM6500_CurrentDCRange(ValueToOrd(fDevice.Value,FM));
    dm_pp_RangeCurrentAC: (PM as TDMM6500MeasPar_CurAC).Range:=TDMM6500_CurrentACRange(ValueToOrd(fDevice.Value,FM));
@@ -705,7 +705,7 @@ begin
 //                       Exit;
 //                      end;
                 end;
-  dm_pp_RangeVoltDC:(PM as TDMM6500MeasPar_VoltDC).Range:=dm_vdrAuto;
+  dm_pp_RangeVoltDC:(PM as TDMM6500MeasPar_BaseVoltDCRange).Range:=dm_vdrAuto;
   dm_pp_RangeVoltAC: (PM as TDMM6500MeasPar_VoltAC).Range:=dm_varAuto;
   dm_pp_RangeCurrentDC: (PM as TDMM6500MeasPar_CurDC).Range:=dm_cdrAuto;
   dm_pp_RangeCurrentAC: (PM as TDMM6500MeasPar_CurAC).Range:=dm_carAuto;
@@ -725,6 +725,7 @@ begin
      and(MParam in [dm_pp_Range,dm_pp_RangeVoltDig,dm_pp_RangeCurrentDig])
       then Exit;
 
+// showmessage(PM.ClassName);
  if not(PermitForParameter(FM,MParam)) then Exit;
  QuireOperation(MeasureToRootNodeNumber(FM),ParametrToFLNode(MParam),0);
  Result:=(fDevice.Value<>ErResult);
@@ -752,7 +753,8 @@ begin
     try
       QuireOperation(MeasureToRootNodeNumber(FM),ParametrToFLNode(MParam),ParameterToLeafNode(MParam,FM));
       Result:=SuccessfulGet(MParam);
-      if Result then GetActionProcedureByMParam(FM,PM,MParam);
+      if Result
+        then GetActionProcedureByMParam(FM,PM,MParam);
     except
      Result:=False;
     end;
@@ -1966,7 +1968,8 @@ begin
 //SetChannelOpenAll;
 
 //-----------------------------------
-showmessage(DMM6500_TempUnitsLabel[(MeasParameters as TDMM6500MeasPar_Temper).Units]);
+//showmessage(DMM6500_TempUnitsLabel[(MeasParameters as TDMM6500MeasPar_Temper).Units]);
+
 
 //SetMeasureFunction(kt_mTemp);
 //if GetTransdType then
@@ -2744,7 +2747,7 @@ end;
 //end;
 
 function TDMM6500.PermitForParameter(FM: TKeitley_Measure; MParam: TDMM6500_MeasParameters;
-             P:Pointer;PM: TDMM6500MeasPar_Base): boolean;
+             P:Pointer{;PM: TDMM6500MeasPar_Base}): boolean;
 begin
   case MParam of
    dm_dp_BiasLevel: Result:=(FM=kt_mDiod);
@@ -2789,8 +2792,9 @@ begin
                         and(not((Terminal=kt_otFront)and(TDMM6500_CurrentACRange(P)=dm_car10A)));
    dm_pp_RangeResistance2W:Result:=(FM=kt_mRes2W);
    dm_pp_RangeResistance4W:Result:=(FM=kt_mRes4W)
-                        and(not(((PM as TDMM6500MeasPar_Res4W).OffsetComp=dm_ocOn)
-                                  and(TDMM6500_Resistance4WRange(P)>dm_r4r10k)));
+//                        and(not(((PM as TDMM6500MeasPar_Res4W).OffsetComp=dm_ocOn)
+//                                  and(TDMM6500_Resistance4WRange(P)>dm_r4r10k)))
+                                  ;
    dm_pp_RangeCapacitance:Result:=(FM=kt_mCap);
    dm_pp_RangeVoltDig:Result:=(FM=kt_mDigVolt)and(not(TDMM6500_VoltageDCRange(P)=dm_vdrAuto));
    dm_pp_RangeCurrentDig:Result:=(FM=kt_mDigCur)and(not(TDMM6500_CurrentDCRange(P)<dm_cdr100uA));
@@ -2890,11 +2894,13 @@ begin
   12..14,
    28..39:case fFirstLevelNode of
           9:StringToOrd(AnsiLowerCase(Str));//StringToOffsetComp(Str);
-          22,20,54,55,16:OffOnToValue(AnsiLowerCase(Str));
-          50:case fLeafNode of
-              1:StringToOrd(AnsiLowerCase(Str));//StrToTempUnit(AnsiLowerCase(Str));
-              2:StringToOrd(AnsiLowerCase(Str));//StrToVoltUnit(AnsiLowerCase(Str));
-             end;
+          20,54,55:fDevice.Value:=StrToInt(Str);
+          22,16:OffOnToValue(AnsiLowerCase(Str));
+          50://case fLeafNode of
+              //1:StringToOrd(AnsiLowerCase(Str));//StrToTempUnit(AnsiLowerCase(Str));
+              //2:
+              StringToOrd(AnsiLowerCase(Str));//StrToVoltUnit(AnsiLowerCase(Str));
+            // end;
           52:StringToOrd(AnsiLowerCase(Str));//StringToInputImpedance(AnsiLowerCase(Str));
           53:StringToOrd(Str);//StringToDetectorBW(Str);
           15,56:case fLeafNode of
@@ -3168,7 +3174,12 @@ end;
 procedure TDMM6500.SetActionRangeShablon(FM: TKeitley_Measure;
   PM: TDMM6500MeasPar_Base; P: Pointer; MParam: TDMM6500_MeasParameters);
 begin
- if PermitForParameter(FM,MParam,P,PM) then
+ if (FM=kt_mRes4W)
+    and(((PM as TDMM6500MeasPar_Res4W).OffsetComp=dm_ocOn)
+        and(TDMM6500_Resistance4WRange(P)>dm_r4r10k))
+     then Exit;
+
+ if PermitForParameter(FM,MParam,P{,PM}) then
   begin
    if PermitForRangeAuto(P,MParam) then
      begin
@@ -4236,9 +4247,11 @@ function TDMM6500.ParameterToLeafNode(MParam: TDMM6500_MeasParameters;
 begin
  case MParam of
    dm_tp_RefJunction,
-   dm_tp_RTDBeta: Result:=1;
+   dm_tp_RTDBeta,
+   dm_tp_UnitsTemp: Result:=1;
    dm_tp_TCoupleType,
-   dm_tp_RTDDelta: Result:=2;
+   dm_tp_RTDDelta,
+   dm_pp_UnitsVolt: Result:=2;
    dm_tp_RTDZero: Result:=3;
    dm_tp_W2RTDType: Result:=4;
    dm_tp_W3RTDType: Result:=5;
@@ -5284,7 +5297,8 @@ begin
         dm_pp_RangeVoltDC,dm_pp_RangeVoltAC,
         dm_pp_RangeCurrentDC,dm_pp_RangeCurrentAC,
         dm_pp_RangeResistance2W,dm_pp_RangeResistance4W,
-        dm_pp_RangeCapacitance,
+        dm_pp_RangeCapacitance,dm_pp_RangeVoltDig,
+        dm_pp_RangeCurrentDig,
         dm_pp_ThresholdRange:Result:=GetActionRangeShablon(fMeasureFunction,MeasParameters,MParam);
         else Result:=GetActionShablon(fMeasureFunction,MeasParameters,MParam);
       end
@@ -5298,6 +5312,8 @@ begin
           dm_pp_RangeCurrentDC,dm_pp_RangeCurrentAC,
           dm_pp_RangeResistance2W,dm_pp_RangeResistance4W,
           dm_pp_RangeCapacitance,
+          dm_pp_RangeVoltDig,
+          dm_pp_RangeCurrentDig,
           dm_pp_ThresholdRange:Result:=GetActionRangeShablon(fChansMeasure[ChanNumber-fFirstChannelInSlot].MeasureFunction,
                          fChansMeasure[ChanNumber-fFirstChannelInSlot].MeasParameters,
                          MParam);

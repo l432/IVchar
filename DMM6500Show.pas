@@ -190,32 +190,8 @@ procedure TDMM6500_Show.GetSettingButtonClick(Sender: TObject);
 begin
   if not(DeviceEthernetisAbsent) then
     begin
-     fDMM6500.GetCardParametersFromDevice;
+//     fDMM6500.GetCardParametersFromDevice;
      fMeasureTypeShow.GetDataFromDevice;
-//     if fMeasParShow<>nil then
-//       fMeasParShow.GetDataFromDevice;
-
-
-//    fKt_2450.IsOutPutOn();
-//    fKt_2450.GetVoltageProtection;
-//    fKt_2450.GetDeviceMode;
-//    fKt_2450.IsResistanceCompencateOn();
-//    fKt_2450.GetVoltageLimit();
-//    fKt_2450.GetCurrentLimit();
-//    fKt_2450.IsReadBackOn();
-//    fKt_2450.GetSenses();
-//    fKt_2450.GetOutputOffStates;
-//    fKt_2450.GetSourceRanges();
-//    fKt_2450.GetMeasureRanges();
-//    fKt_2450.GetMeasureLowRanges();
-//    fKt_2450.IsAzeroStateOn();
-//    fKt_2450.IsSourceDelayAutoOn();
-//    fKt_2450.GetSourceDelay();
-//    fKt_2450.GetSourceValue();
-//    fKt_2450.GetMeasureTime();
-//    fKt_2450.IsHighCapacitanceOn();
-//    fKt_2450.GetDisplayDigitsNumber();
-//    fKt_2450.GetCount();
     end;
 
   inherited GetSettingButtonClick(Sender);
@@ -224,8 +200,7 @@ begin
     begin
      if fMeasParShow<>nil then
        fMeasParShow.GetDataFromDeviceAndToSetting;
-     fControlChannels.GetDataFromDeviceAndToSetting;
-//     fControlChannels.GetDataFromDevice;
+//     fControlChannels.GetDataFromDeviceAndToSetting;
     end;
 
 end;
