@@ -4,7 +4,7 @@ interface
 
 uses
   OlegTypePart2, Keithley, StdCtrls, OlegShowTypes, Classes, ArduinoDeviceNew, 
-  ExtCtrls, IniFiles;
+  ExtCtrls, IniFiles, Measurement, Buttons;
 
 const
   ButtonNumberKeitley = 1;
@@ -64,6 +64,19 @@ TKeitley_MeasurementType=class(TKeitley_StringParameterShow)
   procedure SomeAction();override;
  public
   procedure ObjectToSetting;override;
+end;
+
+TKeitley_MeterShow=class(TMeasurementShowSimple)
+  private
+   fKeitley_Meter:TKeitley_Meter;
+  protected
+   function UnitModeLabel():string;override;
+  public
+   Constructor Create(Keitley_Meter:TKeitley_Meter;
+                      DL,UL:TLabel;
+                      MB:TButton;
+                      AB:TSpeedButton
+                      );
 end;
 
  TKeitley_Show=class(TSimpleFreeAndAiniObject)
@@ -501,6 +514,20 @@ end;
 procedure TKeitley_MeasurementType.SomeAction;
 begin
  fCaption:='MeasureType';
+end;
+
+{ TKeitley_MeterShow }
+
+constructor TKeitley_MeterShow.Create(Keitley_Meter: TKeitley_Meter; DL,
+  UL: TLabel; MB: TButton; AB: TSpeedButton);
+begin
+ inherited Create(Keitley_Meter,DL,UL,MB,AB,Keitley_Meter.Timer);
+ fKeitley_Meter:=Keitley_Meter;
+end;
+
+function TKeitley_MeterShow.UnitModeLabel: string;
+begin
+ Result:=fKeitley_Meter.MeasureModeLabel;
 end;
 
 end.

@@ -3,7 +3,7 @@ unit DMM6500_MeasParamShow;
 interface
 
 uses
-  OlegShowTypes, Classes, DMM6500, StdCtrls, Keitley2450Const, OlegType, SCPI, 
+  OlegShowTypes, Classes, DMM6500, StdCtrls, Keitley2450Const, OlegType, SCPI,
   Controls, Windows, DMM6500_MeasParam, OApproxShow, DMM6500_Const, Forms;
 
 
@@ -15,11 +15,8 @@ const MarginLeft=10;
 
 type
 
-
-
 TDMM6500_ParameterShowBase=class
  private
-//  fParamShow:TParameterShowNew;
   fDMM6500:TDMM6500;
   fChanNumber:byte;
   fMeasP:TDMM6500_MeasParameters;
@@ -64,15 +61,15 @@ end;
 
 TDMM6500_StringParameterShow=class(TDMM6500_ParameterShow)
  private
-  procedure CreateHeader{(DMM6500: TDMM6500; ChanNumber: Byte)};
+  procedure CreateHeader;
   function GetData: integer;
-  procedure SetDat(const Value: integer);//virtual;
+  procedure SetDat(const Value: integer);
   function HighForSLFilling:byte;
   function StrForSLFilling(i:byte):string;
   function FuncForObjectToSetting:byte;
  protected
   fSettingsShowSL:TStringList;
-  procedure SettingsShowSLFilling();virtual;//abstract;
+  procedure SettingsShowSLFilling();virtual;
   procedure SomeAction();virtual;
   procedure OkClick();override;
  public
@@ -156,54 +153,39 @@ end;
 TDMM6500_DisplayDNShow=class(TDMM6500_StringParameterShow)
  protected
   procedure OkClick();override;
-//  procedure SettingsShowSLFilling();override;
-
-//  procedure SomeAction();override;
  public
   Constructor Create(ST:TStaticText;
            DMM6500:TDMM6500;ChanNumber:byte=0);
-//  procedure ObjectToSetting;override;
   procedure GetDataFromDevice;override;
 end;
 
 TDMM6500_AutoDelayShow=class(TDMM6500_BoolParameterShow)
  protected
-//  procedure Click(Sender:TObject);override;
-//  procedure GetDataFromDevice;override;
  public
   Constructor Create(CB:TCheckBox;
            DMM6500:TDMM6500;ChanNumber:byte=0);
-//  procedure ObjectToSetting;override;
 end;
 
 TDMM6500_AzeroStateShow=class(TDMM6500_BoolParameterShow)
  protected
   procedure Click(Sender:TObject);override;
-//  procedure GetDataFromDevice;override;
  public
   Constructor Create(CB:TCheckBox;
            DMM6500:TDMM6500;ChanNumber:byte=0);
-//  procedure ObjectToSetting;override;
 end;
 
 TDMM6500_LineSyncShow=class(TDMM6500_BoolParameterShow)
  protected
-//  procedure Click(Sender:TObject);override;
-//  procedure GetDataFromDevice;override;
  public
   Constructor Create(CB:TCheckBox;
            DMM6500:TDMM6500;ChanNumber:byte=0);
-//  procedure ObjectToSetting;override;
 end;
 
 TDMM6500_OpenLDShow=class(TDMM6500_BoolParameterShow)
  protected
-//  procedure Click(Sender:TObject);override;
-//  procedure GetDataFromDevice;override;
  public
   Constructor Create(CB:TCheckBox;
            DMM6500:TDMM6500;ChanNumber:byte=0);
-//  procedure ObjectToSetting;override;
 end;
 
 TDMM6500_ChannelCloseShow=class(TDMM6500_BoolParameterShow)
@@ -218,110 +200,65 @@ end;
 
 
 TDMM6500_SampleRateShow=class(TDMM6500_IntegerParameterShow)
- private
  protected
   procedure OkClick();override;
-//  procedure GetDataFromDevice;override;
  public
   Constructor Create(STD:TStaticText;
                      STC:TLabel;
                      DMM6500:TDMM6500;ChanNumber:byte=0);
-//  procedure ObjectToSetting;override;
 end;
 
 TDMM6500_VoltageUnitShow=class(TDMM6500_StringParameterShow)
- protected
-//  procedure OkClick();override;
-//  procedure SettingsShowSLFilling();override;
-//  procedure GetDataFromDevice;override;
-//  procedure SomeAction();override;
  public
   Constructor Create(ST:TStaticText;L:Tlabel;
            DMM6500:TDMM6500;ChanNumber:byte=0);
-//  procedure ObjectToSetting;override;
 end;
 
 TDMM6500_TemperatureUnitShow=class(TDMM6500_StringParameterShow)
- protected
-//  procedure OkClick();override;
-//  procedure SettingsShowSLFilling();override;
-//  procedure GetDataFromDevice;override;
  public
   Constructor Create(ST:TStaticText;DMM6500:TDMM6500;ChanNumber:byte=0);
-//  procedure ObjectToSetting;override;
 end;
 
 TDMM6500_DecibelReferenceShow=class(TDMM6500_DoubleParameterShow)
- private
- protected
-//  procedure OkClick();override;
-//  procedure GetDataFromDevice;override;
  public
   Constructor Create(STD:TStaticText;
                      STC:TLabel;
                      DMM6500:TDMM6500;ChanNumber:byte=0);
-//  procedure ObjectToSetting;override;
 end;
 
 TDMM6500_MeaureTimeShow=class(TDMM6500_DoubleParameterShow)
- private
- protected
-//  procedure OkClick();override;
-//  procedure GetDataFromDevice;override;
  public
   Constructor Create(STD:TStaticText;
                      STC:TLabel;
                      DMM6500:TDMM6500;ChanNumber:byte=0);
-//  procedure ObjectToSetting;override;
 end;
 
-
 TDMM6500_SimRefTempShow=class(TDMM6500_DoubleParameterShow)
- private
- protected
-//  procedure OkClick();override;
-//  procedure GetDataFromDevice;override;
  public
   Constructor Create(STD:TStaticText;
                      STC:TLabel;
                      DMM6500:TDMM6500;ChanNumber:byte=0);
-//  procedure ObjectToSetting;override;
 end;
 
 TDMM6500_RTDAlphaShow=class(TDMM6500_DoubleParameterShow)
- private
- protected
-//  procedure OkClick();override;
-//  procedure GetDataFromDevice;override;
  public
   Constructor Create(STD:TStaticText;
                      STC:TLabel;
                      DMM6500:TDMM6500;ChanNumber:byte=0);
-//  procedure ObjectToSetting;override;
 end;
 
 TDMM6500_RTDBetaShow=class(TDMM6500_DoubleParameterShow)
- private
- protected
-//  procedure OkClick();override;
-//  procedure GetDataFromDevice;override;
  public
   Constructor Create(STD:TStaticText;
                      STC:TLabel;
                      DMM6500:TDMM6500;ChanNumber:byte=0);
-//  procedure ObjectToSetting;override;
 end;
 
 TDMM6500_RTDDeltaShow=class(TDMM6500_DoubleParameterShow)
- private
- protected
-//  procedure OkClick();override;
-//  procedure GetDataFromDevice;override;
  public
   Constructor Create(STD:TStaticText;
                      STC:TLabel;
                      DMM6500:TDMM6500;ChanNumber:byte=0);
-//  procedure ObjectToSetting;override;
 end;
 
 TDMM6500_DelayAfterCloseShow=class(TDMM6500_DoubleParameterShow)
@@ -336,269 +273,146 @@ TDMM6500_DelayAfterCloseShow=class(TDMM6500_DoubleParameterShow)
 end;
 
 TDMM6500_DecibelmWReferenceShow=class(TDMM6500_IntegerParameterShow)
- private
- protected
-//  procedure OkClick();override;
-//  procedure GetDataFromDevice;override;
  public
   Constructor Create(STD:TStaticText;
                      STC:TLabel;
                      DMM6500:TDMM6500;ChanNumber:byte=0);
-//  procedure ObjectToSetting;override;
 end;
 
 TDMM6500_RTDZeroShow=class(TDMM6500_IntegerParameterShow)
- private
- protected
-//  procedure OkClick();override;
-//  procedure GetDataFromDevice;override;
  public
   Constructor Create(STD:TStaticText;
                      STC:TLabel;
                      DMM6500:TDMM6500;ChanNumber:byte=0);
-//  procedure ObjectToSetting;override;
 end;
 
 TDMM6500_InputImpedanceShow=class(TDMM6500_StringParameterShow)
- protected
-//  procedure OkClick();override;
-//  procedure SettingsShowSLFilling();override;
-//  procedure GetDataFromDevice;override;
  public
   Constructor Create(ST:TStaticText;L:Tlabel;
            DMM6500:TDMM6500;ChanNumber:byte=0);
-//  procedure ObjectToSetting;override;
 end;
 
 TDMM6500_ThresholdRangeShow=class(TDMM6500_StringParameterShow)
- protected
-//  procedure OkClick();override;
-//  procedure SettingsShowSLFilling();override;
-//  procedure GetDataFromDevice;override;
  public
   Constructor Create(ST:TStaticText;L:Tlabel;
            DMM6500:TDMM6500;ChanNumber:byte=0);
-//  procedure ObjectToSetting;override;
 end;
 
 TDMM6500_BiasLevelShow=class(TDMM6500_StringParameterShow)
- protected
-//  procedure OkClick();override;
-//  procedure SettingsShowSLFilling();override;
-//  procedure GetDataFromDevice;override;
  public
   Constructor Create(ST:TStaticText;L:Tlabel;
            DMM6500:TDMM6500;ChanNumber:byte=0);
-//  procedure ObjectToSetting;override;
 end;
 
 TDMM6500_OffCompShow=class(TDMM6500_StringParameterShow)
  protected
   procedure OkClick();override;
-//  procedure SettingsShowSLFilling();override;
-//  procedure GetDataFromDevice;override;
  public
   Constructor Create(ST:TStaticText;L:Tlabel;
            DMM6500:TDMM6500;ChanNumber:byte=0);
-//  procedure ObjectToSetting;override;
 end;
 
 TDMM6500_VoltageRatioMethodShow=class(TDMM6500_StringParameterShow)
- protected
-//  procedure OkClick();override;
-//  procedure SettingsShowSLFilling();override;
-//  procedure GetDataFromDevice;override;
  public
   Constructor Create(ST:TStaticText;L:Tlabel;
            DMM6500:TDMM6500;ChanNumber:byte=0);
-//  procedure ObjectToSetting;override;
 end;
 
 TDMM6500_TempTransdTypeShow=class(TDMM6500_StringParameterShow)
- protected
-//  procedure OkClick();override;
-//  procedure SettingsShowSLFilling();override;
-//  procedure GetDataFromDevice;override;
  public
   Constructor Create(ST:TStaticText;L:Tlabel;
            DMM6500:TDMM6500;ChanNumber:byte=0);
-//  procedure ObjectToSetting;override;
 end;
 
-//TDMM6500_TempTypeShow=class(TDMM6500_StringParameterShow)
-// protected
-// public
-//  Constructor Create(ST:TStaticText;L:Tlabel;
-//           DMM6500:TDMM6500;ChanNumber:byte=0);
-//end;
-
 TDMM6500_TCoupleShow=class(TDMM6500_StringParameterShow)
- protected
-//  procedure OkClick();override;
-//  procedure SettingsShowSLFilling();override;
-//  procedure GetDataFromDevice;override;
  public
   Constructor Create(ST:TStaticText;L:Tlabel;
            DMM6500:TDMM6500;ChanNumber:byte=0);
-//  procedure ObjectToSetting;override;
 end;
 
 TDMM6500_ThermistorTypeShow=class(TDMM6500_StringParameterShow)
- protected
-//  procedure OkClick();override;
-//  procedure SettingsShowSLFilling();override;
-//  procedure GetDataFromDevice;override;
  public
   Constructor Create(ST:TStaticText;L:Tlabel;
            DMM6500:TDMM6500;ChanNumber:byte=0);
-//  procedure ObjectToSetting;override;
 end;
 
-//TDMM6500_RTDTypeShow=class(TDMM6500_StringParameterShow)
-// protected
-//  procedure SettingsShowSLFilling();override;
-// public
-//end;
-
 TDMM6500_W2RTDTypeShow=class(TDMM6500_StringParameterShow)
- protected
-//  procedure OkClick();override;
-//  procedure GetDataFromDevice;override;
  public
   Constructor Create(ST:TStaticText;L:Tlabel;
            DMM6500:TDMM6500;ChanNumber:byte=0);
-//  procedure ObjectToSetting;override;
 end;
 
 TDMM6500_W3RTDTypeShow=class(TDMM6500_StringParameterShow)
- protected
-//  procedure OkClick();override;
-//  procedure GetDataFromDevice;override;
  public
   Constructor Create(ST:TStaticText;L:Tlabel;
            DMM6500:TDMM6500;ChanNumber:byte=0);
-//  procedure ObjectToSetting;override;
 end;
 
 TDMM6500_W4RTDTypeShow=class(TDMM6500_StringParameterShow)
- protected
-//  procedure OkClick();override;
-//  procedure GetDataFromDevice;override;
  public
   Constructor Create(ST:TStaticText;L:Tlabel;
            DMM6500:TDMM6500;ChanNumber:byte=0);
-//  procedure ObjectToSetting;override;
 end;
 
 TDMM6500_TCoupleRefJunctShow=class(TDMM6500_StringParameterShow)
- protected
-//  procedure OkClick();override;
-//  procedure SettingsShowSLFilling();override;
-//  procedure GetDataFromDevice;override;
  public
   Constructor Create(ST:TStaticText;L:Tlabel;
            DMM6500:TDMM6500;ChanNumber:byte=0);
-//  procedure ObjectToSetting;override;
 end;
-
-
-//TDMM6500_RangeShow=class(TDMM6500_StringParameterShow)
-// protected
-////  procedure GetDataFromDevice;override;
-// public
-//  Constructor Create(ST:TStaticText;DMM6500:TDMM6500;ChanNumber:byte=0);
-//end;
 
 TDMM6500_VoltageDigRangeShow=class(TDMM6500_StringParameterShow)
  protected
   procedure OkClick();override;
-//  procedure SettingsShowSLFilling();override;
  public
   Constructor Create(ST:TStaticText;DMM6500:TDMM6500;ChanNumber:byte=0);
-//  procedure ObjectToSetting;override;
 end;
 
 TDMM6500_CurrentDigRangeShow=class(TDMM6500_StringParameterShow)
  protected
   procedure OkClick();override;
-//  procedure SettingsShowSLFilling();override;
  public
   Constructor Create(ST:TStaticText;DMM6500:TDMM6500;ChanNumber:byte=0);
-//  procedure ObjectToSetting;override;
 end;
 
 TDMM6500_CapacitanceRangeShow=class(TDMM6500_StringParameterShow)
- protected
-//  procedure OkClick();override;
-//  procedure SettingsShowSLFilling();override;
  public
   Constructor Create(ST:TStaticText;DMM6500:TDMM6500;ChanNumber:byte=0);
-//  procedure ObjectToSetting;override;
 end;
 
 TDMM6500_CurrentACRangeShow=class(TDMM6500_StringParameterShow)
- protected
-//  procedure OkClick();override;
-//  procedure SettingsShowSLFilling();override;
  public
   Constructor Create(ST:TStaticText;DMM6500:TDMM6500;ChanNumber:byte=0);
-//  procedure ObjectToSetting;override;
 end;
 
 TDMM6500_VoltageACRangeShow=class(TDMM6500_StringParameterShow)
- protected
-//  procedure OkClick();override;
-//  procedure SettingsShowSLFilling();override;
  public
   Constructor Create(ST:TStaticText;DMM6500:TDMM6500;ChanNumber:byte=0);
-//  procedure ObjectToSetting;override;
 end;
 
 TDMM6500_CurrentDCRangeShow=class(TDMM6500_StringParameterShow)
- protected
-//  procedure OkClick();override;
-//  procedure SettingsShowSLFilling();override;
  public
   Constructor Create(ST:TStaticText;DMM6500:TDMM6500;ChanNumber:byte=0);
-//  procedure ObjectToSetting;override;
 end;
 
 TDMM6500_VoltageDCRangeShow=class(TDMM6500_StringParameterShow)
- protected
-//  procedure OkClick();override;
-//  procedure SettingsShowSLFilling();override;
  public
   Constructor Create(ST:TStaticText;DMM6500:TDMM6500;ChanNumber:byte=0);
-//  procedure ObjectToSetting;override;
 end;
 
 TDMM6500_Resistance2WRangeShow=class(TDMM6500_StringParameterShow)
- protected
-//  procedure OkClick();override;
-//  procedure SettingsShowSLFilling();override;
  public
   Constructor Create(ST:TStaticText;DMM6500:TDMM6500;ChanNumber:byte=0);
-//  procedure ObjectToSetting;override;
 end;
 
 TDMM6500_Resistance4WRangeShow=class(TDMM6500_StringParameterShow)
- protected
-//  procedure OkClick();override;
-//  procedure SettingsShowSLFilling();override;
  public
   Constructor Create(ST:TStaticText;DMM6500:TDMM6500;ChanNumber:byte=0);
-//  procedure ObjectToSetting;override;
 end;
 
 TDMM6500_DetectorBandwidthShow=class(TDMM6500_StringParameterShow)
- protected
-//  procedure OkClick();override;
-//  procedure SettingsShowSLFilling();override;
-//  procedure GetDataFromDevice;override;
  public
   Constructor Create(ST:TStaticText;L:Tlabel;
            DMM6500:TDMM6500;ChanNumber:byte=0);
-//  procedure ObjectToSetting;override;
 end;
 
 //------------------------------------------------------------------------------
@@ -635,7 +449,6 @@ TDMM6500_MeasParShow=class(TControlElements)
   procedure DesignElements;override;
  public
   Constructor Create(Parent:TGroupBox;DMM6500:TDMM6500;ChanNumber:byte=0);
-//  destructor Destroy;override;
   procedure ObjectToSetting;override;
   procedure GetDataFromDevice;override;
 end;
@@ -645,6 +458,7 @@ TDMM6500ControlChannels=class(TControlElements)
   fLabels:array of TLabel;
   fST:array of TStaticText;
   fButtons:array of TButton;
+  fBOpenAll:TButton;
   fMeasurementType:array of TDMM6500_MeasurementTypeShow;
   fMeasParChanShowForm:TForm;
   fBOk:TButton;
@@ -660,6 +474,8 @@ TDMM6500ControlChannels=class(TControlElements)
   procedure CreateForm(MeasureType:TKeitley_Measure;ChanNumber:byte);
   procedure FormShow(MeasureType:TKeitley_Measure;ChanNumber:byte);
   procedure OptionButtonClick(Sender: TObject);
+  procedure ButtonAllOpenClick(Sender: TObject);
+  procedure ClosedChannelHighlight;
  protected
   procedure CreateElements;override;
   procedure CreateControls;override;
@@ -668,13 +484,9 @@ TDMM6500ControlChannels=class(TControlElements)
   procedure DestroyControls;override;
  public
   property ChanCount:byte read GetChanCount;
-//  Constructor Create(GB:TGroupBox;DMM6500:TDMM6500);
-//  destructor Destroy;override;
   procedure ObjectToSetting;override;
   procedure GetDataFromDevice;override;
 end;
-
-
 
 TDMM6500MeasPar_BaseShow=class(TDMM6500_MeasParShow)
  private
@@ -684,12 +496,9 @@ TDMM6500MeasPar_BaseShow=class(TDMM6500_MeasParShow)
  protected
   procedure CreateElements;override;
   procedure CreateControls;override;
-//  procedure CountShowCreate;virtual;
   procedure DesignElements;override;
-
   procedure Resize(Control:TControl);
   procedure ResizeElements;
-//  procedure ParentToElements;
  public
   STCount:TStaticText;
   LCount:TLabel;
@@ -720,7 +529,6 @@ TDMM6500MeasPar_BaseDigShow=class(TDMM6500MeasPar_BaseShow)
   procedure CreateControls;override;
   procedure DesignElements;override;
  public
-//  STRange:TStaticText;
   STSampleRate:TStaticText;
   LSampleRate:TLabel;
 end;
@@ -754,7 +562,6 @@ TDMM6500MeasPar_BaseVoltDCShow=class(TDMM6500MeasPar_BaseVoltShow)
  protected
   procedure CreateElements;override;
   procedure CreateControls;override;
-//  procedure DesignElements;override;
  public
   STInputImpedance:TStaticText;
   LInputImpedance:TLabel;
@@ -765,12 +572,10 @@ TDMM6500MeasPar_DigVoltShow=class(TDMM6500MeasPar_BaseDigShow)
   fRangeShow:TDMM6500_VoltageDigRangeShow;
   fBaseVoltDCShow:TDMM6500MeasPar_BaseVoltDCShow;
  protected
-//  procedure CreateElements;override;
   procedure CreateControls;override;
   procedure DestroyControls;override;
   procedure DesignElements;override;
  public
-//  STRange:TStaticText;
   procedure ObjectToSetting;override;
   procedure GetDataFromDevice;override;
 end;
@@ -781,9 +586,6 @@ TDMM6500MeasPar_DigCurShow=class(TDMM6500MeasPar_BaseDigShow)
  protected
   procedure CreateControls;override;
   procedure DesignElements;override;
- public
-//  procedure ObjectToSetting;override;
-//  procedure GetDataFromDevice;override;
 end;
 
 TDMM6500MeasPar_CapacShow=class(TDMM6500MeasPar_BaseDelayShow)
@@ -792,7 +594,6 @@ TDMM6500MeasPar_CapacShow=class(TDMM6500MeasPar_BaseDelayShow)
  protected
   procedure CreateControls;override;
   procedure DesignElements;override;
- public
 end;
 
 TDMM6500MeasPar_BaseACShow=class(TDMM6500MeasPar_BaseDelayShow)
@@ -814,7 +615,6 @@ TDMM6500MeasPar_CurACShow=class(TDMM6500MeasPar_BaseACShow)
  protected
   procedure CreateControls;override;
   procedure DesignElements;override;
- public
 end;
 
 TDMM6500MeasPar_VoltACShow=class(TDMM6500MeasPar_BaseACShow)
@@ -893,7 +693,6 @@ TDMM6500MeasPar_CurDCShow=class(TDMM6500MeasPar_ContinuityBaseShow)
  protected
   procedure CreateControls;override;
   procedure DesignElements;override;
- public
 end;
 
 TDMM6500MeasPar_BaseVoltDCRangeShow=class(TDMM6500MeasPar_ContinuityBaseShow)
@@ -901,8 +700,6 @@ TDMM6500MeasPar_BaseVoltDCRangeShow=class(TDMM6500MeasPar_ContinuityBaseShow)
   fRangeShow:TDMM6500_VoltageDCRangeShow;
  protected
   procedure CreateControls;override;
-  procedure DesignElements;override;
- public
 end;
 
 TDMM6500MeasPar_Res2WShow=class(TDMM6500MeasPar_ContinuityBaseShow)
@@ -911,9 +708,6 @@ TDMM6500MeasPar_Res2WShow=class(TDMM6500MeasPar_ContinuityBaseShow)
  protected
   procedure CreateControls;override;
   procedure DesignElements;override;
- public
-//  procedure ObjectToSetting;override;
-//  procedure GetDataFromDevice;override;
 end;
 
 TDMM6500MeasPar_Base4WTShow=class(TDMM6500MeasPar_ContinuityBaseShow)
@@ -928,8 +722,6 @@ TDMM6500MeasPar_Base4WTShow=class(TDMM6500MeasPar_ContinuityBaseShow)
   CBOpenLD:TCheckBox;
   STOffComp:TStaticText;
   LOffComp:TLabel;
-//  procedure ObjectToSetting;override;
-//  procedure GetDataFromDevice;override;
 end;
 
 TDMM6500MeasPar_Res4WShow=class(TDMM6500MeasPar_Base4WTShow)
@@ -939,9 +731,6 @@ TDMM6500MeasPar_Res4WShow=class(TDMM6500MeasPar_Base4WTShow)
   procedure CreateControls;override;
   procedure DesignElements;override;
   procedure HookForOffComp;
- public
-//  procedure ObjectToSetting;override;
-//  procedure GetDataFromDevice;override;
 end;
 
 TDMM6500MeasPar_VoltRatShow=class(TDMM6500MeasPar_BaseVoltDCRangeShow)
@@ -1038,7 +827,6 @@ function MeasParShowFactory(MeasureType:TKeitley_Measure;
 begin
  case MeasureType of
    kt_mCurDC: Result:=TDMM6500MeasPar_CurDCShow.Create(Parent,DMM6500,ChanNumber);
-//   kt_mVolDC: Result:=TDMM6500MeasPar_ContinuityBaseShow.Create(Parent,DMM6500,ChanNumber);
    kt_mVolDC: Result:=TDMM6500MeasPar_VoltDCShow.Create(Parent,DMM6500,ChanNumber);
    kt_mRes2W: Result:=TDMM6500MeasPar_Res2WShow.Create(Parent,DMM6500,ChanNumber);
    kt_mCurAC: Result:=TDMM6500MeasPar_CurACShow.Create(Parent,DMM6500,ChanNumber);
@@ -1054,7 +842,6 @@ begin
    kt_mDigCur: Result:=TDMM6500MeasPar_DigCurShow.Create(Parent,DMM6500,ChanNumber);
    else Result:=TDMM6500MeasPar_DigVoltShow.Create(Parent,DMM6500,ChanNumber);
  end;
-// Result.ObjectToSetting;
 end;
 
 { TDMM6500_StringParameterShow }
@@ -1063,16 +850,13 @@ constructor TDMM6500_StringParameterShow.Create(ST: TStaticText;
   ParametrCaption: string; MeasP:TDMM6500_MeasParameters;DMM6500: TDMM6500; ChanNumber: byte);
 begin
   inherited Create(MeasP,DMM6500,ChanNumber);
-  CreateHeader{(DMM6500, ChanNumber)};
+  CreateHeader;
   fParamShow:=TStringParameterShow.Create(ST,ParametrCaption,fSettingsShowSL);
-//  inherited Create(ST,ParametrCaption,fSettingsShowSL);
   fParamShow.HookParameterClick:=OkClick;
 end;
 
 destructor TDMM6500_StringParameterShow.Destroy;
 begin
-//  fParamShow.HookParameterClick:=nil;
-//  fParamShow.Free;
   fSettingsShowSL.Free;
   inherited;
 end;
@@ -1119,33 +903,16 @@ begin
  case fMeasP of
    dm_tp_TransdType: Result:=ord(High(TDMM6500_TempTransducer));
    dm_tp_RefJunction: Result:=ord(High(TDMM6500_TCoupleRefJunct));
-//   dm_tp_RTDAlpha: Result:=;
-//   dm_tp_RTDBeta: Result:=;
-//   dm_tp_RTDDelta: Result:=;
-//   dm_tp_RTDZero: Result:=;
    dm_tp_W2RTDType,
    dm_tp_W3RTDType,
    dm_tp_W4RTDType: Result:=ord(High(TDMM6500_RTDType));
    dm_tp_ThermistorType: Result:=ord(High(TDMM6500_ThermistorType));
    dm_tp_TCoupleType: Result:=ord(High(TDMM6500_TCoupleType));
-//   dm_tp_SimRefTemp: Result:=;
    dm_dp_BiasLevel: Result:=ord(High(TDMM6500_DiodeBiasLevel));
    dm_vrp_VRMethod: Result:=ord(High(TDMM6500_VoltageRatioMethod));
    dm_pp_OffsetCompen: Result:=ord(High(TDMM6500_OffsetCompen));
-//   dm_pp_OpenLeadDetector: Result:=;
-//   dm_pp_LineSync: Result:=;
-//   dm_pp_AzeroState: Result:=;
    dm_pp_DetectorBW: Result:=ord(High(TDMM6500_DetectorBandwidth));
    dm_pp_InputImpedance: Result:=ord(High(TDMM6500_InputImpedance));
-//   dm_pp_Units: Result:=;
-//   dm_pp_DbmWReference: Result:=;
-//   dm_pp_DecibelReference: Result:=;
-//   dm_pp_Aperture: Result:=;
-//   dm_pp_MeasureTime: Result:=;
-//   dm_pp_NPLC: Result:=;
-//   dm_pp_SampleRate: Result:=;
-//   dm_pp_DelayAuto: Result:=;
-//   dm_pp_Range: Result:=;
    dm_pp_ThresholdRange: Result:=ord(High(TDMM6500_VoltageACRange));
    dm_pp_RangeVoltDC: Result:=ord(High(TDMM6500_VoltageDCRange));
    dm_pp_RangeVoltAC: Result:=ord(High(TDMM6500_VoltageACRange));
@@ -1178,7 +945,6 @@ procedure TDMM6500_StringParameterShow.OkClick;
 begin
  fDMM6500.SetShablon(fMeasP,Pointer(Data),fChanNumber);
  inherited;
-// fHookParameterClick;
 end;
 
 procedure TDMM6500_StringParameterShow.SetDat(const Value: integer);
@@ -1202,34 +968,17 @@ begin
  case fMeasP of
    dm_tp_TransdType: Result:=DMM6500_TempTransducerLabel[TDMM6500_TempTransducer(i)];
    dm_tp_RefJunction: Result:=DMM6500_TCoupleRefJunctLabel[TDMM6500_TCoupleRefJunct(i)];
-//   dm_tp_RTDAlpha: Result:=;
-//   dm_tp_RTDBeta: Result:=;
-//   dm_tp_RTDDelta: Result:=;
-//   dm_tp_RTDZero: Result:=;
    dm_tp_W2RTDType,
    dm_tp_W3RTDType,
    dm_tp_W4RTDType: Result:=DMM6500_WiRTDTypeLabel[TDMM6500_RTDType(i)];
    dm_tp_ThermistorType: Result:=inttostr(DMM6500_ThermistorTypeValues[TDMM6500_ThermistorType(i)])
                            +DMM6500_ThermistorTypeSyffix;
    dm_tp_TCoupleType: Result:=DMM6500_TCoupleTypeLabel[TDMM6500_TCoupleType(i)];
-//   dm_tp_SimRefTemp: Result:=;
    dm_dp_BiasLevel: Result:=DMM6500_DiodeBiasLevelLabel[TDMM6500_DiodeBiasLevel(i)];
    dm_vrp_VRMethod: Result:=DMM6500_VoltageRatioMethodLabel[TDMM6500_VoltageRatioMethod(i)];
    dm_pp_OffsetCompen: Result:=DMM6500_OffsetCompenLabel[TDMM6500_OffsetCompen(i)];
-//   dm_pp_OpenLeadDetector: Result:=;
-//   dm_pp_LineSync: Result:=;
-//   dm_pp_AzeroState: Result:=;
    dm_pp_DetectorBW: Result:=DMM6500_DetectorBandwidthLabel[TDMM6500_DetectorBandwidth(i)];
    dm_pp_InputImpedance: Result:=DMM6500_InputImpedanceLabel[TDMM6500_InputImpedance(i)];
-//   dm_pp_Units: Result:=;
-//   dm_pp_DbmWReference: Result:=;
-//   dm_pp_DecibelReference: Result:=;
-//   dm_pp_Aperture: Result:=;
-//   dm_pp_MeasureTime: Result:=;
-//   dm_pp_NPLC: Result:=;
-//   dm_pp_SampleRate: Result:=;
-//   dm_pp_DelayAuto: Result:=;
-//   dm_pp_Range: Result:=;
    dm_pp_ThresholdRange: Result:=DMM6500_VoltageACRangeLabels[TDMM6500_VoltageACRange(i)];
    dm_pp_RangeVoltDC: Result:=DMM6500_VoltageDCRangeLabels[TDMM6500_VoltageDCRange(i)];
    dm_pp_RangeVoltAC: Result:=DMM6500_VoltageACRangeLabels[TDMM6500_VoltageACRange(i)];
@@ -1251,17 +1000,13 @@ constructor TDMM6500_StringParameterShow.Create(ST: TStaticText; LCap: TLabel;
   ParametrCaption: string; MeasP:TDMM6500_MeasParameters; DMM6500: TDMM6500; ChanNumber: byte);
 begin
   inherited Create(MeasP,DMM6500,ChanNumber);
-  CreateHeader{(DMM6500, ChanNumber)};
+  CreateHeader;
   fParamShow:=TStringParameterShow.Create(ST,LCap,ParametrCaption,fSettingsShowSL);
-//  inherited Create(ST,LCap,ParametrCaption,fSettingsShowSL);
   fParamShow.HookParameterClick:=OkClick;
-
 end;
 
-procedure TDMM6500_StringParameterShow.CreateHeader{DMM6500: TDMM6500; ChanNumber: Byte)};
+procedure TDMM6500_StringParameterShow.CreateHeader;
 begin
-//  fDMM6500 := DMM6500;
-//  fChanNumber := ChanNumber;
   SomeAction();
   fSettingsShowSL := TStringList.Create;
   SettingsShowSLFilling;
@@ -1341,27 +1086,25 @@ begin
  fDMM6500:=DMM6500;
  CreateElements;
  CreateControls;
-// CreateElements;
-// CreateControls;
  DesignElements;
 end;
 
-//destructor TControlElements.Destroy;
-//begin
-//  DestroyControls;
-//  DestroyElements;
-//  inherited;
-//end;
-
 { TControlChannels }
 
-//constructor TDMM6500ControlChannels.Create(GB: TGroupBox; DMM6500: TDMM6500);
-//begin
-//// fDMM6500:=DMM6500;
-//// inherited Create(GB);
-// inherited Create(GB,DMM6500);
-// fParent.Caption:='Channels'
-//end;
+procedure TDMM6500ControlChannels.ButtonAllOpenClick(Sender: TObject);
+begin
+ fDMM6500.SetChannelOpenAll;
+ ClosedChannelHighlight;
+end;
+
+procedure TDMM6500ControlChannels.ClosedChannelHighlight;
+ var i:Shortint;
+begin
+ for I := 0 to High(fButtons) do
+  if fDMM6500.ChansMeasure[i].IsClosed
+    then fST[i].Font.Color:=clRed
+    else fST[i].ParentFont:=True;
+end;
 
 procedure TDMM6500ControlChannels.CreateControls;
  var i:Shortint;
@@ -1371,6 +1114,7 @@ begin
   fMeasurementType[i]:=TDMM6500_MeasurementTypeShow.Create(fST[i],fDMM6500,i+1);
  for I := 0 to High(fButtons) do
   fButtons[i].OnClick:=OptionButtonClick;
+ fBOpenAll.OnClick:=ButtonAllOpenClick;
 end;
 
 procedure TDMM6500ControlChannels.CreateElements;
@@ -1382,16 +1126,11 @@ begin
  for I := 0 to High(fLabels) do
   begin
     fLabels[i]:=TLabel.Create(fParent);
-//    fLabels[i].Parent:=fParent;
     fST[i]:=TStaticText.Create(fParent);
-//    fST[i].Parent:=fParent;
     fButtons[i]:=TButton.Create(fParent);
     fButtons[i].Tag:=i+1;
-//    fButtons[i].Parent:=fParent;
-//    fButtons[i].Top:=i*5;
-//    fButtons[i].Left:=50;
-//    fButtons[i].Caption:=(inttostr(i));
   end;
+ fBOpenAll:=TButton.Create(fParent);
 end;
 
 procedure TDMM6500ControlChannels.CreateForm(MeasureType: TKeitley_Measure;
@@ -1413,12 +1152,12 @@ begin
    fSTDelayAfterClose:=TStaticText.Create(fMeasParChanShowForm);
    fLDelayAfterClose:=TLabel.Create(fMeasParChanShowForm);
    fCBChannelClose:=TCheckBox.Create(fMeasParChanShowForm);
-
+   fSTDelayAfterClose.Parent:=fMeasParChanShowForm;
+   fLDelayAfterClose.Parent:=fMeasParChanShowForm;
+   fCBChannelClose.Parent:=fMeasParChanShowForm;
 
 
    fGBParametrChanShow:=TGroupBox.Create(fMeasParChanShowForm);
-   fGBParametrChanShow.Width:=200;
-   fGBParametrChanShow.Height:=200;
    fGBParametrChanShow.Parent:=fMeasParChanShowForm;
 
    fMeasParChanShow:=MeasParShowFactory(MeasureType,fGBParametrChanShow,fDMM6500,ChanNumber);
@@ -1428,13 +1167,12 @@ begin
    fChannelCloseShow:=TDMM6500_ChannelCloseShow.Create(fCBChannelClose,fDMM6500,ChanNumber);
    fDelayAfterCloseShow.GetDataFromDeviceAndToSetting;
    fChannelCloseShow.GetDataFromDeviceAndToSetting;
+   fChannelCloseShow.HookParameterClick:=ClosedChannelHighlight;
 
    fGBParametrChanShow.Top:=0;
    fGBParametrChanShow.Left:=0;
 
-   fSTDelayAfterClose.Parent:=fMeasParChanShowForm;
-   fLDelayAfterClose.Parent:=fMeasParChanShowForm;
-   fCBChannelClose.Parent:=fMeasParChanShowForm;
+
    fCBChannelClose.Left:=MarginLeft;
    fCBChannelClose.Top:=fGBParametrChanShow.Height+5;
    RelativeLocation(fCBChannelClose,fLDelayAfterClose,oRow,Marginbetween);
@@ -1474,12 +1212,16 @@ begin
    fButtons[i].Caption:='Options';
    fButtons[i].Top:=fLabels[i].Top-3;
    fButtons[i].Left:=j;
-   fButtons[i].Repaint;
   end;
 
- fParent.Width:=fButtons[High(fButtons)].Left+fButtons[High(fButtons)].Width+5;
- fParent.Height:=fButtons[High(fButtons)].Top+fButtons[High(fButtons)].Height+10;
-// fParent.Refresh;
+fParent.Width:=fButtons[High(fButtons)].Left+fButtons[High(fButtons)].Width+5;
+
+  fBOpenAll.Parent:=fParent;
+  fBOpenAll.Caption:='Open All';
+  fBOpenAll.Top:=fButtons[High(fButtons)].Top+fButtons[High(fButtons)].Height+5;
+  fBOpenAll.Left:=round((fParent.Width-fBOpenAll.Width)/2);
+
+ fParent.Height:=fBOpenAll.Top+fBOpenAll.Height+10;
 end;
 
 procedure TDMM6500ControlChannels.DestroyControls;
@@ -1498,6 +1240,7 @@ begin
     fST[i].Free;
     fButtons[i].Free;
   end;
+ fBOpenAll.Free;
 end;
 
 procedure TDMM6500ControlChannels.FormShow(MeasureType: TKeitley_Measure;
@@ -1510,16 +1253,19 @@ begin
  fBOk.Parent:=nil;
  fBOk.Free;
 
+
+
+ if fMeasParChanShow<> nil then FreeAndNil(fMeasParChanShow);
+ FreeAndNil(fDelayAfterCloseShow);
+ fChannelCloseShow.HookParameterClick:=nil;
+ FreeAndNil(fChannelCloseShow);
+
  fSTDelayAfterClose.Parent:=nil;
  fLDelayAfterClose.Parent:=nil;
  fCBChannelClose.Parent:=nil;
  fSTDelayAfterClose.Free;
  fLDelayAfterClose.Free;
  fCBChannelClose.Free;
-
- if fMeasParChanShow<> nil then FreeAndNil(fMeasParChanShow);
- FreeAndNil(fDelayAfterCloseShow);
- FreeAndNil(fChannelCloseShow);
 
  fGBParametrChanShow.Parent:=nil;
  fGBParametrChanShow.Free;
@@ -1537,10 +1283,11 @@ procedure TDMM6500ControlChannels.GetDataFromDevice;
  var i:Shortint;
 begin
  for I := 0 to High(fMeasurementType) do
-//  begin
-//  showmessage(inttostr(fMeasurementType[i].fChanNumber));
-  fMeasurementType[i].GetDataFromDevice;
-//  end;
+  begin
+   fMeasurementType[i].GetDataFromDevice;
+   fDMM6500.GetChannelState(i+1);
+  end;
+
 end;
 
 procedure TDMM6500ControlChannels.ObjectToSetting;
@@ -1548,6 +1295,7 @@ procedure TDMM6500ControlChannels.ObjectToSetting;
 begin
  for I := 0 to High(fMeasurementType) do
   fMeasurementType[i].ObjectToSetting;
+ ClosedChannelHighlight;
 end;
 
 procedure TDMM6500ControlChannels.OptionButtonClick(Sender: TObject);
@@ -1556,12 +1304,6 @@ begin
 end;
 
 { TDMM6500_ParameterShow }
-
-//constructor TDMM6500_ParameterShow.Create(DMM6500: TDMM6500; ChanNumber: byte);
-//begin
-//  fDMM6500 := DMM6500;
-//  fChanNumber := ChanNumber;
-//end;
 
 destructor TDMM6500_ParameterShow.Destroy;
 begin
@@ -1573,25 +1315,10 @@ end;
 procedure TDMM6500_ParameterShow.SetLimits(LimitV: TLimitValues);
 begin
  try
-// (fParamShow as TLimitedParameterShow).Limits.SetLimits(LowLimit,HighLimit);
  (fParamShow as TLimitedParameterShow).Limits.SetLimits(LimitV[lvMin],LimitV[lvMax]);
  except
  end;
 end;
-
-//procedure TDMM6500_ParameterShow.UpDate;
-//begin
-// GetDataFromDevice;
-// ObjectToSetting;
-//end;
-
-//{ TDMM6500_LimitedParameterShow }
-//
-//procedure TDMM6500_LimitedParameterShow.SetLimits(LimitV:TLimitValues);
-//begin
-//// (fParamShow as TLimitedParameterShow).Limits.SetLimits(LowLimit,HighLimit);
-// (fParamShow as TLimitedParameterShow).Limits.SetLimits(LimitV[lvMin],LimitV[lvMax]);
-//end;
 
 { TDMM6500_DoubleParameterShow }
 
@@ -1691,10 +1418,6 @@ constructor TDMM6500_CountShow.Create(STD:TStaticText;STC:TLabel;
 begin
  Inherited Create(dm_pp_ApertureAuto,DMM6500,ChanNumber,STD,STC,'Measure Count',1);
  SetCountType(0);
-// fCountType:=CountType;
-// if fCountType=0 then SetLimits(DMM6500_CountLimits)
-//                 else SetLimits(DMM6500_CountDigLimits);
-
 end;
 
 procedure TDMM6500_CountShow.GetDataFromDevice;
@@ -1721,10 +1444,6 @@ end;
 
 procedure TDMM6500_CountShow.OkClick;
 begin
-// if fCountType=0
-//  then fDMM6500.SetCount(Data,fChanNumber)
-//  else fDMM6500.SetCountDig(Data,fChanNumber);
-
 if fCountType=0 then
    begin
      if fChanNumber=0
@@ -1732,12 +1451,6 @@ if fCountType=0 then
        else fDMM6500.SetCount(Data,fChanNumber);
    end           else
    fDMM6500.SetCountDig(Data,fChanNumber);
-//   begin
-//     if fChanNumber=0
-//       then Data:=fDMM6500.CountDig
-//       else Data:=fDMM6500.ChansMeasure[fChanNumber-1].CountDig;
-//   end;
-
  fHookParameterClick;
 end;
 
@@ -1761,54 +1474,18 @@ begin
  fDMM6500.GetDisplayDigitsNumber(fChanNumber);
 end;
 
-//procedure TDMM6500_DisplayDNShow.ObjectToSetting;
-//begin
-// Data:=fDMM6500.MeasParamByCN(fChanNumber).DisplayDN-3;
-//end;
-
 procedure TDMM6500_DisplayDNShow.OkClick;
 begin
  fDMM6500.SetDisplayDigitsNumber(3+Data,fChanNumber);
  fHookParameterClick;
 end;
 
-//procedure TDMM6500_DisplayDNShow.SettingsShowSLFilling;
-// var i:byte;
-//begin
-// for I := Low(TKeitleyDisplayDigitsNumber) to High(TKeitleyDisplayDigitsNumber) do
-//    fSettingsShowSL.Add(inttostr(i)+KeitleyDisplayDNLabel);
-//end;
-
-{ TDMM6500_MeasParShow }
-
-//constructor TDMM6500_MeasParShow.Create(Parent: TWinControl;DMM6500:TDMM6500);
-//begin
-// inherited Create;
-// fParent:=Parent;
-// fDMM6500:=DMM6500;
-// CreateElements;
-// CreateControls;
-//end;
-
-//destructor TDMM6500_MeasParShow.Destroy;
-//begin
-//  DestroyControls;
-//  DestroyElements;
-//  inherited;
-//end;
-
 { TDMM6500MeasPar_BaseShow }
-
-//procedure TDMM6500MeasPar_BaseShow.CountShowCreate;
-//begin
-// fCountShow:=TDMM6500_CountShow.Create(STCount,LCount,fDMM6500,fChanNumber);
-//end;
 
 procedure TDMM6500MeasPar_BaseShow.CreateControls;
 begin
  fDisplayDNShow:=TDMM6500_DisplayDNShow.Create(STDisplayDN,fDMM6500,fChanNumber);
  fCountShow:=TDMM6500_CountShow.Create(STCount,LCount,fDMM6500,fChanNumber);
-// CountShowCreate;
  Add(fDisplayDNShow);
  Add(fCountShow);
  fCountShow.HookParameterClick:=HookParameterClickCount;
@@ -1817,35 +1494,18 @@ end;
 procedure TDMM6500MeasPar_BaseShow.CreateElements;
 begin
   STCount:=TStaticText.Create(fParent);
-//  STCount.Parent:=fParent;
   Add(STCount);
   LCount:=TLabel.Create(fParent);
-//  LCount.Parent:=fParent;
   Add(LCount);
   STDisplayDN:=TStaticText.Create(fParent);
-//  STDisplayDN.Parent:=fParent;
   Add(STDisplayDN);
   STRange:=TStaticText.Create(fParent);
   Add(STRange);
-
-//  STCount:=TStaticText.Create(fParent);
-//  LCount:=TLabel.Create(fParent);
-//  STDisplayDN:=TStaticText.Create(fParent);
-//  STCount.Parent:=fParent;
-//  LCount.Parent:=fParent;
-//  STDisplayDN.Parent:=fParent;
-//  Add(STCount);
-//  Add(LCount);
-//  Add(STDisplayDN);
 end;
 
 procedure TDMM6500MeasPar_BaseShow.DesignElements;
 begin
   inherited DesignElements;
-//  LCount.Parent:=fParent;
-//  STDisplayDN.Parent:=fParent;
-//  STCount.Parent:=fParent;
-//  ParentToElements;
   ResizeElements;
 
   STCount.Font.Color:=clGreen;
@@ -1855,22 +1515,13 @@ begin
  STDisplayDN.Left:=MarginLeft;
  RelativeLocation(STDisplayDN,LCount,oCol,Marginbetween);
  LCount.Left:=MarginLeft;
-// RelativeLocation(LCount,STCount,oCol,MarginBetweenLST);
  HookParameterClickCount;
-
 end;
 
 procedure TDMM6500MeasPar_BaseShow.HookParameterClickCount;
 begin
  RelativeLocation(LCount,STCount,oCol,MarginBetweenLST);
 end;
-
-//procedure TDMM6500MeasPar_BaseShow.ParentToElements;
-// var i:integer;
-//begin
-// for I := 0 to High(fWinElements)
-//   do fWinElements[i].Parent:=fParent;
-//end;
 
 procedure TDMM6500MeasPar_BaseShow.Resize(Control: TControl);
 begin
@@ -1930,41 +1581,6 @@ begin
   inherited Create(Parent,DMM6500);
   ObjectToSetting;
 end;
-
-//procedure TDMM6500_MeasParShow.CreateAndAddElement(Element: TControl;ET:TDMM6500_ControlElementType);
-//begin
-//// case ET of
-////   dm_cetST:Element:=TStaticText.Create(fParent);
-////   dm_cetL:Element:=TLabel.Create(fParent);
-////   dm_cetCB:Element:=TCheckBox.Create(fParent);
-//// end;
-//
-//
-//// if (Element is TStaticText) then
-////     begin
-////     Element:=TStaticText.Create(fParent);
-////     (Element as TStaticText).Parent:=fParent;
-////     end;
-//// if (Element is TLabel) then
-////     begin
-////     Element:=TLabel.Create(fParent);
-////     (Element as TLabel).Parent:=fParent;
-////     end;
-//// if (Element is TCheckBox) then
-////   begin
-////   Element:=TCheckBox.Create(fParent);
-////   (Element as TCheckBox).Parent:=fParent;
-////   end;
-// Element.Parent:=fParent;
-// Add(Element);
-//end;
-
-//procedure TDMM6500_MeasParShow.DesignElements;
-// var i:integer;
-//begin
-// for i := 0 to High(fWinElements) do
-//  fWinElements[i].Parent:=fParent;
-//end;
 
 procedure TDMM6500_MeasParShow.DesignElements;
 begin
@@ -2087,7 +1703,6 @@ end;
 
 procedure TDMM6500_BoolParameterShow.ObjectToSetting;
 begin
-// showmessage('Value='+booltostr(FuncForObjectToSetting,True));
  SetValue(FuncForObjectToSetting);
 end;
 
@@ -2098,30 +1713,11 @@ end;
 
 { TDMM6500_AutoDelayShow }
 
-//procedure TDMM6500_AutoDelayShow.Click(Sender: TObject);
-//// var temp:bool;
-//begin
-//// temp:=fCB.Checked;
-//// fDMM6500.SetShablon(dm_pp_DelayAuto,@temp,fChanNumber);
-// fDMM6500.SetDelayAuto(fCB.Checked,fChanNumber);
-// inherited;
-//end;
-
 constructor TDMM6500_AutoDelayShow.Create(CB: TCheckBox; DMM6500: TDMM6500;
   ChanNumber: byte);
 begin
  inherited Create(CB,'Auto Delay',dm_pp_DelayAuto,DMM6500,ChanNumber);
 end;
-
-//procedure TDMM6500_AutoDelayShow.GetDataFromDevice;
-//begin
-// fDMM6500.GetDelayAuto(fChanNumber);
-//end;
-
-//procedure TDMM6500_AutoDelayShow.ObjectToSetting;
-//begin
-// SetValue((fDMM6500.MeasParamByCN(fChanNumber) as TDMM6500MeasPar_BaseDelay).AutoDelay);
-//end;
 
 { TDMM6500MeasPar_BaseDelayShow }
 
@@ -2136,11 +1732,7 @@ procedure TDMM6500MeasPar_BaseDelayShow.CreateElements;
 begin
   inherited CreateElements;
   CBAutoDelay:=TCheckBox.Create(fParent);
-//  CBAutoDelay.Parent:=fParent;
   Add(CBAutoDelay);
-//  CBAutoDelay:=TCheckBox.Create(fParent);
-//  CBAutoDelay.Parent:=fParent;
-//  Add(CBAutoDelay);
 end;
 
 
@@ -2175,16 +1767,6 @@ begin
  SetLimits(1000,1000000);
 end;
 
-//procedure TDMM6500_SampleRateShow.GetDataFromDevice;
-//begin
-// fDMM6500.GetSampleRate(fChanNumber);
-//end;
-
-//procedure TDMM6500_SampleRateShow.ObjectToSetting;
-//begin
-// Data:=(fDMM6500.MeasParamByCN(fChanNumber) as TDMM6500MeasPar_BaseDig).SampleRate;
-//end;
-
 procedure TDMM6500_SampleRateShow.OkClick;
 begin
  fDMM6500.SetSampleRate(TDMM6500_DigSampleRate(Data),fChanNumber);
@@ -2205,13 +1787,9 @@ procedure TDMM6500MeasPar_BaseDigShow.CreateElements;
 begin
  inherited CreateElements;
   STSampleRate:=TStaticText.Create(fParent);
-//  STSampleRate.Parent:=fParent;
   Add(STSampleRate);
   LSampleRate:=TLabel.Create(fParent);
-//  LSampleRate.Parent:=fParent;
   Add(LSampleRate);
-//  STRange:=TStaticText.Create(fParent);
-//  Add(STRange);
 end;
 
 procedure TDMM6500MeasPar_BaseDigShow.DesignElements;
@@ -2221,7 +1799,6 @@ begin
   LSampleRate.Font.Color:=clRed;
   RelativeLocation(LCount,LSampleRate,oRow,Marginbetween);
   HookParameterClickSampleRate;
-//  RelativeLocation(LSampleRate,STSampleRate,oCol,MarginBetweenLST);
  RelativeLocation(STDisplayDN,STRange,oRow,Marginbetween);
  STRange.Font.Color:=clNavy;
 
@@ -2240,29 +1817,6 @@ begin
  inherited Create(ST,L,'Unit:',dm_pp_UnitsVolt,DMM6500,ChanNumber);
 end;
 
-//procedure TDMM6500_VoltageUnitShow.GetDataFromDevice;
-//begin
-// fDMM6500.GetUnits(fChanNumber);
-//end;
-
-//procedure TDMM6500_VoltageUnitShow.ObjectToSetting;
-//begin
-// Data:=ord(GetBaseVolt.Units);
-//end;
-
-//procedure TDMM6500_VoltageUnitShow.OkClick;
-//begin
-// fDMM6500.SetUnits(TDMM6500_VoltageUnits(Data),fChanNumber);
-// inherited;
-//end;
-
-//procedure TDMM6500_VoltageUnitShow.SettingsShowSLFilling;
-// var i:TDMM6500_VoltageUnits;
-//begin
-// for I := Low(TDMM6500_VoltageUnits) to High(TDMM6500_VoltageUnits) do
-//    fSettingsShowSL.Add(DMM6500_VoltageUnitsLabel[i]);
-//end;
-
 { TDMM6500_DBShow }
 
 constructor TDMM6500_DecibelReferenceShow.Create(STD: TStaticText; STC: TLabel;
@@ -2273,24 +1827,6 @@ begin
  SetLimits(GetBaseVolt.DBLimits);
 end;
 
-//procedure TDMM6500_DecibelReferenceShow.GetDataFromDevice;
-//begin
-// fDMM6500.GetDecibelReference(fChanNumber);
-//end;
-
-//procedure TDMM6500_DecibelReferenceShow.ObjectToSetting;
-//begin
-//  Data:=GetBaseVolt.DB;
-//end;
-
-//procedure TDMM6500_DecibelReferenceShow.OkClick;
-//// var temp:double;
-//begin
-//// temp:=Data;
-//// fDMM6500.SetShablon(dm_pp_DecibelReference,@temp,fChanNumber);
-// fDMM6500.SetDecibelReference(Data,fChanNumber);
-//end;
-
 { TDMM6500_DecibelmWReferenceShow }
 
 constructor TDMM6500_DecibelmWReferenceShow.Create(STD: TStaticText;
@@ -2300,24 +1836,6 @@ begin
  STC.WordWrap:=False;
  SetLimits(GetBaseVolt.DBMLimits);
 end;
-
-//procedure TDMM6500_DecibelmWReferenceShow.GetDataFromDevice;
-//begin
-//  fDMM6500.GetDbmWReference(fChanNumber);
-//end;
-
-//procedure TDMM6500_DecibelmWReferenceShow.ObjectToSetting;
-//begin
-//  Data:=GetBaseVolt.DBM;
-//end;
-
-//procedure TDMM6500_DecibelmWReferenceShow.OkClick;
-//// var temp:integer;
-//begin
-//// temp:=Data;
-//// fDMM6500.SetShablon(dm_pp_DbmWReference,@temp,fChanNumber);
-// fDMM6500.SetDbmWReference(Data,fChanNumber);
-//end;
 
 { TDMM6500MeasPar_BaseVoltShow }
 
@@ -2331,30 +1849,20 @@ end;
 
 procedure TDMM6500MeasPar_BaseVoltShow.CreateElements;
 begin
-//  inherited CreateElements;
   STVoltageUnit:=TStaticText.Create(fParent);
-//  STVoltageUnit.Parent:=fParent;
   Add(STVoltageUnit);
   LVoltageUnit:=TLabel.Create(fParent);
-//  LVoltageUnit.Parent:=fParent;
   Add(LVoltageUnit);
   STDB_DBM:=TStaticText.Create(fParent);
-//  STDB_DBM.Parent:=fParent;
   Add(STDB_DBM);
   LDB_DBM:=TLabel.Create(fParent);
-//  LDB_DBM.Parent:=fParent;
-//  LDB_DBM.WordWrap:=True;
   LDB_DBM.Caption:='Ref. Value, Ohm';
-
   Add(LDB_DBM);
 end;
 
 procedure TDMM6500MeasPar_BaseVoltShow.DesignElements;
 begin
   inherited DesignElements;
-//  STDB_DBM.Visible:=True;
-//  LDB_DBM.Visible:=True;
-
 
   case fVoltageUnitShow.GetBaseVolt.Units of
     dm_vuVolt:begin
@@ -2387,10 +1895,6 @@ begin
  inherited;
  fDMM6500.GetDecibelReference(fChanNumber);
  fDMM6500.GetDbmWReference(fChanNumber);
-//  if fDecibelReferenceShow <> nil then
-//    fDecibelReferenceShow.GetDataFromDevice;
-//  if fDecibelmWReferenceShow <> nil then
-//    fDecibelmWReferenceShow.GetDataFromDevice;
 end;
 
 procedure TDMM6500MeasPar_BaseVoltShow.Hook;
@@ -2442,28 +1946,6 @@ begin
  inherited Create(ST,L,'Input Impedance:',dm_pp_InputImpedance,DMM6500,ChanNumber);
 end;
 
-//procedure TDMM6500_InputImpedanceShow.GetDataFromDevice;
-//begin
-// fDMM6500.GetInputImpedance(fChanNumber);
-//end;
-
-//procedure TDMM6500_InputImpedanceShow.ObjectToSetting;
-//begin
-// Data:=ord(GetBaseVoltDC.InputImpedance);
-//end;
-
-//procedure TDMM6500_InputImpedanceShow.OkClick;
-//begin
-// fDMM6500.SetInputImpedance(TDMM6500_InputImpedance(Data),fChanNumber);
-//end;
-
-//procedure TDMM6500_InputImpedanceShow.SettingsShowSLFilling;
-// var i:TDMM6500_InputImpedance;
-//begin
-// for I := Low(TDMM6500_InputImpedance) to High(TDMM6500_InputImpedance) do
-//    fSettingsShowSL.Add(DMM6500_InputImpedanceLabel[i]);
-//end;
-
 { TDMM6500MeasPar_BaseVoltDCShow }
 
 procedure TDMM6500MeasPar_BaseVoltDCShow.CreateControls;
@@ -2483,19 +1965,6 @@ begin
   Add(LInputImpedance);
 end;
 
-{ TDMM6500_RangeShow }
-
-//constructor TDMM6500_RangeShow.Create(ST: TStaticText; DMM6500: TDMM6500;
-//  ChanNumber: byte);
-//begin
-// inherited Create(St,'Range',dm_pp_Range,DMM6500,ChanNumber);
-//end;
-
-//procedure TDMM6500_RangeShow.GetDataFromDevice;
-//begin
-// fDMM6500.GetRange(fChanNumber);
-//end;
-
 { TDMM6500_VoltageDigRangeShow }
 
 constructor TDMM6500_VoltageDigRangeShow.Create(ST: TStaticText;
@@ -2504,22 +1973,10 @@ begin
  inherited Create(St,'Range',dm_pp_RangeVoltDig,DMM6500,ChanNumber);
 end;
 
-//procedure TDMM6500_VoltageDigRangeShow.ObjectToSetting;
-//begin
-// Data:=ord((fDMM6500.MeasParamByCN(fChanNumber) as TDMM6500MeasPar_DigVolt).Range)-1;
-//end;
-
 procedure TDMM6500_VoltageDigRangeShow.OkClick;
 begin
  fDMM6500.SetRange(TDMM6500_VoltageDigRange(Data+1),fChanNumber);
 end;
-
-//procedure TDMM6500_VoltageDigRangeShow.SettingsShowSLFilling;
-// var i:TDMM6500_VoltageDigRange;
-//begin
-// for I := Low(TDMM6500_VoltageDigRange) to High(TDMM6500_VoltageDigRange) do
-//    fSettingsShowSL.Add(DMM6500_VoltageDCRangeLabels[i]);
-//end;
 
 { TDMM6500_CurrentDigRangeShow }
 
@@ -2529,22 +1986,10 @@ begin
  inherited Create(St,'Range',dm_pp_RangeCurrentDig,DMM6500,ChanNumber);
 end;
 
-//procedure TDMM6500_CurrentDigRangeShow.ObjectToSetting;
-//begin
-// Data:=ord((fDMM6500.MeasParamByCN(fChanNumber) as TDMM6500MeasPar_DigCur).Range)-2;
-//end;
-
 procedure TDMM6500_CurrentDigRangeShow.OkClick;
 begin
  fDMM6500.SetRange(TDMM6500_CurrentDigRange(Data+2),fChanNumber);
 end;
-
-//procedure TDMM6500_CurrentDigRangeShow.SettingsShowSLFilling;
-// var i:TDMM6500_CurrentDigRange;
-//begin
-// for I := Low(TDMM6500_CurrentDigRange) to High(TDMM6500_CurrentDigRange) do
-//    fSettingsShowSL.Add(DMM6500_CurrentDCRangeLabels[i]);
-//end;
 
 { TDMM6500_CapacitanceRangeShow }
 
@@ -2554,23 +1999,6 @@ begin
  inherited Create(St,'Range',dm_pp_RangeCapacitance,DMM6500,ChanNumber);
 end;
 
-//procedure TDMM6500_CapacitanceRangeShow.ObjectToSetting;
-//begin
-// Data:=ord((fDMM6500.MeasParamByCN(fChanNumber) as TDMM6500MeasPar_Capac).Range);
-//end;
-
-//procedure TDMM6500_CapacitanceRangeShow.OkClick;
-//begin
-// fDMM6500.SetRange(TDMM6500_CapacitanceRange(Data),fChanNumber);
-//end;
-
-//procedure TDMM6500_CapacitanceRangeShow.SettingsShowSLFilling;
-// var i:TDMM6500_CapacitanceRange;
-//begin
-// for I := Low(TDMM6500_CapacitanceRange) to High(TDMM6500_CapacitanceRange) do
-//    fSettingsShowSL.Add(DMM6500_CapacitanceRangeRangeLabels[i]);
-//end;
-
 { TDMM6500_CurrentACRangeShow }
 
 constructor TDMM6500_CurrentACRangeShow.Create(ST: TStaticText;
@@ -2578,26 +2006,6 @@ constructor TDMM6500_CurrentACRangeShow.Create(ST: TStaticText;
 begin
  inherited Create(St,'Range',dm_pp_RangeCurrentAC,DMM6500,ChanNumber);
 end;
-
-//procedure TDMM6500_CurrentACRangeShow.ObjectToSetting;
-//begin
-// Data:=ord((fDMM6500.MeasParamByCN(fChanNumber) as TDMM6500MeasPar_CurAC).Range);
-//end;
-
-//procedure TDMM6500_CurrentACRangeShow.OkClick;
-//begin
-// fDMM6500.SetRange(TDMM6500_CurrentACRange(Data),fChanNumber);
-//end;
-
-//procedure TDMM6500_CurrentACRangeShow.SettingsShowSLFilling;
-// var i,Maxi:TDMM6500_CurrentACRange;
-//begin
-// if (fDMM6500.Terminal=kt_otFront)
-//     or (fChanNumber>0) then Maxi:=dm_car3A
-//                        else Maxi:=dm_car10A;
-// for I := dm_carAuto to Maxi do
-//    fSettingsShowSL.Add(DMM6500_CurrentACRangeLabels[i]);
-//end;
 
 { TDMM6500_VoltageACRangeShow }
 
@@ -2607,23 +2015,6 @@ begin
  inherited Create(St,'Range',dm_pp_RangeVoltAC,DMM6500,ChanNumber);
 end;
 
-//procedure TDMM6500_VoltageACRangeShow.ObjectToSetting;
-//begin
-// Data:=ord((fDMM6500.MeasParamByCN(fChanNumber) as TDMM6500MeasPar_VoltAC).Range);
-//end;
-
-//procedure TDMM6500_VoltageACRangeShow.OkClick;
-//begin
-// fDMM6500.SetRange(TDMM6500_VoltageACRange(Data),fChanNumber);
-//end;
-
-//procedure TDMM6500_VoltageACRangeShow.SettingsShowSLFilling;
-// var i:TDMM6500_VoltageACRange;
-//begin
-// for I := Low(TDMM6500_VoltageACRange) to High(TDMM6500_VoltageACRange) do
-//    fSettingsShowSL.Add(DMM6500_VoltageACRangeLabels[i]);
-//end;
-
 { TDMM6500_CurrentDCRangeShow }
 
 constructor TDMM6500_CurrentDCRangeShow.Create(ST: TStaticText;
@@ -2631,28 +2022,6 @@ constructor TDMM6500_CurrentDCRangeShow.Create(ST: TStaticText;
 begin
  inherited Create(St,'Range',dm_pp_RangeCurrentDC,DMM6500,ChanNumber);
 end;
-
-//procedure TDMM6500_CurrentDCRangeShow.ObjectToSetting;
-//begin
-// Data:=ord((fDMM6500.MeasParamByCN(fChanNumber) as TDMM6500MeasPar_CurDC).Range);
-//end;
-
-//procedure TDMM6500_CurrentDCRangeShow.OkClick;
-//begin
-// fDMM6500.SetRange(TDMM6500_CurrentDCRange(Data),fChanNumber);
-//end;
-
-//procedure TDMM6500_CurrentDCRangeShow.SettingsShowSLFilling;
-// var i,Maxi:TDMM6500_CurrentDCRange;
-//begin
-// if (fDMM6500.Terminal=kt_otFront)
-//     or (fChanNumber>0) then Maxi:=dm_cdr3A
-//                        else Maxi:=dm_cdr10A;
-// for I := dm_cdrAuto to Maxi do
-//    fSettingsShowSL.Add(DMM6500_CurrentDCRangeLabels[i]);
-//// for I := Low(TDMM6500_CurrentDCRange) to High(TDMM6500_CurrentDCRange) do
-////    fSettingsShowSL.Add(DMM6500_CurrentDCRangeLabels[i]);
-//end;
 
 { TDMM6500_VoltageDCRangeShow }
 
@@ -2662,23 +2031,6 @@ begin
  inherited Create(St,'Range',dm_pp_RangeVoltDC,DMM6500,ChanNumber);
 end;
 
-//procedure TDMM6500_VoltageDCRangeShow.ObjectToSetting;
-//begin
-// Data:=ord((fDMM6500.MeasParamByCN(fChanNumber) as TDMM6500MeasPar_BaseVoltDCRange).Range);
-//end;
-
-//procedure TDMM6500_VoltageDCRangeShow.OkClick;
-//begin
-// fDMM6500.SetRange(TDMM6500_VoltageDCRange(Data),fChanNumber);
-//end;
-
-//procedure TDMM6500_VoltageDCRangeShow.SettingsShowSLFilling;
-// var i:TDMM6500_VoltageDCRange;
-//begin
-// for I := Low(TDMM6500_VoltageDCRange) to High(TDMM6500_VoltageDCRange) do
-//    fSettingsShowSL.Add(DMM6500_VoltageDCRangeLabels[i]);
-//end;
-
 { TDMM6500_Resistance2WRangeShow }
 
 constructor TDMM6500_Resistance2WRangeShow.Create(ST: TStaticText;
@@ -2687,23 +2039,6 @@ begin
  inherited Create(St,'Range',dm_pp_RangeResistance2W,DMM6500,ChanNumber);
 end;
 
-//procedure TDMM6500_Resistance2WRangeShow.ObjectToSetting;
-//begin
-// Data:=ord((fDMM6500.MeasParamByCN(fChanNumber) as TDMM6500MeasPar_Res2W).Range);
-//end;
-
-//procedure TDMM6500_Resistance2WRangeShow.OkClick;
-//begin
-// fDMM6500.SetRange(TDMM6500_Resistance2WRange(Data),fChanNumber);
-//end;
-
-//procedure TDMM6500_Resistance2WRangeShow.SettingsShowSLFilling;
-// var i:TDMM6500_Resistance2WRange;
-//begin
-// for I := Low(TDMM6500_Resistance2WRange) to High(TDMM6500_Resistance2WRange) do
-//    fSettingsShowSL.Add(DMM6500_Resistance2WRangeLabels[i]);
-//end;
-
 { TDMM6500_Resistance4WRangeShow }
 
 constructor TDMM6500_Resistance4WRangeShow.Create(ST: TStaticText;
@@ -2711,23 +2046,6 @@ constructor TDMM6500_Resistance4WRangeShow.Create(ST: TStaticText;
 begin
  inherited Create(St,'Range',dm_pp_RangeResistance4W,DMM6500,ChanNumber);
 end;
-
-//procedure TDMM6500_Resistance4WRangeShow.ObjectToSetting;
-//begin
-// Data:=ord((fDMM6500.MeasParamByCN(fChanNumber) as TDMM6500MeasPar_Res4W).Range);
-//end;
-
-//procedure TDMM6500_Resistance4WRangeShow.OkClick;
-//begin
-// fDMM6500.SetRange(TDMM6500_Resistance4WRange(Data),fChanNumber);
-//end;
-
-//procedure TDMM6500_Resistance4WRangeShow.SettingsShowSLFilling;
-// var i:TDMM6500_Resistance4WRange;
-//begin
-// for I := Low(TDMM6500_Resistance4WRange) to High(TDMM6500_Resistance4WRange) do
-//    fSettingsShowSL.Add(DMM6500_Resistance4WRangeLabels[i]);
-//end;
 
 { TDMM6500MeasPar_DigVoltShow }
 
@@ -2740,29 +2058,17 @@ begin
   fBaseVoltDCShow:=TDMM6500MeasPar_BaseVoltDCShow.Create(fParent,fDMM6500,fChanNumber);
 end;
 
-//procedure TDMM6500MeasPar_DigVoltShow.CreateElements;
-//begin
-// inherited CreateElements;
-//  STRange:=TStaticText.Create(fParent);
-////  STRange.Parent:=fParent;
-//  Add(STRange);
-//end;
-
 procedure TDMM6500MeasPar_DigVoltShow.DesignElements;
 begin
   inherited DesignElements;
   fBaseVoltDCShow.DesignElements;
-//  RelativeLocation(STDisplayDN,STRange,oRow,Marginbetween);
-//   STRange.Font.Color:=clNavy;
 
   Resize(fBaseVoltDCShow.LVoltageUnit);
   RelativeLocation(STRange,fBaseVoltDCShow.LVoltageUnit,oRow,Marginbetween);
-//  fBaseVoltDCShow.LVoltageUnit.Left:=STRange.Left+Marginbetween+LCount.Canvas.TextWidth('1000 V');
   fBaseVoltDCShow.LVoltageUnit.Top:=STRange.Top-2;
   RelativeLocation(fBaseVoltDCShow.LVoltageUnit,fBaseVoltDCShow.STVoltageUnit,oRow,MarginBetweenLST);
   fBaseVoltDCShow.STVoltageUnit.Top:=STRange.Top;
 
-//  RelativeLocation(LCount,STCount,oCol,MarginBetweenLST);
   RelativeLocation(STCount,fBaseVoltDCShow.LInputImpedance,oCol,MarginBetweenLST);
   fBaseVoltDCShow.LInputImpedance.Left:=MarginLeft;
   RelativeLocation(fBaseVoltDCShow.LInputImpedance,fBaseVoltDCShow.STInputImpedance,oRow,MarginBetweenLST);
@@ -2774,8 +2080,6 @@ begin
 
   fParent.Width:=MarginRight+fBaseVoltDCShow.LDB_DBM.Left+fBaseVoltDCShow.LDB_DBM.Width;
   fParent.Height:=MarginTop+fBaseVoltDCShow.LInputImpedance.Top+fBaseVoltDCShow.LInputImpedance.Height;
-
-
 end;
 
 procedure TDMM6500MeasPar_DigVoltShow.DestroyControls;
@@ -2814,21 +2118,6 @@ begin
 
 end;
 
-
-//procedure TDMM6500MeasPar_DigCurShow.GetDataFromDevice;
-//begin
-//  fRangeShow.GetDataFromDevice;
-////  inherited;
-//
-//end;
-//
-//procedure TDMM6500MeasPar_DigCurShow.ObjectToSetting;
-//begin
-//  fRangeShow.ObjectToSetting;
-////  inherited;
-//
-//end;
-
 { TDMM6500MeasPar_CapacShow }
 
 procedure TDMM6500MeasPar_CapacShow.CreateControls;
@@ -2841,7 +2130,6 @@ end;
 procedure TDMM6500MeasPar_CapacShow.DesignElements;
 begin
   inherited DesignElements;
-
   fParent.Width:=MarginRight+STRange.Left+LCount.Canvas.TextWidth('100 mkF');
   fParent.Height:=MarginTop+STCount.Top+STCount.Height;
 end;
@@ -2853,29 +2141,6 @@ constructor TDMM6500_DetectorBandwidthShow.Create(ST: TStaticText; L: Tlabel;
 begin
  inherited Create(ST,L,'Detector Bandwidth:',dm_pp_DetectorBW,DMM6500,ChanNumber);
 end;
-
-//procedure TDMM6500_DetectorBandwidthShow.GetDataFromDevice;
-//begin
-//  fDMM6500.GetDetectorBW(fChanNumber);
-//end;
-
-//procedure TDMM6500_DetectorBandwidthShow.ObjectToSetting;
-//begin
-//  Data:=ord((fDMM6500.MeasParamByCN(fChanNumber) as TDMM6500MeasPar_BaseAC).DetectorBW);
-//end;
-
-//procedure TDMM6500_DetectorBandwidthShow.OkClick;
-//begin
-//// fDMM6500.SetShablon(fMeasP,Pointer(Data),fChanNumber);
-// fDMM6500.SetDetectorBW(TDMM6500_DetectorBandwidth(Data),fChanNumber);
-//end;
-
-//procedure TDMM6500_DetectorBandwidthShow.SettingsShowSLFilling;
-// var i:TDMM6500_DetectorBandwidth;
-//begin
-// for I := Low(TDMM6500_DetectorBandwidth) to High(TDMM6500_DetectorBandwidth) do
-//    fSettingsShowSL.Add(DMM6500_DetectorBandwidthLabel[i]);
-//end;
 
 { TDMM6500MeasPar_BaseACShow }
 
@@ -2988,21 +2253,6 @@ begin
  SetLimits((fDMM6500.MeasParamByCN(fChanNumber) as TDMM6500MeasPar_BaseDelayMT).MTLimits);
 end;
 
-//procedure TDMM6500_MeaureTimeShow.GetDataFromDevice;
-//begin
-// fDMM6500.GetMeasureTime(fChanNumber);
-//end;
-
-//procedure TDMM6500_MeaureTimeShow.ObjectToSetting;
-//begin
-//  Data:=(fDMM6500.MeasParamByCN(fChanNumber) as TDMM6500MeasPar_BaseDelayMT).MeaureTime;
-//end;
-
-//procedure TDMM6500_MeaureTimeShow.OkClick;
-//begin
-// fDMM6500.SetMeasureTime(Data,fChanNumber);
-//end;
-
 { TDMM6500_AzeroStateShow }
 
 procedure TDMM6500_AzeroStateShow.Click(Sender: TObject);
@@ -3018,39 +2268,13 @@ begin
  inherited Create(CB,'Auto Zero',dm_pp_AzeroState,DMM6500,ChanNumber);
 end;
 
-//procedure TDMM6500_AzeroStateShow.GetDataFromDevice;
-//begin
-// fDMM6500.GetAzeroState(fChanNumber);
-//end;
-
-//procedure TDMM6500_AzeroStateShow.ObjectToSetting;
-//begin
-// SetValue((fDMM6500.MeasParamByCN(fChanNumber) as TDMM6500MeasPar_Continuity).AzeroState);
-//end;
-
 { TDMM6500_LineSyncShow }
-
-//procedure TDMM6500_LineSyncShow.Click(Sender: TObject);
-//begin
-// fDMM6500.SetLineSync(fCB.Checked,fChanNumber);
-// inherited;
-//end;
 
 constructor TDMM6500_LineSyncShow.Create(CB: TCheckBox; DMM6500: TDMM6500;
   ChanNumber: byte);
 begin
  inherited Create(CB,'Line Sync',dm_pp_LineSync,DMM6500,ChanNumber);
 end;
-
-//procedure TDMM6500_LineSyncShow.GetDataFromDevice;
-//begin
-// fDMM6500.GetLineSync(fChanNumber);
-//end;
-
-//procedure TDMM6500_LineSyncShow.ObjectToSetting;
-//begin
-// SetValue((fDMM6500.MeasParamByCN(fChanNumber) as TDMM6500MeasPar_Continuity).LineSync);
-//end;
 
 { TDMM6500MeasPar_BaseDelayMTShow }
 
@@ -3079,7 +2303,6 @@ begin
   Resize(LMeaureTime);
   RelativeLocation(LCount,LMeaureTime,oRow,Marginbetween);
   HookParameterClickMeaureTime;
-//  RelativeLocation(LSampleRate,STSampleRate,oCol,MarginBetweenLST);
 end;
 
 procedure TDMM6500MeasPar_BaseDelayMTShow.HookParameterClickMeaureTime;
@@ -3094,28 +2317,6 @@ constructor TDMM6500_ThresholdRangeShow.Create(ST: TStaticText; L: Tlabel;
 begin
  inherited Create(ST,L,'Threshold Range:',dm_pp_ThresholdRange,DMM6500,ChanNumber);
 end;
-
-//procedure TDMM6500_ThresholdRangeShow.GetDataFromDevice;
-//begin
-// fDMM6500.GetThresholdRange(fChanNumber);
-//end;
-
-//procedure TDMM6500_ThresholdRangeShow.ObjectToSetting;
-//begin
-// Data:=ord((fDMM6500.MeasParamByCN(fChanNumber) as TDMM6500MeasPar_FreqPeriod).ThresholdRange);
-//end;
-
-//procedure TDMM6500_ThresholdRangeShow.OkClick;
-//begin
-// fDMM6500.SetThresholdRange(TDMM6500_VoltageACRange(Data),fChanNumber);
-//end;
-
-//procedure TDMM6500_ThresholdRangeShow.SettingsShowSLFilling;
-// var i:TDMM6500_VoltageACRange;
-//begin
-// for I := Low(TDMM6500_VoltageACRange) to High(TDMM6500_VoltageACRange) do
-//    fSettingsShowSL.Add(DMM6500_VoltageACRangeLabels[i]);
-//end;
 
 { TDMM6500MeasPar_FreqPeriodShow }
 
@@ -3175,10 +2376,6 @@ begin
   RelativeLocation(STCount,CBLineSync,oCol,Marginbetween);
   CBLineSync.Left:=MarginLeft;
   RelativeLocation(CBLineSync,CBAzero,oRow,MarginBetween);
-
-//  fParent.Width:=MarginRight+LMeaureTime.Left+LMeaureTime.Width;
-//  fParent.Height:=MarginTop+STThresholdRange.Top+STThresholdRange.Height;
-
 end;
 
 { TDMM6500MeasPar_ContinuityShow }
@@ -3206,29 +2403,6 @@ constructor TDMM6500_BiasLevelShow.Create(ST: TStaticText; L: Tlabel;
 begin
  inherited Create(ST,L,'Bias Level:',dm_dp_BiasLevel,DMM6500,ChanNumber);
 end;
-
-//procedure TDMM6500_BiasLevelShow.GetDataFromDevice;
-//begin
-// fDMM6500.GetBiasLevel(fChanNumber);
-//end;
-
-//procedure TDMM6500_BiasLevelShow.ObjectToSetting;
-//begin
-// Data:=ord((fDMM6500.MeasParamByCN(fChanNumber) as TDMM6500MeasPar_Diode).BiasLevel);
-//end;
-
-//procedure TDMM6500_BiasLevelShow.OkClick;
-//begin
-// fDMM6500.SetBiasLevel(TDMM6500_DiodeBiasLevel(Data),fChanNumber);
-// inherited;
-//end;
-
-//procedure TDMM6500_BiasLevelShow.SettingsShowSLFilling;
-// var i:TDMM6500_DiodeBiasLevel;
-//begin
-// for I := Low(TDMM6500_DiodeBiasLevel) to High(TDMM6500_DiodeBiasLevel) do
-//    fSettingsShowSL.Add(DMM6500_DiodeBiasLevelLabel[i]);
-//end;
 
 { TDMM6500MeasPar_DiodeShow }
 
@@ -3260,7 +2434,6 @@ begin
 
   RelativeLocation(LMeaureTime,LBiasLevel,oRow,Marginbetween);
   HookParameterClickBiasLevel;
-//  RelativeLocation(LBiasLevel,STBiasLevel,oRow,MarginBetween);
 
   fParent.Width:=MarginRight+LBiasLevel.Left+LBiasLevel.Width;
   fParent.Height:=MarginTop+CBAzero.Top+CBAzero.Height;
@@ -3297,14 +2470,6 @@ begin
   Add(fRangeShow);
 end;
 
-procedure TDMM6500MeasPar_BaseVoltDCRangeShow.DesignElements;
-begin
-  inherited DesignElements;
-
-//  fParent.Width:=MarginRight+STRange.Left+LCount.Canvas.TextWidth('1000 V');
-//  fParent.Height:=MarginTop+CBAzero.Top+CBAzero.Height;
-end;
-
 { TDMM6500MeasPar_Res2WShow }
 
 procedure TDMM6500MeasPar_Res2WShow.CreateControls;
@@ -3321,43 +2486,13 @@ begin
   fParent.Height:=MarginTop+CBAzero.Top+CBAzero.Height;
 end;
 
-//procedure TDMM6500MeasPar_Res2WShow.GetDataFromDevice;
-//begin
-////  fRangeShow.GetDataFromDevice;
-//  inherited GetDataFromDevice;
-//
-//end;
-//
-//procedure TDMM6500MeasPar_Res2WShow.ObjectToSetting;
-//begin
-////  fRangeShow.ObjectToSetting;
-//  inherited ObjectToSetting;
-//
-//end;
-
 { TDMM6500_OpenLDShow }
-
-//procedure TDMM6500_OpenLDShow.Click(Sender: TObject);
-//begin
-//  fDMM6500.SetOpenLD(fCB.Checked,fChanNumber);
-//  inherited;
-//end;
 
 constructor TDMM6500_OpenLDShow.Create(CB: TCheckBox; DMM6500: TDMM6500;
   ChanNumber: byte);
 begin
   inherited Create(CB,'Open Lead Detector',dm_pp_OpenLeadDetector,DMM6500,ChanNumber);
 end;
-
-//procedure TDMM6500_OpenLDShow.GetDataFromDevice;
-//begin
-// fDMM6500.GetOpenLD(fChanNumber);
-//end;
-
-//procedure TDMM6500_OpenLDShow.ObjectToSetting;
-//begin
-// SetValue((fDMM6500.MeasParamByCN(fChanNumber) as TDMM6500MeasPar_Base4WT).OpenLeadDetector);
-//end;
 
 { TDMM6500_OffCompShow }
 
@@ -3367,28 +2502,11 @@ begin
  inherited Create(ST,L,'Offset Compensation:',dm_pp_OffsetCompen,DMM6500,ChanNumber);
 end;
 
-//procedure TDMM6500_OffCompShow.GetDataFromDevice;
-//begin
-// fDMM6500.GetOffsetComp(fChanNumber);
-//end;
-
-//procedure TDMM6500_OffCompShow.ObjectToSetting;
-//begin
-// Data:=ord((fDMM6500.MeasParamByCN(fChanNumber) as TDMM6500MeasPar_Base4WT).OffsetComp);
-//end;
-
 procedure TDMM6500_OffCompShow.OkClick;
 begin
  fDMM6500.SetOffsetComp(TDMM6500_OffsetCompen(Data),fChanNumber);
  fHookParameterClick;
 end;
-
-//procedure TDMM6500_OffCompShow.SettingsShowSLFilling;
-// var i:TDMM6500_OffsetCompen;
-//begin
-// for I := Low(TDMM6500_OffsetCompen) to High(TDMM6500_OffsetCompen) do
-//    fSettingsShowSL.Add(DMM6500_OffsetCompenLabel[i]);
-//end;
 
 { TDMM6500MeasPar_Base4WTShow }
 
@@ -3428,27 +2546,7 @@ begin
 
   RelativeLocation(LOffComp,CBOpenLD,oCol,Marginbetween);
   CBOpenLD.Left:=MarginLeft;
-
-//  fParent.Width:=MarginRight+LMeaureTime.Left+LMeaureTime.Width;
-//  fParent.Height:=MarginTop+CBOpenLD.Top+CBOpenLD.Height;
 end;
-
-//procedure TDMM6500MeasPar_Base4WTShow.GetDataFromDevice;
-//begin
-//  fOffCompShow.GetDataFromDevice;
-//  fOpenLDShow.GetDataFromDevice;
-//  fLineSyncShow.GetDataFromDevice;
-//  fAzeroShow.GetDataFromDevice;
-//  fMeaureTimeShow.GetDataFromDevice;
-////  inherited;
-//
-//end;
-//
-//procedure TDMM6500MeasPar_Base4WTShow.ObjectToSetting;
-//begin
-//  inherited;
-//
-//end;
 
 { TDMM6500MeasPar_Res4WShow }
 
@@ -3473,18 +2571,6 @@ begin
  fRangeShow.ObjectToSetting;
 end;
 
-//procedure TDMM6500MeasPar_Res4WShow.GetDataFromDevice;
-//begin
-//  inherited;
-//// fRangeShow.GetDataFromDevice;
-//end;
-
-//procedure TDMM6500MeasPar_Res4WShow.ObjectToSetting;
-//begin
-//  inherited;
-//
-//end;
-
 { TDMM6500_VoltageRatioMethodShow }
 
 constructor TDMM6500_VoltageRatioMethodShow.Create(ST: TStaticText; L: Tlabel;
@@ -3492,29 +2578,6 @@ constructor TDMM6500_VoltageRatioMethodShow.Create(ST: TStaticText; L: Tlabel;
 begin
  inherited Create(ST,L,'Method:',dm_vrp_VRMethod,DMM6500,ChanNumber);
 end;
-
-//procedure TDMM6500_VoltageRatioMethodShow.GetDataFromDevice;
-//begin
-// fDMM6500.GetVRMethod(fChanNumber);
-//end;
-
-//procedure TDMM6500_VoltageRatioMethodShow.ObjectToSetting;
-//begin
-//  Data:=ord((fDMM6500.MeasParamByCN(fChanNumber) as TDMM6500MeasPar_VoltRat).VRMethod);
-//end;
-
-//procedure TDMM6500_VoltageRatioMethodShow.OkClick;
-//begin
-// fDMM6500.SetVRMethod(TDMM6500_VoltageRatioMethod(Data),fChanNumber);
-// inherited;
-//end;
-
-//procedure TDMM6500_VoltageRatioMethodShow.SettingsShowSLFilling;
-// var i:TDMM6500_VoltageRatioMethod;
-//begin
-// for I := Low(TDMM6500_VoltageRatioMethod) to High(TDMM6500_VoltageRatioMethod) do
-//    fSettingsShowSL.Add(DMM6500_VoltageRatioMethodLabel[i]);
-//end;
 
 { TDMM6500MeasPar_VoltRatShow }
 
@@ -3538,7 +2601,6 @@ procedure TDMM6500MeasPar_VoltRatShow.DesignElements;
 begin
   inherited DesignElements;
   RelativeLocation(CBLineSync,LVRMethod,oCol,MarginBetween);
-//  CBLineSync.Left:=MarginLeft;
   LVRMethod.Left:=MarginLeft;
   RelativeLocation(LVRMethod,STVRMethod,oRow,MarginBetweenLST);
   STVRMethod.Top:=LVRMethod.Top+1;
@@ -3555,37 +2617,6 @@ begin
  inherited Create(ST,L,'Temperature Source:',dm_tp_TransdType,DMM6500,ChanNumber);
 end;
 
-//procedure TDMM6500_TempTransdTypeShow.GetDataFromDevice;
-//begin
-// fDMM6500.GetTransdType(fChanNumber);
-//end;
-
-//procedure TDMM6500_TempTransdTypeShow.ObjectToSetting;
-//begin
-//  Data:=ord((fDMM6500.MeasParamByCN(fChanNumber) as TDMM6500MeasPar_Temper).TransdType);
-//end;
-
-//procedure TDMM6500_TempTransdTypeShow.OkClick;
-//begin
-// fDMM6500.SetTransdType(TDMM6500_TempTransducer(Data),fChanNumber);
-// inherited;
-//end;
-
-//procedure TDMM6500_TempTransdTypeShow.SettingsShowSLFilling;
-// var i:TDMM6500_TempTransducer;
-//begin
-// for I := Low(TDMM6500_TempTransducer) to High(TDMM6500_TempTransducer) do
-//    fSettingsShowSL.Add(DMM6500_TempTransducerLabel[i]);
-//end;
-
-{ TDMM6500_TempTypeShow }
-
-//constructor TDMM6500_TempTypeShow.Create(ST: TStaticText; L: Tlabel;
-//  DMM6500: TDMM6500; ChanNumber: byte);
-//begin
-// inherited Create(ST,L,'Type:',DMM6500,ChanNumber);
-//end;
-
 { TDMM6500_TCoupleShow }
 
 constructor TDMM6500_TCoupleShow.Create(ST: TStaticText; L: Tlabel;
@@ -3593,29 +2624,6 @@ constructor TDMM6500_TCoupleShow.Create(ST: TStaticText; L: Tlabel;
 begin
  inherited Create(ST,L,'Type:',dm_tp_TCoupleType,DMM6500,ChanNumber);
 end;
-
-//procedure TDMM6500_TCoupleShow.GetDataFromDevice;
-//begin
-// fDMM6500.GetTCoupleType(fChanNumber);
-//end;
-
-//procedure TDMM6500_TCoupleShow.ObjectToSetting;
-//begin
-//  Data:=ord((fDMM6500.MeasParamByCN(fChanNumber) as TDMM6500MeasPar_Temper).TCoupleType);
-//end;
-
-//procedure TDMM6500_TCoupleShow.OkClick;
-//begin
-// fDMM6500.SetTCoupleType(TDMM6500_TCoupleType(Data),fChanNumber);
-// inherited;
-//end;
-//
-//procedure TDMM6500_TCoupleShow.SettingsShowSLFilling;
-// var i:TDMM6500_TCoupleType;
-//begin
-// for I := Low(TDMM6500_TCoupleType) to High(TDMM6500_TCoupleType) do
-//    fSettingsShowSL.Add(DMM6500_TCoupleTypeLabel[i]);
-//end;
 
 { TDMM6500_ThermistorTypeShow }
 
@@ -3625,29 +2633,6 @@ begin
  inherited Create(ST,L,'Type:',dm_tp_ThermistorType,DMM6500,ChanNumber);
 end;
 
-//procedure TDMM6500_ThermistorTypeShow.GetDataFromDevice;
-//begin
-// fDMM6500.GetThermistorType(fChanNumber);
-//end;
-
-//procedure TDMM6500_ThermistorTypeShow.ObjectToSetting;
-//begin
-//  Data:=ord((fDMM6500.MeasParamByCN(fChanNumber) as TDMM6500MeasPar_Temper).ThermistorType);
-//end;
-
-//procedure TDMM6500_ThermistorTypeShow.OkClick;
-//begin
-// fDMM6500.SetThermistorType(TDMM6500_ThermistorType(Data),fChanNumber);
-// inherited;
-//end;
-
-//procedure TDMM6500_ThermistorTypeShow.SettingsShowSLFilling;
-// var i:TDMM6500_ThermistorType;
-//begin
-// for I := Low(TDMM6500_ThermistorType) to High(TDMM6500_ThermistorType) do
-//    fSettingsShowSL.Add(inttostr(DMM6500_ThermistorTypeValues[i])+DMM6500_ThermistorTypeSyffix);
-//end;
-
 { TDMM6500_W2RTDTypeShow }
 
 constructor TDMM6500_W2RTDTypeShow.Create(ST: TStaticText; L: Tlabel;
@@ -3655,31 +2640,6 @@ constructor TDMM6500_W2RTDTypeShow.Create(ST: TStaticText; L: Tlabel;
 begin
  inherited Create(ST,L,'Type:',dm_tp_W2RTDType,DMM6500,ChanNumber);
 end;
-
-//procedure TDMM6500_W2RTDTypeShow.GetDataFromDevice;
-//begin
-// fDMM6500.GetW2RTDType(fChanNumber);
-//end;
-
-//procedure TDMM6500_W2RTDTypeShow.ObjectToSetting;
-//begin
-//  Data:=ord((fDMM6500.MeasParamByCN(fChanNumber) as TDMM6500MeasPar_Temper).W2RTDType);
-//end;
-
-//procedure TDMM6500_W2RTDTypeShow.OkClick;
-//begin
-// fDMM6500.SetW2RTDType(TDMM6500_RTDType(Data),fChanNumber);
-// inherited;
-//end;
-
-{ TDMM6500_RTDTypeShow }
-
-//procedure TDMM6500_RTDTypeShow.SettingsShowSLFilling;
-// var i:TDMM6500_RTDType;
-//begin
-// for I := Low(TDMM6500_RTDType) to High(TDMM6500_RTDType) do
-//    fSettingsShowSL.Add(DMM6500_WiRTDTypeLabel[i]);
-//end;
 
 { TDMM6500_W3RTDTypeShow }
 
@@ -3689,22 +2649,6 @@ begin
  inherited Create(ST,L,'Type:',dm_tp_W3RTDType,DMM6500,ChanNumber);
 end;
 
-//procedure TDMM6500_W3RTDTypeShow.GetDataFromDevice;
-//begin
-// fDMM6500.GetW3RTDType(fChanNumber);
-//end;
-
-//procedure TDMM6500_W3RTDTypeShow.ObjectToSetting;
-//begin
-//  Data:=ord((fDMM6500.MeasParamByCN(fChanNumber) as TDMM6500MeasPar_Temper).W3RTDType);
-//end;
-
-//procedure TDMM6500_W3RTDTypeShow.OkClick;
-//begin
-// fDMM6500.SetW3RTDType(TDMM6500_RTDType(Data),fChanNumber);
-// inherited;
-//end;
-
 { TDMM6500_W4RTDTypeShow }
 
 constructor TDMM6500_W4RTDTypeShow.Create(ST: TStaticText; L: Tlabel;
@@ -3712,22 +2656,6 @@ constructor TDMM6500_W4RTDTypeShow.Create(ST: TStaticText; L: Tlabel;
 begin
  inherited Create(ST,L,'Type:',dm_tp_W4RTDType,DMM6500,ChanNumber);
 end;
-
-//procedure TDMM6500_W4RTDTypeShow.GetDataFromDevice;
-//begin
-// fDMM6500.GetW4RTDType(fChanNumber);
-//end;
-
-//procedure TDMM6500_W4RTDTypeShow.ObjectToSetting;
-//begin
-// Data:=ord((fDMM6500.MeasParamByCN(fChanNumber) as TDMM6500MeasPar_Temper).W4RTDType);
-//end;
-
-//procedure TDMM6500_W4RTDTypeShow.OkClick;
-//begin
-// fDMM6500.SetW4RTDType(TDMM6500_RTDType(Data),fChanNumber);
-// inherited;
-//end;
 
 { TDMM6500_TCoupleRefJunctShow }
 
@@ -3737,29 +2665,6 @@ begin
  inherited Create(ST,L,'Ref Junction:',dm_tp_RefJunction,DMM6500,ChanNumber);
 end;
 
-//procedure TDMM6500_TCoupleRefJunctShow.GetDataFromDevice;
-//begin
-// fDMM6500.GetRefJunction(fChanNumber);
-//end;
-
-//procedure TDMM6500_TCoupleRefJunctShow.ObjectToSetting;
-//begin
-// Data:=ord((fDMM6500.MeasParamByCN(fChanNumber) as TDMM6500MeasPar_Temper).RefJunction);
-//end;
-
-//procedure TDMM6500_TCoupleRefJunctShow.OkClick;
-//begin
-// fDMM6500.SetRefJunction(TDMM6500_TCoupleRefJunct(Data),fChanNumber);
-// inherited;
-//end;
-
-//procedure TDMM6500_TCoupleRefJunctShow.SettingsShowSLFilling;
-// var i:TDMM6500_TCoupleRefJunct;
-//begin
-// for I := Low(TDMM6500_TCoupleRefJunct) to High(TDMM6500_TCoupleRefJunct) do
-//    fSettingsShowSL.Add(DMM6500_TCoupleRefJunctLabel[i]);
-//end;
-
 { TDMM6500_TemperatureUnitShow }
 
 constructor TDMM6500_TemperatureUnitShow.Create(ST: TStaticText;
@@ -3768,54 +2673,14 @@ begin
  inherited Create(ST,'TempUnit',dm_tp_UnitsTemp,DMM6500,ChanNumber);
 end;
 
-//procedure TDMM6500_TemperatureUnitShow.GetDataFromDevice;
-//begin
-// fDMM6500.GetUnits(fChanNumber);
-//end;
-
-//procedure TDMM6500_TemperatureUnitShow.ObjectToSetting;
-//begin
-// Data:=ord((fDMM6500.MeasParamByCN(fChanNumber) as TDMM6500MeasPar_Temper).Units);
-//end;
-
-//procedure TDMM6500_TemperatureUnitShow.OkClick;
-//begin
-// fDMM6500.SetUnits(TDMM6500_TempUnits(Data),fChanNumber);
-// inherited;
-//end;
-
-//procedure TDMM6500_TemperatureUnitShow.SettingsShowSLFilling;
-// var i:TDMM6500_TempUnits;
-//begin
-// for I := Low(TDMM6500_TempUnits) to High(TDMM6500_TempUnits) do
-//    fSettingsShowSL.Add(DMM6500_TempUnitsLabel[i]);
-//end;
-
 { TDMM6500_SimRefTempShow }
 
 constructor TDMM6500_RTDZeroShow.Create(STD: TStaticText; STC: TLabel;
   DMM6500: TDMM6500; ChanNumber: byte);
 begin
  inherited Create(dm_tp_RTDZero,DMM6500,ChanNumber,STD,STC,'RTD Zero',100);
-// STC.WordWrap:=False;
  SetLimits(DMM6500_RTDZeroLimits);
 end;
-
-//procedure TDMM6500_RTDZeroShow.GetDataFromDevice;
-//begin
-//  fDMM6500.GetRTDZero(fChanNumber);
-//end;
-
-//procedure TDMM6500_RTDZeroShow.ObjectToSetting;
-//begin
-//  Data:=(fDMM6500.MeasParamByCN(fChanNumber) as TDMM6500MeasPar_Temper).RTD_Zero;
-//end;
-
-//procedure TDMM6500_RTDZeroShow.OkClick;
-//begin
-//  fDMM6500.SetRTDZero(Data,fChanNumber);
-//  inherited;
-//end;
 
 { TDMM6500_SimRefTempShow }
 
@@ -3824,25 +2689,8 @@ constructor TDMM6500_SimRefTempShow.Create(STD: TStaticText; STC: TLabel;
 begin
  inherited Create(dm_tp_SimRefTemp,DMM6500,ChanNumber,STD,STC,'Ref Temperature',
                 DMM6500_RefTempInitValue[(DMM6500.MeasParamByCN(fChanNumber) as TDMM6500MeasPar_Temper).Units],4);
-// STC.WordWrap:=True;
  SetLimits(DMM6500_RefTempLimits[(fDMM6500.MeasParamByCN(fChanNumber) as TDMM6500MeasPar_Temper).Units]);
 end;
-
-//procedure TDMM6500_SimRefTempShow.GetDataFromDevice;
-//begin
-// fDMM6500.GetRefTemperature(fChanNumber);
-//end;
-
-//procedure TDMM6500_SimRefTempShow.ObjectToSetting;
-//begin
-//  Data:=(fDMM6500.MeasParamByCN(fChanNumber) as TDMM6500MeasPar_Temper).RefTemperature;
-//end;
-
-//procedure TDMM6500_SimRefTempShow.OkClick;
-//begin
-//  fDMM6500.SetRefTemperature(Data,fChanNumber);
-//  inherited;
-//end;
 
 { TDMM6500_RTDAlphaShow }
 
@@ -3851,25 +2699,8 @@ constructor TDMM6500_RTDAlphaShow.Create(STD: TStaticText; STC: TLabel;
 begin
  inherited Create(dm_tp_RTDAlpha,DMM6500,ChanNumber,STD,STC,'RTD Alpha:',
                 0.00385055,8);
-// STC.WordWrap:=True;
  SetLimits(DMM6500_RTDAlphaLimits);
 end;
-
-//procedure TDMM6500_RTDAlphaShow.GetDataFromDevice;
-//begin
-// fDMM6500.GetRTDAlpha(fChanNumber);
-//end;
-
-//procedure TDMM6500_RTDAlphaShow.ObjectToSetting;
-//begin
-//  Data:=(fDMM6500.MeasParamByCN(fChanNumber) as TDMM6500MeasPar_Temper).RTD_Alpha;
-//end;
-
-//procedure TDMM6500_RTDAlphaShow.OkClick;
-//begin
-//  fDMM6500.SetRTDAlpha(Data,fChanNumber);
-//  inherited;
-//end;
 
 { TDMM6500_RTDBetaShow }
 
@@ -3878,25 +2709,8 @@ constructor TDMM6500_RTDBetaShow.Create(STD: TStaticText; STC: TLabel;
 begin
  inherited Create(dm_tp_RTDBeta,DMM6500,ChanNumber,STD,STC,'RTD Beta:',
                 0.10863,5);
-// STC.WordWrap:=True;
  SetLimits(DMM6500_RTDBetaLimits);
 end;
-
-//procedure TDMM6500_RTDBetaShow.GetDataFromDevice;
-//begin
-// fDMM6500.GetRTDBeta(fChanNumber);
-//end;
-
-//procedure TDMM6500_RTDBetaShow.ObjectToSetting;
-//begin
-//Data:=(fDMM6500.MeasParamByCN(fChanNumber) as TDMM6500MeasPar_Temper).RTD_Beta;
-//end;
-
-//procedure TDMM6500_RTDBetaShow.OkClick;
-//begin
-//  fDMM6500.SetRTDBeta(Data,fChanNumber);
-//  inherited;
-//end;
 
 { TDMM6500_RTDDeltaShow }
 
@@ -3905,25 +2719,8 @@ constructor TDMM6500_RTDDeltaShow.Create(STD: TStaticText; STC: TLabel;
 begin
  inherited Create(dm_tp_RTDDelta,DMM6500,ChanNumber,STD,STC,'RTD Delta:',
                 1.4999,4);
-// STC.WordWrap:=True;
  SetLimits(DMM6500_RTDDeltaLimits);
 end;
-
-//procedure TDMM6500_RTDDeltaShow.GetDataFromDevice;
-//begin
-// fDMM6500.GetRTDDelta(fChanNumber);
-//end;
-
-//procedure TDMM6500_RTDDeltaShow.ObjectToSetting;
-//begin
-//Data:=(fDMM6500.MeasParamByCN(fChanNumber) as TDMM6500MeasPar_Temper).RTD_Delta;
-//end;
-
-//procedure TDMM6500_RTDDeltaShow.OkClick;
-//begin
-//  fDMM6500.SetRTDDelta(Data,fChanNumber);
-//  inherited;
-//end;
 
 { TDMM6500MeasPar_VoltDCShow }
 
@@ -3949,11 +2746,8 @@ begin
   fBaseVoltDCShow.LDB_DBM.Font.Color:=clTeal;
   fBaseVoltDCShow.STDB_DBM.Font.Color:=clTeal;
 
-//  RelativeLocation(LCount,STCount,oCol,MarginBetweenLST);
   RelativeLocation(fBaseVoltDCShow.LDB_DBM,fBaseVoltDCShow.LInputImpedance,oRow,MarginBetweenLST);
-//  fBaseVoltDCShow.LInputImpedance.Left:=MarginLeft;
   RelativeLocation(fBaseVoltDCShow.LInputImpedance,fBaseVoltDCShow.STInputImpedance,oCol,MarginBetweenLST);
-//  fBaseVoltDCShow.STInputImpedance.Top:=fBaseVoltDCShow.LInputImpedance.Top;
   fBaseVoltDCShow.LInputImpedance.Font.Color:=clOlive;
   fBaseVoltDCShow.STInputImpedance.Font.Color:=clOlive;
 
@@ -3969,14 +2763,12 @@ end;
 
 procedure TDMM6500MeasPar_VoltDCShow.GetDataFromDevice;
 begin
-// fBaseVoltDCShow.fVoltageUnitShow.GetDataFromDevice;
   inherited GetDataFromDevice;
   fBaseVoltDCShow.GetDataFromDevice;
 end;
 
 procedure TDMM6500MeasPar_VoltDCShow.ObjectToSetting;
 begin
-// fBaseVoltDCShow.fVoltageUnitShow.ObjectToSetting;
   inherited ObjectToSetting;
   fBaseVoltDCShow.ObjectToSetting;
 end;
@@ -4165,7 +2957,7 @@ begin
                 if fRTDAlphaShow <> nil then
                     FreeAndNil(fRTDAlphaShow);
                 if fRTDBetaShow <> nil then
-                    FreeAndNil(fRTDBetaShow);                    
+                    FreeAndNil(fRTDBetaShow);
             end;
   end;
 
@@ -4210,7 +3002,6 @@ begin
   STTransdType.Font.Color:=clRed;
 
   Resize(LType);
-//  RelativeLocation(LTransdType,LType,oRow,MarginBetween);
   HookParameterClickType;
 
   LType.Font.Color:=clGreen;
@@ -4228,7 +3019,6 @@ begin
   STRefTemp_Beta.Font.Color:=clNavy;
 
   RelativeLocation(LRefTemp_Beta,LDelta,oRow,MarginBetween);
-//  LDelta.Left:=MarginLeft;
   HookParameterClickDelta;
 
   RelativeLocation(LDelta,LZero,oRow,MarginBetween);
@@ -4379,8 +3169,6 @@ begin
   if fSimRefTemp <> nil then
     fSimRefTemp.ObjectToSetting;
   Hook;
-//  DesignElements;
-//  OpenLeadOffsetCompState;
 end;
 
 procedure TDMM6500MeasPar_TemperShow.OpenLeadOffsetCompState;
@@ -4436,7 +3224,6 @@ end;
 
 procedure TDMM6500MeasPar_TemperShow.SetOffCompEnable(Value: boolean);
 begin
-//  CBOpenLD:TCheckBox;
   STOffComp.Enabled:=Value;
   LOffComp.Enabled:=Value;
 end;
@@ -4469,7 +3256,7 @@ end;
 
 procedure TDMM6500_ChannelCloseShow.ObjectToSetting;
 begin
- SetValue(fDMM6500.ChansMeasure[fChanNumber].IsClosed);
+ SetValue(fDMM6500.ChansMeasure[fChanNumber-1].IsClosed);
 end;
 
 { TDMM6500_DelayAfterCloseShow }
@@ -4489,7 +3276,7 @@ end;
 
 procedure TDMM6500_DelayAfterCloseShow.ObjectToSetting;
 begin
-  Data:=fDMM6500.ChansMeasure[fChanNumber].DelayAfterClose;
+  Data:=fDMM6500.ChansMeasure[fChanNumber-1].DelayAfterClose;
 end;
 
 procedure TDMM6500_DelayAfterCloseShow.OkClick;

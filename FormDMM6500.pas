@@ -5,7 +5,7 @@ interface
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, StdCtrls, ComCtrls, IdBaseComponent, IdComponent, IdTCPConnection,
-  IdTCPClient, IdTelnet, ExtCtrls;
+  IdTCPClient, IdTelnet, ExtCtrls, Buttons;
 
 type
   TDMM6500Form = class(TForm)
@@ -34,6 +34,11 @@ type
     ST_DM6500MeasureMode: TStaticText;
     GB_DM6500Param: TGroupBox;
     GB_DM6500Chan: TGroupBox;
+    GB_DMM6500_Mes: TGroupBox;
+    LDMM6500_Meas: TLabel;
+    LDMM6500_MeasU: TLabel;
+    B_DMM6500_MeasAuto: TSpeedButton;
+    Button1: TButton;
     procedure BCloseClick(Sender: TObject);
     procedure FormPaint(Sender: TObject);
   private

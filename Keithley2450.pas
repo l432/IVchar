@@ -103,7 +103,7 @@ TKT2450_SourceDevice=class;
    fDigitLineType:TKt2450_DigLineTypes;
    fDigitLineDirec:TKt2450_DigLineDirections;
    fDLActive:TKt2450_DigLines;
-   fMeter:TKT2450_Meter;
+//   fMeter:TKT2450_Meter;
    fSourceMeter:TKT2450_SourceMeter;
    fSourceDevice:TKT2450_SourceDevice;
    fHookForTrigDataObtain: TSimpleEvent;
@@ -130,6 +130,7 @@ TKT2450_SourceDevice=class;
 //   procedure SetCountNumber(Value:integer);
    procedure TrigIVLoop(i: Integer);
   protected
+   procedure MeterCreate;override;
    procedure PrepareStringByRootNode;override;
    procedure ProcessingStringByRootNode(Str:string);override;
    procedure DefaultSettings;override;
@@ -166,7 +167,7 @@ TKT2450_SourceDevice=class;
    property SourceMeasuredValue:double read fSourceMeasuredValue;
    property DigitLineType:TKt2450_DigLineTypes read fDigitLineType;
    property DigitLineTypeDirec:TKt2450_DigLineDirections read fDigitLineDirec;
-   property Meter:TKT2450_Meter read fMeter;
+//   property Meter:TKT2450_Meter read fMeter;
    property SourceMeter:TKT2450_SourceMeter read fSourceMeter;
    property SourceDevice:TKT2450_SourceDevice read fSourceDevice;
    property DragonBackTime:double read fDragonBackTime write fDragonBackTime;
@@ -398,56 +399,59 @@ TKT2450_SourceDevice=class;
 
    Procedure GetParametersFromDevice;override;
 
-   Procedure MeasureSimple();overload;
-   {проводиться вимірювання стільки разів, скільки
-   вказано в Count, всі результати розміщуються
-   в defbuffer1, повертається результат останнього виміру;
-   вимірюється та функція, яка зараз встановлена на приладі,
-   можна зробити, щоб вимірювалося щось інше, але я не
-   схотів гратися з такою не дуже реальною на перший погляд
-   задачею}
-   Procedure MeasureSimple(BufName:string);overload;
-   {результати записуються у буфер BufName
-   і з нього ж зчитується останній результат}
-   Procedure MeasureExtended(DataType:TKeitley_ReturnedData=kt_rd_MS;
-                           BufName:string=KeitleyDefBuffer);
-   {як попередні, проте повертає більше даних
-   (див. TKt2450_ReturnedData) щодо останнього виміру}
+//   Procedure MeasureSimple();overload;
+//   {проводиться вимірювання стільки разів, скільки
+//   вказано в Count, всі результати розміщуються
+//   в defbuffer1, повертається результат останнього виміру;
+//   вимірюється та функція, яка зараз встановлена на приладі,
+//   можна зробити, щоб вимірювалося щось інше, але я не
+//   схотів гратися з такою не дуже реальною на перший погляд
+//   задачею}
+//   Procedure MeasureSimple(BufName:string);overload;
+//   {результати записуються у буфер BufName
+//   і з нього ж зчитується останній результат}
+//   Procedure MeasureExtended(DataType:TKeitley_ReturnedData=kt_rd_MS;
+//                           BufName:string=KeitleyDefBuffer);
+//   {як попередні, проте повертає більше даних
+//   (див. TKt2450_ReturnedData) щодо останнього виміру}
 
    Procedure TrigForIVCreate;
    Procedure TrigOutPutChange(toOn:boolean);
  end;
 
-TKT2450_Measurement=class(TMeasurementSimple)
- private
-  fParentModule: TKt_2450;
-  procedure GetDataPreparation;
-  function GetValueFromDevice:double;virtual;
- public
-  constructor Create(Kt_2450:TKt_2450);
-  function GetData:double;override;
-end;
+//TKeitley_Measurement=class(TMeasurementSimple)
+// private
+//  fParentModule: TKt_2450;
+//  procedure GetDataPreparation;
+//  function GetValueFromDevice:double;virtual;
+// public
+//  constructor Create(Kt_2450:TKt_2450);
+//  function GetData:double;override;
+//end;
 
 
-TKT2450_Meter=class(TKT2450_Measurement)
+TKT2450_Meter=class(TKeitley_Meter)
  private
-  fTimer:TTimer;
-  function GetMeasureModeLabel():string;
+//  fTimer:TTimer;
+ protected
+  procedure GetDataPreparationHeader;override;
+  function GetMeasureModeLabel():string;override;
 //  function GetValueFromDevice:double;override;
  public
-  property MeasureModeLabel:string read GetMeasureModeLabel;
-  property Timer:TTimer read fTimer;
+//  property MeasureModeLabel:string read GetMeasureModeLabel;
+//  property Timer:TTimer read fTimer;
   constructor Create(Kt_2450:TKt_2450);
-  destructor Destroy; override;
-  function GetValueFromDevice:double;override;
+//  destructor Destroy; override;
+//  function GetValueFromDevice:double;override;
 //  function GetData:double;override;
 end;
 
-TKT2450_SourceMeter=class(TKT2450_Measurement)
- private
-  function GetValueFromDevice:double;override;
+TKT2450_SourceMeter=class(TKeitley_Measurement)
+ protected
+  procedure GetDataPreparationHeader;override;
  public
   constructor Create(Kt_2450:TKt_2450);
+  function GetValueFromDevice:double;override;
 end;
 
 TKT2450_SourceDevice=class(TNamedInterfacedObject,ISource)
@@ -539,7 +543,7 @@ constructor TKt_2450.Create(Telnet: TIdTelnet; IPAdressShow: TIPAdressShow;
   Nm: string);
 begin
  inherited Create(Telnet,IPAdressShow,Nm);
- fMeter:=TKT2450_Meter.Create(Self);
+// fMeter:=TKT2450_Meter.Create(Self);
  fSourceMeter:=TKT2450_SourceMeter.Create(Self);
  fSourceDevice:=TKT2450_SourceDevice.Create(Self);
 end;
@@ -615,7 +619,7 @@ destructor TKt_2450.Destroy;
 begin
   FreeAndNil(fSourceDevice);
   FreeAndNil(fSourceMeter);
-  FreeAndNil(fMeter);
+//  FreeAndNil(fMeter);
 //  FreeAndNil(fBuffer);
   for I := Low(TKt2450_Source) to High(TKt2450_Source) do
    FreeAndNil(SweepParameters[i]);
@@ -1080,23 +1084,29 @@ begin
  Result:=IsLimitExcided(13,10);
 end;
 
-procedure TKt_2450.MeasureSimple;
-begin
- QuireOperation(21);
-end;
+//procedure TKt_2450.MeasureSimple;
+//begin
+//// :READ?
+// QuireOperation(21);
+//end;
 
-procedure TKt_2450.MeasureExtended(DataType: TKeitley_ReturnedData;
-  BufName: string);
-begin
-// :READ? "<bufferName>", <bufferElements>
- Buffer.SetName(BufName);
- QuireOperation(21,ord(DataType)+2,0,False);
-end;
+//procedure TKt_2450.MeasureExtended(DataType: TKeitley_ReturnedData;
+//  BufName: string);
+//begin
+//// :READ? "<bufferName>", <bufferElements>
+// Buffer.SetName(BufName);
+// QuireOperation(21,ord(DataType)+2,0,False);
+//end;
 
-procedure TKt_2450.MeasureSimple(BufName: string);
+//procedure TKt_2450.MeasureSimple(BufName: string);
+//begin
+// Buffer.SetName(BufName);
+// QuireOperation(21,1,0,False);
+//end;
+
+procedure TKt_2450.MeterCreate;
 begin
- Buffer.SetName(BufName);
- QuireOperation(21,1,0,False);
+ fMeter:=TKT2450_Meter.Create(Self);
 end;
 
 function TKt_2450.ModeDetermination: TKt_2450_Mode;
@@ -1236,16 +1246,16 @@ begin
 // showmessage(floattostr(fDevice.Value));
 
 
-//MeasureExtended(kt_rd_MST,MyBuffer);
-//showmessage(floattostr(fDevice.Value)
-//              +'  '+floattostr(fSourceMeasuredValue)
-//              +'  '+floattostr(fTimeValue));
+MeasureExtended(kt_rd_MST,MyBuffer);
+showmessage(floattostr(fDevice.Value)
+              +'  '+floattostr(fSourceMeasuredValue)
+              +'  '+floattostr(fTimeValue));
 
-//MeasureExtended(kt_rd_MT);
-//showmessage(floattostr(fDevice.Value)+'  '+floattostr(fTimeValue));
-//
-//MeasureExtended();
-//showmessage(floattostr(fDevice.Value)+'  '+floattostr(fSourceMeasuredValue));
+MeasureExtended(kt_rd_MT);
+showmessage(floattostr(fDevice.Value)+'  '+floattostr(fTimeValue));
+
+MeasureExtended();
+showmessage(floattostr(fDevice.Value)+'  '+floattostr(fSourceMeasuredValue));
 
 // MeasureSimple(MyBuffer);
 // showmessage(floattostr(fDevice.Value));
@@ -1668,7 +1678,7 @@ begin
        end;
       end; // fRootNode=19
   21:case fFirstLevelNode of
-       1:JoinToStringToSend(Buffer.Get);
+//       1:JoinToStringToSend(Buffer.Get);
        2..5:JoinToStringToSend(Buffer.DataDemand(TKeitley_ReturnedData(fFirstLevelNode-2)))
      end; // fRootNode=21
   22:case fFirstLevelNode of
@@ -1716,10 +1726,10 @@ begin
              16,15{,26}:fDevice.Value:=SCPI_StringToValue(Str);
           end;   //fRootNode=12..14
 //   20:fDevice.Value:=StrToInt(Str);
-   21:case fFirstLevelNode of
-       0,1:fDevice.Value:=SCPI_StringToValue(Str);
-       2..5:StringToMesuredData(AnsiReplaceStr(Str,',',' '),TKeitley_ReturnedData(fFirstLevelNode-2));
-       end; //fRootNode=21
+//   21:case fFirstLevelNode of
+//       0,1:fDevice.Value:=SCPI_StringToValue(Str);
+//       2..5:StringToMesuredData(AnsiReplaceStr(Str,',',' '),TKeitley_ReturnedData(fFirstLevelNode-2));
+//       end; //fRootNode=21
    23:case fFirstLevelNode of
        36:StringToDigLineStatus(AnsiLowerCase(Str));
        37:fDevice.Value:=StrToInt(Str);
@@ -2471,23 +2481,31 @@ end;
 
 constructor TKT2450_Meter.Create(Kt_2450: TKt_2450);
 begin
- fTimer:=TTimer.Create(nil);
- fTimer.Enabled:=False;
- fTimer.Interval:=2000;
+// fTimer:=TTimer.Create(nil);
+// fTimer.Enabled:=False;
+// fTimer.Interval:=2000;
  inherited Create(Kt_2450);
  fName:='KT2450Meter';
 // fParentModule:=Kt_2450;
 end;
 
-destructor TKT2450_Meter.Destroy;
+//destructor TKT2450_Meter.Destroy;
+//begin
+// FreeAndNil(fTimer);
+// inherited;
+//end;
+
+procedure TKT2450_Meter.GetDataPreparationHeader;
 begin
- FreeAndNil(fTimer);
- inherited;
+//  if (fParentModule.Sences[fParentModule.MeasureFunction] = kt_s4wire) or (fParentModule.Mode in [kt_md_sVmR, kt_md_sImR]) or (fParentModule.OutputOffState[fParentModule.SourceType] = kt_oos_himp) then
+//    fParentModule.OutPutChange(true);
+  if ((ParentModule as TKt_2450).Sences[(ParentModule as TKt_2450).MeasureFunction] = kt_s4wire) or ((ParentModule as TKt_2450).Mode in [kt_md_sVmR, kt_md_sImR]) or ((ParentModule as TKt_2450).OutputOffState[(ParentModule as TKt_2450).SourceType] = kt_oos_himp) then
+    (ParentModule as TKt_2450).OutPutChange(true);
 end;
 
 function TKT2450_Meter.GetMeasureModeLabel: string;
 begin
- case fParentModule.Mode of
+ case (ParentModule as TKt_2450).Mode of
   kt_md_sVmC,kt_md_sImC:Result:=' A';
   kt_md_sVmV,kt_md_sImV:Result:=' V';
   kt_md_sVmR,kt_md_sImR:Result:='Ohm';
@@ -2495,39 +2513,39 @@ begin
  end;
 end;
 
-function TKT2450_Meter.GetValueFromDevice: double;
-begin
- Result:=fParentModule.Device.Value;
-end;
+//function TKT2450_Meter.GetValueFromDevice: double;
+//begin
+// Result:=fParentModule.Device.Value;
+//end;
 
 { TKT2450_Measurement }
 
-constructor TKT2450_Measurement.Create(Kt_2450: TKt_2450);
-begin
- inherited Create;
- fParentModule:=Kt_2450;
-end;
+//constructor TKeitley_Measurement.Create(Kt_2450: TKt_2450);
+//begin
+// inherited Create;
+// fParentModule:=Kt_2450;
+//end;
 
-function TKT2450_Measurement.GetData: double;
-begin
- GetDataPreparation;
- fValue:=GetValueFromDevice;
- Result:=fValue;
- fNewData:=fParentModule.Device.NewData;
-end;
+//function TKeitley_Measurement.GetData: double;
+//begin
+// GetDataPreparation;
+// fValue:=GetValueFromDevice;
+// Result:=fValue;
+// fNewData:=fParentModule.Device.NewData;
+//end;
 
-procedure TKT2450_Measurement.GetDataPreparation;
-begin
-  if (fParentModule.Sences[fParentModule.MeasureFunction] = kt_s4wire) or (fParentModule.Mode in [kt_md_sVmR, kt_md_sImR]) or (fParentModule.OutputOffState[fParentModule.SourceType] = kt_oos_himp) then
-    fParentModule.OutPutChange(true);
-  fParentModule.MeasureExtended(kt_rd_MS);
-//  fParentModule.MeasureSimple;
-end;
-
-function TKT2450_Measurement.GetValueFromDevice: double;
-begin
- Result:=ErResult;
-end;
+//procedure TKeitley_Measurement.GetDataPreparation;
+//begin
+//  if (fParentModule.Sences[fParentModule.MeasureFunction] = kt_s4wire) or (fParentModule.Mode in [kt_md_sVmR, kt_md_sImR]) or (fParentModule.OutputOffState[fParentModule.SourceType] = kt_oos_himp) then
+//    fParentModule.OutPutChange(true);
+//  fParentModule.MeasureExtended(kt_rd_MS);
+////  fParentModule.MeasureSimple;
+//end;
+//
+//function TKeitley_Measurement.GetValueFromDevice: double;
+//begin
+// Result:=ErResult;
+//end;
 
 { TKT2450_SourceMeter }
 
@@ -2537,9 +2555,17 @@ begin
  fName:='KT2450SourceMeter';
 end;
 
+procedure TKT2450_SourceMeter.GetDataPreparationHeader;
+begin
+//  if (fParentModule.Sences[fParentModule.MeasureFunction] = kt_s4wire) or (fParentModule.Mode in [kt_md_sVmR, kt_md_sImR]) or (fParentModule.OutputOffState[fParentModule.SourceType] = kt_oos_himp) then
+//    fParentModule.OutPutChange(true);
+  if ((ParentModule as TKt_2450).Sences[(ParentModule as TKt_2450).MeasureFunction] = kt_s4wire) or ((ParentModule as TKt_2450).Mode in [kt_md_sVmR, kt_md_sImR]) or ((ParentModule as TKt_2450).OutputOffState[(ParentModule as TKt_2450).SourceType] = kt_oos_himp) then
+    (ParentModule as TKt_2450).OutPutChange(true);
+end;
+
 function TKT2450_SourceMeter.GetValueFromDevice: double;
 begin
-  Result:=fParentModule.SourceMeasuredValue;
+  Result:=(ParentModule as TKt_2450).SourceMeasuredValue;
 end;
 
 { TKT2450_Source }

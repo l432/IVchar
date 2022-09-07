@@ -31,13 +31,9 @@ IMeasPar_BaseVoltDC = interface
 end;
 
 TDMM6500MeasPar_Base=class(TSimpleFreeAndAiniObject)
-//TDMM6500MeasPar_Base=class(TInterfacedObject)
  private
-//  fCount:integer;
   fDisplayDN:TKeitleyDisplayDigitsNumber;
-//  procedure SetCountNumber(Value: integer);virtual;
  public
-//  property Count:integer read fCount write SetCountNumber;
   property DisplayDN:TKeitleyDisplayDigitsNumber read fDisplayDN write fDisplayDN;
   constructor Create;
 end;
@@ -95,24 +91,18 @@ TDMM6500MeasPar_BaseAC=class(TDMM6500MeasPar_BaseDelay)
 end;
 
 TDMM6500MeasPar_BaseDelayMT=class(TDMM6500MeasPar_BaseDelay)
-//TDMM6500MeasPar_BaseDelayMT=class(TDMM6500MeasPar_Continuity)
  private
   fMTLimits:TLimitValues;
   fMeaureTime:double;
   {час вимірювання, []=мс, для більшості 0,02-240}
-//  fOffComp:TDMM6500_OffsetCompen;
-//  fOpenLD:boolean;
   procedure SetMeaureTime(Value:double);
  public
   property MTLimits:TLimitValues read fMTLimits;
   property MeaureTime: double read fMeaureTime write SetMeaureTime;
-//  property OffsetComp: TDMM6500_OffsetCompen read fOffComp write fOffComp;
-//  property OpenLeadDetector: boolean read fOpenLD write fOpenLD;
   constructor Create;
 end;
 
 TDMM6500MeasPar_Continuity=class(TDMM6500MeasPar_BaseDelayMT)
-//TDMM6500MeasPar_Continuity=class(TDMM6500MeasPar_BaseDelay)
  private
   fAzeroState:boolean;
   fLineSync:boolean;
@@ -130,11 +120,7 @@ TDMM6500MeasPar_BaseVoltDCRange=class(TDMM6500MeasPar_Continuity)
   constructor Create;
 end;
 
-
-
-
 TDMM6500MeasPar_Base4WT=class(TDMM6500MeasPar_Continuity)
-//TDMM6500MeasPar_Base4WT=class(TDMM6500MeasPar_BaseDelayMT)
  private
   fOffComp:TDMM6500_OffsetCompen;
   fOpenLD:boolean;
@@ -239,7 +225,6 @@ end;
 
 TDMM6500MeasPar_VoltDC=class(TDMM6500MeasPar_BaseVoltDCRange,IMeasPar_BaseVolt,IMeasPar_BaseVoltDC)
  private
-//  fRange:TDMM6500_VoltageDCRange;
   fBaseVolt:TDMM6500MeasPar_BaseVoltDC;
   function GetInputImpedance: TDMM6500_InputImpedance;
   procedure SetInputImpedance(const Value: TDMM6500_InputImpedance);
@@ -252,7 +237,6 @@ TDMM6500MeasPar_VoltDC=class(TDMM6500MeasPar_BaseVoltDCRange,IMeasPar_BaseVolt,I
   procedure SetDB(const Value: double);
   procedure SetDBM(const Value: integer);
  public
-//  property Range: TDMM6500_VoltageDCRange read fRange write fRange;
   property InputImpedance: TDMM6500_InputImpedance read GetInputImpedance write SetInputImpedance;
   property Units: TDMM6500_VoltageUnits read GetUnits write SetUnits;
   property DB:double read GetDB write SetDB;
@@ -265,10 +249,8 @@ end;
 
 TDMM6500MeasPar_VoltRat=class(TDMM6500MeasPar_BaseVoltDCRange)
  private
-//  fRange:TDMM6500_VoltageDCRange;
   fMethod:TDMM6500_VoltageRatioMethod;
  public
-//  property Range: TDMM6500_VoltageDCRange read fRange write fRange;
   property VRMethod:TDMM6500_VoltageRatioMethod read fMethod write fMethod;
   constructor Create;
 end;
@@ -334,23 +316,7 @@ TDMM6500MeasPar_Diode=class(TDMM6500MeasPar_Continuity)
   constructor Create;
 end;
 
-//TQuireFunction=Function(FM: TKeitley_Measure;PM: TDMM6500MeasPar_Base):boolean of object;
-//TQuireFunctionRTDType=Function(FM: TKeitley_Measure;PM: TDMM6500MeasPar_Base;
-//                               WiType:TDMM6500_RTDPropertyNumber):boolean of object;
-//TPermittedMeasureFunction=Function(FM: TKeitley_Measure):boolean of object;
-//TGetActionProc=Procedure(PM: TDMM6500MeasPar_Base)of object;
-
-
-//TSetProcedureBool=Procedure(FM: TKeitley_Measure;PM: TDMM6500MeasPar_Base;toOn:boolean) of object;
-//TSetProcedureDouble=Procedure(FM: TKeitley_Measure;PM: TDMM6500MeasPar_Base;Value:double) of object;
-//TSetProcedureDoubleGeneral=Procedure(FM: TKeitley_Measure;Value:double) of object;
-//TSetProcedureInteger=Procedure(FM: TKeitley_Measure;PM: TDMM6500MeasPar_Base;Value:integer) of object;
-//TSetProcedureRTDType=Procedure(FM: TKeitley_Measure;PM: TDMM6500MeasPar_Base;RTDType:TDMM6500_RTDType;
-//                                WiType:TDMM6500_RTDPropertyNumber) of object;
-
- function  DMM6500MeasParFactory(MeasureType:TKeitley_Measure):TDMM6500MeasPar_Base;
-
-
+function  DMM6500MeasParFactory(MeasureType:TKeitley_Measure):TDMM6500MeasPar_Base;
 
 implementation
 
@@ -380,15 +346,8 @@ end;
 constructor TDMM6500MeasPar_Base.Create;
 begin
  inherited;
-// fCount:=1;
  fDisplayDN:=6;
 end;
-
-//procedure TDMM6500MeasPar_Base.SetCountNumber(Value: integer);
-// const CountLimits:TLimitValues=(1,1000000);
-//begin
-// fCount:=TSCPInew.NumberMap(Value,CountLimits);
-//end;
 
 { TDMM6500MeasPar_BaseDelay }
 
@@ -486,7 +445,6 @@ constructor TDMM6500MeasPar_BaseVolt.Create;
 begin
  inherited Create;
  fUnits:=dm_vuVolt;
-// fUnits:=dm_vuDB;
  fDB:=1;
  fDBM:=1;
  fDBMLimits[lvMin]:=1;
@@ -600,9 +558,6 @@ begin
  fMTLimits[lvMin]:=0.01;
  fMTLimits[lvMax]:=240;
  fMeaureTime:=1;
-// fAzeroState:=True;
-// fOffComp:=dm_ocAuto;
-// fOpenLD:=False;
 end;
 
 procedure TDMM6500MeasPar_BaseDelayMT.SetMeaureTime(Value: double);
@@ -643,7 +598,6 @@ end;
 constructor TDMM6500MeasPar_VoltDC.Create;
 begin
  inherited Create;
-// fRange:=dm_vdrAuto;
  fBaseVolt:=TDMM6500MeasPar_BaseVoltDC.Create;
 end;
 
@@ -709,7 +663,6 @@ end;
 constructor TDMM6500MeasPar_VoltRat.Create;
 begin
  inherited Create;
-// fRange:=dm_vdrAuto;
  fMethod:=dm_vrmPart;
 end;
 
@@ -792,11 +745,8 @@ constructor TDMM6500MeasPar_Diode.Create;
 begin
  inherited Create;
  fBiasLevel:=dm_dbl1mA;
-// fLineSync:=False;
  fAzeroState:=True;
 end;
-
-
 
 { TDMM6500MeasPar_BaseVoltDCRange }
 

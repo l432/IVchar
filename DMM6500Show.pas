@@ -190,7 +190,7 @@ procedure TDMM6500_Show.GetSettingButtonClick(Sender: TObject);
 begin
   if not(DeviceEthernetisAbsent) then
     begin
-//     fDMM6500.GetCardParametersFromDevice;
+     fDMM6500.GetCardParametersFromDevice;
      fMeasureTypeShow.GetDataFromDevice;
     end;
 
@@ -200,7 +200,7 @@ begin
     begin
      if fMeasParShow<>nil then
        fMeasParShow.GetDataFromDeviceAndToSetting;
-//     fControlChannels.GetDataFromDeviceAndToSetting;
+     fControlChannels.GetDataFromDeviceAndToSetting;
     end;
 
 end;

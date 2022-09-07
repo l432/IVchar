@@ -4,7 +4,7 @@ interface
 
 uses
   TelnetDevice, SCPI, IdTelnet, ShowTypes, Keitley2450Const, Keitley2450Device, 
-  OlegVector;
+  OlegVector, ExtCtrls;
 
 type
 
@@ -17,6 +17,8 @@ type
    Constructor Create(SCPInew:TSCPInew;Telnet:TIdTelnet;IPAdressShow: TIPAdressShow;
                Nm:string);
  end;
+
+TKeitley_Meter=class;
 
  TKeitley=class(TSCPInew)
   private
@@ -60,7 +62,7 @@ type
 //   fDigitLineType:TKt2450_DigLineTypes;
 //   fDigitLineDirec:TKt2450_DigLineDirections;
 //   fDLActive:TKt2450_DigLines;
-//   fMeter:TKT2450_Meter;
+
 //   fSourceMeter:TKT2450_SourceMeter;
 //   fSourceDevice:TKT2450_SourceDevice;
    fDisplayState:TKeitley_DisplayState;
@@ -101,6 +103,8 @@ type
    fTimeValue:double;
    fTrigBlockNumber:word;
    fCount:integer;
+   fMeter:TKeitley_Meter;
+   procedure MeterCreate;virtual;abstract;
    procedure PrepareString;override;
    procedure PrepareStringByRootNode;virtual;
    procedure DeviceCreate(Nm:string);override;
@@ -159,7 +163,7 @@ type
    property TimeValue:double read fTimeValue;
 //   property DigitLineType:TKt2450_DigLineTypes read fDigitLineType;
 //   property DigitLineTypeDirec:TKt2450_DigLineDirections read fDigitLineDirec;
-//   property Meter:TKT2450_Meter read fMeter;
+   property Meter:TKeitley_Meter read fMeter;
 //   property SourceMeter:TKT2450_SourceMeter read fSourceMeter;
 //   property SourceDevice:TKT2450_SourceDevice read fSourceDevice;
    property DisplayState:TKeitley_DisplayState read fDisplayState;
@@ -455,21 +459,21 @@ type
 
    Procedure GetParametersFromDevice;virtual;
 //
-//   Procedure MeasureSimple();overload;
-//   {проводиться вимірювання стільки разів, скільки
-//   вказано в Count, всі результати розміщуються
-//   в defbuffer1, повертається результат останнього виміру;
-//   вимірюється та функція, яка зараз встановлена на приладі,
-//   можна зробити, щоб вимірювалося щось інше, але я не
-//   схотів гратися з такою не дуже реальною на перший погляд
-//   задачею}
-//   Procedure MeasureSimple(BufName:string);overload;
-//   {результати записуються у буфер BufName
-//   і з нього ж зчитується останній результат}
-//   Procedure MeasureExtended(DataType:TKt2450_ReturnedData=kt_rd_MS;
-//                           BufName:string=Kt2450DefBuffer);
-//   {як попередні, проте повертає більше даних
-//   (див. TKt2450_ReturnedData) щодо останнього виміру}
+   Procedure MeasureSimple();overload;virtual;
+   {проводиться вимірювання стільки разів, скільки
+   вказано в Count, всі результати розміщуються
+   в defbuffer1, повертається результат останнього виміру;
+   вимірюється та функція, яка зараз встановлена на приладі,
+   можна зробити, щоб вимірювалося щось інше, але я не
+   схотів гратися з такою не дуже реальною на перший погляд
+   задачею}                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           
+   Procedure MeasureSimple(BufName:string);overload;virtual;
+   {результати записуються у буфер BufName
+   і з нього ж зчитується останній результат}
+   Procedure MeasureExtended(DataType:TKeitley_ReturnedData=kt_rd_MS;
+                           BufName:string=KeitleyDefBuffer);
+   {як попередні, проте повертає більше даних
+   (див. TKt2450_ReturnedData) щодо останнього виміру}
 //
 //
    Procedure Init;
@@ -528,9 +532,32 @@ type
    {якщо до того, як дійшли на цей блок, відбулася подія EventType,
    то відбувається перехід на TransitionBlockNumber}
    function GetTrigerState:boolean;
-
  end;
 
+TKeitley_Measurement=class(TMeasurementSimple)
+ private
+  fParentModule: TKeitley;
+ protected
+  procedure GetDataPreparationHeader;virtual;
+  procedure GetDataPreparation;
+ public
+  property ParentModule: TKeitley read fParentModule;
+  constructor Create(Keitley:TKeitley);
+  function GetData:double;override;
+  function GetValueFromDevice:double;virtual;
+end;
+
+TKeitley_Meter=class(TKeitley_Measurement)
+ private
+  fTimer:TTimer;
+ protected
+  function GetMeasureModeLabel():string;virtual;
+ public
+  property MeasureModeLabel:string read GetMeasureModeLabel;
+  property Timer:TTimer read fTimer;
+  constructor Create(Keitley:TKeitley);
+  destructor Destroy; override;
+end;
 
 implementation
 
@@ -814,6 +841,7 @@ begin
  fBuffer:=TKeitley_Buffer.Create;
  fDataVector:=TVector.Create;
  fDataTimeVector:=TVector.Create;
+ MeterCreate;
 end;
 
 procedure TKeitley.DefaultSettings;
@@ -877,6 +905,7 @@ end;
 
 destructor TKeitley.Destroy;
 begin
+  FreeAndNil(fMeter);
   FreeAndNil(fDataVector);
   FreeAndNil(fDataTimeVector);  
   FreeAndNil(fBuffer);
@@ -1005,6 +1034,27 @@ begin
   SetupOperation(7,4);
 end;
 
+procedure TKeitley.MeasureSimple;
+begin
+// :READ?
+ QuireOperation(21);
+end;
+
+procedure TKeitley.MeasureExtended(DataType: TKeitley_ReturnedData;
+  BufName: string);
+begin
+// :READ? "<bufferName>", <bufferElements>
+ Buffer.SetName(BufName);
+ QuireOperation(21,ord(DataType)+2,0,False);
+end;
+
+procedure TKeitley.MeasureSimple(BufName: string);
+begin
+ Buffer.SetName(BufName);
+ QuireOperation(21,1,0,False);
+end;
+
+
 function TKeitley.MeasureToFunctString(Measure: TKeitley_Measure): string;
 begin
  if Measure<kt_mDigCur
@@ -1126,10 +1176,10 @@ begin
            end;
        end;
       end; // fRootNode=19
-//  21:case fFirstLevelNode of
-//       1:JoinToStringToSend(Buffer.Get);
-//       2..5:JoinToStringToSend(Buffer.DataDemand(TKt2450_ReturnedData(fFirstLevelNode-2)))
-//     end; // fRootNode=21
+  21:case fFirstLevelNode of
+       1:JoinToStringToSend(Buffer.Get);
+//       2..5:JoinToStringToSend(Buffer.DataDemand(TKeitley_ReturnedData(fFirstLevelNode-2)))
+     end; // fRootNode=21
   22:case fFirstLevelNode of
        1:JoinToStringToSend(Buffer.Get);
      end; // fRootNode=22
@@ -1234,10 +1284,10 @@ begin
              end;
       end; //fRootNode=19
    20:fDevice.Value:=StrToInt(Str);
-//   21:case fFirstLevelNode of
-//       0,1:fDevice.Value:=SCPI_StringToValue(Str);
-//       2..5:StringToMesuredData(AnsiReplaceStr(Str,',',' '),TKt2450_ReturnedData(fFirstLevelNode-2));
-//       end; //fRootNode=21
+   21:case fFirstLevelNode of
+       0,1:fDevice.Value:=SCPI_StringToValue(Str);
+       2..5:StringToMesuredData(AnsiReplaceStr(Str,',',' '),TKeitley_ReturnedData(fFirstLevelNode-2));
+       end; //fRootNode=21
    22:case fFirstLevelNode of
        0,1:fDevice.Value:=SCPI_StringToValue(Str);
        2..5:StringToMesuredData(AnsiReplaceStr(Str,',',' '),TKeitley_ReturnedData(fFirstLevelNode-2));
@@ -1687,6 +1737,58 @@ procedure TKeitley.Wait;
 begin
 // *WAI
  SetupOperation(25,0,0,False);
+end;
+
+{ TKeitle_Measurement }
+
+constructor TKeitley_Measurement.Create(Keitley: TKeitley);
+begin
+ inherited Create;
+ fParentModule:=Keitley;
+end;
+
+function TKeitley_Measurement.GetData: double;
+begin
+ GetDataPreparation;
+ fValue:=GetValueFromDevice;
+ Result:=fValue;
+ fNewData:=fParentModule.Device.NewData;
+end;
+
+procedure TKeitley_Measurement.GetDataPreparation;
+begin
+  GetDataPreparationHeader;
+  fParentModule.MeasureExtended(kt_rd_MS);
+end;
+
+procedure TKeitley_Measurement.GetDataPreparationHeader;
+begin
+end;
+
+function TKeitley_Measurement.GetValueFromDevice: double;
+begin
+ Result:=fParentModule.Device.Value;
+end;
+
+{ TKeitley_Meter }
+
+constructor TKeitley_Meter.Create(Keitley: TKeitley);
+begin
+ fTimer:=TTimer.Create(nil);
+ fTimer.Enabled:=False;
+ fTimer.Interval:=2000;
+ inherited Create(Keitley);
+end;
+
+destructor TKeitley_Meter.Destroy;
+begin
+ FreeAndNil(fTimer);
+ inherited;
+end;
+
+function TKeitley_Meter.GetMeasureModeLabel: string;
+begin
+
 end;
 
 end.

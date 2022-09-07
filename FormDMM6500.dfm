@@ -315,6 +315,81 @@ object DMM6500Form: TDMM6500Form
     ParentFont = False
     TabOrder = 6
   end
+  object GB_DMM6500_Mes: TGroupBox
+    Left = 347
+    Top = 4
+    Width = 279
+    Height = 91
+    Caption = 'Measurement'
+    Font.Charset = RUSSIAN_CHARSET
+    Font.Color = clMaroon
+    Font.Height = -13
+    Font.Name = 'Arial'
+    Font.Style = [fsBold]
+    ParentFont = False
+    TabOrder = 7
+    object LDMM6500_Meas: TLabel
+      Left = 13
+      Top = 18
+      Width = 208
+      Height = 31
+      AutoSize = False
+      Caption = '  ERROR'
+      Color = clWhite
+      Font.Charset = RUSSIAN_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -25
+      Font.Name = 'Verdana'
+      Font.Style = [fsBold]
+      ParentColor = False
+      ParentFont = False
+    end
+    object LDMM6500_MeasU: TLabel
+      Left = 217
+      Top = 18
+      Width = 47
+      Height = 31
+      AutoSize = False
+      Caption = 'a'
+      Color = clInfoText
+      Font.Charset = RUSSIAN_CHARSET
+      Font.Color = clWhite
+      Font.Height = -27
+      Font.Name = 'Arial'
+      Font.Style = [fsBold]
+      ParentColor = False
+      ParentFont = False
+    end
+    object B_DMM6500_MeasAuto: TSpeedButton
+      Left = 146
+      Top = 56
+      Width = 45
+      Height = 19
+      AllowAllUp = True
+      GroupIndex = 2
+      Caption = 'AUTO'
+      Font.Charset = RUSSIAN_CHARSET
+      Font.Color = clDefault
+      Font.Height = -13
+      Font.Name = 'Arial'
+      Font.Style = [fsBold]
+      ParentFont = False
+    end
+  end
+  object Button1: TButton
+    Left = 387
+    Top = 59
+    Width = 75
+    Height = 24
+    Caption = 'measure'
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clWindowText
+    Font.Height = -13
+    Font.Name = 'Tahoma'
+    Font.Style = [fsBold]
+    ParentFont = False
+    TabOrder = 8
+  end
   object TelnetDMM6500: TIdTelnet
     Terminal = 'dumb'
     Left = 526

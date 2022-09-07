@@ -5,7 +5,7 @@ interface
 uses
   OlegTypePart2, Keithley2450, StdCtrls, Buttons,
   ArduinoDeviceNew, ExtCtrls, IniFiles, OlegShowTypes, Classes, 
-  Keitley2450Const, OlegType, Measurement, KeitleyShow;
+  Keitley2450Const, OlegType, Measurement, KeitleyShow, Keithley;
 
 const
   ButtonNumberKt2450 = 5;
@@ -256,15 +256,17 @@ TKt_2450_SweetShow=class(TKt_2450_AbstractElementShow)
   procedure WriteToIniFile(ConfigFile: TIniFile);override;
 end;
 
-TKt_2450_MeterShow=class(TMeasurementShowSimple)
+//TKt_2450_MeterShow=class(TMeasurementShowSimple)
+TKt_2450_MeterShow=class(TKeitley_MeterShow)
   private
    fKt_2450_Show:TKt_2450_Show;
-   fKT2450_Meter:TKT2450_Meter;
+//   fKT2450_Meter:TKT2450_Meter;
+//   fKT2450_Meter:TKeitley_Meter;
   protected
-   function UnitModeLabel():string;override;
+//   function UnitModeLabel():string;override;
    procedure MeasurementButtonClick(Sender: TObject);override;
   public
-   Constructor Create(KT2450_Meter:TKT2450_Meter;
+   Constructor Create(KT2450_Meter:TKeitley_Meter;
                       Kt_2450_Show:TKt_2450_Show;
                       DL,UL:TLabel;
                       MB:TButton;
@@ -1921,13 +1923,14 @@ end;
 
 { TKt_2450_MeterShow }
 
-constructor TKt_2450_MeterShow.Create(KT2450_Meter: TKT2450_Meter;
+constructor TKt_2450_MeterShow.Create(KT2450_Meter: TKeitley_Meter;
                                       Kt_2450_Show:TKt_2450_Show;
                                       DL,UL: TLabel;
                                       MB: TButton; AB: TSpeedButton);
 begin
- inherited Create(KT2450_Meter,DL,UL,MB,AB,KT2450_Meter.Timer);
- fKT2450_Meter:=KT2450_Meter;
+// inherited Create(KT2450_Meter,DL,UL,MB,AB,KT2450_Meter.Timer);
+// fKT2450_Meter:=KT2450_Meter;
+ inherited Create(KT2450_Meter,DL,UL,MB,AB);
  fKt_2450_Show:=Kt_2450_Show;
 end;
 
@@ -1937,10 +1940,10 @@ begin
  fKt_2450_Show.OutPutOnFromDevice;
 end;
 
-function TKt_2450_MeterShow.UnitModeLabel: string;
-begin
- Result:=fKT2450_Meter.MeasureModeLabel;
-end;
+//function TKt_2450_MeterShow.UnitModeLabel: string;
+//begin
+// Result:=fKT2450_Meter.MeasureModeLabel;
+//end;
 
 { TKt_StringParameterShow }
 
