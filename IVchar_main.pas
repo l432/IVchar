@@ -1209,7 +1209,13 @@ begin
              Kt_2450.BufferLastDataExtended(kt_rd_MT);
              writeln(FF,Name,' - ',temp,'  :'+floattostr(Kt_2450.TimeValue));
             end               else
-             writeln(FF,Name,' - ',temp,'  :'+inttostr(SecondFromDayBegining(FileDateToDateTime(SR.Time))));
+                if (Current_MD.ActiveInterface.Name='DMM6500Meter')
+                                  then
+                begin
+                 DMM_6500.BufferLastDataExtended(kt_rd_MT);
+                 writeln(FF,Name,' - ',temp,'  :'+floattostr(DMM_6500.TimeValue));
+                end               else
+                writeln(FF,Name,' - ',temp,'  :'+inttostr(SecondFromDayBegining(FileDateToDateTime(SR.Time))));
        end;
 
 
@@ -3291,6 +3297,11 @@ begin
       Kt_2450_Show.MeterShow.AutoSpeedButton.Down:=False;
       Kt_2450_Show.MeterShow.AutoSpeedButton.OnClick(Sender);
     end;
+ if DMM6500_Show.MeterShow.AutoSpeedButton.Down then
+    begin
+      DMM6500_Show.MeterShow.AutoSpeedButton.Down:=False;
+      DMM6500_Show.MeterShow.AutoSpeedButton.OnClick(Sender);
+    end;
  except
  end;
 end;
@@ -4303,6 +4314,9 @@ begin
   AllDevices.Add(Kt_2450.SourceMeter);
   VandIDevices.Add(Kt_2450.SourceMeter);
 
+  AllDevices.Add(DMM_6500.Meter);
+  VandIDevices.Add(DMM_6500.Meter);
+
 
   AllDevices.Add(OlegCurrent);
   VandIDevices.Add(OlegCurrent);
@@ -4471,7 +4485,9 @@ begin
                                      [PDM6500SaveSetup,PDM6500LoadSetup],
                                      [ST_DM6500_DispBr,ST_DM6500_Terminals,
                                      ST_DM6500MeasureMode],
-                                     [GB_DM6500Chan,GB_DM6500Param]);
+                                     [GB_DM6500Chan,GB_DM6500Param],
+                                     LDMM6500_Meas,LDMM6500_MeasU,
+                                     B_DMM6500_Meas,B_DMM6500_MeasAuto);
 //                                     [SB_Kt2450_OutPut,SB_Kt2450_Termin],
 //                                     [PKt2450SaveSetup,PKt2450LoadSetup],
 //                                     [ST_KT2450VolProt,ST_KT2450Mode,

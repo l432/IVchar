@@ -4,9 +4,27 @@ interface
 
 uses
   OlegTypePart2, DMM6500, KeitleyShow, StdCtrls, ExtCtrls, 
-  DMM6500_MeasParamShow, Keitley2450Const;
+  DMM6500_MeasParamShow, Keitley2450Const, Keithley, Buttons;
 
 type
+TDMM6500_Show=class;
+
+TDMM6500_MeterShow=class(TKeitley_MeterShow)
+  private
+   fDMM6500_Show:TDMM6500_Show;
+//   fKT2450_Meter:TKT2450_Meter;
+//   fKT2450_Meter:TKeitley_Meter;
+  protected
+//   function UnitModeLabel():string;override;
+//   procedure MeasurementButtonClick(Sender: TObject);override;
+  public
+   Constructor Create(KT2450_Meter:TKeitley_Meter;
+                      DMM6500_Show:TDMM6500_Show;
+                      DL,UL:TLabel;
+                      MB:TButton;
+                      AB:TSpeedButton
+                      );
+end;
 
  TDMM6500_Show=class(TKeitley_Show)
   private
@@ -17,7 +35,7 @@ type
    fGBControlChannels:TGroupBox;
    fGBParametrShow:TGroupBox;
    fMeasParShow:TDMM6500_MeasParShow;
-
+   fMeterShow:TDMM6500_MeterShow;
 
 
 //   fSettingsShow:array of TParameterShowNew;
@@ -99,12 +117,15 @@ type
   protected
     procedure GetSettingButtonClick(Sender:TObject);override;
   public
-//   property MeterShow:TKt_2450_MeterShow read fMeterShow;
+   property MeterShow:TDMM6500_MeterShow read fMeterShow;
    Constructor Create(DMM6500:TDMM6500;
                       ButtonsKeitley:Array of TButton;
                       PanelsSetting:Array of TPanel;
                       STexts:array of TStaticText;
-                      GBs:array of TGroupBox);
+                      GBs:array of TGroupBox;
+                      DataMeterL,UnitMeterL:TLabel;
+                      MeasureMeterB:TButton;
+                      AutoMMeterB:TSpeedButton);
 //                      SpeedButtons:Array of TSpeedButton;
 //                      Panels:Array of TPanel;
 //                      STexts:array of TStaticText;
@@ -160,7 +181,10 @@ constructor TDMM6500_Show.Create(DMM6500: TDMM6500;
                   ButtonsKeitley: array of TButton;
                   PanelsSetting:Array of TPanel;
                   STexts:array of TStaticText;
-                  GBs:array of TGroupBox);
+                  GBs:array of TGroupBox;
+                  DataMeterL,UnitMeterL:TLabel;
+                  MeasureMeterB:TButton;
+                  AutoMMeterB:TSpeedButton);
 begin
 
   inherited Create(DMM6500,ButtonsKeitley,
@@ -174,6 +198,10 @@ begin
   fMeasureTypeShow:=TDMM6500_MeasurementTypeShow.Create(STexts[2],fDMM6500);
   fMeasureTypeShow.HookParameterClick:=MeasureParamShowCreate;
 
+  fMeterShow:=TDMM6500_MeterShow.Create(fDMM6500.Meter,Self,
+                                 DataMeterL,UnitMeterL,
+                                MeasureMeterB,AutoMMeterB);
+  fMeterShow.DigitNumber:=6;
 
   ObjectToSetting();
 end;
@@ -255,6 +283,15 @@ procedure TDMM6500_Show.MeasureParamShowDestroy;
 begin
   if Assigned(fMeasParShow) then
     FreeAndNil(fMeasParShow);
+end;
+
+{ TDMM6500_MeterShow }
+
+constructor TDMM6500_MeterShow.Create(KT2450_Meter: TKeitley_Meter;
+  DMM6500_Show: TDMM6500_Show; DL, UL: TLabel; MB: TButton; AB: TSpeedButton);
+begin
+ inherited Create(KT2450_Meter,DL,UL,MB,AB);
+ fDMM6500_Show:=DMM6500_Show;
 end;
 
 end.

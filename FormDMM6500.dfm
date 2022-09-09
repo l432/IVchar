@@ -329,7 +329,7 @@ object DMM6500Form: TDMM6500Form
     ParentFont = False
     TabOrder = 7
     object LDMM6500_Meas: TLabel
-      Left = 13
+      Left = 7
       Top = 18
       Width = 208
       Height = 31
@@ -345,9 +345,9 @@ object DMM6500Form: TDMM6500Form
       ParentFont = False
     end
     object LDMM6500_MeasU: TLabel
-      Left = 217
+      Left = 211
       Top = 18
-      Width = 47
+      Width = 62
       Height = 31
       AutoSize = False
       Caption = 'a'
@@ -376,7 +376,7 @@ object DMM6500Form: TDMM6500Form
       ParentFont = False
     end
   end
-  object Button1: TButton
+  object B_DMM6500_Meas: TButton
     Left = 387
     Top = 59
     Width = 75

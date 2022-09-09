@@ -536,10 +536,11 @@ TKeitley_Meter=class;
 
 TKeitley_Measurement=class(TMeasurementSimple)
  private
-  fParentModule: TKeitley;
+//  fParentModule: TKeitley;
  protected
+  fParentModule: TKeitley;
   procedure GetDataPreparationHeader;virtual;
-  procedure GetDataPreparation;
+  procedure GetDataPreparation;virtual;
  public
   property ParentModule: TKeitley read fParentModule;
   constructor Create(Keitley:TKeitley);

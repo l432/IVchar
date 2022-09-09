@@ -187,6 +187,11 @@ const
   (296.15,23,73.4);
  DMM6500_NPLCLimits:TLimitValues=(0.0005,12);
 
+ DMM6500_ScanLeafNode:array[0..2]of string=
+ ('',':add',':add:sing');
+//0     1        2
+
+
 implementation
 
 end.

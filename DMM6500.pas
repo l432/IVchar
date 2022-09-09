@@ -43,6 +43,24 @@ type
 
  TTDMM6500ChannelArr=array of TDMM6500Channel;
 
+ TTDMM6500ScanChannels=array of byte;
+
+ TDMM6500Scan=class
+  private
+   fDMM6500:TDMM6500;
+   fScanChans:TTDMM6500ScanChannels;
+  protected
+
+  public
+   property ScanChans:TTDMM6500ScanChannels read fScanChans write fScanChans;
+   constructor Create(DMM6500:TDMM6500);
+   function ChannelsToString:string;
+   function StringToChannels(Str:string):byte;
+   procedure Clear;
+   procedure Add(ChanNumber:byte);
+
+ end;
+
  TDMM6500=class(TKeitley)
   private
    fMeasureChanNumber:byte;
@@ -55,6 +73,8 @@ type
    fChanOperationString:string;
    fCountDig:integer;
    fMeasParameters:array [TKeitley_Measure] of TDMM6500MeasPar_Base;
+//   fScanChans:array of byte;
+   fScan:TDMM6500Scan;
    function GetMeasParameters:TDMM6500MeasPar_Base;
    procedure MeasParameterCreate(Measure:TKeitley_Measure);
    function ChanelToString(ChanNumber:byte):string;overload;
@@ -117,6 +137,7 @@ type
    property MeasParameters:TDMM6500MeasPar_Base read GetMeasParameters;
    property CountDig:integer read fCountDig write SetCountDigNumber;
    property ChansMeasure:TTDMM6500ChannelArr read fChansMeasure;
+   property Scan:TDMM6500Scan read fScan;
    Constructor Create(Telnet:TIdTelnet;IPAdressShow: TIPAdressShow;
                Nm:string='DMM6500');
    destructor Destroy; override;
@@ -313,6 +334,23 @@ type
 
    Procedure GetParametersFromDevice;override;
    Procedure GetCardParametersFromDevice;
+
+   procedure ScanClear;
+   {deletes the existing scan list and
+   creates a new list of channels to scan}
+   function ScanGetChannels:boolean;
+   procedure ScanAddChan(ChanNumber:byte);
+   procedure ScanAddChanAndConfigList(ChanNumber:byte;
+             ListName:string=MyMeasList;
+             ItemIndex:word=0);
+   {як попередня, тільки додається ще інформація
+   про конфігураційний файл, звідки будуть
+   зчитуватися параметри перед виміром;
+   проте на момент виконання має існувати
+   конф.файл (ConfigMeasureCreate) та
+   в ньому має бути запис
+   з номером ItemIndex (ConfigMeasureStore тощо);
+   інакше канал не додається}
  end;
 
 //-------------------------------------------------
@@ -321,6 +359,7 @@ TDM6500_Meter=class(TKeitley_Meter)
  private
  protected
   function GetMeasureModeLabel():string;override;
+  procedure GetDataPreparation;override;
  public
   constructor Create(DMM6500:TDMM6500);
 end;
@@ -413,6 +452,7 @@ constructor TDMM6500.Create(Telnet: TIdTelnet; IPAdressShow: TIPAdressShow;
   Nm: string);
 begin
   inherited Create(Telnet,IPAdressShow,Nm);
+  fScan:=TDMM6500Scan.Create(self);
 end;
 
 procedure TDMM6500.DefaultSettings;
@@ -432,6 +472,7 @@ end;
 
 destructor TDMM6500.Destroy;
 begin
+  fScan.Free;
   MeasParametersDestroy;
   ChansMeasureDestroy;
   inherited;
@@ -879,6 +920,46 @@ begin
   Result:=GetShablon(dm_pp_SampleRate,ChanNumber);
 end;
 
+procedure TDMM6500.ScanAddChan(ChanNumber: byte);
+begin
+ if ChanelNumberIsCorrect(ChanNumber) then
+   begin
+     fChanOperationString:=' '+ChanelToString(ChanNumber);
+     fChanOperation:=True;
+     SetupOperation(9,67,1,False);
+     fScan.Add(ChanNumber);
+   end;
+end;
+
+procedure TDMM6500.ScanAddChanAndConfigList(ChanNumber: byte; ListName: string;
+  ItemIndex: word);
+begin
+ if ChanelNumberIsCorrect(ChanNumber) then
+   begin
+     fChanOperationString:=' '+ChanelToString(ChanNumber);
+     fChanOperationString:=fChanOperationString+PartDelimiter
+                         +StringToInvertedCommas(ListName);
+     if ItemIndex<>0
+       then fChanOperationString:=fChanOperationString+PartDelimiter
+                             +IntToStr(ItemIndex);
+     fChanOperation:=True;
+     SetupOperation(9,67,1,False);
+     fScan.Add(ChanNumber);
+   end;
+end;
+
+procedure TDMM6500.ScanClear;
+begin
+ SetupOperation(9,67,0,False);
+ fScan.Clear;
+end;
+
+function TDMM6500.ScanGetChannels: boolean;
+begin
+ QuireOperation(9,67,0);
+ Result:=fDevice.Value<>ErResult;
+end;
+
 function TDMM6500.GetUnits(ChanNumber: byte): boolean;
 begin
  Result:=GetShablon(dm_pp_Units,ChanNumber);
@@ -1049,12 +1130,22 @@ end;
 procedure TDMM6500.MyTraining;
 // var i:integer;
 begin
-//  (fDevice as TTelnetMeterDeviceSingle).SetStringToSend(':COUN?');
-//  fDevice.Request();
-//  fDevice.GetData;
-//  (fDevice as TTelnetMeterDeviceSingle).SetStringToSend(':DIG:COUN?');
-//  fDevice.GetData;
+// (fDevice as TTelnetMeterDeviceSingle).SetStringToSend(':ROUT:SCAN');
+// fDevice.Request;
+// (fDevice as TTelnetMeterDeviceSingle).SetStringToSend(':ROUT:SCAN?');
+// fDevice.GetData;
 
+if ScanGetChannels then
+// showmessage(Scan.ChannelsToString);
+//ScanClear;
+//if ScanGetChannels then
+// showmessage(Scan.ChannelsToString);
+ConfigMeasureCreate();
+ScanClear;
+ConfigMeasureStore;
+ScanAddChanAndConfigList(5);
+if ScanGetChannels then
+ showmessage(Scan.ChannelsToString);
 
 
 
@@ -1950,6 +2041,7 @@ begin
     end;
   9:case fFirstLevelNode of
      65:JoinToStringToSend(FirstNodeKt_2450[fLeafNode]);
+     67:JoinToStringToSend(DMM6500_ScanLeafNode[fLeafNode]);
     end;
   12..14,28..39:
      case fFirstLevelNode of
@@ -2001,8 +2093,11 @@ begin
      52:if pos(Pseudocard_Test,Str)<>0 then fDevice.Value:=314;
     end;
   9:case fFirstLevelNode of
-    66:fDevice.Value:=StrToInt(Str);
     21:fDevice.Value:=SCPI_StringToValue(Str);
+    66:fDevice.Value:=StrToInt(Str);
+    67:case fLeafNode of
+        0:fDevice.Value:=Scan.StringToChannels(AnsiReplaceStr(Str,',',' '));
+       end;
     end;
   12..14,
    28..39:case fFirstLevelNode of
@@ -3159,6 +3254,11 @@ begin
  fName:='DMM6500Meter';
 end;
 
+procedure TDM6500_Meter.GetDataPreparation;
+begin
+ (fParentModule as TDMM6500).MeasureExtended(kt_rd_MS);
+end;
+
 function TDM6500_Meter.GetMeasureModeLabel: string;
  var ActiveChan:byte;
 begin
@@ -3189,6 +3289,53 @@ begin
               end;
   else Result:=' V';
  end;
+end;
+
+{ TDMM6500Scan }
+
+procedure TDMM6500Scan.Add(ChanNumber: byte);
+begin
+ SetLength(fScanChans,High(fScanChans)+2);
+ fScanChans[High(fScanChans)]:=ChanNumber;
+end;
+
+function TDMM6500Scan.ChannelsToString: string;
+ var i:integer;
+begin
+ if High(fScanChans)<0
+  then Result:='None'
+  else
+   begin
+     Result:='';
+     for I := 0 to High(fScanChans) do
+      Result:=Result+inttostr(fScanChans[i])+' ';
+     Result:=TrimRight(Result);
+   end;
+end;
+
+procedure TDMM6500Scan.Clear;
+begin
+ SetLength(fScanChans,0);
+end;
+
+constructor TDMM6500Scan.Create(DMM6500: TDMM6500);
+begin
+ inherited Create;
+ fDMM6500:=DMM6500;
+end;
+
+function TDMM6500Scan.StringToChannels(Str: string): byte;
+ var i:shortint;
+begin
+ Result:=0;
+ if Pos('@',Str)=0 then Exit;
+ Str:=TSCPInew.DeleteSubstring(Str,'(');
+ Str:=TSCPInew.DeleteSubstring(Str,')');
+ Str:=TSCPInew.DeleteSubstring(Str,'@');
+ SetLength(fScanChans,NumberOfSubstringInRow(Str));
+ for I := 0 to High(fScanChans) do
+  fScanChans[i]:=round(FloatDataFromRow(Str,i+1))
+
 end;
 
 end.

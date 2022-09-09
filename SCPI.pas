@@ -38,7 +38,6 @@ type
 //    function StringToInvertedCommas(str:string):string;
     procedure DefaultSettings;virtual;
     function SCPI_StringToValue(Str:string):double;
-    Function DeleteSubstring(Source:string;Substring: string=':'):string;
     Function NumberToStrLimited(Value:double;LimitValues:TLimitValues):string;overload;
     Function NumberToStrLimited(Value:integer;LimitValues:TLimitValues):string;overload;
     Function NumbersArrayToStrLimited(Values:TArrSingle;LimitValues:TLimitValues):string;overload;
@@ -56,6 +55,7 @@ type
     {повертається число. яке знаходиться в межах LimitValues}
     class Function NumberMap(Value:integer;LimitValues:TLimitValues):integer;overload;
     class function StringToInvertedCommas(str:string):string;
+    class Function DeleteSubstring(Source:string;Substring: string=':'):string;
     class function DeleteSubstringAll(Source:string;Substring: string=' '):string;
   end;
 
@@ -153,7 +153,7 @@ procedure TSCPInew.DefaultSettings;
 begin
 end;
 
-function TSCPInew.DeleteSubstring(Source, Substring: string): string;
+class function TSCPInew.DeleteSubstring(Source, Substring: string): string;
 begin
  Result:=Source;
  if pos(Substring,Source)<>0 then

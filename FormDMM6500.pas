@@ -38,7 +38,7 @@ type
     LDMM6500_Meas: TLabel;
     LDMM6500_MeasU: TLabel;
     B_DMM6500_MeasAuto: TSpeedButton;
-    Button1: TButton;
+    B_DMM6500_Meas: TButton;
     procedure BCloseClick(Sender: TObject);
     procedure FormPaint(Sender: TObject);
   private
