@@ -169,7 +169,12 @@ TKt2450_DigLineDirections=array[TKt2450_DigLines] of  TKt2450_DigLineDirection;
 TKeitley_DisplayState=(kt_ds_on100,kt_ds_on75,kt_ds_on50,kt_ds_on25,
                       kt_ds_off,kt_ds_black);
 
-TKeitley_TrigLimitType=(kt_tlt_above, kt_tlt_below, kt_tlt_inside, kt_tlt_outside);
+TKeitley_ScanLimitType=(kt_tlt_above, kt_tlt_below,
+                        kt_tlt_inside, kt_tlt_outside,kt_tlt_off);
+TKeitley_TrigLimitType=kt_tlt_above..kt_tlt_outside;
+//TKeitley_TrigLimitType=(kt_tlt_above, kt_tlt_below, kt_tlt_inside, kt_tlt_outside);
+
+
 TKeitley_TriggerEvents=(kt_te_comm,//подія через command interface
                       kt_te_disp,//натискування кнопки "TRIGGER" на панелі
                       kt_te_none,//відсутність події
@@ -183,9 +188,14 @@ TKeitley_TriggerEvents=(kt_te_comm,//подія через command interface
                       kt_te_atr,//Analog trigger
                       kt_te_ext);//External in trigger
 
-TKeitley_TriggerState=(kt_ts_idle,kt_ts_running,kt_ts_waiting,kt_ts_empty,
+TKeitley_ScanState=(kt_ts_idle,kt_ts_running,kt_ts_waiting,kt_ts_empty,
                         kt_ts_paused,kt_ts_building,kt_ts_failed,kt_ts_aborting,
-                        kt_ts_aborted);
+                        kt_ts_aborted,kt_ts_success);
+
+TKeitley_TriggerState=kt_ts_idle..kt_ts_aborted;
+//TKeitley_TriggerState=(kt_ts_idle,kt_ts_running,kt_ts_waiting,kt_ts_empty,
+//                        kt_ts_paused,kt_ts_building,kt_ts_failed,kt_ts_aborting,
+//                        kt_ts_aborted);
 
 const
  Keitley_TerminalsName:array [TKeitley_OutputTerminals]
@@ -283,9 +293,13 @@ Keitley_MeasureLabel:array[TKeitley_Measure]of string=
            'Continuity','Frequency','Period',
            'Voltage Ratio','Dig Current','Dig Voltage');
 
-Keitley_TriggerStateCommand:array[TKeitley_TriggerState]of string=
+Keitley_TriggerStateCommand:array[TKeitley_ScanState]of string=
   ('idle','running','waiting','empty','paused','building',
-   'failed','aborting','aborted');
+   'failed','aborting','aborted','success');
+
+//Keitley_TriggerStateCommand:array[TKeitley_TriggerState]of string=
+//  ('idle','running','waiting','empty','paused','building',
+//   'failed','aborting','aborted');
 
 
 implementation

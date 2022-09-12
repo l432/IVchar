@@ -49,15 +49,45 @@ type
   private
    fDMM6500:TDMM6500;
    fScanChans:TTDMM6500ScanChannels;
+   fCount:integer;
+   fStep:integer;
+   fInterval:double;
+   fMeasInterval:double;
+   fScanState:TKeitley_ScanState;
+   fCurrentCount:integer;
+   fCurrentStep:integer;
+   {при запиті про стан сканування,
+   окрім fScanState повертаються
+   також і значення скільки кроків
+   пройшло та скільки разів сканування
+   вже виконалося}
+   fMonitorMode:TKeitley_ScanLimitType;
+   fMonitorLimitLower:double;
+   fMonitorLimitUpper:double;
+   fMonitorChannel:byte;
   protected
-
+   procedure SetCount(const Value: integer);
+   procedure SetInterval(const Value: double);
+   procedure SetMeasInterval(const Value: double);
   public
    property ScanChans:TTDMM6500ScanChannels read fScanChans write fScanChans;
+   property Count:integer read fCount write SetCount;
+   property Step:integer read fStep write fStep;
+   property Interval:double read fInterval write SetInterval;
+   property MeasInterval:double read fMeasInterval write SetMeasInterval;
+   property ScanState:TKeitley_ScanState read fScanState;
+   property CurrentCount:integer read  fCurrentCount;
+   property CurrentStep:integer read  fCurrentStep;
+   property MonitorMode:TKeitley_ScanLimitType read fMonitorMode write fMonitorMode;
+   property MonitorLimitLower:double  read fMonitorLimitLower write fMonitorLimitLower;
+   property MonitorLimitUpper:double  read fMonitorLimitUpper write fMonitorLimitUpper;
+   property MonitorChannel:byte  read fMonitorChannel write fMonitorChannel;
    constructor Create(DMM6500:TDMM6500);
    function ChannelsToString:string;
    function StringToChannels(Str:string):byte;
    procedure Clear;
-   procedure Add(ChanNumber:byte);
+   procedure Add(ChanNumber:byte);overload;
+   procedure Add(ChanNumbers: array of byte);overload;
 
  end;
 
@@ -351,6 +381,41 @@ type
    в ньому має бути запис
    з номером ItemIndex (ConfigMeasureStore тощо);
    інакше канал не додається}
+   procedure ScanAddChanMultiple(ChanNumbers:array of byte);
+   {to include multiple channels in a single scan step,
+   щось не запрацювала}
+   procedure ScanAddChanMultipleAndConfigList(ChanNumbers:array of byte;
+             ListName:string=MyMeasList;
+             ItemIndex:word=0);
+   procedure ScanSetCount(Count:integer);
+   {sets the number of times the scan is repeated,
+   0 - повтор, поки не буде aborted}
+   function ScanGetCount:boolean;
+   function ScanGetStep:boolean;
+  {returns the number of steps in the present scan}
+   procedure ScanSetInterval(Int:double);
+   {specifies the interval time between scan
+   starts when the scan count is more than one
+   []= s,  from 0 s to 100 ks;
+   If the scan interval is less than the time
+   the scan takes to run, the next scan starts
+   immediately when the first scan finishes}
+   function ScanGetInterval:boolean;
+   procedure ScanSetMeasInterval(Int:double);
+   {specifies the interval time between each measurement
+   in the scan;
+   []= s,  from 0 s to 100 ks;}
+   function ScanGetMeasInterval:boolean;
+
+   {є можливість, щоб сканування запускалося
+   не зразу після INIT, а коли
+   результат виміру на якомусь каналі задавольнятиме
+   певним умовам}
+//   property MonitorMode:TKeitley_ScanLimitType read fMonitorMode write fMonitorMode;
+//   property MonitorLimitLower:double  read fMonitorLimitLower write fMonitorLimitLower;
+//   property MonitorLimitUpper:double  read fMonitorLimitUpper write fMonitorLimitUpper;
+//   property MonitorChannel:byte  read fMonitorChannel write fMonitorChannel;
+
  end;
 
 //-------------------------------------------------
@@ -934,6 +999,7 @@ end;
 procedure TDMM6500.ScanAddChanAndConfigList(ChanNumber: byte; ListName: string;
   ItemIndex: word);
 begin
+// :ROUT:SCAN:ADD (@<channelList>), "<configurationList>", <index>
  if ChanelNumberIsCorrect(ChanNumber) then
    begin
      fChanOperationString:=' '+ChanelToString(ChanNumber);
@@ -948,16 +1014,100 @@ begin
    end;
 end;
 
+procedure TDMM6500.ScanAddChanMultiple(ChanNumbers: array of byte);
+begin
+ if ChanelNumberIsCorrect(ChanNumbers) then
+   begin
+     fChanOperationString:=' '+ChanelToString(ChanNumbers);
+     fChanOperation:=True;
+     SetupOperation(9,67,2,False);
+     fScan.Add(ChanNumbers);
+   end;
+end;
+
+procedure TDMM6500.ScanAddChanMultipleAndConfigList(ChanNumbers: array of byte;
+  ListName: string; ItemIndex: word);
+begin
+//:ROUT:SCAN:ADD:SING (@<channelList>), "<configurationList>", <index>
+ if ChanelNumberIsCorrect(ChanNumbers) then
+   begin
+     fChanOperationString:=' '+ChanelToString(ChanNumbers);
+          fChanOperationString:=fChanOperationString+PartDelimiter
+                         +StringToInvertedCommas(ListName);
+     if ItemIndex<>0
+       then fChanOperationString:=fChanOperationString+PartDelimiter
+                             +IntToStr(ItemIndex);
+     fChanOperation:=True;
+     SetupOperation(9,67,2,False);
+     fScan.Add(ChanNumbers);
+   end;
+end;
+
 procedure TDMM6500.ScanClear;
 begin
+// :ROUT:SCAN
  SetupOperation(9,67,0,False);
  fScan.Clear;
 end;
 
 function TDMM6500.ScanGetChannels: boolean;
 begin
+//:ROUT:SCAN?
  QuireOperation(9,67,0);
  Result:=fDevice.Value<>ErResult;
+end;
+
+function TDMM6500.ScanGetCount: boolean;
+begin
+ QuireOperation(9,67,3);
+ Result:=fDevice.isReceived;
+ if Result then fScan.Count:=round(fDevice.Value);
+end;
+
+function TDMM6500.ScanGetInterval: boolean;
+begin
+ QuireOperation(9,67,5);
+ Result:=fDevice.isReceived;
+ if Result then fScan.Interval:=fDevice.Value;
+end;
+
+function TDMM6500.ScanGetMeasInterval: boolean;
+begin
+ QuireOperation(9,67,6);
+ Result:=fDevice.isReceived;
+ if Result then fScan.MeasInterval:=fDevice.Value;
+end;
+
+function TDMM6500.ScanGetStep: boolean;
+begin
+//:ROUT:SCAN:COUN:STEP?
+ QuireOperation(9,67,4);
+ Result:=fDevice.isReceived;
+ if Result then fScan.Step:=round(fDevice.Value);
+end;
+
+procedure TDMM6500.ScanSetCount(Count: integer);
+begin
+//:ROUT:SCAN:COUN:SCAN <scanCount>
+ fScan.Count:=Count;
+ fAdditionalString:=inttostr(fScan.Count);
+ SetupOperation(9,67,3);
+end;
+
+procedure TDMM6500.ScanSetInterval(Int: double);
+begin
+//:ROUT:SCAN:INT <interval>
+ fScan.Interval:=Int;
+ fAdditionalString:=FloatToStrF(fScan.Interval,ffExponent,5,0);
+ SetupOperation(9,67,5);
+end;
+
+procedure TDMM6500.ScanSetMeasInterval(Int: double);
+begin
+//:ROUT:SCAN:MEAS:INT <time>
+ fScan.MeasInterval:=Int;
+ fAdditionalString:=FloatToStrF(fScan.MeasInterval,ffExponent,5,0);
+ SetupOperation(9,67,6);
 end;
 
 function TDMM6500.GetUnits(ChanNumber: byte): boolean;
@@ -1132,20 +1282,59 @@ procedure TDMM6500.MyTraining;
 begin
 // (fDevice as TTelnetMeterDeviceSingle).SetStringToSend(':ROUT:SCAN');
 // fDevice.Request;
-// (fDevice as TTelnetMeterDeviceSingle).SetStringToSend(':ROUT:SCAN?');
+// (fDevice as TTelnetMeterDeviceSingle).SetStringToSend(':ROUTe:SCAN:STATe?');
 // fDevice.GetData;
 
-if ScanGetChannels then
+//if ScanGetMeasInterval then
+// showmessage('Ura!! '+floattostr(fScan.MeasInterval)) ;
+//ScanSetMeasInterval(3.1234567);
+//if ScanGetMeasInterval then
+// showmessage('Ura!! '+floattostr(fScan.MeasInterval)) ;
+//ScanSetMeasInterval(0.001234567);
+//if ScanGetMeasInterval then
+// showmessage('Ura!! '+floattostr(fScan.MeasInterval)) ;
+
+
+//if ScanGetInterval then
+// showmessage('Ura!! '+floattostr(fScan.Interval)) ;
+//ScanSetInterval(3.1234567);
+//if ScanGetInterval then
+// showmessage('Ura!! '+floattostr(fScan.Interval)) ;
+
+//if ScanGetStep then
+// showmessage('Ura!!'+inttostr(fScan.Step)) ;
+
+//if ScanGetCount then
+// showmessage('Ura!!'+inttostr(fScan.Count)) ;
+//ScanSetCount(10);
+//if ScanGetCount then
+// showmessage('Ura!!'+inttostr(fScan.Count)) ;
+
+//ScanClear;
+//if ScanGetChannels then
+// showmessage(Scan.ChannelsToString);
+//ScanAddChan(3);
+//ScanAddChan(1);
+//ScanAddChan(2);
+//
+//if ScanGetChannels then
+// showmessage(Scan.ChannelsToString);
+//ScanAddChanMultiple([1,5]);
+//if ScanGetChannels then
+// showmessage(Scan.ChannelsToString);
+
+
+//if ScanGetChannels then
 // showmessage(Scan.ChannelsToString);
 //ScanClear;
 //if ScanGetChannels then
 // showmessage(Scan.ChannelsToString);
-ConfigMeasureCreate();
-ScanClear;
-ConfigMeasureStore;
-ScanAddChanAndConfigList(5);
-if ScanGetChannels then
- showmessage(Scan.ChannelsToString);
+//ConfigMeasureCreate();
+//ScanClear;
+//ConfigMeasureStore;
+//ScanAddChanAndConfigList(5);
+//if ScanGetChannels then
+// showmessage(Scan.ChannelsToString);
 
 
 
@@ -2097,6 +2286,8 @@ begin
     66:fDevice.Value:=StrToInt(Str);
     67:case fLeafNode of
         0:fDevice.Value:=Scan.StringToChannels(AnsiReplaceStr(Str,',',' '));
+        3,4:fDevice.Value:=StrToInt(Str);
+        5,6:fDevice.Value:=SCPI_StringToValue(Str);
        end;
     end;
   12..14,
@@ -2832,7 +3023,7 @@ begin
    begin
    Result:=Result+inttostr(ChanNumbers[i]);
    if i<>High(ChanNumbers)
-     then Result:=Result+PartDelimiter;
+     then Result:=Result+PartDelimiter+' ';
    end;
  Result:=Result+')';
 end;
@@ -3299,6 +3490,15 @@ begin
  fScanChans[High(fScanChans)]:=ChanNumber;
 end;
 
+procedure TDMM6500Scan.Add(ChanNumbers: array of byte);
+ var i,lastnumber:integer;
+begin
+ lastnumber:=High(fScanChans)+1;
+ SetLength(fScanChans,lastnumber+High(ChanNumbers)+1);
+ for I := 0 to High(ChanNumbers) do
+  fScanChans[i+lastnumber]:=ChanNumbers[i];
+end;
+
 function TDMM6500Scan.ChannelsToString: string;
  var i:integer;
 begin
@@ -3322,6 +3522,30 @@ constructor TDMM6500Scan.Create(DMM6500: TDMM6500);
 begin
  inherited Create;
  fDMM6500:=DMM6500;
+ fCount:=1;
+ fStep:=0;
+ fScanState:=kt_ts_building;
+ fCurrentCount:=0;
+ fCurrentStep:=0;
+ fMonitorMode:=kt_tlt_off;
+ fMonitorLimitLower:=0;
+ fMonitorLimitUpper:=0;
+ fMonitorChannel:=1;
+end;
+
+procedure TDMM6500Scan.SetCount(const Value: integer);
+begin
+ fCount:=TSCPInew.NumberMap(Value,DMM6500_ScanCountLimits);
+end;
+
+procedure TDMM6500Scan.SetInterval(const Value: double);
+begin
+ fInterval:=TSCPInew.NumberMap(Value,DMM6500_ScanIntervalLimits);
+end;
+
+procedure TDMM6500Scan.SetMeasInterval(const Value: double);
+begin
+ fMeasInterval:=TSCPInew.NumberMap(Value,DMM6500_ScanIntervalLimits);
 end;
 
 function TDMM6500Scan.StringToChannels(Str: string): byte;
