@@ -453,27 +453,38 @@ TDMM6500_MeasParShow=class(TControlElements)
   procedure GetDataFromDevice;override;
 end;
 
-TDMM6500ControlChannels=class(TControlElements)
+TControlElementsWithWindowCreate=class(TControlElements)
+ private
+  fShowForm:TForm;
+  fBOk:TButton;
+  fGBInFormShow:TGroupBox;
+  procedure OptionButtonClick(Sender: TObject);virtual;abstract;
+  procedure CreateFormHeader(const FormName:string);
+  procedure CreateFormFooter(const bOkTot:integer);
+  procedure FormShowFooter;
+end;
+
+//TDMM6500ControlChannels=class(TControlElements)
+TDMM6500ControlChannels=class(TControlElementsWithWindowCreate)
  private
   fLabels:array of TLabel;
   fST:array of TStaticText;
   fButtons:array of TButton;
   fBOpenAll:TButton;
   fMeasurementType:array of TDMM6500_MeasurementTypeShow;
-  fMeasParChanShowForm:TForm;
-  fBOk:TButton;
-  fGBParametrChanShow:TGroupBox;
+//  fShowForm:TForm;
+//  fBOk:TButton;
+//  fGBInFormShow:TGroupBox;
   fSTDelayAfterClose:TStaticText;
   fLDelayAfterClose:TLabel;
   fCBChannelClose:TCheckBox;
   fDelayAfterCloseShow:TDMM6500_DelayAfterCloseShow;
   fChannelCloseShow:TDMM6500_ChannelCloseShow;
-
   fMeasParChanShow:TDMM6500_MeasParShow;
   function GetChanCount:byte;
   procedure CreateForm(MeasureType:TKeitley_Measure;ChanNumber:byte);
   procedure FormShow(MeasureType:TKeitley_Measure;ChanNumber:byte);
-  procedure OptionButtonClick(Sender: TObject);
+  procedure OptionButtonClick(Sender: TObject);override;
   procedure ButtonAllOpenClick(Sender: TObject);
   procedure ClosedChannelHighlight;
  protected
@@ -1136,31 +1147,35 @@ end;
 procedure TDMM6500ControlChannels.CreateForm(MeasureType: TKeitley_Measure;
   ChanNumber: byte);
 begin
-  fMeasParChanShowForm := TForm.Create(Application);
-  fMeasParChanShowForm.Position := poMainFormCenter;
-  fMeasParChanShowForm.AutoScroll := True;
-  fMeasParChanShowForm.BorderIcons := [biSystemMenu];
-  fMeasParChanShowForm.ParentFont := True;
-  fMeasParChanShowForm.Font.Style := [fsBold];
-  fMeasParChanShowForm.Caption := 'Options of '+inttostr(ChanNumber)+' channel';
-  fMeasParChanShowForm.Color := clLtGray;
 
-   fBOk:=TButton.Create(fMeasParChanShowForm);
-   fBOk.ModalResult:=mrOK;
-   fBOk.Caption:='OK';
+  CreateFormHeader('Options of '+inttostr(ChanNumber)+' channel');
+//  fShowForm := TForm.Create(Application);
+//  fShowForm.Position := poMainFormCenter;
+//  fShowForm.AutoScroll := True;
+//  fShowForm.BorderIcons := [biSystemMenu];
+//  fShowForm.ParentFont := True;
+//  fShowForm.Font.Style := [fsBold];
+//  fShowForm.Caption := 'Options of '+inttostr(ChanNumber)+' channel';
+//  fShowForm.Color := clLtGray;
+//
+//  fBOk:=TButton.Create(fShowForm);
+//  fBOk.ModalResult:=mrOK;
+//  fBOk.Caption:='OK';
+//
+//  fGBInFormShow:=TGroupBox.Create(fShowForm);
+//  fGBInFormShow.Parent:=fShowForm;
 
-   fSTDelayAfterClose:=TStaticText.Create(fMeasParChanShowForm);
-   fLDelayAfterClose:=TLabel.Create(fMeasParChanShowForm);
-   fCBChannelClose:=TCheckBox.Create(fMeasParChanShowForm);
-   fSTDelayAfterClose.Parent:=fMeasParChanShowForm;
-   fLDelayAfterClose.Parent:=fMeasParChanShowForm;
-   fCBChannelClose.Parent:=fMeasParChanShowForm;
+   fSTDelayAfterClose:=TStaticText.Create(fShowForm);
+   fLDelayAfterClose:=TLabel.Create(fShowForm);
+   fCBChannelClose:=TCheckBox.Create(fShowForm);
+   fSTDelayAfterClose.Parent:=fShowForm;
+   fLDelayAfterClose.Parent:=fShowForm;
+   fCBChannelClose.Parent:=fShowForm;
 
 
-   fGBParametrChanShow:=TGroupBox.Create(fMeasParChanShowForm);
-   fGBParametrChanShow.Parent:=fMeasParChanShowForm;
 
-   fMeasParChanShow:=MeasParShowFactory(MeasureType,fGBParametrChanShow,fDMM6500,ChanNumber);
+
+   fMeasParChanShow:=MeasParShowFactory(MeasureType,fGBInFormShow,fDMM6500,ChanNumber);
    if fMeasParChanShow<>nil then fMeasParChanShow.GetDataFromDeviceAndToSetting;
 
    fDelayAfterCloseShow:=TDMM6500_DelayAfterCloseShow.Create(fSTDelayAfterClose,fLDelayAfterClose,fDMM6500,ChanNumber);
@@ -1169,21 +1184,21 @@ begin
    fChannelCloseShow.GetDataFromDeviceAndToSetting;
    fChannelCloseShow.HookParameterClick:=ClosedChannelHighlight;
 
-   fGBParametrChanShow.Top:=0;
-   fGBParametrChanShow.Left:=0;
-
-
    fCBChannelClose.Left:=MarginLeft;
-   fCBChannelClose.Top:=fGBParametrChanShow.Height+5;
+   fCBChannelClose.Top:=fGBInFormShow.Height+5;
    RelativeLocation(fCBChannelClose,fLDelayAfterClose,oRow,Marginbetween);
    RelativeLocation(fLDelayAfterClose,fSTDelayAfterClose,oRow,MarginBetweenLST);
 
-   fBOk.Parent:=fMeasParChanShowForm;
-   fBOk.Left:=round((fGBParametrChanShow.Width-fBOk.Width)/2);
-   fBOk.Top:=fSTDelayAfterClose.Height+5+fSTDelayAfterClose.Top;
-
-   fMeasParChanShowForm.Width:=fGBParametrChanShow.Width+25;
-   fMeasParChanShowForm.Height:=fBOk.Top+fBOk.Height+35;
+   CreateFormFooter(fSTDelayAfterClose.Height+5+fSTDelayAfterClose.Top);
+//   fGBInFormShow.Top:=0;
+//   fGBInFormShow.Left:=0;
+//
+//   fBOk.Parent:=fShowForm;
+//   fBOk.Left:=round((fGBInFormShow.Width-fBOk.Width)/2);
+//   fBOk.Top:=fSTDelayAfterClose.Height+5+fSTDelayAfterClose.Top;
+//
+//   fShowForm.Width:=fGBInFormShow.Width+25;
+//   fShowForm.Height:=fBOk.Top+fBOk.Height+35;
 end;
 
 procedure TDMM6500ControlChannels.DesignElements;
@@ -1248,11 +1263,7 @@ procedure TDMM6500ControlChannels.FormShow(MeasureType: TKeitley_Measure;
 begin
  CreateForm(MeasureType,ChanNumber);
 
- fMeasParChanShowForm.ShowModal;
-
- fBOk.Parent:=nil;
- fBOk.Free;
-
+ fShowForm.ShowModal;
 
 
  if fMeasParChanShow<> nil then FreeAndNil(fMeasParChanShow);
@@ -1267,11 +1278,15 @@ begin
  fLDelayAfterClose.Free;
  fCBChannelClose.Free;
 
- fGBParametrChanShow.Parent:=nil;
- fGBParametrChanShow.Free;
-
- fMeasParChanShowForm.Hide;
- fMeasParChanShowForm.Release;
+ FormShowFooter;
+// fBOk.Parent:=nil;
+// fBOk.Free;
+//
+// fGBInFormShow.Parent:=nil;
+// fGBInFormShow.Free;
+//
+// fShowForm.Hide;
+// fShowForm.Release;
 end;
 
 function TDMM6500ControlChannels.GetChanCount: byte;
@@ -3283,6 +3298,54 @@ procedure TDMM6500_DelayAfterCloseShow.OkClick;
 begin
   fDMM6500.SetDelayAfterClose(Data,fChanNumber);
   fHookParameterClick;
+end;
+
+{ TControlElementsWithWindowCreate }
+
+procedure TControlElementsWithWindowCreate.CreateFormFooter(
+  const bOkTot: integer);
+begin
+   fGBInFormShow.Top:=0;
+   fGBInFormShow.Left:=0;
+
+   fBOk.Parent:=fShowForm;
+   fBOk.Left:=round((fGBInFormShow.Width-fBOk.Width)/2);
+   fBOk.Top:=bOkTot;
+
+   fShowForm.Width:=fGBInFormShow.Width+25;
+   fShowForm.Height:=fBOk.Top+fBOk.Height+35;
+end;
+
+procedure TControlElementsWithWindowCreate.CreateFormHeader(
+  const FormName: string);
+begin
+  fShowForm := TForm.Create(Application);
+  fShowForm.Position := poMainFormCenter;
+  fShowForm.AutoScroll := True;
+  fShowForm.BorderIcons := [biSystemMenu];
+  fShowForm.ParentFont := True;
+  fShowForm.Font.Style := [fsBold];
+  fShowForm.Caption := FormName;
+  fShowForm.Color := clLtGray;
+
+  fBOk:=TButton.Create(fShowForm);
+  fBOk.ModalResult:=mrOK;
+  fBOk.Caption:='OK';
+
+  fGBInFormShow:=TGroupBox.Create(fShowForm);
+  fGBInFormShow.Parent:=fShowForm;
+end;
+
+procedure TControlElementsWithWindowCreate.FormShowFooter;
+begin
+ fBOk.Parent:=nil;
+ fBOk.Free;
+
+ fGBInFormShow.Parent:=nil;
+ fGBInFormShow.Free;
+
+ fShowForm.Hide;
+ fShowForm.Release;
 end;
 
 end.

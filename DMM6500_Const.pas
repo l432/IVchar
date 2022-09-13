@@ -171,7 +171,7 @@ const
   DMM6500_DiodeBiasLevelLabel:array[TDMM6500_DiodeBiasLevel]of string=
  ('10 mkA', '100 mkA','1 mA','10 mA');
 
-DMM6500_ScanLimitTypeCommand:array[TKeitley_ScanLimitType]of string=
+DMM6500_ScanMonitorModeCommand:array[TKeitley_ScanLimitType]of string=
  ('upp', 'low','wind','outs','off');
 
  DMM6500_RTDAlphaLimits:TLimitValues=(0,0.01);
@@ -191,11 +191,11 @@ DMM6500_ScanLimitTypeCommand:array[TKeitley_ScanLimitType]of string=
   (296.15,23,73.4);
  DMM6500_NPLCLimits:TLimitValues=(0.0005,12);
 
- DMM6500_ScanLeafNode:array[0..6]of string=
+ DMM6500_ScanLeafNode:array[0..11]of string=
  ('',':add',':add:sing',':coun:scan',':coun:step',':int',
 //0     1        2            3            4         5
-  ':meas:int');
-//     6
+  ':meas:int',':stat',':mon:mode',':mon:chan',':mon:lim:low',':mon:lim:upp');
+//     6        7          8           9            10             11
 
 
 implementation

@@ -69,6 +69,8 @@ type
    procedure SetCount(const Value: integer);
    procedure SetInterval(const Value: double);
    procedure SetMeasInterval(const Value: double);
+   procedure SetMonitorLimitLower(const Value: double);
+   procedure SetMonitorLimitUpper(const Value: double);
   public
    property ScanChans:TTDMM6500ScanChannels read fScanChans write fScanChans;
    property Count:integer read fCount write SetCount;
@@ -79,11 +81,13 @@ type
    property CurrentCount:integer read  fCurrentCount;
    property CurrentStep:integer read  fCurrentStep;
    property MonitorMode:TKeitley_ScanLimitType read fMonitorMode write fMonitorMode;
-   property MonitorLimitLower:double  read fMonitorLimitLower write fMonitorLimitLower;
-   property MonitorLimitUpper:double  read fMonitorLimitUpper write fMonitorLimitUpper;
+   property MonitorLimitLower:double  read fMonitorLimitLower write SetMonitorLimitLower;
+   property MonitorLimitUpper:double  read fMonitorLimitUpper write SetMonitorLimitUpper;
    property MonitorChannel:byte  read fMonitorChannel write fMonitorChannel;
    constructor Create(DMM6500:TDMM6500);
    function ChannelsToString:string;
+   function ScanStateToString:string;
+   
    function StringToChannels(Str:string):byte;
    procedure Clear;
    procedure Add(ChanNumber:byte);overload;
@@ -147,6 +151,9 @@ type
    procedure GetActionRangeAutoProcedureByMParam(FM: TKeitley_Measure;PM: TDMM6500MeasPar_Base;MParam:TDMM6500_MeasParameters);
    procedure SetActionProcedureByMParam(FM:TKeitley_Measure;PM:TDMM6500MeasPar_Base;
                               P:Pointer;MParam:TDMM6500_MeasParameters);
+   procedure StringToScanStateFull(Str:string);
+//   function StringToScanState(Str:string):boolean;
+//   procedure StringToScanMonitorMode(Str:string);
   protected
    procedure MeterCreate;override;
    procedure ProcessingStringByRootNode(Str:string);override;
@@ -407,15 +414,20 @@ type
    []= s,  from 0 s to 100 ks;}
    function ScanGetMeasInterval:boolean;
 
+   function ScanGetState:boolean;
+
    {є можливість, щоб сканування запускалося
    не зразу після INIT, а коли
    результат виміру на якомусь каналі задавольнятиме
    певним умовам}
-//   property MonitorMode:TKeitley_ScanLimitType read fMonitorMode write fMonitorMode;
-//   property MonitorLimitLower:double  read fMonitorLimitLower write fMonitorLimitLower;
-//   property MonitorLimitUpper:double  read fMonitorLimitUpper write fMonitorLimitUpper;
-//   property MonitorChannel:byte  read fMonitorChannel write fMonitorChannel;
-
+   procedure ScanMonitorSetMode(Mode:TKeitley_ScanLimitType);
+   function ScanMonitorGetMode:boolean;
+   procedure ScanMonitorSetCnan(ChanNumber:byte);
+   function ScanMonitorGetChan:boolean;
+   procedure ScanMonitorSetLimitLower(Limit:double);
+   function ScanMonitorGetLimitLower:boolean;
+   procedure ScanMonitorSetLimitUpper(Limit:double);
+   function ScanMonitorGetLimitUpper:boolean;
  end;
 
 //-------------------------------------------------
@@ -1078,12 +1090,84 @@ begin
  if Result then fScan.MeasInterval:=fDevice.Value;
 end;
 
+function TDMM6500.ScanGetState: boolean;
+begin
+//:ROUT:SCAN:STAT?
+ QuireOperation(9,67,7);
+ Result:=fDevice.Value<>ErResult;
+// if Result then fScan.MeasInterval:=fDevice.Value;
+end;
+
 function TDMM6500.ScanGetStep: boolean;
 begin
 //:ROUT:SCAN:COUN:STEP?
  QuireOperation(9,67,4);
  Result:=fDevice.isReceived;
  if Result then fScan.Step:=round(fDevice.Value);
+end;
+
+function TDMM6500.ScanMonitorGetChan: boolean;
+begin
+ QuireOperation(9,67,9);
+ Result:=fDevice.Value<>ErResult;
+ if Result then fScan.MonitorChannel:=round(fDevice.Value);
+end;
+
+function TDMM6500.ScanMonitorGetLimitLower: boolean;
+begin
+ QuireOperation(9,67,10);
+ Result:=fDevice.Value<>ErResult;
+ if Result then fScan.MonitorLimitLower:=fDevice.Value;
+end;
+
+function TDMM6500.ScanMonitorGetLimitUpper: boolean;
+begin
+ QuireOperation(9,67,11);
+ Result:=fDevice.Value<>ErResult;
+ if Result then fScan.MonitorLimitUpper:=fDevice.Value;
+end;
+
+function TDMM6500.ScanMonitorGetMode: boolean;
+begin
+ QuireOperation(9,67,8);
+ Result:=fDevice.Value<>ErResult;
+ if Result then fScan.MonitorMode:=TKeitley_ScanLimitType(round(fDevice.Value));
+end;
+
+procedure TDMM6500.ScanMonitorSetCnan(ChanNumber: byte);
+begin
+//:ROUT:SCAN:MON:CHAN
+ if ChanelNumberIsCorrect(ChanNumber) then
+   begin
+     fChanOperationString:=' '+ChanelToString(ChanNumber);
+     fChanOperation:=True;
+     SetupOperation(9,67,9,False);
+     fScan.MonitorChannel:=ChanNumber;
+   end;
+end;
+
+procedure TDMM6500.ScanMonitorSetLimitLower(Limit: double);
+begin
+//:ROUT:SCAN:MON:LIM:LOW <n> 
+ fScan.MonitorLimitLower:=Limit;
+ fAdditionalString:=FloatToStrF(fScan.MonitorLimitLower,ffExponent,5,0);
+ SetupOperation(9,67,10);
+end;
+
+procedure TDMM6500.ScanMonitorSetLimitUpper(Limit: double);
+begin
+//:ROUT:SCAN:MON:LIM:UPP <n> 
+ fScan.MonitorLimitUpper:=Limit;
+ fAdditionalString:=FloatToStrF(fScan.MonitorLimitUpper,ffExponent,5,0);
+ SetupOperation(9,67,11);
+end;
+
+procedure TDMM6500.ScanMonitorSetMode(Mode: TKeitley_ScanLimitType);
+begin
+//:ROUT:SCAN:MON:MODE <n>
+ fScan.MonitorMode:=Mode;
+ fAdditionalString:=DMM6500_ScanMonitorModeCommand[Mode];
+ SetupOperation(9,67,8);
 end;
 
 procedure TDMM6500.ScanSetCount(Count: integer);
@@ -1159,8 +1243,12 @@ begin
           61:Result:=ord(High(TDMM6500_ThermistorType));
           62:Result:=ord(High(TDMM6500_TempTransducer));
          end;
+  9:case fLeafNode of
+     7:Result:=ord(High(TKeitley_ScanState));
+     8:Result:=ord(High(TKeitley_ScanLimitType));
+    end;
  end;
-end;
+end;                         
 
 function TDMM6500.GetDelayAuto(Measure: TKeitley_Measure): boolean;
 begin
@@ -1229,8 +1317,12 @@ begin
           61:Result:=(Str=IntToStr(DMM6500_ThermistorTypeValues[TDMM6500_ThermistorType(i)]));
           62:Result:=(Str=DMM6500_TempTransducerCommand[TDMM6500_TempTransducer(i)]);
          end;
+   9:case fLeafNode of
+      7:Result:=(Pos(Keitley_TriggerStateCommand[TKeitley_ScanState(i)],Str)<>0);
+      8:Result:=(Pos(DMM6500_ScanMonitorModeCommand[TKeitley_ScanLimitType(i)],Str)<>0);
+     end;      
  end;
-end;
+end;                         
 
 procedure TDMM6500.MeasParameterCreate(Measure: TKeitley_Measure);
 begin
@@ -1284,6 +1376,37 @@ begin
 // fDevice.Request;
 // (fDevice as TTelnetMeterDeviceSingle).SetStringToSend(':ROUTe:SCAN:STATe?');
 // fDevice.GetData;
+
+//if ScanMonitorGetLimitLower then
+//  showmessage('ura!! '+floattostr(fScan.MonitorLimitLower));
+//ScanMonitorSetLimitLower(1.1234567);
+//if ScanMonitorGetLimitLower then
+//  showmessage('ura!! '+floattostr(fScan.MonitorLimitLower));
+//ScanMonitorSetLimitLower(-25.1234567);
+//if ScanMonitorGetLimitLower then
+//  showmessage('ura!! '+floattostr(fScan.MonitorLimitUpper));
+//
+//if ScanMonitorGetLimitUpper then
+//  showmessage('ura!! '+floattostr(fScan.MonitorLimitUpper));
+//ScanMonitorSetLimitUpper(5.1234567);
+//if ScanMonitorGetLimitUpper then
+//  showmessage('ura!! '+floattostr(fScan.MonitorLimitUpper));
+  
+//if ScanMonitorGetChan then
+//  showmessage('ura!! '+inttostr(fScan.MonitorChannel));
+//ScanMonitorSetCnan(3);
+//if ScanMonitorGetChan then
+//  showmessage('ura!! '+inttostr(fScan.MonitorChannel));
+
+//if ScanMonitorGetMode then
+//  showmessage('ura!! '+DMM6500_ScanMonitorModeCommand[fScan.MonitorMode]);
+//ScanMonitorSetMode(kt_tlt_outside);
+//if ScanMonitorGetMode then
+//  showmessage('ura!! '+DMM6500_ScanMonitorModeCommand[fScan.MonitorMode]);
+
+//showmessage(fScan.ScanStateToString);
+//if ScanGetState then
+//  showmessage('ura!!! '+fScan.ScanStateToString);
 
 //if ScanGetMeasInterval then
 // showmessage('Ura!! '+floattostr(fScan.MeasInterval)) ;
@@ -2286,8 +2409,10 @@ begin
     66:fDevice.Value:=StrToInt(Str);
     67:case fLeafNode of
         0:fDevice.Value:=Scan.StringToChannels(AnsiReplaceStr(Str,',',' '));
-        3,4:fDevice.Value:=StrToInt(Str);
-        5,6:fDevice.Value:=SCPI_StringToValue(Str);
+        3,4,9:fDevice.Value:=StrToInt(Str);
+        5,6,10,11:fDevice.Value:=SCPI_StringToValue(Str);
+        7:StringToScanStateFull(AnsiReplaceStr(Str,';',' '));
+        8:StringToOrd(AnsiLowerCase(Str));
        end;
     end;
   12..14,
@@ -3249,6 +3374,53 @@ begin
  end;
 end;
 
+//procedure TDMM6500.StringToScanMonitorMode(Str: string);
+//  var i:TKeitley_ScanLimitType;
+//begin
+//// Result:=False;
+// for I := Low(TKeitley_ScanLimitType) to High(TKeitley_ScanLimitType) do
+//   if Pos(DMM6500_ScanMonitorModeCommand[i],Str)<>0 then
+//     begin
+//       fScan.MonitorMode:=i;
+////       Result:=True;
+//       fDevice.Value:=ord(i);
+//       Exit;
+//     end;
+//// Result:=False;
+//end;
+
+//function TDMM6500.StringToScanState(Str: string): boolean;
+//  var i:TKeitley_ScanState;
+//begin
+//// Result:=False;
+// for I := Low(TKeitley_ScanState) to High(TKeitley_ScanState) do
+//   if Pos(Keitley_TriggerStateCommand[i],Str)<>0 then
+//     begin
+//       fScan.fScanState:=i;
+//       Result:=True;
+////       fDevice.Value:=ord(i);
+//       Exit;
+//     end;
+// Result:=False;    
+//end;
+
+procedure TDMM6500.StringToScanStateFull(Str: string);
+begin
+ if NumberOfSubstringInRow(Str)<>3 then Exit;
+// if not(StringToScanState(AnsiLowerCase(StringDataFromRow(Str,1))))
+//    then Exit;
+ try
+  StringToOrd(AnsiLowerCase(StringDataFromRow(Str,1)));
+  if fDevice.Value<>ErResult 
+     then fScan.fScanState:=TKeitley_ScanState(round(fDevice.Value));
+  
+  fScan.fCurrentCount:=round(FloatDataFromRow(Str,2));
+  fScan.fCurrentStep:=round(FloatDataFromRow(Str,3));
+//  fDevice.Value:=ord(fScan.ScanState);
+ except
+ end;
+end;
+
 function TDMM6500.SuccessfulGet(MParam: TDMM6500_MeasParameters): boolean;
 begin
  case MParam of
@@ -3533,6 +3705,13 @@ begin
  fMonitorChannel:=1;
 end;
 
+function TDMM6500Scan.ScanStateToString: string;
+begin
+ Result:=Keitley_TriggerStateCommand[fScanState]
+         +' '+IntTostr(fCurrentCount)
+         +' '+IntTostr(fCurrentStep);
+end;
+
 procedure TDMM6500Scan.SetCount(const Value: integer);
 begin
  fCount:=TSCPInew.NumberMap(Value,DMM6500_ScanCountLimits);
@@ -3546,6 +3725,16 @@ end;
 procedure TDMM6500Scan.SetMeasInterval(const Value: double);
 begin
  fMeasInterval:=TSCPInew.NumberMap(Value,DMM6500_ScanIntervalLimits);
+end;
+
+procedure TDMM6500Scan.SetMonitorLimitLower(const Value: double);
+begin
+ fMonitorLimitLower:=min(Value,fMonitorLimitUpper);
+end;
+
+procedure TDMM6500Scan.SetMonitorLimitUpper(const Value: double);
+begin
+ fMonitorLimitUpper:=max(Value,fMonitorLimitLower);
 end;
 
 function TDMM6500Scan.StringToChannels(Str: string): byte;
