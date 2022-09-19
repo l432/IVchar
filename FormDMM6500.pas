@@ -29,7 +29,6 @@ type
     B_DM6500GetSetting: TButton;
     B_DM6500_Reset: TButton;
     ST_DM6500_DispBr: TStaticText;
-    L_DM6500_DispBr: TLabel;
     ST_DM6500_Terminals: TStaticText;
     ST_DM6500MeasureMode: TStaticText;
     GB_DM6500Param: TGroupBox;
@@ -39,6 +38,8 @@ type
     LDMM6500_MeasU: TLabel;
     B_DMM6500_MeasAuto: TSpeedButton;
     B_DMM6500_Meas: TButton;
+    GB_DM6500Scan: TGroupBox;
+    L_DM6500_DispBr: TLabel;
     procedure BCloseClick(Sender: TObject);
     procedure FormPaint(Sender: TObject);
   private
@@ -71,6 +72,7 @@ begin
     Height:=Height+20;
    end;
 end;
+
 
 procedure TDMM6500Form.FormPaint(Sender: TObject);
 begin

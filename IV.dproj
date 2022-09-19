@@ -52,6 +52,9 @@
     <DCCReference Include="FormDMM6500.pas">
       <Form>DMM6500Form</Form>
     </DCCReference>
+    <DCCReference Include="FormGDS806.pas">
+      <Form>Form1</Form>
+    </DCCReference>
     <DCCReference Include="FormKT2450.pas">
       <Form>KT2450Form</Form>
     </DCCReference>

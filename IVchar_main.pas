@@ -536,67 +536,6 @@ type
     ST9866FreqCh1: TStaticText;
     RGAD9833Mode: TRadioGroup;
     TS_GDS: TTabSheet;
-    GB_GDS_Com: TGroupBox;
-    ComCBGDS_Port: TComComboBox;
-    ComCBGDS_Baud: TComComboBox;
-    ST_GDS_Rate: TStaticText;
-    ST_GDS_StopBits: TStaticText;
-    ComCBGDS_Stop: TComComboBox;
-    ST_GDS_Parity: TStaticText;
-    ComCBGDS_Parity: TComComboBox;
-    LGDSPort: TLabel;
-    GB_GDS_Set: TGroupBox;
-    LGDS_Mode: TLabel;
-    STGDS_Mode: TStaticText;
-    B_GDS_SetSet: TButton;
-    B_GDS_SetGet: TButton;
-    B_GDS_Test: TButton;
-    B_GDS_SetSav: TButton;
-    B_GDS_SetLoad: TButton;
-    B_GDS_SetAuto: TButton;
-    B_GDS_SetDef: TButton;
-    LGDS_RLength: TLabel;
-    STGDS_RLength: TStaticText;
-    LGDS_AveNum: TLabel;
-    STGDS_AveNum: TStaticText;
-    LGDS_Ch1: TLabel;
-    LGDSU_Ch1: TLabel;
-    ChGDS: TChart;
-    GB_GDS_Ch1: TGroupBox;
-    LGDS_OffsetCh1: TLabel;
-    STGDS_OffsetCh1: TStaticText;
-    B_GDS_MeasCh1: TButton;
-    SB_GDS_AutoCh1: TSpeedButton;
-    STGDS_MeasCh1: TStaticText;
-    CBGDS_DisplayCh1: TCheckBox;
-    CBGDS_InvertCh1: TCheckBox;
-    STGDS_ProbCh1: TStaticText;
-    STGDS_CoupleCh1: TStaticText;
-    STGDS_ScaleCh1: TStaticText;
-    GB_GDS_Show: TGroupBox;
-    PGGDS_Show: TRadioGroup;
-    B_GDS_MeasShow: TButton;
-    SB_GDS_AutoShow: TSpeedButton;
-    B_GDS_Refresh: TButton;
-    B_GDS_Run: TButton;
-    B_GDS_Stop: TButton;
-    B_GDS_Unlock: TButton;
-    STGDS_ScaleGoriz: TStaticText;
-    GB_GDS_Ch2: TGroupBox;
-    LGDS_OffsetCh2: TLabel;
-    LGDS_Ch2: TLabel;
-    LGDSU_Ch2: TLabel;
-    SB_GDS_AutoCh2: TSpeedButton;
-    STGDS_OffsetCh2: TStaticText;
-    B_GDS_MeasCh2: TButton;
-    STGDS_MeasCh2: TStaticText;
-    CBGDS_DisplayCh2: TCheckBox;
-    CBGDS_InvertCh2: TCheckBox;
-    STGDS_ProbCh2: TStaticText;
-    STGDS_CoupleCh2: TStaticText;
-    STGDS_ScaleCh2: TStaticText;
-    GDS_SeriesCh1: TLineSeries;
-    GDS_SeriesCh2: TLineSeries;
     GBMLX615: TGroupBox;
     PMLX615: TPanel;
     GBMLX615_GC: TGroupBox;
@@ -746,6 +685,7 @@ type
     GBTelnetParam: TGroupBox;
     CBTelnetStrShow: TCheckBox;
     CBTelnetDevAbsent: TCheckBox;
+    B_GDS806drive: TButton;
 
     procedure FormCreate(Sender: TObject);
     procedure BConnectClick(Sender: TObject);
@@ -792,6 +732,7 @@ type
     procedure CBuseKT2450Click(Sender: TObject);
     procedure B_DM6500driveClick(Sender: TObject);
     procedure CBTelnetStrShowClick(Sender: TObject);
+    procedure B_GDS806driveClick(Sender: TObject);
   private
     procedure ComponentView;
     {початкове налаштування різних компонентів}
@@ -907,6 +848,7 @@ type
     procedure ADS1115Create;
     procedure INA226Create;
     procedure GDS_Create;
+    procedure GDSShow_Create;
     procedure IB6332_Create;
 
     procedure SaveIVMeasurementResults(FileName: string; DataVector:TVector);
@@ -1086,7 +1028,7 @@ implementation
 uses
   ArduinoADC, OlegFunction, AD5752R, IT6332B, Keithley2450Show, FormKT2450, 
   PsevdoMainForm, Keitley2450Const, FormDMM6500, DMM6500, DMM6500Show, 
-  TelnetDevice;
+  TelnetDevice, FormGDS806;
 
 {$R *.dfm}
 
@@ -2516,13 +2458,10 @@ begin
   ArduinoMeters.Add(ADS11115module);
 end;
 
-procedure TIVchar.GDS_Create;
- var i:TGDS_Channel;
+procedure TIVchar.GDSShow_Create;
 begin
-  GDS_806S := TGDS_806S.Create(ComPortGDS);
-  for I := Low(TGDS_Channel) to High(TGDS_Channel) do
-      GDS_806S_Channel[i]:=TGDS_806S_Channel.Create(i,GDS_806S);
-
+  with Form_GDS806 do
+  begin
   GDS_806S_Show := TGDS_806S_Show.Create(GDS_806S,
                       GDS_806S_Channel,
                      [STGDS_Mode, STGDS_RLength, STGDS_AveNum, STGDS_ScaleGoriz,
@@ -2542,8 +2481,46 @@ begin
                      [SB_GDS_AutoCh1,SB_GDS_AutoCh2,SB_GDS_AutoShow],
                      [GDS_SeriesCh1,GDS_SeriesCh2],
                      PGGDS_Show);
-
+  end;
   ShowArray.Add([GDS_806S_Show]);
+end;
+
+procedure TIVchar.GDS_Create;
+ var i:TGDS_Channel;
+begin
+  GDS_806S := TGDS_806S.Create(ComPortGDS);
+  for I := Low(TGDS_Channel) to High(TGDS_Channel) do
+      GDS_806S_Channel[i]:=TGDS_806S_Channel.Create(i,GDS_806S);
+
+  if Assigned(Form_GDS806) then
+   GDSShow_Create;
+//  with Form_GDS806 do
+//  begin
+//  GDS_806S_Show := TGDS_806S_Show.Create(GDS_806S,
+//                      GDS_806S_Channel,
+//                     [STGDS_Mode, STGDS_RLength, STGDS_AveNum, STGDS_ScaleGoriz,
+//                     STGDS_CoupleCh1, STGDS_ProbCh1, STGDS_MeasCh1, STGDS_ScaleCh1,
+//                     STGDS_CoupleCh2, STGDS_ProbCh2, STGDS_MeasCh2, STGDS_ScaleCh2,
+//                     STGDS_OffsetCh1, STGDS_OffsetCh2],
+//                     [LGDS_Mode, LGDS_RLength, LGDS_AveNum,
+//                     LGDS_OffsetCh1, LGDS_OffsetCh2],
+//                     [B_GDS_SetSet, B_GDS_SetGet, B_GDS_Test,
+//                     B_GDS_SetSav, B_GDS_SetLoad, B_GDS_SetAuto,
+//                     B_GDS_SetDef, B_GDS_Refresh, B_GDS_Run,
+//                     B_GDS_Stop, B_GDS_Unlock],
+//                     [CBGDS_InvertCh1, CBGDS_InvertCh2],
+//                     [CBGDS_DisplayCh1, CBGDS_DisplayCh2],
+//                     [LGDS_Ch1,LGDSU_Ch1,LGDS_Ch2,LGDSU_Ch2],
+//                     [B_GDS_MeasCh1,B_GDS_MeasCh2,B_GDS_MeasShow],
+//                     [SB_GDS_AutoCh1,SB_GDS_AutoCh2,SB_GDS_AutoShow],
+//                     [GDS_SeriesCh1,GDS_SeriesCh2],
+//                     PGGDS_Show);
+//  end;
+//
+//  if Assigned(Form_GDS806) then
+//  ShowArray.Add([GDS_806S_Show]);
+
+
   AnyObjectArray.Add([GDS_806S,GDS_806S_Channel[1],
                       GDS_806S_Channel[2]]);
 
@@ -2905,6 +2882,23 @@ end;
 
 
 
+
+procedure TIVchar.B_GDS806driveClick(Sender: TObject);
+begin
+  if not(Assigned(Form_GDS806)) then
+   begin
+    Form_GDS806:=TForm_GDS806.Create(Application);
+    GDSShow_Create;
+    GDS_806S_Show.ReadFromIniFile(ConfigFile);
+   end;
+
+  Form_GDS806.Parent := IVchar.TS_GDS;
+  Form_GDS806.BorderStyle:=bsNone;
+  Form_GDS806.Align := alClient;
+  Form_GDS806.BClose.Caption:='UnDock';
+  Form_GDS806.Color:=clBtnFace;
+  Form_GDS806.Height:=Form_GDS806.Height-20;
+end;
 
 procedure TIVchar.B_Kt2450driveClick(Sender: TObject);
 begin
@@ -3277,6 +3271,8 @@ procedure TIVchar.FormsTunning;
 begin
  B_Kt2450drive.Click;
  B_DM6500drive.Click;
+ if Assigned(Form_GDS806) then
+   B_GDS806drive.Click;
 end;
 
 procedure TIVchar.PCChange(Sender: TObject);
@@ -3439,10 +3435,15 @@ begin
   ComCBUT70BPort.UpdateSettings;
   ComCBBR.UpdateSettings;
   ComCBPort.UpdateSettings;
+
+  if Assigned(Form_GDS806) then
+  with Form_GDS806 do
+  begin
   ComCBGDS_Port.UpdateSettings;
   ComCBGDS_Baud.UpdateSettings;
   ComCBGDS_Stop.UpdateSettings;
   ComCBGDS_Parity.UpdateSettings;
+  end;
 
   ComCBIT6332B_Port.UpdateSettings;
   ComCBIT6332_Baud.UpdateSettings;
@@ -3460,7 +3461,10 @@ begin
   end;
 //---------------
 //  PortBeginAction(ComPortIT6332B, LIT6332Port, nil);
-  PortBeginAction(ComPortGDS, LGDSPort, nil);
+
+//  PortBeginAction(ComPortGDS, LGDSPort, nil);
+  if Assigned(Form_GDS806) then
+  PortBeginAction(ComPortGDS, Form_GDS806.LGDSPort, nil);
 
 
   PortBeginAction(ComPort1, LConnected, BConnect);
@@ -4485,7 +4489,8 @@ begin
                                      [PDM6500SaveSetup,PDM6500LoadSetup],
                                      [ST_DM6500_DispBr,ST_DM6500_Terminals,
                                      ST_DM6500MeasureMode],
-                                     [GB_DM6500Chan,GB_DM6500Param],
+                                     [GB_DM6500Chan,GB_DM6500Param,
+                                     GB_DM6500Scan],
                                      LDMM6500_Meas,LDMM6500_MeasU,
                                      B_DMM6500_Meas,B_DMM6500_MeasAuto);
 //                                     [SB_Kt2450_OutPut,SB_Kt2450_Termin],

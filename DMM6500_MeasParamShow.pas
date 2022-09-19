@@ -464,6 +464,28 @@ TControlElementsWithWindowCreate=class(TControlElements)
   procedure FormShowFooter;
 end;
 
+TDMM6500ScanParameters=class(TControlElementsWithWindowCreate)
+ private
+//  fBCreate:TButton;
+  fBInit:TButton;
+  fBAbort:TButton;
+  fBAdd:TButton;
+  fBOption:TButton;
+  fMemo:TMemo;
+  procedure OptionButtonClick(Sender: TObject);override;
+  procedure FormShow();
+ protected
+  procedure CreateElements;override;
+  procedure CreateControls;override;
+  procedure DestroyElements;override;
+  procedure DestroyControls;override;
+  procedure DesignElements;override;
+ public
+  procedure ObjectToSetting;override;
+  procedure GetDataFromDevice;override;
+end;
+
+
 //TDMM6500ControlChannels=class(TControlElements)
 TDMM6500ControlChannels=class(TControlElementsWithWindowCreate)
  private
@@ -670,6 +692,8 @@ TDMM6500MeasPar_ContinuityBaseShow=class(TDMM6500MeasPar_BaseDelayMTShow)
  private
   fLineSyncShow:TDMM6500_LineSyncShow;
   fAzeroShow:TDMM6500_AzeroStateShow;
+  procedure RefreshZeroClick(Sender:TObject);
+  procedure HookAzeroShow;
  protected
   procedure CreateElements;override;
   procedure CreateControls;override;
@@ -677,6 +701,8 @@ TDMM6500MeasPar_ContinuityBaseShow=class(TDMM6500MeasPar_BaseDelayMTShow)
  public
   CBAzero:TCheckBox;
   CBLineSync:TCheckBox;
+  BAzeroAuto:TButton;
+  procedure ObjectToSetting;override;
 end;
 
 TDMM6500MeasPar_ContinuityShow=class(TDMM6500MeasPar_ContinuityBaseShow)
@@ -1760,6 +1786,7 @@ begin
  STRange.Font.Color:=clNavy;
 end;
 
+
 procedure TDMM6500_ParameterShow.OkClick;
 begin
  fHookParameterClick;
@@ -2373,6 +2400,9 @@ begin
   add(fLineSyncShow);
   fAzeroShow:=TDMM6500_AzeroStateShow.Create(CBAzero,fDMM6500,fChanNumber);
   Add(fAzeroShow);
+  fAzeroShow.HookParameterClick:=HookAzeroShow;
+  BAzeroAuto.Caption := 'Refresh';
+  BAzeroAuto.OnClick := RefreshZeroClick;
 end;
 
 procedure TDMM6500MeasPar_ContinuityBaseShow.CreateElements;
@@ -2382,6 +2412,8 @@ begin
   Add(CBAzero);
   CBLineSync:=TCheckBox.Create(fParent);
   Add(CBLineSync);
+  BAzeroAuto:=TButton.Create(fParent);
+  Add(BAzeroAuto);
 end;
 
 procedure TDMM6500MeasPar_ContinuityBaseShow.DesignElements;
@@ -2391,6 +2423,26 @@ begin
   RelativeLocation(STCount,CBLineSync,oCol,Marginbetween);
   CBLineSync.Left:=MarginLeft;
   RelativeLocation(CBLineSync,CBAzero,oRow,MarginBetween);
+//  Resize(BAzeroAuto);
+//  BAzeroAuto.Width:=BAzeroAuto.Width+9;
+  RelativeLocation(CBAzero,BAzeroAuto,oRow,MarginBetween);
+  HookAzeroShow;
+end;
+
+procedure TDMM6500MeasPar_ContinuityBaseShow.HookAzeroShow;
+begin
+ BAzeroAuto.Enabled:=(not(CBAzero.Checked)) and CBAzero.Enabled;
+end;
+
+procedure TDMM6500MeasPar_ContinuityBaseShow.ObjectToSetting;
+begin
+  inherited;
+  HookAzeroShow;
+end;
+
+procedure TDMM6500MeasPar_ContinuityBaseShow.RefreshZeroClick(Sender: TObject);
+begin
+ fDMM6500.AzeroOnce();
 end;
 
 { TDMM6500MeasPar_ContinuityShow }
@@ -2407,7 +2459,8 @@ begin
   STMeaureTime.Enabled:=False;
   LMeaureTime.Enabled:=False;
 
-  fParent.Width:=MarginRight+LMeaureTime.Left+LMeaureTime.Width;
+//  fParent.Width:=MarginRight+LMeaureTime.Left+LMeaureTime.Width;
+  fParent.Width:=MarginRight+BAzeroAuto.Left+BAzeroAuto.Width;
   fParent.Height:=MarginTop+CBAzero.Top+CBAzero.Height;
 end;
 
@@ -2472,7 +2525,9 @@ procedure TDMM6500MeasPar_CurDCShow.DesignElements;
 begin
   inherited DesignElements;
 
-  fParent.Width:=MarginRight+STRange.Left+LCount.Canvas.TextWidth('100 mkA');;
+//  fParent.Width:=MarginRight+STRange.Left+LCount.Canvas.TextWidth('100 mkA');;
+  fParent.Width:=MarginRight+BAzeroAuto.Left+BAzeroAuto.Width;
+
   fParent.Height:=MarginTop+CBAzero.Top+CBAzero.Height;
 end;
 
@@ -2497,7 +2552,8 @@ end;
 procedure TDMM6500MeasPar_Res2WShow.DesignElements;
 begin
   inherited;
-  fParent.Width:=MarginRight+STRange.Left+LCount.Canvas.TextWidth('100 kOhm');
+//  fParent.Width:=MarginRight+STRange.Left+LCount.Canvas.TextWidth('100 kOhm');
+  fParent.Width:=MarginRight+BAzeroAuto.Left+BAzeroAuto.Width;
   fParent.Height:=MarginTop+CBAzero.Top+CBAzero.Height;
 end;
 
@@ -2577,7 +2633,8 @@ end;
 procedure TDMM6500MeasPar_Res4WShow.DesignElements;
 begin
   inherited;
-  fParent.Width:=MarginRight+STRange.Left+LCount.Canvas.TextWidth('100 kOhm');
+//  fParent.Width:=MarginRight+STRange.Left+LCount.Canvas.TextWidth('100 kOhm');
+  fParent.Width:=MarginRight+BAzeroAuto.Left+BAzeroAuto.Width;
 fParent.Height:=MarginTop+CBOpenLD.Top+CBOpenLD.Height;
 end;
 
@@ -2620,7 +2677,8 @@ begin
   RelativeLocation(LVRMethod,STVRMethod,oRow,MarginBetweenLST);
   STVRMethod.Top:=LVRMethod.Top+1;
 
-  fParent.Width:=MarginRight+STRange.Left+LCount.Canvas.TextWidth('1000 V');
+//  fParent.Width:=MarginRight+STRange.Left+LCount.Canvas.TextWidth('1000 V');
+  fParent.Width:=MarginRight+BAzeroAuto.Left+BAzeroAuto.Width;
   fParent.Height:=MarginTop+LVRMethod.Top+LVRMethod.Height;
 end;
 
@@ -3346,6 +3404,99 @@ begin
 
  fShowForm.Hide;
  fShowForm.Release;
+end;
+
+{ TDMM6500ScanParameters }
+
+procedure TDMM6500ScanParameters.CreateControls;
+begin
+  fBInit.OnClick:=OptionButtonClick;
+//  fBAbort.OnClick:=OptionButtonClick;
+//  fBAdd.OnClick:=OptionButtonClick;
+//  fBOption.OnClick:=OptionButtonClick;
+end;
+
+procedure TDMM6500ScanParameters.CreateElements;
+begin
+////  fBCreate:=TButton.Create(fParent);
+  fBInit:=TButton.Create(fParent);
+//  fBAbort:=TButton.Create(fParent);
+//  fBAdd:=TButton.Create(fParent);
+//  fBOption:=TButton.Create(fParent);
+//  fMemo:=TMemo.Create(fParent);
+////  fBCreate.Name:='Create';
+  fBInit.Name:='Init';
+//  fBAbort.Name:='Abort';
+//  fBAdd.Name:='Add';
+//  fBOption.Name:='Option';
+
+
+end;
+
+procedure TDMM6500ScanParameters.DesignElements;
+begin
+//  fBInit.Parent:=fParent;
+  fBInit.Caption:=fBInit.Name;
+  fBInit.Top:=MarginTop;
+  fBInit.Left:=MarginLeft;
+
+//  fBAbort.Parent:=fParent;
+//  RelativeLocation(fBInit,fBAbort,oCol,Marginbetween);
+//  RelativeLocation(fBAbort,fBAdd,oCol,Marginbetween);
+//  RelativeLocation(fBAdd,fBOption,oCol,Marginbetween);
+//  RelativeLocation(fBOption,fMemo,oCol,Marginbetween);
+
+end;
+
+procedure TDMM6500ScanParameters.DestroyControls;
+begin
+
+end;
+
+procedure TDMM6500ScanParameters.DestroyElements;
+begin
+////  fBCreate.Free;
+  fBInit.Free;
+//  fBAbort.Free;
+//  fBAdd.Free;
+//  fBOption.Free;
+//  fMemo.Free;
+end;
+
+procedure TDMM6500ScanParameters.FormShow;
+begin
+
+end;
+
+procedure TDMM6500ScanParameters.GetDataFromDevice;
+begin
+
+end;
+
+procedure TDMM6500ScanParameters.ObjectToSetting;
+begin
+// fMemo.Lines.Clear;
+// fMemo.Lines.Add(fDMM6500.Scan.ChannelsToString);
+// fMemo.Text:=fDMM6500.Scan.ChannelsToString;
+
+end;
+
+procedure TDMM6500ScanParameters.OptionButtonClick(Sender: TObject);
+begin
+ if (Sender as TButton).Name='Init'
+    then fDMM6500.Init;
+
+ if (Sender as TButton).Name='Abort'
+    then fDMM6500.Abort;
+
+ if (Sender as TButton).Name='Add'
+    then begin
+          ObjectToSetting;
+         end;
+
+ if (Sender as TButton).Name='Option'
+    then FormShow;
+
 end;
 
 end.

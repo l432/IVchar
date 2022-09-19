@@ -390,6 +390,20 @@ object DMM6500Form: TDMM6500Form
     ParentFont = False
     TabOrder = 8
   end
+  object GB_DM6500Scan: TGroupBox
+    Left = 634
+    Top = 241
+    Width = 135
+    Height = 198
+    Caption = 'Scan'
+    Font.Charset = RUSSIAN_CHARSET
+    Font.Color = clMaroon
+    Font.Height = -13
+    Font.Name = 'Arial'
+    Font.Style = [fsBold]
+    ParentFont = False
+    TabOrder = 9
+  end
   object TelnetDMM6500: TIdTelnet
     Terminal = 'dumb'
     Left = 526

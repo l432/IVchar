@@ -34,8 +34,10 @@ end;
    fControlChannels:TDMM6500ControlChannels;
    fGBControlChannels:TGroupBox;
    fGBParametrShow:TGroupBox;
+   fGBScanParametrShow:TGroupBox;
    fMeasParShow:TDMM6500_MeasParShow;
    fMeterShow:TDMM6500_MeterShow;
+   fScanParameters:TDMM6500ScanParameters;
 
 
 //   fSettingsShow:array of TParameterShowNew;
@@ -194,6 +196,9 @@ begin
   fTerminalState:=STexts[1];
   fGBControlChannels:=GBs[0];
   fGBParametrShow:=GBs[1];
+  fGBScanParametrShow:=GBs[2];
+
+  fScanParameters:=TDMM6500ScanParameters.Create(fGBScanParametrShow,fDMM6500);
 
   fMeasureTypeShow:=TDMM6500_MeasurementTypeShow.Create(STexts[2],fDMM6500);
   fMeasureTypeShow.HookParameterClick:=MeasureParamShowCreate;
@@ -211,6 +216,7 @@ destructor TDMM6500_Show.Destroy;
 begin
   MeasureParamShowDestroy;
   fMeasureTypeShow.Free;
+  fScanParameters.Free;
   inherited;
 end;
 
@@ -263,9 +269,11 @@ begin
   fTerminalState.Caption:=Keitlay_TerminalsButtonName[fDMM6500.Terminal];
   fMeasureTypeShow.ObjectToSetting;
   ControlChannelsCreate;
+
   MeasureParamShowDestroy;
   fMeasParShow:=MeasParShowFactory(fDMM6500.MeasureFunction,
                 fGBParametrShow,fDMM6500,0);
+  fScanParameters.ObjectToSetting;
 //  MeasureParamShowCreate;
 end;
 
