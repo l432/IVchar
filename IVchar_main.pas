@@ -2482,6 +2482,7 @@ begin
                      [GDS_SeriesCh1,GDS_SeriesCh2],
                      PGGDS_Show);
   end;
+//  GDS_806S_Show.ReadFromIniFile(ConfigFile);
   ShowArray.Add([GDS_806S_Show]);
 end;
 
@@ -2887,7 +2888,7 @@ procedure TIVchar.B_GDS806driveClick(Sender: TObject);
 begin
   if not(Assigned(Form_GDS806)) then
    begin
-    Form_GDS806:=TForm_GDS806.Create(Application);
+    Form_GDS806:=TForm_GDS806.Create(nil);
     GDSShow_Create;
     GDS_806S_Show.ReadFromIniFile(ConfigFile);
    end;

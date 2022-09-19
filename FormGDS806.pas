@@ -72,6 +72,7 @@ type
     STGDS_AveNum: TStaticText;
     BClose: TButton;
     procedure BCloseClick(Sender: TObject);
+    procedure FormDestroy(Sender: TObject);
   private
     { Private declarations }
   public
@@ -84,7 +85,7 @@ var
 implementation
 
 uses
-  IVchar_main;
+  IVchar_main, GDS_806Su;
 
 {$R *.dfm}
 
@@ -104,5 +105,11 @@ begin
 end;
 
 
+
+procedure TForm_GDS806.FormDestroy(Sender: TObject);
+begin
+//  GDS_806S_Show.WriteToIniFile(ConfigFile);
+//  GDS_806S_Show.Free;
+end;
 
 end.

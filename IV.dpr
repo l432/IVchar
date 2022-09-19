@@ -62,7 +62,7 @@ begin
   Application.CreateForm(TMain, Main);
   Application.CreateForm(TKT2450Form, KT2450Form);
   Application.CreateForm(TDMM6500Form, DMM6500Form);
-  Application.CreateForm(TForm_GDS806, Form_GDS806);
+//  Application.CreateForm(TForm_GDS806, Form_GDS806);
   Application.CreateForm(TIVchar, IVchar);
   //  KT2450Form.Hide;
   Main.Hide;

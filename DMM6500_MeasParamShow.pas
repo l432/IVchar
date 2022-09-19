@@ -3411,40 +3411,48 @@ end;
 procedure TDMM6500ScanParameters.CreateControls;
 begin
   fBInit.OnClick:=OptionButtonClick;
-//  fBAbort.OnClick:=OptionButtonClick;
-//  fBAdd.OnClick:=OptionButtonClick;
-//  fBOption.OnClick:=OptionButtonClick;
+  fBAbort.OnClick:=OptionButtonClick;
+  fBAdd.OnClick:=OptionButtonClick;
+  fBOption.OnClick:=OptionButtonClick;
 end;
 
 procedure TDMM6500ScanParameters.CreateElements;
 begin
-////  fBCreate:=TButton.Create(fParent);
+//  fBCreate:=TButton.Create(fParent);
   fBInit:=TButton.Create(fParent);
-//  fBAbort:=TButton.Create(fParent);
-//  fBAdd:=TButton.Create(fParent);
-//  fBOption:=TButton.Create(fParent);
-//  fMemo:=TMemo.Create(fParent);
-////  fBCreate.Name:='Create';
+  fBAbort:=TButton.Create(fParent);
+  fBAdd:=TButton.Create(fParent);
+  fBOption:=TButton.Create(fParent);
+  fMemo:=TMemo.Create(fParent);
+//  fBCreate.Name:='Create';
   fBInit.Name:='Init';
-//  fBAbort.Name:='Abort';
-//  fBAdd.Name:='Add';
-//  fBOption.Name:='Option';
+  fBAbort.Name:='Abort';
+  fBAdd.Name:='Add';
+  fBOption.Name:='Option';
 
 
 end;
 
 procedure TDMM6500ScanParameters.DesignElements;
 begin
-//  fBInit.Parent:=fParent;
+  fBInit.Parent:=fParent;
   fBInit.Caption:=fBInit.Name;
   fBInit.Top:=MarginTop;
   fBInit.Left:=MarginLeft;
 
-//  fBAbort.Parent:=fParent;
-//  RelativeLocation(fBInit,fBAbort,oCol,Marginbetween);
-//  RelativeLocation(fBAbort,fBAdd,oCol,Marginbetween);
-//  RelativeLocation(fBAdd,fBOption,oCol,Marginbetween);
-//  RelativeLocation(fBOption,fMemo,oCol,Marginbetween);
+  fBAbort.Parent:=fParent;
+  RelativeLocation(fBInit,fBAbort,oCol,Marginbetween);
+  fBAdd.Parent:=fParent;
+  RelativeLocation(fBAbort,fBAdd,oCol,Marginbetween);
+  fBOption.Parent:=fParent;
+  RelativeLocation(fBAdd,fBOption,oCol,Marginbetween);
+  fMemo.Parent:=fParent;
+  fMemo.Width:=fBOption.Width;
+  fMemo.Height:=round(1.5*fBOption.Height);
+  RelativeLocation(fBOption,fMemo,oCol,Marginbetween);
+
+  fParent.Width:=MarginRight+fMemo.Left+fMemo.Width;
+  fParent.Height:=MarginTop+fMemo.Top+fMemo.Height;
 
 end;
 
@@ -3457,10 +3465,10 @@ procedure TDMM6500ScanParameters.DestroyElements;
 begin
 ////  fBCreate.Free;
   fBInit.Free;
-//  fBAbort.Free;
-//  fBAdd.Free;
-//  fBOption.Free;
-//  fMemo.Free;
+  fBAbort.Free;
+  fBAdd.Free;
+  fBOption.Free;
+  fMemo.Free;
 end;
 
 procedure TDMM6500ScanParameters.FormShow;
@@ -3475,9 +3483,9 @@ end;
 
 procedure TDMM6500ScanParameters.ObjectToSetting;
 begin
-// fMemo.Lines.Clear;
+ fMemo.Lines.Clear;
 // fMemo.Lines.Add(fDMM6500.Scan.ChannelsToString);
-// fMemo.Text:=fDMM6500.Scan.ChannelsToString;
+ fMemo.Text:=fDMM6500.Scan.ChannelsToString;
 
 end;
 

@@ -37,7 +37,7 @@ object IVchar: TIVchar
     Top = 0
     Width = 788
     Height = 530
-    ActivePage = TS_GDS
+    ActivePage = TS_DM6500
     Align = alTop
     Font.Charset = RUSSIAN_CHARSET
     Font.Color = clWindowText

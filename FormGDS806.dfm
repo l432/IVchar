@@ -12,6 +12,7 @@ object Form_GDS806: TForm_GDS806
   Font.Style = []
   OldCreateOrder = False
   Visible = True
+  OnDestroy = FormDestroy
   PixelsPerInch = 96
   TextHeight = 13
   object GB_GDS_Ch1: TGroupBox
