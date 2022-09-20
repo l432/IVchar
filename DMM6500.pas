@@ -424,7 +424,7 @@ type
    певним умовам}
    procedure ScanMonitorSetMode(Mode:TKeitley_ScanLimitType);
    function ScanMonitorGetMode:boolean;
-   procedure ScanMonitorSetCnan(ChanNumber:byte);
+   procedure ScanMonitorSetChan(ChanNumber:byte);
    function ScanMonitorGetChan:boolean;
    procedure ScanMonitorSetLimitLower(Limit:double);
    function ScanMonitorGetLimitLower:boolean;
@@ -1136,7 +1136,7 @@ begin
  if Result then fScan.MonitorMode:=TKeitley_ScanLimitType(round(fDevice.Value));
 end;
 
-procedure TDMM6500.ScanMonitorSetCnan(ChanNumber: byte);
+procedure TDMM6500.ScanMonitorSetChan(ChanNumber: byte);
 begin
 //:ROUT:SCAN:MON:CHAN
  if ChanelNumberIsCorrect(ChanNumber) then
@@ -3698,6 +3698,8 @@ begin
  fDMM6500:=DMM6500;
  fCount:=1;
  fStep:=0;
+ fInterval:=0;
+ fMeasInterval:=0;
  fScanState:=kt_ts_building;
  fCurrentCount:=0;
  fCurrentStep:=0;

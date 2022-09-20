@@ -173,6 +173,8 @@ const
 
 DMM6500_ScanMonitorModeCommand:array[TKeitley_ScanLimitType]of string=
  ('upp', 'low','wind','outs','off');
+DMM6500_ScanMonitorModeLabel:array[TKeitley_ScanLimitType]of string=
+ ('Above Upper Limit', 'Below Lower Limit','Between Limits','Outside Limits','Monitor Off');
 
  DMM6500_RTDAlphaLimits:TLimitValues=(0,0.01);
  DMM6500_RTDBetaLimits:TLimitValues=(0,1);

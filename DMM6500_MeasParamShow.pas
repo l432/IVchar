@@ -219,6 +219,16 @@ TDMM6500_ScanCountShow=class(TDMM6500_IntegerParameterShow)
   procedure GetDataFromDevice;override;
 end;
 
+TDMM6500_ScanMonitorChanShow=class(TDMM6500_IntegerParameterShow)
+ protected
+  procedure OkClick();override;
+ public
+  Constructor Create(STD:TStaticText;
+                     STC:TLabel;
+                     DMM6500:TDMM6500);
+  procedure ObjectToSetting;override;
+  procedure GetDataFromDevice;override;
+end;
 
 TDMM6500_VoltageUnitShow=class(TDMM6500_StringParameterShow)
  public
@@ -282,6 +292,50 @@ TDMM6500_DelayAfterCloseShow=class(TDMM6500_DoubleParameterShow)
                      DMM6500:TDMM6500;ChanNumber:byte);
   procedure GetDataFromDevice;override;
   procedure ObjectToSetting;override;
+end;
+
+TDMM6500_ScanIntervalShow=class(TDMM6500_DoubleParameterShow)
+ protected
+  procedure OkClick();override;
+ public
+  Constructor Create(STD:TStaticText;
+                     STC:TLabel;
+                     DMM6500:TDMM6500);
+  procedure ObjectToSetting;override;
+  procedure GetDataFromDevice;override;
+end;
+
+TDMM6500_ScanMeasIntervalShow=class(TDMM6500_DoubleParameterShow)
+ protected
+  procedure OkClick();override;
+ public
+  Constructor Create(STD:TStaticText;
+                     STC:TLabel;
+                     DMM6500:TDMM6500);
+  procedure ObjectToSetting;override;
+  procedure GetDataFromDevice;override;
+end;
+
+TDMM6500_ScanMonitorLimitLower=class(TDMM6500_DoubleParameterShow)
+ protected
+  procedure OkClick();override;
+ public
+  Constructor Create(STD:TStaticText;
+                     STC:TLabel;
+                     DMM6500:TDMM6500);
+  procedure ObjectToSetting;override;
+  procedure GetDataFromDevice;override;
+end;
+
+TDMM6500_ScanMonitorLimitUpper=class(TDMM6500_DoubleParameterShow)
+ protected
+  procedure OkClick();override;
+ public
+  Constructor Create(STD:TStaticText;
+                     STC:TLabel;
+                     DMM6500:TDMM6500);
+  procedure ObjectToSetting;override;
+  procedure GetDataFromDevice;override;
 end;
 
 TDMM6500_DecibelmWReferenceShow=class(TDMM6500_IntegerParameterShow)
@@ -427,6 +481,19 @@ TDMM6500_DetectorBandwidthShow=class(TDMM6500_StringParameterShow)
            DMM6500:TDMM6500;ChanNumber:byte=0);
 end;
 
+TDMM6500_ScanMonitorModeShow=class(TDMM6500_StringParameterShow)
+ protected
+  procedure OkClick();override;
+  procedure SettingsShowSLFilling();override;
+ public
+  Constructor Create(STD:TStaticText;
+                     STC:TLabel;
+                     DMM6500:TDMM6500);
+  procedure ObjectToSetting;override;
+  procedure GetDataFromDevice;override;
+end;
+
+
 //------------------------------------------------------------------------------
 
 TControlElements=class
@@ -476,9 +543,10 @@ TControlElementsWithWindowCreate=class(TControlElements)
   procedure FormShowFooter;
 end;
 
+TDMM6500ScanParametrWindowShow=class;
+
 TDMM6500ScanParameters=class(TControlElementsWithWindowCreate)
  private
-//  fBCreate:TButton;
   fBInit:TButton;
   fBAbort:TButton;
   fBAdd:TButton;
@@ -486,9 +554,10 @@ TDMM6500ScanParameters=class(TControlElementsWithWindowCreate)
   fBOption:TButton;
   fMemo:TMemo;
   fST:TStringList;
+  fScanParametrWindowShow:TDMM6500ScanParametrWindowShow;
   procedure OptionButtonClick(Sender: TObject);override;
   procedure FormShow();
-    procedure MemoFilling;
+  procedure MemoFilling;
  protected
   procedure CreateElements;override;
   procedure CreateControls;override;
@@ -534,6 +603,47 @@ TDMM6500ControlChannels=class(TControlElementsWithWindowCreate)
   property ChanCount:byte read GetChanCount;
   procedure ObjectToSetting;override;
   procedure GetDataFromDevice;override;
+end;
+
+
+
+TDMM6500ScanParametrWindowShow=class(TDMM6500_MeasParShow)
+ private
+  fScanParameters:TDMM6500ScanParameters;
+  fMonitorChanShow:TDMM6500_ScanMonitorChanShow;
+  fCountShow:TDMM6500_ScanCountShow;
+  fMonitorModeShow:TDMM6500_ScanMonitorModeShow;
+  fIntervalShow:TDMM6500_ScanIntervalShow;
+  fMonitorLimitUpperShow:TDMM6500_ScanMonitorLimitUpper;
+  fMonitorLimitLowerShow:TDMM6500_ScanMonitorLimitLower;
+  fMeasIntervalShow:TDMM6500_ScanMeasIntervalShow;
+  procedure HookParameterMonitorMode;
+ protected
+  procedure CreateElements;override;
+  procedure CreateControls;override;
+  procedure DesignElements;override;
+//  procedure Resize(Control:TControl);
+//  procedure ResizeElements;
+ public
+  
+  STCount:TStaticText;
+  LCount:TLabel;
+  STMonitorChan:TStaticText;
+  LMonitorChan:TLabel;
+  STMonitorMode:TStaticText;
+  LMonitorMode:TLabel;
+  STInterval:TStaticText;
+  LInterval:TLabel;
+  STMeasInterval:TStaticText;
+  LMeasInterval:TLabel;
+  STMonitorLimitUpper:TStaticText;
+  LMonitorLimitUpper:TLabel;
+  STMonitorLimitLower:TStaticText;
+  LMonitorLimitLower:TLabel;
+  BAdd:TButton;
+  BClear:TButton;
+  Memo:TMemo;
+  Constructor Create(Parent:TGroupBox;DMM6500:TDMM6500;ScanParameters:TDMM6500ScanParameters);
 end;
 
 TDMM6500MeasPar_BaseShow=class(TDMM6500_MeasParShow)
@@ -3434,21 +3544,18 @@ end;
 
 procedure TDMM6500ScanParameters.CreateElements;
 begin
-//  fBCreate:=TButton.Create(fParent);
   fBInit:=TButton.Create(fParent);
   fBAbort:=TButton.Create(fParent);
   fBAdd:=TButton.Create(fParent);
   fBClear:=TButton.Create(fParent);
   fBOption:=TButton.Create(fParent);
   fMemo:=TMemo.Create(fParent);
-//  fBCreate.Name:='Create';
   fBInit.Name:='Init';
   fBAbort.Name:='Abort';
   fBClear.Name:='Clear';
   fBAdd.Name:='Add';
   fBOption.Name:='Option';
   fST:=TStringList.Create;
-
 end;
 
 procedure TDMM6500ScanParameters.DesignElements;
@@ -3516,6 +3623,8 @@ end;
 procedure TDMM6500ScanParameters.MemoFilling;
 begin
   fMemo.Text := fDMM6500.Scan.ChannelsToString;
+  if assigned(fScanParametrWindowShow) then
+    fScanParametrWindowShow.Memo.Text := fDMM6500.Scan.ChannelsToString;
 end;
 
 procedure TDMM6500ScanParameters.ObjectToSetting;
@@ -3581,6 +3690,298 @@ end;
 procedure TDMM6500_ScanCountShow.OkClick;
 begin
  fDMM6500.ScanSetCount(Data);
+end;
+
+{ TDMM6500_ScanIntervalShow }
+
+constructor TDMM6500_ScanIntervalShow.Create(STD: TStaticText; STC: TLabel;
+  DMM6500: TDMM6500);
+begin
+ inherited Create(dm_tp_RTDDelta,DMM6500,0,STD,STC,'Scans Interval, s:',
+                0,5);
+ SetLimits(DMM6500_ScanIntervalLimits);
+end;
+
+procedure TDMM6500_ScanIntervalShow.GetDataFromDevice;
+begin
+ fDMM6500.ScanGetInterval;
+end;
+
+procedure TDMM6500_ScanIntervalShow.ObjectToSetting;
+begin
+ Data:=fDMM6500.Scan.Interval;
+end;
+
+procedure TDMM6500_ScanIntervalShow.OkClick;
+begin
+ fDMM6500.ScanSetInterval(Data);
+ fHookParameterClick;
+end;
+
+{ TDMM6500_ScanMeasIntervalShow }
+
+constructor TDMM6500_ScanMeasIntervalShow.Create(STD: TStaticText; STC: TLabel;
+  DMM6500: TDMM6500);
+begin
+ inherited Create(dm_tp_RTDDelta,DMM6500,0,STD,STC,'Measures in Scan Interval, s:',
+                0,5);
+ SetLimits(DMM6500_ScanIntervalLimits);
+end;
+
+procedure TDMM6500_ScanMeasIntervalShow.GetDataFromDevice;
+begin
+ fDMM6500.ScanGetMeasInterval;
+end;
+
+procedure TDMM6500_ScanMeasIntervalShow.ObjectToSetting;
+begin
+ Data:=fDMM6500.Scan.MeasInterval;
+end;
+
+procedure TDMM6500_ScanMeasIntervalShow.OkClick;
+begin
+ fDMM6500.ScanSetMeasInterval(Data);
+ fHookParameterClick;
+end;
+
+{ TDMM6500_ScanMonitorLimitLower }
+
+constructor TDMM6500_ScanMonitorLimitLower.Create(STD: TStaticText; STC: TLabel;
+  DMM6500: TDMM6500);
+begin
+ inherited Create(dm_tp_RTDDelta,DMM6500,0,STD,STC,'Monitor Lower Limit:',
+                0,5);
+end;
+
+procedure TDMM6500_ScanMonitorLimitLower.GetDataFromDevice;
+begin
+ fDMM6500.ScanMonitorGetLimitLower;
+end;
+
+procedure TDMM6500_ScanMonitorLimitLower.ObjectToSetting;
+begin
+ Data:=fDMM6500.Scan.MonitorLimitLower;
+end;
+
+procedure TDMM6500_ScanMonitorLimitLower.OkClick;
+begin
+ fDMM6500.ScanMonitorSetLimitLower(Data);
+ ObjectToSetting;
+ fHookParameterClick;
+end;
+
+{ TDMM6500_ScanMonitorLimitUpper }
+
+constructor TDMM6500_ScanMonitorLimitUpper.Create(STD: TStaticText; STC: TLabel;
+  DMM6500: TDMM6500);
+begin
+ inherited Create(dm_tp_RTDDelta,DMM6500,0,STD,STC,'Monitor Upper Limit:',
+                0,5);
+end;
+
+procedure TDMM6500_ScanMonitorLimitUpper.GetDataFromDevice;
+begin
+ fDMM6500.ScanMonitorGetLimitUpper;
+end;
+
+procedure TDMM6500_ScanMonitorLimitUpper.ObjectToSetting;
+begin
+ Data:=fDMM6500.Scan.MonitorLimitUpper;
+end;
+
+procedure TDMM6500_ScanMonitorLimitUpper.OkClick;
+begin
+ fDMM6500.ScanMonitorSetLimitUpper(Data);
+ ObjectToSetting;
+ fHookParameterClick;
+end;
+
+{ TDMM6500_ScanMonitorChanShow }
+
+constructor TDMM6500_ScanMonitorChanShow.Create(STD: TStaticText; STC: TLabel;
+  DMM6500: TDMM6500);
+begin
+ inherited Create(dm_pp_SampleRate,DMM6500,0,STD,STC,'Monitor Channel:',1);
+ SetLimits(fDMM6500.FirstChannelInSlot,fDMM6500.LastChannelInSlot);
+end;
+
+procedure TDMM6500_ScanMonitorChanShow.GetDataFromDevice;
+begin
+ fDMM6500.ScanMonitorGetChan;
+end;
+
+procedure TDMM6500_ScanMonitorChanShow.ObjectToSetting;
+begin
+ Data:=fDMM6500.Scan.MonitorChannel;
+end;
+
+procedure TDMM6500_ScanMonitorChanShow.OkClick;
+begin
+ fDMM6500.ScanMonitorSetChan(Data);
+ fHookParameterClick;
+end;
+
+{ TDMM6500_ScanMonitorModeShow }
+
+constructor TDMM6500_ScanMonitorModeShow.Create(STD: TStaticText; STC: TLabel;
+  DMM6500: TDMM6500);
+begin
+
+end;
+
+procedure TDMM6500_ScanMonitorModeShow.GetDataFromDevice;
+begin
+ fDMM6500.ScanMonitorGetMode;
+end;
+
+procedure TDMM6500_ScanMonitorModeShow.ObjectToSetting;
+begin
+  Data:=ord(fDMM6500.Scan.MonitorMode);
+end;
+
+procedure TDMM6500_ScanMonitorModeShow.OkClick;
+begin
+ fDMM6500.ScanMonitorSetMode(TKeitley_ScanLimitType(Data));
+ fHookParameterClick;
+end;
+
+procedure TDMM6500_ScanMonitorModeShow.SettingsShowSLFilling;
+ var i:TKeitley_ScanLimitType;
+begin
+ for I := Low(TKeitley_ScanLimitType) to High(TKeitley_ScanLimitType) do
+    fSettingsShowSL.Add(DMM6500_ScanMonitorModeLabel[i]);
+end;
+
+{ TDMM6500ScanParametrWindowShow }
+
+constructor TDMM6500ScanParametrWindowShow.Create(Parent: TGroupBox;
+  DMM6500: TDMM6500; ScanParameters: TDMM6500ScanParameters);
+begin
+ inherited Create(Parent,DMM6500);
+ fScanParameters:=ScanParameters;
+end;
+
+procedure TDMM6500ScanParametrWindowShow.CreateControls;
+begin
+  BAdd.OnClick:=fScanParameters.OptionButtonClick;
+  BClear.OnClick:=fScanParameters.OptionButtonClick;
+
+  fMonitorChanShow:=TDMM6500_ScanMonitorChanShow.Create(STMonitorChan,LMonitorChan,fDMM6500);
+  fCountShow:=TDMM6500_ScanCountShow.Create(STCount,LCount,fDMM6500);;
+  fMonitorModeShow:=TDMM6500_ScanMonitorModeShow.Create(STMonitorMode,LMonitorMode,fDMM6500);;
+  fIntervalShow:=TDMM6500_ScanIntervalShow.Create(STInterval,LInterval,fDMM6500);;
+  fMonitorLimitUpperShow:=TDMM6500_ScanMonitorLimitUpper.Create(STMonitorLimitUpper,LMonitorLimitUpper,fDMM6500);;
+  fMonitorLimitLowerShow:=TDMM6500_ScanMonitorLimitLower.Create(STMonitorLimitLower,LMonitorLimitLower,fDMM6500);;
+  fMeasIntervalShow:=TDMM6500_ScanMeasIntervalShow.Create(STMeasInterval,LMeasInterval,fDMM6500);;
+  Add(fMonitorChanShow);
+  Add(fCountShow);
+  Add(fMonitorModeShow);
+  Add(fIntervalShow);
+  Add(fMonitorLimitUpperShow);
+  Add(fMonitorLimitLowerShow);
+  Add(fMeasIntervalShow);
+  fMonitorModeShow.HookParameterClick:=HookParameterMonitorMode;
+end;
+
+procedure TDMM6500ScanParametrWindowShow.CreateElements;
+begin
+  STCount:=TStaticText.Create(fParent);
+  Add(STCount);
+  LCount:=TLabel.Create(fParent);
+  Add(LCount);
+  STMonitorChan:=TStaticText.Create(fParent);
+  Add(STMonitorChan);
+  LMonitorChan:=TLabel.Create(fParent);
+  Add(LMonitorChan);
+  STMonitorMode:=TStaticText.Create(fParent);
+  Add(STMonitorMode);
+  LMonitorMode:=TLabel.Create(fParent);
+  Add(LMonitorMode);
+  STInterval:=TStaticText.Create(fParent);
+  Add(STInterval);
+  LInterval:=TLabel.Create(fParent);
+  Add(LInterval);
+  STMeasInterval:=TStaticText.Create(fParent);
+  Add(STMeasInterval);
+  LMeasInterval:=TLabel.Create(fParent);
+  Add(LMeasInterval);
+  STMonitorLimitUpper:=TStaticText.Create(fParent);
+  Add(STMonitorLimitUpper);
+  LMonitorLimitUpper:=TLabel.Create(fParent);
+  Add(LMonitorLimitUpper);
+  STMonitorLimitLower:=TStaticText.Create(fParent);
+  Add(STMonitorLimitLower);
+  LMonitorLimitLower:=TLabel.Create(fParent);
+  Add(LMonitorLimitLower);
+  BAdd:=TButton.Create(fParent);
+  Add(BAdd);
+  BClear:=TButton.Create(fParent);
+  Add(BClear);
+  BClear.Name:='Clear';
+  BAdd.Name:='Add';
+  Memo:=TMemo.Create(fParent);
+  Add(Memo);
+end;
+
+procedure TDMM6500ScanParametrWindowShow.DesignElements;
+begin
+ inherited DesignElements;
+
+ BAdd.Top:=MarginTop;
+ BAdd.Left:=MarginLeft;
+ RelativeLocation(BClear,BAdd,oRow,Marginbetween);
+
+ Memo.ScrollBars:=ssVertical;
+ Memo.Width:=round(1.5*BAdd.Width);
+ Memo.Height:=round(1.5*BAdd.Height);
+ RelativeLocation(BAdd,Memo,oCol,Marginbetween);
+
+ STCount.Font.Color:=clGreen;
+ LCount.Font.Color:=clGreen;
+ RelativeLocation(Memo,LCount,oCol,Marginbetween);
+ RelativeLocation(LCount,STCount,oRow,Marginbetween);
+ STCount.Top:=LCount.Top;
+
+ STInterval.Font.Color:=clRed;
+ LInterval.Font.Color:=clRed;
+ RelativeLocation(LCount,LInterval,oCol,Marginbetween);
+ RelativeLocation(LInterval,STInterval,oRow,Marginbetween);
+ STInterval.Top:=LInterval.Top;
+
+ STMeasInterval.Font.Color:=clBlue;
+ LMeasInterval.Font.Color:=clRed;
+ RelativeLocation(LInterval,LMeasInterval,oCol,Marginbetween);
+ RelativeLocation(LMeasInterval,STMeasInterval,oRow,Marginbetween);
+ STMeasInterval.Top:=LMeasInterval.Top
+
+// STMeasInterval.Font.Color:=clBlue;
+// LMeasInterval.Font.Color:=clRed;
+// RelativeLocation(LInterval,LMeasInterval,oCol,Marginbetween);
+// RelativeLocation(LMeasInterval,STMeasInterval,oRow,Marginbetween);
+// STMeasInterval.Top:=LMeasInterval.Top
+//
+//
+//  STMonitorChan:TStaticText;
+//  LMonitorChan:TLabel;
+//  STMonitorMode:TStaticText;
+//  LMonitorMode:TLabel;
+//  STMonitorLimitUpper:TStaticText;
+//  LMonitorLimitUpper:TLabel;
+//  STMonitorLimitLower:TStaticText;
+//  LMonitorLimitLower:TLabel;
+
+
+ HookParameterMonitorMode;
+end;
+
+procedure TDMM6500ScanParametrWindowShow.HookParameterMonitorMode;
+begin
+  STMonitorChan.Enabled:=(fDMM6500.Scan.MonitorMode<>kt_tlt_off);
+  LMonitorChan.Enabled:=STMonitorChan.Enabled;
+  STMonitorLimitUpper.Enabled:=STMonitorChan.Enabled;
+  LMonitorLimitUpper.Enabled:=STMonitorChan.Enabled;
+  STMonitorLimitLower.Enabled:=STMonitorChan.Enabled;
+  LMonitorLimitLower.Enabled:=STMonitorChan.Enabled;
 end;
 
 end.
