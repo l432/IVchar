@@ -175,6 +175,8 @@ type
    property CountDig:integer read fCountDig write SetCountDigNumber;
    property ChansMeasure:TTDMM6500ChannelArr read fChansMeasure;
    property Scan:TDMM6500Scan read fScan;
+   property FirstChannelInSlot:byte read fFirstChannelInSlot;
+   property LastChannelInSlot:byte read fLastChannelInSlot;
    Constructor Create(Telnet:TIdTelnet;IPAdressShow: TIPAdressShow;
                Nm:string='DMM6500');
    destructor Destroy; override;

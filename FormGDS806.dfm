@@ -1,9 +1,11 @@
 object Form_GDS806: TForm_GDS806
   Left = 0
   Top = 0
+  BorderIcons = []
+  BorderStyle = bsSingle
   Caption = 'GDS806 Settings'
-  ClientHeight = 454
-  ClientWidth = 772
+  ClientHeight = 456
+  ClientWidth = 774
   Color = clInfoBk
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -11,6 +13,7 @@ object Form_GDS806: TForm_GDS806
   Font.Name = 'Tahoma'
   Font.Style = []
   OldCreateOrder = False
+  Position = poScreenCenter
   Visible = True
   OnDestroy = FormDestroy
   PixelsPerInch = 96
@@ -503,7 +506,6 @@ object Form_GDS806: TForm_GDS806
       Height = 26
       ComProperty = cpPort
       AutoApply = True
-      Text = 'COM1'
       Style = csDropDownList
       Font.Charset = RUSSIAN_CHARSET
       Font.Color = clWindowText
@@ -511,7 +513,7 @@ object Form_GDS806: TForm_GDS806
       Font.Name = 'Arial'
       Font.Style = [fsBold]
       ItemHeight = 18
-      ItemIndex = 0
+      ItemIndex = -1
       ParentFont = False
       TabOrder = 0
     end
@@ -522,7 +524,6 @@ object Form_GDS806: TForm_GDS806
       Height = 26
       ComProperty = cpBaudRate
       AutoApply = True
-      Text = 'Custom'
       Style = csDropDownList
       Font.Charset = RUSSIAN_CHARSET
       Font.Color = clWindowText
@@ -530,7 +531,7 @@ object Form_GDS806: TForm_GDS806
       Font.Name = 'Arial'
       Font.Style = [fsBold]
       ItemHeight = 18
-      ItemIndex = 0
+      ItemIndex = -1
       ParentFont = False
       TabOrder = 1
     end
@@ -569,7 +570,6 @@ object Form_GDS806: TForm_GDS806
       Height = 26
       ComProperty = cpStopBits
       AutoApply = True
-      Text = '1'
       Style = csDropDownList
       Font.Charset = RUSSIAN_CHARSET
       Font.Color = clWindowText
@@ -577,7 +577,7 @@ object Form_GDS806: TForm_GDS806
       Font.Name = 'Arial'
       Font.Style = [fsBold]
       ItemHeight = 18
-      ItemIndex = 0
+      ItemIndex = -1
       ParentFont = False
       TabOrder = 4
     end
@@ -602,7 +602,6 @@ object Form_GDS806: TForm_GDS806
       Height = 26
       ComProperty = cpParity
       AutoApply = True
-      Text = 'None'
       Style = csDropDownList
       Font.Charset = RUSSIAN_CHARSET
       Font.Color = clWindowText
@@ -610,7 +609,7 @@ object Form_GDS806: TForm_GDS806
       Font.Name = 'Arial'
       Font.Style = [fsBold]
       ItemHeight = 18
-      ItemIndex = 0
+      ItemIndex = -1
       ParentFont = False
       TabOrder = 6
     end

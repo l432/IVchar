@@ -225,6 +225,7 @@ begin
   if not(DeviceEthernetisAbsent) then
     begin
      fDMM6500.GetCardParametersFromDevice;
+     fScanParameters.GetDataFromDeviceAndToSetting;
      fMeasureTypeShow.GetDataFromDevice;
     end;
 

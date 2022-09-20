@@ -4680,6 +4680,7 @@ begin
 //                                      CB_KT2450Azero],
 //                                     GB_Kt2450_Mes);
 
+
  AnyObjectArray.Add([Kt_2450]);
  ShowArray.Add([Kt2450_IPAdressShow,Kt_2450_Show]);
 

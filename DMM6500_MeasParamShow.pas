@@ -28,7 +28,7 @@ TDMM6500_ParameterShowBase=class
   procedure ObjectToSetting;virtual;abstract;
   procedure GetDataFromDevice;virtual;//abstract;
   procedure GetDataFromDeviceAndToSetting;
-  procedure UpDate;
+//  procedure UpDate;
   function GetBaseVolt:IMeasPar_BaseVolt;
   function GetBaseVoltDC:IMeasPar_BaseVoltDC;
 end;
@@ -207,6 +207,18 @@ TDMM6500_SampleRateShow=class(TDMM6500_IntegerParameterShow)
                      STC:TLabel;
                      DMM6500:TDMM6500;ChanNumber:byte=0);
 end;
+
+TDMM6500_ScanCountShow=class(TDMM6500_IntegerParameterShow)
+ protected
+  procedure OkClick();override;
+ public
+  Constructor Create(STD:TStaticText;
+                     STC:TLabel;
+                     DMM6500:TDMM6500);
+  procedure ObjectToSetting;override;
+  procedure GetDataFromDevice;override;
+end;
+
 
 TDMM6500_VoltageUnitShow=class(TDMM6500_StringParameterShow)
  public
@@ -470,10 +482,13 @@ TDMM6500ScanParameters=class(TControlElementsWithWindowCreate)
   fBInit:TButton;
   fBAbort:TButton;
   fBAdd:TButton;
+  fBClear:TButton;
   fBOption:TButton;
   fMemo:TMemo;
+  fST:TStringList;
   procedure OptionButtonClick(Sender: TObject);override;
   procedure FormShow();
+    procedure MemoFilling;
  protected
   procedure CreateElements;override;
   procedure CreateControls;override;
@@ -981,7 +996,7 @@ end;
 procedure TDMM6500_StringParameterShow.OkClick;
 begin
  fDMM6500.SetShablon(fMeasP,Pointer(Data),fChanNumber);
- inherited;
+ inherited OkClick;
 end;
 
 procedure TDMM6500_StringParameterShow.SetDat(const Value: integer);
@@ -1699,11 +1714,11 @@ begin
  ObjectToSetting;
 end;
 
-procedure TDMM6500_ParameterShowBase.UpDate;
-begin
- GetDataFromDevice;
- ObjectToSetting;
-end;
+//procedure TDMM6500_ParameterShowBase.UpDate;
+//begin
+// GetDataFromDevice;
+// ObjectToSetting;
+//end;
 
 { TDMM6500_BoolParameterShow }
 
@@ -3413,6 +3428,7 @@ begin
   fBInit.OnClick:=OptionButtonClick;
   fBAbort.OnClick:=OptionButtonClick;
   fBAdd.OnClick:=OptionButtonClick;
+  fBClear.OnClick:=OptionButtonClick;
   fBOption.OnClick:=OptionButtonClick;
 end;
 
@@ -3422,14 +3438,16 @@ begin
   fBInit:=TButton.Create(fParent);
   fBAbort:=TButton.Create(fParent);
   fBAdd:=TButton.Create(fParent);
+  fBClear:=TButton.Create(fParent);
   fBOption:=TButton.Create(fParent);
   fMemo:=TMemo.Create(fParent);
 //  fBCreate.Name:='Create';
   fBInit.Name:='Init';
   fBAbort.Name:='Abort';
+  fBClear.Name:='Clear';
   fBAdd.Name:='Add';
   fBOption.Name:='Option';
-
+  fST:=TStringList.Create;
 
 end;
 
@@ -3439,19 +3457,31 @@ begin
   fBInit.Caption:=fBInit.Name;
   fBInit.Top:=MarginTop;
   fBInit.Left:=MarginLeft;
+  fBInit.Width:=round(0.7*fBInit.Width);
 
   fBAbort.Parent:=fParent;
-  RelativeLocation(fBInit,fBAbort,oCol,Marginbetween);
+  fBAbort.Width:=fBInit.Width;
+  RelativeLocation(fBInit,fBAbort,oRow,Marginbetween);
+
   fBAdd.Parent:=fParent;
-  RelativeLocation(fBAbort,fBAdd,oCol,Marginbetween);
+  fBAdd.Width:=fBInit.Width;
+  RelativeLocation(fBInit,fBAdd,oCol,Marginbetween);
+
+  fBClear.Parent:=fParent;
+  fBClear.Width:=fBInit.Width;
+  RelativeLocation(fBAdd,fBClear,oRow,Marginbetween);
+
   fBOption.Parent:=fParent;
   RelativeLocation(fBAdd,fBOption,oCol,Marginbetween);
+  fBAdd.Left:=fBInit.Left;
+
   fMemo.Parent:=fParent;
-  fMemo.Width:=fBOption.Width;
+  fMemo.ScrollBars:=ssVertical;
+  fMemo.Width:=round(1.5*fBOption.Width);
   fMemo.Height:=round(1.5*fBOption.Height);
   RelativeLocation(fBOption,fMemo,oCol,Marginbetween);
 
-  fParent.Width:=MarginRight+fMemo.Left+fMemo.Width;
+  fParent.Width:=MarginRight+fBAbort.Left+fBAbort.Width;
   fParent.Height:=MarginTop+fMemo.Top+fMemo.Height;
 
 end;
@@ -3467,8 +3497,10 @@ begin
   fBInit.Free;
   fBAbort.Free;
   fBAdd.Free;
+  fBClear.Free;
   fBOption.Free;
   fMemo.Free;
+  fST.Free;
 end;
 
 procedure TDMM6500ScanParameters.FormShow;
@@ -3478,18 +3510,25 @@ end;
 
 procedure TDMM6500ScanParameters.GetDataFromDevice;
 begin
+ fDMM6500.ScanGetChannels;
+end;
 
+procedure TDMM6500ScanParameters.MemoFilling;
+begin
+  fMemo.Text := fDMM6500.Scan.ChannelsToString;
 end;
 
 procedure TDMM6500ScanParameters.ObjectToSetting;
+ var i:byte;
 begin
- fMemo.Lines.Clear;
-// fMemo.Lines.Add(fDMM6500.Scan.ChannelsToString);
- fMemo.Text:=fDMM6500.Scan.ChannelsToString;
-
+ fST.Clear;
+ for I := fDMM6500.FirstChannelInSlot to fDMM6500.LastChannelInSlot do
+   fST.Add(inttostr(i));
+ MemoFilling;
 end;
 
 procedure TDMM6500ScanParameters.OptionButtonClick(Sender: TObject);
+ var i:integer;
 begin
  if (Sender as TButton).Name='Init'
     then fDMM6500.Init;
@@ -3497,14 +3536,51 @@ begin
  if (Sender as TButton).Name='Abort'
     then fDMM6500.Abort;
 
+ if (Sender as TButton).Name='Clear'
+     then
+      begin
+      fDMM6500.ScanClear;
+      MemoFilling;
+      end;
+
+
  if (Sender as TButton).Name='Add'
     then begin
-          ObjectToSetting;
+          i:=SelectFromVariants(fST,-1,'Choose channel to add');
+          if i>-1 then
+            begin
+             fDMM6500.ScanAddChan(i+1);
+             MemoFilling;
+            end;
          end;
 
  if (Sender as TButton).Name='Option'
     then FormShow;
 
+end;
+
+{ TDMM6500_ScanCountShow }
+
+constructor TDMM6500_ScanCountShow.Create(STD: TStaticText; STC: TLabel;
+  DMM6500: TDMM6500);
+begin
+ inherited Create(dm_pp_SampleRate,DMM6500,0,STD,STC,'Scan Count',1);
+ SetLimits(DMM6500_ScanCountLimits);
+end;
+
+procedure TDMM6500_ScanCountShow.GetDataFromDevice;
+begin
+ fDMM6500.ScanGetCount;
+end;
+
+procedure TDMM6500_ScanCountShow.ObjectToSetting;
+begin
+ Data:=fDMM6500.Scan.Count;
+end;
+
+procedure TDMM6500_ScanCountShow.OkClick;
+begin
+ fDMM6500.ScanSetCount(Data);
 end;
 
 end.
