@@ -4,7 +4,8 @@ interface
 
 uses
   OlegShowTypes, Classes, DMM6500, StdCtrls, Keitley2450Const, OlegType, SCPI,
-  Controls, Windows, DMM6500_MeasParam, OApproxShow, DMM6500_Const, Forms;
+  Controls, Windows, DMM6500_MeasParam, OApproxShow, DMM6500_Const, Forms, 
+  Graphics;
 
 
 const MarginLeft=10;
@@ -557,6 +558,7 @@ TDMM6500ScanParameters=class(TControlElementsWithWindowCreate)
   fScanParametrWindowShow:TDMM6500ScanParametrWindowShow;
   procedure OptionButtonClick(Sender: TObject);override;
   procedure FormShow();
+  procedure CreateForm();
   procedure MemoFilling;
  protected
   procedure CreateElements;override;
@@ -568,7 +570,7 @@ TDMM6500ScanParameters=class(TControlElementsWithWindowCreate)
   procedure ObjectToSetting;override;
   procedure GetDataFromDevice;override;
 end;
-
+ 
 
 //TDMM6500ControlChannels=class(TControlElements)
 TDMM6500ControlChannels=class(TControlElementsWithWindowCreate)
@@ -622,10 +624,11 @@ TDMM6500ScanParametrWindowShow=class(TDMM6500_MeasParShow)
   procedure CreateElements;override;
   procedure CreateControls;override;
   procedure DesignElements;override;
+  procedure DesignArrangement(ControlLeader:Tcontrol;LabelElement:TLabel;
+                              StaticTextElement:TStaticText;Color:TColor);
 //  procedure Resize(Control:TControl);
 //  procedure ResizeElements;
  public
-  
   STCount:TStaticText;
   LCount:TLabel;
   STMonitorChan:TStaticText;
@@ -644,6 +647,7 @@ TDMM6500ScanParametrWindowShow=class(TDMM6500_MeasParShow)
   BClear:TButton;
   Memo:TMemo;
   Constructor Create(Parent:TGroupBox;DMM6500:TDMM6500;ScanParameters:TDMM6500ScanParameters);
+  procedure ObjectToSetting;override;
 end;
 
 TDMM6500MeasPar_BaseShow=class(TDMM6500_MeasParShow)
@@ -981,7 +985,7 @@ function MeasParShowFactory(MeasureType:TKeitley_Measure;
 implementation
 
 uses
-  SysUtils, Graphics, OlegFunction, FormDMM6500, Dialogs;
+  SysUtils, OlegFunction, FormDMM6500, Dialogs;
 
 function MeasParShowFactory(MeasureType:TKeitley_Measure;
                 Parent:TGroupBox;DMM6500:TDMM6500;
@@ -3558,6 +3562,40 @@ begin
   fST:=TStringList.Create;
 end;
 
+procedure TDMM6500ScanParameters.CreateForm();
+begin
+  CreateFormHeader('Options of Scan');
+//  fShowForm := TForm.Create(Application);
+//  fShowForm.Position := poMainFormCenter;
+//  fShowForm.AutoScroll := True;
+//  fShowForm.BorderIcons := [biSystemMenu];
+//  fShowForm.ParentFont := True;
+//  fShowForm.Font.Style := [fsBold];
+//  fShowForm.Caption := 'Options of '+inttostr(ChanNumber)+' channel';
+//  fShowForm.Color := clLtGray;
+//
+//  fBOk:=TButton.Create(fShowForm);
+//  fBOk.ModalResult:=mrOK;
+//  fBOk.Caption:='OK';
+//
+//  fGBInFormShow:=TGroupBox.Create(fShowForm);
+//  fGBInFormShow.Parent:=fShowForm;
+
+   fScanParametrWindowShow:=TDMM6500ScanParametrWindowShow.Create(fGBInFormShow,fDMM6500,Self);
+   fScanParametrWindowShow.GetDataFromDeviceAndToSetting;
+
+   CreateFormFooter(fGBInFormShow.Height+5+fGBInFormShow.Top);
+//   fGBInFormShow.Top:=0;
+//   fGBInFormShow.Left:=0;
+//
+//   fBOk.Parent:=fShowForm;
+//   fBOk.Left:=round((fGBInFormShow.Width-fBOk.Width)/2);
+//   fBOk.Top:=fSTDelayAfterClose.Height+5+fSTDelayAfterClose.Top;
+//
+//   fShowForm.Width:=fGBInFormShow.Width+25;
+//   fShowForm.Height:=fBOk.Top+fBOk.Height+35;
+end;
+
 procedure TDMM6500ScanParameters.DesignElements;
 begin
   fBInit.Parent:=fParent;
@@ -3612,7 +3650,22 @@ end;
 
 procedure TDMM6500ScanParameters.FormShow;
 begin
+ CreateForm;
 
+ fShowForm.ShowModal;
+
+
+ FreeAndNil(fScanParametrWindowShow);
+
+ FormShowFooter;
+// fBOk.Parent:=nil;
+// fBOk.Free;
+//
+// fGBInFormShow.Parent:=nil;
+// fGBInFormShow.Free;
+//
+// fShowForm.Hide;
+// fShowForm.Release;
 end;
 
 procedure TDMM6500ScanParameters.GetDataFromDevice;
@@ -3675,6 +3728,7 @@ constructor TDMM6500_ScanCountShow.Create(STD: TStaticText; STC: TLabel;
 begin
  inherited Create(dm_pp_SampleRate,DMM6500,0,STD,STC,'Scan Count',1);
  SetLimits(DMM6500_ScanCountLimits);
+ STC.WordWrap:=False;
 end;
 
 procedure TDMM6500_ScanCountShow.GetDataFromDevice;
@@ -3700,6 +3754,7 @@ begin
  inherited Create(dm_tp_RTDDelta,DMM6500,0,STD,STC,'Scans Interval, s:',
                 0,5);
  SetLimits(DMM6500_ScanIntervalLimits);
+ STC.WordWrap:=False;
 end;
 
 procedure TDMM6500_ScanIntervalShow.GetDataFromDevice;
@@ -3726,6 +3781,7 @@ begin
  inherited Create(dm_tp_RTDDelta,DMM6500,0,STD,STC,'Measures in Scan Interval, s:',
                 0,5);
  SetLimits(DMM6500_ScanIntervalLimits);
+ STC.WordWrap:=False;
 end;
 
 procedure TDMM6500_ScanMeasIntervalShow.GetDataFromDevice;
@@ -3751,6 +3807,7 @@ constructor TDMM6500_ScanMonitorLimitLower.Create(STD: TStaticText; STC: TLabel;
 begin
  inherited Create(dm_tp_RTDDelta,DMM6500,0,STD,STC,'Monitor Lower Limit:',
                 0,5);
+ STC.WordWrap:=False;
 end;
 
 procedure TDMM6500_ScanMonitorLimitLower.GetDataFromDevice;
@@ -3777,6 +3834,7 @@ constructor TDMM6500_ScanMonitorLimitUpper.Create(STD: TStaticText; STC: TLabel;
 begin
  inherited Create(dm_tp_RTDDelta,DMM6500,0,STD,STC,'Monitor Upper Limit:',
                 0,5);
+ STC.WordWrap:=False;
 end;
 
 procedure TDMM6500_ScanMonitorLimitUpper.GetDataFromDevice;
@@ -3803,6 +3861,7 @@ constructor TDMM6500_ScanMonitorChanShow.Create(STD: TStaticText; STC: TLabel;
 begin
  inherited Create(dm_pp_SampleRate,DMM6500,0,STD,STC,'Monitor Channel:',1);
  SetLimits(fDMM6500.FirstChannelInSlot,fDMM6500.LastChannelInSlot);
+ STC.WordWrap:=False;
 end;
 
 procedure TDMM6500_ScanMonitorChanShow.GetDataFromDevice;
@@ -3826,7 +3885,8 @@ end;
 constructor TDMM6500_ScanMonitorModeShow.Create(STD: TStaticText; STC: TLabel;
   DMM6500: TDMM6500);
 begin
-
+ inherited Create(STD,STC,'Monitor Mode:',dm_pp_DetectorBW,DMM6500,0);
+ STC.WordWrap:=False;
 end;
 
 procedure TDMM6500_ScanMonitorModeShow.GetDataFromDevice;
@@ -3857,8 +3917,9 @@ end;
 constructor TDMM6500ScanParametrWindowShow.Create(Parent: TGroupBox;
   DMM6500: TDMM6500; ScanParameters: TDMM6500ScanParameters);
 begin
- inherited Create(Parent,DMM6500);
  fScanParameters:=ScanParameters;
+ inherited Create(Parent,DMM6500);
+
 end;
 
 procedure TDMM6500ScanParametrWindowShow.CreateControls;
@@ -3923,55 +3984,45 @@ begin
   Add(Memo);
 end;
 
+procedure TDMM6500ScanParametrWindowShow.DesignArrangement(ControlLeader:Tcontrol;
+   LabelElement:TLabel;StaticTextElement:TStaticText;Color:TColor);
+begin
+ StaticTextElement.Font.Color:=Color;
+ LabelElement.Font.Color:=Color;
+ RelativeLocation(ControlLeader,LabelElement,oCol,Marginbetween);
+ LabelElement.Left:=MarginLeft;
+ ControlLeader.Left:=MarginLeft;
+ RelativeLocation(LabelElement,StaticTextElement,oRow,MarginBetweenLST);
+ StaticTextElement.Top:=LabelElement.Top;
+end;
+
 procedure TDMM6500ScanParametrWindowShow.DesignElements;
 begin
  inherited DesignElements;
 
  BAdd.Top:=MarginTop;
  BAdd.Left:=MarginLeft;
- RelativeLocation(BClear,BAdd,oRow,Marginbetween);
+ RelativeLocation(BAdd,BClear,oRow,Marginbetween);
 
  Memo.ScrollBars:=ssVertical;
  Memo.Width:=round(1.5*BAdd.Width);
  Memo.Height:=round(1.5*BAdd.Height);
  RelativeLocation(BAdd,Memo,oCol,Marginbetween);
+ BAdd.Left:=MarginLeft;
 
- STCount.Font.Color:=clGreen;
- LCount.Font.Color:=clGreen;
- RelativeLocation(Memo,LCount,oCol,Marginbetween);
- RelativeLocation(LCount,STCount,oRow,Marginbetween);
- STCount.Top:=LCount.Top;
-
- STInterval.Font.Color:=clRed;
- LInterval.Font.Color:=clRed;
- RelativeLocation(LCount,LInterval,oCol,Marginbetween);
- RelativeLocation(LInterval,STInterval,oRow,Marginbetween);
- STInterval.Top:=LInterval.Top;
-
- STMeasInterval.Font.Color:=clBlue;
- LMeasInterval.Font.Color:=clRed;
- RelativeLocation(LInterval,LMeasInterval,oCol,Marginbetween);
- RelativeLocation(LMeasInterval,STMeasInterval,oRow,Marginbetween);
- STMeasInterval.Top:=LMeasInterval.Top
-
-// STMeasInterval.Font.Color:=clBlue;
-// LMeasInterval.Font.Color:=clRed;
-// RelativeLocation(LInterval,LMeasInterval,oCol,Marginbetween);
-// RelativeLocation(LMeasInterval,STMeasInterval,oRow,Marginbetween);
-// STMeasInterval.Top:=LMeasInterval.Top
-//
-//
-//  STMonitorChan:TStaticText;
-//  LMonitorChan:TLabel;
-//  STMonitorMode:TStaticText;
-//  LMonitorMode:TLabel;
-//  STMonitorLimitUpper:TStaticText;
-//  LMonitorLimitUpper:TLabel;
-//  STMonitorLimitLower:TStaticText;
-//  LMonitorLimitLower:TLabel;
-
+ DesignArrangement(Memo,LCount,STCount,clGreen);
+ DesignArrangement(LCount,LInterval,STInterval,clRed);
+ DesignArrangement(LInterval,LMeasInterval,STMeasInterval,clBlue);
+ DesignArrangement(LMeasInterval,LMonitorMode,STMonitorMode,clMaroon);
+ DesignArrangement(LMonitorMode,LMonitorChan,STMonitorChan,clBlack);
+ DesignArrangement(LMonitorChan,LMonitorLimitLower,STMonitorLimitLower,clOlive);
+ DesignArrangement(LMonitorLimitLower,LMonitorLimitUpper,STMonitorLimitUpper,clNavy);
 
  HookParameterMonitorMode;
+
+ fParent.Height:=LMonitorLimitUpper.Top+LMonitorLimitUpper.Height+MarginTop;
+ fParent.Width:=STMonitorMode.Left+LMonitorMode.Width+2*MarginTop;
+
 end;
 
 procedure TDMM6500ScanParametrWindowShow.HookParameterMonitorMode;
@@ -3982,6 +4033,12 @@ begin
   LMonitorLimitUpper.Enabled:=STMonitorChan.Enabled;
   STMonitorLimitLower.Enabled:=STMonitorChan.Enabled;
   LMonitorLimitLower.Enabled:=STMonitorChan.Enabled;
+end;
+
+procedure TDMM6500ScanParametrWindowShow.ObjectToSetting;
+begin
+ inherited ObjectToSetting;
+ Memo.Text:=fDMM6500.Scan.ChannelsToString;
 end;
 
 end.
