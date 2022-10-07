@@ -3118,11 +3118,19 @@ begin
   if (SBTAuto.Down)and
      (Temperature_MD.ActiveInterface.NewData) then
       begin
+       HelpForMe('SBTAuto_True');
        Temperature:=Temperature_MD.ActiveInterface.Value;
       end                                     else
+       begin
+        HelpForMe('SBTAuto_False');
        Temperature:=Temperature_MD.GetMeasurementResult();
+       end;
   if Temperature=ErResult
-    then  Temperature:=Temperature_MD.GetMeasurementResult();
+    then
+     begin
+      HelpForMe('Temperature_ErResult');
+     Temperature:=Temperature_MD.GetMeasurementResult();
+     end;
 
  CustomFastIVMeas:=FastIVDep;
  if FastIVDep.SingleMeasurement
