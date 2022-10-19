@@ -969,7 +969,10 @@ end;
 procedure TMeterDevice.GetDataThread(WPARAM: word; EventEnd: THandle);
 begin
  if DataSubject.PortConnected then
+   begin
    fRS232MeasuringTread:=TRS232MeasuringTread.Create(Self,WPARAM,EventEnd);
+
+   end;
 end;
 
 function TMeterDevice.GetDeviceKod: byte;

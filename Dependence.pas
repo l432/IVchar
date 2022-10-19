@@ -2211,19 +2211,36 @@ begin
           or(fFastIV.Kt2450.TrigerState=kt_ts_waiting)) then Break;
     Application.ProcessMessages;
 //    sleep(fFastIV.Kt2450.Device.DelayTimeStep);
-    sleep(round(fFastIV.Kt2450.DragonBackTime));
+    sleep(round(max(10,fFastIV.Kt2450.DragonBackTime)));
    end;
 // showmessage('ll');
 
  fFastIV.Kt2450.Beep;
- fFastIV.Kt2450.Device.DelayTimeStep:=round(fFastIV.Kt2450.DragonBackTime);
+
+ fFastIV.Kt2450.Device.DelayTimeStep:=
+     round(max(fFastIV.Kt2450.DragonBackTime,10));
 // fFastIV.Kt2450.Device.DelayTimeStep:=10;
 // showmessage('ll2333');
  NumberInBuffer:=fFastIV.Kt2450.BufferGetReadingsNumber;
- if NumberInBuffer=-1 then NumberInBuffer:=fFastIV.Kt2450.BufferGetReadingsNumber;
 
- fFastIV.Kt2450.Device.DelayTimeStep:=10;
- fFastIV.Kt2450.BufferDataArrayExtended(1,NumberInBuffer,kt_rd_MST);
+ fFastIV.Kt2450.Wait;
+
+ if (NumberInBuffer=-1)or
+    (NumberInBuffer=555) then NumberInBuffer:=fFastIV.Kt2450.BufferGetReadingsNumber;
+ fFastIV.Kt2450.Wait;
+
+ fFastIV.Kt2450.Device.DelayTimeStep:=20;
+ repeat
+ if NumberInBuffer<>555 then
+   fFastIV.Kt2450.BufferDataArrayExtended(1,NumberInBuffer,kt_rd_MST);
+
+ fFastIV.Kt2450.Wait;
+
+// HelpForMe('Pr'+inttostr(NumberInBuffer)+'_'+
+//            inttostr(fFastIV.Kt2450.DataVector.HighNumber)
+//            +'_'+inttostr(MilliSecond));
+ until NumberInBuffer=fFastIV.Kt2450.DataVector.HighNumber+1;
+
  fFastIV.Kt2450.DataVector.CopyTo(fFastIV.Results);
  if fFastIV.fDiodOrientationVoltageFactor<1 then
    begin
@@ -2233,7 +2250,7 @@ begin
     fFastIV.Results.MultiplyY(fFastIV.fDiodOrientationVoltageFactor);
    end;
 
-// fFastIV.Results.Sorting;
+ fFastIV.Results.Sorting;
  fFastIV.Results.DeleteDuplicate;
  fFastIV.fItIsLightIV:=(fFastIV.Results.Yvalue(0)<-1e-5);
 

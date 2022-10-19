@@ -87,7 +87,9 @@ end;
 procedure TTemperatureMeasuringThread.DoSomething;
 begin
 //  fTemperatureMeasurement.GetTemperatureThread(fEventEnd);
+//  HelpForMe('Temp'+inttostr(MilliSecond));
   ITemperatureMeasurement(fTemperatureMeasurement).GetTemperatureThread(fEventEnd);
+//  HelpForMe('Temp'+inttostr(MilliSecond));
 end;
 
 { TMeasuringThread }

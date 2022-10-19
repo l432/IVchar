@@ -686,6 +686,7 @@ type
     CBTelnetStrShow: TCheckBox;
     CBTelnetDevAbsent: TCheckBox;
     B_GDS806drive: TButton;
+//    TemperatureMeasuringThreadTerminated:boolean;
 
     procedure FormCreate(Sender: TObject);
     procedure BConnectClick(Sender: TObject);
@@ -764,6 +765,7 @@ type
     procedure TestVarFree;
     procedure DevicesCreate;
     procedure TemperatureThreadCreate;
+    procedure TemperatureThreadDestroy;
     procedure ControllerThreadCreate;
     function StepDetermine(Voltage: Double; ItForward: Boolean):double;
     procedure BoxFromIniFile;
@@ -1393,15 +1395,21 @@ procedure TIVchar.IVcharOnTempHookSecondMeas;
  var //LEDWasOpened:bool;
      RepetNumber:integer;
      PauseBegin:integer;
+     TemperatureMeasuringThreadTerminated:boolean;
 begin
 // LEDWasOpened:=false;
  RepetNumber:=TemperatureRepetitionNumber.Data;
+ TemperatureMeasuringThreadTerminated:=False;
 repeat
     if IscVocOnTimeModeIsFastIV then
      begin
 
        if assigned(TemperatureMeasuringThread) then
-                 TemperatureMeasuringThread.Terminate;
+                 begin
+                  TemperatureThreadDestroy();
+//                 TemperatureMeasuringThread.Terminate;
+                  TemperatureMeasuringThreadTerminated:=True;
+                 end;
 
 
        if CBtempIVdark.Checked
@@ -1420,8 +1428,12 @@ repeat
          end;
 
       //______________________________________
-         if not(assigned(TemperatureMeasuringThread)) then
+//         if not(assigned(TemperatureMeasuringThread)) then
+         if TemperatureMeasuringThreadTerminated then
+               begin
                TemperatureThreadCreate();
+               TemperatureMeasuringThreadTerminated:=False;
+               end;
       //----------------------------------------
      end    else
      begin
@@ -1589,18 +1601,36 @@ begin
 end;
 
 procedure TIVchar.IscVocOnTimeHookFirstMeas;
+// var TemperatureMeasuringThreadTerminated:boolean;
 begin
 //відкриття заслонки
    LED_OpenIfCondition();
 //запалювання діоду
    LED_OnIfCondition(ForwLine.Count=0);
 
+//TemperatureMeasuringThreadTerminated:=False;
 if IscVocOnTimeModeIsFastIV then
   begin
 
 //_________________________
-   if assigned(TemperatureMeasuringThread) then
-           TemperatureMeasuringThread.Terminate;
+
+   if not(CBuseKT2450.Checked) then
+    begin
+
+   if SBTAuto.Down then
+
+//   if assigned(TemperatureMeasuringThread) then
+       begin
+//           HelpForMe('lll');
+           TemperatureMeasuringThread.Suspend;
+
+//           TemperatureMeasuringThread.Terminate;
+//    TemperatureThreadDestroy();
+
+//           TemperatureMeasuringThreadTerminated:=True;
+       end;
+
+    end;
 //--------------------------
 
 
@@ -1654,6 +1684,7 @@ if IscVocOnTimeModeIsFastIV then
 
 //______________________________________
 //   if not(assigned(TemperatureMeasuringThread)) then
+//
 //         TemperatureThreadCreate();
 //----------------------------------------
 
@@ -1745,8 +1776,20 @@ begin
      FastIVMeasuringComplex('d');
      end;
 
-   if not(assigned(TemperatureMeasuringThread)) then
-         TemperatureThreadCreate();
+   if not(CBuseKT2450.Checked) then
+    begin
+
+   if (assigned(TemperatureMeasuringThread))
+     and(SBTAuto.Down)
+     and(TemperatureMeasuringThread.Suspended) then
+//   if SBTAuto.Down then
+         TemperatureMeasuringThread.Resume;
+
+    end;
+
+//   if not(assigned(TemperatureMeasuringThread)) then
+////   if SBTAuto.Down then
+//         TemperatureThreadCreate();
   end;
 
 end;
@@ -2833,7 +2876,8 @@ begin
       begin
        if assigned(TemperatureMeasuringThread) then
            begin
-            TemperatureMeasuringThread.Terminate;
+            TemperatureThreadDestroy();
+//            TemperatureMeasuringThread.Terminate;
             sleep(500);
            end;
        TemperatureThreadCreate();
@@ -3118,17 +3162,18 @@ begin
   if (SBTAuto.Down)and
      (Temperature_MD.ActiveInterface.NewData) then
       begin
-       HelpForMe('SBTAuto_True');
+//       HelpForMe('SBTAuto_True'+inttostr(MilliSecond));
        Temperature:=Temperature_MD.ActiveInterface.Value;
+       Temperature_MD.ActiveInterface.NewData:=False;
       end                                     else
        begin
-        HelpForMe('SBTAuto_False');
+//        HelpForMe('SBTAuto_False'+inttostr(MilliSecond));
        Temperature:=Temperature_MD.GetMeasurementResult();
        end;
   if Temperature=ErResult
     then
      begin
-      HelpForMe('Temperature_ErResult');
+//      HelpForMe('Temperature_ErResult'+inttostr(MilliSecond));
      Temperature:=Temperature_MD.GetMeasurementResult();
      end;
 
@@ -3219,7 +3264,8 @@ end;
 procedure TIVchar.FormDestroy(Sender: TObject);
 begin
 
- if SBTAuto.Down then TemperatureMeasuringThread.Terminate;
+ if SBTAuto.Down then    TemperatureThreadDestroy();
+// TemperatureMeasuringThread.Terminate;
  if SBControlBegin.Down then ControllerThread.Terminate;
 
  if assigned(DependTimer) then DependTimer.Free;
@@ -3756,7 +3802,8 @@ begin
  if SBTAuto.Down then
     TemperatureThreadCreate()
                  else
-    TemperatureMeasuringThread.Terminate;
+    TemperatureThreadDestroy();
+//    TemperatureMeasuringThread.Terminate;
 end;
 
 procedure TIVchar.SBTermostatClick(Sender: TObject);
@@ -3805,6 +3852,7 @@ end;
 
 procedure TIVchar.TemperatureThreadCreate;
 begin
+//  HelpForMe('TempThreadCreate'+inttostr(MilliSecond));
   ThermoCuple.Measurement:=TermoCouple_MD.ActiveInterface;
   TemperatureMeasuringThread:=
     TTemperatureMeasuringThread.Create(Temperature_MD.ActiveInterface,
@@ -3812,6 +3860,12 @@ begin
                                        EventMeasuringEnd);
 end;
 
+
+procedure TIVchar.TemperatureThreadDestroy;
+begin
+//  HelpForMe('TempThreadDestroy'+inttostr(MilliSecond));
+  TemperatureMeasuringThread.Terminate;
+end;
 
 procedure TIVchar.TimeDHookFirstMeas;
 begin
@@ -3863,7 +3917,8 @@ begin
          begin
          if assigned(TemperatureMeasuringThread) then
           begin
-           TemperatureMeasuringThread.Terminate;
+           TemperatureThreadDestroy();
+//           TemperatureMeasuringThread.Terminate;
            sleep(1000);
           end;
          TemperatureThreadCreate();

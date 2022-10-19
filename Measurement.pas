@@ -352,8 +352,12 @@ begin
     t := Now();
     DoSomething;
     k := fInterval - Round(MilliSecondSpan(Now(), t));
+//    HelpForMe(inttostr(k)+'_'+inttostr(MilliSecond));
     if k>0 then
+      begin
+//       HelpForMe(inttostr(k)+'_'+inttostr(MilliSecond));
       _Sleep(k);
+      end;
   end;
 end;
 
