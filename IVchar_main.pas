@@ -2962,11 +2962,26 @@ procedure TIVchar.BWriteTMClick(Sender: TObject);
 begin
     AssignFile(FF,'comments.dat');
     if FindFirst('comments.dat',faAnyFile,SR)=0 then Append(FF) else ReWrite(FF);
-    write(FF,'Time mark : ',inttostr(SecondFromDayBegining(Now())));
+    if (CBuseKT2450.Checked)
+      then
+       begin
+        Kt_2450.OutPutChange(True);
+        Kt_2450.MeasureExtended(kt_rd_MT);
+        Kt_2450.OutPutChange(False);
+
+        if Kt_2450.Device.Value<>ErResult
+         then write(FF,'Time mark : ',floattostr(Kt_2450.TimeValue))
+         else
+          write(FF,'Time mark : ',inttostr(SecondFromDayBegining(Now())));
+       end
+      else
+        write(FF,'Time mark : ',inttostr(SecondFromDayBegining(Now())));
     writeln(FF);
     writeln(FF);
     CloseFile(FF);
 end;
+
+
 
 procedure TIVchar.B_DM6500driveClick(Sender: TObject);
 begin
