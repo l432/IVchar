@@ -2599,6 +2599,7 @@ end;
 procedure TIVchar.FastIVMeasuringComplex(const FilePrefix: string);
 begin
   FastIVMeasuring.Measuring(False, FilePrefix);
+  if CBuseKT2450.Checked then Exit;
   if IVisBad(FastIVMeasuring.Results) then
   begin
     sleep(400);
