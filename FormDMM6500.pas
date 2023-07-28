@@ -60,17 +60,18 @@ uses
 
 procedure TDMM6500Form.BCloseClick(Sender: TObject);
 begin
-  if Parent=nil then IVchar.B_DM6500drive.Click
-                else
-   begin
-    Align := alNone;
-    BorderStyle:=bsSingle;
-    Parent := nil;
-    BClose.Caption:='Dock';
-    Color:=clMoneyGreen;
-    Position:=poScreenCenter;
-    Height:=Height+20;
-   end;
+   FormDockUnDock(Self,clMoneyGreen);
+//  if Parent=nil then IVchar.B_DM6500drive.Click
+//                else
+//   begin
+//    Align := alNone;
+//    BorderStyle:=bsSingle;
+//    Parent := nil;
+//    BClose.Caption:='Dock';
+//    Color:=clMoneyGreen;
+//    Position:=poScreenCenter;
+//    Height:=Height+20;
+//   end;
 end;
 
 

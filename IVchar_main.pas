@@ -686,6 +686,9 @@ type
     CBTelnetStrShow: TCheckBox;
     CBTelnetDevAbsent: TCheckBox;
     B_GDS806drive: TButton;
+    TS_ST2829: TTabSheet;
+    B_ST2829drive: TButton;
+    ComPortST2829: TComPort;
 //    TemperatureMeasuringThreadTerminated:boolean;
 
     procedure FormCreate(Sender: TObject);
@@ -729,11 +732,12 @@ type
 //    procedure FormPaint(Sender: TObject);
     procedure FormShow(Sender: TObject);
     procedure BBCloseClick(Sender: TObject);
-    procedure B_Kt2450driveClick(Sender: TObject);
+//    procedure B_Kt2450driveClick(Sender: TObject);
     procedure CBuseKT2450Click(Sender: TObject);
-    procedure B_DM6500driveClick(Sender: TObject);
+//    procedure B_DM6500driveClick(Sender: TObject);
     procedure CBTelnetStrShowClick(Sender: TObject);
-    procedure B_GDS806driveClick(Sender: TObject);
+//    procedure B_GDS806driveClick(Sender: TObject);
+    procedure B_driveClick(Sender: TObject);
   private
     procedure ComponentView;
     {початкове налаштування різних компонентів}
@@ -863,7 +867,8 @@ type
     procedure IscVocPin_toVoc;
     procedure IscVocPin_toIsc;
     procedure ComPort1Reload;
-    procedure  FormsTunning;
+    procedure FormsTunning;
+    procedure FormDock(FForm: TForm; TS: TTabSheet);
   public
     TestVar2:TINA226_Channel;
 //     TestVar:TINA226_Module;
@@ -1016,6 +1021,8 @@ type
 
   end;
 
+Procedure FormDockUnDock(Form:TForm;Color:TColor);
+
 const
   Undefined='NoData';
   Vmax=6.6;
@@ -1030,7 +1037,7 @@ implementation
 uses
   ArduinoADC, OlegFunction, AD5752R, IT6332B, Keithley2450Show, FormKT2450, 
   PsevdoMainForm, Keitley2450Const, FormDMM6500, DMM6500, DMM6500Show, 
-  TelnetDevice, FormGDS806;
+  TelnetDevice, FormGDS806, FormST2829;
 
 {$R *.dfm}
 
@@ -2929,33 +2936,34 @@ end;
 
 
 
-procedure TIVchar.B_GDS806driveClick(Sender: TObject);
-begin
-  if not(Assigned(Form_GDS806)) then
-   begin
-    Form_GDS806:=TForm_GDS806.Create(nil);
-    GDSShow_Create;
-    GDS_806S_Show.ReadFromIniFile(ConfigFile);
-   end;
+//procedure TIVchar.B_GDS806driveClick(Sender: TObject);
+//begin
+//  if not(Assigned(Form_GDS806)) then
+//   begin
+//    Form_GDS806:=TForm_GDS806.Create(nil);
+//    GDSShow_Create;
+//    GDS_806S_Show.ReadFromIniFile(ConfigFile);
+//   end;
+//
+//  Form_GDS806.Parent := IVchar.TS_GDS;
+//  Form_GDS806.BorderStyle:=bsNone;
+//  Form_GDS806.Align := alClient;
+//  Form_GDS806.BClose.Caption:='UnDock';
+//  Form_GDS806.Color:=clBtnFace;
+//  Form_GDS806.Height:=Form_GDS806.Height-20;
+//end;
 
-  Form_GDS806.Parent := IVchar.TS_GDS;
-  Form_GDS806.BorderStyle:=bsNone;
-  Form_GDS806.Align := alClient;
-  Form_GDS806.BClose.Caption:='UnDock';
-  Form_GDS806.Color:=clBtnFace;
-  Form_GDS806.Height:=Form_GDS806.Height-20;
-end;
-
-procedure TIVchar.B_Kt2450driveClick(Sender: TObject);
-begin
-//  KT2450Form.Show;
-  KT2450Form.Parent := IVchar.TS_Kt2450;
-  KT2450Form.BorderStyle:=bsNone;
-  KT2450Form.Align := alClient;
-  KT2450Form.BClose.Caption:='UnDock';
-  KT2450Form.Color:=clBtnFace;
-  KT2450Form.Height:=KT2450Form.Height-20;
-end;
+//procedure TIVchar.B_Kt2450driveClick(Sender: TObject);
+//begin
+////  KT2450Form.Show;
+//
+//  KT2450Form.Parent := IVchar.TS_Kt2450;
+//  KT2450Form.BorderStyle:=bsNone;
+//  KT2450Form.Align := alClient;
+//  KT2450Form.BClose.Caption:='UnDock';
+//  KT2450Form.Color:=clBtnFace;
+//  KT2450Form.Height:=KT2450Form.Height-20;
+//end;
 
 procedure TIVchar.BWriteTMClick(Sender: TObject);
  var SR : TSearchRec;
@@ -2984,14 +2992,46 @@ end;
 
 
 
-procedure TIVchar.B_DM6500driveClick(Sender: TObject);
+//procedure TIVchar.B_DM6500driveClick(Sender: TObject);
+//begin
+//  DMM6500Form.Parent := IVchar.TS_DM6500;
+//  DMM6500Form.BorderStyle:=bsNone;
+//  DMM6500Form.Align := alClient;
+//  DMM6500Form.BClose.Caption:='UnDock';
+//  DMM6500Form.Color:=clBtnFace;
+//  DMM6500Form.Height:=DMM6500Form.Height-20;
+//end;
+
+procedure TIVchar.B_driveClick(Sender: TObject);
 begin
-  DMM6500Form.Parent := IVchar.TS_DM6500;
-  DMM6500Form.BorderStyle:=bsNone;
-  DMM6500Form.Align := alClient;
-  DMM6500Form.BClose.Caption:='UnDock';
-  DMM6500Form.Color:=clBtnFace;
-  DMM6500Form.Height:=DMM6500Form.Height-20;
+  if (Sender as TButton).Name='B_Kt2450drive'
+      then  FormDock(KT2450Form, TS_Kt2450);
+
+  if (Sender as TButton).Name='B_GDS806drive'
+      then
+      begin
+       if not(Assigned(Form_GDS806)) then
+         begin
+          Form_GDS806:=TForm_GDS806.Create(nil);
+          with Form_GDS806 do
+          begin
+          ComCBGDS_Port.UpdateSettings;
+          ComCBGDS_Baud.UpdateSettings;
+          ComCBGDS_Stop.UpdateSettings;
+          ComCBGDS_Parity.UpdateSettings;
+          end;
+          GDSShow_Create;
+          GDS_806S_Show.ReadFromIniFile(ConfigFile);
+         end;
+       FormDock(Form_GDS806,TS_GDS);
+      end;
+
+  if (Sender as TButton).Name='B_DM6500drive'
+      then  FormDock(DMM6500Form, TS_DM6500);
+
+  if (Sender as TButton).Name='B_ST2829drive'
+      then  FormDock(ST2829Form, TS_ST2829);
+
 end;
 
 procedure TIVchar.B_IT6332_TestClick(Sender: TObject);
@@ -3324,6 +3364,19 @@ begin
 end;
 
 
+procedure TIVchar.FormDock(FForm: TForm; TS: TTabSheet);
+ var But:TButton;
+begin
+  FForm.Parent := TS;
+  FForm.BorderStyle:=bsNone;
+  FForm.Align := alClient;
+  But:=TButton(FForm.FindComponent('BClose'));
+  if Assigned(But)
+    then  But.Caption:='UnDock';
+  FForm.Color:=clBtnFace;
+  FForm.Height:=FForm.Height-20;
+end;
+
 //procedure TIVchar.FormPaint(Sender: TObject);
 //begin
 // TMyGroupBox(GB_K2450IP).Canvas.Brush.Color:=clBlack;
@@ -3344,6 +3397,7 @@ begin
  B_DM6500drive.Click;
  if Assigned(Form_GDS806) then
    B_GDS806drive.Click;
+ B_ST2829drive.Click;
 end;
 
 procedure TIVchar.PCChange(Sender: TObject);
@@ -3501,7 +3555,7 @@ end;
 procedure TIVchar.ComPortsBegining;
 begin
   ComPortsLoadSettings([ComPortUT70C,ComPortUT70B,
-          ComPort1,ComPortGDS,ComPortIT6332B]);
+          ComPort1,ComPortGDS,ComPortIT6332B,ComPortST2829]);
   ComCBUT70CPort.UpdateSettings;
   ComCBUT70BPort.UpdateSettings;
   ComCBBR.UpdateSettings;
@@ -3537,6 +3591,7 @@ begin
   if Assigned(Form_GDS806) then
   PortBeginAction(ComPortGDS, Form_GDS806.LGDSPort, nil);
 
+  PortBeginAction(ComPortST2829, ST2829Form.LST2829Port, nil);
 
   PortBeginAction(ComPort1, LConnected, BConnect);
 end;
@@ -3856,7 +3911,8 @@ begin
   DelayTimeWriteToIniFile;
   BoxToIniFile;
   ComPortsWriteSettings([ComPortUT70C,ComPortUT70B,
-              ComPort1,ComPortGDS,ComPortIT6332B]);
+              ComPort1,ComPortGDS,
+              ComPortIT6332B,ComPortST2829]);
 end;
 
 procedure TIVchar.TemperatureOnTimeFirstMeas;
@@ -4900,6 +4956,32 @@ begin
   IsWorkingTermostat:=False;
   IsPID_Termostat_Created:=False;
   IscVocOnTimeIsRun:=False;
+
+end;
+
+Procedure FormDockUnDock(Form:TForm;Color:TColor);
+ var But:TButton;
+begin
+  if Form.Parent=nil
+                then
+                  case Color of
+                    clMoneyGreen:IVchar.B_DM6500drive.Click;
+                    clCream:IVchar.B_Kt2450drive.Click;
+                    clInfoBk:IVchar.B_GDS806drive.Click;
+                    clSkyBlue:IVchar.B_ST2829drive.Click;
+                  end
+                else
+   begin
+    Form.Align := alNone;
+    Form.BorderStyle:=bsSingle;
+    Form.Parent := nil;
+    But:=TButton(Form.FindComponent('BClose'));
+    if Assigned(But)
+      then  But.Caption:='Dock';
+    Form.Color:=Color;
+    Form.Position:=poScreenCenter;
+    Form.Height:=Form.Height+20;
+   end;
 
 end;
 

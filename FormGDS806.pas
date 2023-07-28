@@ -91,17 +91,18 @@ uses
 
 procedure TForm_GDS806.BCloseClick(Sender: TObject);
 begin
-  if Parent=nil then IVchar.B_GDS806drive.Click
-                else
-   begin
-    Align := alNone;
-    BorderStyle:=bsSingle;
-    Parent := nil;
-    BClose.Caption:='Dock';
-    Color:=clInfoBk;
-    Position:=poScreenCenter;
-    Height:=Height+20;
-   end;
+  FormDockUnDock(Self,clInfoBk);
+//  if Parent=nil then IVchar.B_GDS806drive.Click
+//                else
+//   begin
+//    Align := alNone;
+//    BorderStyle:=bsSingle;
+//    Parent := nil;
+//    BClose.Caption:='Dock';
+//    Color:=clInfoBk;
+//    Position:=poScreenCenter;
+//    Height:=Height+20;
+//   end;
 end;
 
 

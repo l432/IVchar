@@ -58,6 +58,9 @@
     <DCCReference Include="FormKT2450.pas">
       <Form>KT2450Form</Form>
     </DCCReference>
+    <DCCReference Include="FormST2829.pas">
+      <Form>ST2829Form</Form>
+    </DCCReference>
     <DCCReference Include="GDS_806Su.pas" />
     <DCCReference Include="HighResolutionTimer.pas" />
     <DCCReference Include="INA226.pas" />

@@ -52,7 +52,8 @@ uses
   DMM6500_Const in 'DMM6500_Const.pas',
   DMM6500_MeasParam in 'DMM6500_MeasParam.pas',
   DMM6500_MeasParamShow in 'DMM6500_MeasParamShow.pas',
-  FormGDS806 in 'FormGDS806.pas' {Form1};
+  FormGDS806 in 'FormGDS806.pas' {Form1},
+  FormST2829 in 'FormST2829.pas' {ST2829Form};
 
 {$R *.res}
 
@@ -62,7 +63,8 @@ begin
   Application.CreateForm(TMain, Main);
   Application.CreateForm(TKT2450Form, KT2450Form);
   Application.CreateForm(TDMM6500Form, DMM6500Form);
-//  Application.CreateForm(TForm_GDS806, Form_GDS806);
+  Application.CreateForm(TST2829Form, ST2829Form);
+  //  Application.CreateForm(TForm_GDS806, Form_GDS806);
   Application.CreateForm(TIVchar, IVchar);
   //  KT2450Form.Hide;
   Main.Hide;

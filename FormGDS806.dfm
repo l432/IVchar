@@ -506,6 +506,7 @@ object Form_GDS806: TForm_GDS806
       Height = 26
       ComProperty = cpPort
       AutoApply = True
+      Text = 'COM1'
       Style = csDropDownList
       Font.Charset = RUSSIAN_CHARSET
       Font.Color = clWindowText
@@ -513,7 +514,7 @@ object Form_GDS806: TForm_GDS806
       Font.Name = 'Arial'
       Font.Style = [fsBold]
       ItemHeight = 18
-      ItemIndex = -1
+      ItemIndex = 0
       ParentFont = False
       TabOrder = 0
     end
@@ -522,8 +523,10 @@ object Form_GDS806: TForm_GDS806
       Top = 85
       Width = 74
       Height = 26
+      ComPort = IVchar.ComPortGDS
       ComProperty = cpBaudRate
       AutoApply = True
+      Text = '9600'
       Style = csDropDownList
       Font.Charset = RUSSIAN_CHARSET
       Font.Color = clWindowText
@@ -531,7 +534,7 @@ object Form_GDS806: TForm_GDS806
       Font.Name = 'Arial'
       Font.Style = [fsBold]
       ItemHeight = 18
-      ItemIndex = -1
+      ItemIndex = 7
       ParentFont = False
       TabOrder = 1
     end
@@ -568,8 +571,10 @@ object Form_GDS806: TForm_GDS806
       Top = 32
       Width = 74
       Height = 26
+      ComPort = IVchar.ComPortGDS
       ComProperty = cpStopBits
       AutoApply = True
+      Text = '1'
       Style = csDropDownList
       Font.Charset = RUSSIAN_CHARSET
       Font.Color = clWindowText
@@ -577,7 +582,7 @@ object Form_GDS806: TForm_GDS806
       Font.Name = 'Arial'
       Font.Style = [fsBold]
       ItemHeight = 18
-      ItemIndex = -1
+      ItemIndex = 0
       ParentFont = False
       TabOrder = 4
     end
@@ -600,8 +605,10 @@ object Form_GDS806: TForm_GDS806
       Top = 85
       Width = 74
       Height = 26
+      ComPort = IVchar.ComPortGDS
       ComProperty = cpParity
       AutoApply = True
+      Text = 'None'
       Style = csDropDownList
       Font.Charset = RUSSIAN_CHARSET
       Font.Color = clWindowText
@@ -609,7 +616,7 @@ object Form_GDS806: TForm_GDS806
       Font.Name = 'Arial'
       Font.Style = [fsBold]
       ItemHeight = 18
-      ItemIndex = -1
+      ItemIndex = 0
       ParentFont = False
       TabOrder = 6
     end

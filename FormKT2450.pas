@@ -114,17 +114,19 @@ uses
 procedure TKT2450Form.BCloseClick(Sender: TObject);
 begin
 //  KT2450Form.Hide;
-  if Parent=nil then IVchar.B_Kt2450drive.Click
-                else
-   begin
-    Align := alNone;
-    BorderStyle:=bsSingle;
-    Parent := nil;
-    BClose.Caption:='Dock';
-    Color:=clCream;
-    Position:=poScreenCenter;
-    Height:=Height+20;
-   end;
+  FormDockUnDock(Self,clCream);
+
+//  if Parent=nil then IVchar.B_Kt2450drive.Click
+//                else
+//   begin
+//    Align := alNone;
+//    BorderStyle:=bsSingle;
+//    Parent := nil;
+//    BClose.Caption:='Dock';
+//    Color:=clCream;
+//    Position:=poScreenCenter;
+//    Height:=Height+20;
+//   end;
 end;
 
 
