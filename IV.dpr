@@ -53,7 +53,10 @@ uses
   DMM6500_MeasParam in 'DMM6500_MeasParam.pas',
   DMM6500_MeasParamShow in 'DMM6500_MeasParamShow.pas',
   FormGDS806 in 'FormGDS806.pas' {Form1},
-  FormST2829 in 'FormST2829.pas' {ST2829Form};
+  FormST2829 in 'FormST2829.pas' {ST2829Form},
+  ST2829C in 'ST2829C.pas',
+  ST2829CShow in 'ST2829CShow.pas',
+  ST2829CConst in 'ST2829CConst.pas';
 
 {$R *.res}
 

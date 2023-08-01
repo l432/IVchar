@@ -325,6 +325,9 @@ Procedure PortBeginAction(Port:TComPort;Lab:TLabel;Button: TButton);
 
 Procedure PortEndAction(Port:TComPort);
 
+var
+ TestShowRS232,DeviceRS232isAbsent:boolean;
+
 implementation
 
 uses
@@ -514,6 +517,7 @@ end;
 
 Procedure PortBeginAction(Port:TComPort;Lab:TLabel;Button: TButton);
 begin
+// showmessage('!!!'+Port.Name);
   try
   try
     Port.Open;

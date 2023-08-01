@@ -689,6 +689,9 @@ type
     TS_ST2829: TTabSheet;
     B_ST2829drive: TButton;
     ComPortST2829: TComPort;
+    GBComParamShow: TGroupBox;
+    CBComStrShow: TCheckBox;
+    CBComDevAbsent: TCheckBox;
 //    TemperatureMeasuringThreadTerminated:boolean;
 
     procedure FormCreate(Sender: TObject);
@@ -1018,7 +1021,8 @@ type
     Kt2450_IPAdressShow,DMM6500_IPAdressShow:TIPAdressShow;
     procedure Kt2450_Create;
     procedure DMM6500_Create;
-
+    procedure ST2829C_Create;
+    procedure ST2829CShow_Create;
   end;
 
 Procedure FormDockUnDock(Form:TForm;Color:TColor);
@@ -1037,7 +1041,7 @@ implementation
 uses
   ArduinoADC, OlegFunction, AD5752R, IT6332B, Keithley2450Show, FormKT2450, 
   PsevdoMainForm, Keitley2450Const, FormDMM6500, DMM6500, DMM6500Show, 
-  TelnetDevice, FormGDS806, FormST2829;
+  TelnetDevice, FormGDS806, FormST2829, ST2829C, ST2829CShow;
 
 {$R *.dfm}
 
@@ -1967,6 +1971,12 @@ begin
 
  if ((Sender as TCheckBox).Name='CBTelnetDevAbsent') then
       DeviceEthernetisAbsent:=CBTelnetDevAbsent.Checked;
+
+ if ((Sender as TCheckBox).Name='CBComStrShow') then
+      TestShowRS232:=CBComStrShow.Checked;
+
+ if ((Sender as TCheckBox).Name='CBComDevAbsent') then
+      DeviceRS232isAbsent:=CBComDevAbsent.Checked;
 end;
 
 procedure TIVchar.CBuseKT2450Click(Sender: TObject);
@@ -2539,6 +2549,7 @@ end;
 procedure TIVchar.GDS_Create;
  var i:TGDS_Channel;
 begin
+//  showmessage('kkk');
   GDS_806S := TGDS_806S.Create(ComPortGDS);
   for I := Low(TGDS_Channel) to High(TGDS_Channel) do
       GDS_806S_Channel[i]:=TGDS_806S_Channel.Create(i,GDS_806S);
@@ -3030,7 +3041,21 @@ begin
       then  FormDock(DMM6500Form, TS_DM6500);
 
   if (Sender as TButton).Name='B_ST2829drive'
-      then  FormDock(ST2829Form, TS_ST2829);
+      then
+      begin
+       if not(Assigned(ST2829Form)) then
+         begin
+          ST2829Form:=TST2829Form.Create(nil);
+          with ST2829Form do
+          begin
+          ComCBST2829_Port.UpdateSettings;
+          ComCBST2829_Baud.UpdateSettings;
+          end;
+          GDSShow_Create;
+          GDS_806S_Show.ReadFromIniFile(ConfigFile);
+         end;
+       FormDock(ST2829Form, TS_ST2829);
+      end;
 
 end;
 
@@ -3495,6 +3520,24 @@ begin
 end;
 
 
+procedure TIVchar.ST2829CShow_Create;
+begin
+ with ST2829Form do
+ begin
+  ST2829C_Show := TST2829C_Show.Create(ST_2829C,
+                                      B_ST2829C_Test);
+ end;
+ ShowArray.Add([ST2829C_Show]);
+end;
+
+procedure TIVchar.ST2829C_Create;
+begin
+ ST_2829C := TST2829C.Create(ComPortST2829);
+ if Assigned(ST2829Form) then
+   ST2829CShow_Create;
+ AnyObjectArray.Add([ST_2829C]);
+end;
+
 procedure TIVchar.NameToLabel(LabelName: string; Name, NameValue: TLabel);
 begin
 if LabelName='' then
@@ -3556,6 +3599,7 @@ procedure TIVchar.ComPortsBegining;
 begin
   ComPortsLoadSettings([ComPortUT70C,ComPortUT70B,
           ComPort1,ComPortGDS,ComPortIT6332B,ComPortST2829]);
+
   ComCBUT70CPort.UpdateSettings;
   ComCBUT70BPort.UpdateSettings;
   ComCBBR.UpdateSettings;
@@ -3564,11 +3608,21 @@ begin
   if Assigned(Form_GDS806) then
   with Form_GDS806 do
   begin
+//  showmessage('hiiii');
   ComCBGDS_Port.UpdateSettings;
   ComCBGDS_Baud.UpdateSettings;
   ComCBGDS_Stop.UpdateSettings;
   ComCBGDS_Parity.UpdateSettings;
   end;
+
+  if Assigned(ST2829Form) then
+  with ST2829Form do
+  begin
+//  showmessage('hi');
+  ComCBST2829_Port.UpdateSettings;
+  ComCBST2829_Baud.UpdateSettings;
+  end;
+
 
   ComCBIT6332B_Port.UpdateSettings;
   ComCBIT6332_Baud.UpdateSettings;
@@ -3587,11 +3641,11 @@ begin
 //---------------
 //  PortBeginAction(ComPortIT6332B, LIT6332Port, nil);
 
-//  PortBeginAction(ComPortGDS, LGDSPort, nil);
   if Assigned(Form_GDS806) then
   PortBeginAction(ComPortGDS, Form_GDS806.LGDSPort, nil);
 
-  PortBeginAction(ComPortST2829, ST2829Form.LST2829Port, nil);
+  if Assigned(ST2829Form) then
+   PortBeginAction(ComPortST2829, ST2829Form.LST2829Port, nil);
 
   PortBeginAction(ComPort1, LConnected, BConnect);
 end;
@@ -3608,7 +3662,10 @@ var
   I: Integer;
 begin
   for I := 0 to High(ComPorts) do
+//   begin
+//   showmessage(ComPorts[i].Name);
    ComPorts[i].LoadSettings(stIniFile, ExtractFilePath(Application.ExeName) + 'IVChar.ini');
+//   end;
 end;
 
 procedure TIVchar.ComPortsWriteSettings(ComPorts: array of TComPort);
@@ -4103,6 +4160,7 @@ begin
   IB6332_Create();
   Kt2450_Create();
   DMM6500_Create();
+  ST2829C_Create();
 
 end;
 

@@ -90,6 +90,9 @@
     <DCCReference Include="RS232_Mediator_Tread.pas" />
     <DCCReference Include="SCPI.pas" />
     <DCCReference Include="ShowTypes.pas" />
+    <DCCReference Include="ST2829C.pas" />
+    <DCCReference Include="ST2829CConst.pas" />
+    <DCCReference Include="ST2829CShow.pas" />
     <DCCReference Include="TelnetDevice.pas" />
     <DCCReference Include="TemperatureSensor.pas" />
     <DCCReference Include="TempThread.pas" />

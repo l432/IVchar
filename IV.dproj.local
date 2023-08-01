@@ -40,5 +40,8 @@
     <Transaction>2022.09.19 13:43:22.180.dfm,D:\Oleg\Shottky_Program\IVchar\Unit1.dfm=D:\Oleg\Shottky_Program\IVchar\FormGDS806.dfm</Transaction>
     <Transaction>2023.07.28 10:33:32.390.pas,D:\Oleg\Shottky_Program\IVchar\Unit2.pas=D:\Oleg\Shottky_Program\IVchar\FormST2829.pas</Transaction>
     <Transaction>2023.07.28 10:33:32.390.dfm,D:\Oleg\Shottky_Program\IVchar\Unit2.dfm=D:\Oleg\Shottky_Program\IVchar\FormST2829.dfm</Transaction>
+    <Transaction>2023.08.01 11:04:28.296.pas,D:\Oleg\Shottky_Program\IVchar\Unit1.pas=D:\Oleg\Shottky_Program\IVchar\ST2829C.pas</Transaction>
+    <Transaction>2023.08.01 13:09:49.706.pas,D:\Oleg\Shottky_Program\IVchar\Unit1.pas=D:\Oleg\Shottky_Program\IVchar\ST2829CShow.pas</Transaction>
+    <Transaction>2023.08.01 14:07:50.550.pas,D:\Oleg\Shottky_Program\IVchar\Unit1.pas=D:\Oleg\Shottky_Program\IVchar\ST2829CConst.pas</Transaction>
   </Transactions>
 </BorlandProject>

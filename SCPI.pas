@@ -1,4 +1,4 @@
-unit SCPI;
+п»їunit SCPI;
 
 interface
 
@@ -16,7 +16,7 @@ type
  TLimits=(lvMin,lvMax);
  TLimitValues=array[TLimits] of double;
 
-  TSCPInew=class(TNamedInterfacedObject)
+ TSCPInew=class(TNamedInterfacedObject)
    private
     procedure SetFlags(RootNode,FirstLevelNode,LeafNode:byte;
                   IsSuffix:boolean=True;isQuery:boolean=False);
@@ -43,16 +43,16 @@ type
     Function NumbersArrayToStrLimited(Values:TArrSingle;LimitValues:TLimitValues):string;overload;
     Function NumbersArrayToStrLimited(Values:TArrInteger;LimitValues:TLimitValues):string;overload;
     procedure StrToNumberArray(var Values:TArrSingle; Str:string; Decimator:string=',');
-    {розміщує в Values числа, розташовані в рядку Str і розділені між собою Decimator}
+    {СЂРѕР·РјС–С‰СѓС” РІ Values С‡РёСЃР»Р°, СЂРѕР·С‚Р°С€РѕРІР°РЅС– РІ СЂСЏРґРєСѓ Str С– СЂРѕР·РґС–Р»РµРЅС– РјС–Р¶ СЃРѕР±РѕСЋ Decimator}
     procedure JoinToStringToSend(Str:string);
    public
     property Device:TMeterDevice read fDevice;
     Constructor Create(Nm:string);
     destructor Destroy;override;
-    function Test():boolean;virtual;abstract;
+    function Test():boolean;virtual;//abstract;
     procedure ProcessingString(Str:string);virtual;abstract;
     class Function NumberMap(Value:double;LimitValues:TLimitValues):double;overload;
-    {повертається число. яке знаходиться в межах LimitValues}
+    {РїРѕРІРµСЂС‚Р°С”С‚СЊСЃСЏ С‡РёСЃР»Рѕ. СЏРєРµ Р·РЅР°С…РѕРґРёС‚СЊСЃСЏ РІ РјРµР¶Р°С… LimitValues}
     class Function NumberMap(Value:integer;LimitValues:TLimitValues):integer;overload;
     class function StringToInvertedCommas(str:string):string;
     class Function DeleteSubstring(Source:string;Substring: string=':'):string;
@@ -60,10 +60,10 @@ type
   end;
 
 TMeasurementSimple=class(TNamedInterfacedObject,IMeasurement)
-{заготовка для простих вимірювачів на кшталт каналу осцилографа
-тобто об'єкт, для якого реальні вимірювання проводить щось
-більш складніше, а тут практично реалізація інтерфейсу мінімальна,
-щоб можна було підключити, наприклад, до TMeasurementShowSimple}
+{Р·Р°РіРѕС‚РѕРІРєР° РґР»СЏ РїСЂРѕСЃС‚РёС… РІРёРјС–СЂСЋРІР°С‡С–РІ РЅР° РєС€С‚Р°Р»С‚ РєР°РЅР°Р»Сѓ РѕСЃС†РёР»РѕРіСЂР°С„Р°
+С‚РѕР±С‚Рѕ РѕР±'С”РєС‚, РґР»СЏ СЏРєРѕРіРѕ СЂРµР°Р»СЊРЅС– РІРёРјС–СЂСЋРІР°РЅРЅСЏ РїСЂРѕРІРѕРґРёС‚СЊ С‰РѕСЃСЊ
+Р±С–Р»СЊС€ СЃРєР»Р°РґРЅС–С€Рµ, Р° С‚СѓС‚ РїСЂР°РєС‚РёС‡РЅРѕ СЂРµР°Р»С–Р·Р°С†С–СЏ С–РЅС‚РµСЂС„РµР№СЃСѓ РјС–РЅС–РјР°Р»СЊРЅР°,
+С‰РѕР± РјРѕР¶РЅР° Р±СѓР»Рѕ РїС–РґРєР»СЋС‡РёС‚Рё, РЅР°РїСЂРёРєР»Р°Рґ, РґРѕ TMeasurementShowSimple}
  protected
   fValue:double;
   fNewData:boolean;
@@ -98,6 +98,18 @@ end;
      procedure CreateDataRequest;override;
   end;
 
+ TRS232DeviceNew=class(TRS232MeterDeviceSingle)
+  private
+   fSCPI:TSCPInew;
+  protected
+   procedure UpDate();override;
+   procedure CreateDataRequest;override;
+  public
+   Constructor Create(SCPInew:TSCPInew;CP:TComPort;Nm:string);
+   Procedure SetStringToSend(StrTОїS:string);
+ end;
+
+
 var
   StringToSend:string;
 
@@ -127,9 +139,17 @@ end;
 
 procedure TDataRequest_SCPI.Request;
 begin
- if TestShow then showmessage('send:  '+StringToSend);
- inherited Request;
+// if TestShow then showmessage('send:  '+StringToSend);
+// inherited Request;
+ if DeviceRS232isAbsent
+    then showmessage('Virtual send:  '+StringToSend)
+    else
+      begin
+      if TestShowRS232 then showmessage('send:  '+StringToSend);
+      inherited Request;
+      end;
 end;
+
 
 { TSCPI }
 
@@ -296,12 +316,19 @@ begin
    Values[i]:=FloatDataFromRow(Str,i+1);
 end;
 
+function TSCPInew.Test: boolean;
+begin
+// *IDN?
+ QuireOperation(0,0,0,False);
+ Result:=(fDevice.Value=314);
+end;
+
 { TMeasurementSimple }
 
 
 procedure TMeasurementSimple.GetDataThread(WPARAM: word; EventEnd: THandle);
 begin
-  // не зробив
+  // РЅРµ Р·СЂРѕР±РёРІ
 end;
 
 function TMeasurementSimple.GetDeviceKod: byte;
@@ -323,6 +350,47 @@ end;
 procedure TMeasurementSimple.SetNewData(Value: boolean);
 begin
    fNewData:=Value;
+end;
+
+{ TRS232DeviceNew }
+
+constructor TRS232DeviceNew.Create(SCPInew: TSCPInew; CP: TComPort; Nm: string);
+begin
+
+  inherited Create(CP,Nm);
+//  CreateDataSubject(CP);
+//  inherited Create(Nm);
+  //  fIsReceived:=False;
+  //  fMinDelayTime:=0;
+  //  fDelayTimeStep:=10;
+  //  fDelayTimeMax:=130;
+  //  fValue:=ErResult;
+  //  fNewData:=False;
+  //  fError:=False;
+  //  RepeatInErrorCase:=False;
+//  Self.DataSubject:=fDataSubject;
+//  fDataSubject.RegisterObserver(Self);
+//  CreateDataRequest;
+ fSCPI:=SCPInew;
+end;
+
+procedure TRS232DeviceNew.CreateDataRequest;
+begin
+ fDataRequest:=TDataRequest_SCPI.Create(Self.fDataSubject.RS232,Self);
+end;
+
+procedure TRS232DeviceNew.SetStringToSend(StrTОїS: string);
+begin
+ StringToSend:=StrTОїS;
+end;
+
+procedure TRS232DeviceNew.UpDate;
+begin
+ inherited UpDate;
+ fIsReceived:=True;
+ fSCPI.ProcessingString(fDataSubject.ReceivedString);
+ if TestShowRS232
+   then showmessage('recived:  '+fDataSubject.ReceivedString);
 end;
 
 end.

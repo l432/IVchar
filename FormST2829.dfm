@@ -33,10 +33,10 @@ object ST2829Form: TST2829Form
     OnClick = BCloseClick
   end
   object GB_ST2829_Com: TGroupBox
-    Left = 566
+    Left = 556
     Top = -2
-    Width = 206
-    Height = 97
+    Width = 215
+    Height = 99
     Caption = 'COM parameters'
     Font.Charset = RUSSIAN_CHARSET
     Font.Color = clNavy
@@ -57,15 +57,16 @@ object ST2829Form: TST2829Form
       Font.Name = 'Verdana'
       Font.Style = [fsBold]
       ParentFont = False
+      ShowAccelChar = False
     end
     object ComCBST2829_Port: TComComboBox
       Left = 8
       Top = 31
       Width = 74
       Height = 26
+      ComPort = IVchar.ComPortST2829
       ComProperty = cpPort
       AutoApply = True
-      Text = 'COM1'
       Style = csDropDownList
       Font.Charset = RUSSIAN_CHARSET
       Font.Color = clWindowText
@@ -73,12 +74,12 @@ object ST2829Form: TST2829Form
       Font.Name = 'Arial'
       Font.Style = [fsBold]
       ItemHeight = 18
-      ItemIndex = 0
+      ItemIndex = -1
       ParentFont = False
       TabOrder = 0
     end
     object ST_ST2829_Rate: TStaticText
-      Left = 102
+      Left = 116
       Top = 12
       Width = 89
       Height = 22
@@ -91,11 +92,11 @@ object ST2829Form: TST2829Form
       ParentFont = False
       TabOrder = 2
     end
-    object B_GDS_Test: TButton
-      Left = 12
+    object B_ST2829C_Test: TButton
+      Left = 8
       Top = 63
-      Width = 185
-      Height = 25
+      Width = 201
+      Height = 31
       Caption = 'B_ST2829_SetSet'
       Font.Charset = RUSSIAN_CHARSET
       Font.Color = clWindowText
@@ -104,15 +105,16 @@ object ST2829Form: TST2829Form
       Font.Style = [fsBold]
       ParentFont = False
       TabOrder = 3
+      WordWrap = True
     end
     object ComCBST2829_Baud: TComComboBox
-      Left = 100
+      Left = 116
       Top = 31
       Width = 93
       Height = 26
+      ComPort = IVchar.ComPortST2829
       ComProperty = cpBaudRate
       AutoApply = True
-      Text = 'Custom'
       Style = csDropDownList
       Font.Charset = RUSSIAN_CHARSET
       Font.Color = clWindowText
@@ -120,7 +122,7 @@ object ST2829Form: TST2829Form
       Font.Name = 'Arial'
       Font.Style = [fsBold]
       ItemHeight = 18
-      ItemIndex = 0
+      ItemIndex = -1
       ParentFont = False
       TabOrder = 1
     end

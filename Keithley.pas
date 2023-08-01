@@ -22,80 +22,19 @@ TKeitley_Meter=class;
 
  TKeitley=class(TSCPInew)
   private
-
-//   fIsTripped:boolean;
-//
    fTerminal:TKeitley_OutputTerminals;
-//   fOutPutOn:boolean;
-//   fResistanceCompencateOn:TKt2450_MeasureBool;
-//   fAzeroState:TKt2450_MeasureBool;
-//   fReadBack:TKt2450_SourceBool;
-//   fHighCapacitance:TKt2450_SourceBool;
-//   fSences:TKt2450_Senses;
-//   fMeasureUnits:TKt_2450_MeasureUnits;
-//   fOutputOffState:TKt_2450_OutputOffStates;
-//   fSourceType:TKt2450_Source;
-//   fVoltageProtection:TKt_2450_VoltageProtection;
-//   fVoltageLimit:double;
-//   fCurrentLimit:double;
-//   fMode:TKt_2450_Mode;
-//   fSourceVoltageRange:TKt2450VoltageRange;
-//   fSourceCurrentRange:TKt2450CurrentRange;
-//   fMeasureVoltageRange:TKt2450VoltageRange;
-//   fMeasureCurrentRange:TKt2450CurrentRange;
-//   fMeasureVoltageLowRange:TKt2450VoltageRange;
-//   fMeasureCurrentLowRange:TKt2450CurrentRange;
-//   fSourceDelay:TKt2450_SourceDouble;
-//   fSourceValue:TKt2450_SourceDouble;
-//   fSourceDelayAuto:TKt2450_SourceBool;
-//   fMeasureTime:TKt2450_MeasureDouble;
-//   fDisplayDN:TKt2450_MeasureDisplayDN;
    fDataVector:TVector;
    {X - значення чогось (джерела, номера каналу); Y - результат виміру}
    fDataTimeVector:TVector;
    {X - час виміру (мілісекунди з початку доби); Y - результат виміру}
    fBuffer:TKeitley_Buffer;
 
-//   fSourceMeasuredValue:double;
-
-//   {час виміру, в мілісекундах з початку доби}
-//   fDigitLineType:TKt2450_DigLineTypes;
-//   fDigitLineDirec:TKt2450_DigLineDirections;
-//   fDLActive:TKt2450_DigLines;
-
-//   fSourceMeter:TKT2450_SourceMeter;
-//   fSourceDevice:TKT2450_SourceDevice;
    fDisplayState:TKeitley_DisplayState;
-//   fHookForTrigDataObtain: TSimpleEvent;
-//
-//   fDragonBackTime:double;
-//   fToUseDragonBackTime:boolean;
-//   fImax:double;
-//   fImin:double;
-//   FCurrentValueLimitEnable:boolean;
-//   fSweepWasCreated:boolean;
-     fTrigerState:TKeitley_TriggerState;
+   fTrigerState:TKeitley_TriggerState;
 
-//   function StringToVoltageProtection(Str:string;var vp:TKt_2450_VoltageProtection):boolean;
-//   function StringToSourceType(Str:string):boolean;
-//   function StringToMeasureFunction(Str:string):boolean;
    function StringToTerminals(Str:string):boolean;
-//   function StringToOutPutState(Str:string):boolean;
-//   function StringToMeasureUnit(Str:string):boolean;
    function StringToBufferIndexies(Str:string):boolean;
    function StringToDisplayBrightness(Str:string):boolean;
-
-//   procedure StringToDigLineStatus(Str:string);
-//   procedure StringToArray(Str:string);
-//   procedure StringToMesuredDataArray(Str:string;DataType:TKt2450_ReturnedData);
-//   function IsLimitExcided(FirstLevelNode,LeafNode:byte):boolean;
-//   {типова функція для запиту, чи ввімкнув прилад певні захисти}
-//   function ModeDetermination:TKt_2450_Mode;
-//   function ValueToVoltageRange(Value:double):TKt2450VoltageRange;
-//   function VoltageRangeToString(Range:TKt2450VoltageRange):string;
-//   function ValueToCurrentRange(Value:double):TKt2450CurrentRange;
-//   function CurrentRangeToString(Range:TKt2450CurrentRange):string;
-//   procedure TrigIVLoop(i: Integer);
   protected
    fTelnet:TIdTelnet;
    fIPAdressShow: TIPAdressShow;
@@ -126,70 +65,24 @@ TKeitley_Meter=class;
    procedure SetCountNumber(Value:integer);virtual;
    procedure OnOffFromBool(toOn:boolean);
   public
-//   SweepParameters:array[TKt2450_Source]of TKt_2450_SweepParameters;
-//   property HookForTrigDataObtain:TSimpleEvent read fHookForTrigDataObtain write fHookForTrigDataObtain;
    property DataVector:TVector read fDataVector;
    property DataTimeVector:TVector read fDataTimeVector;
-//   property SourceType:TKt2450_Source read fSourceType;
-//   property MeasureFunction:TKt2450_Measure read fMeasureFunction;
-//   property VoltageProtection:TKt_2450_VoltageProtection read fVoltageProtection;
-//   property VoltageLimit:double read fVoltageLimit;
-//   property CurrentLimit:double read fCurrentLimit;
    property MeasureFunction:TKeitley_Measure read GetMeasureFunctionValue;
    property Terminal:TKeitley_OutputTerminals read fTerminal write fTerminal;
-//   property OutPutOn:boolean read fOutPutOn write fOutPutOn;
-//   property ResistanceCompencateOn:TKt2450_MeasureBool read fResistanceCompencateOn;
-//   property ReadBack:TKt2450_SourceBool read fReadBack;
-//   property HighCapacitance:TKt2450_SourceBool read fHighCapacitance;
-//   property Sences:TKt2450_Senses read fSences;
-//   property MeasureUnits:TKt_2450_MeasureUnits read fMeasureUnits;
-//   property OutputOffState:TKt_2450_OutputOffStates read fOutputOffState;
-//   property Mode:TKt_2450_Mode read fMode;
-//   property SourceVoltageRange:TKt2450VoltageRange read fSourceVoltageRange;
-//   property SourceCurrentRange:TKt2450CurrentRange read fSourceCurrentRange;
-//   property MeasureVoltageRange:TKt2450VoltageRange read fMeasureVoltageRange;
-//   property MeasureCurrentRange:TKt2450CurrentRange read fMeasureCurrentRange;
-//   property MeasureVoltageLowRange:TKt2450VoltageRange read fMeasureVoltageLowRange;
-//   property MeasureCurrentLowRange:TKt2450CurrentRange read fMeasureCurrentLowRange;
-//   property AzeroState:TKt2450_MeasureBool read fAzeroState;
-//   property SourceDelay:TKt2450_SourceDouble read fSourceDelay;
-//   property SourceValue:TKt2450_SourceDouble read fSourceValue;
-//   property SourceDelayAuto:TKt2450_SourceBool read fSourceDelayAuto;
-//   property DisplayDN:TKt2450_MeasureDisplayDN read fDisplayDN;
-//   property MeasureTime:TKt2450_MeasureDouble read fMeasureTime;
    property Buffer:TKeitley_Buffer read fBuffer;
    property Count:integer read fCount write SetCountNumber;
-//   property SourceMeasuredValue:double read fSourceMeasuredValue;
    property TimeValue:double read fTimeValue;
-//   property DigitLineType:TKt2450_DigLineTypes read fDigitLineType;
-//   property DigitLineTypeDirec:TKt2450_DigLineDirections read fDigitLineDirec;
    property Meter:TKeitley_Meter read fMeter;
-//   property SourceMeter:TKT2450_SourceMeter read fSourceMeter;
-//   property SourceDevice:TKT2450_SourceDevice read fSourceDevice;
    property DisplayState:TKeitley_DisplayState read fDisplayState;
-//   property DragonBackTime:double read fDragonBackTime write fDragonBackTime;
-//   property ToUseDragonBackTime:boolean read fToUseDragonBackTime write fToUseDragonBackTime;
-//   property Imax:double read fImax write fImax;
-//   property Imin:double read FImin write FImin;
-//   property CurrentValueLimitEnable:boolean read FCurrentValueLimitEnable write FCurrentValueLimitEnable;
-//   property SweepWasCreated:boolean read fSweepWasCreated write fSweepWasCreated;
    property TrigerState:TKeitley_TriggerState read fTrigerState;
    Constructor Create(Telnet:TIdTelnet;IPAdressShow: TIPAdressShow;
                Nm:string);
    destructor Destroy; override;
 //
-   function Test():boolean;override;
+//   function Test():boolean;override;
    procedure ProcessingString(Str:string);override;
    procedure ResetSetting();
    procedure MyTraining();virtual;
-//
-//   procedure OutPutChange(toOn:boolean);
-//   {вмикає/вимикає вихід приладу}
-//   function  IsOutPutOn():boolean;
-//
-//   procedure SetInterlockStatus(toOn:boolean);
-//   function IsInterlockOn():boolean;
-//
    procedure ClearUserScreen();
    procedure TextToUserScreen(top_text:string='';bottom_text:string='');
 
@@ -202,173 +95,23 @@ TKeitley_Meter=class;
    function GetTerminal():boolean;
 //   {вихід на передню чи задню панель}
 //
-//   procedure SetSense(MeasureType:TKt2450_Measure;Sense:TKt2450_Sense);
-//   {2-зондовий чи 4-зондовий спосіб вимірювання}
-//   function GetSense(MeasureType:TKt2450_Measure):boolean;
-//   function GetSenses():boolean;
-//
-//
-//   procedure SetOutputOffState(Source:TKt2450_Source;
-//                           OutputOffState:TKt_2450_OutputOffState);
-//   {перемикання типу виходу джерела,
-//   коли воно не ввімкнене входу: нормальний, високоімпедансний тощо}
-//   function GetOutputOffState(Source:TKt2450_Source):boolean;
-//   function GetOutputOffStates():boolean;
-//
-//   procedure SetReadBackState(Source:TKt2450_Source;
-//                              toOn:boolean);overload;
-//   {чи вимірюється те значення, що подається з приладу;
-//   якщо ні - то буде використовуватися (в розрахунках, тощо)
-//   значення, яке заплановано}
-//   procedure SetReadBackState(toOn:boolean);overload;
-//   function IsReadBackOn(Source:TKt2450_Source):boolean;overload;
-//   function IsReadBackOn():boolean;overload;
-//   function GetReadBacks():boolean;
-//
-//   procedure SetHighCapacitanceState(Source:TKt2450_Source;
-//                              toOn:boolean);overload;
-//   {встановлюється високоємнісний стан виходу}
-//   procedure SetHighCapacitanceState(toOn:boolean);overload;
-//   function IsHighCapacitanceOn(Source:TKt2450_Source):boolean;overload;
-//   function IsHighCapacitanceOn():boolean;overload;
-//   function GetHighCapacitanceStates():boolean;
-//
-//
    procedure SetAzeroState(Measure:TKeitley_Measure;
                               toOn:boolean);overload;
    {чи перевіряються опорні значення перед кожним виміром}
    procedure SetAzeroState(toOn:boolean);overload;virtual;
-//   function IsAzeroStateOn(Measure:TKt2450_Measure):boolean;overload;
-//   function IsAzeroStateOn():boolean;overload;
-//   function GetAzeroStates():boolean;
    procedure AzeroOnce();
    {примусова перевірка опорного значення}
-//
-//   procedure SetResistanceCompencate(toOn:boolean);
-//   {ввімкнення/вимкнення компенсації опору}
-//   function IsResistanceCompencateOn():boolean;
-//
-//   procedure SetVoltageProtection(Level:TKt_2450_VoltageProtection);
-//   {встановлення значення захисту від перенапруги}
-//   function  GetVoltageProtection():boolean;
-//   {запит номеру режиму в TKt_2450_VoltageProtection}
-//   function IsVoltageProtectionActive():boolean;
-//   {перевірка, чи вімкнувся захист від перенапруги}
-//
-//   procedure SetVoltageLimit(Value:double=0);
-//   {встановлення граничної напруги джерела}
-//   procedure SetCurrentLimit(Value:double=0);
-//   {встановлення граничного струму джерела}
-//   function  GetVoltageLimit():boolean;
-//   {запит величини граничної напруги джерела}
-//   function  GetCurrentLimit():boolean;
-//   {запит величини граничної напруги джерела}
-//   function IsVoltageLimitExceeded():boolean;
-//   {перевірка, чи була спроба перевищення напруги}
-//   function IsCurrentLimitExceeded():boolean;
-//   {перевірка, чи була спроба перевищення напруги}
-//
-//   procedure SetSourceType(SourseType:TKt2450_Source=kt_sVolt);
-//   {прилад як джерело напруги чи струму;
-//   при цьому вихід виключається OutPut=Off}
-//   function GetSourceType():boolean;
-//
    procedure SetMeasureFunction(MeasureFunc:TKeitley_Measure=kt_mCurDC);virtual;
    {що саме буде вимірювати прилад}
    function GetMeasureFunction():boolean;virtual;
     {повертає тип вимірювання, обробка залежить
     від типу приладу}
-//
-//   procedure SetMeasureUnit(Measure:TKt2450_Measure; MeasureUnit:TKt_2450_MeasureUnit);
-//   {що буде вимірювати (розраховувати) при реальних вимірах Measure}
-//   function GetMeasureUnit(Measure:TKt2450_Measure):boolean;
-//   function GetMeasureUnits():boolean;
-//
-//   procedure SetMeasureTime(Measure:TKt2450_Measure; Value:double);overload;
-//   {час на вимірювння []=мс, можливий діапазон - (0,2-200)}
-//   procedure SetMeasureTime(Value:double);overload;
-//   function GetMeasureTime(Measure:TKt2450_Measure):boolean;overload;
-//   function GetMeasureTime():boolean;overload;
-//   function GetMeasureTimes():boolean;
-//
    procedure SetDisplayDigitsNumber(Measure:TKeitley_Measure; Number:TKeitleyDisplayDigitsNumber);overload;virtual;
    {кількість цифр, що відображаються на екрані,
      на точність самого вимірювання не впливає}
    procedure SetDisplayDigitsNumber(Number:TKeitleyDisplayDigitsNumber);overload;virtual;
    function GetDisplayDigitsNumber(Measure:TKeitley_Measure):boolean;overload;virtual;
    function GetDisplayDigitsNumber():boolean;overload;virtual;
-//   function GetDisplayDNs():boolean;
-//
-//
-//   procedure SetMode(Mode:TKt_2450_Mode);
-//   function GetDeviceMode():boolean;
-//
-//   procedure SetSourceVoltageRange(Range:TKt2450VoltageRange=kt_vrAuto);
-//   function GetSourceVoltageRange():boolean;
-//   procedure SetSourceCurrentRange(Range:TKt2450CurrentRange=kt_crAuto);
-//   function GetSourceCurrentRange():boolean;
-//   function GetSourceRanges():boolean;
-//
-//   procedure SetMeasureVoltageRange(Range:TKt2450VoltageRange=kt_vrAuto);
-//   function GetMeasureVoltageRange():boolean;
-//   procedure SetMeasureCurrentRange(Range:TKt2450CurrentRange=kt_crAuto);
-//   function GetMeasureCurrentRange():boolean;
-//   function GetMeasureRanges():boolean;
-//
-//   procedure SetMeasureVoltageLowRange(Range:TKt2450VoltageRange=kt_vr20mV);
-//   {якщо встановлено автоматичний пошук діапазону для вимірювань,
-//   можна встановити найнижчий діапазон, з якого починатиметься
-//   пошук потрібного}
-//   function GetMeasureVoltageLowRange():boolean;
-//   procedure SetMeasureCurrentLowRange(Range:TKt2450CurrentRange=kt_cr10nA);
-//   function GetMeasureCurrentLowRange():boolean;
-//   function GetMeasureLowRanges():boolean;
-//
-//
-//   procedure SetSourceValue(Source:TKt2450_Source;
-//                            value:double);overload;
-//   {значення джерела, воно реально з'явиться
-//   лише після включення OutPut, якщо вже
-//   включено - з'явиться миттєво}
-//   procedure SetSourceValue(value:double);overload;
-//   function GetSourceValue(Source:TKt2450_Source):boolean;overload;
-//   function GetSourceValue():boolean;overload;
-//   function GetSourceValues():boolean;
-//
-//   procedure SetSourceDelay(Source:TKt2450_Source;
-//                            value:double);overload;
-//   {час затримки між встановленням значення джерела
-//   та початком вимірювання}
-//   procedure SetSourceDelay(value:double);overload;
-//   function GetSourceDelay(Source:TKt2450_Source):boolean;overload;
-//   function GetSourceDelay():boolean;overload;
-//   function GetSourceDelays():boolean;
-//   procedure SetSourceDelayAuto(Source:TKt2450_Source;
-//                            toOn:boolean);overload;
-//   {час затримки між встановленням значення джерела
-//   та початком вимірювання}
-//   procedure SetSourceDelayAuto(toOn:boolean);overload;
-//   function IsSourceDelayAutoOn(Source:TKt2450_Source):boolean;overload;
-//   function IsSourceDelayAutoOn():boolean;overload;
-//   function GetSourceDelayAutoOns():boolean;
-//
-//   procedure SourceListCreate(Source:TKt2450_Source;ListValues:TArrSingle);overload;
-//   {створення списку значень джерела, які будуть використовуватися під час
-//   послідовності вимірювань}
-//   procedure SourceListCreate(ListValues:TArrSingle);overload;
-//   function GetSourceList(Source:TKt2450_Source):boolean;overload;
-//   {отримані значення розташовуються в DataVector.X та DataVector.Y}
-//   function GetSourceList():boolean;overload;
-//   procedure SourceListAppend(Source:TKt2450_Source;ListValues:TArrSingle);overload;
-//   {значення додаються до списку значень джерела, які будуть використовуватися під час
-//   послідовності вимірювань}
-//   procedure SourceListAppend(ListValues:TArrSingle);overload;
-//
-//   procedure SwepLinearPointCreate();
-//   procedure SwepLinearStepCreate();
-//   procedure SwepListCreate(StartIndex:word=1);
-//   procedure SwepLogStepCreate();
-//
    procedure BufferCreate();overload;
    procedure BufferCreate(Name:string);overload;
    procedure BufferCreate(Name:string;Size:integer);overload;
@@ -424,21 +167,6 @@ TKeitley_Meter=class;
    procedure SetCount(Cnt:integer);
    {кількість повторних вимірювань, коли прилад просять поміряти}
    function GetCount:boolean;
-
-//   procedure SetDigLineMode(LineNumber:TKt2450_DigLines;
-//                            LineType:TKt2450_DigLineType;
-//                            Direction:TKt2450_DigLineDirection);
-//   function GetDigLineMode(LineNumber:TKt2450_DigLines):boolean;
-//   procedure SetDidLinOut(LineNumber:TKt2450_DigLines;HighLevel:boolean=True);
-//   {якщо лінія LineNumber має kt_dt_dig та kt_dd_out, то
-//   для неї можна встановили високий чи низький рівні}
-//   function GetDidLinOut(LineNumber:TKt2450_DigLines):integer;
-//   {якщо лінія LineNumber має kt_dt_dig та kt_dd_in, то
-//   для неї можна зчитати значення рівня;
-//   Resul=1 якщо високий
-//         0 якщо низький
-//        -1 якщо не отримали відповідь}
-//
    procedure SetDisplayBrightness(State:TKeitley_DisplayState);
    function GetDisplayBrightness():boolean;
 //
@@ -448,7 +176,6 @@ TKeitley_Meter=class;
    procedure ConfigMeasureCreate(ListName:string=MyMeasList);
    procedure ConfigMeasureDelete(ListName:string=MyMeasList;ItemIndex:word=0);
    {якщо ItemIndex=0, то видаляється весь список}
-//   procedure ConfigSourceDelete(ListName:string=MySourceList;ItemIndex:word=0);
    procedure ConfigMeasureRecall(ListName:string=MyMeasList;ItemIndex:word=1);
    {завантаження налаштувань, записаних в ItemIndex;
    якщо потрібно викликати налаштування і для джерела,
@@ -466,7 +193,7 @@ TKeitley_Meter=class;
    вимірюється та функція, яка зараз встановлена на приладі,
    можна зробити, щоб вимірювалося щось інше, але я не
    схотів гратися з такою не дуже реальною на перший погляд
-   задачею}                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           
+   задачею}
    Procedure MeasureSimple(BufName:string);overload;virtual;
    {результати записуються у буфер BufName
    і з нього ж зчитується останній результат}
@@ -1559,12 +1286,12 @@ begin
      end;
 end;
 
-function TKeitley.Test: boolean;
-begin
-// *IDN?
- QuireOperation(0,0,0,False);
- Result:=(fDevice.Value=314);
-end;
+//function TKeitley.Test: boolean;
+//begin
+//// *IDN?
+// QuireOperation(0,0,0,False);
+// Result:=(fDevice.Value=314);
+//end;
 
 procedure TKeitley.TextToUserScreen(top_text, bottom_text: string);
 begin

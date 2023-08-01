@@ -82,115 +82,24 @@ end;
  TKeitley_Show=class(TSimpleFreeAndAiniObject)
   private
    fKeitley:TKeitley;
-
-//   fSettingsShow:array of TParameterShowNew;
-//   fSettingsShowSL:array of TStringList;
-
-//   fOutPutOnOff:TSpeedButton;
-//   fTerminalsFrRe:TSpeedButton;
    fSetupMemoryShow:TKeitley_SetupMemoryShow;
-//
-//   fSourceShow:TKt_2450_SourceShow;
-//   SourceShowStaticText:array[TKt2450_SourceSettings]of TStaticText;
-//   SourceShowLabels:array[TKt2450_SourceSettings]of TLabel;
-//   SourceValueShowLabel:TLabel;
-//   SourceReadBackCB: TCheckBox;
-//   fSourceDelayCB: TCheckBox;
-//   fSourceHCapac: TCheckBox;
-//   fSourceShowState:0..2;
-//   {2 - не створювався, 0 - створено під kt_sVolt; 1 - kt_sCurr}
-//
-//   fMeasurementShow:TKt_2450_MeasurementShow;
-//   fMeasurementShowStaticText:array[TKt2450_MeasureSettings]of TStaticText;
-//   fMeasurementShowLabels:array[TKt2450_MeasureSettings]of TLabel;
-//   fMeasurementShowGB:TGroupBox;
-//   fMeasurementShowState:0..5;
-//   {5 - не створювався, 0 - створено під струм; 1 - напругу,
-//    3 - опір, 4 - потужність}
-//   fAutoZeroCB: TCheckBox;
-//   fZeroManualB:TButton;
-//
-//   fSweetShow:TKt_2450_SweetShow;
-//   fSweetST:array of TStaticText;
-//   fSweetLab:array of TLabel;
-//   fSweetButtons:TKt2450_SweepButtonArray;
-//   fSweetDualCB,fSweetAbortLimitCB:TCheckBox;
-//   fSweetMode:TRadioGroup;
-//   fSweetSelect:TRadioGroup;
-//   fSweepGB:TGroupBox;
-//   fSweetShowState:0..2;
-//   {2 - не створювався, 0 - створено під kt_sVolt; 1 - kt_sCurr}
-//
-//   fMeterShow:TKt_2450_MeterShow;
-//
-//   fSourceMeterValueLab:TLabel;
-//
    fBrightnessShow:TKeitley_BrightnessShow;
-
-//   procedure SourceShowCreate();
-//   procedure SourceShowFree();
-//
-//   procedure MeasureShowCreate();
-//   procedure MeasureShowFree();
-//
-//   procedure SweetShowCreate();
-//
    procedure TestButtonClick(Sender:TObject);
-
-
-//   procedure RefreshZeroClick(Sender:TObject);
-//   procedure SourceMeasureClick(Sender:TObject);
    procedure MyTrainButtonClick(Sender:TObject);
-//   procedure AutoZeroClick(Sender:TObject);
-
-//   procedure SpeedButtonsTune(SpeedButtons: array of TSpeedButton);
-//   procedure SettingsShowSLCreate();
-//   procedure SettingsShowCreate(STexts:array of TStaticText;
-//                          Labels:array of TLabel);
-//   procedure SettingsShowFree;
-//   procedure OutPutOnOffSpeedButtonClick(Sender: TObject);
-//
-//   procedure TerminalsFrReSpeedButtonClick(Sender: TObject);
-//   procedure TerminalsFromDevice();
-//   procedure AZeroFromDevice();
-//   procedure VoltageProtectionOkClick();
-//   procedure ModeOkClick();
-//   procedure CountOkClick();
-//    procedure ReCreateElements;
   protected
-//   BTest:TButton;
    procedure ButtonsTune(Buttons: array of TButton);virtual;
    procedure ResetButtonClick(Sender:TObject);virtual;
    procedure GetSettingButtonClick(Sender:TObject);virtual;
   public
-//   property MeterShow:TKt_2450_MeterShow read fMeterShow;
    Constructor Create(Keitley:TKeitley;
                       Buttons:Array of TButton;
                       Panels:Array of TPanel;
                       STextsBrightness:TStaticText
                       );
-//                      SpeedButtons:Array of TSpeedButton;
-//                      
-//                      STexts:array of TStaticText;
-//                      Labels:array of TLabel;
-//                      CheckBoxs:array of TCheckBox;
-//                      GroupBox:TGroupBox;
-//                      SweetST:array of TStaticText;
-//                      SweetLab:array of TLabel;
-//                      SweetButtons:Array of TButton;
-//                      SweetDualCB,SweetAbortLimitCB:TCheckBox;
-//                      SweetMode,SweetSelect:TRadioGroup;
-//                      SweepGB:TGroupBox;
-//                      DataMeterL,UnitMeterL:TLabel;
-//                      MeasureMeterB:TButton;
-//                      AutoMMeterB:TSpeedButton);
-//
   destructor Destroy;override;
   procedure ReadFromIniFile(ConfigFile:TIniFile);override;
   procedure WriteToIniFile(ConfigFile:TIniFile);override;
-//  procedure SettingToObject;
   procedure ObjectToSetting;virtual;
-//  procedure OutPutOnFromDevice();
  end;
 
 
@@ -222,90 +131,12 @@ constructor TKeitley_Show.Create(Keitley: TKeitley;
                       Panels:Array of TPanel;
                       STextsBrightness:TStaticText);
 begin
-//  if (High(Buttons)<>ButtonNumberKeitley)
-//     or(High(SpeedButtons)<>SpeedButtonNumberKt2450)
-//     or(High(Panels)<>PanelNumberKt2450)
-//     or(High(STexts)<>((ord(High(TKt2450_Settings))+1+ord(High(TKt2450_SourceSettings))+1
-//                        +ord(High(TKt2450_MeasureSettings))+1)))
-//     or(High(Labels)<>(ord(High(TKt2450_Settings))+1
-//                       +ord(kt_ss_limit)-ord(kt_ss_outputoff)+2
-//                       +ord(kt_ms_rescomp)-ord(kt_ms_rescomp)+1+1+1))
-//     or(High(CheckBoxs)<>CheckBoxNumberKt2450)
-//     or(High(SweetST)<>ord(High(TKt2450_SweepSettings)))
-//     or(High(SweetLab)<>ord(High(TKt2450_SweepSettings)))
-//     or(High(SweetButtons)<>ord(High(TKt2450_SweepButtons)))
-//   then
-//    begin
-//      showmessage('Keitley_Show is not created!');
-//      Exit;
-//    end;
   fKeitley:=Keitley;
   ButtonsTune(Buttons);
 
-//  SpeedButtonsTune(SpeedButtons);
-//
-//  CBnumber:=0;
-//
-//  SettingsShowSLCreate();
-//  SettingsShowCreate(STexts,Labels);
   fBrightnessShow:=TKeitley_BrightnessShow.Create(STextsBrightness,fKeitley);
-//
-//  fSourceShowState:=2;
-//  for i:=0 to ord(High(TKt2450_SourceSettings)) do
-//     SourceShowStaticText[TKt2450_SourceSettings(i)]:=STexts[ord(High(TKt2450_Settings))+2+i];
-//  for i:=0 to ord(kt_ss_limit) do
-//     SourceShowLabels[TKt2450_SourceSettings(i)]:=Labels[ord(High(TKt2450_Settings))+2+i];
-//  SourceValueShowLabel:=Labels[ord(High(TKt2450_Settings))+2+ord(kt_ss_limit)+1];
-//  SourceReadBackCB:=CheckBoxs[CBnumber];
-//  inc(CBnumber);
-//  fSourceDelayCB:=CheckBoxs[CBnumber];
-//  inc(CBnumber);
-//  fSourceHCapac:=CheckBoxs[CBnumber];
-//  inc(CBnumber);
-//
-//  SourceShowCreate();
-//
-//  fMeasurementShowState:=5;
-//  for i:=0 to ord(High(TKt2450_MeasureSettings)) do
-//     fMeasurementShowStaticText[TKt2450_MeasureSettings(i)]:=STexts[ord(High(TKt2450_Settings))+2
-//                                                           +ord(High(TKt2450_SourceSettings))+1+i];
-// i:=ord(High(TKt2450_Settings))+2+ord(kt_ss_limit)-ord(kt_ss_outputoff)+2;
-// fMeasurementShowLabels[kt_ms_rescomp]:=Labels[i];
-// fMeasurementShowLabels[kt_ms_time]:=Labels[i+1];
-// fMeasurementShowLabels[kt_ms_lrange]:=Labels[i+2];
-//
-//  fMeasurementShowGB:=GroupBox;
-//  MeasureShowCreate();
-//
-//  fAutoZeroCB:=CheckBoxs[CBnumber];
-//  fAutoZeroCB.OnClick:=AutoZeroClick;
-//
-//
-//  fSweetShowState:=2;
-//  SetLength(fSweetST,ord(High(TKt2450_SweepSettings))+1);
-//  SetLength(fSweetLab,ord(High(TKt2450_SweepSettings))+1);
-//  for I := 0 to ord(High(TKt2450_SweepSettings)) do
-//   begin
-//    fSweetST[i]:=SweetST[i];
-//    fSweetLab[i]:=SweetLab[i];
-//   end;
-//  for I := 0 to ord(High(TKt2450_SweepButtons)) do
-//    fSweetButtons[TKt2450_SweepButtons(i)]:=SweetButtons[i];
-//  fSweetDualCB:=SweetDualCB;
-//  fSweetAbortLimitCB:=SweetAbortLimitCB;
-//  fSweetMode:=SweetMode;
-//  fSweetSelect:=SweetSelect;
-//  fSweepGB:=SweepGB;
-//  SweetShowCreate();
-//
-//  fMeterShow:=TKt_2450_MeterShow.Create(fKt_2450.Meter,Self,
-//                                 DataMeterL,UnitMeterL,
-//                                MeasureMeterB,AutoMMeterB);
-//  fMeterShow.DigitNumber:=6;
-//
   fSetupMemoryShow:=TKeitley_SetupMemoryShow.Create(Self,Panels[0],Panels[1]);
 
-//  ObjectToSetting();
 
 end;
 

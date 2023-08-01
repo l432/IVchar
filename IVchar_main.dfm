@@ -37,7 +37,7 @@ object IVchar: TIVchar
     Top = 0
     Width = 788
     Height = 530
-    ActivePage = TS_ADC
+    ActivePage = TS_Setting
     Align = alTop
     Font.Charset = RUSSIAN_CHARSET
     Font.Color = clWindowText
@@ -2995,7 +2995,7 @@ object IVchar: TIVchar
       end
       object GBTelnetParam: TGroupBox
         Left = 481
-        Top = 260
+        Top = 233
         Width = 162
         Height = 93
         Caption = 'Telnet parameters'
@@ -3027,6 +3027,54 @@ object IVchar: TIVchar
           Tag = 6
           Left = 14
           Top = 51
+          Width = 123
+          Height = 29
+          Caption = 'Device is absent'
+          Font.Charset = RUSSIAN_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -13
+          Font.Name = 'Arial'
+          Font.Style = [fsBold]
+          ParentFont = False
+          TabOrder = 1
+          WordWrap = True
+          OnClick = CBTelnetStrShowClick
+        end
+      end
+      object GBComParamShow: TGroupBox
+        Left = 481
+        Top = 340
+        Width = 162
+        Height = 93
+        Caption = 'Com Param Chow'
+        Font.Charset = RUSSIAN_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -13
+        Font.Name = 'Courier'
+        Font.Style = [fsBold]
+        ParentFont = False
+        TabOrder = 14
+        object CBComStrShow: TCheckBox
+          Tag = 6
+          Left = 14
+          Top = 16
+          Width = 101
+          Height = 29
+          Caption = 'Strings Show'
+          Font.Charset = RUSSIAN_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -13
+          Font.Name = 'Arial'
+          Font.Style = [fsBold]
+          ParentFont = False
+          TabOrder = 0
+          WordWrap = True
+          OnClick = CBTelnetStrShowClick
+        end
+        object CBComDevAbsent: TCheckBox
+          Tag = 6
+          Left = 12
+          Top = 55
           Width = 123
           Height = 29
           Caption = 'Device is absent'
@@ -8667,7 +8715,7 @@ object IVchar: TIVchar
     Top = 530
   end
   object ComPortST2829: TComPort
-    BaudRate = br9600
+    BaudRate = br38400
     Port = 'COM1'
     Parity.Bits = prNone
     StopBits = sbOneStopBit

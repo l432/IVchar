@@ -14,7 +14,7 @@ type
     ComCBST2829_Port: TComComboBox;
     ComCBST2829_Baud: TComComboBox;
     ST_ST2829_Rate: TStaticText;
-    B_GDS_Test: TButton;
+    B_ST2829C_Test: TButton;
     procedure BCloseClick(Sender: TObject);
   private
     { Private declarations }
