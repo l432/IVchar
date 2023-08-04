@@ -15,6 +15,8 @@ object ST2829Form: TST2829Form
   OldCreateOrder = False
   Position = poScreenCenter
   Visible = True
+  OnCreate = FormCreate
+  OnDestroy = FormDestroy
   PixelsPerInch = 96
   TextHeight = 13
   object BClose: TButton
@@ -32,8 +34,8 @@ object ST2829Form: TST2829Form
     TabOrder = 0
     OnClick = BCloseClick
   end
-  object GB_ST2829_Com: TGroupBox
-    Left = 556
+  object GB_ST2829C_Com: TGroupBox
+    Left = 557
     Top = -2
     Width = 215
     Height = 99
@@ -45,86 +47,13 @@ object ST2829Form: TST2829Form
     Font.Style = [fsBold]
     ParentFont = False
     TabOrder = 1
-    object LST2829Port: TLabel
-      Left = 10
-      Top = 12
-      Width = 40
-      Height = 18
-      Caption = 'Port '
-      Font.Charset = RUSSIAN_CHARSET
-      Font.Color = clWindowText
-      Font.Height = -15
-      Font.Name = 'Verdana'
-      Font.Style = [fsBold]
-      ParentFont = False
-      ShowAccelChar = False
-    end
-    object ComCBST2829_Port: TComComboBox
-      Left = 8
-      Top = 31
-      Width = 74
-      Height = 26
-      ComPort = IVchar.ComPortST2829
-      ComProperty = cpPort
-      AutoApply = True
-      Style = csDropDownList
-      Font.Charset = RUSSIAN_CHARSET
-      Font.Color = clWindowText
-      Font.Height = -15
-      Font.Name = 'Arial'
-      Font.Style = [fsBold]
-      ItemHeight = 18
-      ItemIndex = -1
-      ParentFont = False
-      TabOrder = 0
-    end
-    object ST_ST2829_Rate: TStaticText
-      Left = 116
-      Top = 12
-      Width = 89
-      Height = 22
-      Caption = 'Baud Rate'
-      Font.Charset = RUSSIAN_CHARSET
-      Font.Color = clWindowText
-      Font.Height = -15
-      Font.Name = 'Verdana'
-      Font.Style = [fsBold]
-      ParentFont = False
-      TabOrder = 2
-    end
-    object B_ST2829C_Test: TButton
-      Left = 8
-      Top = 63
-      Width = 201
-      Height = 31
-      Caption = 'B_ST2829_SetSet'
-      Font.Charset = RUSSIAN_CHARSET
-      Font.Color = clWindowText
-      Font.Height = -15
-      Font.Name = 'Arial'
-      Font.Style = [fsBold]
-      ParentFont = False
-      TabOrder = 3
-      WordWrap = True
-    end
-    object ComCBST2829_Baud: TComComboBox
-      Left = 116
-      Top = 31
-      Width = 93
-      Height = 26
-      ComPort = IVchar.ComPortST2829
-      ComProperty = cpBaudRate
-      AutoApply = True
-      Style = csDropDownList
-      Font.Charset = RUSSIAN_CHARSET
-      Font.Color = clWindowText
-      Font.Height = -15
-      Font.Name = 'Arial'
-      Font.Style = [fsBold]
-      ItemHeight = 18
-      ItemIndex = -1
-      ParentFont = False
-      TabOrder = 1
-    end
+  end
+  object B_MyTrain: TButton
+    Left = 7
+    Top = 45
+    Width = 69
+    Height = 25
+    Caption = 'B_MyTrain'
+    TabOrder = 2
   end
 end

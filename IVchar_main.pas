@@ -688,7 +688,6 @@ type
     B_GDS806drive: TButton;
     TS_ST2829: TTabSheet;
     B_ST2829drive: TButton;
-    ComPortST2829: TComPort;
     GBComParamShow: TGroupBox;
     CBComStrShow: TCheckBox;
     CBComDevAbsent: TCheckBox;
@@ -1021,8 +1020,8 @@ type
     Kt2450_IPAdressShow,DMM6500_IPAdressShow:TIPAdressShow;
     procedure Kt2450_Create;
     procedure DMM6500_Create;
-    procedure ST2829C_Create;
-    procedure ST2829CShow_Create;
+//    procedure ST2829C_Create;
+//    procedure ST2829CShow_Create;
   end;
 
 Procedure FormDockUnDock(Form:TForm;Color:TColor);
@@ -3044,16 +3043,7 @@ begin
       then
       begin
        if not(Assigned(ST2829Form)) then
-         begin
           ST2829Form:=TST2829Form.Create(nil);
-          with ST2829Form do
-          begin
-          ComCBST2829_Port.UpdateSettings;
-          ComCBST2829_Baud.UpdateSettings;
-          end;
-          GDSShow_Create;
-          GDS_806S_Show.ReadFromIniFile(ConfigFile);
-         end;
        FormDock(ST2829Form, TS_ST2829);
       end;
 
@@ -3520,23 +3510,27 @@ begin
 end;
 
 
-procedure TIVchar.ST2829CShow_Create;
-begin
- with ST2829Form do
- begin
-  ST2829C_Show := TST2829C_Show.Create(ST_2829C,
-                                      B_ST2829C_Test);
- end;
- ShowArray.Add([ST2829C_Show]);
-end;
+//procedure TIVchar.ST2829CShow_Create;
+//begin
+// with ST2829Form do
+// begin
+//  ST2829C_Show := TST2829C_Show.Create(ST_2829C,
+//                                      B_ST2829C_Test);
+// end;
+// ShowArray.Add([ST2829C_Show]);
+//end;
 
-procedure TIVchar.ST2829C_Create;
-begin
- ST_2829C := TST2829C.Create(ComPortST2829);
- if Assigned(ST2829Form) then
-   ST2829CShow_Create;
- AnyObjectArray.Add([ST_2829C]);
-end;
+//procedure TIVchar.ST2829C_Create;
+//begin
+// ST_2829C := TST2829C.Create(ComPortST2829);
+
+
+// ST_2829C := TST2829C.Create();
+// AnyObjectArray.Add([ST_2829C]);
+
+// if Assigned(ST2829Form) then
+//   ST2829CShow_Create;
+//end;
 
 procedure TIVchar.NameToLabel(LabelName: string; Name, NameValue: TLabel);
 begin
@@ -3598,7 +3592,7 @@ end;
 procedure TIVchar.ComPortsBegining;
 begin
   ComPortsLoadSettings([ComPortUT70C,ComPortUT70B,
-          ComPort1,ComPortGDS,ComPortIT6332B,ComPortST2829]);
+          ComPort1,ComPortGDS,ComPortIT6332B]);
 
   ComCBUT70CPort.UpdateSettings;
   ComCBUT70BPort.UpdateSettings;
@@ -3615,13 +3609,13 @@ begin
   ComCBGDS_Parity.UpdateSettings;
   end;
 
-  if Assigned(ST2829Form) then
-  with ST2829Form do
-  begin
-//  showmessage('hi');
-  ComCBST2829_Port.UpdateSettings;
-  ComCBST2829_Baud.UpdateSettings;
-  end;
+//  if Assigned(ST2829Form) then
+//  with ST2829Form do
+//  begin
+////  showmessage('hi');
+//  ComCBST2829_Port.UpdateSettings;
+//  ComCBST2829_Baud.UpdateSettings;
+//  end;
 
 
   ComCBIT6332B_Port.UpdateSettings;
@@ -3644,8 +3638,8 @@ begin
   if Assigned(Form_GDS806) then
   PortBeginAction(ComPortGDS, Form_GDS806.LGDSPort, nil);
 
-  if Assigned(ST2829Form) then
-   PortBeginAction(ComPortST2829, ST2829Form.LST2829Port, nil);
+//  if Assigned(ST2829Form) then
+//   PortBeginAction(ComPortST2829, ST2829Form.LST2829Port, nil);
 
   PortBeginAction(ComPort1, LConnected, BConnect);
 end;
@@ -3969,7 +3963,7 @@ begin
   BoxToIniFile;
   ComPortsWriteSettings([ComPortUT70C,ComPortUT70B,
               ComPort1,ComPortGDS,
-              ComPortIT6332B,ComPortST2829]);
+              ComPortIT6332B]);
 end;
 
 procedure TIVchar.TemperatureOnTimeFirstMeas;
@@ -4160,7 +4154,7 @@ begin
   IB6332_Create();
   Kt2450_Create();
   DMM6500_Create();
-  ST2829C_Create();
+//  ST2829C_Create();
 
 end;
 

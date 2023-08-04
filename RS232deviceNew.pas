@@ -176,6 +176,8 @@ TMeterDevice=class(TCustomDevice,IMeasurement,IDataObserver)
    procedure MeasurementBegin;
    procedure GetDataThread(WPARAM: word;EventEnd:THandle);virtual;
    procedure JoinToStringToSend(AdditionalString:string);virtual;
+   procedure ClearStringToSend;virtual;
+   Procedure SetStringToSend(StringToSend:string);virtual;
   end;
 
 //TRS232MeterDevice=class(TMeterDevice,IMeasurement,IDataObserver)
@@ -935,6 +937,11 @@ end;
 
 { TMeterDevice }
 
+procedure TMeterDevice.ClearStringToSend;
+begin
+
+end;
+
 constructor TMeterDevice.Create(Nm: string);
 begin
  inherited Create(Nm);
@@ -1050,6 +1057,10 @@ end;
 procedure TMeterDevice.SetNewData(Value: boolean);
 begin
   fNewData:=Value;
+end;
+
+procedure TMeterDevice.SetStringToSend(StringToSend: string);
+begin
 end;
 
 procedure TMeterDevice.UpDate;

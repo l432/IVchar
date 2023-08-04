@@ -13,7 +13,7 @@ const
 //  MyMeasList='OlegMeasList';
 
   RootNodeST2829C:array[0..1]of string=
-  ('*idn?','*rcl ');
+  ('*idn?','*rst');
 
 //  ,'*rst','*sav',':acq',':outp',':disp',':syst','scr:run',
 //   0       1       2      3      4        5       6       7      8

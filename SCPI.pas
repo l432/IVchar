@@ -33,7 +33,10 @@ type
     procedure SetupOperation(RootNode:byte;FirstLevelNode:byte=0;LeafNode:byte=0;
                             isSyffix:boolean=True;isQuery:boolean=False);
     procedure DeviceCreate(Nm:string='Device');virtual;abstract;
-    procedure PrepareString;virtual;abstract;
+    procedure PrepareString;virtual;//abstract;
+    function GetRootNodeString():string;virtual;abstract;
+    procedure PrepareStringByRootNode;virtual;abstract;
+    procedure ProcessingStringByRootNode(Str:string);virtual;abstract;
     procedure JoinAddString();
 //    function StringToInvertedCommas(str:string):string;
     procedure DefaultSettings;virtual;
@@ -50,7 +53,7 @@ type
     Constructor Create(Nm:string);
     destructor Destroy;override;
     function Test():boolean;virtual;//abstract;
-    procedure ProcessingString(Str:string);virtual;abstract;
+    procedure ProcessingString(Str:string);virtual;//abstract;
     class Function NumberMap(Value:double;LimitValues:TLimitValues):double;overload;
     {повертається число. яке знаходиться в межах LimitValues}
     class Function NumberMap(Value:integer;LimitValues:TLimitValues):integer;overload;
@@ -101,12 +104,20 @@ end;
  TRS232DeviceNew=class(TRS232MeterDeviceSingle)
   private
    fSCPI:TSCPInew;
+   fCPort:TComPort;
   protected
    procedure UpDate();override;
    procedure CreateDataRequest;override;
+   procedure ComPortTuninig();virtual;
   public
-   Constructor Create(SCPInew:TSCPInew;CP:TComPort;Nm:string);
-   Procedure SetStringToSend(StrTοS:string);
+   property ComPort:TComPort read fCPort;
+   property SCPI:TSCPInew read fSCPI;
+   Constructor Create(SCPInew:TSCPInew;Nm:string);overload;
+   Constructor Create(SCPInew:TSCPInew;CP:TComPort;Nm:string);overload;
+   destructor Destroy; override;
+   Procedure SetStringToSend(StrTοS:string);override;
+   procedure ClearStringToSend;override;
+   procedure JoinToStringToSend(AdditionalString:string);override;
  end;
 
 
@@ -116,7 +127,7 @@ var
 implementation
 
 uses
-  Dialogs, SysUtils, Math, OlegFunction;
+  Dialogs, SysUtils, Math, OlegFunction, Forms;
 
 { TRS232_SCPI }
 
@@ -252,6 +263,23 @@ begin
   Result:=IntToStr(NumberMap(Value,LimitValues));
 end;
 
+procedure TSCPInew.PrepareString;
+begin
+ fDevice.ClearStringToSend;
+
+ fDevice.SetStringToSend(GetRootNodeString());
+
+ PrepareStringByRootNode;
+
+ if fIsSuffix then JoinAddString;
+end;
+
+procedure TSCPInew.ProcessingString(Str: string);
+begin
+ Str:=Trim(Str);
+ ProcessingStringByRootNode(Str);
+end;
+
 procedure TSCPInew.QuireOperation(RootNode, FirstLevelNode, LeafNode: byte;
   isSyffix{, isQuery}: boolean);
 begin
@@ -354,8 +382,23 @@ end;
 
 { TRS232DeviceNew }
 
+procedure TRS232DeviceNew.ClearStringToSend;
+begin
+ StringToSend:='';
+end;
+
+procedure TRS232DeviceNew.ComPortTuninig;
+begin
+ fCPort.DataBits:=dbEight;
+ fCPort.StopBits:=sbOneStopBit;
+ fCPort.Parity.Bits:=prNone;
+ fCPort.BaudRate:=br9600;
+// fCPort.Port:='COM1';
+end;
+
 constructor TRS232DeviceNew.Create(SCPInew: TSCPInew; CP: TComPort; Nm: string);
 begin
+
 
   inherited Create(CP,Nm);
 //  CreateDataSubject(CP);
@@ -374,9 +417,30 @@ begin
  fSCPI:=SCPInew;
 end;
 
+constructor TRS232DeviceNew.Create(SCPInew: TSCPInew; Nm: string);
+begin
+  fCPort:=TComPort.Create(Application.MainForm);
+//  fCPort:=TComPort.Create(nil);
+  ComPortTuninig();
+  fCPort.Name:='ComPort'+Nm;
+  inherited Create(fCPort,Nm);
+  fSCPI:=SCPInew;
+end;
+
 procedure TRS232DeviceNew.CreateDataRequest;
 begin
  fDataRequest:=TDataRequest_SCPI.Create(Self.fDataSubject.RS232,Self);
+end;
+
+destructor TRS232DeviceNew.Destroy;
+begin
+  FreeAndNil(fCPort);
+  inherited;
+end;
+
+procedure TRS232DeviceNew.JoinToStringToSend(AdditionalString: string);
+begin
+ StringToSend:=StringToSend+AdditionalString;
 end;
 
 procedure TRS232DeviceNew.SetStringToSend(StrTοS: string);
@@ -387,7 +451,7 @@ end;
 procedure TRS232DeviceNew.UpDate;
 begin
  inherited UpDate;
- fIsReceived:=True;
+// fIsReceived:=True;
  fSCPI.ProcessingString(fDataSubject.ReceivedString);
  if TestShowRS232
    then showmessage('recived:  '+fDataSubject.ReceivedString);

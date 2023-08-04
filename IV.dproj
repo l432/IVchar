@@ -89,6 +89,7 @@
     <DCCReference Include="RS232_Meas_Tread.pas" />
     <DCCReference Include="RS232_Mediator_Tread.pas" />
     <DCCReference Include="SCPI.pas" />
+    <DCCReference Include="SCPIshow.pas" />
     <DCCReference Include="ShowTypes.pas" />
     <DCCReference Include="ST2829C.pas" />
     <DCCReference Include="ST2829CConst.pas" />

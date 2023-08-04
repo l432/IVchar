@@ -37,7 +37,7 @@ object IVchar: TIVchar
     Top = 0
     Width = 788
     Height = 530
-    ActivePage = TS_Setting
+    ActivePage = TS_ST2829
     Align = alTop
     Font.Charset = RUSSIAN_CHARSET
     Font.Color = clWindowText
@@ -8713,23 +8713,5 @@ object IVchar: TIVchar
     Terminal = 'dumb'
     Left = 526
     Top = 530
-  end
-  object ComPortST2829: TComPort
-    BaudRate = br38400
-    Port = 'COM1'
-    Parity.Bits = prNone
-    StopBits = sbOneStopBit
-    DataBits = dbEight
-    Events = [evRxChar, evTxEmpty, evRxFlag, evRing, evBreak, evCTS, evDSR, evError, evRLSD, evRx80Full]
-    FlowControl.OutCTSFlow = False
-    FlowControl.OutDSRFlow = False
-    FlowControl.ControlDTR = dtrDisable
-    FlowControl.ControlRTS = rtsDisable
-    FlowControl.XonXoffOut = False
-    FlowControl.XonXoffIn = False
-    StoredProps = [spBasic]
-    TriggersOnRxChar = True
-    Left = 708
-    Top = 528
   end
 end

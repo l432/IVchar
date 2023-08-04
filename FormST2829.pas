@@ -9,13 +9,11 @@ uses
 type
   TST2829Form = class(TForm)
     BClose: TButton;
-    GB_ST2829_Com: TGroupBox;
-    LST2829Port: TLabel;
-    ComCBST2829_Port: TComComboBox;
-    ComCBST2829_Baud: TComComboBox;
-    ST_ST2829_Rate: TStaticText;
-    B_ST2829C_Test: TButton;
+    GB_ST2829C_Com: TGroupBox;
+    B_MyTrain: TButton;
     procedure BCloseClick(Sender: TObject);
+    procedure FormCreate(Sender: TObject);
+    procedure FormDestroy(Sender: TObject);
   private
     { Private declarations }
   public
@@ -28,7 +26,7 @@ var
 implementation
 
 uses
-  IVchar_main;
+  IVchar_main, ST2829CShow, ST2829C;
 
 {$R *.dfm}
 
@@ -47,6 +45,21 @@ begin
 //    Position:=poScreenCenter;
 //    Height:=Height+20;
 //   end;
+end;
+
+procedure TST2829Form.FormCreate(Sender: TObject);
+begin
+ ST2829C_Show := TST2829C_Show.Create(ST_2829C,
+                                      GB_ST2829C_Com,
+                                      B_MyTrain);
+
+ ST2829C_Show.ReadFromIniFile(nil);
+end;
+
+procedure TST2829Form.FormDestroy(Sender: TObject);
+begin
+ ST2829C_Show.WriteToIniFile(nil);
+ FreeAndNil(ST2829C_Show);
 end;
 
 end.

@@ -56,7 +56,8 @@ uses
   FormST2829 in 'FormST2829.pas' {ST2829Form},
   ST2829C in 'ST2829C.pas',
   ST2829CShow in 'ST2829CShow.pas',
-  ST2829CConst in 'ST2829CConst.pas';
+  ST2829CConst in 'ST2829CConst.pas',
+  SCPIshow in 'SCPIshow.pas';
 
 {$R *.res}
 
@@ -69,6 +70,7 @@ begin
   Application.CreateForm(TST2829Form, ST2829Form);
   //  Application.CreateForm(TForm_GDS806, Form_GDS806);
   Application.CreateForm(TIVchar, IVchar);
+//  Application.CreateForm(TST2829Form, ST2829Form);
   //  KT2450Form.Hide;
   Main.Hide;
   IVchar.Show;

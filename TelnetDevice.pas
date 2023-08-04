@@ -67,8 +67,8 @@ TTelnetMeterDeviceSingle=class(TMeterDevice)
   Constructor Create(Telnet:TIdTelnet;IPAdressShow: TIPAdressShow;Nm:string);
   destructor Destroy;override;
   Procedure Request();override;
-  Procedure SetStringToSend(StringToSend:string);
-  procedure ClearStringToSend;
+  Procedure SetStringToSend(StringToSend:string);override;
+  procedure ClearStringToSend;override;
   procedure JoinToStringToSend(AdditionalString:string);override;
   function GetData():double;override;
 end;

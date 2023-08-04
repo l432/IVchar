@@ -29,7 +29,7 @@ type
   TST2829C=class(TSCPInew)
   private
 //   fRS232:TRS232MeterDeviceSingle;
-   fComPort:TComPort;
+//   fComPort:TComPort;
 //   fTerminal:TKeitley_OutputTerminals;
 //   fDataVector:TVector;
 //   {X - значення чогось (джерела, номера каналу); Y - результат виміру}
@@ -52,10 +52,11 @@ type
 //   fCount:integer;
 //   fMeter:TKeitley_Meter;
 //   procedure MeterCreate;virtual;abstract;
-   procedure PrepareString;override;
-   procedure PrepareStringByRootNode;
+//   procedure PrepareString;override;
+   function GetRootNodeString():string;override;
+   procedure PrepareStringByRootNode;override;
    procedure DeviceCreate(Nm:string);override;
-   procedure ProcessingStringByRootNode(Str:string);
+   procedure ProcessingStringByRootNode(Str:string);override;
 //   procedure DefaultSettings;override;
 //   function StringToMeasureFunction(Str:string):boolean;//virtual;
 //   function StringToDigMeasureFunction(Str:string):boolean;
@@ -83,15 +84,16 @@ type
 //   property Meter:TKeitley_Meter read fMeter;
 //   property DisplayState:TKeitley_DisplayState read fDisplayState;
 //   property TrigerState:TKeitley_TriggerState read fTrigerState;
-     Constructor Create(CP:TComPort;Nm:string='ST2829C');
+//     Constructor Create(CP:TComPort;Nm:string='ST2829C');
+     Constructor Create();
 //   Constructor Create(Telnet:TIdTelnet;IPAdressShow: TIPAdressShow;
 //               Nm:string);
 //   destructor Destroy; override;
 ////
 //   function Test():boolean;override;
-   procedure ProcessingString(Str:string);override;
-//   procedure ResetSetting();
-//   procedure MyTraining();virtual;
+//   procedure ProcessingString(Str:string);override;
+   procedure ResetSetting();
+   procedure MyTraining();
 //   procedure ClearUserScreen();
 //   procedure TextToUserScreen(top_text:string='';bottom_text:string='');
 //
@@ -280,55 +282,77 @@ uses
 
 { T2829C }
 
-constructor TST2829C.Create(CP: TComPort; Nm: string);
+constructor TST2829C.Create();
 begin
- fComPort:=CP;
- inherited Create(Nm);
-// inherited Create;
-// fName:=Nm;
-// DeviceCreate(Nm);
-// DefaultSettings();
-// SetFlags(0,0,0);
-
-// fBuffer:=TKeitley_Buffer.Create;
-// fDataVector:=TVector.Create;
-// fDataTimeVector:=TVector.Create;
-// MeterCreate;
-
-
+ inherited Create('ST2829C');
 end;
+
+//constructor TST2829C.Create(CP: TComPort; Nm: string);
+//begin
+// fComPort:=CP;
+// inherited Create(Nm);
+//// inherited Create;
+//// fName:=Nm;
+//// DeviceCreate(Nm);
+//// DefaultSettings();
+//// SetFlags(0,0,0);
+//
+//// fBuffer:=TKeitley_Buffer.Create;
+//// fDataVector:=TVector.Create;
+//// fDataTimeVector:=TVector.Create;
+//// MeterCreate;
+//
+//
+//end;
 
 procedure TST2829C.DeviceCreate(Nm: string);
 begin
-  fDevice:=TST2829CDevice.Create(Self,fComPort,Nm);
+//  fDevice:=TST2829CDevice.Create(Self,fComPort,Nm);
+  fDevice:=TST2829CDevice.Create(Self,Nm);
 end;
 
-procedure TST2829C.PrepareString;
+function TST2829C.GetRootNodeString: string;
 begin
-// (fDevice as TKeitleyDevice).ClearStringToSend;
- (fDevice as TST2829CDevice).SetStringToSend(RootNodeST2829C[fRootNode]);
-
- PrepareStringByRootNode;
-
-// if fIsSuffix then JoinAddString;
+ Result:=RootNodeST2829C[fRootNode];
 end;
+
+procedure TST2829C.MyTraining;
+begin
+ ResetSetting();
+end;
+
+//procedure TST2829C.PrepareString;
+//begin
+// (fDevice as TST2829CDevice).ClearStringToSend;
+// (fDevice as TST2829CDevice).SetStringToSend(RootNodeST2829C[fRootNode]);
+//
+// PrepareStringByRootNode;
+//
+// if fIsSuffix then JoinAddString;
+//end;
 
 procedure TST2829C.PrepareStringByRootNode;
 begin
 
 end;
 
-procedure TST2829C.ProcessingString(Str: string);
-begin
- Str:=Trim(Str);
- ProcessingStringByRootNode(Str);
-end;
+//procedure TST2829C.ProcessingString(Str: string);
+//begin
+// Str:=Trim(Str);
+// ProcessingStringByRootNode(Str);
+//end;
 
 procedure TST2829C.ProcessingStringByRootNode(Str: string);
 begin
  case fRootNode of
   0:if pos(ST2829C_Test,Str)<>0 then fDevice.Value:=314;
  end;
+end;
+
+procedure TST2829C.ResetSetting;
+begin
+//  *RST
+  SetupOperation(1,0,0,False);
 end;
 
 { T2829CDevice }
@@ -355,9 +379,16 @@ end;
 constructor TRS232_ST2829C.Create(CP: TComPort);
 begin
  inherited Create(CP,250052,250052);
- fComPort.DataBits:=dbEight;
- fComPort.StopBits:=sbOneStopBit;
- fComPort.Parity.Bits:=prNone;
+// fComPort.DataBits:=dbEight;
+// fComPort.StopBits:=sbOneStopBit;
+// fComPort.Parity.Bits:=prNone;
 end;
+
+
+initialization
+  ST_2829C := TST2829C.Create();
+
+finalization
+  ST_2829C.Free;
 
 end.

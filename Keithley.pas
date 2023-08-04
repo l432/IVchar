@@ -44,10 +44,11 @@ TKeitley_Meter=class;
    fCount:integer;
    fMeter:TKeitley_Meter;
    procedure MeterCreate;virtual;abstract;
-   procedure PrepareString;override;
-   procedure PrepareStringByRootNode;virtual;
+//   procedure PrepareString;override;
+   function GetRootNodeString():string;override;
+   procedure PrepareStringByRootNode;override;
    procedure DeviceCreate(Nm:string);override;
-   procedure ProcessingStringByRootNode(Str:string);virtual;
+   procedure ProcessingStringByRootNode(Str:string);override;
    procedure DefaultSettings;override;
    function StringToMeasureFunction(Str:string):boolean;//virtual;
    function StringToDigMeasureFunction(Str:string):boolean;
@@ -80,7 +81,7 @@ TKeitley_Meter=class;
    destructor Destroy; override;
 //
 //   function Test():boolean;override;
-   procedure ProcessingString(Str:string);override;
+//   procedure ProcessingString(Str:string);override;
    procedure ResetSetting();
    procedure MyTraining();virtual;
    procedure ClearUserScreen();
@@ -722,6 +723,11 @@ if not(GetMeasureFunction()) then Exit;
  if not(GetDisplayBrightness()) then Exit;
 end;
 
+function TKeitley.GetRootNodeString: string;
+begin
+ Result:=RootNodeKeitley[fRootNode]
+end;
+
 function TKeitley.GetTerminal: boolean;
 begin
  QuireOperation(9,6);
@@ -813,15 +819,15 @@ begin
          else fAdditionalString:=SuffixKt_2450[1];
 end;
 
-procedure TKeitley.PrepareString;
-begin
- (fDevice as TKeitleyDevice).ClearStringToSend;
- (fDevice as TKeitleyDevice).SetStringToSend(RootNodeKeitley[fRootNode]);
-
- PrepareStringByRootNode;
-
- if fIsSuffix then JoinAddString;
-end;
+//procedure TKeitley.PrepareString;
+//begin
+// (fDevice as TKeitleyDevice).ClearStringToSend;
+// (fDevice as TKeitleyDevice).SetStringToSend(RootNodeKeitley[fRootNode]);
+//
+// PrepareStringByRootNode;
+//
+// if fIsSuffix then JoinAddString;
+//end;
 
 procedure TKeitley.PrepareStringByRootNode;
 begin
@@ -947,12 +953,11 @@ begin
 
 end;
 
-procedure TKeitley.ProcessingString(Str: string);
-begin
- Str:=Trim(Str);
-
- ProcessingStringByRootNode(Str);
-end;
+//procedure TKeitley.ProcessingString(Str: string);
+//begin
+// Str:=Trim(Str);
+// ProcessingStringByRootNode(Str);
+//end;
 
 procedure TKeitley.ProcessingStringByRootNode(Str:string);
 begin
