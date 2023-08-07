@@ -9,11 +9,11 @@ type
 
 TGBwithControlElements=class
  private
-  fParent:TGroupBox;
   fWinElements:array of TControl;
-  procedure Add(WinElements:TControl);
   procedure ParentToElements;
  protected
+  fParent:TGroupBox;
+  procedure Add(WinElements:TControl);
   procedure CreateElements;virtual;abstract;
   procedure CreateControls;virtual;abstract;
   procedure DestroyElements;
@@ -207,6 +207,7 @@ end;
 
 destructor TRS232DeviceNew_Show.Destroy;
 begin
+ PortEndAction(fRS232Device.ComPort);
  FreeAndNil(fRS232Show);
   inherited;
 end;

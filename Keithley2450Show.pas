@@ -17,28 +17,6 @@ type
 
  TKt_2450_Show=class;
 
-// TKeitley_SetupMemoryPins=class(TPins)
-//  protected
-//   Function GetPinStr(Index:integer):string;override;
-//  public
-//   Constructor Create(Name:string);
-// end;
-
-
-// TKeitley_SetupMemoryShow=class(TPinsShowUniversal)
-//   private
-//    fKT2450_Show:TKt_2450_Show;
-//    fMemoryPins:TKeitley_SetupMemoryPins;
-//   protected
-//    procedure LabelsFilling;
-//    procedure CommandSend;
-//   public
-//    Constructor Create(KT2450_Show:TKt_2450_Show;
-//                       PanelSave, PanelLoad:TPanel);
-//    destructor Destroy;override;
-//    procedure NumberPinShow(PinActiveNumber:integer=-1;ChooseNumber:integer=-1);override;
-// end;
-
 TKt_2450_AbstractElementShow=class(TSimpleFreeAndAiniObject)
  private
   fKt_2450:TKt_2450;

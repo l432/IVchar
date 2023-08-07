@@ -327,13 +327,22 @@ Procedure PortBeginAction(Port:TComPort;Lab:TLabel;Button: TButton);
 
 Procedure PortEndAction(Port:TComPort);
 
+Procedure EnableComPort(Ports:TStringList);
+
+Procedure EnableComPortShow();
+
+procedure StringListShow(StrL:TStringList);
+
+
 var
  TestShowRS232,DeviceRS232isAbsent:boolean;
+ ComPorts:TStringList;
 
 implementation
 
 uses
-  OlegType, Dialogs, RS232_Meas_Tread, Windows, Forms, Graphics, SysUtils;
+  OlegType, Dialogs, RS232_Meas_Tread, Windows, Forms, Graphics, SysUtils,
+  OlegFunction;
 
 //procedure TRS232MeterDevice.DiapazonDetermination();
 //begin
@@ -520,6 +529,14 @@ end;
 Procedure PortBeginAction(Port:TComPort;Lab:TLabel;Button: TButton);
 begin
 // showmessage('!!!'+Port.Name);
+  if ComPorts.IndexOf(Port.Port)=-1
+    then
+    begin
+//      showmessage('Port '+Port.Port+' is absent');
+      Exit;
+    end;
+
+
   try
   try
     Port.Open;
@@ -550,6 +567,9 @@ end;
 
 Procedure PortEndAction(Port:TComPort);
 begin
+  if ComPorts.IndexOf(Port.Port)=-1
+    then Exit;
+
    try
   if Port.Connected then
    begin
@@ -561,7 +581,64 @@ begin
  end;
 end;
 
+Procedure EnableComPort(Ports:TStringList);
+var
+  I: Integer;
+  PortName:string;
+  PortHandle:THandle;
+  temp:TStringList;
+begin
+  temp:=TStringList.Create;
+  try
+    // Використовуємо цикл для перевірки портів в діапазоні від COM1 до COM256
+    for I := 1 to 256 do
+    begin
+      // Створюємо ім'я порту у відповідності до діапазону
+      // Наприклад, "COM1", "COM2" і т. д.
+      PortName := 'COM' + IntToStr(I);
 
+      // Відкриваємо порт з правом читання та запису
+      PortHandle := CreateFile(PChar('\\.\' + PortName), GENERIC_READ or GENERIC_WRITE,
+        0, nil, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 0);
+
+      if PortHandle <> INVALID_HANDLE_VALUE then
+      begin
+        temp.Add(PortName);
+        CloseHandle(PortHandle);
+      end;
+    end;
+  except
+    // Якщо сталася помилка, звільнимо пам'ять і повернемо порожній список
+    temp.Free;
+    temp := TStringList.Create;
+  end;
+  Ports.Assign(temp);
+end;
+
+
+Procedure EnableComPortShow();
+var
+  PortList: TStringList;
+begin
+  PortList := TStringList.Create;
+  EnableComPort(PortList);
+  StringListShow(PortList);
+  PortList.Free;
+end;
+
+procedure StringListShow(StrL:TStringList);
+ var temp:string;
+   i:integer;
+begin
+ temp:='';
+ if StrL.Count>0
+   then
+     for I := 0 to StrL.Count-1 do
+       temp:=temp+ StrL[i]+#10
+   else
+    temp:='is empty';
+ showmessage(temp);
+end;
 
 { TRS232 }
 
@@ -1106,7 +1183,8 @@ initialization
                                  True, // начальное состояние TRUE - сигнальное
                                  nil);
 
-
+   ComPorts:=TStringList.Create;
+   EnableComPort(ComPorts);
 finalization
 
   SetEvent(EventComPortFree);
@@ -1115,4 +1193,6 @@ finalization
 
   SetEvent(EventMeasuringEnd);
   CloseHandle(EventMeasuringEnd);
+
+  FreeAndNil(ComPorts);
 end.

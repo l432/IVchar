@@ -112,12 +112,13 @@ end;
   public
    property ComPort:TComPort read fCPort;
    property SCPI:TSCPInew read fSCPI;
-   Constructor Create(SCPInew:TSCPInew;Nm:string);overload;
-   Constructor Create(SCPInew:TSCPInew;CP:TComPort;Nm:string);overload;
+   Constructor Create(SCPInew:TSCPInew;Nm:string);//overload;
+//   Constructor Create(SCPInew:TSCPInew;CP:TComPort;Nm:string);overload;
    destructor Destroy; override;
    Procedure SetStringToSend(StrTοS:string);override;
    procedure ClearStringToSend;override;
    procedure JoinToStringToSend(AdditionalString:string);override;
+   function GetData():double;override;
  end;
 
 
@@ -396,26 +397,26 @@ begin
 // fCPort.Port:='COM1';
 end;
 
-constructor TRS232DeviceNew.Create(SCPInew: TSCPInew; CP: TComPort; Nm: string);
-begin
-
-
-  inherited Create(CP,Nm);
-//  CreateDataSubject(CP);
-//  inherited Create(Nm);
-  //  fIsReceived:=False;
-  //  fMinDelayTime:=0;
-  //  fDelayTimeStep:=10;
-  //  fDelayTimeMax:=130;
-  //  fValue:=ErResult;
-  //  fNewData:=False;
-  //  fError:=False;
-  //  RepeatInErrorCase:=False;
-//  Self.DataSubject:=fDataSubject;
-//  fDataSubject.RegisterObserver(Self);
-//  CreateDataRequest;
- fSCPI:=SCPInew;
-end;
+//constructor TRS232DeviceNew.Create(SCPInew: TSCPInew; CP: TComPort; Nm: string);
+//begin
+//
+//
+//  inherited Create(CP,Nm);
+////  CreateDataSubject(CP);
+////  inherited Create(Nm);
+//  //  fIsReceived:=False;
+//  //  fMinDelayTime:=0;
+//  //  fDelayTimeStep:=10;
+//  //  fDelayTimeMax:=130;
+//  //  fValue:=ErResult;
+//  //  fNewData:=False;
+//  //  fError:=False;
+//  //  RepeatInErrorCase:=False;
+////  Self.DataSubject:=fDataSubject;
+////  fDataSubject.RegisterObserver(Self);
+////  CreateDataRequest;
+// fSCPI:=SCPInew;
+//end;
 
 constructor TRS232DeviceNew.Create(SCPInew: TSCPInew; Nm: string);
 begin
@@ -436,6 +437,22 @@ destructor TRS232DeviceNew.Destroy;
 begin
   FreeAndNil(fCPort);
   inherited;
+end;
+
+function TRS232DeviceNew.GetData: double;
+begin
+  Result:=ErResult;
+
+  if DeviceRS232isAbsent or DataSubject.PortConnected then
+   begin
+    Result:=Measurement();
+    fNewData:=True;
+   end
+                                      else
+   begin
+     fError:=True;
+     showmessage(MessageError);
+   end;
 end;
 
 procedure TRS232DeviceNew.JoinToStringToSend(AdditionalString: string);

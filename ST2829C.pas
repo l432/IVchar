@@ -3,7 +3,7 @@ unit ST2829C;
 interface
 
 uses
-  SCPI, CPort, RS232deviceNew;
+  SCPI, CPort, RS232deviceNew, ST2829CConst;
 
 type
 
@@ -94,11 +94,13 @@ type
 //   procedure ProcessingString(Str:string);override;
    procedure ResetSetting();
    procedure MyTraining();
+   procedure Trig();
+   {triggers the measurement and then sends the result to the output buffer.}
 //   procedure ClearUserScreen();
 //   procedure TextToUserScreen(top_text:string='';bottom_text:string='');
 //
-//   procedure SaveSetup(SlotNumber:TKeitley_SetupMemorySlot);
-//   procedure LoadSetup(SlotNumber:TKeitley_SetupMemorySlot);
+   procedure SaveSetup(RecordNumber:TST2829C_SetupMemoryRecord;RecordName:string='');
+   procedure LoadSetup(RecordNumber:TST2829C_SetupMemoryRecord);
 //   procedure LoadSetupPowerOn(SlotNumber:TKeitley_SetupMemorySlot);
 //   procedure UnloadSetupPowerOn();
 //   procedure RunningMacroScript(ScriptName:string);
@@ -278,7 +280,7 @@ var
 implementation
 
 uses
-  SysUtils, ST2829CConst;
+  SysUtils;
 
 { T2829C }
 
@@ -316,9 +318,25 @@ begin
  Result:=RootNodeST2829C[fRootNode];
 end;
 
+procedure TST2829C.LoadSetup(RecordNumber: TST2829C_SetupMemoryRecord);
+begin
+// *MMEM:LOAD:STAT <record number>
+ fAdditionalString:=inttostr(RecordNumber);
+ SetupOperation(3);
+end;
+
 procedure TST2829C.MyTraining;
 begin
- ResetSetting();
+
+SaveSetup(0);
+SaveSetup(11,'Hi result');
+SaveSetup(25,'0123456789ABCDEFGH');
+
+ LoadSetup(35);
+// Trig();
+// EnableComPortShow();
+
+// ResetSetting();
 end;
 
 //procedure TST2829C.PrepareString;
@@ -333,7 +351,10 @@ end;
 
 procedure TST2829C.PrepareStringByRootNode;
 begin
+ case fRootNode of
+  3:JoinToStringToSend(FirstNodeST2829C[fFirstLevelNode]);
 
+  end;
 end;
 
 //procedure TST2829C.ProcessingString(Str: string);
@@ -353,6 +374,25 @@ procedure TST2829C.ResetSetting;
 begin
 //  *RST
   SetupOperation(1,0,0,False);
+end;
+
+procedure TST2829C.SaveSetup(RecordNumber: TST2829C_SetupMemoryRecord;RecordName:string='');
+begin
+// *MMEM:STOR:STAT <record number>,“<string>”
+ fAdditionalString:=inttostr(RecordNumber);
+ if Length(RecordName)>0 then
+  begin
+    if Length(RecordName)>ST2829C_MemFileMaxLength then SetLength(RecordName,ST2829C_MemFileMaxLength);
+    fAdditionalString:=fAdditionalString+', '+StringToInvertedCommas(RecordName);
+  end;
+ 
+ SetupOperation(3,1);
+end;
+
+procedure TST2829C.Trig;
+begin
+//  *TRG
+  SetupOperation(2,0,0,False);
 end;
 
 { T2829CDevice }

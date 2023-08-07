@@ -3334,7 +3334,6 @@ end;
 
 procedure TIVchar.FormDestroy(Sender: TObject);
 begin
-
  if SBTAuto.Down then    TemperatureThreadDestroy();
 // TemperatureMeasuringThread.Terminate;
  if SBControlBegin.Down then ControllerThread.Terminate;
@@ -3356,7 +3355,6 @@ begin
  ShowArray.WriteToIniFileAndFree(ConfigFile);
 
 
-
 // DACFree();
   ObjectsFree();
              end;
@@ -3375,7 +3373,9 @@ begin
  NumberPinsOneWire.Free;
  NumberPinsInput.Free;
 
+ 
  ComPortsEnding([ComPortUT70C,ComPortUT70B,ComPort1]);
+// HelpForMe('gg');
 end;
 
 
