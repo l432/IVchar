@@ -8,11 +8,11 @@ uses
   Graphics;
 
 
-const MarginLeft=10;
-      MarginRight=10;
-      Marginbetween=5;
-      MarginBetweenLST=3;
-      MarginTop=20;
+//const MarginLeft=10;
+//      MarginRight=10;
+//      Marginbetween=5;
+//      MarginBetweenLST=3;
+//      MarginTop=20;
 
 type
 
@@ -985,7 +985,7 @@ function MeasParShowFactory(MeasureType:TKeitley_Measure;
 implementation
 
 uses
-  SysUtils, OlegFunction, FormDMM6500, Dialogs;
+  SysUtils, OlegFunction, FormDMM6500, Dialogs, SCPIshow;
 
 function MeasParShowFactory(MeasureType:TKeitley_Measure;
                 Parent:TGroupBox;DMM6500:TDMM6500;

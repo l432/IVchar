@@ -532,7 +532,7 @@ begin
   if ComPorts.IndexOf(Port.Port)=-1
     then
     begin
-//      showmessage('Port '+Port.Port+' is absent');
+      showmessage('Port '+Port.Port+' is absent');
       Exit;
     end;
 
@@ -588,31 +588,33 @@ var
   PortHandle:THandle;
   temp:TStringList;
 begin
-  temp:=TStringList.Create;
-  try
-    // Використовуємо цикл для перевірки портів в діапазоні від COM1 до COM256
-    for I := 1 to 256 do
-    begin
-      // Створюємо ім'я порту у відповідності до діапазону
-      // Наприклад, "COM1", "COM2" і т. д.
-      PortName := 'COM' + IntToStr(I);
-
-      // Відкриваємо порт з правом читання та запису
-      PortHandle := CreateFile(PChar('\\.\' + PortName), GENERIC_READ or GENERIC_WRITE,
-        0, nil, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 0);
-
-      if PortHandle <> INVALID_HANDLE_VALUE then
-      begin
-        temp.Add(PortName);
-        CloseHandle(PortHandle);
-      end;
-    end;
-  except
-    // Якщо сталася помилка, звільнимо пам'ять і повернемо порожній список
-    temp.Free;
-    temp := TStringList.Create;
-  end;
-  Ports.Assign(temp);
+//  temp:=TStringList.Create;
+//  try
+//    // Використовуємо цикл для перевірки портів в діапазоні від COM1 до COM256
+//    for I := 1 to 256 do
+//    begin
+//      // Створюємо ім'я порту у відповідності до діапазону
+//      // Наприклад, "COM1", "COM2" і т. д.
+//      PortName := 'COM' + IntToStr(I);
+//
+//      // Відкриваємо порт з правом читання та запису
+//      PortHandle := CreateFile(PChar('\\.\' + PortName), GENERIC_READ or GENERIC_WRITE,
+//        0, nil, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 0);
+//
+//      if PortHandle <> INVALID_HANDLE_VALUE then
+//      begin
+//        showmessage(PortName);
+//        temp.Add(PortName);
+//        CloseHandle(PortHandle);
+//      end;
+//    end;
+//  except
+////     Якщо сталася помилка, звільнимо пам'ять і повернемо порожній список
+//    temp.Free;
+//    temp := TStringList.Create;
+//  end;
+//  Ports.Assign(temp);
+  EnumComPorts(Ports);
 end;
 
 

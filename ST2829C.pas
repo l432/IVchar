@@ -73,6 +73,8 @@ type
 //   function GetMeasureFunctionValue:TKeitley_Measure;virtual;
 //   procedure SetCountNumber(Value:integer);virtual;
 //   procedure OnOffFromBool(toOn:boolean);
+   function HighForStrParsing:byte;override;
+   function ItIsRequiredStr(Str:string;i:byte):boolean;override;
   public
 //   property DataVector:TVector read fDataVector;
 //   property DataTimeVector:TVector read fDataTimeVector;
@@ -96,6 +98,10 @@ type
    procedure MyTraining();
    procedure Trig();
    {triggers the measurement and then sends the result to the output buffer.}
+   procedure SetDisplayPage(Page:TST2829C_DisplayPage);
+   function  GetDisplayPage():boolean;
+   procedure SetDisplayFont(Font:TST2829C_Font);
+   function  GetDisplayFont():boolean;
 //   procedure ClearUserScreen();
 //   procedure TextToUserScreen(top_text:string='';bottom_text:string='');
 //
@@ -280,12 +286,13 @@ var
 implementation
 
 uses
-  SysUtils;
+  SysUtils, Dialogs, OlegType;
 
 { T2829C }
 
 constructor TST2829C.Create();
 begin
+// showmessage('TST2829C Create');
  inherited Create('ST2829C');
 end;
 
@@ -313,9 +320,43 @@ begin
   fDevice:=TST2829CDevice.Create(Self,Nm);
 end;
 
+function TST2829C.GetDisplayFont: boolean;
+begin
+ QuireOperation(4,3);
+ Result:=(fDevice.Value<>ErResult);
+end;
+
+function TST2829C.GetDisplayPage: boolean;
+begin
+ QuireOperation(4,2);
+ Result:=(fDevice.Value<>ErResult);
+end;
+
 function TST2829C.GetRootNodeString: string;
 begin
  Result:=RootNodeST2829C[fRootNode];
+end;
+
+function TST2829C.HighForStrParsing: byte;
+begin
+ Result:=0;
+ case fRootNode of
+  4:case fFirstLevelNode of
+    2:Result:=ord(High(TST2829C_DisplayPageCommand));
+    3:Result:=ord(High(TST2829C_Font));
+    end;
+ end;
+end;
+
+function TST2829C.ItIsRequiredStr(Str: string; i: byte): boolean;
+begin
+ Result:=False;
+ case fRootNode of
+  4:case fFirstLevelNode of
+    2:Result:=(Pos(TST2829C_DisplayPageResponce[TST2829C_DisplayPage(i)],Str)<>0);
+    3:Result:=(Pos(TST2829C_FontCommand[TST2829C_Font(i)],Str)<>0);
+    end;
+ end;
 end;
 
 procedure TST2829C.LoadSetup(RecordNumber: TST2829C_SetupMemoryRecord);
@@ -326,13 +367,35 @@ begin
 end;
 
 procedure TST2829C.MyTraining;
+ var i:Integer;
 begin
 
-SaveSetup(0);
-SaveSetup(11,'Hi result');
-SaveSetup(25,'0123456789ABCDEFGH');
+  for I := 0 to ord(High(TST2829C_Font)) do
+   begin
+     SetDisplayFont(TST2829C_Font(i));
+     if (GetDisplayFont() and(i=round(fDevice.Value)))
+      then showmessage('Ura!!!');
+   end;
+ SetDisplayFont(st_lLarge);
 
- LoadSetup(35);
+// SetDisplayFont(st_lTine);
+// SetDisplayFont(st_lOff);
+// SetDisplayFont(st_lLarge);
+
+
+//  for I := 0 to ord(High(TST2829C_DisplayPage)) do
+//   begin
+//     SetDisplayPage(TST2829C_DisplayPage(i));
+//     if (GetDisplayPage() and(i=round(fDevice.Value)))
+//      then showmessage('Ura');
+//   end;
+
+
+//SaveSetup(0);
+//SaveSetup(11,'Hi result');
+//SaveSetup(25,'0123456789ABCDEFGH');
+//
+// LoadSetup(35);
 // Trig();
 // EnableComPortShow();
 
@@ -353,7 +416,7 @@ procedure TST2829C.PrepareStringByRootNode;
 begin
  case fRootNode of
   3:JoinToStringToSend(FirstNodeST2829C[fFirstLevelNode]);
-
+  4:JoinToStringToSend(FirstNodeST2829C[fFirstLevelNode]);
   end;
 end;
 
@@ -367,6 +430,9 @@ procedure TST2829C.ProcessingStringByRootNode(Str: string);
 begin
  case fRootNode of
   0:if pos(ST2829C_Test,Str)<>0 then fDevice.Value:=314;
+  4:case fFirstLevelNode of
+    2,3:StringToOrd(AnsiLowerCase(Str));
+    end;
  end;
 end;
 
@@ -387,6 +453,20 @@ begin
   end;
  
  SetupOperation(3,1);
+end;
+
+procedure TST2829C.SetDisplayFont(Font: TST2829C_Font);
+begin
+ //DISP:FRON <Font>
+ fAdditionalString:=TST2829C_FontCommand[Font];
+ SetupOperation(4,3);
+end;
+
+procedure TST2829C.SetDisplayPage(Page: TST2829C_DisplayPage);
+begin
+//DISP:PAGE <Page>
+ fAdditionalString:=TST2829C_DisplayPageCommand[Page];
+ SetupOperation(4,2);
 end;
 
 procedure TST2829C.Trig;

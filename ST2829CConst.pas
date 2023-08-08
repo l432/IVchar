@@ -13,18 +13,56 @@ const
 //  MySourceList='OlegSourceList';
 //  MyMeasList='OlegMeasList';
 
-  RootNodeST2829C:array[0..3]of string=
-  ('*idn?','*rst','*trg', 'mmem');
-//   0       1       2      3      4        5       6       7      8
+  RootNodeST2829C:array[0..4]of string=
+  ('*idn?','*rst','*trg', 'mmem', 'disp');
+//   0       1       2      3       4        5       6       7      8
 
-  FirstNodeST2829C:array[0..1]of string=
-  (':load:stat',':stor:stat');
-//     0             1             2          3      4        5         6
+  FirstNodeST2829C:array[0..3]of string=
+  (':load:stat',':stor:stat',':page',':rfon');
+//     0             1           2      3      4        5         6
 
 type
 
- TST2829C_SetupMemoryRecord=0..39;
+ TST2829C_SetupMemoryRecord=0..29;
+ {реально- до 39, але вікно з кнопками завелике}
 
-implementation
+ TST2829C_DisplayPage=(st_dpMeas, st_dpBNum, st_dpBCO,
+                       st_dpList, st_dpMset, st_dpCset,
+                       st_dpLtab, st_dpLSet, st_dpSyst,st_dpFlis);
+//MEASurement    Set the display page as the LCR measurement display.
+//BNUMber         Set the display page as the bin number display.
+//BCOunt           Set the display page as the bin count display.
+//LIST              Set the display page as the list sweep display.
+//MSETup           Set the display page as the measurement display.
+//CSETup           Set the display page as the correction setup.
+//LTABle            Set the display page as the limit table setup.
+//LSETup           Set the display page as the list sweep setup.
+//SYSTem          Set the display page as the system setup page.
+//FLISt             Set the display page as the file list page.
+
+ TST2829C_Font=(st_lLarge, st_lTine, st_lOff);
+
+const
+ TST2829C_DisplayPageCommand:array [TST2829C_DisplayPage]
+            of string=('meas', 'bnum', 'bco',
+                       'list', 'mset', 'cset',
+                       'ltab', 'lset', 'syst','flis');
+
+ TST2829C_DisplayPageResponce:array [TST2829C_DisplayPage]
+            of string=('meas display',
+                       'bin no. disp',
+                       'bin count disp',
+                       'list sweep disp',
+                       'measure setup',
+                       'correction',
+                       'limit table setup',
+                       'list sweep setup',
+                       'system setup',
+                       'file list');
+
+ TST2829C_FontCommand:array [TST2829C_Font]
+            of string=('large', 'tiny', 'off');
+
+ implementation
 
 end.

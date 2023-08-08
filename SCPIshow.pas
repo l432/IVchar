@@ -3,7 +3,14 @@ unit SCPIshow;
 interface
 
 uses
-  OlegTypePart2, SCPI, StdCtrls, CPortCtl, Controls, IniFiles;
+  OlegTypePart2, SCPI, StdCtrls, CPortCtl, Controls, IniFiles, ExtCtrls, 
+  ArduinoDeviceNew;
+
+const MarginLeft=10;
+      MarginRight=10;
+      Marginbetween=5;
+      MarginBetweenLST=3;
+      MarginTop=20;
 
 type
 
@@ -17,7 +24,9 @@ TGBwithControlElements=class
   procedure CreateElements;virtual;abstract;
   procedure CreateControls;virtual;abstract;
   procedure DestroyElements;
+  procedure DestroyControls;virtual;
   procedure DesignElements;virtual;
+  procedure Resize(Control:TControl);
  public
   Constructor Create(GB:TGroupBox);
   destructor Destroy;override;
@@ -35,6 +44,13 @@ TRS232minimal_Show=class(TGBwithControlElements)
   fComCBBaud: TComComboBox;
   fSTRate: TStaticText;
   fBTest: TButton;
+end;
+
+TSCPI_SetupMemoryPins=class(TPins)
+ protected
+  Function GetPinStr(Index:integer):string;override;
+ public
+  Constructor Create(Name:string);
 end;
 
 TRS232DeviceNew_Show=class(TSimpleFreeAndAiniObject)
@@ -55,7 +71,7 @@ TRS232DeviceNew_Show=class(TSimpleFreeAndAiniObject)
 { TRS232DeviceNew_Show }
 
 
-
+Procedure DesignSettingPanel(P:TPanel;Caption:string);
 
 
 implementation
@@ -100,9 +116,13 @@ end;
 
 destructor TGBwithControlElements.Destroy;
 begin
-//  DestroyControls;
+  DestroyControls;
   DestroyElements;
   inherited;
+end;
+
+procedure TGBwithControlElements.DestroyControls;
+begin
 end;
 
 procedure TGBwithControlElements.DestroyElements;
@@ -117,6 +137,34 @@ procedure TGBwithControlElements.ParentToElements;
 begin
  for I := 0 to High(fWinElements)
    do fWinElements[i].Parent:=fParent;
+end;
+
+procedure TGBwithControlElements.Resize(Control: TControl);
+ var L:Tlabel;
+begin
+ 
+ if (Control is TLabel) then
+  begin
+    Control.Width:=(Control as TLabel).Canvas.TextWidth((Control as TLabel).Caption);
+    Control.Height:=(Control as TLabel).Canvas.TextHeight((Control as TLabel).Caption);
+    Exit;
+  end;
+ if (Control is TCheckBox) then
+  begin
+    L:=TLabel.Create(fParent);
+    L.Parent:=fParent;
+    Control.Width:=L.Canvas.TextWidth((Control as TCheckBox).Caption)+17;
+    FreeAndNil(L);
+    Exit;
+  end;
+ if (Control is TButton) then
+  begin
+    L:=TLabel.Create(fParent);
+    L.Parent:=fParent;
+    Control.Width:=L.Canvas.TextWidth((Control as TButton).Caption)+17;
+    FreeAndNil(L);
+    Exit;
+  end;
 end;
 
 { TRS232minimal_Show }
@@ -231,6 +279,36 @@ end;
 procedure TRS232DeviceNew_Show.WriteToIniFile(ConfigFile: TIniFile);
 begin
  fRS232Device.ComPort.StoreSettings(stIniFile,ExtractFilePath(Application.ExeName)+'IVChar.ini');
+end;
+
+
+Procedure DesignSettingPanel(P:TPanel;Caption:string);
+begin
+ P.Caption:=Caption;
+ P.Height:=23;
+ P.Width:=85;
+ P.Font.Color:=clHotLight;
+ P.BevelOuter:=bvLowered;
+ P.ParentColor:=False;
+ P.Color:=clSilver;
+ P.Cursor:=crHandPoint;
+end;
+
+
+{ TSCPI_SetupMemoryPins }
+
+constructor TSCPI_SetupMemoryPins.Create(Name: string);
+begin
+ inherited Create(Name,['SaveSlot','LoadSlot']);
+ PinStrPart:='';
+end;
+
+function TSCPI_SetupMemoryPins.GetPinStr(Index: integer): string;
+begin
+ case Index of
+  0:Result:='Save Setup';
+  else Result:='Load Setup';
+ end;
 end;
 
 end.

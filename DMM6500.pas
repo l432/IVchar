@@ -133,9 +133,6 @@ type
 
    function ChanQuireBegin(ChanNumber:byte):boolean;
    Procedure MeasParametersDestroy;
-   procedure StringToOrd(Str:string);
-   function HighForStrParsing:byte;
-   function ItIsRequiredStr(Str:string;i:byte):boolean;
    function RangeToString(P:pointer;MParam:TDMM6500_MeasParameters):string;//overload;
    function ApertValueToString(FM: TKeitley_Measure;ApertValue:double):string;
    function BiasLevelToString(BL:TDMM6500_DiodeBiasLevel):string;
@@ -170,6 +167,9 @@ type
    {повертає номер закритого (підготовленого) для вимірювань
    каналу; якщо таких декілька - найменший номер,
    якщо всі відкриті - Result=0}
+//   procedure StringToOrd(Str:string);
+   function HighForStrParsing:byte;override;
+   function ItIsRequiredStr(Str:string;i:byte):boolean;override;
   public
    property MeasParameters:TDMM6500MeasPar_Base read GetMeasParameters;
    property CountDig:integer read fCountDig write SetCountDigNumber;
@@ -3361,20 +3361,20 @@ begin
  SetShablon(dm_tp_W4RTDType,Pointer(RTDType),ChanNumber);
 end;
 
-procedure TDMM6500.StringToOrd(Str: string);
-  var i:byte;
-begin
- try
-   for I := 0 to HighForStrParsing do
-     if ItIsRequiredStr(Str,i) then
-       begin
-         fDevice.Value:=i;
-         Break;
-       end;
- except
-  fDevice.Value:=ErResult;
- end;
-end;
+//procedure TDMM6500.StringToOrd(Str: string);
+//  var i:byte;
+//begin
+// try
+//   for I := 0 to HighForStrParsing do
+//     if ItIsRequiredStr(Str,i) then
+//       begin
+//         fDevice.Value:=i;
+//         Break;
+//       end;
+// except
+//  fDevice.Value:=ErResult;
+// end;
+//end;
 
 //procedure TDMM6500.StringToScanMonitorMode(Str: string);
 //  var i:TKeitley_ScanLimitType;

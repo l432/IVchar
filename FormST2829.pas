@@ -12,10 +12,6 @@ type
     GB_ST2829C_Com: TGroupBox;
     B_MyTrain: TButton;
     GB_Setting: TGroupBox;
-    PDM6500LoadSetup: TPanel;
-    PDM6500SaveSetup: TPanel;
-    B_DM6500GetSetting: TButton;
-    B_DM6500_Reset: TButton;
     procedure BCloseClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
@@ -31,7 +27,7 @@ var
 implementation
 
 uses
-  IVchar_main, ST2829CShow, ST2829C;
+  IVchar_main, ST2829CShow, ST2829C, IniFiles;
 
 {$R *.dfm}
 
@@ -53,17 +49,24 @@ begin
 end;
 
 procedure TST2829Form.FormCreate(Sender: TObject);
+ var CF:TIniFile;
 begin
  ST2829C_Show := TST2829C_Show.Create(ST_2829C,
                                       [GB_ST2829C_Com,GB_Setting],
                                       B_MyTrain);
 
- ST2829C_Show.ReadFromIniFile(nil);
+ CF:=TIniFile.Create(ExtractFilePath(Application.ExeName)+'IVChar.ini');
+ ST2829C_Show.ReadFromIniFile(CF);
+ CF.Free;
 end;
 
 procedure TST2829Form.FormDestroy(Sender: TObject);
+ var CF:TIniFile;
 begin
- ST2829C_Show.WriteToIniFile(nil);
+ CF:=TIniFile.Create(ExtractFilePath(Application.ExeName)+'IVChar.ini');
+ ST2829C_Show.WriteToIniFile(CF);
+ CF.Free;
+
  FreeAndNil(ST2829C_Show);
 end;
 

@@ -48,6 +48,18 @@ type
     procedure StrToNumberArray(var Values:TArrSingle; Str:string; Decimator:string=',');
     {розміщує в Values числа, розташовані в рядку Str і розділені між собою Decimator}
     procedure JoinToStringToSend(Str:string);
+    procedure StringToOrd(Str:string);
+    {аналізує отриманий рядок}
+    function HighForStrParsing:byte;virtual;
+    {повертає найбільший індекс при поcтуповому порівнянні
+    рядка з шаблонами,
+    загалом має залежати від xxNode,
+    використовується в StringToOrd}
+    function ItIsRequiredStr(Str:string;i:byte):boolean;virtual;
+    {безпосередньо перевіряє
+    наявність у рядку певного шаблону,
+    загалом має залежати від xxNode,
+    використовується в StringToOrd}
    public
     property Device:TMeterDevice read fDevice;
     Constructor Create(Nm:string);
@@ -205,6 +217,16 @@ begin
   inherited;
 end;
 
+function TSCPInew.HighForStrParsing: byte;
+begin
+ Result:=0;
+end;
+
+function TSCPInew.ItIsRequiredStr(Str: string; i: byte): boolean;
+begin
+ Result:=False;
+end;
+
 function TSCPInew.NumberToStrLimited(Value: double;
   LimitValues: TLimitValues): string;
 begin
@@ -332,6 +354,21 @@ end;
 class function TSCPInew.StringToInvertedCommas(str: string): string;
 begin
  Result:='"'+str+'"';
+end;
+
+procedure TSCPInew.StringToOrd(Str: string);
+  var i:byte;
+begin
+ try
+   for I := 0 to HighForStrParsing do
+     if ItIsRequiredStr(Str,i) then
+       begin
+         fDevice.Value:=i;
+         Break;
+       end;
+ except
+  fDevice.Value:=ErResult;
+ end;
 end;
 
 procedure TSCPInew.StrToNumberArray(var Values: TArrSingle; Str,

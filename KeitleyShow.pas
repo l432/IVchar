@@ -4,7 +4,7 @@ interface
 
 uses
   OlegTypePart2, Keithley, StdCtrls, OlegShowTypes, Classes, ArduinoDeviceNew, 
-  ExtCtrls, IniFiles, Measurement, Buttons;
+  ExtCtrls, IniFiles, Measurement, Buttons, SCPIshow;
 
 const
   ButtonNumberKeitley = 1;
@@ -13,17 +13,18 @@ type
 
 TKeitley_Show=class;
 
-TKeitley_SetupMemoryPins=class(TPins)
- protected
-  Function GetPinStr(Index:integer):string;override;
- public
-  Constructor Create(Name:string);
-end;
+//TKeitley_SetupMemoryPins=class(TPins)
+// protected
+//  Function GetPinStr(Index:integer):string;override;
+// public
+//  Constructor Create(Name:string);
+//end;
 
 TKeitley_SetupMemoryShow=class(TPinsShowUniversal)
  private
   fKeitley_Show:TKeitley_Show;
-  fMemoryPins:TKeitley_SetupMemoryPins;
+//  fMemoryPins:TKeitley_SetupMemoryPins;
+  fMemoryPins:TSCPI_SetupMemoryPins;
  protected
   procedure LabelsFilling;
   procedure CommandSend;
@@ -265,19 +266,19 @@ end;
 
 { TKeitley_SetupMemoryPins }
 
-constructor TKeitley_SetupMemoryPins.Create(Name: string);
-begin
- inherited Create(Name,['SaveSlot','LoadSlot']);
- PinStrPart:='';
-end;
-
-function TKeitley_SetupMemoryPins.GetPinStr(Index: integer): string;
-begin
- case Index of
-  0:Result:='Save Setup';
-  else Result:='Load Setup';
- end;
-end;
+//constructor TKeitley_SetupMemoryPins.Create(Name: string);
+//begin
+// inherited Create(Name,['SaveSlot','LoadSlot']);
+// PinStrPart:='';
+//end;
+//
+//function TKeitley_SetupMemoryPins.GetPinStr(Index: integer): string;
+//begin
+// case Index of
+//  0:Result:='Save Setup';
+//  else Result:='Load Setup';
+// end;
+//end;
 
 { TKeitley_SetupMemoryShow }
 
@@ -289,7 +290,8 @@ constructor TKeitley_SetupMemoryShow.Create(Keitley_Show: TKeitley_Show;
   PanelSave, PanelLoad: TPanel);
 begin
  fKeitley_Show:=Keitley_Show;
- fMemoryPins:=TKeitley_SetupMemoryPins.Create(fKeitley_Show.fKeitley.Name+'Pins');
+// fMemoryPins:=TKeitley_SetupMemoryPins.Create(fKeitley_Show.fKeitley.Name+'Pins');
+ fMemoryPins:=TSCPI_SetupMemoryPins.Create(fKeitley_Show.fKeitley.Name+'Pins');
  inherited Create(fMemoryPins,[PanelSave, PanelLoad]);
  LabelsFilling();
 end;
