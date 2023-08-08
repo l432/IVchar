@@ -17,8 +17,8 @@ const
   ('*idn?','*rst','*trg', 'mmem', 'disp');
 //   0       1       2      3       4        5       6       7      8
 
-  FirstNodeST2829C:array[0..3]of string=
-  (':load:stat',':stor:stat',':page',':rfon');
+  FirstNodeST2829C:array[0..4]of string=
+  (':load:stat',':stor:stat',':page',':rfon',':line');
 //     0             1           2      3      4        5         6
 
 type

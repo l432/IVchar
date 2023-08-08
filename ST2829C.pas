@@ -370,13 +370,15 @@ procedure TST2829C.MyTraining;
  var i:Integer;
 begin
 
-  for I := 0 to ord(High(TST2829C_Font)) do
-   begin
-     SetDisplayFont(TST2829C_Font(i));
-     if (GetDisplayFont() and(i=round(fDevice.Value)))
-      then showmessage('Ura!!!');
-   end;
- SetDisplayFont(st_lLarge);
+ QuireOperation(4,4);
+//----------------------------------------
+//  for I := 0 to ord(High(TST2829C_Font)) do
+//   begin
+//     SetDisplayFont(TST2829C_Font(i));
+//     if (GetDisplayFont() and(i=round(fDevice.Value)))
+//      then showmessage('Ura!!!');
+//   end;
+// SetDisplayFont(st_lLarge);
 
 // SetDisplayFont(st_lTine);
 // SetDisplayFont(st_lOff);

@@ -532,7 +532,7 @@ begin
   if ComPorts.IndexOf(Port.Port)=-1
     then
     begin
-      showmessage('Port '+Port.Port+' is absent');
+//      showmessage('Port '+Port.Port+' is absent');
       Exit;
     end;
 

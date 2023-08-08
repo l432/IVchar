@@ -294,10 +294,14 @@ end;
 
 procedure TST2829C_SetupMemoryShow.NumberPinShow(PinActiveNumber,
   ChooseNumber: integer);
+ var RecordName:string;
 begin
  inherited;
  case PinActiveNumber of
-  0:fST2829CElement_Show.fST2829C.SaveSetup(TST2829C_SetupMemoryRecord(ChooseNumber));
+  0:begin
+    RecordName := InputBox('Record Name', 'Input name for save if device memory', '');
+    fST2829CElement_Show.fST2829C.SaveSetup(TST2829C_SetupMemoryRecord(ChooseNumber),RecordName);
+    end;
   1:fST2829CElement_Show.fST2829C.LoadSetup(TST2829C_SetupMemoryRecord(ChooseNumber));
  end;
 end;
