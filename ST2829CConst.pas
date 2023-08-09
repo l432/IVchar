@@ -2,6 +2,9 @@ unit ST2829CConst;
 
 interface
 
+uses
+  SCPI;
+
 const
 
   ST2829C_Test='SOURCETRONIC, ST2829C,Ver 2.0.0';
@@ -13,18 +16,30 @@ const
 //  MySourceList='OlegSourceList';
 //  MyMeasList='OlegMeasList';
 
-  RootNodeST2829C:array[0..4]of string=
-  ('*idn?','*rst','*trg', 'mmem', 'disp');
-//   0       1       2      3       4        5       6       7      8
+  RootNodeST2829C:array[0..8]of string=
+  ('*idn?','*rst','*trg', 'mmem', 'disp','freq','ampl:alc','volt','curr');
+//   0       1       2      3       4       5       6       7       8
 
   FirstNodeST2829C:array[0..4]of string=
   (':load:stat',':stor:stat',':page',':rfon',':line');
 //     0             1           2      3      4        5         6
 
+
+  SuffixST2829C:array[0..1]of string=('on','off');
+//                                      0    1     2     3
+
 type
 
- TST2829C_SetupMemoryRecord=0..29;
+ TST2829C_SetupMemoryRecord=0..39;
  {реально- до 39, але вікно з кнопками завелике}
+
+ {що саме можна робити}
+ TST2829CAction=(st_aReset,st_aTrig,st_aMemLoad,st_aMemSave,
+//                 0           1         2          3
+                 st_aDispPage,st_aChangFont,st_aFreqMeas,
+//                  4               5              6
+                 st_aALE, st_aVMeas, st_aIMeas);
+//                  7          8          9
 
  TST2829C_DisplayPage=(st_dpMeas, st_dpBNum, st_dpBCO,
                        st_dpList, st_dpMset, st_dpCset,
@@ -62,6 +77,13 @@ const
 
  TST2829C_FontCommand:array [TST2829C_Font]
             of string=('large', 'tiny', 'off');
+
+ TST2829C_FreqMeasLimits:TLimitValues=(20,1000000);
+ TST2829C_VmrsMeasLimits:TLimitValues=(0.005,2);
+ TST2829C_ImrsMeasLimits:TLimitValues=(0.05,20);
+ TST2829C_VmrsMeasLimitsForAL:TLimitValues=(0.01,1);
+ TST2829C_ImrsMeasLimitsForAL:TLimitValues=(0.1,10);
+
 
  implementation
 

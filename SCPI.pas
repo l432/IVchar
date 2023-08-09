@@ -67,8 +67,10 @@ type
     function Test():boolean;virtual;//abstract;
     procedure ProcessingString(Str:string);virtual;//abstract;
     class Function NumberMap(Value:double;LimitValues:TLimitValues):double;overload;
-    {повертається число. яке знаходиться в межах LimitValues}
+    {повертається число, яке знаходиться в межах LimitValues}
     class Function NumberMap(Value:integer;LimitValues:TLimitValues):integer;overload;
+    class Function ValueInMap(Value:double;LimitValues:TLimitValues):boolean;
+    {повертає True, якщо число в межах}
     class function StringToInvertedCommas(str:string):string;
     class Function DeleteSubstring(Source:string;Substring: string=':'):string;
     class function DeleteSubstringAll(Source:string;Substring: string=' '):string;
@@ -387,6 +389,12 @@ begin
 // *IDN?
  QuireOperation(0,0,0,False);
  Result:=(fDevice.Value=314);
+end;
+
+class function TSCPInew.ValueInMap(Value: double;
+  LimitValues: TLimitValues): boolean;
+begin
+ Result:=InRange(Value,LimitValues[lvMin],LimitValues[lvMax]);
 end;
 
 { TMeasurementSimple }

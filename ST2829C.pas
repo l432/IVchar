@@ -28,6 +28,20 @@ type
 
   TST2829C=class(TSCPInew)
   private
+   fFreqMeas:double;
+   {частота на якій проводяться вимірювання,
+   []=Hz}
+   fVrmsMeas:double;
+   fIrmsMeas:double;
+   {діючі напруга та сила струму,
+    на яких проводяться вимірювання,
+    []=V, []=mA (!)}
+   fAutoLevelControlEnable:boolean;
+   {якщо True, то прилад відслідковує
+   реаліні значення на DUT, а не просто
+   задає певні величини}
+
+
 //   fRS232:TRS232MeterDeviceSingle;
 //   fComPort:TComPort;
 //   fTerminal:TKeitley_OutputTerminals;
@@ -43,6 +57,10 @@ type
 //   function StringToTerminals(Str:string):boolean;
 //   function StringToBufferIndexies(Str:string):boolean;
 //   function StringToDisplayBrightness(Str:string):boolean;
+   Procedure SetFreqMeas(Value:Double);
+    procedure SetAutoLevelControl(const Value: boolean);
+    procedure SetIrmsMeas(const Value: double);
+    procedure SetVrmsMeas(const Value: double);
   protected
 //   fTelnet:TIdTelnet;
 //   fIPAdressShow: TIPAdressShow;
@@ -57,7 +75,7 @@ type
    procedure PrepareStringByRootNode;override;
    procedure DeviceCreate(Nm:string);override;
    procedure ProcessingStringByRootNode(Str:string);override;
-//   procedure DefaultSettings;override;
+   procedure DefaultSettings;override;
 //   function StringToMeasureFunction(Str:string):boolean;//virtual;
 //   function StringToDigMeasureFunction(Str:string):boolean;
 //   function StringToTrigerState(Str:string):boolean;
@@ -72,10 +90,31 @@ type
 //   function StringToMeasureTime(Str:string):double;
 //   function GetMeasureFunctionValue:TKeitley_Measure;virtual;
 //   procedure SetCountNumber(Value:integer);virtual;
-//   procedure OnOffFromBool(toOn:boolean);
+   procedure OnOffFromBool(toOn:boolean);
    function HighForStrParsing:byte;override;
    function ItIsRequiredStr(Str:string;i:byte):boolean;override;
+   function GetShablon(Action:TST2829CAction):boolean;
+   function SuccessfulGet(Action:TST2829CAction):boolean;
+   {визначає критерій успішного отримання даних}
+   procedure GetActionProcedure(Action:TST2829CAction);
+   {дії, що виконуються при успішному отриманні}
+   procedure SetShablon(Action:TST2829CAction;P:Pointer=nil);overload;
+   procedure SetShablon(Action:TST2829CAction;Ps:array of Pointer);overload;
+   procedure SetPrepareAction(Action:TST2829CAction;P:Pointer=nil);overload;
+   procedure SetPrepareAction(Action:TST2829CAction;Ps:array of Pointer);overload;
+   {підготовчі операції перед викликом SetupOperation}
+   function ActionToRootNodeNumber(Action:TST2829CAction):byte;
+   function ActionToFirstNode(Action:TST2829CAction):byte;
+   function ActionToLeafNode(Action:TST2829CAction):byte;
+   function ActionToSyffix(Action:TST2829CAction):boolean;
+
   public
+   property FreqMeas:double read fFreqMeas write SetFreqMeas;
+   property VrmsMeas:double read fVrmsMeas write SetVrmsMeas;
+   property IrmsMeas:double read fIrmsMeas write SetIrmsMeas;
+   property AutoLevelControlEnable:boolean read fAutoLevelControlEnable write SetAutoLevelControl;
+
+
 //   property DataVector:TVector read fDataVector;
 //   property DataTimeVector:TVector read fDataTimeVector;
 //   property MeasureFunction:TKeitley_Measure read GetMeasureFunctionValue;
@@ -87,13 +126,8 @@ type
 //   property DisplayState:TKeitley_DisplayState read fDisplayState;
 //   property TrigerState:TKeitley_TriggerState read fTrigerState;
 //     Constructor Create(CP:TComPort;Nm:string='ST2829C');
-     Constructor Create();
-//   Constructor Create(Telnet:TIdTelnet;IPAdressShow: TIPAdressShow;
-//               Nm:string);
-//   destructor Destroy; override;
-////
-//   function Test():boolean;override;
-//   procedure ProcessingString(Str:string);override;
+
+   Constructor Create();
    procedure ResetSetting();
    procedure MyTraining();
    procedure Trig();
@@ -102,11 +136,22 @@ type
    function  GetDisplayPage():boolean;
    procedure SetDisplayFont(Font:TST2829C_Font);
    function  GetDisplayFont():boolean;
-//   procedure ClearUserScreen();
-//   procedure TextToUserScreen(top_text:string='';bottom_text:string='');
-//
    procedure SaveSetup(RecordNumber:TST2829C_SetupMemoryRecord;RecordName:string='');
    procedure LoadSetup(RecordNumber:TST2829C_SetupMemoryRecord);
+
+   procedure SetFrequancyMeasurement(Freq:double);
+   function  GetFrequancyMeasurement():boolean;
+
+   procedure SetAutoLevelEnable(toOn: boolean);
+   function  GetAutoLevelEnable():boolean;
+
+   procedure SetVoltageMeasurement(V:double);
+   function  GetVoltageMeasurement():boolean;
+
+   procedure SetCurrentMeasurement(I:double);
+   function  GetCurrentMeasurement():boolean;
+
+
 //   procedure LoadSetupPowerOn(SlotNumber:TKeitley_SetupMemorySlot);
 //   procedure UnloadSetupPowerOn();
 //   procedure RunningMacroScript(ScriptName:string);
@@ -290,29 +335,63 @@ uses
 
 { T2829C }
 
+function TST2829C.ActionToFirstNode(Action: TST2829CAction): byte;
+begin
+ case Action of
+   st_aMemSave: Result:=1;
+   st_aDispPage,st_aChangFont: Result:=ord(Action)-2;
+   else Result:=0;
+ end;
+end;
+
+function TST2829C.ActionToLeafNode(Action: TST2829CAction): byte;
+begin
+ Result:=0;
+// case Action of
+//   st_aReset: ;
+//   st_aTrig: ;
+//   st_aMemLoad: ;
+//   st_aMemSave: ;
+//   st_aDispPage: ;
+//   st_aChangFont: ;
+// end;
+end;
+
+function TST2829C.ActionToRootNodeNumber(Action: TST2829CAction): byte;
+begin
+ case Action of
+   st_aReset,st_aTrig,
+   st_aMemLoad: Result:=ord(Action)+1;
+   st_aMemSave: Result:=3;
+   st_aDispPage,st_aChangFont:Result:=4;
+   st_aFreqMeas,st_aALE,
+   st_aVMeas,st_aIMeas:Result:=ord(Action)-1;
+   else Result:=0;
+ end;
+end;
+
+function TST2829C.ActionToSyffix(Action: TST2829CAction): boolean;
+begin
+ case Action of
+   st_aReset,st_aTrig: Result:=False;
+   else Result:=True;
+ end;
+end;
+
 constructor TST2829C.Create();
 begin
 // showmessage('TST2829C Create');
  inherited Create('ST2829C');
 end;
 
-//constructor TST2829C.Create(CP: TComPort; Nm: string);
-//begin
-// fComPort:=CP;
-// inherited Create(Nm);
-//// inherited Create;
-//// fName:=Nm;
-//// DeviceCreate(Nm);
-//// DefaultSettings();
-//// SetFlags(0,0,0);
-//
-//// fBuffer:=TKeitley_Buffer.Create;
-//// fDataVector:=TVector.Create;
-//// fDataTimeVector:=TVector.Create;
-//// MeterCreate;
-//
-//
-//end;
+
+procedure TST2829C.DefaultSettings;
+begin
+ fFreqMeas:=1000;
+ fVrmsMeas:=0.01;
+ fIrmsMeas:=0.1;
+ fAutoLevelControlEnable:=False;
+end;
 
 procedure TST2829C.DeviceCreate(Nm: string);
 begin
@@ -320,21 +399,66 @@ begin
   fDevice:=TST2829CDevice.Create(Self,Nm);
 end;
 
+procedure TST2829C.GetActionProcedure(Action: TST2829CAction);
+begin
+  case Action of
+    st_aFreqMeas:FreqMeas:=fDevice.Value;
+    st_aALE:fAutoLevelControlEnable:=(fDevice.Value=1);
+    st_aVMeas:VrmsMeas:=fDevice.Value;
+    st_aIMeas:IrmsMeas:=fDevice.Value;
+  end;
+end;
+
+function TST2829C.GetAutoLevelEnable: boolean;
+begin
+ Result:=GetShablon(st_aALE);
+end;
+
+function TST2829C.GetCurrentMeasurement: boolean;
+begin
+ Result:=GetShablon(st_aIMeas);
+end;
+
 function TST2829C.GetDisplayFont: boolean;
 begin
- QuireOperation(4,3);
- Result:=(fDevice.Value<>ErResult);
+ Result:=GetShablon(st_aChangFont);
+// QuireOperation(4,3);
+// Result:=(fDevice.Value<>ErResult);
 end;
 
 function TST2829C.GetDisplayPage: boolean;
 begin
- QuireOperation(4,2);
- Result:=(fDevice.Value<>ErResult);
+ Result:=GetShablon(st_aDispPage);
+// QuireOperation(4,2);
+// Result:=(fDevice.Value<>ErResult);
+end;
+
+function TST2829C.GetFrequancyMeasurement: boolean;
+begin
+ Result:=GetShablon(st_aFreqMeas);
 end;
 
 function TST2829C.GetRootNodeString: string;
 begin
  Result:=RootNodeST2829C[fRootNode];
+end;
+
+function TST2829C.GetShablon(Action: TST2829CAction): boolean;
+begin
+  try
+    QuireOperation(ActionToRootNodeNumber(Action),ActionToFirstNode(Action),
+                ActionToLeafNode(Action));
+    Result:=SuccessfulGet(Action);
+    if Result
+      then GetActionProcedure(Action);
+  except
+   Result:=False;
+  end;
+end;
+
+function TST2829C.GetVoltageMeasurement: boolean;
+begin
+ Result:=GetShablon(st_aIMeas);
 end;
 
 function TST2829C.HighForStrParsing: byte;
@@ -362,15 +486,63 @@ end;
 procedure TST2829C.LoadSetup(RecordNumber: TST2829C_SetupMemoryRecord);
 begin
 // *MMEM:LOAD:STAT <record number>
- fAdditionalString:=inttostr(RecordNumber);
- SetupOperation(3);
+ SetShablon(st_aMemLoad,Pointer(RecordNumber));
+// fAdditionalString:=inttostr(RecordNumber);
+// SetupOperation(3);
 end;
 
 procedure TST2829C.MyTraining;
  var i:Integer;
+     tempDouble:double;
 begin
+// (fDevice as TST2829CDevice).SetStringToSend('VOLT MAX');
+// fDevice.Request;
+// (fDevice as TST2829CDevice).SetStringToSend('VOLT?');
+// fDevice.GetData;
 
- QuireOperation(4,4);
+
+
+// SetAutoLevelEnable(True);
+// SetAutoLevelEnable(False);
+// GetAutoLevelEnable();
+
+// tempDouble:=4567;
+// SetFrequancyMeasurement(tempDouble);
+// if GetFrequancyMeasurement()  then
+//  showmessage('send:'+floattostr(tempDouble)
+//              +'  received:'+floattostr(FreqMeas));
+// tempDouble:=1.25e5;
+// SetFrequancyMeasurement(tempDouble);
+// if GetFrequancyMeasurement()  then
+//  showmessage('send:'+floattostr(tempDouble)
+//              +'  received:'+floattostr(FreqMeas));
+//  tempDouble:=1.25e6;
+// SetFrequancyMeasurement(tempDouble);
+// if GetFrequancyMeasurement()  then
+//  showmessage('send:'+floattostr(tempDouble)
+//              +'  received:'+floattostr(FreqMeas));
+//  tempDouble:=15;
+// SetFrequancyMeasurement(tempDouble);
+// if GetFrequancyMeasurement()  then
+//  showmessage('send:'+floattostr(tempDouble)
+//              +'  received:'+floattostr(FreqMeas));
+// tempDouble:=438.12345;
+// SetFrequancyMeasurement(tempDouble);
+// if GetFrequancyMeasurement()  then
+//  showmessage('send:'+floattostr(tempDouble)
+//              +'  received:'+floattostr(FreqMeas));
+//
+//
+// GetFrequancyMeasurement();
+// SetFrequancyMeasurement(4567);
+// SetFrequancyMeasurement(1.25e5);
+// SetFrequancyMeasurement(1.25e6);
+// SetFrequancyMeasurement(15);
+// SetFrequancyMeasurement(438.12345);
+
+
+
+//  QuireOperation(4,4);
 //----------------------------------------
 //  for I := 0 to ord(High(TST2829C_Font)) do
 //   begin
@@ -404,15 +576,12 @@ begin
 // ResetSetting();
 end;
 
-//procedure TST2829C.PrepareString;
-//begin
-// (fDevice as TST2829CDevice).ClearStringToSend;
-// (fDevice as TST2829CDevice).SetStringToSend(RootNodeST2829C[fRootNode]);
-//
-// PrepareStringByRootNode;
-//
-// if fIsSuffix then JoinAddString;
-//end;
+
+procedure TST2829C.OnOffFromBool(toOn: boolean);
+begin
+ if toOn then fAdditionalString:=SuffixST2829C[0]
+         else fAdditionalString:=SuffixST2829C[1];
+end;
 
 procedure TST2829C.PrepareStringByRootNode;
 begin
@@ -422,59 +591,179 @@ begin
   end;
 end;
 
-//procedure TST2829C.ProcessingString(Str: string);
-//begin
-// Str:=Trim(Str);
-// ProcessingStringByRootNode(Str);
-//end;
 
 procedure TST2829C.ProcessingStringByRootNode(Str: string);
 begin
  case fRootNode of
   0:if pos(ST2829C_Test,Str)<>0 then fDevice.Value:=314;
-  4:case fFirstLevelNode of
-    2,3:StringToOrd(AnsiLowerCase(Str));
-    end;
+  4:StringToOrd(AnsiLowerCase(Str));
+  5,7,8:fDevice.Value:=SCPI_StringToValue(Str);
+  6:fDevice.Value:=StrToInt(Str);
  end;
 end;
 
 procedure TST2829C.ResetSetting;
 begin
 //  *RST
-  SetupOperation(1,0,0,False);
+  SetShablon(st_aReset)
+//  SetupOperation(1,0,0,False);
 end;
 
 procedure TST2829C.SaveSetup(RecordNumber: TST2829C_SetupMemoryRecord;RecordName:string='');
 begin
 // *MMEM:STOR:STAT <record number>,“<string>”
- fAdditionalString:=inttostr(RecordNumber);
- if Length(RecordName)>0 then
-  begin
-    if Length(RecordName)>ST2829C_MemFileMaxLength then SetLength(RecordName,ST2829C_MemFileMaxLength);
-    fAdditionalString:=fAdditionalString+', '+StringToInvertedCommas(RecordName);
-  end;
- 
- SetupOperation(3,1);
+ SetShablon(st_aMemSave,[Pointer(RecordNumber),@RecordName]);
+
+// fAdditionalString:=inttostr(RecordNumber);
+// if Length(RecordName)>0 then
+//  begin
+//    if Length(RecordName)>ST2829C_MemFileMaxLength then SetLength(RecordName,ST2829C_MemFileMaxLength);
+//    fAdditionalString:=fAdditionalString+', '+StringToInvertedCommas(RecordName);
+//  end;
+//
+// SetupOperation(3,1);
+end;
+
+procedure TST2829C.SetAutoLevelControl(const Value: boolean);
+begin
+  fAutoLevelControlEnable := Value and ValueInMap(fVrmsMeas,TST2829C_VmrsMeasLimitsForAL)
+                                   and ValueInMap(fIrmsMeas,TST2829C_ImrsMeasLimitsForAL);
+end;
+
+procedure TST2829C.SetAutoLevelEnable(toOn: boolean);
+begin
+//AMPL:ALC ON|OFF
+ SetShablon(st_aALE,@toOn);
+end;
+
+procedure TST2829C.SetCurrentMeasurement(I: double);
+begin
+//CURR <I>
+ SetShablon(st_aIMeas,@I);
 end;
 
 procedure TST2829C.SetDisplayFont(Font: TST2829C_Font);
 begin
  //DISP:FRON <Font>
- fAdditionalString:=TST2829C_FontCommand[Font];
- SetupOperation(4,3);
+ SetShablon(st_aChangFont,Pointer(Font));
+// fAdditionalString:=TST2829C_FontCommand[Font];
+// SetupOperation(4,3);
 end;
 
 procedure TST2829C.SetDisplayPage(Page: TST2829C_DisplayPage);
 begin
 //DISP:PAGE <Page>
- fAdditionalString:=TST2829C_DisplayPageCommand[Page];
- SetupOperation(4,2);
+ SetShablon(st_aDispPage,Pointer(Page));
+// fAdditionalString:=TST2829C_DisplayPageCommand[Page];
+// SetupOperation(4,2);
+end;
+
+procedure TST2829C.SetFreqMeas(Value: Double);
+begin
+ fFreqMeas:=NumberMap(Value,TST2829C_FreqMeasLimits);
+ fFreqMeas:=round(fFreqMeas*100)/100;
+end;
+
+procedure TST2829C.SetFrequancyMeasurement(Freq: double);
+begin
+//FREQ <Freq>
+ SetShablon(st_aFreqMeas,@Freq);
+end;
+
+procedure TST2829C.SetIrmsMeas(const Value: double);
+begin
+ fIrmsMeas:=NumberMap(Value,TST2829C_ImrsMeasLimits);
+ if not(ValueInMap(fIrmsMeas,TST2829C_ImrsMeasLimitsForAL))
+   then fAutoLevelControlEnable:=False;
+ fIrmsMeas:=round(fIrmsMeas*1000)/1000;
+end;
+
+procedure TST2829C.SetPrepareAction(Action: TST2829CAction;
+  Ps: array of Pointer);
+  var tempstr:string;
+begin
+  case Action of
+   st_aMemSave:begin
+               fAdditionalString:=inttostr(TST2829C_SetupMemoryRecord(Ps[0]));
+               tempstr:=PString(Ps[1])^;
+               if Length(tempstr)>0 then
+                begin
+                  if Length(tempstr)>ST2829C_MemFileMaxLength then SetLength(tempstr,ST2829C_MemFileMaxLength);
+                  fAdditionalString:=fAdditionalString+', '+StringToInvertedCommas(tempstr);
+                end;
+               end;
+   st_aChangFont: ;
+   else;
+ end;
+end;
+
+procedure TST2829C.SetPrepareAction(Action: TST2829CAction; P: Pointer);
+begin
+  case Action of
+   st_aMemLoad: fAdditionalString:=inttostr(TST2829C_SetupMemoryRecord(P));
+   st_aDispPage:fAdditionalString:=TST2829C_DisplayPageCommand[TST2829C_DisplayPage(P)] ;
+   st_aChangFont:fAdditionalString:=TST2829C_FontCommand[TST2829C_Font(P)];
+   st_aFreqMeas:begin
+                FreqMeas:=PDouble(P)^;
+                fAdditionalString:=FloatToStrF(FreqMeas,ffGeneral,7,0)+'Hz';
+                end;
+   st_aALE:begin
+                AutoLevelControlEnable:=PBoolean(P)^;
+                OnOffFromBool(AutoLevelControlEnable)
+                end;
+   st_aVMeas:begin
+                VrmsMeas:=PDouble(P)^;
+                fAdditionalString:=FloatToStrF(VrmsMeas,ffGeneral,7,0)+'V';
+                end;
+   st_aIMeas:begin
+                IrmsMeas:=PDouble(P)^;
+                fAdditionalString:=FloatToStrF(IrmsMeas,ffGeneral,7,0)+'mA';
+                end;
+   else;
+ end;
+end;
+
+procedure TST2829C.SetShablon(Action: TST2829CAction; Ps: array of Pointer);
+begin
+ SetPrepareAction(Action,Ps);
+ SetupOperation(ActionToRootNodeNumber(Action),ActionToFirstNode(Action),
+                ActionToLeafNode(Action),ActionToSyffix(Action));
+end;
+
+procedure TST2829C.SetVoltageMeasurement(V: double);
+begin
+//VOLT <V>
+ SetShablon(st_aVMeas,@V);
+end;
+
+procedure TST2829C.SetVrmsMeas(const Value: double);
+begin
+ fVrmsMeas:=NumberMap(Value,TST2829C_VmrsMeasLimits);
+ if not(ValueInMap(fVrmsMeas,TST2829C_VmrsMeasLimitsForAL))
+   then fAutoLevelControlEnable:=False;
+ fVrmsMeas:=round(fVrmsMeas*1000)/1000;
+end;
+
+function TST2829C.SuccessfulGet(Action: TST2829CAction): boolean;
+begin
+  Result:=(fDevice.Value<>ErResult);
+  case Action of
+    st_aFreqMeas: Result:=((fDevice.Value<>ErResult)and(fDevice.isReceived));
+  end;
+end;
+
+procedure TST2829C.SetShablon(Action: TST2829CAction; P: Pointer);
+begin
+ SetPrepareAction(Action,P);
+ SetupOperation(ActionToRootNodeNumber(Action),ActionToFirstNode(Action),
+                ActionToLeafNode(Action),ActionToSyffix(Action));
 end;
 
 procedure TST2829C.Trig;
 begin
 //  *TRG
-  SetupOperation(2,0,0,False);
+  SetShablon(st_aTrig);
+//  SetupOperation(2,0,0,False);
 end;
 
 { T2829CDevice }

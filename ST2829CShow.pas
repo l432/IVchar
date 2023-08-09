@@ -80,7 +80,7 @@ end;
 //                      Panels:Array of TPanel;
 //                      STextsBrightness:TStaticText
 //                      );
-//  destructor Destroy;override;
+  destructor Destroy;override;
   procedure ReadFromIniFile(ConfigFile:TIniFile);override;
   procedure WriteToIniFile(ConfigFile:TIniFile);override;
   procedure ObjectToSetting;virtual;
@@ -116,6 +116,12 @@ end;
 //     then (Sender as TButton).Caption:='Connection Test - Ok'
 //     else (Sender as TButton).Caption:='Connection Test - Failed';
 //end;
+
+destructor TST2829C_Show.Destroy;
+begin
+  FreeAndNil(fSettingShow);
+  inherited;
+end;
 
 procedure TST2829C_Show.MyTrainButtonClick(Sender: TObject);
 begin
@@ -210,28 +216,10 @@ procedure TST2829CSetting_Show.GetSettingButtonClick(Sender: TObject);
 begin
   if not(DeviceRS232isAbsent) then
     begin
-//    fKeitley.GetTerminal();
-//    fKt_2450.IsOutPutOn();
-//    fKt_2450.GetVoltageProtection;
-//    fKt_2450.GetDeviceMode;
-//    fKt_2450.IsResistanceCompencateOn();
-//    fKt_2450.GetVoltageLimit();
-//    fKt_2450.GetCurrentLimit();
-//    fKt_2450.IsReadBackOn();
-//    fKt_2450.GetSenses();
-//    fKt_2450.GetOutputOffStates;
-//    fKt_2450.GetSourceRanges();
-//    fKt_2450.GetMeasureRanges();
-//    fKt_2450.GetMeasureLowRanges();
-//    fKt_2450.IsAzeroStateOn();
-//    fKt_2450.IsSourceDelayAutoOn();
-//    fKt_2450.GetSourceDelay();
-//    fKt_2450.GetSourceValue();
-//    fKt_2450.GetMeasureTime();
-//    fKt_2450.IsHighCapacitanceOn();
-//    fKt_2450.GetDisplayDigitsNumber();
-//    fKeitley.GetCount();
-//    fKeitley.GetDisplayBrightness();
+     fST2829C.GetFrequancyMeasurement();
+     fST2829C.GetAutoLevelEnable();
+     fST2829C.GetVoltageMeasurement();
+     fST2829C.GetCurrentMeasurement();
     end;
 
   fST2829C_Show.ObjectToSetting();
@@ -285,7 +273,7 @@ procedure TST2829C_SetupMemoryShow.LabelsFilling;
 begin
  fPinVariants[0].Clear;
  fPinVariants[1].Clear;
- for I := Low(TST2829C_SetupMemoryRecord) to High(TST2829C_SetupMemoryRecord) do
+ for I := Low(TST2829C_SetupMemoryRecord) to High(TST2829C_SetupMemoryRecord)-10 do
    begin
      fPinVariants[0].Add(inttostr(I));
      fPinVariants[1].Add(inttostr(I));
