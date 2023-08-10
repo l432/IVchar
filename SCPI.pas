@@ -66,6 +66,16 @@ type
     destructor Destroy;override;
     function Test():boolean;virtual;//abstract;
     procedure ProcessingString(Str:string);virtual;//abstract;
+    function GetPattern(ActionType:Pointer):boolean;virtual;
+    {типова дія, що виконується при отриманні
+    параметрів від пристрою, повертає
+    True якщо все добре отрималося}
+    procedure SetPattern(Ps:array of Pointer);virtual;
+    {типова дія, що виконується при
+    встановленні якогось параметра пристрою,
+    серед масиву аргументів є і вказівник на тип дії
+    (як правило, передається першим)
+    і вказівники на параметри}
     class Function NumberMap(Value:double;LimitValues:TLimitValues):double;overload;
     {повертається число, яке знаходиться в межах LimitValues}
     class Function NumberMap(Value:integer;LimitValues:TLimitValues):integer;overload;
@@ -219,6 +229,11 @@ begin
   inherited;
 end;
 
+function TSCPInew.GetPattern(ActionType: Pointer): boolean;
+begin
+ Result:=False;
+end;
+
 function TSCPInew.HighForStrParsing: byte;
 begin
  Result:=0;
@@ -343,6 +358,11 @@ begin
  fLeafNode:=LeafNode;
  fIsSuffix:=IsSuffix;
  fIsQuery:=isQuery;
+end;
+
+procedure TSCPInew.SetPattern(Ps: array of Pointer);
+begin
+
 end;
 
 procedure TSCPInew.SetupOperation(RootNode, FirstLevelNode, LeafNode: byte;

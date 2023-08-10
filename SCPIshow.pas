@@ -4,7 +4,7 @@ interface
 
 uses
   OlegTypePart2, SCPI, StdCtrls, CPortCtl, Controls, IniFiles, ExtCtrls, 
-  ArduinoDeviceNew;
+  ArduinoDeviceNew, OlegType, OlegShowTypes, Classes;
 
 const MarginLeft=10;
       MarginRight=10;
@@ -68,6 +68,125 @@ TRS232DeviceNew_Show=class(TSimpleFreeAndAiniObject)
 //  procedure ObjectToSetting;virtual;
  end;
 
+TSCPI_ParameterShowBase=class
+{базовий елемент для створення керуючих
+приладом об'єктів}
+ private
+  fHookParameterClick: TSimpleEvent;
+  {додаткова дія при натисканні на кнопку}
+ protected
+  fSCPInew:TSCPInew;
+  fActionType:Pointer;
+  {дія, що зв'язана з елементом,
+  як правило щось на кшталт TST2829CAction,
+  тому для кожного пристрою буде свій тип}
+ public
+  property HookParameterClick:TSimpleEvent read fHookParameterClick write fHookParameterClick;
+  Constructor Create(SCPInew:TSCPInew;ActionType:Pointer);
+  procedure ObjectToSetting;virtual;abstract;
+  procedure GetDataFromDevice;virtual;//abstract;
+  procedure GetDataFromDeviceAndToSetting;
+end;
+
+TSCPI_BoolParameterShow=class(TSCPI_ParameterShowBase)
+{заготовка для керування логічним параметром
+за допомогою TCheckBox}
+ private
+  fCB:TCheckBox;
+  procedure Click(Sender:TObject);virtual;
+//  procedure SetValue(Value:Boolean);
+ protected
+  function FuncForObjectToSetting:boolean;virtual;abstract;
+  {як правило, повертає вказівник на булевську властивість
+  обё'єкту-пристрою, пов'язану з параметром;
+  конкретизується для певного пристрою залежно
+  від fActionType}
+ public
+  property CB:TCheckBox read fCB;
+  Constructor Create(SCPInew:TSCPInew;ActionType:Pointer;
+                     ParametrCaption: string);
+  destructor Destroy;override;
+  procedure ObjectToSetting;override;
+end;
+
+TSCPI_ParameterShow=class(TSCPI_ParameterShowBase)
+{заготовка для використання різних TParameterShowNew}
+ private
+  fParamShow:TParameterShowNew;
+  {має створитися у нащадках}
+  fST:TStaticText;
+  fLab:TLabel;
+ protected
+  procedure Click();virtual;
+  procedure SetLimits(LimitV:TLimitValues);overload;
+  procedure SetLimits(LowLimit:double=ErResult;HighLimit:double=ErResult);overload;
+ public
+  property STdata:TStaticText read fST;
+  property LCaption:TLabel read fLab;
+  Constructor Create(SCPInew:TSCPInew;ActionType:Pointer;LabelIsNeeded:boolean=True);
+  destructor Destroy;override;
+end;
+
+
+TSCPI_StringParameterShow=class(TSCPI_ParameterShow)
+ private
+  procedure CreateHeader;
+  function GetData: integer;
+  procedure SetDat(const Value: integer);
+ protected
+  fSettingsShowSL:TStringList;
+  procedure SettingsShowSLFilling();virtual;
+  procedure SomeAction();virtual;
+  procedure Click();override;
+  function HighForSLFilling:byte;virtual;abstract;
+  function StrForSLFilling(i:byte):string;virtual;abstract;
+  function FuncForObjectToSetting:byte;virtual;abstract;
+ public
+  property Data:integer read GetData write SetDat;
+  Constructor Create(SCPInew:TSCPInew;ActionType:Pointer;
+                     ParametrCaption: string; LabelIsNeeded:boolean);
+  destructor Destroy;override;
+  procedure ObjectToSetting;override;
+end;
+
+
+TSCPI_IntegerParameterShow=class(TSCPI_ParameterShow)
+ private
+//  fSTD:TStaticText;
+//  fSTC:TLabel;
+  function GetData: integer;
+  procedure SetDat(const Value: integer);
+ protected
+  function FuncForObjectToSetting:integer;virtual;abstract;
+  procedure Click();override;
+ public
+//  property STData:TStaticText read fSTD;
+//  property LCaption:TLabel read fSTC;
+  property Data:integer read GetData write SetDat;
+  Constructor Create(SCPInew:TSCPInew;ActionType:Pointer;
+                      ParametrCaption:string;
+                      InitValue:integer);
+  destructor Destroy;override;
+  procedure ObjectToSetting;override;
+end;
+
+TSCPI_DoubleParameterShow=class(TSCPI_ParameterShow)
+ private
+  function GetData: double;
+  procedure SetDat(const Value: double);
+ protected
+  function FuncForObjectToSetting:double;virtual;abstract;
+  procedure Click();override;
+ public
+  property Data:double read GetData write SetDat;
+  Constructor Create(SCPInew:TSCPInew;ActionType:Pointer;
+                      ParametrCaption:string;
+                      InitValue:double;
+                      DN:byte=3);
+ procedure ObjectToSetting;override;
+end;
+
+
 { TRS232DeviceNew_Show }
 
 
@@ -77,7 +196,7 @@ Procedure DesignSettingPanel(P:TPanel;Caption:string);
 implementation
 
 uses
-  SysUtils, CPort, Forms, RS232deviceNew, Dialogs, Graphics;
+  SysUtils, CPort, Forms, RS232deviceNew, Dialogs, Graphics, OlegFunction;
 
 constructor TRS232DeviceNew_Show.Create(Device: TRS232DeviceNew; GB: TGroupBox);
 begin
@@ -309,6 +428,243 @@ begin
   0:Result:='Save Setup';
   else Result:='Load Setup';
  end;
+end;
+
+{ TSCPI_ParameterShowBase }
+
+constructor TSCPI_ParameterShowBase.Create(SCPInew: TSCPInew;
+  ActionType: Pointer);
+begin
+ inherited Create;
+ fSCPInew:=SCPInew;
+ fActionType:=ActionType;
+ fHookParameterClick:=TSimpleClass.EmptyProcedure;
+end;
+
+procedure TSCPI_ParameterShowBase.GetDataFromDevice;
+begin
+ fSCPInew.GetPattern(fActionType);
+end;
+
+procedure TSCPI_ParameterShowBase.GetDataFromDeviceAndToSetting;
+begin
+ GetDataFromDevice;
+ ObjectToSetting;
+end;
+
+{ TSCPI_BoolParameterShow }
+
+procedure TSCPI_BoolParameterShow.Click(Sender: TObject);
+   var temp:boolean;
+begin
+ temp:=fCB.Checked;
+ fSCPInew.SetPattern([fActionType,@temp]);
+ fHookParameterClick;
+end;
+
+constructor TSCPI_BoolParameterShow.Create(SCPInew: TSCPInew;
+  ActionType: Pointer; ParametrCaption: string);
+begin
+ inherited Create(SCPInew,ActionType);
+ fCB:=TCheckBox.Create(nil);
+ fCB.OnClick:=Click;
+ fCB.Caption:=ParametrCaption;
+ fCB.WordWrap:=False;
+end;
+
+destructor TSCPI_BoolParameterShow.Destroy;
+begin
+  FreeAndNil(fCB);
+  inherited;
+end;
+
+procedure TSCPI_BoolParameterShow.ObjectToSetting;
+begin
+  AccurateCheckBoxCheckedChange(fCB,FuncForObjectToSetting);
+//  SetValue(FuncForObjectToSetting);
+end;
+
+//procedure TSCPI_BoolParameterShow.SetValue(Value: Boolean);
+//begin
+//  AccurateCheckBoxCheckedChange(fCB,Value);
+//end;
+
+{ TDMM6500_ParameterShow }
+
+constructor TSCPI_ParameterShow.Create(SCPInew:TSCPInew;ActionType:Pointer;
+                                       LabelIsNeeded:boolean=True);
+begin
+  inherited Create(SCPInew,ActionType);
+  fST:=TStaticText.Create(nil);
+  if LabelIsNeeded then
+     begin
+     fLab:=TLabel.Create(nil);
+     fLab.WordWrap:=False;
+     end;
+end;
+
+destructor TSCPI_ParameterShow.Destroy;
+begin
+  if Assigned(fLab) then FreeAndNil(fLab);
+  FreeAndNil(fST);
+  fParamShow.HookParameterClick:=nil;
+  fParamShow.Free;
+  inherited;
+end;
+
+procedure TSCPI_ParameterShow.Click;
+begin
+ fHookParameterClick;
+end;
+
+procedure TSCPI_ParameterShow.SetLimits(LowLimit, HighLimit: double);
+begin
+ try
+ (fParamShow as TLimitedParameterShow).Limits.SetLimits(LowLimit,HighLimit);
+ except
+ end;
+end;
+
+procedure TSCPI_ParameterShow.SetLimits(LimitV: TLimitValues);
+begin
+ try
+ (fParamShow as TLimitedParameterShow).Limits.SetLimits(LimitV[lvMin],LimitV[lvMax]);
+ except
+ end;
+end;
+
+{ TSCPI_IntegerParameterShow }
+
+procedure TSCPI_IntegerParameterShow.Click;
+ var temp:integer;
+begin
+ temp:=Data;
+ fSCPInew.SetPattern([fActionType,@temp]);
+ inherited;
+end;
+
+constructor TSCPI_IntegerParameterShow.Create(SCPInew: TSCPInew;
+  ActionType: Pointer; ParametrCaption: string; InitValue: integer);
+begin
+  inherited Create(SCPInew,ActionType,True);
+//  fSTD:=TStaticText.Create(nil);
+//  fSTC:=TLabel.Create(nil);
+  fParamShow:=TIntegerParameterShow.Create(fST,fLab,ParametrCaption,InitValue);
+  fParamShow.HookParameterClick:=Click;
+end;
+
+destructor TSCPI_IntegerParameterShow.Destroy;
+begin
+//  FreeAndNil(fSTD);
+//  FreeAndNil(fSTC);
+  inherited;
+end;
+
+function TSCPI_IntegerParameterShow.GetData: integer;
+begin
+  Result:=(fParamShow as TIntegerParameterShow).Data;
+end;
+
+procedure TSCPI_IntegerParameterShow.ObjectToSetting;
+begin
+ Data:=FuncForObjectToSetting();
+end;
+
+procedure TSCPI_IntegerParameterShow.SetDat(const Value: integer);
+begin
+  (fParamShow as TIntegerParameterShow).Data:=Value;
+end;
+
+{ TSCPI_StringParameterShow }
+
+procedure TSCPI_StringParameterShow.Click;
+begin
+ fSCPInew.SetPattern([fActionType,Pointer(Data)]);
+ inherited Click;
+end;
+
+constructor TSCPI_StringParameterShow.Create(SCPInew: TSCPInew;
+  ActionType: Pointer; ParametrCaption: string; LabelIsNeeded: boolean);
+begin
+  inherited Create(SCPInew,ActionType,LabelIsNeeded);
+  CreateHeader;
+  if LabelIsNeeded
+   then fParamShow:=TStringParameterShow.Create(fST,fLab,ParametrCaption,fSettingsShowSL)
+   else fParamShow:=TStringParameterShow.Create(fST,ParametrCaption,fSettingsShowSL);
+  fParamShow.HookParameterClick:=Click;
+end;
+
+procedure TSCPI_StringParameterShow.CreateHeader;
+begin
+  SomeAction();
+  fSettingsShowSL := TStringList.Create;
+  SettingsShowSLFilling;
+end;
+
+destructor TSCPI_StringParameterShow.Destroy;
+begin
+  fSettingsShowSL.Free;
+  inherited;
+end;
+
+function TSCPI_StringParameterShow.GetData: integer;
+begin
+ Result:=(fParamShow as TStringParameterShow).Data;
+end;
+
+procedure TSCPI_StringParameterShow.ObjectToSetting;
+begin
+ Data:=FuncForObjectToSetting;
+end;
+
+procedure TSCPI_StringParameterShow.SetDat(const Value: integer);
+begin
+ (fParamShow as TStringParameterShow).Data:=Value;
+end;
+
+procedure TSCPI_StringParameterShow.SettingsShowSLFilling;
+ var i:byte;
+begin
+ for I := 0 to HighForSLFilling do
+    fSettingsShowSL.Add(StrForSLFilling(i));
+end;
+
+procedure TSCPI_StringParameterShow.SomeAction;
+begin
+
+end;
+
+{ TSCPI_DoubleParameterShow }
+
+procedure TSCPI_DoubleParameterShow.Click;
+  var temp:double;
+begin
+ temp:=Data;
+ fSCPInew.SetPattern([fActionType,@temp]);
+ inherited;
+end;
+
+constructor TSCPI_DoubleParameterShow.Create(SCPInew: TSCPInew;
+  ActionType: Pointer; ParametrCaption: string; InitValue: double; DN: byte);
+begin
+  inherited Create(SCPInew,ActionType);
+  fParamShow:=TDoubleParameterShow.Create(fST,fLab,ParametrCaption,InitValue,DN);
+  fParamShow.HookParameterClick:=Click;
+end;
+
+function TSCPI_DoubleParameterShow.GetData: double;
+begin
+ Result:=(fParamShow as TDoubleParameterShow).Data;
+end;
+
+procedure TSCPI_DoubleParameterShow.ObjectToSetting;
+begin
+  Data:=FuncForObjectToSetting;
+end;
+
+procedure TSCPI_DoubleParameterShow.SetDat(const Value: double);
+begin
+ (fParamShow as TDoubleParameterShow).Data:=Value;
 end;
 
 end.

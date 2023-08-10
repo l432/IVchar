@@ -93,15 +93,14 @@ type
    procedure OnOffFromBool(toOn:boolean);
    function HighForStrParsing:byte;override;
    function ItIsRequiredStr(Str:string;i:byte):boolean;override;
-   function GetShablon(Action:TST2829CAction):boolean;
    function SuccessfulGet(Action:TST2829CAction):boolean;
    {визначає критерій успішного отримання даних}
    procedure GetActionProcedure(Action:TST2829CAction);
    {дії, що виконуються при успішному отриманні}
-   procedure SetShablon(Action:TST2829CAction;P:Pointer=nil);overload;
-   procedure SetShablon(Action:TST2829CAction;Ps:array of Pointer);overload;
-   procedure SetPrepareAction(Action:TST2829CAction;P:Pointer=nil);overload;
-   procedure SetPrepareAction(Action:TST2829CAction;Ps:array of Pointer);overload;
+//   procedure SetShablon(Action:TST2829CAction;P:Pointer=nil);overload;
+//   procedure SetShablon(Action:TST2829CAction;Ps:array of Pointer);overload;
+//   procedure SetPrepareAction(Action:TST2829CAction;P:Pointer=nil);overload;
+   procedure SetPrepareAction(Ps:array of Pointer);
    {підготовчі операції перед викликом SetupOperation}
    function ActionToRootNodeNumber(Action:TST2829CAction):byte;
    function ActionToFirstNode(Action:TST2829CAction):byte;
@@ -128,6 +127,9 @@ type
 //     Constructor Create(CP:TComPort;Nm:string='ST2829C');
 
    Constructor Create();
+   function GetPattern(Action:Pointer):boolean;override;
+   procedure SetPattern(Ps: array of Pointer);override;
+//   procedure SetPattern(Action:TST2829CAction;Ps:array of Pointer);overload;
    procedure ResetSetting();
    procedure MyTraining();
    procedure Trig();
@@ -411,31 +413,31 @@ end;
 
 function TST2829C.GetAutoLevelEnable: boolean;
 begin
- Result:=GetShablon(st_aALE);
+ Result:=GetPattern(Pointer(st_aALE));
 end;
 
 function TST2829C.GetCurrentMeasurement: boolean;
 begin
- Result:=GetShablon(st_aIMeas);
+ Result:=GetPattern(Pointer(st_aIMeas));
 end;
 
 function TST2829C.GetDisplayFont: boolean;
 begin
- Result:=GetShablon(st_aChangFont);
+ Result:=GetPattern(Pointer(st_aChangFont));
 // QuireOperation(4,3);
 // Result:=(fDevice.Value<>ErResult);
 end;
 
 function TST2829C.GetDisplayPage: boolean;
 begin
- Result:=GetShablon(st_aDispPage);
+ Result:=GetPattern(Pointer(st_aDispPage));
 // QuireOperation(4,2);
 // Result:=(fDevice.Value<>ErResult);
 end;
 
 function TST2829C.GetFrequancyMeasurement: boolean;
 begin
- Result:=GetShablon(st_aFreqMeas);
+ Result:=GetPattern(Pointer(st_aFreqMeas));
 end;
 
 function TST2829C.GetRootNodeString: string;
@@ -443,14 +445,15 @@ begin
  Result:=RootNodeST2829C[fRootNode];
 end;
 
-function TST2829C.GetShablon(Action: TST2829CAction): boolean;
+function TST2829C.GetPattern(Action: Pointer): boolean;
 begin
   try
-    QuireOperation(ActionToRootNodeNumber(Action),ActionToFirstNode(Action),
-                ActionToLeafNode(Action));
-    Result:=SuccessfulGet(Action);
+    QuireOperation(ActionToRootNodeNumber(TST2829CAction(Action)),
+                   ActionToFirstNode(TST2829CAction(Action)),
+                   ActionToLeafNode(TST2829CAction(Action)));
+    Result:=SuccessfulGet(TST2829CAction(Action));
     if Result
-      then GetActionProcedure(Action);
+      then GetActionProcedure(TST2829CAction(Action));
   except
    Result:=False;
   end;
@@ -458,7 +461,7 @@ end;
 
 function TST2829C.GetVoltageMeasurement: boolean;
 begin
- Result:=GetShablon(st_aIMeas);
+ Result:=GetPattern(Pointer(st_aIMeas));
 end;
 
 function TST2829C.HighForStrParsing: byte;
@@ -466,7 +469,7 @@ begin
  Result:=0;
  case fRootNode of
   4:case fFirstLevelNode of
-    2:Result:=ord(High(TST2829C_DisplayPageCommand));
+    2:Result:=ord(High(ST2829C_DisplayPageCommand));
     3:Result:=ord(High(TST2829C_Font));
     end;
  end;
@@ -477,8 +480,8 @@ begin
  Result:=False;
  case fRootNode of
   4:case fFirstLevelNode of
-    2:Result:=(Pos(TST2829C_DisplayPageResponce[TST2829C_DisplayPage(i)],Str)<>0);
-    3:Result:=(Pos(TST2829C_FontCommand[TST2829C_Font(i)],Str)<>0);
+    2:Result:=(Pos(ST2829C_DisplayPageResponce[TST2829C_DisplayPage(i)],Str)<>0);
+    3:Result:=(Pos(ST2829C_FontCommand[TST2829C_Font(i)],Str)<>0);
     end;
  end;
 end;
@@ -486,7 +489,7 @@ end;
 procedure TST2829C.LoadSetup(RecordNumber: TST2829C_SetupMemoryRecord);
 begin
 // *MMEM:LOAD:STAT <record number>
- SetShablon(st_aMemLoad,Pointer(RecordNumber));
+ SetPattern([Pointer(st_aMemLoad),Pointer(RecordNumber)]);
 // fAdditionalString:=inttostr(RecordNumber);
 // SetupOperation(3);
 end;
@@ -605,14 +608,14 @@ end;
 procedure TST2829C.ResetSetting;
 begin
 //  *RST
-  SetShablon(st_aReset)
+  SetPattern([Pointer(st_aReset)])
 //  SetupOperation(1,0,0,False);
 end;
 
 procedure TST2829C.SaveSetup(RecordNumber: TST2829C_SetupMemoryRecord;RecordName:string='');
 begin
 // *MMEM:STOR:STAT <record number>,“<string>”
- SetShablon(st_aMemSave,[Pointer(RecordNumber),@RecordName]);
+ SetPattern([Pointer(st_aMemSave),Pointer(RecordNumber),@RecordName]);
 
 // fAdditionalString:=inttostr(RecordNumber);
 // if Length(RecordName)>0 then
@@ -626,26 +629,26 @@ end;
 
 procedure TST2829C.SetAutoLevelControl(const Value: boolean);
 begin
-  fAutoLevelControlEnable := Value and ValueInMap(fVrmsMeas,TST2829C_VmrsMeasLimitsForAL)
-                                   and ValueInMap(fIrmsMeas,TST2829C_ImrsMeasLimitsForAL);
+  fAutoLevelControlEnable := Value and ValueInMap(fVrmsMeas,ST2829C_VmrsMeasLimitsForAL)
+                                   and ValueInMap(fIrmsMeas,ST2829C_ImrsMeasLimitsForAL);
 end;
 
 procedure TST2829C.SetAutoLevelEnable(toOn: boolean);
 begin
 //AMPL:ALC ON|OFF
- SetShablon(st_aALE,@toOn);
+ SetPattern([Pointer(st_aALE),@toOn]);
 end;
 
 procedure TST2829C.SetCurrentMeasurement(I: double);
 begin
 //CURR <I>
- SetShablon(st_aIMeas,@I);
+ SetPattern([Pointer(st_aIMeas),@I]);
 end;
 
 procedure TST2829C.SetDisplayFont(Font: TST2829C_Font);
 begin
  //DISP:FRON <Font>
- SetShablon(st_aChangFont,Pointer(Font));
+ SetPattern([Pointer(st_aChangFont),Pointer(Font)]);
 // fAdditionalString:=TST2829C_FontCommand[Font];
 // SetupOperation(4,3);
 end;
@@ -653,93 +656,128 @@ end;
 procedure TST2829C.SetDisplayPage(Page: TST2829C_DisplayPage);
 begin
 //DISP:PAGE <Page>
- SetShablon(st_aDispPage,Pointer(Page));
+ SetPattern([Pointer(st_aDispPage),Pointer(Page)]);
 // fAdditionalString:=TST2829C_DisplayPageCommand[Page];
 // SetupOperation(4,2);
 end;
 
 procedure TST2829C.SetFreqMeas(Value: Double);
 begin
- fFreqMeas:=NumberMap(Value,TST2829C_FreqMeasLimits);
+ fFreqMeas:=NumberMap(Value,ST2829C_FreqMeasLimits);
  fFreqMeas:=round(fFreqMeas*100)/100;
 end;
 
 procedure TST2829C.SetFrequancyMeasurement(Freq: double);
 begin
 //FREQ <Freq>
- SetShablon(st_aFreqMeas,@Freq);
+ SetPattern([Pointer(st_aFreqMeas),@Freq]);
 end;
 
 procedure TST2829C.SetIrmsMeas(const Value: double);
 begin
- fIrmsMeas:=NumberMap(Value,TST2829C_ImrsMeasLimits);
- if not(ValueInMap(fIrmsMeas,TST2829C_ImrsMeasLimitsForAL))
+ fIrmsMeas:=NumberMap(Value,ST2829C_ImrsMeasLimits);
+ if not(ValueInMap(fIrmsMeas,ST2829C_ImrsMeasLimitsForAL))
    then fAutoLevelControlEnable:=False;
  fIrmsMeas:=round(fIrmsMeas*1000)/1000;
 end;
 
-procedure TST2829C.SetPrepareAction(Action: TST2829CAction;
-  Ps: array of Pointer);
+procedure TST2829C.SetPrepareAction(Ps: array of Pointer);
   var tempstr:string;
+      Action: TST2829CAction;
 begin
-  case Action of
+ Action:=TST2829CAction(Ps[0]);
+ case Action of
+   st_aMemLoad: fAdditionalString:=inttostr(TST2829C_SetupMemoryRecord(Ps[1]));
+   st_aDispPage:fAdditionalString:=ST2829C_DisplayPageCommand[TST2829C_DisplayPage(Ps[1])] ;
+   st_aChangFont:fAdditionalString:=ST2829C_FontCommand[TST2829C_Font(Ps[1])];
+   st_aFreqMeas:begin
+                FreqMeas:=PDouble(Ps[1])^;
+                fAdditionalString:=FloatToStrF(FreqMeas,ffGeneral,7,0)+'Hz';
+                end;
+   st_aALE:begin
+                AutoLevelControlEnable:=PBoolean(Ps[1])^;
+                OnOffFromBool(AutoLevelControlEnable)
+                end;
+   st_aVMeas:begin
+                VrmsMeas:=PDouble(Ps[1])^;
+                fAdditionalString:=FloatToStrF(VrmsMeas,ffGeneral,7,0)+'V';
+                end;
+   st_aIMeas:begin
+                IrmsMeas:=PDouble(Ps[1])^;
+                fAdditionalString:=FloatToStrF(IrmsMeas,ffGeneral,7,0)+'mA';
+                end;
    st_aMemSave:begin
-               fAdditionalString:=inttostr(TST2829C_SetupMemoryRecord(Ps[0]));
-               tempstr:=PString(Ps[1])^;
+               fAdditionalString:=inttostr(TST2829C_SetupMemoryRecord(Ps[1]));
+               tempstr:=PString(Ps[2])^;
                if Length(tempstr)>0 then
                 begin
                   if Length(tempstr)>ST2829C_MemFileMaxLength then SetLength(tempstr,ST2829C_MemFileMaxLength);
                   fAdditionalString:=fAdditionalString+', '+StringToInvertedCommas(tempstr);
                 end;
                end;
-   st_aChangFont: ;
    else;
  end;
+//
+//
+//
+//  case Action of
+//   st_aMemSave:begin
+//               fAdditionalString:=inttostr(TST2829C_SetupMemoryRecord(Ps[0]));
+//               tempstr:=PString(Ps[1])^;
+//               if Length(tempstr)>0 then
+//                begin
+//                  if Length(tempstr)>ST2829C_MemFileMaxLength then SetLength(tempstr,ST2829C_MemFileMaxLength);
+//                  fAdditionalString:=fAdditionalString+', '+StringToInvertedCommas(tempstr);
+//                end;
+//               end;
+//   st_aChangFont: ;
+//   else;
+// end;
 end;
 
-procedure TST2829C.SetPrepareAction(Action: TST2829CAction; P: Pointer);
-begin
-  case Action of
-   st_aMemLoad: fAdditionalString:=inttostr(TST2829C_SetupMemoryRecord(P));
-   st_aDispPage:fAdditionalString:=TST2829C_DisplayPageCommand[TST2829C_DisplayPage(P)] ;
-   st_aChangFont:fAdditionalString:=TST2829C_FontCommand[TST2829C_Font(P)];
-   st_aFreqMeas:begin
-                FreqMeas:=PDouble(P)^;
-                fAdditionalString:=FloatToStrF(FreqMeas,ffGeneral,7,0)+'Hz';
-                end;
-   st_aALE:begin
-                AutoLevelControlEnable:=PBoolean(P)^;
-                OnOffFromBool(AutoLevelControlEnable)
-                end;
-   st_aVMeas:begin
-                VrmsMeas:=PDouble(P)^;
-                fAdditionalString:=FloatToStrF(VrmsMeas,ffGeneral,7,0)+'V';
-                end;
-   st_aIMeas:begin
-                IrmsMeas:=PDouble(P)^;
-                fAdditionalString:=FloatToStrF(IrmsMeas,ffGeneral,7,0)+'mA';
-                end;
-   else;
- end;
-end;
+//procedure TST2829C.SetPrepareAction(Action: TST2829CAction; P: Pointer);
+//begin
+//  case Action of
+//   st_aMemLoad: fAdditionalString:=inttostr(TST2829C_SetupMemoryRecord(P));
+//   st_aDispPage:fAdditionalString:=TST2829C_DisplayPageCommand[TST2829C_DisplayPage(P)] ;
+//   st_aChangFont:fAdditionalString:=TST2829C_FontCommand[TST2829C_Font(P)];
+//   st_aFreqMeas:begin
+//                FreqMeas:=PDouble(P)^;
+//                fAdditionalString:=FloatToStrF(FreqMeas,ffGeneral,7,0)+'Hz';
+//                end;
+//   st_aALE:begin
+//                AutoLevelControlEnable:=PBoolean(P)^;
+//                OnOffFromBool(AutoLevelControlEnable)
+//                end;
+//   st_aVMeas:begin
+//                VrmsMeas:=PDouble(P)^;
+//                fAdditionalString:=FloatToStrF(VrmsMeas,ffGeneral,7,0)+'V';
+//                end;
+//   st_aIMeas:begin
+//                IrmsMeas:=PDouble(P)^;
+//                fAdditionalString:=FloatToStrF(IrmsMeas,ffGeneral,7,0)+'mA';
+//                end;
+//   else;
+// end;
+//end;
 
-procedure TST2829C.SetShablon(Action: TST2829CAction; Ps: array of Pointer);
-begin
- SetPrepareAction(Action,Ps);
- SetupOperation(ActionToRootNodeNumber(Action),ActionToFirstNode(Action),
-                ActionToLeafNode(Action),ActionToSyffix(Action));
-end;
+//procedure TST2829C.SetPattern(Action: TST2829CAction; Ps: array of Pointer);
+//begin
+// SetPrepareAction(Action,Ps);
+// SetupOperation(ActionToRootNodeNumber(Action),ActionToFirstNode(Action),
+//                ActionToLeafNode(Action),ActionToSyffix(Action));
+//end;
 
 procedure TST2829C.SetVoltageMeasurement(V: double);
 begin
 //VOLT <V>
- SetShablon(st_aVMeas,@V);
+ SetPattern([Pointer(st_aVMeas),@V]);
 end;
 
 procedure TST2829C.SetVrmsMeas(const Value: double);
 begin
- fVrmsMeas:=NumberMap(Value,TST2829C_VmrsMeasLimits);
- if not(ValueInMap(fVrmsMeas,TST2829C_VmrsMeasLimitsForAL))
+ fVrmsMeas:=NumberMap(Value,ST2829C_VmrsMeasLimits);
+ if not(ValueInMap(fVrmsMeas,ST2829C_VmrsMeasLimitsForAL))
    then fAutoLevelControlEnable:=False;
  fVrmsMeas:=round(fVrmsMeas*1000)/1000;
 end;
@@ -752,9 +790,11 @@ begin
   end;
 end;
 
-procedure TST2829C.SetShablon(Action: TST2829CAction; P: Pointer);
+procedure TST2829C.SetPattern(Ps: array of Pointer);
+ var  Action: TST2829CAction;
 begin
- SetPrepareAction(Action,P);
+ Action:=TST2829CAction(Ps[0]);
+ SetPrepareAction(Ps);
  SetupOperation(ActionToRootNodeNumber(Action),ActionToFirstNode(Action),
                 ActionToLeafNode(Action),ActionToSyffix(Action));
 end;
@@ -762,7 +802,7 @@ end;
 procedure TST2829C.Trig;
 begin
 //  *TRG
-  SetShablon(st_aTrig);
+  SetPattern([Pointer(st_aTrig)]);
 //  SetupOperation(2,0,0,False);
 end;
 

@@ -58,12 +58,12 @@ type
  TST2829C_Font=(st_lLarge, st_lTine, st_lOff);
 
 const
- TST2829C_DisplayPageCommand:array [TST2829C_DisplayPage]
+ ST2829C_DisplayPageCommand:array [TST2829C_DisplayPage]
             of string=('meas', 'bnum', 'bco',
                        'list', 'mset', 'cset',
                        'ltab', 'lset', 'syst','flis');
 
- TST2829C_DisplayPageResponce:array [TST2829C_DisplayPage]
+ ST2829C_DisplayPageResponce:array [TST2829C_DisplayPage]
             of string=('meas display',
                        'bin no. disp',
                        'bin count disp',
@@ -75,14 +75,14 @@ const
                        'system setup',
                        'file list');
 
- TST2829C_FontCommand:array [TST2829C_Font]
+ ST2829C_FontCommand:array [TST2829C_Font]
             of string=('large', 'tiny', 'off');
 
- TST2829C_FreqMeasLimits:TLimitValues=(20,1000000);
- TST2829C_VmrsMeasLimits:TLimitValues=(0.005,2);
- TST2829C_ImrsMeasLimits:TLimitValues=(0.05,20);
- TST2829C_VmrsMeasLimitsForAL:TLimitValues=(0.01,1);
- TST2829C_ImrsMeasLimitsForAL:TLimitValues=(0.1,10);
+ ST2829C_FreqMeasLimits:TLimitValues=(20,1000000);
+ ST2829C_VmrsMeasLimits:TLimitValues=(0.005,2);
+ ST2829C_ImrsMeasLimits:TLimitValues=(0.05,20);
+ ST2829C_VmrsMeasLimitsForAL:TLimitValues=(0.01,1);
+ ST2829C_ImrsMeasLimitsForAL:TLimitValues=(0.1,10);
 
 
  implementation

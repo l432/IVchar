@@ -93,6 +93,7 @@
     <DCCReference Include="ShowTypes.pas" />
     <DCCReference Include="ST2829C.pas" />
     <DCCReference Include="ST2829CConst.pas" />
+    <DCCReference Include="ST2829CParamShow.pas" />
     <DCCReference Include="ST2829CShow.pas" />
     <DCCReference Include="TelnetDevice.pas" />
     <DCCReference Include="TemperatureSensor.pas" />

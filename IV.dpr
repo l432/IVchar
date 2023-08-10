@@ -57,7 +57,8 @@ uses
   ST2829C in 'ST2829C.pas',
   ST2829CShow in 'ST2829CShow.pas',
   ST2829CConst in 'ST2829CConst.pas',
-  SCPIshow in 'SCPIshow.pas';
+  SCPIshow in 'SCPIshow.pas',
+  ST2829CParamShow in 'ST2829CParamShow.pas';
 
 {$R *.res}
 
