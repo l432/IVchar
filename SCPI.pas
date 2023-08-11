@@ -81,6 +81,8 @@ type
     class Function NumberMap(Value:integer;LimitValues:TLimitValues):integer;overload;
     class Function ValueInMap(Value:double;LimitValues:TLimitValues):boolean;
     {повертає True, якщо число в межах}
+    class Function ValueWithMinResolution(Value:double;MinResolution:double):double;
+    {повертає число з врахуванням мінімально можливого кроку}
     class function StringToInvertedCommas(str:string):string;
     class Function DeleteSubstring(Source:string;Substring: string=':'):string;
     class function DeleteSubstringAll(Source:string;Substring: string=' '):string;
@@ -415,6 +417,17 @@ class function TSCPInew.ValueInMap(Value: double;
   LimitValues: TLimitValues): boolean;
 begin
  Result:=InRange(Value,LimitValues[lvMin],LimitValues[lvMax]);
+end;
+
+class function TSCPInew.ValueWithMinResolution(Value,
+  MinResolution: double): double;
+begin
+ if MinResolution=0 then
+  begin
+    Result:=Value;
+    Exit;
+  end;
+ Result:=round(Value/MinResolution)*MinResolution;
 end;
 
 { TMeasurementSimple }

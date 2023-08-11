@@ -220,6 +220,10 @@ begin
      fST2829C.GetAutoLevelEnable();
      fST2829C.GetVoltageMeasurement();
      fST2829C.GetCurrentMeasurement();
+     fST2829C.GetBiasEnable();
+     fST2829C.GetBiasVoltage();
+     fST2829C.GetOutputImpedance();
+     fST2829C.GetMeasureFunction();
     end;
 
   fST2829C_Show.ObjectToSetting();

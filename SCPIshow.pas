@@ -97,7 +97,7 @@ TSCPI_BoolParameterShow=class(TSCPI_ParameterShowBase)
 //  procedure SetValue(Value:Boolean);
  protected
   function FuncForObjectToSetting:boolean;virtual;abstract;
-  {як правило, повертає вказівник на булевську властивість
+  {як правило, повертає булевську властивість
   обё'єкту-пристрою, пов'язану з параметром;
   конкретизується для певного пристрою залежно
   від fActionType}

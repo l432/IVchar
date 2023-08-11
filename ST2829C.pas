@@ -40,7 +40,10 @@ type
    {якщо True, то прилад відслідковує
    реаліні значення на DUT, а не просто
    задає певні величини}
-
+   fBiasEnable:boolean;
+   fBiasValue:double;
+   fOutputImpedance:TST2829C_OutputImpedance;
+   fMeasureType:TST2829C_MeasureType;
 
 //   fRS232:TRS232MeterDeviceSingle;
 //   fComPort:TComPort;
@@ -58,9 +61,10 @@ type
 //   function StringToBufferIndexies(Str:string):boolean;
 //   function StringToDisplayBrightness(Str:string):boolean;
    Procedure SetFreqMeas(Value:Double);
-    procedure SetAutoLevelControl(const Value: boolean);
-    procedure SetIrmsMeas(const Value: double);
-    procedure SetVrmsMeas(const Value: double);
+   procedure SetAutoLevelControl(const Value: boolean);
+   procedure SetIrmsMeas(const Value: double);
+   procedure SetVrmsMeas(const Value: double);
+   procedure StBiasValue(const Value: double);
   protected
 //   fTelnet:TIdTelnet;
 //   fIPAdressShow: TIPAdressShow;
@@ -72,25 +76,19 @@ type
 //   procedure MeterCreate;virtual;abstract;
 //   procedure PrepareString;override;
    function GetRootNodeString():string;override;
-   procedure PrepareStringByRootNode;override;
    procedure DeviceCreate(Nm:string);override;
+   procedure OnOffFromBool(toOn:boolean);
+   function ValueToOrd(Value: double; Action:TST2829CAction): integer;
+   {перетворення отриманого від приладу числа в номер значення
+   в переліку, використовується для величин, що приймають дискретні значення}
+   function EnumerateToString(Action:TST2829CAction):string;
+   {повертає рядок, який потрібно надіслати залежно від
+   величини параметру, що має тип перерахунок
+   (приймає дискретні значення)}
+
+   procedure PrepareStringByRootNode;override;
    procedure ProcessingStringByRootNode(Str:string);override;
    procedure DefaultSettings;override;
-//   function StringToMeasureFunction(Str:string):boolean;//virtual;
-//   function StringToDigMeasureFunction(Str:string):boolean;
-//   function StringToTrigerState(Str:string):boolean;
-//   function MeasureToRootNodeNumber(Measure:TKeitley_Measure):byte;
-//   function MeasureToRootNodeStr(Measure:TKeitley_Measure):string;
-//   function MeasureToFunctString(Measure:TKeitley_Measure):string;
-//   procedure StringToMesuredData(Str:string;DataType:TKeitley_ReturnedData);
-//   procedure AdditionalDataFromString(Str:string);virtual;abstract;
-//   procedure StringToMesuredDataArray(Str:string;DataType:TKeitley_ReturnedData);
-//   procedure AdditionalDataToArrayFromString;virtual;abstract;
-//
-//   function StringToMeasureTime(Str:string):double;
-//   function GetMeasureFunctionValue:TKeitley_Measure;virtual;
-//   procedure SetCountNumber(Value:integer);virtual;
-   procedure OnOffFromBool(toOn:boolean);
    function HighForStrParsing:byte;override;
    function ItIsRequiredStr(Str:string;i:byte):boolean;override;
    function SuccessfulGet(Action:TST2829CAction):boolean;
@@ -102,6 +100,8 @@ type
 //   procedure SetPrepareAction(Action:TST2829CAction;P:Pointer=nil);overload;
    procedure SetPrepareAction(Ps:array of Pointer);
    {підготовчі операції перед викликом SetupOperation}
+   function PermitedAction(Action:TST2829CAction):boolean;
+   {визначає, чи дозволена операція за даних умов}
    function ActionToRootNodeNumber(Action:TST2829CAction):byte;
    function ActionToFirstNode(Action:TST2829CAction):byte;
    function ActionToLeafNode(Action:TST2829CAction):byte;
@@ -112,7 +112,10 @@ type
    property VrmsMeas:double read fVrmsMeas write SetVrmsMeas;
    property IrmsMeas:double read fIrmsMeas write SetIrmsMeas;
    property AutoLevelControlEnable:boolean read fAutoLevelControlEnable write SetAutoLevelControl;
-
+   property BiasEnable:boolean read fBiasEnable write fBiasEnable;
+   property BiasValue:double read fBiasValue write StBiasValue;
+   property OutputImpedance:TST2829C_OutputImpedance read fOutputImpedance write fOutputImpedance;
+   property MeasureType:TST2829C_MeasureType read fMeasureType write fMeasureType;
 
 //   property DataVector:TVector read fDataVector;
 //   property DataTimeVector:TVector read fDataTimeVector;
@@ -153,22 +156,22 @@ type
    procedure SetCurrentMeasurement(I:double);
    function  GetCurrentMeasurement():boolean;
 
+   procedure SetBiasEnable(toOn: boolean);
+   function  GetBiasEnable():boolean;
 
-//   procedure LoadSetupPowerOn(SlotNumber:TKeitley_SetupMemorySlot);
-//   procedure UnloadSetupPowerOn();
-//   procedure RunningMacroScript(ScriptName:string);
-//
-//   function GetTerminal():boolean;
-////   {вихід на передню чи задню панель}
-////
-//   procedure SetAzeroState(Measure:TKeitley_Measure;
-//                              toOn:boolean);overload;
-//   {чи перевіряються опорні значення перед кожним виміром}
-//   procedure SetAzeroState(toOn:boolean);overload;virtual;
-//   procedure AzeroOnce();
-//   {примусова перевірка опорного значення}
+   procedure SetBiasVoltage(V:double);
+   function  GetBiasVoltage():boolean;
+
+   procedure SetOutputImpedance(OI:TST2829C_OutputImpedance);
+   function  GetOutputImpedance():boolean;
+
+   procedure SetMeasureFunction(MF:TST2829C_MeasureType);
+    {що саме буде вимірювати прилад}
+   function  GetMeasureFunction():boolean;
+
+
 //   procedure SetMeasureFunction(MeasureFunc:TKeitley_Measure=kt_mCurDC);virtual;
-//   {що саме буде вимірювати прилад}
+//   
 //   function GetMeasureFunction():boolean;virtual;
 //    {повертає тип вимірювання, обробка залежить
 //    від типу приладу}
@@ -342,6 +345,9 @@ begin
  case Action of
    st_aMemSave: Result:=1;
    st_aDispPage,st_aChangFont: Result:=ord(Action)-2;
+   st_aBiasEn,
+   st_aBiasVal,
+   st_aSetMeasT:Result:=ord(Action)-5;
    else Result:=0;
  end;
 end;
@@ -368,6 +374,9 @@ begin
    st_aDispPage,st_aChangFont:Result:=4;
    st_aFreqMeas,st_aALE,
    st_aVMeas,st_aIMeas:Result:=ord(Action)-1;
+   st_aBiasEn,st_aBiasVal:Result:=9;
+   st_aOutImp:Result:=10;
+   st_aSetMeasT:result:=11;
    else Result:=0;
  end;
 end;
@@ -393,12 +402,25 @@ begin
  fVrmsMeas:=0.01;
  fIrmsMeas:=0.1;
  fAutoLevelControlEnable:=False;
+ fBiasEnable:=False;
+ fBiasValue:=0;
+ fOutputImpedance:=st_oi100;
+ fMeasureType:=st_mtCpD;
 end;
 
 procedure TST2829C.DeviceCreate(Nm: string);
 begin
 //  fDevice:=TST2829CDevice.Create(Self,fComPort,Nm);
   fDevice:=TST2829CDevice.Create(Self,Nm);
+end;
+
+function TST2829C.EnumerateToString(Action: TST2829CAction): string;
+begin
+ case Action of
+   st_aOutImp:Result:=Copy(ST2829C_OutputImpedanceLabels[fOutputImpedance],
+                           1, Length(ST2829C_OutputImpedanceLabels[fOutputImpedance])-4);
+   else Result:='';
+ end;
 end;
 
 procedure TST2829C.GetActionProcedure(Action: TST2829CAction);
@@ -408,12 +430,26 @@ begin
     st_aALE:fAutoLevelControlEnable:=(fDevice.Value=1);
     st_aVMeas:VrmsMeas:=fDevice.Value;
     st_aIMeas:IrmsMeas:=fDevice.Value;
+    st_aBiasEn:BiasEnable:=(fDevice.Value=1);
+    st_aBiasVal:VrmsMeas:=fDevice.Value;
+    st_aOutImp:OutputImpedance:=TST2829C_OutputImpedance(ValueToOrd(fDevice.Value,st_aOutImp));
+    st_aSetMeasT:MeasureType:=TST2829C_MeasureType(round(fDevice.Value));
   end;
 end;
 
 function TST2829C.GetAutoLevelEnable: boolean;
 begin
  Result:=GetPattern(Pointer(st_aALE));
+end;
+
+function TST2829C.GetBiasEnable: boolean;
+begin
+ Result:=GetPattern(Pointer(st_aBiasEn));
+end;
+
+function TST2829C.GetBiasVoltage: boolean;
+begin
+ Result:=GetPattern(Pointer(st_aBiasVal));
 end;
 
 function TST2829C.GetCurrentMeasurement: boolean;
@@ -440,6 +476,16 @@ begin
  Result:=GetPattern(Pointer(st_aFreqMeas));
 end;
 
+function TST2829C.GetMeasureFunction: boolean;
+begin
+ Result:=GetPattern(Pointer(st_aSetMeasT));
+end;
+
+function TST2829C.GetOutputImpedance: boolean;
+begin
+ Result:=GetPattern(Pointer(st_aOutImp));
+end;
+
 function TST2829C.GetRootNodeString: string;
 begin
  Result:=RootNodeST2829C[fRootNode];
@@ -461,7 +507,7 @@ end;
 
 function TST2829C.GetVoltageMeasurement: boolean;
 begin
- Result:=GetPattern(Pointer(st_aIMeas));
+ Result:=GetPattern(Pointer(st_aVMeas));
 end;
 
 function TST2829C.HighForStrParsing: byte;
@@ -472,6 +518,9 @@ begin
     2:Result:=ord(High(ST2829C_DisplayPageCommand));
     3:Result:=ord(High(TST2829C_Font));
     end;
+  11:case fFirstLevelNode of
+     8:Result:=ord(High(TST2829C_MeasureType));
+     end;
  end;
 end;
 
@@ -483,6 +532,9 @@ begin
     2:Result:=(Pos(ST2829C_DisplayPageResponce[TST2829C_DisplayPage(i)],Str)<>0);
     3:Result:=(Pos(ST2829C_FontCommand[TST2829C_Font(i)],Str)<>0);
     end;
+  11:case fFirstLevelNode of
+     8:Result:=(Pos(TST2829C_MeasureTypeCommand[TST2829C_MeasureType(i)],Str)<>0);
+     end;
  end;
 end;
 
@@ -504,10 +556,83 @@ begin
 // fDevice.GetData;
 
 
+  for I := 0 to ord(High(TST2829C_OutputImpedance)) do
+   begin
+     SetOutputImpedance(TST2829C_OutputImpedance(i));
+     if (GetOutputImpedance() and(i=round(fDevice.Value)))
+      then showmessage('Ura!!!');
+   end;
+
+
+// tempDouble:=1.2345678;
+// SetBiasVoltage(tempDouble);
+// if GetBiasVoltage()  then
+//  showmessage('send:'+floattostr(tempDouble)
+//              +'  received:'+floattostr(BiasValue));
+//
+// tempDouble:=-15;
+// SetBiasVoltage(tempDouble);
+// if GetBiasVoltage()  then
+//  showmessage('send:'+floattostr(tempDouble)
+//              +'  received:'+floattostr(BiasValue));
+//
+// tempDouble:=-1.987654321;
+// SetBiasVoltage(tempDouble);
+// if GetBiasVoltage()  then
+//  showmessage('send:'+floattostr(tempDouble)
+//              +'  received:'+floattostr(BiasValue));
+
+
+
+// SetBiasEnable(True);
+// if GetBiasEnable() then
+//   showmessage(booltostr(BiasEnable,True));
+// SetBiasEnable(False);
+// if GetBiasEnable() then
+//   showmessage(booltostr(BiasEnable,True));
+
+
+
+// tempDouble:=1.2345678;
+// SetCurrentMeasurement(tempDouble);
+// if GetCurrentMeasurement()  then
+//  showmessage('send:'+floattostr(tempDouble)
+//              +'  received:'+floattostr(IrmsMeas));
+//
+// tempDouble:=0.01;
+// SetCurrentMeasurement(tempDouble);
+// if GetCurrentMeasurement()  then
+//  showmessage('send:'+floattostr(tempDouble)
+//              +'  received:'+floattostr(IrmsMeas));
+
+
+
+// tempDouble:=0.1;
+// SetVoltageMeasurement(tempDouble);
+// if GetVoltageMeasurement()  then
+//  showmessage('send:'+floattostr(tempDouble)
+//              +'  received:'+floattostr(VrmsMeas));
+//
+// tempDouble:=2.5;
+// SetVoltageMeasurement(tempDouble);
+// if GetVoltageMeasurement()  then
+//  showmessage('send:'+floattostr(tempDouble)
+//              +'  received:'+floattostr(VrmsMeas));
+// tempDouble:=0.12345678;
+// SetVoltageMeasurement(tempDouble);
+// if GetVoltageMeasurement()  then
+//  showmessage('send:'+floattostr(tempDouble)
+//              +'  received:'+floattostr(VrmsMeas));
+
+
+
 
 // SetAutoLevelEnable(True);
+// if GetAutoLevelEnable() then
+//   showmessage(booltostr(AutoLevelControlEnable,True));
 // SetAutoLevelEnable(False);
-// GetAutoLevelEnable();
+// if GetAutoLevelEnable() then
+//   showmessage(booltostr(AutoLevelControlEnable,True));
 
 // tempDouble:=4567;
 // SetFrequancyMeasurement(tempDouble);
@@ -586,11 +711,23 @@ begin
          else fAdditionalString:=SuffixST2829C[1];
 end;
 
+function TST2829C.PermitedAction(Action: TST2829CAction): boolean;
+begin
+ case Action of
+   st_aALE: Result:=ValueInMap(fVrmsMeas,ST2829C_VmrsMeasLimitsForAL)
+                     and ValueInMap(fIrmsMeas,ST2829C_ImrsMeasLimitsForAL);
+   st_aOutImp:Result:=not(fBiasEnable);
+   else Result:=true;
+ end;
+end;
+
 procedure TST2829C.PrepareStringByRootNode;
 begin
  case fRootNode of
-  3:JoinToStringToSend(FirstNodeST2829C[fFirstLevelNode]);
-  4:JoinToStringToSend(FirstNodeST2829C[fFirstLevelNode]);
+  3,4,9:JoinToStringToSend(FirstNodeST2829C[fFirstLevelNode]);
+  11:case fFirstLevelNode of
+      8:JoinToStringToSend(FirstNodeST2829C[fFirstLevelNode]);
+     end;
   end;
 end;
 
@@ -600,8 +737,16 @@ begin
  case fRootNode of
   0:if pos(ST2829C_Test,Str)<>0 then fDevice.Value:=314;
   4:StringToOrd(AnsiLowerCase(Str));
-  5,7,8:fDevice.Value:=SCPI_StringToValue(Str);
+  5,7,
+  8,10:fDevice.Value:=SCPI_StringToValue(Str);
   6:fDevice.Value:=StrToInt(Str);
+  9:case fFirstLevelNode of
+     5:fDevice.Value:=StrToInt(Str);
+     6:fDevice.Value:=SCPI_StringToValue(Str);
+    end;
+  11:case fFirstLevelNode of
+      8:StringToOrd(AnsiLowerCase(Str));
+     end;
  end;
 end;
 
@@ -639,9 +784,21 @@ begin
  SetPattern([Pointer(st_aALE),@toOn]);
 end;
 
+procedure TST2829C.SetBiasEnable(toOn: boolean);
+begin
+//BIAS:STAT ON|OFF
+ SetPattern([Pointer(st_aBiasEn),@toOn]);
+end;
+
+procedure TST2829C.SetBiasVoltage(V: double);
+begin
+//BIAS:VOLT <V>
+ SetPattern([Pointer(st_aBiasVal),@V]);
+end;
+
 procedure TST2829C.SetCurrentMeasurement(I: double);
 begin
-//CURR <I>
+//CURR <I>mA
  SetPattern([Pointer(st_aIMeas),@I]);
 end;
 
@@ -664,7 +821,7 @@ end;
 procedure TST2829C.SetFreqMeas(Value: Double);
 begin
  fFreqMeas:=NumberMap(Value,ST2829C_FreqMeasLimits);
- fFreqMeas:=round(fFreqMeas*100)/100;
+ fFreqMeas:=ValueWithMinResolution(fFreqMeas,1e-2);
 end;
 
 procedure TST2829C.SetFrequancyMeasurement(Freq: double);
@@ -678,7 +835,19 @@ begin
  fIrmsMeas:=NumberMap(Value,ST2829C_ImrsMeasLimits);
  if not(ValueInMap(fIrmsMeas,ST2829C_ImrsMeasLimitsForAL))
    then fAutoLevelControlEnable:=False;
- fIrmsMeas:=round(fIrmsMeas*1000)/1000;
+ fIrmsMeas:=ValueWithMinResolution(fIrmsMeas,1e-3);
+end;
+
+procedure TST2829C.SetMeasureFunction(MF: TST2829C_MeasureType);
+begin
+//FUNC:IMP <MF>
+ SetPattern([Pointer(st_aSetMeasT),Pointer(MF)]);
+end;
+
+procedure TST2829C.SetOutputImpedance(OI: TST2829C_OutputImpedance);
+begin
+//ORES <OI>
+ SetPattern([Pointer(st_aOutImp),Pointer(OI)]);
 end;
 
 procedure TST2829C.SetPrepareAction(Ps: array of Pointer);
@@ -697,15 +866,15 @@ begin
    st_aALE:begin
                 AutoLevelControlEnable:=PBoolean(Ps[1])^;
                 OnOffFromBool(AutoLevelControlEnable)
-                end;
+           end;
    st_aVMeas:begin
                 VrmsMeas:=PDouble(Ps[1])^;
                 fAdditionalString:=FloatToStrF(VrmsMeas,ffGeneral,7,0)+'V';
-                end;
+              end;
    st_aIMeas:begin
                 IrmsMeas:=PDouble(Ps[1])^;
                 fAdditionalString:=FloatToStrF(IrmsMeas,ffGeneral,7,0)+'mA';
-                end;
+             end;
    st_aMemSave:begin
                fAdditionalString:=inttostr(TST2829C_SetupMemoryRecord(Ps[1]));
                tempstr:=PString(Ps[2])^;
@@ -715,6 +884,23 @@ begin
                   fAdditionalString:=fAdditionalString+', '+StringToInvertedCommas(tempstr);
                 end;
                end;
+   st_aBiasEn:begin
+                BiasEnable:=PBoolean(Ps[1])^;
+                if BiasEnable then OutputImpedance:=st_oi100;
+                OnOffFromBool(BiasEnable);
+              end;
+   st_aBiasVal:begin
+                BiasValue:=PDouble(Ps[1])^;
+                fAdditionalString:=FloatToStrF(BiasValue,ffGeneral,7,0);
+               end;
+   st_aOutImp:begin
+               OutputImpedance:=TST2829C_OutputImpedance(Ps[1]);
+               fAdditionalString:=EnumerateToString(Action);
+              end;
+   st_aSetMeasT:begin
+                 MeasureType:=TST2829C_MeasureType(Ps[1]);
+                 fAdditionalString:=TST2829C_MeasureTypeCommand[TST2829C_MeasureType(Ps[1])];
+                end
    else;
  end;
 //
@@ -770,7 +956,7 @@ end;
 
 procedure TST2829C.SetVoltageMeasurement(V: double);
 begin
-//VOLT <V>
+//VOLT <V>V
  SetPattern([Pointer(st_aVMeas),@V]);
 end;
 
@@ -779,7 +965,13 @@ begin
  fVrmsMeas:=NumberMap(Value,ST2829C_VmrsMeasLimits);
  if not(ValueInMap(fVrmsMeas,ST2829C_VmrsMeasLimitsForAL))
    then fAutoLevelControlEnable:=False;
- fVrmsMeas:=round(fVrmsMeas*1000)/1000;
+ fVrmsMeas:=ValueWithMinResolution(fVrmsMeas,1e-4);
+end;
+
+procedure TST2829C.StBiasValue(const Value: double);
+begin
+ fBiasValue:=NumberMap(Value,ST2829C_BiasVoltageLimits);
+ fBiasValue:=ValueWithMinResolution(fBiasValue,5e-4);
 end;
 
 function TST2829C.SuccessfulGet(Action: TST2829CAction): boolean;
@@ -794,9 +986,12 @@ procedure TST2829C.SetPattern(Ps: array of Pointer);
  var  Action: TST2829CAction;
 begin
  Action:=TST2829CAction(Ps[0]);
- SetPrepareAction(Ps);
- SetupOperation(ActionToRootNodeNumber(Action),ActionToFirstNode(Action),
-                ActionToLeafNode(Action),ActionToSyffix(Action));
+ if PermitedAction(Action) then
+ begin
+   SetPrepareAction(Ps);
+   SetupOperation(ActionToRootNodeNumber(Action),ActionToFirstNode(Action),
+                  ActionToLeafNode(Action),ActionToSyffix(Action));
+ end;
 end;
 
 procedure TST2829C.Trig;
@@ -804,6 +999,20 @@ begin
 //  *TRG
   SetPattern([Pointer(st_aTrig)]);
 //  SetupOperation(2,0,0,False);
+end;
+
+function TST2829C.ValueToOrd(Value: double; Action: TST2829CAction): integer;
+begin
+ case Action of
+   st_aOutImp:case round(Value) of
+                 10:Result:=0;
+                 30:Result:=1;
+                 50:Result:=2;
+                 100:Result:=3;
+                 else Result:=-1;
+              end ;
+   else Result:=-1;
+ end;
 end;
 
 { T2829CDevice }

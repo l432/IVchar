@@ -21,11 +21,41 @@ TST2829C_BoolParameterShow=class(TSCPI_BoolParameterShow)
  public
 end;
 
-TST2829C_AutoDelayShow=class(TST2829C_BoolParameterShow)
+
+TST2829C_StringParameterShow=class(TSCPI_StringParameterShow)
+ private
+ protected
+  function HighForSLFilling:byte;override;
+  function StrForSLFilling(i:byte):string;override;
+  function FuncForObjectToSetting:byte;override;
+ public
+end;
+
+//---------------------------------------------------------
+
+TST2829C_OutputImpedanceShow=class(TST2829C_StringParameterShow)
  protected
  public
   Constructor Create(ST2829C:TST2829C);
 end;
+
+//------------------------------------------------------------------
+
+TST2829C_AutoLevelShow=class(TST2829C_BoolParameterShow)
+ protected
+ public
+  Constructor Create(ST2829C:TST2829C);
+end;
+
+TST2829C_BiasEnableShow=class(TST2829C_BoolParameterShow)
+ protected
+ public
+  Constructor Create(ST2829C:TST2829C);
+end;
+
+
+
+//----------------------------------------------------
 
 TST2829C_FreqMeasShow=class(TST2829C_DoubleParameterShow)
  protected
@@ -40,6 +70,12 @@ TST2829C_VMeasShow=class(TST2829C_DoubleParameterShow)
 end;
 
 TST2829C_IMeasShow=class(TST2829C_DoubleParameterShow)
+ protected
+ public
+  Constructor Create(ST2829C:TST2829C);
+end;
+
+TST2829C_BiasVoltageShow=class(TST2829C_DoubleParameterShow)
  protected
  public
   Constructor Create(ST2829C:TST2829C);
@@ -74,7 +110,7 @@ end;
 
 { TST2829C_AutoDelayShow }
 
-constructor TST2829C_AutoDelayShow.Create(ST2829C: TST2829C);
+constructor TST2829C_AutoLevelShow.Create(ST2829C: TST2829C);
 begin
  inherited Create(ST2829C,Pointer(st_aALE),'Auto Level Control');
 end;
@@ -84,7 +120,7 @@ end;
 constructor TST2829C_FreqMeasShow.Create(ST2829C: TST2829C);
 begin
  inherited Create(ST2829C,Pointer(st_aFreqMeas),
-                 'Meas Freq',1000,2);
+                 'Meas Freq:',1000,2);
  SetLimits(ST2829C_FreqMeasLimits);
 end;
 
@@ -93,7 +129,7 @@ end;
 constructor TST2829C_VMeasShow.Create(ST2829C: TST2829C);
 begin
  inherited Create(ST2829C,Pointer(st_aVMeas),
-                 'Meas Vmrs',0.01,2);
+                 'Meas Vmrs, V:',0.01,2);
  SetLimits(ST2829C_VmrsMeasLimits);
 end;
 
@@ -102,8 +138,61 @@ end;
 constructor TST2829C_IMeasShow.Create(ST2829C: TST2829C);
 begin
  inherited Create(ST2829C,Pointer(st_aIMeas),
-                 'Meas Imrs',0.1,2);
+                 'Meas Imrs, mA:',0.1,2);
  SetLimits(ST2829C_ImrsMeasLimits);
+end;
+
+{ TST2829C_BiasEnableShow }
+
+constructor TST2829C_BiasEnableShow.Create(ST2829C: TST2829C);
+begin
+ inherited Create(ST2829C,Pointer(st_aBiasEn),'Bias Enable');
+end;
+
+{ TST2829C_BiasVoltageShow }
+
+constructor TST2829C_BiasVoltageShow.Create(ST2829C: TST2829C);
+begin
+ inherited Create(ST2829C,Pointer(st_aBiasVal),
+                 'Bias, V:',0,2);
+ SetLimits(ST2829C_BiasVoltageLimits);
+end;
+
+{ TST2829C_StringParameterShow }
+
+function TST2829C_StringParameterShow.FuncForObjectToSetting: byte;
+begin
+  case TST2829CAction(fActionType) of
+    st_aOutImp:Result:=ord((fSCPInew as TST2829C).OutputImpedance);
+    st_aSetMeasT:Result:=ord((fSCPInew as TST2829C).MeasureType);
+    else Result:=255;
+  end;
+end;
+
+function TST2829C_StringParameterShow.HighForSLFilling: byte;
+begin
+ case TST2829CAction(fActionType) of
+  st_aOutImp:Result:=ord(High(TST2829C_OutputImpedance));
+  st_aSetMeasT:Result:=ord(High(TST2829C_MeasureType));
+  else Result:=0;
+ end;
+end;
+
+function TST2829C_StringParameterShow.StrForSLFilling(i: byte): string;
+begin
+ case TST2829CAction(fActionType) of
+  st_aOutImp:Result:=ST2829C_OutputImpedanceLabels[TST2829C_OutputImpedance(i)];
+  st_aSetMeasT:Result:=TST2829C_MeasureTypeLabel[TST2829C_MeasureType(i)];
+  else Result:='';
+ end;
+end;
+
+{ TST2829C_OutputImpedanceShow }
+
+constructor TST2829C_OutputImpedanceShow.Create(ST2829C: TST2829C);
+begin
+  inherited Create(ST2829C,Pointer(st_aOutImp),
+                     'Input Impedance:', True);
 end;
 
 end.
