@@ -17,19 +17,19 @@ type
 TGBwithControlElements=class
  private
   fWinElements:array of TControl;
-  procedure ParentToElements;
+  procedure ParentToElements;virtual;
  protected
   fParent:TGroupBox;
   procedure Add(WinElements:TControl);
-  procedure CreateElements;virtual;abstract;
+  procedure CreateElements;virtual;//abstract;
   procedure CreateControls;virtual;abstract;
   procedure DestroyElements;
   procedure DestroyControls;virtual;
   procedure DesignElements;virtual;
-  procedure Resize(Control:TControl);
  public
   Constructor Create(GB:TGroupBox);
   destructor Destroy;override;
+  class procedure Resize(Control:TControl);
 end;
 
 TRS232minimal_Show=class(TGBwithControlElements)
@@ -85,8 +85,24 @@ TSCPI_ParameterShowBase=class
   Constructor Create(SCPInew:TSCPInew;ActionType:Pointer);
   procedure ObjectToSetting;virtual;abstract;
   procedure GetDataFromDevice;virtual;//abstract;
+//  procedure GetDataFromDeviceAndToSetting;
+  procedure ParentToElements(Parent:TWinControl);virtual;abstract;
+end;
+
+TGBwithControlElementsAndParamShow=class(TGBwithControlElements)
+ private
+  fShowElements:array of TSCPI_ParameterShowBase;
+  procedure ParentToElements;override;
+ protected
+  procedure Add(ShowElements:TSCPI_ParameterShowBase);overload;
+  procedure DestroyControls();override;
+  procedure DesignElements;override;
+ public
+  procedure ObjectToSetting;//virtual;
+  procedure GetDataFromDevice;//virtual;
   procedure GetDataFromDeviceAndToSetting;
 end;
+
 
 TSCPI_BoolParameterShow=class(TSCPI_ParameterShowBase)
 {заготовка для керування логічним параметром
@@ -107,7 +123,9 @@ TSCPI_BoolParameterShow=class(TSCPI_ParameterShowBase)
                      ParametrCaption: string);
   destructor Destroy;override;
   procedure ObjectToSetting;override;
+  procedure ParentToElements(Parent:TWinControl);override;
 end;
+
 
 TSCPI_ParameterShow=class(TSCPI_ParameterShowBase)
 {заготовка для використання різних TParameterShowNew}
@@ -125,6 +143,7 @@ TSCPI_ParameterShow=class(TSCPI_ParameterShowBase)
   property LCaption:TLabel read fLab;
   Constructor Create(SCPInew:TSCPInew;ActionType:Pointer;LabelIsNeeded:boolean=True);
   destructor Destroy;override;
+  procedure ParentToElements(Parent:TWinControl);override;
 end;
 
 
@@ -222,15 +241,20 @@ begin
  inherited Create;
  fParent:=GB;
 
+//  showmessage('ll');
  CreateElements;
- DesignElements;
  CreateControls;
+ DesignElements;
+end;
 
+procedure TGBwithControlElements.CreateElements;
+begin
+ ParentToElements;
 end;
 
 procedure TGBwithControlElements.DesignElements;
 begin
- ParentToElements;
+// ParentToElements;
 end;
 
 destructor TGBwithControlElements.Destroy;
@@ -258,10 +282,19 @@ begin
    do fWinElements[i].Parent:=fParent;
 end;
 
-procedure TGBwithControlElements.Resize(Control: TControl);
+class procedure TGBwithControlElements.Resize(Control: TControl);
  var L:Tlabel;
 begin
- 
+ if (Control is TStaticText) then
+  begin
+    L:=TLabel.Create(Control.Parent);
+    L.Parent:=Control.Parent;
+    Control.Width:=L.Canvas.TextWidth((Control as TStaticText).Caption);
+    Control.Height:=L.Canvas.TextHeight((Control as TStaticText).Caption);
+    FreeAndNil(L);
+    Exit;
+  end;
+
  if (Control is TLabel) then
   begin
     Control.Width:=(Control as TLabel).Canvas.TextWidth((Control as TLabel).Caption);
@@ -270,16 +303,17 @@ begin
   end;
  if (Control is TCheckBox) then
   begin
-    L:=TLabel.Create(fParent);
-    L.Parent:=fParent;
+    L:=TLabel.Create(Control.Parent);
+    L.Parent:=Control.Parent;
     Control.Width:=L.Canvas.TextWidth((Control as TCheckBox).Caption)+17;
+//    Control.Height:=L.Canvas.TextHeight((Control as TCheckBox).Caption);
     FreeAndNil(L);
     Exit;
   end;
  if (Control is TButton) then
   begin
-    L:=TLabel.Create(fParent);
-    L.Parent:=fParent;
+    L:=TLabel.Create(Control.Parent);
+    L.Parent:=Control.Parent;
     Control.Width:=L.Canvas.TextWidth((Control as TButton).Caption)+17;
     FreeAndNil(L);
     Exit;
@@ -309,6 +343,8 @@ begin
   Add(fComCBBaud);
   Add(fSTRate);
   Add(fBTest);
+
+  inherited CreateElements;
 end;
 
 procedure TRS232minimal_Show.DesignElements;
@@ -336,8 +372,7 @@ begin
  fComCBBaud.Font.Height:=-15;
  fBTest.Font.Height:=-15;
 
-
- inherited DesignElements;
+// inherited DesignElements;
  fLPort.Caption:='Port';
  fLPort.Top:=12;
  fLPort.Left:=10;
@@ -446,11 +481,11 @@ begin
  fSCPInew.GetPattern(fActionType);
 end;
 
-procedure TSCPI_ParameterShowBase.GetDataFromDeviceAndToSetting;
-begin
- GetDataFromDevice;
- ObjectToSetting;
-end;
+//procedure TSCPI_ParameterShowBase.GetDataFromDeviceAndToSetting;
+//begin
+// GetDataFromDevice;
+// ObjectToSetting;
+//end;
 
 { TSCPI_BoolParameterShow }
 
@@ -484,6 +519,11 @@ begin
 //  SetValue(FuncForObjectToSetting);
 end;
 
+procedure TSCPI_BoolParameterShow.ParentToElements(Parent: TWinControl);
+begin
+ fCB.Parent:=Parent;
+end;
+
 //procedure TSCPI_BoolParameterShow.SetValue(Value: Boolean);
 //begin
 //  AccurateCheckBoxCheckedChange(fCB,Value);
@@ -496,11 +536,7 @@ constructor TSCPI_ParameterShow.Create(SCPInew:TSCPInew;ActionType:Pointer;
 begin
   inherited Create(SCPInew,ActionType);
   fST:=TStaticText.Create(nil);
-  if LabelIsNeeded then
-     begin
-     fLab:=TLabel.Create(nil);
-     fLab.WordWrap:=False;
-     end;
+  if LabelIsNeeded then fLab:=TLabel.Create(nil);
 end;
 
 destructor TSCPI_ParameterShow.Destroy;
@@ -510,6 +546,12 @@ begin
   fParamShow.HookParameterClick:=nil;
   fParamShow.Free;
   inherited;
+end;
+
+procedure TSCPI_ParameterShow.ParentToElements(Parent: TWinControl);
+begin
+ fST.Parent:=Parent;
+ if Assigned(fLab) then fLab.Parent:=Parent;
 end;
 
 procedure TSCPI_ParameterShow.Click;
@@ -665,6 +707,56 @@ end;
 procedure TSCPI_DoubleParameterShow.SetDat(const Value: double);
 begin
  (fParamShow as TDoubleParameterShow).Data:=Value;
+end;
+
+{ TGBwithControlElementsAndParamShow }
+
+procedure TGBwithControlElementsAndParamShow.Add(
+  ShowElements: TSCPI_ParameterShowBase);
+begin
+ SetLength(fShowElements,High(fShowElements)+2);
+ fShowElements[High(fShowElements)]:=ShowElements;
+end;
+
+procedure TGBwithControlElementsAndParamShow.DesignElements;
+begin
+ ParentToElements;
+end;
+
+procedure TGBwithControlElementsAndParamShow.DestroyControls;
+ var i:integer;
+begin
+ for i := 0 to High(fShowElements) do
+  if fShowElements[i]<>nil then
+    FreeAndNil(fShowElements[i])
+end;
+
+procedure TGBwithControlElementsAndParamShow.GetDataFromDevice;
+ var i:integer;
+begin
+ for i := 0 to High(fShowElements) do
+   fShowElements[i].GetDataFromDevice;
+end;
+
+procedure TGBwithControlElementsAndParamShow.GetDataFromDeviceAndToSetting;
+begin
+  GetDataFromDevice;
+  ObjectToSetting;
+end;
+
+procedure TGBwithControlElementsAndParamShow.ObjectToSetting;
+ var i:integer;
+begin
+ for i := 0 to High(fShowElements) do
+   fShowElements[i].ObjectToSetting;
+end;
+
+procedure TGBwithControlElementsAndParamShow.ParentToElements;
+ var i:integer;
+begin
+  inherited ParentToElements;
+  for I := 0 to High(fShowElements)
+   do  fShowElements[i].ParentToElements(fParent);
 end;
 
 end.

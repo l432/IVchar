@@ -39,6 +39,14 @@ TST2829C_OutputImpedanceShow=class(TST2829C_StringParameterShow)
   Constructor Create(ST2829C:TST2829C);
 end;
 
+
+TST2829C_MeasureTypeShow=class(TST2829C_StringParameterShow)
+ protected
+ public
+  Constructor Create(ST2829C:TST2829C);
+end;
+
+
 //------------------------------------------------------------------
 
 TST2829C_AutoLevelShow=class(TST2829C_BoolParameterShow)
@@ -193,6 +201,14 @@ constructor TST2829C_OutputImpedanceShow.Create(ST2829C: TST2829C);
 begin
   inherited Create(ST2829C,Pointer(st_aOutImp),
                      'Input Impedance:', True);
+end;
+
+{ TST2829C_MeasureTypeShow }
+
+constructor TST2829C_MeasureTypeShow.Create(ST2829C: TST2829C);
+begin
+  inherited Create(ST2829C,Pointer(st_aSetMeasT),
+                     'MeasType', False);
 end;
 
 end.

@@ -71,4 +71,19 @@ object ST2829Form: TST2829Form
     ParentFont = False
     TabOrder = 3
   end
+  object GBST2829C_Option: TGroupBox
+    Tag = 110
+    Left = 8
+    Top = 87
+    Width = 241
+    Height = 146
+    Caption = 'Opt'
+    Font.Charset = RUSSIAN_CHARSET
+    Font.Color = clMaroon
+    Font.Height = -13
+    Font.Name = 'Arial'
+    Font.Style = [fsBold]
+    ParentFont = False
+    TabOrder = 4
+  end
 end

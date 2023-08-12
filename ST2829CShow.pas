@@ -4,7 +4,7 @@ interface
 
 uses
   OlegTypePart2, ST2829C, StdCtrls, SCPIshow, ExtCtrls, ArduinoDeviceNew, 
-  IniFiles;
+  IniFiles, ST2829CParamShow;
 
 type
  TST2829C_Show=class;
@@ -52,8 +52,28 @@ end;
                       GB: TGroupBox);
     procedure ReadFromIniFile(ConfigFile:TIniFile);//override;//virtual;
     procedure WriteToIniFile(ConfigFile:TIniFile);//override;//virtual;
-
   end;
+
+
+ TST2829CElementAndParamShow=class(TGBwithControlElementsAndParamShow)
+  private
+   fST2829C:TST2829C;
+  public
+   Constructor Create(ST2829C:TST2829C;
+                      GB: TGroupBox);
+ end;
+
+ TST2829CMeasureParamShow=class(TST2829CElementAndParamShow)
+  private
+  protected
+   procedure CreateElements;override;
+   procedure CreateControls;override;
+   procedure DesignElements;override;
+  public
+   OutputImpedanceShow:TST2829C_OutputImpedanceShow;
+   AutoLevelShow:TST2829C_AutoLevelShow;
+//   destructor Destroy;override;
+ end;
 
 
 //  TST2829C_Show=class(TSimpleFreeAndAiniObject)
@@ -64,6 +84,8 @@ end;
 //   fSetupMemoryShow:TKeitley_SetupMemoryShow;
 //   fBrightnessShow:TKeitley_BrightnessShow;
 //   procedure TestButtonClick(Sender:TObject);
+   fMeasureTypeShow:TST2829C_MeasureTypeShow;
+   fMeasureParamShow:TST2829CMeasureParamShow;
    procedure MyTrainButtonClick(Sender:TObject);
   protected
 //   procedure ButtonsTune(Buttons: array of TButton);virtual;
@@ -92,7 +114,7 @@ var
 implementation
 
 uses
-  OApproxShow, ST2829CConst, SysUtils, RS232deviceNew, Dialogs;
+  OApproxShow, ST2829CConst, SysUtils, RS232deviceNew, Dialogs, Graphics;
 
 { TST2829C_Show }
 
@@ -108,6 +130,17 @@ begin
 // showmessage(Self.fST2829C.Name);
  fSettingShow:=TST2829CSetting_Show.Create(Self,GBs[1]);
  B_MyTrain.OnClick:=MyTrainButtonClick;
+
+ fMeasureTypeShow:=TST2829C_MeasureTypeShow.Create(fST2829C);
+ fMeasureTypeShow.ParentToElements(GBs[0].Parent);
+ fMeasureTypeShow.STdata.Top:=15;
+ fMeasureTypeShow.STdata.Left:=220;
+ fMeasureTypeShow.STdata.Font.Name:='Verdana';
+ fMeasureTypeShow.STdata.Font.Height:=-23;
+ fMeasureTypeShow.STdata.Font.Style:=[fsBold];
+
+ fMeasureParamShow:=TST2829CMeasureParamShow.Create(fST2829C,GBs[2]);
+
 end;
 
 //procedure TST2829C_Show.TestButtonClick(Sender: TObject);
@@ -119,6 +152,8 @@ end;
 
 destructor TST2829C_Show.Destroy;
 begin
+  FreeAndNil(fMeasureParamShow);
+  FreeAndNil(fMeasureTypeShow);
   FreeAndNil(fSettingShow);
   inherited;
 end;
@@ -130,7 +165,8 @@ end;
 
 procedure TST2829C_Show.ObjectToSetting;
 begin
-
+ fMeasureTypeShow.ObjectToSetting;
+ fMeasureParamShow.ObjectToSetting;
 end;
 
 procedure TST2829C_Show.ReadFromIniFile(ConfigFile: TIniFile);
@@ -182,12 +218,12 @@ begin
  Add(fPLoad);
  Add(fBReset);
  Add(fBGetParam);
-
+ inherited CreateElements;
 end;
 
 procedure TST2829CSetting_Show.DesignElements;
 begin
- inherited DesignElements;
+// inherited DesignElements;
  fParent.Caption:='Setting';
  DesignSettingPanel(fPSave,'Save Setup');
  DesignSettingPanel(fPLoad,'Load Setup');
@@ -297,5 +333,52 @@ begin
   1:fST2829CElement_Show.fST2829C.LoadSetup(TST2829C_SetupMemoryRecord(ChooseNumber));
  end;
 end;
+
+{ TST2829CElementAndParamShow }
+
+constructor TST2829CElementAndParamShow.Create(ST2829C: TST2829C;
+  GB: TGroupBox);
+begin
+ fST2829C:=ST2829C;
+ inherited Create(GB);
+end;
+
+{ TST2829CMeasureParamShow }
+
+procedure TST2829CMeasureParamShow.CreateControls;
+begin
+// OutputImpedanceShow:=TST2829C_OutputImpedanceShow.Create(fST2829C);
+// Add(OutputImpedanceShow);
+
+ AutoLevelShow:=TST2829C_AutoLevelShow.Create(fST2829C);
+ Add(AutoLevelShow);
+end;
+
+procedure TST2829CMeasureParamShow.CreateElements;
+begin
+
+end;
+
+procedure TST2829CMeasureParamShow.DesignElements;
+begin
+  inherited DesignElements;
+  fParent.Caption:='Measure option';
+
+//  OutputImpedanceShow.LCaption.WordWrap:=False;
+//  OutputImpedanceShow.LCaption.Top:=MarginTop;
+//  OutputImpedanceShow.LCaption.Left:=MarginLeft;
+//  RelativeLocation(OutputImpedanceShow.LCaption,OutputImpedanceShow.STdata,oRow,Marginbetween);
+
+  AutoLevelShow.CB.Top:=MarginTop;
+  AutoLevelShow.CB.Left:=MarginLeft;
+//  AutoLevelShow.CB.WordWrap:=True;
+  Resize(AutoLevelShow.CB);
+end;
+
+//destructor TST2829CMeasureParamShow.Destroy;
+//begin
+//  FreeAndNil(OutputImpedanceShow);
+//  inherited;
+//end;
 
 end.

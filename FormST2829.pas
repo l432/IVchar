@@ -12,6 +12,7 @@ type
     GB_ST2829C_Com: TGroupBox;
     B_MyTrain: TButton;
     GB_Setting: TGroupBox;
+    GBST2829C_Option: TGroupBox;
     procedure BCloseClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
@@ -52,7 +53,7 @@ procedure TST2829Form.FormCreate(Sender: TObject);
  var CF:TIniFile;
 begin
  ST2829C_Show := TST2829C_Show.Create(ST_2829C,
-                                      [GB_ST2829C_Com,GB_Setting],
+                                      [GB_ST2829C_Com,GB_Setting,GBST2829C_Option],
                                       B_MyTrain);
 
  CF:=TIniFile.Create(ExtractFilePath(Application.ExeName)+'IVChar.ini');

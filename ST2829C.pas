@@ -555,13 +555,21 @@ begin
 // (fDevice as TST2829CDevice).SetStringToSend('VOLT?');
 // fDevice.GetData;
 
-
-  for I := 0 to ord(High(TST2829C_OutputImpedance)) do
+  for I := 0 to ord(High(TST2829C_MeasureType)) do
    begin
-     SetOutputImpedance(TST2829C_OutputImpedance(i));
-     if (GetOutputImpedance() and(i=round(fDevice.Value)))
+     SetMeasureFunction(TST2829C_MeasureType(i));
+     if (GetMeasureFunction() and(i=round(fDevice.Value)))
       then showmessage('Ura!!!');
    end;
+
+
+
+//  for I := 0 to ord(High(TST2829C_OutputImpedance)) do
+//   begin
+//     SetOutputImpedance(TST2829C_OutputImpedance(i));
+//     if (GetOutputImpedance() and(i=round(fDevice.Value)))
+//      then showmessage('Ura!!!');
+//   end;
 
 
 // tempDouble:=1.2345678;
