@@ -17,11 +17,11 @@ const
    'bias','ores','func');
 //   9      10     11
 
-  FirstNodeST2829C:array[0..8]of string=
+  FirstNodeST2829C:array[0..10]of string=
   (':load:stat',':stor:stat',':page',':rfon',':line',':stat',':volt',':curr',
 //     0             1           2      3      4        5        6      7
-  ':imp');
-//   8     1           2      3      4        5        6      7
+  ':imp',':rang',':auto');
+//   8      9       10      11      12        13        14      15
 
 
   SuffixST2829C:array[0..1]of string=('on','off');
@@ -39,8 +39,8 @@ type
 //                  4               5              6
                  st_aALE, st_aVMeas, st_aIMeas,st_aBiasEn,st_aBiasVal,
 //                  7          8          9          10       11
-                 st_aOutImp, st_aSetMeasT );
-//                  12         13         14         15       16
+                 st_aOutImp, st_aSetMeasT, st_aRange );
+//                  12         13             14         15       16
 
  TST2829C_DisplayPage=(st_dpMeas, st_dpBNum, st_dpBCO,
                        st_dpList, st_dpMset, st_dpCset,
@@ -79,6 +79,10 @@ type
 
  TST2829C_OutputImpedance=(st_oi10,st_oi30,st_oi50,st_oi100);
 
+ TST2829C_Range=(st_rAuto,st_r10,st_r30,st_r100,st_r300,
+                 st_r1k,st_r3k,st_r10k,st_r30k,st_r100k,
+                 st_r300k,st_r1M);
+
 const
  ST2829C_DisplayPageCommand:array [TST2829C_DisplayPage]
             of string=('meas', 'bnum', 'bco',
@@ -105,13 +109,13 @@ const
 
 
 
- TST2829C_MeasureTypeCommand:array [TST2829C_MeasureType]
+ ST2829C_MeasureTypeCommands:array [TST2829C_MeasureType]
           of string=('cpd', 'cpq', 'cpg', 'cprp', 'csd',
               'csq','csrs','lpq', 'lpd', 'lpg', 'lprp',
               'lsd','lsq','lsrs','rx', 'ztd', 'ztr',
               'gb', 'ytd', 'ytr', 'dcr');
 //               'rpq', 'rsq'
- TST2829C_MeasureTypeLabel:array [TST2829C_MeasureType]
+ ST2829C_MeasureTypeLabels:array [TST2829C_MeasureType]
           of string=('Cp-Dissipation', 'Cp-Quality', 'Cp-Conductance',
             'Cp-Rp','Cs-Dissipation','Cs-Quality','Cs-Rs',
             'Lp-Quality', 'Lp-Dissipation', 'Lp-Conductance', 'Lp-Rp',
@@ -121,6 +125,9 @@ const
             'Admittance-Phase(rad)', 'DC resistance');
 //             'Rs-Quality','Rp-Quality'
 
+ ST2829C_RangeLabels:array[TST2829C_Range]of string=
+         ('Auto','10 Ohm', '30 Ohm', '100 Ohm', '300 Ohm', '1 kOhm',
+         '3 kOhm', '10 kOhm','30 kOhm', '100 kOhm', '300 kOhm', '1 MOhm');
 
  ST2829C_FreqMeasLimits:TLimitValues=(20,1000000);
  ST2829C_VmrsMeasLimits:TLimitValues=(0.005,2);

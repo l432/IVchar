@@ -46,6 +46,12 @@ TST2829C_MeasureTypeShow=class(TST2829C_StringParameterShow)
   Constructor Create(ST2829C:TST2829C);
 end;
 
+TST2829C_RangeShow=class(TST2829C_StringParameterShow)
+ protected
+ public
+  Constructor Create(ST2829C:TST2829C);
+end;
+
 
 //------------------------------------------------------------------
 
@@ -67,6 +73,7 @@ end;
 
 TST2829C_FreqMeasShow=class(TST2829C_DoubleParameterShow)
  protected
+//  procedure HookParameterClickFreqMeas;
  public
   Constructor Create(ST2829C:TST2829C);
 end;
@@ -102,6 +109,7 @@ begin
     st_aFreqMeas:Result:=(fSCPInew as TST2829C).FreqMeas;
     st_aVMeas:Result:=(fSCPInew as TST2829C).VrmsMeas;
     st_aIMeas:Result:=(fSCPInew as TST2829C).IrmsMeas;
+    st_aBiasVal:Result:=(fSCPInew as TST2829C).BiasValue;
     else Result:=-1;
   end;
 end;
@@ -112,6 +120,7 @@ function TST2829C_BoolParameterShow.FuncForObjectToSetting: boolean;
 begin
   case TST2829CAction(fActionType) of
     st_aALE:Result:=(fSCPInew as TST2829C).AutoLevelControlEnable;
+    st_aBiasEn:Result:=(fSCPInew as TST2829C).BiasEnable;
     else Result:=False;
   end;
 end;
@@ -128,17 +137,24 @@ end;
 constructor TST2829C_FreqMeasShow.Create(ST2829C: TST2829C);
 begin
  inherited Create(ST2829C,Pointer(st_aFreqMeas),
-                 'Meas Freq:',1000,2);
+                 'Meas Freq, Hz:',1000,10);
  SetLimits(ST2829C_FreqMeasLimits);
+ HookParameterClick:=ObjectToSetting;
 end;
+
+//procedure TST2829C_FreqMeasShow.HookParameterClickFreqMeas;
+//begin
+//  ObjectToSetting;
+//end;
 
 { TST2829C_VMeasShow }
 
 constructor TST2829C_VMeasShow.Create(ST2829C: TST2829C);
 begin
  inherited Create(ST2829C,Pointer(st_aVMeas),
-                 'Meas Vmrs, V:',0.01,2);
+                 'Meas Vmrs, V:',0.01,8);
  SetLimits(ST2829C_VmrsMeasLimits);
+// HookParameterClick:=ObjectToSetting;
 end;
 
 { TST2829C_IMeasShow }
@@ -146,8 +162,9 @@ end;
 constructor TST2829C_IMeasShow.Create(ST2829C: TST2829C);
 begin
  inherited Create(ST2829C,Pointer(st_aIMeas),
-                 'Meas Imrs, mA:',0.1,2);
+                 'Meas Imrs, mA:',0.1,7);
  SetLimits(ST2829C_ImrsMeasLimits);
+// HookParameterClick:=ObjectToSetting;
 end;
 
 { TST2829C_BiasEnableShow }
@@ -162,8 +179,9 @@ end;
 constructor TST2829C_BiasVoltageShow.Create(ST2829C: TST2829C);
 begin
  inherited Create(ST2829C,Pointer(st_aBiasVal),
-                 'Bias, V:',0,2);
+                 'Bias, V:',0,7);
  SetLimits(ST2829C_BiasVoltageLimits);
+ HookParameterClick:=ObjectToSetting;
 end;
 
 { TST2829C_StringParameterShow }
@@ -182,6 +200,7 @@ begin
  case TST2829CAction(fActionType) of
   st_aOutImp:Result:=ord(High(TST2829C_OutputImpedance));
   st_aSetMeasT:Result:=ord(High(TST2829C_MeasureType));
+  st_aRange:Result:=ord(High(TST2829C_Range));
   else Result:=0;
  end;
 end;
@@ -190,7 +209,8 @@ function TST2829C_StringParameterShow.StrForSLFilling(i: byte): string;
 begin
  case TST2829CAction(fActionType) of
   st_aOutImp:Result:=ST2829C_OutputImpedanceLabels[TST2829C_OutputImpedance(i)];
-  st_aSetMeasT:Result:=TST2829C_MeasureTypeLabel[TST2829C_MeasureType(i)];
+  st_aSetMeasT:Result:=ST2829C_MeasureTypeLabels[TST2829C_MeasureType(i)];
+  st_aRange:Result:=ST2829C_RangeLabels[TST2829C_Range(i)];
   else Result:='';
  end;
 end;
@@ -209,6 +229,14 @@ constructor TST2829C_MeasureTypeShow.Create(ST2829C: TST2829C);
 begin
   inherited Create(ST2829C,Pointer(st_aSetMeasT),
                      'MeasType', False);
+end;
+
+{ TST2829C_RangeShow }
+
+constructor TST2829C_RangeShow.Create(ST2829C: TST2829C);
+begin
+  inherited Create(ST2829C,Pointer(st_aRange),
+                     'Range:', True);
 end;
 
 end.

@@ -72,6 +72,12 @@ end;
   public
    OutputImpedanceShow:TST2829C_OutputImpedanceShow;
    AutoLevelShow:TST2829C_AutoLevelShow;
+   BiasEnableShow:TST2829C_BiasEnableShow;
+   FreqMeasShow:TST2829C_FreqMeasShow;
+   VMeasShow:TST2829C_VMeasShow;
+   IMeasShow:TST2829C_IMeasShow;
+   BiasVoltageShow:TST2829C_BiasVoltageShow;
+   RangeShow:TST2829C_RangeShow;
 //   destructor Destroy;override;
  end;
 
@@ -124,6 +130,7 @@ constructor TST2829C_Show.Create(ST2829C:TST2829C;
                      B_MyTrain:TButton);
 begin
  fST2829C:=ST2829C;
+ DecimalSeparator:='.';
  inherited Create((ST2829C.Device as TST2829CDevice),GBs[0]);
 // showmessage('TST2829C_Show Create');
 // showmessage(fST2829C.Name);
@@ -350,8 +357,30 @@ begin
 // OutputImpedanceShow:=TST2829C_OutputImpedanceShow.Create(fST2829C);
 // Add(OutputImpedanceShow);
 
- AutoLevelShow:=TST2829C_AutoLevelShow.Create(fST2829C);
- Add(AutoLevelShow);
+// AutoLevelShow:=TST2829C_AutoLevelShow.Create(fST2829C);
+// Add(AutoLevelShow);
+
+// BiasEnableShow:=TST2829C_BiasEnableShow.Create(fST2829C);
+// Add(BiasEnableShow);
+
+// FreqMeasShow:=TST2829C_FreqMeasShow.Create(fST2829C);
+// Add(FreqMeasShow);
+
+// VMeasShow:=TST2829C_VMeasShow.Create(fST2829C);;
+// Add(VMeasShow);
+//// VMeasShow.HookParameterClick:=
+
+// IMeasShow:=TST2829C_IMeasShow.Create(fST2829C);
+// Add(IMeasShow);
+//// IMeasShow.HookParameterClick:=
+
+// BiasVoltageShow:=TST2829C_BiasVoltageShow.Create(fST2829C);
+// Add(BiasVoltageShow);
+
+ RangeShow:=TST2829C_RangeShow.Create(fST2829C);
+ Add(RangeShow);
+
+
 end;
 
 procedure TST2829CMeasureParamShow.CreateElements;
@@ -369,10 +398,42 @@ begin
 //  OutputImpedanceShow.LCaption.Left:=MarginLeft;
 //  RelativeLocation(OutputImpedanceShow.LCaption,OutputImpedanceShow.STdata,oRow,Marginbetween);
 
-  AutoLevelShow.CB.Top:=MarginTop;
-  AutoLevelShow.CB.Left:=MarginLeft;
-//  AutoLevelShow.CB.WordWrap:=True;
-  Resize(AutoLevelShow.CB);
+//  AutoLevelShow.CB.Top:=MarginTop;
+//  AutoLevelShow.CB.Left:=MarginLeft;
+//  Resize(AutoLevelShow.CB);
+
+//  BiasEnableShow.CB.Top:=MarginTop;
+//  BiasEnableShow.CB.Left:=MarginLeft;
+
+//  FreqMeasShow.LCaption.WordWrap:=False;
+//  FreqMeasShow.LCaption.Top:=MarginTop;
+//  FreqMeasShow.LCaption.Left:=MarginLeft;
+//  RelativeLocation(FreqMeasShow.LCaption,FreqMeasShow.STdata,oRow,3);
+//  FreqMeasShow.STdata.Top:=FreqMeasShow.STdata.Top+2;
+
+//  VMeasShow.LCaption.WordWrap:=False;
+//  VMeasShow.LCaption.Top:=MarginTop;
+//  VMeasShow.LCaption.Left:=MarginLeft;
+//  RelativeLocation(VMeasShow.LCaption,VMeasShow.STdata,oRow,3);
+//  VMeasShow.STdata.Top:=VMeasShow.STdata.Top+2;
+
+//  IMeasShow.LCaption.WordWrap:=False;
+//  IMeasShow.LCaption.Top:=MarginTop;
+//  IMeasShow.LCaption.Left:=MarginLeft;
+//  RelativeLocation(IMeasShow.LCaption,IMeasShow.STdata,oRow,3);
+//  IMeasShow.STdata.Top:=IMeasShow.STdata.Top+2;
+
+//  BiasVoltageShow.LCaption.WordWrap:=False;
+//  BiasVoltageShow.LCaption.Top:=MarginTop;
+//  BiasVoltageShow.LCaption.Left:=MarginLeft;
+//  RelativeLocation(BiasVoltageShow.LCaption,BiasVoltageShow.STdata,oRow,3);
+//  BiasVoltageShow.STdata.Top:=BiasVoltageShow.STdata.Top+2;
+
+  RangeShow.LCaption.Top:=MarginTop;
+  RangeShow.LCaption.Left:=MarginLeft;
+  RelativeLocation(RangeShow.LCaption,RangeShow.STdata,oRow,3);
+  RangeShow.STdata.Top:=RangeShow.STdata.Top+2;
+
 end;
 
 //destructor TST2829CMeasureParamShow.Destroy;

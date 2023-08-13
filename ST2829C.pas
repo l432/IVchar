@@ -44,6 +44,7 @@ type
    fBiasValue:double;
    fOutputImpedance:TST2829C_OutputImpedance;
    fMeasureType:TST2829C_MeasureType;
+   fMeasureRange:TST2829C_Range;
 
 //   fRS232:TRS232MeterDeviceSingle;
 //   fComPort:TComPort;
@@ -85,6 +86,7 @@ type
    {повертає рядок, який потрібно надіслати залежно від
    величини параметру, що має тип перерахунок
    (приймає дискретні значення)}
+   function GetRangePattern(Action:TST2829CAction):boolean;
 
    procedure PrepareStringByRootNode;override;
    procedure ProcessingStringByRootNode(Str:string);override;
@@ -116,6 +118,7 @@ type
    property BiasValue:double read fBiasValue write StBiasValue;
    property OutputImpedance:TST2829C_OutputImpedance read fOutputImpedance write fOutputImpedance;
    property MeasureType:TST2829C_MeasureType read fMeasureType write fMeasureType;
+   property MeasureRange:TST2829C_Range read fMeasureRange write fMeasureRange;
 
 //   property DataVector:TVector read fDataVector;
 //   property DataTimeVector:TVector read fDataTimeVector;
@@ -169,6 +172,8 @@ type
     {що саме буде вимірювати прилад}
    function  GetMeasureFunction():boolean;
 
+   procedure SetRange(Range:TST2829C_Range);
+   function  GetRange():boolean;
 
 //   procedure SetMeasureFunction(MeasureFunc:TKeitley_Measure=kt_mCurDC);virtual;
 //   
@@ -336,7 +341,7 @@ var
 implementation
 
 uses
-  SysUtils, Dialogs, OlegType;
+  SysUtils, Dialogs, OlegType, Math;
 
 { T2829C }
 
@@ -348,6 +353,7 @@ begin
    st_aBiasEn,
    st_aBiasVal,
    st_aSetMeasT:Result:=ord(Action)-5;
+   st_aRange:Result:=8;
    else Result:=0;
  end;
 end;
@@ -355,14 +361,13 @@ end;
 function TST2829C.ActionToLeafNode(Action: TST2829CAction): byte;
 begin
  Result:=0;
-// case Action of
-//   st_aReset: ;
-//   st_aTrig: ;
-//   st_aMemLoad: ;
-//   st_aMemSave: ;
-//   st_aDispPage: ;
-//   st_aChangFont: ;
-// end;
+ case Action of
+   st_aRange: case fMeasureRange of
+               st_rAuto:Result:=1;
+               else Result:=2;
+              end;
+//   else Result:=0;
+ end;
 end;
 
 function TST2829C.ActionToRootNodeNumber(Action: TST2829CAction): byte;
@@ -376,7 +381,8 @@ begin
    st_aVMeas,st_aIMeas:Result:=ord(Action)-1;
    st_aBiasEn,st_aBiasVal:Result:=9;
    st_aOutImp:Result:=10;
-   st_aSetMeasT:result:=11;
+   st_aSetMeasT,
+   st_aRange:Result:=11;
    else Result:=0;
  end;
 end;
@@ -406,6 +412,7 @@ begin
  fBiasValue:=0;
  fOutputImpedance:=st_oi100;
  fMeasureType:=st_mtCpD;
+ fMeasureRange:=st_rAuto;
 end;
 
 procedure TST2829C.DeviceCreate(Nm: string);
@@ -419,6 +426,11 @@ begin
  case Action of
    st_aOutImp:Result:=Copy(ST2829C_OutputImpedanceLabels[fOutputImpedance],
                            1, Length(ST2829C_OutputImpedanceLabels[fOutputImpedance])-4);
+   st_aRange:begin
+               if odd(ord(MeasureRange))
+                 then Result:=floattostr(Power(10,((ord(MeasureRange) Div 2)+1)))
+                 else Result:=floattostr(3*Power(10,((ord(MeasureRange) Div 2))));
+             end
    else Result:='';
  end;
 end;
@@ -486,6 +498,39 @@ begin
  Result:=GetPattern(Pointer(st_aOutImp));
 end;
 
+function TST2829C.GetRange: boolean;
+begin
+ Result:=GetPattern(Pointer(st_aRange));
+end;
+
+function TST2829C.GetRangePattern(Action: TST2829CAction): boolean;
+begin
+
+ QuireOperation(ActionToRootNodeNumber(Action),
+                ActionToFirstNode(Action),1);
+ Result:=SuccessfulGet(Action);
+// if not(Result) then Exit;
+
+ if fDevice.Value=1
+   then fMeasureRange:=st_rAuto
+   else
+    begin
+      try
+        QuireOperation(ActionToRootNodeNumber(Action),
+                       ActionToFirstNode(Action),2);
+        Result:=SuccessfulGet(Action);
+        if Result then
+              begin
+               if ((round(fDevice.Value) mod 3) = 0 )
+                 then fMeasureRange:=TST2829C_Range(round(Log10(fDevice.Value/3)*2))
+                 else fMeasureRange:=TST2829C_Range(round(Log10(fDevice.Value)*2-1));
+              end;
+      except
+       Result:=False;
+      end;
+    end;
+end;
+
 function TST2829C.GetRootNodeString: string;
 begin
  Result:=RootNodeST2829C[fRootNode];
@@ -493,6 +538,13 @@ end;
 
 function TST2829C.GetPattern(Action: Pointer): boolean;
 begin
+  if TST2829CAction(Action)=st_aRange then
+   begin
+     Result:=GetRangePattern(TST2829CAction(Action));
+     Exit;
+   end;
+  
+
   try
     QuireOperation(ActionToRootNodeNumber(TST2829CAction(Action)),
                    ActionToFirstNode(TST2829CAction(Action)),
@@ -533,7 +585,7 @@ begin
     3:Result:=(Pos(ST2829C_FontCommand[TST2829C_Font(i)],Str)<>0);
     end;
   11:case fFirstLevelNode of
-     8:Result:=(Pos(TST2829C_MeasureTypeCommand[TST2829C_MeasureType(i)],Str)<>0);
+     8:Result:=(Pos(ST2829C_MeasureTypeCommands[TST2829C_MeasureType(i)],Str)<>0);
      end;
  end;
 end;
@@ -555,12 +607,21 @@ begin
 // (fDevice as TST2829CDevice).SetStringToSend('VOLT?');
 // fDevice.GetData;
 
-  for I := 0 to ord(High(TST2829C_MeasureType)) do
+  for I := 0 to ord(High(TST2829C_Range)) do
    begin
-     SetMeasureFunction(TST2829C_MeasureType(i));
-     if (GetMeasureFunction() and(i=round(fDevice.Value)))
+     SetRange(TST2829C_Range(i));
+     if (GetRange() and(i=ord(fMeasureRange)))
       then showmessage('Ura!!!');
    end;
+
+
+
+//  for I := 0 to ord(High(TST2829C_MeasureType)) do
+//   begin
+//     SetMeasureFunction(TST2829C_MeasureType(i));
+//     if (GetMeasureFunction() and(i=round(fDevice.Value)))
+//      then showmessage('Ura!!!');
+//   end;
 
 
 
@@ -734,7 +795,16 @@ begin
  case fRootNode of
   3,4,9:JoinToStringToSend(FirstNodeST2829C[fFirstLevelNode]);
   11:case fFirstLevelNode of
-      8:JoinToStringToSend(FirstNodeST2829C[fFirstLevelNode]);
+      8:begin
+        JoinToStringToSend(FirstNodeST2829C[fFirstLevelNode]);
+        case fLeafNode of
+          1:begin
+             JoinToStringToSend(FirstNodeST2829C[9]);
+             JoinToStringToSend(FirstNodeST2829C[10]);
+            end;
+          2:JoinToStringToSend(FirstNodeST2829C[9]);
+        end;
+        end;
      end;
   end;
 end;
@@ -753,7 +823,11 @@ begin
      6:fDevice.Value:=SCPI_StringToValue(Str);
     end;
   11:case fFirstLevelNode of
-      8:StringToOrd(AnsiLowerCase(Str));
+      8:case fLeafNode of
+         0:StringToOrd(AnsiLowerCase(Str));
+         1:fDevice.Value:=StrToInt(Str);
+         2:fDevice.Value:=SCPI_StringToValue(Str);
+        end;
      end;
  end;
 end;
@@ -907,8 +981,14 @@ begin
               end;
    st_aSetMeasT:begin
                  MeasureType:=TST2829C_MeasureType(Ps[1]);
-                 fAdditionalString:=TST2829C_MeasureTypeCommand[TST2829C_MeasureType(Ps[1])];
-                end
+                 fAdditionalString:=ST2829C_MeasureTypeCommands[TST2829C_MeasureType(Ps[1])];
+                end;
+    st_aRange:begin
+                MeasureRange:=TST2829C_Range(Ps[1]);
+                if MeasureRange=st_rAuto
+                  then OnOffFromBool(True)
+                  else fAdditionalString:=EnumerateToString(Action)+'Ohm';
+              end;
    else;
  end;
 //
@@ -927,6 +1007,13 @@ begin
 //   st_aChangFont: ;
 //   else;
 // end;
+end;
+
+procedure TST2829C.SetRange(Range: TST2829C_Range);
+begin
+//FUNC:IMP:RANG <Range>
+//FUNC:IMP:RANG:AUTO ON|OFF
+ SetPattern([Pointer(st_aRange),Pointer(Range)]);
 end;
 
 //procedure TST2829C.SetPrepareAction(Action: TST2829CAction; P: Pointer);
@@ -987,6 +1074,10 @@ begin
   Result:=(fDevice.Value<>ErResult);
   case Action of
     st_aFreqMeas: Result:=((fDevice.Value<>ErResult)and(fDevice.isReceived));
+//    st_aRange:Result:=(round(fDevice.Value) in [0,1,10,30,100,300]);
+//                                        1000,3000]);
+//                                        ,10000,30000,
+//                                        100000,300000,1000000]);
   end;
 end;
 
