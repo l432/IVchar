@@ -45,6 +45,9 @@ type
    fOutputImpedance:TST2829C_OutputImpedance;
    fMeasureType:TST2829C_MeasureType;
    fMeasureRange:TST2829C_Range;
+   fMeasureSpeed:TST2829C_MeasureSpeed;
+   fAverTimes:byte;
+   {кількість усереднень при вимірюванні}
 
 //   fRS232:TRS232MeterDeviceSingle;
 //   fComPort:TComPort;
@@ -66,6 +69,7 @@ type
    procedure SetIrmsMeas(const Value: double);
    procedure SetVrmsMeas(const Value: double);
    procedure StBiasValue(const Value: double);
+   procedure StAverTimes(const Value: byte);
   protected
 //   fTelnet:TIdTelnet;
 //   fIPAdressShow: TIPAdressShow;
@@ -119,6 +123,9 @@ type
    property OutputImpedance:TST2829C_OutputImpedance read fOutputImpedance write fOutputImpedance;
    property MeasureType:TST2829C_MeasureType read fMeasureType write fMeasureType;
    property MeasureRange:TST2829C_Range read fMeasureRange write fMeasureRange;
+   property MeasureSpeed:TST2829C_MeasureSpeed read fMeasureSpeed write fMeasureSpeed;
+   property AverTimes:byte read fAverTimes write StAverTimes;
+
 
 //   property DataVector:TVector read fDataVector;
 //   property DataTimeVector:TVector read fDataTimeVector;
@@ -175,8 +182,26 @@ type
    procedure SetRange(Range:TST2829C_Range);
    function  GetRange():boolean;
 
+   procedure SetShowVrms(toOn: boolean);
+    {чи буде на екрані приладу показувати
+     результати вимірювання реальної напруги
+     на DUT}
+   function  GetShowVrms():boolean;
+
+   procedure SetShowIrms(toOn: boolean);
+    {чи буде на екрані приладу показувати
+     результати вимірювання реальної сили струму
+     на DUT}
+   function  GetShowIrms():boolean;
+
+   procedure SetMeasureSpeed(Speed:TST2829C_MeasureSpeed);
+   function  GetMeasureSpeed():boolean;
+
+   procedure SetAverTime(AverTime:byte);
+   function  GetAverTime():boolean;
+
 //   procedure SetMeasureFunction(MeasureFunc:TKeitley_Measure=kt_mCurDC);virtual;
-//   
+//
 //   function GetMeasureFunction():boolean;virtual;
 //    {повертає тип вимірювання, обробка залежить
 //    від типу приладу}
@@ -354,6 +379,9 @@ begin
    st_aBiasVal,
    st_aSetMeasT:Result:=ord(Action)-5;
    st_aRange:Result:=8;
+   st_aShowVmeas,
+   st_aShowImeas:Result:=11;
+   st_aAverTimes:Result:=1;
    else Result:=0;
  end;
 end;
@@ -366,6 +394,9 @@ begin
                st_rAuto:Result:=1;
                else Result:=2;
               end;
+   st_aShowVmeas:Result:=12;
+   st_aShowImeas:Result:=13;
+
 //   else Result:=0;
  end;
 end;
@@ -382,7 +413,11 @@ begin
    st_aBiasEn,st_aBiasVal:Result:=9;
    st_aOutImp:Result:=10;
    st_aSetMeasT,
-   st_aRange:Result:=11;
+   st_aRange,
+   st_aShowVmeas,
+   st_aShowImeas:Result:=11;
+   st_aSpeedMeas,
+   st_aAverTimes:Result:=12;
    else Result:=0;
  end;
 end;
@@ -413,6 +448,8 @@ begin
  fOutputImpedance:=st_oi100;
  fMeasureType:=st_mtCpD;
  fMeasureRange:=st_rAuto;
+ fMeasureSpeed:=st_msMed;
+ fAverTimes:=1;
 end;
 
 procedure TST2829C.DeviceCreate(Nm: string);
@@ -441,17 +478,24 @@ begin
     st_aFreqMeas:FreqMeas:=fDevice.Value;
     st_aALE:fAutoLevelControlEnable:=(fDevice.Value=1);
     st_aVMeas:VrmsMeas:=fDevice.Value;
-    st_aIMeas:IrmsMeas:=fDevice.Value;
+    st_aIMeas:IrmsMeas:=fDevice.Value*1000;
     st_aBiasEn:BiasEnable:=(fDevice.Value=1);
     st_aBiasVal:VrmsMeas:=fDevice.Value;
     st_aOutImp:OutputImpedance:=TST2829C_OutputImpedance(ValueToOrd(fDevice.Value,st_aOutImp));
     st_aSetMeasT:MeasureType:=TST2829C_MeasureType(round(fDevice.Value));
+    st_aSpeedMeas:MeasureSpeed:=TST2829C_MeasureSpeed(round(fDevice.Value));
+    st_aAverTimes:AverTimes:=round(fDevice.Value);
   end;
 end;
 
 function TST2829C.GetAutoLevelEnable: boolean;
 begin
  Result:=GetPattern(Pointer(st_aALE));
+end;
+
+function TST2829C.GetAverTime: boolean;
+begin
+ Result:=GetPattern(Pointer(st_aAverTimes));
 end;
 
 function TST2829C.GetBiasEnable: boolean;
@@ -491,6 +535,11 @@ end;
 function TST2829C.GetMeasureFunction: boolean;
 begin
  Result:=GetPattern(Pointer(st_aSetMeasT));
+end;
+
+function TST2829C.GetMeasureSpeed: boolean;
+begin
+ Result:=GetPattern(Pointer(st_aSpeedMeas));
 end;
 
 function TST2829C.GetOutputImpedance: boolean;
@@ -536,6 +585,16 @@ begin
  Result:=RootNodeST2829C[fRootNode];
 end;
 
+function TST2829C.GetShowIrms: boolean;
+begin
+ Result:=GetPattern(Pointer(st_aShowImeas));
+end;
+
+function TST2829C.GetShowVrms: boolean;
+begin
+ Result:=GetPattern(Pointer(st_aShowVmeas));
+end;
+
 function TST2829C.GetPattern(Action: Pointer): boolean;
 begin
   if TST2829CAction(Action)=st_aRange then
@@ -573,6 +632,7 @@ begin
   11:case fFirstLevelNode of
      8:Result:=ord(High(TST2829C_MeasureType));
      end;
+  12:Result:=ord(High(TST2829C_MeasureSpeed));
  end;
 end;
 
@@ -587,6 +647,9 @@ begin
   11:case fFirstLevelNode of
      8:Result:=(Pos(ST2829C_MeasureTypeCommands[TST2829C_MeasureType(i)],Str)<>0);
      end;
+  12:if i<ord(st_msFastPlus)
+        then Result:=(Pos(ST2829C_MeasureSpeedCommands[TST2829C_MeasureSpeed(i)]+' ',Str)<>0)
+        else Result:=(Pos(ST2829C_MeasureSpeedCommands[TST2829C_MeasureSpeed(i)],Str)<>0)
  end;
 end;
 
@@ -602,17 +665,60 @@ procedure TST2829C.MyTraining;
  var i:Integer;
      tempDouble:double;
 begin
-// (fDevice as TST2829CDevice).SetStringToSend('VOLT MAX');
+// (fDevice as TST2829CDevice).SetStringToSend('BIAS:CURR -0.1');
 // fDevice.Request;
-// (fDevice as TST2829CDevice).SetStringToSend('VOLT?');
+// (fDevice as TST2829CDevice).SetStringToSend('BIAS:CURR?');
 // fDevice.GetData;
 
-  for I := 0 to ord(High(TST2829C_Range)) do
-   begin
-     SetRange(TST2829C_Range(i));
-     if (GetRange() and(i=ord(fMeasureRange)))
-      then showmessage('Ura!!!');
-   end;
+// (fDevice as TST2829CDevice).SetStringToSend('TRIG:DEL 0.1234567');
+// fDevice.Request;
+// (fDevice as TST2829CDevice).SetStringToSend('FETC?');
+// fDevice.GetData;
+// (fDevice as TST2829CDevice).SetStringToSend('FETCh:fres:acur?');
+// fDevice.GetData;
+
+//Trig();
+
+//GetMeasureSpeed();
+//SetAverTime(5);
+//GetAverTime();
+//Showmessage(inttostr(AverTimes));
+//
+//SetAverTime(0);
+//GetAverTime();
+//Showmessage(inttostr(AverTimes));
+//
+//SetAverTime(115);
+//GetAverTime();
+//Showmessage(inttostr(AverTimes));
+
+
+
+//  for I := 0 to ord(High(TST2829C_MeasureSpeed)) do
+//   begin
+//     SetMeasureSpeed(TST2829C_MeasureSpeed(i));
+//     if (GetMeasureSpeed() and(i=ord(fMeasureSpeed)))
+//      then showmessage('Ura!!!');
+//   end;
+
+
+// SetShowVrms(False);
+// GetShowVrms();
+// SetShowVrms(True);
+// GetShowVrms();
+//
+// SetShowIrms(False);
+// GetShowIrms();
+// SetShowIrms(True);
+// GetShowIrms();
+
+
+//  for I := 0 to ord(High(TST2829C_Range)) do
+//   begin
+//     SetRange(TST2829C_Range(i));
+//     if (GetRange() and(i=ord(fMeasureRange)))
+//      then showmessage('Ura!!!');
+//   end;
 
 
 
@@ -628,28 +734,28 @@ begin
 //  for I := 0 to ord(High(TST2829C_OutputImpedance)) do
 //   begin
 //     SetOutputImpedance(TST2829C_OutputImpedance(i));
-//     if (GetOutputImpedance() and(i=round(fDevice.Value)))
+//     if (GetOutputImpedance() and(TST2829C_OutputImpedance(i)=OutputImpedance))
 //      then showmessage('Ura!!!');
 //   end;
 
 
-// tempDouble:=1.2345678;
-// SetBiasVoltage(tempDouble);
-// if GetBiasVoltage()  then
-//  showmessage('send:'+floattostr(tempDouble)
-//              +'  received:'+floattostr(BiasValue));
-//
-// tempDouble:=-15;
-// SetBiasVoltage(tempDouble);
-// if GetBiasVoltage()  then
-//  showmessage('send:'+floattostr(tempDouble)
-//              +'  received:'+floattostr(BiasValue));
-//
-// tempDouble:=-1.987654321;
-// SetBiasVoltage(tempDouble);
-// if GetBiasVoltage()  then
-//  showmessage('send:'+floattostr(tempDouble)
-//              +'  received:'+floattostr(BiasValue));
+ tempDouble:=1.2345678;
+ SetBiasVoltage(tempDouble);
+ if GetBiasVoltage()  then
+  showmessage('send:'+floattostr(tempDouble)
+              +'  received:'+floattostr(BiasValue));
+
+ tempDouble:=-15;
+ SetBiasVoltage(tempDouble);
+ if GetBiasVoltage()  then
+  showmessage('send:'+floattostr(tempDouble)
+              +'  received:'+floattostr(BiasValue));
+
+ tempDouble:=-1.987654321;
+ SetBiasVoltage(tempDouble);
+ if GetBiasVoltage()  then
+  showmessage('send:'+floattostr(tempDouble)
+              +'  received:'+floattostr(BiasValue));
 
 
 
@@ -661,14 +767,27 @@ begin
 //   showmessage(booltostr(BiasEnable,True));
 
 
+// SetVoltageMeasurement(0.015);
+
+//SetAutoLevelEnable(False);
+//GetAutoLevelEnable();
+//SetCurrentMeasurement(0.07);
+//GetAutoLevelEnable();
+//SetAutoLevelEnable(True);
+//GetAutoLevelEnable();
+
+// ST2829C_VmrsMeasLimits:TLimitValues=(0.005,10);
+// ST2829C_ImrsMeasLimits:TLimitValues=(0.05,100);
+// ST2829C_VmrsMeasLimitsForAL:TLimitValues=(0.01,5);
+// ST2829C_ImrsMeasLimitsForAL:TLimitValues=(0.1,50);
 
 // tempDouble:=1.2345678;
 // SetCurrentMeasurement(tempDouble);
 // if GetCurrentMeasurement()  then
 //  showmessage('send:'+floattostr(tempDouble)
 //              +'  received:'+floattostr(IrmsMeas));
-//
-// tempDouble:=0.01;
+
+// tempDouble:=11.12345678;
 // SetCurrentMeasurement(tempDouble);
 // if GetCurrentMeasurement()  then
 //  showmessage('send:'+floattostr(tempDouble)
@@ -694,7 +813,7 @@ begin
 //              +'  received:'+floattostr(VrmsMeas));
 
 
-
+//----------------------------------------
 
 // SetAutoLevelEnable(True);
 // if GetAutoLevelEnable() then
@@ -740,7 +859,7 @@ begin
 
 
 //  QuireOperation(4,4);
-//----------------------------------------
+
 //  for I := 0 to ord(High(TST2829C_Font)) do
 //   begin
 //     SetDisplayFont(TST2829C_Font(i));
@@ -805,6 +924,10 @@ begin
           2:JoinToStringToSend(FirstNodeST2829C[9]);
         end;
         end;
+      11:begin
+          JoinToStringToSend(FirstNodeST2829C[fFirstLevelNode]);
+          JoinToStringToSend(FirstNodeST2829C[fLeafNode]);
+         end;
      end;
   end;
 end;
@@ -828,6 +951,11 @@ begin
          1:fDevice.Value:=StrToInt(Str);
          2:fDevice.Value:=SCPI_StringToValue(Str);
         end;
+      11:fDevice.Value:=StrToInt(Str);
+     end;
+  12:case fFirstLevelNode of
+     0:StringToOrd(AnsiLowerCase(Str));
+     1:fDevice.Value:=StrToInt(Copy(Str,Pos(',',Str)+1,Length(Str)));
      end;
  end;
 end;
@@ -864,6 +992,12 @@ procedure TST2829C.SetAutoLevelEnable(toOn: boolean);
 begin
 //AMPL:ALC ON|OFF
  SetPattern([Pointer(st_aALE),@toOn]);
+end;
+
+procedure TST2829C.SetAverTime(AverTime: byte);
+begin
+//APER <MeasSpeed>, <AverTime>
+ SetPattern([Pointer(st_aAverTimes),@AverTime]);
 end;
 
 procedure TST2829C.SetBiasEnable(toOn: boolean);
@@ -903,7 +1037,7 @@ end;
 procedure TST2829C.SetFreqMeas(Value: Double);
 begin
  fFreqMeas:=NumberMap(Value,ST2829C_FreqMeasLimits);
- fFreqMeas:=ValueWithMinResolution(fFreqMeas,1e-2);
+ fFreqMeas:=ValueWithMinResolution(fFreqMeas,1e-3);
 end;
 
 procedure TST2829C.SetFrequancyMeasurement(Freq: double);
@@ -917,13 +1051,19 @@ begin
  fIrmsMeas:=NumberMap(Value,ST2829C_ImrsMeasLimits);
  if not(ValueInMap(fIrmsMeas,ST2829C_ImrsMeasLimitsForAL))
    then fAutoLevelControlEnable:=False;
- fIrmsMeas:=ValueWithMinResolution(fIrmsMeas,1e-3);
+ fIrmsMeas:=ValueWithMinResolution(fIrmsMeas,1e-4);
 end;
 
 procedure TST2829C.SetMeasureFunction(MF: TST2829C_MeasureType);
 begin
 //FUNC:IMP <MF>
  SetPattern([Pointer(st_aSetMeasT),Pointer(MF)]);
+end;
+
+procedure TST2829C.SetMeasureSpeed(Speed: TST2829C_MeasureSpeed);
+begin
+//APER <Speed>
+ SetPattern([Pointer(st_aSpeedMeas),Pointer(Speed)]);
 end;
 
 procedure TST2829C.SetOutputImpedance(OI: TST2829C_OutputImpedance);
@@ -989,6 +1129,17 @@ begin
                   then OnOffFromBool(True)
                   else fAdditionalString:=EnumerateToString(Action)+'Ohm';
               end;
+    st_aShowVmeas,
+    st_aShowImeas:OnOffFromBool(PBoolean(Ps[1])^);
+    st_aSpeedMeas:begin
+                  MeasureSpeed:=TST2829C_MeasureSpeed(Ps[1]);
+                  fAdditionalString:=ST2829C_MeasureSpeedCommands[MeasureSpeed];
+                  end;
+    st_aAverTimes:begin
+                  AverTimes:=PByte(Ps[1])^;
+                  fAdditionalString:=ST2829C_MeasureSpeedCommands[MeasureSpeed]
+                         +', '+Inttostr(AverTimes);
+                  end;
    else;
  end;
 //
@@ -1014,6 +1165,18 @@ begin
 //FUNC:IMP:RANG <Range>
 //FUNC:IMP:RANG:AUTO ON|OFF
  SetPattern([Pointer(st_aRange),Pointer(Range)]);
+end;
+
+procedure TST2829C.SetShowIrms(toOn: boolean);
+begin
+//FUNC:SMON:IAC ON|OFF
+ SetPattern([Pointer(st_aShowImeas),@toOn]);
+end;
+
+procedure TST2829C.SetShowVrms(toOn: boolean);
+begin
+//FUNC:SMON:VAC ON|OFF
+ SetPattern([Pointer(st_aShowVmeas),@toOn]);
 end;
 
 //procedure TST2829C.SetPrepareAction(Action: TST2829CAction; P: Pointer);
@@ -1060,7 +1223,12 @@ begin
  fVrmsMeas:=NumberMap(Value,ST2829C_VmrsMeasLimits);
  if not(ValueInMap(fVrmsMeas,ST2829C_VmrsMeasLimitsForAL))
    then fAutoLevelControlEnable:=False;
- fVrmsMeas:=ValueWithMinResolution(fVrmsMeas,1e-4);
+ fVrmsMeas:=ValueWithMinResolution(fVrmsMeas,1e-3);
+end;
+
+procedure TST2829C.StAverTimes(const Value: byte);
+begin
+ fAverTimes:=NumberMap(Value,ST2829C_AverTimes);
 end;
 
 procedure TST2829C.StBiasValue(const Value: double);
@@ -1104,10 +1272,10 @@ function TST2829C.ValueToOrd(Value: double; Action: TST2829CAction): integer;
 begin
  case Action of
    st_aOutImp:case round(Value) of
-                 10:Result:=0;
-                 30:Result:=1;
-                 50:Result:=2;
-                 100:Result:=3;
+//                 10:Result:=0;
+                 30:Result:=0;
+                 50:Result:=1;
+                 100:Result:=2;
                  else Result:=-1;
               end ;
    else Result:=-1;

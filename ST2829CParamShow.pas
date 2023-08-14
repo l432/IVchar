@@ -14,6 +14,13 @@ TST2829C_DoubleParameterShow=class(TSCPI_DoubleParameterShow)
  public
 end;
 
+TST2829C_IntegerParameterShow=class(TSCPI_IntegerParameterShow)
+ private
+ protected
+  function FuncForObjectToSetting:integer;override;
+ public
+end;
+
 TST2829C_BoolParameterShow=class(TSCPI_BoolParameterShow)
  private
  protected
@@ -47,6 +54,12 @@ TST2829C_MeasureTypeShow=class(TST2829C_StringParameterShow)
 end;
 
 TST2829C_RangeShow=class(TST2829C_StringParameterShow)
+ protected
+ public
+  Constructor Create(ST2829C:TST2829C);
+end;
+
+TST2829C_MeasureSpeedShow=class(TST2829C_StringParameterShow)
  protected
  public
   Constructor Create(ST2829C:TST2829C);
@@ -95,6 +108,16 @@ TST2829C_BiasVoltageShow=class(TST2829C_DoubleParameterShow)
  public
   Constructor Create(ST2829C:TST2829C);
 end;
+
+//----------------------------------------------------------------
+TST2829C_AverTimesShow=class(TST2829C_IntegerParameterShow)
+ protected
+ public
+  Constructor Create(ST2829C:TST2829C);
+end;
+
+
+
 
 implementation
 
@@ -191,6 +214,7 @@ begin
   case TST2829CAction(fActionType) of
     st_aOutImp:Result:=ord((fSCPInew as TST2829C).OutputImpedance);
     st_aSetMeasT:Result:=ord((fSCPInew as TST2829C).MeasureType);
+    st_aSpeedMeas:Result:=ord((fSCPInew as TST2829C).MeasureSpeed);
     else Result:=255;
   end;
 end;
@@ -201,6 +225,7 @@ begin
   st_aOutImp:Result:=ord(High(TST2829C_OutputImpedance));
   st_aSetMeasT:Result:=ord(High(TST2829C_MeasureType));
   st_aRange:Result:=ord(High(TST2829C_Range));
+  st_aSpeedMeas:Result:=ord(High(TST2829C_MeasureSpeed));
   else Result:=0;
  end;
 end;
@@ -211,6 +236,7 @@ begin
   st_aOutImp:Result:=ST2829C_OutputImpedanceLabels[TST2829C_OutputImpedance(i)];
   st_aSetMeasT:Result:=ST2829C_MeasureTypeLabels[TST2829C_MeasureType(i)];
   st_aRange:Result:=ST2829C_RangeLabels[TST2829C_Range(i)];
+  st_aSpeedMeas:Result:=ST2829C_MeasureSpeedCommands[TST2829C_MeasureSpeed(i)];
   else Result:='';
  end;
 end;
@@ -237,6 +263,33 @@ constructor TST2829C_RangeShow.Create(ST2829C: TST2829C);
 begin
   inherited Create(ST2829C,Pointer(st_aRange),
                      'Range:', True);
+end;
+
+{ TST2829C_MeasureSpeedShow }
+
+constructor TST2829C_MeasureSpeedShow.Create(ST2829C: TST2829C);
+begin
+  inherited Create(ST2829C,Pointer(st_aSpeedMeas),
+                     'Speed:', True);
+end;
+
+{ TST2829C_IntegerParameterShow }
+
+function TST2829C_IntegerParameterShow.FuncForObjectToSetting: integer;
+begin
+  case TST2829CAction(fActionType) of
+    st_aAverTimes:Result:=(fSCPInew as TST2829C).AverTimes;
+    else Result:=-1;
+  end;
+end;
+
+{ TST2829C_AverTimesShow }
+
+constructor TST2829C_AverTimesShow.Create(ST2829C: TST2829C);
+begin
+ inherited Create(ST2829C,Pointer(st_aAverTimes),
+                 'Average Count:',1);
+ SetLimits(ST2829C_AverTimes);
 end;
 
 end.

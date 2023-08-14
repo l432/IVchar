@@ -78,6 +78,8 @@ end;
    IMeasShow:TST2829C_IMeasShow;
    BiasVoltageShow:TST2829C_BiasVoltageShow;
    RangeShow:TST2829C_RangeShow;
+   MeasureSpeedShow:TST2829C_MeasureSpeedShow;
+   AverTimesShow:TST2829C_AverTimesShow;
 //   destructor Destroy;override;
  end;
 
@@ -267,6 +269,9 @@ begin
      fST2829C.GetBiasVoltage();
      fST2829C.GetOutputImpedance();
      fST2829C.GetMeasureFunction();
+     fST2829C.GetRange();
+     fST2829C.GetMeasureSpeed();
+     fST2829C.GetAverTime();
     end;
 
   fST2829C_Show.ObjectToSetting();
@@ -377,9 +382,14 @@ begin
 // BiasVoltageShow:=TST2829C_BiasVoltageShow.Create(fST2829C);
 // Add(BiasVoltageShow);
 
- RangeShow:=TST2829C_RangeShow.Create(fST2829C);
- Add(RangeShow);
+// RangeShow:=TST2829C_RangeShow.Create(fST2829C);
+// Add(RangeShow);
 
+// MeasureSpeedShow:=TST2829C_MeasureSpeedShow.Create(fST2829C);
+// Add(MeasureSpeedShow);
+
+ AverTimesShow:=TST2829C_AverTimesShow.Create(fST2829C);
+ Add(AverTimesShow);
 
 end;
 
@@ -429,10 +439,20 @@ begin
 //  RelativeLocation(BiasVoltageShow.LCaption,BiasVoltageShow.STdata,oRow,3);
 //  BiasVoltageShow.STdata.Top:=BiasVoltageShow.STdata.Top+2;
 
-  RangeShow.LCaption.Top:=MarginTop;
-  RangeShow.LCaption.Left:=MarginLeft;
-  RelativeLocation(RangeShow.LCaption,RangeShow.STdata,oRow,3);
-  RangeShow.STdata.Top:=RangeShow.STdata.Top+2;
+//  RangeShow.LCaption.Top:=MarginTop;
+//  RangeShow.LCaption.Left:=MarginLeft;
+//  RelativeLocation(RangeShow.LCaption,RangeShow.STdata,oRow,3);
+//  RangeShow.STdata.Top:=RangeShow.STdata.Top+2;
+
+//  MeasureSpeedShow.LCaption.Top:=MarginTop;
+//  MeasureSpeedShow.LCaption.Left:=MarginLeft;
+//  RelativeLocation(MeasureSpeedShow.LCaption,MeasureSpeedShow.STdata,oRow,3);
+//  MeasureSpeedShow.STdata.Top:=MeasureSpeedShow.STdata.Top+2;
+
+  AverTimesShow.LCaption.Top:=MarginTop;
+  AverTimesShow.LCaption.Left:=MarginLeft;
+  RelativeLocation(AverTimesShow.LCaption,AverTimesShow.STdata,oRow,3);
+//  AverTimesShow.STdata.Top:=AverTimesShow.STdata.Top+2;
 
 end;
 
