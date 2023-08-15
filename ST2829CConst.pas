@@ -11,17 +11,17 @@ const
   ST2829C_MemFileMaxLength=16;
 
 
-  RootNodeST2829C:array[0..12]of string=
+  RootNodeST2829C:array[0..14]of string=
   ('*idn?','*rst','*trg', 'mmem', 'disp','freq','ampl:alc','volt','curr',
 //   0       1       2      3       4       5       6       7       8
-   'bias','ores','func','aper');
-//   9      10     11     12
+   'bias','ores','func','aper','trig','fetc');
+//   9      10     11     12     13     14
 
-  FirstNodeST2829C:array[0..13]of string=
+  FirstNodeST2829C:array[0..15]of string=
   (':load:stat',':stor:stat',':page',':rfon',':line',':stat',':volt',':curr',
 //     0             1           2      3      4        5        6      7
-  ':imp',':rang',':auto',':smon',':vac',':iac');
-//   8      9       10      11     12     13        14      15
+  ':imp',':rang',':auto',':smon',':vac',':iac',':sour',':del');
+//   8      9       10      11     12     13      14     15
 
 
   SuffixST2829C:array[0..1]of string=('on','off');
@@ -33,16 +33,18 @@ type
  {реально- до 39, але вікно з кнопками завелике}
 
  {що саме можна робити}
- TST2829CAction=(st_aReset,st_aTrig,st_aMemLoad,st_aMemSave,
+ TST2829CAction=(st_aReset,st_aTrg,st_aMemLoad,st_aMemSave,
 //                 0           1         2          3
                  st_aDispPage,st_aChangFont,st_aFreqMeas,
 //                  4               5              6
-                 st_aALE, st_aVMeas, st_aIMeas,st_aBiasEn,st_aBiasVal,
+                 st_aALE, st_aVMeas, st_aIMeas,st_aBiasEn,st_aBiasVol,
 //                  7          8          9          10       11
-                 st_aOutImp, st_aSetMeasT, st_aRange, st_aShowVmeas, st_aShowImeas,
+                 st_aOutImp, st_aSetMeasT, st_aRange, st_aVrmsToMeas, st_aIrmsToMeas,
 //                  12         13             14         15               16
-                 st_aSpeedMeas,st_aAverTimes);
+                 st_aSpeedMeas,st_aAverTimes,st_aBiasCur,st_aTriger,st_aTrigSource,
 //                  17            18             19         20               21
+                 st_aTrigDelay,st_aGetMeasData,st_aGetVrms,st_aGetIrms);
+//                   22            23             24         25               26
 
  TST2829C_DisplayPage=(st_dpMeas, st_dpBNum, st_dpBCO,
                        st_dpList, st_dpMset, st_dpCset,
@@ -87,6 +89,8 @@ type
                  st_r300k,st_r1M});
 
  TST2829C_MeasureSpeed=(st_msSlow,st_msMed,st_msFast,st_msFastPlus);
+
+ TST2829C_TrigerSource=(st_tsInt,st_tsHold,st_tsBus);
 
 const
  ST2829C_DisplayPageCommand:array [TST2829C_DisplayPage]
@@ -142,6 +146,12 @@ const
  ST2829C_MeasureSpeedCommands:array[TST2829C_MeasureSpeed]of string=
         ('slow','med','fast','fast+');
 
+ ST2829C_TrigerSourceCommands:array[TST2829C_TrigerSource]of string=
+        ('int','hold','bus');
+ ST2829C_TrigerSourceLabels:array[TST2829C_TrigerSource]of string=
+        ('Continious','Manual','RS232');
+
+
  ST2829C_FreqMeasLimits:TLimitValues=(20,1000000);
  ST2829C_VmrsMeasLimits:TLimitValues=(0.005,10);
  ST2829C_ImrsMeasLimits:TLimitValues=(0.05,100);
@@ -150,6 +160,8 @@ const
  ST2829C_BiasVoltageLimits:TLimitValues=(-10,10);
  ST2829C_BiasCurrentLimits:TLimitValues=(-100,100);
  ST2829C_AverTimes:TLimitValues=(1,255);
+ ST2829C_DelayTime:TLimitValues=(0,60000);
+
 
  implementation
 

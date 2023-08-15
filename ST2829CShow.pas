@@ -77,9 +77,14 @@ end;
    VMeasShow:TST2829C_VMeasShow;
    IMeasShow:TST2829C_IMeasShow;
    BiasVoltageShow:TST2829C_BiasVoltageShow;
+   BiasCurrentShow:TST2829C_BiasCurrentShow;
    RangeShow:TST2829C_RangeShow;
    MeasureSpeedShow:TST2829C_MeasureSpeedShow;
    AverTimesShow:TST2829C_AverTimesShow;
+   VrmsToMeasureShow:TST2829C_VrmsToMeasureShow;
+   IrmsToMeasureShow:TST2829C_IrmsToMeasureShow;
+   TrigerSourceShow:TST2829C_TrigerSourceShow;
+   DelayTimeShow:TST2829C_DelayTimeShow;
 //   destructor Destroy;override;
  end;
 
@@ -267,11 +272,16 @@ begin
      fST2829C.GetCurrentMeasurement();
      fST2829C.GetBiasEnable();
      fST2829C.GetBiasVoltage();
+     fST2829C.GetBiasCurrent();
      fST2829C.GetOutputImpedance();
      fST2829C.GetMeasureFunction();
      fST2829C.GetRange();
      fST2829C.GetMeasureSpeed();
      fST2829C.GetAverTime();
+     fST2829C.GetVrmsToMeasure();
+     fST2829C.GetIrmsToMeasure();
+     fST2829C.GetTrigerSource();
+     fST2829C.GetDelayTime();
     end;
 
   fST2829C_Show.ObjectToSetting();
@@ -388,8 +398,26 @@ begin
 // MeasureSpeedShow:=TST2829C_MeasureSpeedShow.Create(fST2829C);
 // Add(MeasureSpeedShow);
 
- AverTimesShow:=TST2829C_AverTimesShow.Create(fST2829C);
- Add(AverTimesShow);
+// AverTimesShow:=TST2829C_AverTimesShow.Create(fST2829C);
+// Add(AverTimesShow);
+
+// VrmsToMeasureShow:=TST2829C_VrmsToMeasureShow.Create(fST2829C);
+// Add(VrmsToMeasureShow);
+
+
+// IrmsToMeasureShow:=TST2829C_IrmsToMeasureShow.Create(fST2829C);
+// Add(IrmsToMeasureShow);
+
+// BiasCurrentShow:=TST2829C_BiasCurrentShow.Create(fST2829C);
+// Add(BiasCurrentShow);
+
+// TrigerSourceShow:=TST2829C_TrigerSourceShow.Create(fST2829C);
+// Add(TrigerSourceShow);
+
+
+ DelayTimeShow:=TST2829C_DelayTimeShow.Create(fST2829C);
+ Add(DelayTimeShow);
+
 
 end;
 
@@ -449,10 +477,36 @@ begin
 //  RelativeLocation(MeasureSpeedShow.LCaption,MeasureSpeedShow.STdata,oRow,3);
 //  MeasureSpeedShow.STdata.Top:=MeasureSpeedShow.STdata.Top+2;
 
-  AverTimesShow.LCaption.Top:=MarginTop;
-  AverTimesShow.LCaption.Left:=MarginLeft;
-  RelativeLocation(AverTimesShow.LCaption,AverTimesShow.STdata,oRow,3);
-//  AverTimesShow.STdata.Top:=AverTimesShow.STdata.Top+2;
+//  AverTimesShow.LCaption.Top:=MarginTop;
+//  AverTimesShow.LCaption.Left:=MarginLeft;
+//  RelativeLocation(AverTimesShow.LCaption,AverTimesShow.STdata,oRow,3);
+////  AverTimesShow.STdata.Top:=AverTimesShow.STdata.Top+2;
+
+//  VrmsToMeasureShow.CB.Top:=MarginTop;
+//  VrmsToMeasureShow.CB.Left:=MarginLeft;
+//  Resize(VrmsToMeasureShow.CB);
+
+//  IrmsToMeasureShow.CB.Top:=MarginTop;
+//  IrmsToMeasureShow.CB.Left:=MarginLeft;
+//  Resize(IrmsToMeasureShow.CB);
+
+//  BiasCurrentShow.LCaption.WordWrap:=False;
+//  BiasCurrentShow.LCaption.Top:=MarginTop;
+//  BiasCurrentShow.LCaption.Left:=MarginLeft;
+//  RelativeLocation(BiasCurrentShow.LCaption,BiasCurrentShow.STdata,oRow,3);
+//  BiasCurrentShow.STdata.Top:=BiasCurrentShow.STdata.Top+2;
+
+//  TrigerSourceShow.LCaption.WordWrap:=False;
+//  TrigerSourceShow.LCaption.Top:=MarginTop;
+//  TrigerSourceShow.LCaption.Left:=MarginLeft;
+//  RelativeLocation(TrigerSourceShow.LCaption,TrigerSourceShow.STdata,oRow,3);
+//  TrigerSourceShow.STdata.Top:=TrigerSourceShow.STdata.Top+2;
+
+  DelayTimeShow.LCaption.WordWrap:=False;
+  DelayTimeShow.LCaption.Top:=MarginTop;
+  DelayTimeShow.LCaption.Left:=MarginLeft;
+  RelativeLocation(DelayTimeShow.LCaption,DelayTimeShow.STdata,oRow,3);
+  DelayTimeShow.STdata.Top:=DelayTimeShow.STdata.Top+2;
 
 end;
 

@@ -65,7 +65,11 @@ TST2829C_MeasureSpeedShow=class(TST2829C_StringParameterShow)
   Constructor Create(ST2829C:TST2829C);
 end;
 
-
+TST2829C_TrigerSourceShow=class(TST2829C_StringParameterShow)
+ protected
+ public
+  Constructor Create(ST2829C:TST2829C);
+end;
 //------------------------------------------------------------------
 
 TST2829C_AutoLevelShow=class(TST2829C_BoolParameterShow)
@@ -80,7 +84,17 @@ TST2829C_BiasEnableShow=class(TST2829C_BoolParameterShow)
   Constructor Create(ST2829C:TST2829C);
 end;
 
+TST2829C_VrmsToMeasureShow=class(TST2829C_BoolParameterShow)
+ protected
+ public
+  Constructor Create(ST2829C:TST2829C);
+end;
 
+TST2829C_IrmsToMeasureShow=class(TST2829C_BoolParameterShow)
+ protected
+ public
+  Constructor Create(ST2829C:TST2829C);
+end;
 
 //----------------------------------------------------
 
@@ -109,6 +123,12 @@ TST2829C_BiasVoltageShow=class(TST2829C_DoubleParameterShow)
   Constructor Create(ST2829C:TST2829C);
 end;
 
+TST2829C_BiasCurrentShow=class(TST2829C_DoubleParameterShow)
+ protected
+ public
+  Constructor Create(ST2829C:TST2829C);
+end;
+
 //----------------------------------------------------------------
 TST2829C_AverTimesShow=class(TST2829C_IntegerParameterShow)
  protected
@@ -116,7 +136,11 @@ TST2829C_AverTimesShow=class(TST2829C_IntegerParameterShow)
   Constructor Create(ST2829C:TST2829C);
 end;
 
-
+TST2829C_DelayTimeShow=class(TST2829C_IntegerParameterShow)
+ protected
+ public
+  Constructor Create(ST2829C:TST2829C);
+end;
 
 
 implementation
@@ -132,7 +156,9 @@ begin
     st_aFreqMeas:Result:=(fSCPInew as TST2829C).FreqMeas;
     st_aVMeas:Result:=(fSCPInew as TST2829C).VrmsMeas;
     st_aIMeas:Result:=(fSCPInew as TST2829C).IrmsMeas;
-    st_aBiasVal:Result:=(fSCPInew as TST2829C).BiasValue;
+    st_aBiasVol:Result:=(fSCPInew as TST2829C).BiasVoltageValue;
+    st_aBiasCur:Result:=(fSCPInew as TST2829C).BiasCurrentValue;
+
     else Result:=-1;
   end;
 end;
@@ -144,6 +170,8 @@ begin
   case TST2829CAction(fActionType) of
     st_aALE:Result:=(fSCPInew as TST2829C).AutoLevelControlEnable;
     st_aBiasEn:Result:=(fSCPInew as TST2829C).BiasEnable;
+    st_aVrmsToMeas:Result:=(fSCPInew as TST2829C).VrmsToMeasure;
+    st_aIrmsToMeas:Result:=(fSCPInew as TST2829C).IrmsToMeasure;
     else Result:=False;
   end;
 end;
@@ -201,7 +229,7 @@ end;
 
 constructor TST2829C_BiasVoltageShow.Create(ST2829C: TST2829C);
 begin
- inherited Create(ST2829C,Pointer(st_aBiasVal),
+ inherited Create(ST2829C,Pointer(st_aBiasVol),
                  'Bias, V:',0,7);
  SetLimits(ST2829C_BiasVoltageLimits);
  HookParameterClick:=ObjectToSetting;
@@ -215,6 +243,7 @@ begin
     st_aOutImp:Result:=ord((fSCPInew as TST2829C).OutputImpedance);
     st_aSetMeasT:Result:=ord((fSCPInew as TST2829C).MeasureType);
     st_aSpeedMeas:Result:=ord((fSCPInew as TST2829C).MeasureSpeed);
+    st_aTrigSource:Result:=ord((fSCPInew as TST2829C).TrigSource);
     else Result:=255;
   end;
 end;
@@ -226,6 +255,8 @@ begin
   st_aSetMeasT:Result:=ord(High(TST2829C_MeasureType));
   st_aRange:Result:=ord(High(TST2829C_Range));
   st_aSpeedMeas:Result:=ord(High(TST2829C_MeasureSpeed));
+  st_aTrigSource:Result:=ord(High(TST2829C_TrigerSource));
+
   else Result:=0;
  end;
 end;
@@ -237,6 +268,7 @@ begin
   st_aSetMeasT:Result:=ST2829C_MeasureTypeLabels[TST2829C_MeasureType(i)];
   st_aRange:Result:=ST2829C_RangeLabels[TST2829C_Range(i)];
   st_aSpeedMeas:Result:=ST2829C_MeasureSpeedCommands[TST2829C_MeasureSpeed(i)];
+  st_aTrigSource:Result:=ST2829C_TrigerSourceLabels[TST2829C_TrigerSource(i)];
   else Result:='';
  end;
 end;
@@ -279,6 +311,7 @@ function TST2829C_IntegerParameterShow.FuncForObjectToSetting: integer;
 begin
   case TST2829CAction(fActionType) of
     st_aAverTimes:Result:=(fSCPInew as TST2829C).AverTimes;
+    st_aTrigDelay:Result:=(fSCPInew as TST2829C).DelayTime;
     else Result:=-1;
   end;
 end;
@@ -290,6 +323,47 @@ begin
  inherited Create(ST2829C,Pointer(st_aAverTimes),
                  'Average Count:',1);
  SetLimits(ST2829C_AverTimes);
+end;
+
+{ TST2829C_VrmsToMeasureShow }
+
+constructor TST2829C_VrmsToMeasureShow.Create(ST2829C: TST2829C);
+begin
+  inherited Create(ST2829C,Pointer(st_aVrmsToMeas),'To measure Vrms');
+end;
+
+{ TST2829C_IrmsToMeasureShow }
+
+constructor TST2829C_IrmsToMeasureShow.Create(ST2829C: TST2829C);
+begin
+  inherited Create(ST2829C,Pointer(st_aIrmsToMeas),'To measure Irms');
+end;
+
+{ TST2829C_BiasCurrentShow }
+
+constructor TST2829C_BiasCurrentShow.Create(ST2829C: TST2829C);
+begin
+ inherited Create(ST2829C,Pointer(st_aBiasCur),
+                 'Bias, mA:',0,7);
+ SetLimits(ST2829C_BiasCurrentLimits);
+ HookParameterClick:=ObjectToSetting;
+end;
+
+{ TST2829C_TrigerSourceShow }
+
+constructor TST2829C_TrigerSourceShow.Create(ST2829C: TST2829C);
+begin
+  inherited Create(ST2829C,Pointer(st_aTrigSource),
+                     'Triger Source:', True);
+end;
+
+{ TST2829C_DelayTimeShow }
+
+constructor TST2829C_DelayTimeShow.Create(ST2829C: TST2829C);
+begin
+ inherited Create(ST2829C,Pointer(st_aTrigDelay),
+                 'Delay Time, ms:',0);
+ SetLimits(ST2829C_DelayTime);
 end;
 
 end.
