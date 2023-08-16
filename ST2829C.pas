@@ -3,7 +3,7 @@ unit ST2829C;
 interface
 
 uses
-  SCPI, CPort, RS232deviceNew, ST2829CConst;
+  SCPI, CPort, RS232deviceNew, ST2829CConst, ExtCtrls, OlegTypePart2;
 
 type
 
@@ -25,6 +25,9 @@ type
    procedure CreateDataSubject(CP:TComPort);override;
   public
  end;
+
+  TST2829_MeterSecondary=class;
+  TST2829_MeterPrimary=class;
 
   TST2829C=class(TSCPInew)
   private
@@ -62,6 +65,8 @@ type
    fSecondaryData:double;
    fVrmsData:double;
    fIrmsData:double;
+   fMeterSec:TST2829_MeterSecondary;
+   fMeterPrim:TST2829_MeterPrimary;
 
 //   fRS232:TRS232MeterDeviceSingle;
 //   fComPort:TComPort;
@@ -154,24 +159,12 @@ type
    property DataSecondary:double read fSecondaryData;
    property DataVrms:double read fVrmsData;
    property DataIrms:double read fIrmsData;
-
-
-//   property DataVector:TVector read fDataVector;
-//   property DataTimeVector:TVector read fDataTimeVector;
-//   property MeasureFunction:TKeitley_Measure read GetMeasureFunctionValue;
-//   property Terminal:TKeitley_OutputTerminals read fTerminal write fTerminal;
-//   property Buffer:TKeitley_Buffer read fBuffer;
-//   property Count:integer read fCount write SetCountNumber;
-//   property TimeValue:double read fTimeValue;
-//   property Meter:TKeitley_Meter read fMeter;
-//   property DisplayState:TKeitley_DisplayState read fDisplayState;
-//   property TrigerState:TKeitley_TriggerState read fTrigerState;
-//     Constructor Create(CP:TComPort;Nm:string='ST2829C');
-
+   property MeterPrim:TST2829_MeterPrimary read fMeterPrim;
+   property MeterSecond:TST2829_MeterSecondary read fMeterSec;
    Constructor Create();
+   destructor Destroy; override;
    function GetPattern(Action:Pointer):boolean;override;
    procedure SetPattern(Ps: array of Pointer);override;
-//   procedure SetPattern(Action:TST2829CAction;Ps:array of Pointer);overload;
    procedure ResetSetting();
    procedure MyTraining();
    procedure Trig();
@@ -248,166 +241,55 @@ type
    function  GetData():boolean;
    function  GetDataVrms():boolean;
    function  GetDataIrms():boolean;
-
-//   procedure SetMeasureFunction(MeasureFunc:TKeitley_Measure=kt_mCurDC);virtual;
-//
-//   function GetMeasureFunction():boolean;virtual;
-//    {повертає тип вимірювання, обробка залежить
-//    від типу приладу}
-//   procedure SetDisplayDigitsNumber(Measure:TKeitley_Measure; Number:TKeitleyDisplayDigitsNumber);overload;virtual;
-//   {кількість цифр, що відображаються на екрані,
-//     на точність самого вимірювання не впливає}
-//   procedure SetDisplayDigitsNumber(Number:TKeitleyDisplayDigitsNumber);overload;virtual;
-//   function GetDisplayDigitsNumber(Measure:TKeitley_Measure):boolean;overload;virtual;
-//   function GetDisplayDigitsNumber():boolean;overload;virtual;
-//   procedure BufferCreate();overload;
-//   procedure BufferCreate(Name:string);overload;
-//   procedure BufferCreate(Name:string;Size:integer);overload;
-//   procedure BufferCreate(Name:string;Size:integer;Style:TKt2450_BufferStyle);overload;virtual;
-//   procedure BufferCreate(Style:TKt2450_BufferStyle);overload;virtual;
-//   procedure BufferDelete();overload;
-//   procedure BufferDelete(Name:string);overload;
-//   procedure BufferClear();overload;
-//   procedure BufferClear(BufName:string);overload;
-////
-//   procedure BufferReSize(NewSize:integer);overload;
-//   {змінює можливу кількість записів у буфері,
-//   при цьому він очищується}
-//   procedure BufferReSize(BufName:string;NewSize:integer);overload;
-//   function BufferGetSize():integer;overload;
-//   function BufferGetSize(BufName:string):integer;overload;
-//   function BufferGetReadingsNumber(BufName:string=KeitleyDefBuffer):integer;
-//   {повертає існуючу кількість записів у буфері}
-//   function BufferGetStartEndIndex(BufName:string=KeitleyDefBuffer):boolean;
-//   {повертає початковий та кінцевий індекси існуючих
-//   в буфері записів, якщо все добре вони знаходяться
-//   в Buffer.StartIndex та Buffer.EndIndex}
-//
-//   procedure BufferSetFillMode(FillMode:TKeitley_BufferFillMode);overload;
-//   procedure BufferSetFillMode(BufName:string;FillMode:TKeitley_BufferFillMode);overload;
-//   function BufferGetFillMode():boolean;overload;
-//   function BufferGetFillMode(BufName:string):boolean;overload;
-//
-//   Procedure BufferLastDataSimple();overload;
-//   {без вимірювання видобувається результат останнього
-//   вимірювання, що зберігається у defbuffer1,
-//   розміщується в fDevice.Value}
-//   Procedure BufferLastDataSimple(BufName:string);overload;
-//   {отримання останнього збереженого результату
-//   вимірювань з буфера BufName}
-//   Procedure BufferLastDataExtended(DataType:TKeitley_ReturnedData=kt_rd_MS;
-//                            BufName:string=KeitleyDefBuffer);
-//   {як попередні, проте повертає більше даних
-//   (див. TKeitley_ReturnedData) щодо останнього виміру}
-//   Procedure BufferDataArrayExtended(SIndex,EIndex:integer;
-//                     DataType:TKeitley_ReturnedData=kt_rd_MS;
-//                     BufName:string=KeitleyDefBuffer);
-//   {зчитування з буферу BufName результатів, збережених за
-//   індексами в діапазоні від SIndex до EIndex,
-//   що саме повертається залежить від DataType,
-//   результати вимірювань в DataVector.Y,
-//   значення джерела в DataVector.Х,
-//   якщо берем час вимірювання, то він в  DataTimeVector.X,
-//   а результат виміру в  DataTimeVector.Y,
-//   якщо DataType=kt_rd_M, то вимір і в  DataVector.Х}
-//   {треба оцінити час передачі}
-//
-//   procedure SetCount(Cnt:integer);
-//   {кількість повторних вимірювань, коли прилад просять поміряти}
-//   function GetCount:boolean;
-//   procedure SetDisplayBrightness(State:TKeitley_DisplayState);
-//   function GetDisplayBrightness():boolean;
-////
-//   procedure Beep(Freq:word=600;Duration:double=0.1);
-//   {звук частотою Freq Гц протягом Duration секунд}
-//
-//   procedure ConfigMeasureCreate(ListName:string=MyMeasList);
-//   procedure ConfigMeasureDelete(ListName:string=MyMeasList;ItemIndex:word=0);
-//   {якщо ItemIndex=0, то видаляється весь список}
-//   procedure ConfigMeasureRecall(ListName:string=MyMeasList;ItemIndex:word=1);
-//   {завантаження налаштувань, записаних в ItemIndex;
-//   якщо потрібно викликати налаштування і для джерела,
-//   і для вимірювача - спочатку завантажувати треба для джерела}
-//   procedure ConfigMeasureStore(ListName:string=MyMeasList;ItemIndex:word=0);
-//   {запис налаштувань у список;
-//   якщо ItemIndex=0, то записується у кінець списку}
-//
-//   Procedure GetParametersFromDevice;virtual;
-////
-//   Procedure MeasureSimple();overload;virtual;
-//   {проводиться вимірювання стільки разів, скільки
-//   вказано в Count, всі результати розміщуються
-//   в defbuffer1, повертається результат останнього виміру;
-//   вимірюється та функція, яка зараз встановлена на приладі,
-//   можна зробити, щоб вимірювалося щось інше, але я не
-//   схотів гратися з такою не дуже реальною на перший погляд
-//   задачею}
-//   Procedure MeasureSimple(BufName:string);overload;virtual;
-//   {результати записуються у буфер BufName
-//   і з нього ж зчитується останній результат}
-//   Procedure MeasureExtended(DataType:TKeitley_ReturnedData=kt_rd_MS;
-//                           BufName:string=KeitleyDefBuffer);
-//   {як попередні, проте повертає більше даних
-//   (див. TKt2450_ReturnedData) щодо останнього виміру}
-////
-////
-//   Procedure Init;
-//   Procedure Abort;
-//   Procedure Wait;
-//   Procedure TrigPause;
-//   Procedure TrigResume;
-//   Procedure InitWait;
-//   Procedure TrigEventGenerate;
-//   {generates a trigger event }
-//
-//   Procedure TrigNewCreate;
-//   {any blocks that have been defined in the trigger model
-//   are cleared so the trigger model has no blocks defined}
-//   Procedure TrigBufferClear(BufName:string=KeitleyDefBuffer);
-//   Procedure TrigConfigListRecall(ListName:string;Index:integer=1);
-//   Procedure TrigConfigListNext(ListName:string);overload;
-//   Procedure TrigConfigListNext(ListName1,ListName2:string);overload;
-//   Procedure TrigAlwaysTransition(TransitionBlockNumber:word);
-//   Procedure TrigDelay(DelayTime:double);
-//   Procedure TrigMeasure(BufName:string=KeitleyDefBuffer;Count:word=1);
-//   {при досягненні цього блоку прилад вимірює Count разів,
-//   після чого виконується наступний блок;
-//   Count=0 може використовуватися для зупинки нескінченних вимірювань
-//   - див. далі;
-//   результати заносяться в BufName}
-//   Procedure TrigMeasureInf(BufName:string=KeitleyDefBuffer);
-//   {при досягненні цього блоку прилад починає
-//   виміри і виконується наступний блок; виміри продовжуються доти,
-//   поки не зустрінеться новий вимірювальний блок чи не буде кінець моделі}
-//   Procedure TrigMeasureCountDevice(BufName:string=KeitleyDefBuffer);
-//   {при досягненні цього блоку прилад вимірює стільки разів, скільки
-//   передбачено попередньо встановленою властивістю Count,
-//   після чого виконується наступний блок}
-//
-//   Procedure TrigMeasureResultTransition(LimitType:TKeitley_TrigLimitType;
-//                    LimA,LimB:double;TransitionBlockNumber:word;
-//                    MeasureBlockNumber:word=0);
-//   {якщо вимірювання задовольняє умові, яка передбачена в LimitType,
-//   то відбувається перехід на блок TransitionBlockNumber;
-//   при MeasureBlockNumber=0 береться до уваги останнє
-//   вимірювання, інакше те, яке відбулося в блоці з номером MeasureBlockNumber;
-//   якщо задати LimA>LimB, то прилад автоматично їх поміняє місцями
-//   умова виконується, якщо результат (MeasureResult)
-//   при kt_tlt_above: MeasureResult > LimB
-//   kt_tlt_below: MeasureResult < LimA
-//   kt_tlt_inside: LimA < MeasureResult < LimB  (про <= не знаю, треба експерементувати)
-//   kt_tlt_outside:  MeasureResult не належить [LimA, LimB]
-//   }
-//   Procedure TrigCounterTransition(TargetCount,TransitionBlockNumber:word);
-//   {якщо кількість приходів на цей блок менша TargetCount, то відбувається
-//   перехід на блок TransitionBlockNumber}
-//   Procedure TrigEventTransition(TransitionBlockNumber:word;
-//                                 EventType:TKeitley_TriggerEvents=kt_te_comm;
-//                                 EventNumber:word=1);
-//   {якщо до того, як дійшли на цей блок, відбулася подія EventType,
-//   то відбувається перехід на TransitionBlockNumber}
-//   function GetTrigerState:boolean;
  end;
+
+
+TST2829_Measurement=class(TMeasurementSimple)
+ private
+ protected
+  fParentModule: TST2829C;
+  function GetValueFromDevice:double;virtual;
+ public
+  property ParentModule: TST2829C read fParentModule;
+  constructor Create(ST2829C:TST2829C);
+  function GetData:double;override;
+end;
+
+TST2829_MeterSecondary=class(TST2829_Measurement)
+ protected
+  function GetValueFromDevice:double;override;
+ public
+  constructor Create(ST2829C:TST2829C);
+end;
+
+TST2829_MeterPrimary=class(TST2829_Measurement)
+ private
+  fTimer:TTimer;
+  fValue2:double;
+ protected
+  function GetValueFromDevice:double;override;
+  function GetMeasureModeLabel():string;
+  function GetMeasureModeLabelTwo():string;
+ public
+  property Timer:TTimer read fTimer;
+  property ValueTwo:double read fValue2;
+  property MeasureModeLabel:string read GetMeasureModeLabel;
+  property MeasureModeLabelTwo:string read GetMeasureModeLabel;
+  constructor Create(ST2829C:TST2829C);
+  destructor Destroy; override;
+end;
+
+TST2829SweepParameter=class(TNamedInterfacedObject)
+ private
+  fSweepType:TST2829C_SweepParametr;
+  fStartValue:double;
+  fFinishValue:double;
+  fPointCount:integer;
+  fLinearStep:boolean;
+ public
+  property SweepType:TST2829C_SweepParametr read fSweepType;
+  constructor Create(SweepType:TST2829C_SweepParametr);
+end;
 
 var
   ST_2829C:TST2829C;
@@ -497,6 +379,8 @@ constructor TST2829C.Create();
 begin
 // showmessage('TST2829C Create');
  inherited Create('ST2829C');
+ fMeterSec:=TST2829_MeterSecondary.Create(Self);
+ fMeterPrim:=TST2829_MeterPrimary.Create(Self)
 end;
 
 
@@ -524,9 +408,15 @@ begin
  fIrmsData:=0;
 end;
 
+destructor TST2829C.Destroy;
+begin
+  FreeAndNil(fMeterSec);
+  FreeAndNil(fMeterPrim);
+  inherited;
+end;
+
 procedure TST2829C.DeviceCreate(Nm: string);
 begin
-//  fDevice:=TST2829CDevice.Create(Self,fComPort,Nm);
   fDevice:=TST2829CDevice.Create(Self,Nm);
 end;
 
@@ -1266,7 +1156,7 @@ end;
 
 procedure TST2829C.SetIrmsMeas(const Value: double);
 begin
- fIrmsMeas:=NumberMap(Value,ST2829C_ImrsMeasLimits);
+ fIrmsMeas:=NumberMap(Value,ST2829C_IrmsMeasLimits);
  if not(ValueInMap(fIrmsMeas,ST2829C_ImrsMeasLimitsForAL))
    then fAutoLevelControlEnable:=False;
  fIrmsMeas:=ValueWithMinResolution(fIrmsMeas,1e-4);
@@ -1357,7 +1247,7 @@ begin
                    end;
     st_aIrmsToMeas:begin
                     IrmsToMeasure:=PBoolean(Ps[1])^;
-                    OnOffFromBool(VrmsToMeasure);
+                    OnOffFromBool(IrmsToMeasure);
                    end;
     st_aSpeedMeas:begin
                   MeasureSpeed:=TST2829C_MeasureSpeed(Ps[1]);
@@ -1462,7 +1352,7 @@ end;
 
 procedure TST2829C.SetVrmsMeas(const Value: double);
 begin
- fVrmsMeas:=NumberMap(Value,ST2829C_VmrsMeasLimits);
+ fVrmsMeas:=NumberMap(Value,ST2829C_VrmsMeasLimits);
  if not(ValueInMap(fVrmsMeas,ST2829C_VmrsMeasLimitsForAL))
    then fAutoLevelControlEnable:=False;
  fVrmsMeas:=ValueWithMinResolution(fVrmsMeas,1e-3);
@@ -1583,6 +1473,136 @@ begin
 // fComPort.Parity.Bits:=prNone;
 end;
 
+
+{ TST2829_Measurement }
+
+constructor TST2829_Measurement.Create(ST2829C: TST2829C);
+begin
+ inherited Create;
+ fParentModule:=ST2829C;
+end;
+
+function TST2829_Measurement.GetData: double;
+begin
+ fParentModule.Trig;
+ fValue:=GetValueFromDevice;
+ Result:=fValue;
+ fNewData:=fParentModule.Device.NewData;
+end;
+
+function TST2829_Measurement.GetValueFromDevice: double;
+begin
+ Result:=fParentModule.DataPrimary;
+end;
+
+{ TST2829_MeterSecond }
+
+constructor TST2829_MeterSecondary.Create(ST2829C: TST2829C);
+begin
+ inherited Create(ST2829C);
+ fName:='ST2829Secondary';
+end;
+
+function TST2829_MeterSecondary.GetValueFromDevice: double;
+begin
+ Result:=fParentModule.DataSecondary;
+end;
+
+{ TST2829_MeterPrimary }
+
+constructor TST2829_MeterPrimary.Create(ST2829C: TST2829C);
+begin
+ fTimer:=TTimer.Create(nil);
+ fTimer.Enabled:=False;
+ fTimer.Interval:=2000;
+ inherited Create(ST2829C);
+ fName:='ST2829Primary';
+end;
+
+destructor TST2829_MeterPrimary.Destroy;
+begin
+  FreeAndNil(fTimer);
+  inherited;
+end;
+
+function TST2829_MeterPrimary.GetMeasureModeLabel: string;
+begin
+ case fParentModule.MeasureType of
+  st_mtCpD,
+  st_mtCpQ,
+  st_mtCpG,
+  st_mtCpRp,
+  st_mtCsD,
+  st_mtCsQ,
+  st_mtCsRs:Result:=' F';
+  st_mtLpQ,
+  st_mtLpD,
+  st_mtLpG,
+  st_mtLpRp,
+  st_mLpZ,
+  st_mtLsD,
+  st_mtLsQ,
+  st_mtLsRs,
+  st_mLsZ:Result:=' H';
+  st_mtDCR,
+  st_mtRX,
+  st_mRpQ,
+  st_mRsQ,
+  st_mtZTd,
+  st_mtZTr,
+  st_mZQ:Result:=' Ohm';
+  st_mtGB,
+  st_mtYTd,
+  st_mtYTr:Result:=' S';
+
+ end;
+end;
+
+function TST2829_MeterPrimary.GetMeasureModeLabelTwo: string;
+begin
+ case fParentModule.MeasureType of
+  st_mtLsD,
+  st_mtCpD,
+  st_mtCsD,
+  st_mtLpD,
+  st_mtCpQ,
+  st_mtCsQ,
+  st_mtLpQ,
+  st_mtLsQ,
+  st_mRpQ,
+  st_mRsQ,
+  st_mZQ:Result:=' ';
+  st_mtCpG,
+  st_mtLpG:Result:=' S';
+  st_mtCpRp,
+  st_mtCsRs,
+  st_mtLpRp,
+  st_mtLsRs,
+  st_mLpZ,
+  st_mLsZ,
+  st_mtRX:Result:=' Ohm';
+  st_mtZTd,
+  st_mtYTd:Result:=' deg';
+  st_mtZTr,
+  st_mtYTr:Result:=' rad';
+  st_mtGB:Result:=' ??';
+  st_mtDCR:Result:='---';
+ end;
+end;
+
+function TST2829_MeterPrimary.GetValueFromDevice: double;
+begin
+ fValue2:=fParentModule.DataSecondary;
+ Result:=fParentModule.DataPrimary;
+end;
+
+{ TST2829SweepParameter }
+
+constructor TST2829SweepParameter.Create(SweepType: TST2829C_SweepParametr);
+begin
+ inherited Create;
+ fSweepType:=SweepType;
+end;
 
 initialization
   ST_2829C := TST2829C.Create();

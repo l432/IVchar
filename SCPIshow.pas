@@ -85,7 +85,6 @@ TSCPI_ParameterShowBase=class
   Constructor Create(SCPInew:TSCPInew;ActionType:Pointer);
   procedure ObjectToSetting;virtual;abstract;
   procedure GetDataFromDevice;virtual;//abstract;
-//  procedure GetDataFromDeviceAndToSetting;
   procedure ParentToElements(Parent:TWinControl);virtual;abstract;
 end;
 
@@ -98,7 +97,7 @@ TGBwithControlElementsAndParamShow=class(TGBwithControlElements)
   procedure DestroyControls();override;
   procedure DesignElements;override;
  public
-  procedure ObjectToSetting;//virtual;
+  procedure ObjectToSetting;virtual;
   procedure GetDataFromDevice;//virtual;
   procedure GetDataFromDeviceAndToSetting;
 end;
@@ -151,7 +150,7 @@ TSCPI_StringParameterShow=class(TSCPI_ParameterShow)
  private
   procedure CreateHeader;
   function GetData: integer;
-  procedure SetDat(const Value: integer);
+  procedure SetData(const Value: integer);
  protected
   fSettingsShowSL:TStringList;
   procedure SettingsShowSLFilling();virtual;
@@ -161,7 +160,7 @@ TSCPI_StringParameterShow=class(TSCPI_ParameterShow)
   function StrForSLFilling(i:byte):string;virtual;abstract;
   function FuncForObjectToSetting:byte;virtual;abstract;
  public
-  property Data:integer read GetData write SetDat;
+  property Data:integer read GetData write SetData;
   Constructor Create(SCPInew:TSCPInew;ActionType:Pointer;
                      ParametrCaption: string; LabelIsNeeded:boolean);
   destructor Destroy;override;
@@ -174,14 +173,14 @@ TSCPI_IntegerParameterShow=class(TSCPI_ParameterShow)
 //  fSTD:TStaticText;
 //  fSTC:TLabel;
   function GetData: integer;
-  procedure SetDat(const Value: integer);
+  procedure SetData(const Value: integer);
  protected
   function FuncForObjectToSetting:integer;virtual;abstract;
   procedure Click();override;
  public
 //  property STData:TStaticText read fSTD;
 //  property LCaption:TLabel read fSTC;
-  property Data:integer read GetData write SetDat;
+  property Data:integer read GetData write SetData;
   Constructor Create(SCPInew:TSCPInew;ActionType:Pointer;
                       ParametrCaption:string;
                       InitValue:integer);
@@ -192,12 +191,12 @@ end;
 TSCPI_DoubleParameterShow=class(TSCPI_ParameterShow)
  private
   function GetData: double;
-  procedure SetDat(const Value: double);
+  procedure SetData(const Value: double);
  protected
   function FuncForObjectToSetting:double;virtual;abstract;
   procedure Click();override;
  public
-  property Data:double read GetData write SetDat;
+  property Data:double read GetData write SetData;
   Constructor Create(SCPInew:TSCPInew;ActionType:Pointer;
                       ParametrCaption:string;
                       InitValue:double;
@@ -215,7 +214,8 @@ Procedure DesignSettingPanel(P:TPanel;Caption:string);
 implementation
 
 uses
-  SysUtils, CPort, Forms, RS232deviceNew, Dialogs, Graphics, OlegFunction;
+  SysUtils, CPort, Forms, RS232deviceNew, Dialogs, Graphics, OlegFunction, 
+  Buttons;
 
 constructor TRS232DeviceNew_Show.Create(Device: TRS232DeviceNew; GB: TGroupBox);
 begin
@@ -315,6 +315,14 @@ begin
     L:=TLabel.Create(Control.Parent);
     L.Parent:=Control.Parent;
     Control.Width:=L.Canvas.TextWidth((Control as TButton).Caption)+17;
+    FreeAndNil(L);
+    Exit;
+  end;
+ if (Control is TSpeedButton) then
+  begin
+    L:=TLabel.Create(Control.Parent);
+    L.Parent:=Control.Parent;
+    Control.Width:=L.Canvas.TextWidth((Control as TSpeedButton).Caption)+17;
     FreeAndNil(L);
     Exit;
   end;
@@ -612,7 +620,7 @@ begin
  Data:=FuncForObjectToSetting();
 end;
 
-procedure TSCPI_IntegerParameterShow.SetDat(const Value: integer);
+procedure TSCPI_IntegerParameterShow.SetData(const Value: integer);
 begin
   (fParamShow as TIntegerParameterShow).Data:=Value;
 end;
@@ -659,7 +667,7 @@ begin
  Data:=FuncForObjectToSetting;
 end;
 
-procedure TSCPI_StringParameterShow.SetDat(const Value: integer);
+procedure TSCPI_StringParameterShow.SetData(const Value: integer);
 begin
  (fParamShow as TStringParameterShow).Data:=Value;
 end;
@@ -704,7 +712,7 @@ begin
   Data:=FuncForObjectToSetting;
 end;
 
-procedure TSCPI_DoubleParameterShow.SetDat(const Value: double);
+procedure TSCPI_DoubleParameterShow.SetData(const Value: double);
 begin
  (fParamShow as TDoubleParameterShow).Data:=Value;
 end;

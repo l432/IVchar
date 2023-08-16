@@ -181,6 +181,7 @@ end;
 constructor TST2829C_AutoLevelShow.Create(ST2829C: TST2829C);
 begin
  inherited Create(ST2829C,Pointer(st_aALE),'Auto Level Control');
+ HookParameterClick:=ObjectToSetting;
 end;
 
 { TST2829C_FreqMeasShow }
@@ -188,7 +189,7 @@ end;
 constructor TST2829C_FreqMeasShow.Create(ST2829C: TST2829C);
 begin
  inherited Create(ST2829C,Pointer(st_aFreqMeas),
-                 'Meas Freq, Hz:',1000,10);
+                 'Freq, Hz:',1000,10);
  SetLimits(ST2829C_FreqMeasLimits);
  HookParameterClick:=ObjectToSetting;
 end;
@@ -203,8 +204,8 @@ end;
 constructor TST2829C_VMeasShow.Create(ST2829C: TST2829C);
 begin
  inherited Create(ST2829C,Pointer(st_aVMeas),
-                 'Meas Vmrs, V:',0.01,8);
- SetLimits(ST2829C_VmrsMeasLimits);
+                 'Vrms, V:',0.01,8);
+ SetLimits(ST2829C_VrmsMeasLimits);
 // HookParameterClick:=ObjectToSetting;
 end;
 
@@ -213,8 +214,8 @@ end;
 constructor TST2829C_IMeasShow.Create(ST2829C: TST2829C);
 begin
  inherited Create(ST2829C,Pointer(st_aIMeas),
-                 'Meas Imrs, mA:',0.1,7);
- SetLimits(ST2829C_ImrsMeasLimits);
+                 'Irms, mA:',0.1,7);
+ SetLimits(ST2829C_IrmsMeasLimits);
 // HookParameterClick:=ObjectToSetting;
 end;
 
@@ -232,7 +233,7 @@ begin
  inherited Create(ST2829C,Pointer(st_aBiasVol),
                  'Bias, V:',0,7);
  SetLimits(ST2829C_BiasVoltageLimits);
- HookParameterClick:=ObjectToSetting;
+// HookParameterClick:=ObjectToSetting;
 end;
 
 { TST2829C_StringParameterShow }
@@ -329,14 +330,14 @@ end;
 
 constructor TST2829C_VrmsToMeasureShow.Create(ST2829C: TST2829C);
 begin
-  inherited Create(ST2829C,Pointer(st_aVrmsToMeas),'To measure Vrms');
+  inherited Create(ST2829C,Pointer(st_aVrmsToMeas),'Enable Vrms measuring');
 end;
 
 { TST2829C_IrmsToMeasureShow }
 
 constructor TST2829C_IrmsToMeasureShow.Create(ST2829C: TST2829C);
 begin
-  inherited Create(ST2829C,Pointer(st_aIrmsToMeas),'To measure Irms');
+  inherited Create(ST2829C,Pointer(st_aIrmsToMeas),'Enable Irms measuring');
 end;
 
 { TST2829C_BiasCurrentShow }
@@ -346,7 +347,7 @@ begin
  inherited Create(ST2829C,Pointer(st_aBiasCur),
                  'Bias, mA:',0,7);
  SetLimits(ST2829C_BiasCurrentLimits);
- HookParameterClick:=ObjectToSetting;
+// HookParameterClick:=ObjectToSetting;
 end;
 
 { TST2829C_TrigerSourceShow }

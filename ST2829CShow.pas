@@ -4,7 +4,7 @@ interface
 
 uses
   OlegTypePart2, ST2829C, StdCtrls, SCPIshow, ExtCtrls, ArduinoDeviceNew, 
-  IniFiles, ST2829CParamShow;
+  IniFiles, ST2829CParamShow, Buttons, Measurement;
 
 type
  TST2829C_Show=class;
@@ -65,31 +65,83 @@ end;
 
  TST2829CMeasureParamShow=class(TST2829CElementAndParamShow)
   private
+   fBVrmsNeasuring:TButton;
+   fBIrmsNeasuring:TButton;
+   fLVrmsData:TLabel;
+   fLIrmsData:TLabel;
+   procedure VrmsDataToLabel;
+   procedure IrmsDataToLabel;
+  protected
+   procedure CreateElements;override;
+   procedure CreateControls;override;
+   procedure DesignElements;override;
+   procedure VMeasShowClick;
+   procedure IMeasShowClick;
+   procedure VrmsToMeasureClick;
+   procedure IrmsToMeasureClick;
+   procedure rmsMeasuringClick(Sender:TObject);
+  public
+   AutoLevelShow:TST2829C_AutoLevelShow;
+   FreqMeasShow:TST2829C_FreqMeasShow;
+   VMeasShow:TST2829C_VMeasShow;
+   IMeasShow:TST2829C_IMeasShow;
+   VrmsToMeasureShow:TST2829C_VrmsToMeasureShow;
+   IrmsToMeasureShow:TST2829C_IrmsToMeasureShow;
+   procedure ObjectToSetting;override;
+ end;
+
+ TST2829CBiasParamShow=class(TST2829CElementAndParamShow)
+  private
+   fSBOnOff:TSpeedButton;
+   procedure OnOffSpeedButtonClick(Sender: TObject);
+  protected
+   procedure CreateElements;override;
+   procedure CreateControls;override;
+   procedure DesignElements;override;
+   procedure BiasVoltageShowClick;
+   procedure BiasCurrentShowClick;
+  public
+   BiasVoltageShow:TST2829C_BiasVoltageShow;
+   BiasCurrentShow:TST2829C_BiasCurrentShow;
+   procedure ObjectToSetting;override;
+   procedure BiasOutPutFromDevice();
+ end;
+
+ TST2829CSetupParamShow=class(TST2829CElementAndParamShow)
+  private
+   fBTrig:TButton;
+   procedure BTrigClick(Sender:TObject);
   protected
    procedure CreateElements;override;
    procedure CreateControls;override;
    procedure DesignElements;override;
   public
    OutputImpedanceShow:TST2829C_OutputImpedanceShow;
-   AutoLevelShow:TST2829C_AutoLevelShow;
-   BiasEnableShow:TST2829C_BiasEnableShow;
-   FreqMeasShow:TST2829C_FreqMeasShow;
-   VMeasShow:TST2829C_VMeasShow;
-   IMeasShow:TST2829C_IMeasShow;
-   BiasVoltageShow:TST2829C_BiasVoltageShow;
-   BiasCurrentShow:TST2829C_BiasCurrentShow;
    RangeShow:TST2829C_RangeShow;
    MeasureSpeedShow:TST2829C_MeasureSpeedShow;
    AverTimesShow:TST2829C_AverTimesShow;
-   VrmsToMeasureShow:TST2829C_VrmsToMeasureShow;
-   IrmsToMeasureShow:TST2829C_IrmsToMeasureShow;
    TrigerSourceShow:TST2829C_TrigerSourceShow;
    DelayTimeShow:TST2829C_DelayTimeShow;
-//   destructor Destroy;override;
+//   procedure ObjectToSetting;override;
  end;
 
 
-//  TST2829C_Show=class(TSimpleFreeAndAiniObject)
+TST2829C_MeterShow=class(TMeasurementShowSimple)
+  private
+   fST2829_MeterPrimary:TST2829_MeterPrimary;
+   fDataLabel2,fUnitLabel2:TLabel;
+  protected
+   function UnitModeLabel():string;override;
+  public
+   Constructor Create(ST2829_MeterPrimary:TST2829_MeterPrimary;
+                      DL,UL:TLabel;
+                      MB:TButton;
+                      AB:TSpeedButton;
+                      DL2,UL2:TLabel
+                      );
+  procedure MetterDataShow();override;
+end;
+
   TST2829C_Show=class(TRS232DeviceNew_Show)
   private
    fST2829C:TST2829C;
@@ -99,6 +151,9 @@ end;
 //   procedure TestButtonClick(Sender:TObject);
    fMeasureTypeShow:TST2829C_MeasureTypeShow;
    fMeasureParamShow:TST2829CMeasureParamShow;
+   fBiasParamShow:TST2829CBiasParamShow;
+   fSetupParamShow:TST2829CSetupParamShow;
+   fMeterShow:TST2829C_MeterShow;
    procedure MyTrainButtonClick(Sender:TObject);
   protected
 //   procedure ButtonsTune(Buttons: array of TButton);virtual;
@@ -110,6 +165,10 @@ end;
    property ST2829C:TST2829C read fST2829C;
    Constructor Create(ST2829C:TST2829C;
                       GBs: array of TGroupBox;
+                      DL,UL:TLabel;
+                      MB:TButton;
+                      AB:TSpeedButton;
+                      DL2,UL2:TLabel;
                       B_MyTrain:TButton);
 //                      Buttons:Array of TButton;
 //                      Panels:Array of TPanel;
@@ -127,13 +186,18 @@ var
 implementation
 
 uses
-  OApproxShow, ST2829CConst, SysUtils, RS232deviceNew, Dialogs, Graphics;
+  OApproxShow, ST2829CConst, SysUtils, RS232deviceNew, Dialogs, Graphics, 
+  Classes, OlegType;
 
 { TST2829C_Show }
 
 //constructor TST2829C_Show.Create(ST2829C: TST2829C; ButTest: TButton);
 constructor TST2829C_Show.Create(ST2829C:TST2829C;
                      GBs: array of TGroupBox;
+                     DL,UL:TLabel;
+                     MB:TButton;
+                     AB:TSpeedButton;
+                     DL2,UL2:TLabel;
                      B_MyTrain:TButton);
 begin
  fST2829C:=ST2829C;
@@ -155,6 +219,12 @@ begin
 
  fMeasureParamShow:=TST2829CMeasureParamShow.Create(fST2829C,GBs[2]);
 
+ fBiasParamShow:=TST2829CBiasParamShow.Create(fST2829C,GBs[3]);
+
+ fSetupParamShow:=TST2829CSetupParamShow.Create(fST2829C,GBs[4]);
+
+ fMeterShow:=TST2829C_MeterShow.Create(fST2829C.MeterPrim,DL,UL,MB,AB,DL2,UL2);
+
 end;
 
 //procedure TST2829C_Show.TestButtonClick(Sender: TObject);
@@ -166,6 +236,9 @@ end;
 
 destructor TST2829C_Show.Destroy;
 begin
+  FreeAndNil(fMeterShow);
+  FreeAndNil(fSetupParamShow);
+  FreeAndNil(fBiasParamShow);
   FreeAndNil(fMeasureParamShow);
   FreeAndNil(fMeasureTypeShow);
   FreeAndNil(fSettingShow);
@@ -174,6 +247,8 @@ end;
 
 procedure TST2829C_Show.MyTrainButtonClick(Sender: TObject);
 begin
+ //  showmessage(inttostr(fParent.Height));
+//  showmessage(inttostr(fParent.Width));
  fST2829C.MyTraining();
 end;
 
@@ -181,6 +256,8 @@ procedure TST2829C_Show.ObjectToSetting;
 begin
  fMeasureTypeShow.ObjectToSetting;
  fMeasureParamShow.ObjectToSetting;
+ fBiasParamShow.ObjectToSetting;
+ fSetupParamShow.ObjectToSetting;
 end;
 
 procedure TST2829C_Show.ReadFromIniFile(ConfigFile: TIniFile);
@@ -369,145 +446,179 @@ end;
 
 procedure TST2829CMeasureParamShow.CreateControls;
 begin
-// OutputImpedanceShow:=TST2829C_OutputImpedanceShow.Create(fST2829C);
-// Add(OutputImpedanceShow);
 
-// AutoLevelShow:=TST2829C_AutoLevelShow.Create(fST2829C);
-// Add(AutoLevelShow);
+ FreqMeasShow:=TST2829C_FreqMeasShow.Create(fST2829C);
+ Add(FreqMeasShow);
 
-// BiasEnableShow:=TST2829C_BiasEnableShow.Create(fST2829C);
-// Add(BiasEnableShow);
+ VMeasShow:=TST2829C_VMeasShow.Create(fST2829C);;
+ Add(VMeasShow);
+ VMeasShow.HookParameterClick:=VMeasShowClick;
 
-// FreqMeasShow:=TST2829C_FreqMeasShow.Create(fST2829C);
-// Add(FreqMeasShow);
+ IMeasShow:=TST2829C_IMeasShow.Create(fST2829C);
+ Add(IMeasShow);
+ IMeasShow.HookParameterClick:=IMeasShowClick;
 
-// VMeasShow:=TST2829C_VMeasShow.Create(fST2829C);;
-// Add(VMeasShow);
-//// VMeasShow.HookParameterClick:=
+ AutoLevelShow:=TST2829C_AutoLevelShow.Create(fST2829C);
+ Add(AutoLevelShow);
 
-// IMeasShow:=TST2829C_IMeasShow.Create(fST2829C);
-// Add(IMeasShow);
-//// IMeasShow.HookParameterClick:=
+ VrmsToMeasureShow:=TST2829C_VrmsToMeasureShow.Create(fST2829C);
+ Add(VrmsToMeasureShow);
 
-// BiasVoltageShow:=TST2829C_BiasVoltageShow.Create(fST2829C);
-// Add(BiasVoltageShow);
+ IrmsToMeasureShow:=TST2829C_IrmsToMeasureShow.Create(fST2829C);
+ Add(IrmsToMeasureShow);
 
-// RangeShow:=TST2829C_RangeShow.Create(fST2829C);
-// Add(RangeShow);
+ fBVrmsNeasuring.Tag:=1;
+ fBVrmsNeasuring.OnClick:=rmsMeasuringClick;
 
-// MeasureSpeedShow:=TST2829C_MeasureSpeedShow.Create(fST2829C);
-// Add(MeasureSpeedShow);
-
-// AverTimesShow:=TST2829C_AverTimesShow.Create(fST2829C);
-// Add(AverTimesShow);
-
-// VrmsToMeasureShow:=TST2829C_VrmsToMeasureShow.Create(fST2829C);
-// Add(VrmsToMeasureShow);
-
-
-// IrmsToMeasureShow:=TST2829C_IrmsToMeasureShow.Create(fST2829C);
-// Add(IrmsToMeasureShow);
-
-// BiasCurrentShow:=TST2829C_BiasCurrentShow.Create(fST2829C);
-// Add(BiasCurrentShow);
-
-// TrigerSourceShow:=TST2829C_TrigerSourceShow.Create(fST2829C);
-// Add(TrigerSourceShow);
-
-
- DelayTimeShow:=TST2829C_DelayTimeShow.Create(fST2829C);
- Add(DelayTimeShow);
-
+ fBIrmsNeasuring.Tag:=2;
+ fBIrmsNeasuring.OnClick:=rmsMeasuringClick;
 
 end;
 
 procedure TST2829CMeasureParamShow.CreateElements;
 begin
-
+ fBVrmsNeasuring:=TButton.Create(fParent);
+ Add(fBVrmsNeasuring);
+ fBIrmsNeasuring:=TButton.Create(fParent);
+ Add(fBIrmsNeasuring);
+ fLVrmsData:=TLabel.Create(fParent);
+ Add(fLVrmsData);
+ fLIrmsData:=TLabel.Create(fParent);
+ Add(fLIrmsData);
 end;
 
 procedure TST2829CMeasureParamShow.DesignElements;
 begin
   inherited DesignElements;
-  fParent.Caption:='Measure option';
+  fParent.Caption:='Measuring option';
 
-//  OutputImpedanceShow.LCaption.WordWrap:=False;
-//  OutputImpedanceShow.LCaption.Top:=MarginTop;
-//  OutputImpedanceShow.LCaption.Left:=MarginLeft;
-//  RelativeLocation(OutputImpedanceShow.LCaption,OutputImpedanceShow.STdata,oRow,Marginbetween);
+  FreqMeasShow.LCaption.WordWrap:=False;
+  FreqMeasShow.LCaption.Top:=MarginTop;
+  FreqMeasShow.LCaption.Left:=10;
+  RelativeLocation(FreqMeasShow.LCaption,FreqMeasShow.STdata,oRow,3);
+  FreqMeasShow.STdata.Top:=FreqMeasShow.STdata.Top+2;
 
-//  AutoLevelShow.CB.Top:=MarginTop;
-//  AutoLevelShow.CB.Left:=MarginLeft;
-//  Resize(AutoLevelShow.CB);
+  VMeasShow.LCaption.WordWrap:=False;
+  RelativeLocation(FreqMeasShow.LCaption,VMeasShow.LCaption,oCol,5);
+  RelativeLocation(VMeasShow.LCaption,VMeasShow.STdata,oCol,3);
+  VMeasShow.LCaption.Font.Color:=clRed;
+  VMeasShow.STdata.Font.Color:=clRed;
 
-//  BiasEnableShow.CB.Top:=MarginTop;
-//  BiasEnableShow.CB.Left:=MarginLeft;
+  IMeasShow.LCaption.WordWrap:=False;
+  RelativeLocation(VMeasShow.LCaption,IMeasShow.LCaption,oRow,8);
+  RelativeLocation(IMeasShow.LCaption,IMeasShow.STdata,oCol,3);
+  IMeasShow.LCaption.Font.Color:=clBlue;
+  IMeasShow.STdata.Font.Color:=clBlue;
 
-//  FreqMeasShow.LCaption.WordWrap:=False;
-//  FreqMeasShow.LCaption.Top:=MarginTop;
-//  FreqMeasShow.LCaption.Left:=MarginLeft;
-//  RelativeLocation(FreqMeasShow.LCaption,FreqMeasShow.STdata,oRow,3);
-//  FreqMeasShow.STdata.Top:=FreqMeasShow.STdata.Top+2;
+  Resize(AutoLevelShow.CB);
+  AutoLevelShow.CB.Left:=10;
+  AutoLevelShow.CB.Top:=VMeasShow.STdata.Top+VMeasShow.STdata.Height+3;
 
-//  VMeasShow.LCaption.WordWrap:=False;
-//  VMeasShow.LCaption.Top:=MarginTop;
-//  VMeasShow.LCaption.Left:=MarginLeft;
-//  RelativeLocation(VMeasShow.LCaption,VMeasShow.STdata,oRow,3);
-//  VMeasShow.STdata.Top:=VMeasShow.STdata.Top+2;
+  Resize(VrmsToMeasureShow.CB);
+  VrmsToMeasureShow.CB.Left:=10;
+  VrmsToMeasureShow.CB.Top:=AutoLevelShow.CB.Top+AutoLevelShow.CB.Height+5;
+  VrmsToMeasureShow.CB.Alignment:=taLeftJustify;
+  VrmsToMeasureShow.CB.Font.Color:=clGreen;
 
-//  IMeasShow.LCaption.WordWrap:=False;
-//  IMeasShow.LCaption.Top:=MarginTop;
-//  IMeasShow.LCaption.Left:=MarginLeft;
-//  RelativeLocation(IMeasShow.LCaption,IMeasShow.STdata,oRow,3);
-//  IMeasShow.STdata.Top:=IMeasShow.STdata.Top+2;
+  Resize(IrmsToMeasureShow.CB);
+  IrmsToMeasureShow.CB.Left:=10;
+  IrmsToMeasureShow.CB.Top:=VrmsToMeasureShow.CB.Top+VrmsToMeasureShow.CB.Height+3;
+  IrmsToMeasureShow.CB.Font.Color:=clOlive;
 
-//  BiasVoltageShow.LCaption.WordWrap:=False;
-//  BiasVoltageShow.LCaption.Top:=MarginTop;
-//  BiasVoltageShow.LCaption.Left:=MarginLeft;
-//  RelativeLocation(BiasVoltageShow.LCaption,BiasVoltageShow.STdata,oRow,3);
-//  BiasVoltageShow.STdata.Top:=BiasVoltageShow.STdata.Top+2;
+  fBVrmsNeasuring.Caption:='Get real Vrms';
+  fBVrmsNeasuring.WordWrap:=True;
+  fBVrmsNeasuring.Height:=round(1.5*fBVrmsNeasuring.Height);
+  fBVrmsNeasuring.Left:=10;
+  fBVrmsNeasuring.Top:=IrmsToMeasureShow.CB.Top+IrmsToMeasureShow.CB.Height+5;
 
-//  RangeShow.LCaption.Top:=MarginTop;
-//  RangeShow.LCaption.Left:=MarginLeft;
-//  RelativeLocation(RangeShow.LCaption,RangeShow.STdata,oRow,3);
-//  RangeShow.STdata.Top:=RangeShow.STdata.Top+2;
+  fBIrmsNeasuring.Caption:='Get real Irms';
+  fBIrmsNeasuring.WordWrap:=True;
+  fBIrmsNeasuring.Height:=fBVrmsNeasuring.Height;
+  RelativeLocation(fBVrmsNeasuring,fBIrmsNeasuring,oRow,10);
 
-//  MeasureSpeedShow.LCaption.Top:=MarginTop;
-//  MeasureSpeedShow.LCaption.Left:=MarginLeft;
-//  RelativeLocation(MeasureSpeedShow.LCaption,MeasureSpeedShow.STdata,oRow,3);
-//  MeasureSpeedShow.STdata.Top:=MeasureSpeedShow.STdata.Top+2;
+  VrmsToMeasureClick;
+  IrmsToMeasureClick;
+  VrmsToMeasureShow.HookParameterClick:=VrmsToMeasureClick;
+  IrmsToMeasureShow.HookParameterClick:=IrmsToMeasureClick;
 
-//  AverTimesShow.LCaption.Top:=MarginTop;
-//  AverTimesShow.LCaption.Left:=MarginLeft;
-//  RelativeLocation(AverTimesShow.LCaption,AverTimesShow.STdata,oRow,3);
-////  AverTimesShow.STdata.Top:=AverTimesShow.STdata.Top+2;
+  fLVrmsData.Enabled:=False;
+  VrmsDataToLabel;
 
-//  VrmsToMeasureShow.CB.Top:=MarginTop;
-//  VrmsToMeasureShow.CB.Left:=MarginLeft;
-//  Resize(VrmsToMeasureShow.CB);
+  fLIrmsData.Enabled:=False;
+  IrmsDataToLabel;
+  
+  fParent.Height:=fLVrmsData.Top+fLVrmsData.Height+10;
+  fParent.Width:=fBIrmsNeasuring.Left+ fBIrmsNeasuring.Width+10;
+end;
 
-//  IrmsToMeasureShow.CB.Top:=MarginTop;
-//  IrmsToMeasureShow.CB.Left:=MarginLeft;
-//  Resize(IrmsToMeasureShow.CB);
+procedure TST2829CMeasureParamShow.IMeasShowClick;
+begin
+ IMeasShow.ObjectToSetting;
+ RelativeLocation(IMeasShow.LCaption,IMeasShow.STdata,oCol,3);
+ AutoLevelShow.ObjectToSetting;
+ IMeasShow.LCaption.Font.Color:=clRed;
+ IMeasShow.STdata.Font.Color:=clRed;
+ VMeasShow.LCaption.Font.Color:=clBlue;
+ VMeasShow.STdata.Font.Color:=clBlue;
+end;
 
-//  BiasCurrentShow.LCaption.WordWrap:=False;
-//  BiasCurrentShow.LCaption.Top:=MarginTop;
-//  BiasCurrentShow.LCaption.Left:=MarginLeft;
-//  RelativeLocation(BiasCurrentShow.LCaption,BiasCurrentShow.STdata,oRow,3);
-//  BiasCurrentShow.STdata.Top:=BiasCurrentShow.STdata.Top+2;
+procedure TST2829CMeasureParamShow.IrmsDataToLabel;
+begin
+  if fST2829C.DataIrms = ErResult
+    then fLIrmsData.Caption := 'ERROR'
+    else fLIrmsData.Caption := FloatToStrF(fST2829C.DataIrms, ffGeneral, 5, 0)+' mA';
+ RelativeLocation(fBIrmsNeasuring,fLIrmsData,oCol,5);    
+end;
 
-//  TrigerSourceShow.LCaption.WordWrap:=False;
-//  TrigerSourceShow.LCaption.Top:=MarginTop;
-//  TrigerSourceShow.LCaption.Left:=MarginLeft;
-//  RelativeLocation(TrigerSourceShow.LCaption,TrigerSourceShow.STdata,oRow,3);
-//  TrigerSourceShow.STdata.Top:=TrigerSourceShow.STdata.Top+2;
+procedure TST2829CMeasureParamShow.IrmsToMeasureClick;
+begin
+  fBIrmsNeasuring.Enabled:=IrmsToMeasureShow.CB.Checked;
+end;
 
-  DelayTimeShow.LCaption.WordWrap:=False;
-  DelayTimeShow.LCaption.Top:=MarginTop;
-  DelayTimeShow.LCaption.Left:=MarginLeft;
-  RelativeLocation(DelayTimeShow.LCaption,DelayTimeShow.STdata,oRow,3);
-  DelayTimeShow.STdata.Top:=DelayTimeShow.STdata.Top+2;
+procedure TST2829CMeasureParamShow.ObjectToSetting;
+begin
+  inherited ObjectToSetting;
+  VrmsToMeasureClick;
+  IrmsToMeasureClick;
+end;
 
+procedure TST2829CMeasureParamShow.VrmsDataToLabel;
+begin
+  if fST2829C.DataVrms = ErResult
+    then fLVrmsData.Caption := 'ERROR'
+    else fLVrmsData.Caption := FloatToStrF(fST2829C.DataVrms, ffGeneral, 5, 0)+' V';
+ RelativeLocation(fBVrmsNeasuring,fLVrmsData,oCol,5);
+end;
+
+procedure TST2829CMeasureParamShow.rmsMeasuringClick(Sender: TObject);
+begin
+ if (Sender as TButton).Tag=1 then
+   begin
+    fST2829C.GetDataVrms();
+    VrmsDataToLabel();
+   end;
+ if (Sender as TButton).Tag=2 then
+   begin
+    fST2829C.GetDataIrms();
+    IrmsDataToLabel();
+   end;
+end;
+
+procedure TST2829CMeasureParamShow.VMeasShowClick;
+begin
+ VMeasShow.ObjectToSetting;
+ RelativeLocation(VMeasShow.LCaption,VMeasShow.STdata,oCol,3);
+ AutoLevelShow.ObjectToSetting;
+ VMeasShow.LCaption.Font.Color:=clRed;
+ VMeasShow.STdata.Font.Color:=clRed;
+ IMeasShow.LCaption.Font.Color:=clBlue;
+ IMeasShow.STdata.Font.Color:=clBlue;
+
+end;
+
+procedure TST2829CMeasureParamShow.VrmsToMeasureClick;
+begin
+ fBVrmsNeasuring.Enabled:=VrmsToMeasureShow.CB.Checked;
 end;
 
 //destructor TST2829CMeasureParamShow.Destroy;
@@ -515,5 +626,225 @@ end;
 //  FreeAndNil(OutputImpedanceShow);
 //  inherited;
 //end;
+
+{ TST2829CBiasParamShow }
+
+procedure TST2829CBiasParamShow.BiasCurrentShowClick;
+begin
+ BiasCurrentShow.ObjectToSetting;
+ RelativeLocation(BiasCurrentShow.LCaption,BiasCurrentShow.STdata,oCol,3);
+ BiasCurrentShow.LCaption.Font.Color:=clRed;
+ BiasCurrentShow.STdata.Font.Color:=clRed;
+ BiasVoltageShow.LCaption.Font.Color:=clBlue;
+ BiasVoltageShow.STdata.Font.Color:=clBlue;
+end;
+
+procedure TST2829CBiasParamShow.BiasOutPutFromDevice;
+begin
+  fSBOnOff.OnClick:=nil;
+  fSBOnOff.Caption:=ST2829C_BiasOnOffButtonCaption[fST2829C.BiasEnable];
+  fSBOnOff.Down:=fST2829C.BiasEnable;
+  fSBOnOff.OnClick:=OnOffSpeedButtonClick;
+end;
+
+procedure TST2829CBiasParamShow.BiasVoltageShowClick;
+begin
+ BiasVoltageShow.ObjectToSetting;
+ RelativeLocation(BiasVoltageShow.LCaption,BiasVoltageShow.STdata,oCol,3);
+ BiasVoltageShow.LCaption.Font.Color:=clRed;
+ BiasVoltageShow.STdata.Font.Color:=clRed;
+ BiasCurrentShow.LCaption.Font.Color:=clBlue;
+ BiasCurrentShow.STdata.Font.Color:=clBlue;
+end;
+
+procedure TST2829CBiasParamShow.CreateControls;
+begin
+ BiasCurrentShow:=TST2829C_BiasCurrentShow.Create(fST2829C);
+ Add(BiasCurrentShow);
+ BiasCurrentShow.HookParameterClick:=BiasCurrentShowClick;
+
+ BiasVoltageShow:=TST2829C_BiasVoltageShow.Create(fST2829C);
+ Add(BiasVoltageShow);
+ BiasVoltageShow.HookParameterClick:=BiasVoltageShowClick;
+
+ fSBOnOff.AllowAllUp:=True;
+ fSBOnOff.GroupIndex:=3;
+ fSBOnOff.OnClick:=OnOffSpeedButtonClick;
+end;
+
+procedure TST2829CBiasParamShow.CreateElements;
+begin
+ fSBOnOff:=TSpeedButton.Create(fParent);
+ Add(fSBOnOff);
+end;
+
+procedure TST2829CBiasParamShow.DesignElements;
+begin
+  inherited DesignElements;
+  fParent.Caption:='Bias option';
+
+  BiasVoltageShow.LCaption.WordWrap:=False;
+  BiasVoltageShow.LCaption.Top:=MarginTop;
+  BiasVoltageShow.LCaption.Left:=10;
+  RelativeLocation(BiasVoltageShow.LCaption,BiasVoltageShow.STdata,oCol,3);
+  BiasVoltageShow.LCaption.Font.Color:=clRed;
+  BiasVoltageShow.STdata.Font.Color:=clRed;
+
+  BiasCurrentShow.LCaption.WordWrap:=False;
+  RelativeLocation(BiasVoltageShow.LCaption,BiasCurrentShow.LCaption,oRow,8);
+  RelativeLocation(BiasCurrentShow.LCaption,BiasCurrentShow.STdata,oCol,3);
+  BiasCurrentShow.LCaption.Font.Color:=clBlue;
+  BiasCurrentShow.STdata.Font.Color:=clBlue;
+
+  fSBOnOff.Caption:='Bias Output';
+  Resize(fSBOnOff);
+  fSBOnOff.Left:=BiasVoltageShow.STdata.Left;
+  fSBOnOff.Top:=BiasCurrentShow.STdata.Top+BiasCurrentShow.STdata.Height+3;
+
+  fParent.Width:=BiasCurrentShow.LCaption.Left+BiasCurrentShow.LCaption.Width+10;
+  fParent.Height:=fSBOnOff.Top+fSBOnOff.Height+10;
+
+//    showmessage(inttostr(fParent.Height));
+//  showmessage(inttostr(fParent.Width));
+end;
+
+procedure TST2829CBiasParamShow.ObjectToSetting;
+begin
+  inherited ObjectToSetting;
+  BiasOutPutFromDevice()
+end;
+
+procedure TST2829CBiasParamShow.OnOffSpeedButtonClick(Sender: TObject);
+begin
+ fST2829C.SetBiasEnable(fSBOnOff.Down);
+ fSBOnOff.Caption:=ST2829C_BiasOnOffButtonCaption[fSBOnOff.Down];
+// fSourceShow.GetSourceValueShow.ColorToActive(fOutPutOnOff.Down);
+end;
+
+{ TST2829CSetupParamShow }
+
+procedure TST2829CSetupParamShow.BTrigClick(Sender: TObject);
+begin
+ fST2829C.Trigger();
+end;
+
+procedure TST2829CSetupParamShow.CreateControls;
+begin
+ MeasureSpeedShow:=TST2829C_MeasureSpeedShow.Create(fST2829C);
+ Add(MeasureSpeedShow);
+
+ AverTimesShow:=TST2829C_AverTimesShow.Create(fST2829C);
+ Add(AverTimesShow);
+
+ RangeShow:=TST2829C_RangeShow.Create(fST2829C);
+ Add(RangeShow);
+
+ OutputImpedanceShow:=TST2829C_OutputImpedanceShow.Create(fST2829C);
+ Add(OutputImpedanceShow);
+
+ TrigerSourceShow:=TST2829C_TrigerSourceShow.Create(fST2829C);
+ Add(TrigerSourceShow);
+
+
+ DelayTimeShow:=TST2829C_DelayTimeShow.Create(fST2829C);
+ Add(DelayTimeShow);
+
+ fBTrig.OnClick:=BTrigClick;
+
+end;
+
+procedure TST2829CSetupParamShow.CreateElements;
+begin
+ fBTrig:=TButton.Create(fParent);
+ Add(fBTrig);
+end;
+
+procedure TST2829CSetupParamShow.DesignElements;
+begin
+  inherited DesignElements;
+  fParent.Caption:='Setup';
+
+  MeasureSpeedShow.LCaption.Top:=MarginTop;
+  MeasureSpeedShow.LCaption.Left:=10;
+  RelativeLocation(MeasureSpeedShow.LCaption,MeasureSpeedShow.STdata,oCol,2);
+  MeasureSpeedShow.STdata.Top:=MeasureSpeedShow.STdata.Top+2;
+
+  AverTimesShow.LCaption.WordWrap:=False;
+  RelativeLocation(MeasureSpeedShow.LCaption,AverTimesShow.LCaption,oRow,5);
+  RelativeLocation(AverTimesShow.LCaption,AverTimesShow.STdata,oCol,2);
+//  AverTimesShow.STdata.Top:=AverTimesShow.STdata.Top+2;
+  AverTimesShow.LCaption.Font.Color:=clNavy;
+  AverTimesShow.STdata.Font.Color:=clNavy;
+
+  DelayTimeShow.LCaption.WordWrap:=False;
+  RelativeLocation(AverTimesShow.LCaption,DelayTimeShow.LCaption,oRow,5);
+  RelativeLocation(DelayTimeShow.LCaption,DelayTimeShow.STdata,oCol,2);
+  DelayTimeShow.LCaption.Font.Color:=clPurple;
+  DelayTimeShow.STdata.Font.Color:=clPurple;
+
+  RangeShow.LCaption.Left:=35;
+  RangeShow.LCaption.Top:=MeasureSpeedShow.STdata.Top+MeasureSpeedShow.STdata.Height+5;
+  RelativeLocation(RangeShow.LCaption,RangeShow.STdata,oCol,2);
+  RangeShow.LCaption.Font.Color:=clGreen;
+  RangeShow.STdata.Font.Color:=clGreen;
+
+
+  OutputImpedanceShow.LCaption.WordWrap:=False;
+  RelativeLocation(RangeShow.LCaption,OutputImpedanceShow.LCaption,oRow,20);
+  RelativeLocation(OutputImpedanceShow.LCaption,OutputImpedanceShow.STdata,oCol,2);
+  OutputImpedanceShow.LCaption.Font.Color:=clOlive;
+  OutputImpedanceShow.STdata.Font.Color:=clOlive;
+
+  TrigerSourceShow.LCaption.WordWrap:=False;
+  TrigerSourceShow.LCaption.Left:=10;
+  TrigerSourceShow.LCaption.Top:=RangeShow.STdata.Top+RangeShow.STdata.Height+5;
+  RelativeLocation(TrigerSourceShow.LCaption,TrigerSourceShow.STdata,oCol,2);
+  TrigerSourceShow.LCaption.Font.Color:=clTeal;
+  TrigerSourceShow.STdata.Font.Color:=clTeal;
+
+  fBTrig.Caption:='TRIGGER';
+  fBTrig.Top:=TrigerSourceShow.LCaption.Top+5;
+  fBTrig.Left:=TrigerSourceShow.LCaption.Left+TrigerSourceShow.LCaption.Width+25;
+
+
+  fParent.Height:=TrigerSourceShow.STdata.Top+TrigerSourceShow.STdata.Height+10;
+  fParent.Width:=DelayTimeShow.LCaption.Left+ DelayTimeShow.LCaption.Width+10;
+
+//  showmessage(inttostr(fParent.Height));
+//  showmessage(inttostr(fParent.Width));
+
+end;
+
+{ TST2829C_MeterShow }
+
+constructor TST2829C_MeterShow.Create(ST2829_MeterPrimary: TST2829_MeterPrimary;
+             DL, UL: TLabel; MB: TButton; AB: TSpeedButton; DL2,UL2:TLabel);
+begin
+ inherited Create(ST2829_MeterPrimary,DL,UL,MB,AB,ST2829_MeterPrimary.Timer);
+ fST2829_MeterPrimary:=ST2829_MeterPrimary;
+ fDataLabel2:=DL2;
+ fUnitLabel2:=UL2;
+ DigitNumber:=6;
+end;
+
+procedure TST2829C_MeterShow.MetterDataShow;
+begin
+  inherited;
+  if Meter.Value<>ErResult then
+     begin
+       fUnitLabel2.Caption:=fST2829_MeterPrimary.MeasureModeLabelTwo;
+       fDataLabel2.Caption:=FloatToStrF(fST2829_MeterPrimary.ValueTwo,ffExponent,fDigitNumber,2)
+     end
+                        else
+     begin
+       fUnitLabel2.Caption:='';
+       fDataLabel2.Caption:='    ERROR';
+     end;
+end;
+
+function TST2829C_MeterShow.UnitModeLabel: string;
+begin
+ Result:=fST2829_MeterPrimary.MeasureModeLabel;
+end;
 
 end.

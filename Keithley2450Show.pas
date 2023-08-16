@@ -34,36 +34,12 @@ TKt_2450_AbstractElementShow=class(TSimpleFreeAndAiniObject)
   procedure ObjectToSetting;virtual;abstract;
  end;
 
-//TKeitley_StringParameterShow=class(TStringParameterShow)
-// private
-//  fSettingsShowSL:TStringList;
-//  fKt_2450:TKt_2450;
-//  fCaption:string;
-//  procedure OkClick();virtual;abstract;
-//  procedure SettingsShowSLFilling();virtual;abstract;
-//  procedure SomeAction();virtual;abstract;
-// public
-//  Constructor Create(ST:TStaticText;Kt_2450:TKt_2450);
-//  destructor Destroy;override;
-//  procedure ObjectToSetting;virtual;abstract;
-//end;
 
-//TKeitley_BrightnessShow=class(TKeitley_StringParameterShow)
-// protected
-//  procedure OkClick();override;
-//  procedure SettingsShowSLFilling();override;
-//  procedure SomeAction();override;
-// public
-//  procedure ObjectToSetting;override;
-//end;
 
-//TKt_RangeShow=class(TStringParameterShow)
 TKt_RangeShow=class(TKeitley_StringParameterShow)
  private
-//  fSettingsShowSL:TStringList;
   fType:TKt2450_Source;
   fKt_2450:TKt_2450;
-//  procedure RangeOkClick();virtual;abstract;
 
   procedure TypeDetermination();virtual;abstract;
   procedure SetEnabled(Value:boolean);virtual;
@@ -74,8 +50,6 @@ TKt_RangeShow=class(TKeitley_StringParameterShow)
  public
   property Enabled:boolean read GetEnable write SetEnabled;
   Constructor Create(ST:TStaticText;Kt_2450:TKt_2450);
-//  destructor Destroy;override;
-//  procedure ObjectToSetting;virtual;abstract;
 end;
 
 TKt_RangeMeasureShow=class(TKt_RangeShow)

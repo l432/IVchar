@@ -4509,11 +4509,13 @@ begin
   AllDevices.Add(DMM_6500.Meter);
   VandIDevices.Add(DMM_6500.Meter);
 
+  AllDevices.Add(ST_2829C.MeterPrim);
+  AllDevices.Add(ST_2829C.MeterSecond);
 
-  AllDevices.Add(OlegCurrent);
-  VandIDevices.Add(OlegCurrent);
-  AllDevices.Add(OlegVoltage);
-  VandIDevices.Add(OlegVoltage);
+//  AllDevices.Add(OlegCurrent);
+//  VandIDevices.Add(OlegCurrent);
+//  AllDevices.Add(OlegVoltage);
+//  VandIDevices.Add(OlegVoltage);
 
 
 //  Current_MD:=TMeasuringDevice.Create(Devices, CBCMD,'Current', LADCurrentValue, srCurrent);

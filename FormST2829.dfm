@@ -49,8 +49,8 @@ object ST2829Form: TST2829Form
     TabOrder = 1
   end
   object B_MyTrain: TButton
-    Left = 7
-    Top = 45
+    Left = 83
+    Top = 4
     Width = 69
     Height = 25
     Caption = 'B_MyTrain'
@@ -58,9 +58,9 @@ object ST2829Form: TST2829Form
   end
   object GB_Setting: TGroupBox
     Tag = 110
-    Left = 625
+    Left = 636
     Top = 103
-    Width = 139
+    Width = 128
     Height = 146
     Caption = 'Settings'
     Font.Charset = RUSSIAN_CHARSET
@@ -73,10 +73,10 @@ object ST2829Form: TST2829Form
   end
   object GBST2829C_Option: TGroupBox
     Tag = 110
-    Left = 8
-    Top = 87
-    Width = 241
-    Height = 146
+    Left = 5
+    Top = 35
+    Width = 190
+    Height = 231
     Caption = 'Opt'
     Font.Charset = RUSSIAN_CHARSET
     Font.Color = clMaroon
@@ -85,5 +85,142 @@ object ST2829Form: TST2829Form
     Font.Style = [fsBold]
     ParentFont = False
     TabOrder = 4
+  end
+  object GB_ST2829C_Mes: TGroupBox
+    Left = 201
+    Top = 59
+    Width = 279
+    Height = 132
+    Caption = 'Measurement'
+    Font.Charset = RUSSIAN_CHARSET
+    Font.Color = clMaroon
+    Font.Height = -13
+    Font.Name = 'Arial'
+    Font.Style = [fsBold]
+    ParentFont = False
+    TabOrder = 5
+    object LST2829CP_Meas: TLabel
+      Left = 7
+      Top = 18
+      Width = 208
+      Height = 31
+      AutoSize = False
+      Caption = '  ERROR'
+      Color = clWhite
+      Font.Charset = RUSSIAN_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -25
+      Font.Name = 'Verdana'
+      Font.Style = [fsBold]
+      ParentColor = False
+      ParentFont = False
+    end
+    object LST2829CP_MeasU: TLabel
+      Left = 211
+      Top = 18
+      Width = 62
+      Height = 31
+      AutoSize = False
+      Caption = 'a'
+      Color = clInfoText
+      Font.Charset = RUSSIAN_CHARSET
+      Font.Color = clWhite
+      Font.Height = -27
+      Font.Name = 'Arial'
+      Font.Style = [fsBold]
+      ParentColor = False
+      ParentFont = False
+    end
+    object SB_ST2829C_MeasAuto: TSpeedButton
+      Left = 146
+      Top = 58
+      Width = 45
+      Height = 19
+      AllowAllUp = True
+      GroupIndex = 2
+      Caption = 'AUTO'
+      Font.Charset = RUSSIAN_CHARSET
+      Font.Color = clDefault
+      Font.Height = -13
+      Font.Name = 'Arial'
+      Font.Style = [fsBold]
+      ParentFont = False
+    end
+    object LST2829CS_Meas: TLabel
+      Left = 7
+      Top = 84
+      Width = 208
+      Height = 31
+      AutoSize = False
+      Caption = '  ERROR'
+      Color = clWhite
+      Font.Charset = RUSSIAN_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -25
+      Font.Name = 'Verdana'
+      Font.Style = [fsBold]
+      ParentColor = False
+      ParentFont = False
+    end
+    object LST2829CS_MeasU: TLabel
+      Left = 209
+      Top = 84
+      Width = 62
+      Height = 31
+      AutoSize = False
+      Caption = 'a'
+      Color = clInfoText
+      Font.Charset = RUSSIAN_CHARSET
+      Font.Color = clWhite
+      Font.Height = -27
+      Font.Name = 'Arial'
+      Font.Style = [fsBold]
+      ParentColor = False
+      ParentFont = False
+    end
+    object B_ST2829C_Meas: TButton
+      Left = 36
+      Top = 54
+      Width = 75
+      Height = 24
+      Caption = 'measure'
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -13
+      Font.Name = 'Tahoma'
+      Font.Style = [fsBold]
+      ParentFont = False
+      TabOrder = 0
+    end
+  end
+  object GBST2829C_Bias: TGroupBox
+    Tag = 110
+    Left = 486
+    Top = 103
+    Width = 144
+    Height = 97
+    Caption = 'Opt'
+    Font.Charset = RUSSIAN_CHARSET
+    Font.Color = clMaroon
+    Font.Height = -13
+    Font.Name = 'Arial'
+    Font.Style = [fsBold]
+    ParentFont = False
+    TabOrder = 6
+  end
+  object GBST2829C_Setup: TGroupBox
+    Tag = 110
+    Left = 8
+    Top = 272
+    Width = 285
+    Height = 162
+    Caption = 'Opt'
+    Font.Charset = RUSSIAN_CHARSET
+    Font.Color = clMaroon
+    Font.Height = -13
+    Font.Name = 'Arial'
+    Font.Style = [fsBold]
+    ParentFont = False
+    TabOrder = 7
   end
 end

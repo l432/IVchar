@@ -92,6 +92,9 @@ type
 
  TST2829C_TrigerSource=(st_tsInt,st_tsHold,st_tsBus);
 
+ TST2829C_SweepParametr=(st_tpBiasVolt,st_tpBiasCurr,st_tpFreq,
+                         st_tpVrms,st_tpIrms);
+
 const
  ST2829C_DisplayPageCommand:array [TST2829C_DisplayPage]
             of string=('meas', 'bnum', 'bco',
@@ -153,8 +156,8 @@ const
 
 
  ST2829C_FreqMeasLimits:TLimitValues=(20,1000000);
- ST2829C_VmrsMeasLimits:TLimitValues=(0.005,10);
- ST2829C_ImrsMeasLimits:TLimitValues=(0.05,100);
+ ST2829C_VrmsMeasLimits:TLimitValues=(0.005,10);
+ ST2829C_IrmsMeasLimits:TLimitValues=(0.05,100);
  ST2829C_VmrsMeasLimitsForAL:TLimitValues=(0.01,10);
  ST2829C_ImrsMeasLimitsForAL:TLimitValues=(0.1,100);
  ST2829C_BiasVoltageLimits:TLimitValues=(-10,10);
@@ -162,6 +165,8 @@ const
  ST2829C_AverTimes:TLimitValues=(1,255);
  ST2829C_DelayTime:TLimitValues=(0,60000);
 
+ ST2829C_BiasOnOffButtonCaption:array [Boolean]
+            of string=('Bias off', 'Bias on');
 
  implementation
 
