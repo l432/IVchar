@@ -22,6 +22,7 @@ type
     LST2829CS_MeasU: TLabel;
     GBST2829C_Bias: TGroupBox;
     GBST2829C_Setup: TGroupBox;
+    GBST2829C_Sweep: TGroupBox;
     procedure BCloseClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
@@ -59,13 +60,13 @@ begin
 end;
 
 procedure TST2829Form.FormCreate(Sender: TObject);
- var CF:TIniFile;
 begin
  ST2829C_Show := TST2829C_Show.Create(ST_2829C,
                                       [GB_ST2829C_Com,GB_Setting,
                                       GBST2829C_Option,
                                       GBST2829C_Bias,
-                                      GBST2829C_Setup],
+                                      GBST2829C_Setup,
+                                      GBST2829C_Sweep],
                                       LST2829CP_Meas,
                                       LST2829CP_MeasU,
                                       B_ST2829C_Meas,
@@ -74,17 +75,12 @@ begin
                                       LST2829CS_MeasU,
                                       B_MyTrain);
 
- CF:=TIniFile.Create(ExtractFilePath(Application.ExeName)+'IVChar.ini');
- ST2829C_Show.ReadFromIniFile(CF);
- CF.Free;
+ ST2829C_Show.ReadFromIniFile(CF_ST_2829C);
 end;
 
 procedure TST2829Form.FormDestroy(Sender: TObject);
- var CF:TIniFile;
 begin
- CF:=TIniFile.Create(ExtractFilePath(Application.ExeName)+'IVChar.ini');
- ST2829C_Show.WriteToIniFile(CF);
- CF.Free;
+ ST2829C_Show.WriteToIniFile(CF_ST_2829C);
 
  FreeAndNil(ST2829C_Show);
 end;

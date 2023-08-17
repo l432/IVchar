@@ -92,8 +92,10 @@ type
 
  TST2829C_TrigerSource=(st_tsInt,st_tsHold,st_tsBus);
 
- TST2829C_SweepParametr=(st_tpBiasVolt,st_tpBiasCurr,st_tpFreq,
-                         st_tpVrms,st_tpIrms);
+ TST2829C_SweepParametr=(st_spBiasVolt,st_spBiasCurr,st_spFreq,
+                         sp_tpVrms,st_spIrms);
+
+ TST2829C_SweepData=(st_sdPrim,st_sdSecon,st_sdBoth);
 
 const
  ST2829C_DisplayPageCommand:array [TST2829C_DisplayPage]
@@ -154,6 +156,15 @@ const
  ST2829C_TrigerSourceLabels:array[TST2829C_TrigerSource]of string=
         ('Continious','Manual','RS232');
 
+ ST2829C_SweepParametrLabels:array[TST2829C_SweepParametr]of string=
+        ('Bias Voltage','Bias Current','Frequancy',
+        'Measure Voltage','Measure Current');
+
+ ST2829C_SweepParametrSalt:array[TST2829C_SweepParametr]of string=
+        ('BV','BC','Fr', 'MV','MC');
+
+  ST2829C_SweepDataLabels:array[TST2829C_SweepData]of string=
+        ('Primery','Secondary','Both');
 
  ST2829C_FreqMeasLimits:TLimitValues=(20,1000000);
  ST2829C_VrmsMeasLimits:TLimitValues=(0.005,10);

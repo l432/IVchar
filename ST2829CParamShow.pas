@@ -363,7 +363,7 @@ end;
 constructor TST2829C_DelayTimeShow.Create(ST2829C: TST2829C);
 begin
  inherited Create(ST2829C,Pointer(st_aTrigDelay),
-                 'Delay Time, ms:',0);
+                 'Delay Time, ms:','Lazy time bewbeen trigering and measuring, []=ms',0);
  SetLimits(ST2829C_DelayTime);
 end;
 

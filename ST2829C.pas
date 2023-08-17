@@ -3,7 +3,7 @@ unit ST2829C;
 interface
 
 uses
-  SCPI, CPort, RS232deviceNew, ST2829CConst, ExtCtrls, OlegTypePart2;
+  SCPI, CPort, RS232deviceNew, ST2829CConst, ExtCtrls, OlegTypePart2, IniFiles;
 
 type
 
@@ -28,6 +28,7 @@ type
 
   TST2829_MeterSecondary=class;
   TST2829_MeterPrimary=class;
+  TST2829SweepParameters=class;
 
   TST2829C=class(TSCPInew)
   private
@@ -67,22 +68,8 @@ type
    fIrmsData:double;
    fMeterSec:TST2829_MeterSecondary;
    fMeterPrim:TST2829_MeterPrimary;
+   fSweepParameters:TST2829SweepParameters;
 
-//   fRS232:TRS232MeterDeviceSingle;
-//   fComPort:TComPort;
-//   fTerminal:TKeitley_OutputTerminals;
-//   fDataVector:TVector;
-//   {X - значення чогось (джерела, номера каналу); Y - результат виміру}
-//   fDataTimeVector:TVector;
-//   {X - час виміру (мілісекунди з початку доби); Y - результат виміру}
-//   fBuffer:TKeitley_Buffer;
-//
-//   fDisplayState:TKeitley_DisplayState;
-//   fTrigerState:TKeitley_TriggerState;
-//
-//   function StringToTerminals(Str:string):boolean;
-//   function StringToBufferIndexies(Str:string):boolean;
-//   function StringToDisplayBrightness(Str:string):boolean;
    Procedure SetFreqMeas(Value:Double);
    procedure SetAutoLevelControl(const Value: boolean);
    procedure SetIrmsMeas(const Value: double);
@@ -93,15 +80,6 @@ type
    procedure StDelayTime(const Value: integer);
    procedure StrToData(Str:string);
   protected
-//   fTelnet:TIdTelnet;
-//   fIPAdressShow: TIPAdressShow;
-//   fMeasureFunction:TKeitley_Measure;
-//   fTimeValue:double;
-//   fTrigBlockNumber:word;
-//   fCount:integer;
-//   fMeter:TKeitley_Meter;
-//   procedure MeterCreate;virtual;abstract;
-//   procedure PrepareString;override;
    function GetRootNodeString():string;override;
    procedure DeviceCreate(Nm:string);override;
    procedure OnOffFromBool(toOn:boolean);
@@ -161,6 +139,7 @@ type
    property DataIrms:double read fIrmsData;
    property MeterPrim:TST2829_MeterPrimary read fMeterPrim;
    property MeterSecond:TST2829_MeterSecondary read fMeterSec;
+   property SweepParameters:TST2829SweepParameters read fSweepParameters;
    Constructor Create();
    destructor Destroy; override;
    function GetPattern(Action:Pointer):boolean;override;
@@ -279,25 +258,33 @@ TST2829_MeterPrimary=class(TST2829_Measurement)
   destructor Destroy; override;
 end;
 
-TST2829SweepParameter=class(TNamedInterfacedObject)
+TST2829SweepParameters=class
  private
-  fSweepType:TST2829C_SweepParametr;
-  fStartValue:double;
-  fFinishValue:double;
-  fPointCount:integer;
-  fLinearStep:boolean;
+//  fSweepType:TST2829C_SweepParametr;
+//  fStartValue:double;
+//  fFinishValue:double;
+//  fPointCount:integer;
+//  fLinearStep:boolean;
  public
-  property SweepType:TST2829C_SweepParametr read fSweepType;
-  constructor Create(SweepType:TST2829C_SweepParametr);
+//  property SweepType:TST2829C_SweepParametr read fSweepType;
+  SweepType:TST2829C_SweepParametr;
+  StartValue:double;
+  FinishValue:double;
+  PointCount:integer;
+  LogStep:boolean;
+  DataType:TST2829C_SweepData;
+  constructor Create;
+  function ToString():string;
 end;
 
 var
   ST_2829C:TST2829C;
+  CF_ST_2829C:TIniFile;
 
 implementation
 
 uses
-  SysUtils, Dialogs, OlegType, Math, StrUtils, OlegFunction;
+  SysUtils, Dialogs, OlegType, Math, StrUtils, OlegFunction, Forms;
 
 { T2829C }
 
@@ -380,7 +367,8 @@ begin
 // showmessage('TST2829C Create');
  inherited Create('ST2829C');
  fMeterSec:=TST2829_MeterSecondary.Create(Self);
- fMeterPrim:=TST2829_MeterPrimary.Create(Self)
+ fMeterPrim:=TST2829_MeterPrimary.Create(Self);
+ fSweepParameters:=TST2829SweepParameters.Create();
 end;
 
 
@@ -410,6 +398,7 @@ end;
 
 destructor TST2829C.Destroy;
 begin
+  FreeAndNil(fSweepParameters);
   FreeAndNil(fMeterSec);
   FreeAndNil(fMeterPrim);
   inherited;
@@ -1596,18 +1585,35 @@ begin
  Result:=fParentModule.DataPrimary;
 end;
 
-{ TST2829SweepParameter }
+{ TST2829SweepParameters }
 
-constructor TST2829SweepParameter.Create(SweepType: TST2829C_SweepParametr);
+constructor TST2829SweepParameters.Create;
 begin
- inherited Create;
- fSweepType:=SweepType;
+  inherited Create();
+  SweepType:=st_spBiasVolt;
+  StartValue:=0;
+  FinishValue:=1;
+  PointCount:=2;
+  LogStep:=False;
+  DataType:=st_sdPrim;
+end;
+
+function TST2829SweepParameters.ToString: string;
+begin
+ Result:=ST2829C_SweepParametrLabels[SweepType]+#10#13
+        +ST2829C_SweepDataLabels[DataType]+#10#13
+        +'Start='+floattostr(StartValue)+#10#13
+        +'Finish='+floattostr(FinishValue)+#10#13
+        +'Step Count='+inttostr(PointCount)+#10#13
+        +'Log step='+booltostr(LogStep,True);
 end;
 
 initialization
   ST_2829C := TST2829C.Create();
+  CF_ST_2829C:=TIniFile.Create(ExtractFilePath(Application.ExeName)+'IVChar.ini');
 
 finalization
+  CF_ST_2829C.Free;
   ST_2829C.Free;
 
 end.

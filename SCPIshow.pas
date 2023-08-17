@@ -53,7 +53,7 @@ TSCPI_SetupMemoryPins=class(TPins)
   Constructor Create(Name:string);
 end;
 
-TRS232DeviceNew_Show=class(TSimpleFreeAndAiniObject)
+TRS232DeviceNew_Show=class(TNamedInterfacedObject)
   private
    fRS232Device:TRS232DeviceNew;
    fRS232Show:TRS232minimal_Show;
@@ -183,7 +183,11 @@ TSCPI_IntegerParameterShow=class(TSCPI_ParameterShow)
   property Data:integer read GetData write SetData;
   Constructor Create(SCPInew:TSCPInew;ActionType:Pointer;
                       ParametrCaption:string;
-                      InitValue:integer);
+                      InitValue:integer);overload;
+  Constructor Create(SCPInew:TSCPInew;ActionType:Pointer;
+                      ParametrCaption:string;
+                      WindowText:string;
+                      InitValue:integer);overload;
   destructor Destroy;override;
   procedure ObjectToSetting;override;
 end;
@@ -224,7 +228,7 @@ begin
  fRS232Show.fComCBPort.ComPort:=fRS232Device.ComPort;
  fRS232Show.fComCBBaud.ComPort:=fRS232Device.ComPort;
  fRS232Show.fBTest.OnClick := TestButtonClick;
-
+ fName:=fRS232Device.Name;
 end;
 
 { TGBwithControlElements }
@@ -322,7 +326,15 @@ begin
   begin
     L:=TLabel.Create(Control.Parent);
     L.Parent:=Control.Parent;
-    Control.Width:=L.Canvas.TextWidth((Control as TSpeedButton).Caption)+17;
+    Control.Width:=L.Canvas.TextWidth((Control as TSpeedButton).Caption)+22;
+    FreeAndNil(L);
+    Exit;
+  end;
+ if (Control is TRadioGroup) then
+  begin
+    L:=TLabel.Create(Control.Parent);
+    L.Parent:=Control.Parent;
+    Control.Height:=L.Canvas.TextHeight((Control as TRadioGroup).Items[0])+20;
     FreeAndNil(L);
     Exit;
   end;
@@ -597,9 +609,15 @@ constructor TSCPI_IntegerParameterShow.Create(SCPInew: TSCPInew;
   ActionType: Pointer; ParametrCaption: string; InitValue: integer);
 begin
   inherited Create(SCPInew,ActionType,True);
-//  fSTD:=TStaticText.Create(nil);
-//  fSTC:=TLabel.Create(nil);
   fParamShow:=TIntegerParameterShow.Create(fST,fLab,ParametrCaption,InitValue);
+  fParamShow.HookParameterClick:=Click;
+end;
+
+constructor TSCPI_IntegerParameterShow.Create(SCPInew: TSCPInew;
+  ActionType: Pointer; ParametrCaption, WindowText: string; InitValue: integer);
+begin
+  inherited Create(SCPInew,ActionType,True);
+  fParamShow:=TIntegerParameterShow.Create(fST,fLab,ParametrCaption,WindowText,InitValue);
   fParamShow.HookParameterClick:=Click;
 end;
 
