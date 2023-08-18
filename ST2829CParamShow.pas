@@ -245,6 +245,7 @@ begin
     st_aSetMeasT:Result:=ord((fSCPInew as TST2829C).MeasureType);
     st_aSpeedMeas:Result:=ord((fSCPInew as TST2829C).MeasureSpeed);
     st_aTrigSource:Result:=ord((fSCPInew as TST2829C).TrigSource);
+    st_aRange:Result:=ord((fSCPInew as TST2829C).MeasureRange);
     else Result:=255;
   end;
 end;

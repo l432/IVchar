@@ -873,86 +873,33 @@ type
     procedure FormDock(FForm: TForm; TS: TTabSheet);
   public
     TestVar2:TINA226_Channel;
-//     TestVar:TINA226_Module;
      TestVar:TSimpleFreeAndAiniObject;
-//    TestVar2:TSimpleFreeAndAiniObject;
     TestVar3:TSimpleFreeAndAiniObject;
     TestVar4:array of IMeasurement;
+
     ShowArray:TObjectArray;
     AnyObjectArray:TObjectArray;
     ArduinoMeters:TObjectArray;
 
     ArduinoDataSubject:TArduinoDataSubject;
 
-//    V721A:TV721A;
-//    V721_I,V721_II:TV721;
-////    V721_I:TV721;
-////    V721_II:TV721_Brak;
-//    VoltmetrShows:array of TVoltmetrShow;
-
-//    DS18B20:TDS18B20;
     DS18B20show:TOnePinsShow;
-//    TMP102:TTMP102;
     TMP102show:TI2C_PinsShow;
 
-//    ADT74x0:TADT74x0;
-//    ADT74x0show:TI2C_PinsShow;
-//    MCP9808:TMCP9808;
     MCP9808show:TI2C_PinsShow;
-//    HTU21D:THTU21D;
-//    STS21:TSTS21;
-//    MLX90615:TMLX90615;
     MLX90615Show:TMLX90615Show;
 
-//    ThermoCuple:TThermoCuple;
-//    MCP3424:TMCP3424_Module;
     MCP3424show:TI2C_PinsShow;
-
-//    MCP3424_Channels:array [TMCP3424_ChanelNumber] of TMCP3424_Channel;
-//    MCP3424_ChannelShows:array [TMCP3424_ChanelNumber] of TMCP3424_ChannelShow;
-
-//    ADS11115module:TADS1115_Module;
-//    ADS11115show:TI2C_PinsShow;
-//
-//    ADS11115_Channels:array [TADS1115_ChanelNumber] of TADS1115_Channel;
-//    ADS11115_ChannelShows:array [TADS1115_ChanelNumber] of TADS1115_ChannelShow;
-
-//    INA226_Module:TINA226_Module;
-//    INA226_ModuleShow:TINA226_ModuleShow;
-//    INA226_Shunt,INA226_Bus:TINA226_Channel;
-//    INA226_ShuntShow,INA226_BusShow:TINA226_ChannelShow;
-
-//    GDS_806S:TGDS_806S;
-//    GDS_806S_Channel:array[TGDS_Channel]of TGDS_806S_Channel;
-//    GDS_806S_Show:TGDS_806S_Show;
-
-//    OlegCurrent:TCurrent;
-//    CurrentShow:TCurrentShow;
 
     IscVocPinChanger,LEDOpenPinChanger:TArduinoPinChanger;
     IscVocPinChangerShow,LEDOpenPinChangerShow:TArduinoPinChangerShow;
-//    ConfigFile:TIniFile;
     NumberPins:TStringList; // номери пінів, які використовуються як керуючі для SPI
     NumberPinsOneWire:TStringList; // номери пінів, які використовуються для OneWire
     NumberPinsInput:TStringList; // номери пінів, які можуть бути викристані для переривань
     ForwSteps,RevSteps,IVResult,VolCorrection,
     VolCorrectionNew,TemperData:TVector;
 
-//    DACR2R:TDACR2R;
-//    DACR2RShow:TDACR2RShow;
-
-//    D30_06:TD30_06;
-//    D30_06Show:TD30_06Show;
-
-//   AD9833:TAD9833;
-//   AD9833Show:TAD9833Show;
-
     Simulator:TSimulator;
-
-//    UT70B:TUT70B;
-//    UT70C:TUT70C;
-//    UT70BShow:TUT70BShow;
-//    UT70CShow:TUT70CShow;
 
 
     ET1255_DACs:array[TET1255_DAC_ChanelNumber] of TET1255_DAC;
@@ -965,11 +912,7 @@ type
     TermoCoupleDevices,AllDevices,VandIDevices:TArrIMeas;
     SetingDevices:TArrIDAC;
     TemperMeasurDevices:TArrITempMeas;
-//    Current_MDNew,VoltageIV_MDNew,DACR2R_MDNew,D30_MDNew,
-//    TermoCouple_MDNew,TimeD_MDNew,Control_MDNew,TimeD_MD2New,
-//    Isc_MDNew,Voc_MDNew:TMeasuringDeviceNew;
     Devices:array of IMeasurement;
-//    PDevices:array of Pointer;
     DevicesSet:array of IDAC;
     Temperature_MD:TTemperature_MD;
     Current_MD,VoltageIV_MD,DACR2R_MD,D30_MD,
@@ -1020,8 +963,7 @@ type
     Kt2450_IPAdressShow,DMM6500_IPAdressShow:TIPAdressShow;
     procedure Kt2450_Create;
     procedure DMM6500_Create;
-//    procedure ST2829C_Create;
-//    procedure ST2829CShow_Create;
+
   end;
 
 Procedure FormDockUnDock(Form:TForm;Color:TColor);
@@ -3275,6 +3217,8 @@ begin
  ET1255Create();
  VectorsCreate();
 
+ PC.Pages[14].TabVisible:=False;
+
  ConstantShowCreate();
 
  PIDShowCreateAndFromIniFile();
@@ -4085,37 +4029,19 @@ begin
   INA226Create();
   ADS1115Create();
 
-//  V721A := TV721A.Create('B7-21A');
-//  V721_I := TV721.Create('B7-21 (1)');
-//  V721_II := TV721.Create('B7-21 (2)');
-////  V721_II := TV721_Brak.Create(ComPort1, 'B7-21 (2)');
   ArduinoMeters.Add([V721A,V721_I,V721_II]);
-//  SetLength(VoltmetrShows,3);
   VoltmetrShows[0]:= TVoltmetrShow.Create(V721A, RGV721A_MM, RGV721ARange, LV721A, LV721AU, PV721APin, PV721APinG, {BV721ASet, BV721ASetGate, }BV721AMeas, SBV721AAuto, NumberPins{CBV721A}, Time);
   VoltmetrShows[1]:= TVoltmetrShow.Create(V721_I, RGV721I_MM, RGV721IRange, LV721I, LV721IU, PV721IPin, PV721IPinG, {BV721ISet, BV721ISetGate,} BV721IMeas, SBV721IAuto, NumberPins{CBV721I}, Time);
   VoltmetrShows[2]:= TVoltmetrShow.Create(V721_II, RGV721II_MM, RGV721IIRange, LV721II, LV721IIU, PV721IIPin, PV721IIPinG, {BV721IISet, BV721IISetGate,} BV721IIMeas, SBV721IIAuto, NumberPins, Time);
 
-//  DS18B20:=TDS18B20.Create('DS18B20');
   DS18B20show:=TOnePinsShow.Create(DS18B20.Pins,PDS18BPin,NumberPinsOneWire);
 
 
-//  TMP102:=TTMP102.Create;
   TMP102show:=TI2C_PinsShow.Create(TMP102.Pins,PTMP102Pin, TMP102_StartAdress,TMP102_LastAdress);
 
-//  MLX90615:=TMLX90615.Create('MLX90615');
-
-//  ADT74x0:=TADT74x0.Create;
   ADT74x0show:=TI2C_PinsShow.Create(ADT74x0.Pins,PADT74Pin, ADT74x0_StartAdress,ADT74x0_LastAdress);
 
-//  MCP9808:=TMCP9808.Create;
   MCP9808show:=TI2C_PinsShow.Create(MCP9808.Pins,PMCP9808Pin, MCP9808_StartAdress,MCP9808_LastAdress);
-
-//  HTU21D:=THTU21D.Create('HTU21D');
-//  STS21:=TSTS21.Create('STS21');
-
-
-//  ThermoCuple:=TThermoCuple.Create;
-//  AnyObjectArray.Add(ThermoCuple);
 
   LEDOpenPinChanger:=TArduinoPinChanger.Create('LEDOpenPin');
   LEDOpenPinChangerShow:=TArduinoPinChangerShow.Create(LEDOpenPinChanger,PLEDOpenPin,BLEDOpenPinChange,NumberPins,'to close','to open');
@@ -4127,11 +4053,7 @@ begin
   ShowArray.Add([DS18B20show,TMP102show, ADT74x0show,MCP9808Show,
                 IscVocPinChangerShow,LEDOpenPinChangerShow]);
 
-//  AnyObjectArray.Add([V721A,V721_I,V721_II]);
-  AnyObjectArray.Add([{DS18B20,{TMP102,HTU21D,MLX90615,
-                      {STS21,ADT74x0,
-                      {MCP9808,}
-                      IscVocPinChanger,LEDOpenPinChanger]);
+  AnyObjectArray.Add([IscVocPinChanger,LEDOpenPinChanger]);
 
   ArduinoMeters.Add([DS18B20,HTU21D,STS21,MLX90615,TMP102,
                      ADT74x0,MCP9808]);
@@ -4154,7 +4076,6 @@ begin
   IB6332_Create();
   Kt2450_Create();
   DMM6500_Create();
-//  ST2829C_Create();
 
 end;
 
@@ -4376,14 +4297,6 @@ begin
   AnyObjectArray.Add([TermoCoupleDevices,AllDevices,VandIDevices]);
 
 
-//  SetLength(Devices,4);
-//  Devices[0]:=Simulator;
-//  Devices[1]:=V721A;
-//  Devices[2]:=V721_I;
-//  Devices[3]:=V721_II;
-
-
-//  TermoCouple_MD:=TMeasuringDevice.Create(Devices, CBTcVMD, 'Thermocouple', LTRValue, srVoltge);
   TermoCouple_MD:=TMeasuringDevice.Create(TermoCoupleDevices,
                CBTcVMD, 'Thermocouple', LTRValue, srVoltge);
 
@@ -4393,11 +4306,6 @@ begin
                                   MCP9808]);
   AnyObjectArray.Add(TemperMeasurDevices);
 
-//  Temperature_MD:=TTemperature_MD.Create([Simulator,ThermoCuple,
-//                                  DS18B20,HTU21D,TMP102,ADT74x0,
-//                                  MLX90615,STS21,
-//                                  MCP9808],
-//                                  CBTD,'Temperature',LTRValue);
   Temperature_MD:=TTemperature_MD.Create(TemperMeasurDevices,
                                   CBTD,'Temperature',LTRValue);
 
@@ -4405,11 +4313,6 @@ begin
                           BMLX615_GCwrite,BMLX615_Calib,Temperature_MD);
 
   ShowArray.Add([TermoCouple_MD,Temperature_MD,MLX90615Show]);
-//  ShowArray.Add([TermoCouple_MDNew,Temperature_MD,MLX90615Show]);
-
-//  SetLength(Devices,High(Devices)+3);
-//  Devices[High(Devices)-1]:=UT70B;
-//  Devices[High(Devices)]:=UT70C;
 
   AllDevices.Add([UT70B,UT70C]);
   VandIDevices.Add([UT70B,UT70C]);
@@ -4417,10 +4320,6 @@ begin
 
   if ET1255isPresent then
    begin
-//    SetLength(Devices,High(Devices)+4);
-//    Devices[High(Devices)-2]:=ET1255_ADCModule.Channels[0];
-//    Devices[High(Devices)-1]:=ET1255_ADCModule.Channels[1];
-//    Devices[High(Devices)]:=ET1255_ADCModule.Channels[2];
     AllDevices.Add([ET1255_ADCModule.Channels[0],
                     ET1255_ADCModule.Channels[1],
                     ET1255_ADCModule.Channels[2]]);
@@ -4429,11 +4328,6 @@ begin
                     ET1255_ADCModule.Channels[2]]);
    end;
 
-//  SetLength(Devices,High(Devices)+5);
-//  Devices[High(Devices)-3]:=MCP3424_Channels[0];
-//  Devices[High(Devices)-2]:=MCP3424_Channels[1];
-//  Devices[High(Devices)-1]:=MCP3424_Channels[2];
-//  Devices[High(Devices)]:=MCP3424_Channels[3];
   AllDevices.Add([MCP3424_Channels[0],
                   MCP3424_Channels[1],
                   MCP3424_Channels[2],
@@ -4444,11 +4338,6 @@ begin
                     MCP3424_Channels[3]]);
 
 
-
-//  SetLength(Devices,High(Devices)+4);
-//  Devices[High(Devices)-2]:=ADS11115_Channels[0];
-//  Devices[High(Devices)-1]:=ADS11115_Channels[1];
-//  Devices[High(Devices)]:=ADS11115_Channels[2];
   AllDevices.Add([ADS11115_Channels[0],
                   ADS11115_Channels[1],
                   ADS11115_Channels[2]]);
@@ -4456,21 +4345,10 @@ begin
                   ADS11115_Channels[1],
                   ADS11115_Channels[2]]);
 
-
-//  SetLength(Devices,High(Devices)+3);
-//  Devices[High(Devices)-1]:=GDS_806S_Channel[1];
-//  Devices[High(Devices)]:=GDS_806S_Channel[2];
   AllDevices.Add([GDS_806S_Channel[1],
                   GDS_806S_Channel[2]]);
   VandIDevices.Add([GDS_806S_Channel[1],
                   GDS_806S_Channel[2]]);
-
-
-
-//  SetLength(Devices,High(Devices)+3);
-//  Devices[High(Devices)-1]:=INA226_Shunt;
-//  Devices[High(Devices)]:=INA226_Bus;
-//  Pointer(FInterfaceField) := Pointer(InterfaceVariable)
 
   AllDevices.Add([INA226_Shunt,
                   INA226_Bus]);
@@ -4478,28 +4356,22 @@ begin
                   INA226_Bus]);
 
 
-//  OlegCurrent:=TCurrent.Create;
-//  AnyObjectArray.Add(OlegCurrent);
+//  CurrentShow:=TCurrentShow.Create(OlegCurrent,ST_oCurBias,
+//                     L_oCurBias,LoCur,LUoCur,
+//                     L_oCurMeasDiap,L_oCurMeasVal,
+//                     B_oCur_Meas,B_oCurMeasDiap,B_oCurMeasVal,
+//                     SB_oCur_Auto,VandIDevices,
+//                     CB_oCurMeasDiap,CB_oCurMeasVal);
+//  ShowArray.Add(CurrentShow);
+//
+//   VoltageShow:=TVoltageShow.Create(OlegVoltage,
+//                     LoVol,LUoVol,
+//                     L_oVolMeasVal,
+//                     B_oVol_Meas,B_oVolMeasVal,
+//                     SB_oVol_Auto,VandIDevices,
+//                     CB_oVolMeasVal);
+//  ShowArray.Add(VoltageShow);
 
-  CurrentShow:=TCurrentShow.Create(OlegCurrent,ST_oCurBias,
-                     L_oCurBias,LoCur,LUoCur,
-                     L_oCurMeasDiap,L_oCurMeasVal,
-                     B_oCur_Meas,B_oCurMeasDiap,B_oCurMeasVal,
-//                     SB_oCur_Auto,Devices,
-                     SB_oCur_Auto,VandIDevices,
-                     CB_oCurMeasDiap,CB_oCurMeasVal);
-  ShowArray.Add(CurrentShow);
-
-   VoltageShow:=TVoltageShow.Create(OlegVoltage,
-                     LoVol,LUoVol,
-                     L_oVolMeasVal,
-                     B_oVol_Meas,B_oVolMeasVal,
-                     SB_oVol_Auto,VandIDevices,
-                     CB_oVolMeasVal);
-  ShowArray.Add(VoltageShow);
-
-//  SetLength(Devices,High(Devices)+2);
-//  Devices[High(Devices)]:=OlegCurrent;
 
   AllDevices.Add(Kt_2450.Meter);
   VandIDevices.Add(Kt_2450.Meter);
@@ -4518,18 +4390,6 @@ begin
 //  VandIDevices.Add(OlegVoltage);
 
 
-//  Current_MD:=TMeasuringDevice.Create(Devices, CBCMD,'Current', LADCurrentValue, srCurrent);
-//  VoltageIV_MD:=TMeasuringDevice.Create(Devices, CBVMD,'Voltage', LADVoltageValue, srVoltge);
-//
-//  DACR2R_MD:=TMeasuringDevice.Create(Devices, CBMeasDACR2R,'R2R', LMeasR2R, srPreciseVoltage);
-//  DACR2R_MD.AddActionButton(BMeasR2R);
-//  D30_MD:=TMeasuringDevice.Create(Devices, CBMeasD30,'D30', LMeasD30, srPreciseVoltage);
-//  D30_MD.AddActionButton(BMeasD30);
-//
-//  Isc_MD:=TMeasuringDevice.Create(Devices, CBIscMD,'Isc' , LIscResult, srCurrent);
-//  Isc_MD.AddActionButton(BIscMeasure);
-//  Voc_MD:=TMeasuringDevice.Create(Devices, CBVocMD,'Voc' , LVocResult, srPreciseVoltage);
-//  Voc_MD.AddActionButton(BVocMeasure);
 
   Current_MD:=TMeasuringDevice.Create(VandIDevices, CBCMD,'Current', LADCurrentValue, srCurrent);
   VoltageIV_MD:=TMeasuringDevice.Create(VandIDevices, CBVMD,'Voltage', LADVoltageValue, srVoltge);
@@ -4555,28 +4415,11 @@ begin
 
   ShowArray.Add([Current_MD,VoltageIV_MD,DACR2R_MD,D30_MD,
                  Isc_MD,Voc_MD]);
-//  ShowArray.Add([Current_MDNew,VoltageIV_MDNew,DACR2R_MDNew,D30_MDNew,Isc_MDNew,Voc_MDNew]);
 
-//  SetLength(Devices,High(Devices)+9);
-//  Devices[High(Devices)-7]:=ThermoCuple;
-//  Devices[High(Devices)-6]:=DS18B20;
-//  Devices[High(Devices)-5]:=HTU21D;
-//  Devices[High(Devices)-4]:=TMP102;
-//  Devices[High(Devices)-3]:=MLX90615;
-//  Devices[High(Devices)-2]:=STS21;
-//  Devices[High(Devices)-1]:=ADT74x0;
-//  Devices[High(Devices)]:=MCP9808;
   AllDevices.Add([ThermoCuple,DS18B20,HTU21D,
                              TMP102,MLX90615,STS21,ADT74x0,MCP9808]);
 
 
-//  TimeD_MD:=
-//    TMeasuringDevice.Create(Devices, CBTimeMD,'Time Dependence', LADCurrentValue, srVoltge);
-//  TimeD_MD2:=
-//    TMeasuringDevice.Create(Devices, CBTimeMD2,'Time Dependence Two', LADInputVoltageValue, srVoltge);
-//  Control_MD:=
-//    TMeasuringDevice.Create(Devices, CBControlMD,'Control setup', LControlCVValue, srPreciseVoltage);
-//  ShowArray.Add([TimeD_MD,TimeD_MD2,Control_MD]);
 
   TimeD_MD:=
     TMeasuringDevice.Create(AllDevices, CBTimeMD,'Time Dependence', LADCurrentValue, srVoltge);
@@ -4587,11 +4430,6 @@ begin
   ShowArray.Add([TimeD_MD,TimeD_MD2,Control_MD]);
 
 
-//  SetLength(DevicesSet,High(DevicesSet)+4);
-////  EnlargeIDACArray(DevicesSet,[Simulator,DACR2R,D30_06]);
-//  DevicesSet[0]:=Simulator;
-//  DevicesSet[1]:=DACR2R;
-//  DevicesSet[High(DevicesSet)]:=D30_06;
 
   SetingDevices:=TArrIDAC.Create([Simulator,DACR2R,D30_06,AD5752_chA,AD5752_chB]);
   AnyObjectArray.Add(SetingDevices);
@@ -4599,12 +4437,6 @@ begin
 
   if ET1255isPresent then
    begin
-//    SetLength(DevicesSet,High(DevicesSet)+4);
-////    EnlargeIDACArray(DevicesSet,[ET1255_DACs[0],
-////                     ET1255_DACs[1],ET1255_DACs[2]]);
-//    DevicesSet[High(DevicesSet)-2]:=ET1255_DACs[0];
-//    DevicesSet[High(DevicesSet)-1]:=ET1255_DACs[1];
-//    DevicesSet[High(DevicesSet)]:=ET1255_DACs[2];
 
     SetingDevices.Add([ET1255_DACs[0],ET1255_DACs[1],ET1255_DACs[2]]);
 
@@ -4618,23 +4450,10 @@ begin
                       CBMeasET1255Ch2,'ET1255_DAC_Ch2',LMeas1255Ch2,srPreciseVoltage);
     ET1255_DAC_MD[2].AddActionButton(BMeas1255Ch2);
 
-//    ET1255_DAC_MD[0]:=TMeasuringDevice.Create(Devices,
-//                      CBMeasET1255Ch0,'ET1255_DAC_Ch0',LMeas1255Ch0,srPreciseVoltage);
-//    ET1255_DAC_MD[0].AddActionButton(BMeas1255Ch0);
-//    ET1255_DAC_MD[1]:=TMeasuringDevice.Create(Devices,
-//                      CBMeasET1255Ch1,'ET1255_DAC_Ch1',LMeas1255Ch1,srPreciseVoltage);
-//    ET1255_DAC_MD[1].AddActionButton(BMeas1255Ch1);
-//    ET1255_DAC_MD[2]:=TMeasuringDevice.Create(Devices,
-//                      CBMeasET1255Ch2,'ET1255_DAC_Ch2',LMeas1255Ch2,srPreciseVoltage);
-//    ET1255_DAC_MD[2].AddActionButton(BMeas1255Ch2);
     ShowArray.Add([ET1255_DAC_MD[0],ET1255_DAC_MD[1],ET1255_DAC_MD[2]]);
    end;
 
 
-//  SettingDevice:=TSettingDevice.Create(DevicesSet,CBVS,'Input voltage');
-//  SettingDeviceControl:=TSettingDevice.Create(DevicesSet,CBControlCD,'Control input');
-//  SettingTermostat:=TSettingDevice.Create(DevicesSet,CBTermostatCD,'Termostat input');
-//  SettingDeviceLED:=TSettingDevice.Create(DevicesSet,CBLED_onCD,'LED output');
   SettingDevice:=TSettingDevice.Create(SetingDevices,CBVS,'Input voltage');
   SettingDeviceControl:=TSettingDevice.Create(SetingDevices,CBControlCD,'Control input');
   SettingTermostat:=TSettingDevice.Create(SetingDevices,CBTermostatCD,'Termostat input');

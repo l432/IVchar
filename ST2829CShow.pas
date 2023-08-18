@@ -290,8 +290,6 @@ end;
 
 procedure TST2829C_Show.MyTrainButtonClick(Sender: TObject);
 begin
- //  showmessage(inttostr(fParent.Height));
-//  showmessage(inttostr(fParent.Width));
 //showmessage(fST2829C.SweepParameters.ToString);
  fST2829C.MyTraining();
 end;
@@ -396,6 +394,7 @@ begin
      fST2829C.GetBiasCurrent();
      fST2829C.GetOutputImpedance();
      fST2829C.GetMeasureFunction();
+
      fST2829C.GetRange();
      fST2829C.GetMeasureSpeed();
      fST2829C.GetAverTime();
@@ -873,16 +872,17 @@ end;
 
 procedure TST2829C_MeterShow.MetterDataShow;
 begin
-  inherited;
-  if Meter.Value<>ErResult then
+  inherited MetterDataShow;
+//  if Meter.Value<>ErResult then
+  if fST2829_MeterPrimary.ValueTwo<>ErResult then
      begin
        fUnitLabel2.Caption:=fST2829_MeterPrimary.MeasureModeLabelTwo;
        fDataLabel2.Caption:=FloatToStrF(fST2829_MeterPrimary.ValueTwo,ffExponent,fDigitNumber,2)
      end
                         else
      begin
-       fUnitLabel2.Caption:='';
-       fDataLabel2.Caption:='    ERROR';
+       fUnitLabel2.Caption:='---';
+       fDataLabel2.Caption:='---';
      end;
 end;
 

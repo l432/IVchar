@@ -773,8 +773,12 @@ end;
 procedure TGBwithControlElementsAndParamShow.ObjectToSetting;
  var i:integer;
 begin
+
  for i := 0 to High(fShowElements) do
+//   begin
    fShowElements[i].ObjectToSetting;
+//   showmessage(inttostr(i));
+//   end;
 end;
 
 procedure TGBwithControlElementsAndParamShow.ParentToElements;

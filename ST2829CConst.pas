@@ -11,11 +11,11 @@ const
   ST2829C_MemFileMaxLength=16;
 
 
-  RootNodeST2829C:array[0..14]of string=
+  RootNodeST2829C:array[0..15]of string=
   ('*idn?','*rst','*trg', 'mmem', 'disp','freq','ampl:alc','volt','curr',
 //   0       1       2      3       4       5       6       7       8
-   'bias','ores','func','aper','trig','fetc');
-//   9      10     11     12     13     14
+   'bias','ores','func','aper','trig','fetc','corr');
+//   9      10     11     12     13     14     15
 
   FirstNodeST2829C:array[0..15]of string=
   (':load:stat',':stor:stat',':page',':rfon',':line',':stat',':volt',':curr',

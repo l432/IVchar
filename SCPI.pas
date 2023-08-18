@@ -371,6 +371,8 @@ procedure TSCPInew.SetupOperation(RootNode, FirstLevelNode, LeafNode: byte;
   isSyffix, isQuery: boolean);
 begin
  SetFlags(RootNode, FirstLevelNode, LeafNode,isSyffix,isQuery);
+// showmessage(booltostr(isSyffix,True));
+// showmessage(inttostr(FirstLevelNode));
  PrepareString();
  fDevice.Request();
 end;

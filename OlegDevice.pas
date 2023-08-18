@@ -507,9 +507,9 @@ end;
 
 
 initialization
-  OlegCurrent:=TCurrent.Create;
-  OlegVoltage:=TVoltage.Create;
+//  OlegCurrent:=TCurrent.Create;
+//  OlegVoltage:=TVoltage.Create;
 finalization
-  OlegCurrent.Free;
-  FreeAndNil(OlegVoltage);
+//  OlegCurrent.Free;
+//  FreeAndNil(OlegVoltage);
 end.
