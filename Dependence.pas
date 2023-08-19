@@ -5,7 +5,8 @@ interface
 uses
   StdCtrls, ComCtrls, OlegType, Series, ShowTypes,
   ExtCtrls, Classes, OlegTypePart2, MDevice, HighResolutionTimer, 
-  OlegShowTypes, IniFiles, OlegVector, OlegVectorManipulation, Keithley2450;
+  OlegShowTypes, IniFiles, OlegVector, OlegVectorManipulation, Keithley2450, 
+  ST2829C;
 
 var EventToStopDependence:THandle;
   fItIsForward:boolean;
@@ -71,7 +72,10 @@ private
   class procedure tempVChange(Value: double);
   class function tempI:double;
   class procedure tempIChange(Value: double);
-  procedure Free;
+  class function SecondValue:double;
+  class procedure SecondValueChange(Value: double);
+  destructor Destroy;override;
+//  procedure Free;
 //  procedure PeriodicMeasuring();virtual;
 end;
 
@@ -96,7 +100,25 @@ private
   procedure PeriodicMeasuring();virtual;
 end;
 
-
+TST2829Dependence=class(TDependence)
+ private
+  fST2829C:TST2829C;
+  procedure SeriesClear();override;
+  procedure Cycle();
+  function MeasurementNumberDetermine(): integer;override;
+  procedure BeginMeasuring();override;
+  procedure EndMeasuring();override;
+  procedure ActionMeasurement();override;
+  procedure DataSave();override;
+ protected
+ public
+ Constructor Create(ST2829C:TST2829C;
+                    PB:TProgressBar;
+                    BS: TButton;
+                    Res:TVector;
+                    FistPS,SecondPS:TPointSeries);
+ procedure Measuring;
+end;
 
 TTimeDependence=class(TDependence)
 private
@@ -229,8 +251,8 @@ TTimeTwoDependenceTimer=class(TTimeDependenceTimer)
                      FLn,FLg:TPointSeries;
                      Tim:TTimer);
   procedure BeginMeasuring();override;
-  class function SecondValue:double;
-  class procedure SecondValueChange(Value: double);
+//  class function SecondValue:double;
+//  class procedure SecondValueChange(Value: double);
 end;
 
 
@@ -498,7 +520,7 @@ implementation
 uses
   SysUtils, Forms, Windows, Math, DateUtils,
   Dialogs, OlegGraph, OlegFunction, 
-  OlegMath, Measurement, Buttons, Keitley2450Const;
+  OlegMath, Measurement, Buttons, Keitley2450Const, ST2829CConst;
 
 var
 //  fItIsForward:boolean;
@@ -1000,15 +1022,15 @@ begin
 
 end;
 
-class function TTimeTwoDependenceTimer.SecondValue: double;
-begin
- Result:=fSecondValue;
-end;
+//class function TTimeTwoDependenceTimer.SecondValue: double;
+//begin
+// Result:=fSecondValue;
+//end;
 
-class procedure TTimeTwoDependenceTimer.SecondValueChange(Value: double);
-begin
- fSecondValue:=Value;
-end;
+//class procedure TTimeTwoDependenceTimer.SecondValueChange(Value: double);
+//begin
+// fSecondValue:=Value;
+//end;
 
 { TIVMeasurementResult }
 
@@ -1169,6 +1191,12 @@ begin
 
 end;
 
+destructor TFastDependence.Destroy;
+begin
+  if fOwnResultsVectorIsUsed then  Results.Free;
+  inherited;
+end;
+
 procedure TFastDependence.DuringMeasuring(Action: TSimpleEvent);
 begin
    Application.ProcessMessages;
@@ -1185,11 +1213,11 @@ begin
   MelodyShot();
 end;
 
-procedure TFastDependence.Free;
-begin
- if fOwnResultsVectorIsUsed then  Results.Free;
- inherited Free;
-end;
+//procedure TFastDependence.Free;
+//begin
+// if fOwnResultsVectorIsUsed then  Results.Free;
+// inherited Free;
+//end;
 
 procedure TFastDependence.CreateFooter(BS: TButton; FLn, FLg: TPointSeries);
 begin
@@ -1205,12 +1233,24 @@ begin
   HookAction := TSimpleClass.EmptyProcedure;
 end;
 
+class function TFastDependence.SecondValue: double;
+begin
+ Result:=fSecondValue;
+end;
+
+class procedure TFastDependence.SecondValueChange(Value: double);
+begin
+ fSecondValue:=Value;
+end;
+
 procedure TFastDependence.SeriesClear;
 begin
   ForwLine.Clear;
   ForwLg.Clear;
   ForwLg.ParentChart.Axes.Left.Logarithmic:=True;
   ForwLg.ParentChart.Axes.Left.LogarithmicBase:=10;
+  ForwLg.ParentChart.Axes.Bottom.Logarithmic:=False;
+  ForwLine.ParentChart.Axes.Bottom.Logarithmic:=False;
 end;
 
 { TFastIVDependenceNew }
@@ -2305,6 +2345,188 @@ begin
   fFastIV.Cycle(True);
   if not(fIVMeasuringToStop)
      then fFastIV.Cycle(False);
+end;
+
+{ TST2829Dependence }
+
+procedure TST2829Dependence.ActionMeasurement;
+begin
+  case fST2829C.SweepParameters.SweepType of
+    st_spBiasVolt: fST2829C.SetBiasVoltage(fVoltageInput);
+    st_spBiasCurr: fST2829C.SetBiasCurrent(fVoltageInput);
+    st_spFreq: fST2829C.SetFrequancyMeasurement(fVoltageInput);
+    st_spVrms: fST2829C.SetVoltageMeasurement(fVoltageInput);
+    st_spIrms: fST2829C.SetCurrentMeasurement(fVoltageInput);
+  end;
+  fST2829C.Trig;
+
+  case  fST2829C.SweepParameters.SweepType of
+   st_spIrms:fST2829C.GetDataIrms();
+   st_spVrms:fST2829C.GetDataVrms();
+  end;
+
+
+  inherited ActionMeasurement;
+end;
+
+procedure TST2829Dependence.BeginMeasuring;
+begin
+  inherited BeginMeasuring;
+  fIVMeasuringToStop:=False;
+  fVoltageInput:=fST2829C.SweepParameters.StartValue;
+  fVoltageStep:=(fST2829C.SweepParameters.FinishValue
+              -fST2829C.SweepParameters.StartValue)
+              /(fST2829C.SweepParameters.PointCount-1);
+
+  case  fST2829C.SweepParameters.SweepType of
+   st_spBiasVolt,
+   st_spBiasCurr:fST2829C.SetBiasEnable(True);
+   st_spIrms:fST2829C.SetIrmsToMeasure(True);
+   st_spVrms:fST2829C.SetVrmsToMeasure(True);
+  end;
+
+ if IVtiming then
+  begin
+   secondmeter.Start();
+  end;  
+
+end;
+
+constructor TST2829Dependence.Create(ST2829C: TST2829C; PB: TProgressBar;
+  BS: TButton; Res: TVector; FistPS, SecondPS: TPointSeries);
+begin
+ fST2829C:=ST2829C;
+ inherited Create(PB,BS,Res,FistPS,SecondPS);
+end;
+
+procedure TST2829Dependence.Cycle();
+begin
+
+ repeat
+     Application.ProcessMessages;
+     if fIVMeasuringToStop then Exit;
+
+     PeriodicMeasuring();
+//     DuringMeasuring(Action);
+//     HookStep();
+     fVoltageInput:=fVoltageInput+fVoltageStep;
+  until fPointNumber>=fST2829C.SweepParameters.PointCount;
+end;
+
+procedure TST2829Dependence.DataSave;
+begin
+
+  Application.ProcessMessages;
+  HookDataSave();
+
+  case fST2829C.SweepParameters.DataType of
+    st_sdPrim:case fST2829C.SweepParameters.SweepType of
+                st_spBiasVolt,
+                st_spBiasCurr,
+                st_spFreq:begin
+                          ForwLine.AddXY(fVoltageInput, fST2829C.DataPrimary);
+                          ForwLg.AddXY(fVoltageInput, fST2829C.DataPrimary);
+                          end;
+                st_spVrms:begin
+                          ForwLine.AddXY(fST2829C.DataVrms, fST2829C.DataPrimary);
+                          ForwLg.AddXY(fST2829C.DataVrms, fST2829C.DataPrimary);
+                          end;
+                st_spIrms:begin
+                          ForwLine.AddXY(fST2829C.DataIrms, fST2829C.DataPrimary);
+                          ForwLg.AddXY(fST2829C.DataIrms, fST2829C.DataPrimary);
+                          end;
+              end;
+    st_sdSecon:case fST2829C.SweepParameters.SweepType of
+                st_spBiasVolt,
+                st_spBiasCurr,
+                st_spFreq:begin
+                          ForwLine.AddXY(fVoltageInput, fST2829C.DataSecondary);
+                          ForwLg.AddXY(fVoltageInput, fST2829C.DataSecondary);
+                          end;
+                st_spVrms:begin
+                          ForwLine.AddXY(fST2829C.DataVrms, fST2829C.DataSecondary);
+                          ForwLg.AddXY(fST2829C.DataVrms, fST2829C.DataSecondary);
+                          end;
+                st_spIrms:begin
+                          ForwLine.AddXY(fST2829C.DataIrms, fST2829C.DataSecondary);
+                          ForwLg.AddXY(fST2829C.DataIrms, fST2829C.DataSecondary);
+                          end;
+               end;
+    st_sdBoth:case fST2829C.SweepParameters.SweepType of
+                st_spBiasVolt,
+                st_spBiasCurr,
+                st_spFreq:begin
+                          ForwLine.AddXY(fVoltageInput, fST2829C.DataPrimary);
+                          ForwLg.AddXY(fVoltageInput, fST2829C.DataSecondary);
+                          end;
+                st_spVrms:begin
+                          ForwLine.AddXY(fST2829C.DataVrms, fST2829C.DataPrimary);
+                          ForwLg.AddXY(fST2829C.DataVrms, fST2829C.DataSecondary);
+                          end;
+                st_spIrms:begin
+                          ForwLine.AddXY(fST2829C.DataIrms, fST2829C.DataPrimary);
+                          ForwLg.AddXY(fST2829C.DataIrms, fST2829C.DataSecondary);
+                          end;
+              end;
+  end;
+
+  if (ForwLine.Count  mod 10) = 0 then
+     case fST2829C.SweepParameters.DataType of
+      st_sdPrim,
+      st_sdSecon:Write_File_Series('zapas.dat',ForwLine,8);
+      st_sdBoth:ToFileFromTwoSeries('zapas.dat',ForwLine,ForwLg,8);
+     end;
+end;
+
+procedure TST2829Dependence.EndMeasuring;
+begin
+ if IVtiming then
+  begin
+   secondmeter.Finish();
+    helpforme('IVtime_'+floattostr(SecondMeter.Interval));
+  end;
+
+  case  fST2829C.SweepParameters.SweepType of
+   st_spBiasVolt,
+   st_spBiasCurr:fST2829C.SetBiasEnable(False);
+   st_spIrms:fST2829C.SetIrmsToMeasure(False);
+   st_spVrms:fST2829C.SetVrmsToMeasure(False);
+  end;
+  case fST2829C.SweepParameters.SweepType of
+    st_spBiasVolt: fST2829C.SetBiasVoltage(fST2829C.SweepParameters.StartValue);
+    st_spBiasCurr: fST2829C.SetBiasCurrent(fST2829C.SweepParameters.StartValue);
+    st_spFreq: fST2829C.SetFrequancyMeasurement(fST2829C.SweepParameters.StartValue);
+    st_spVrms: fST2829C.SetVoltageMeasurement(fST2829C.SweepParameters.StartValue);
+    st_spIrms: fST2829C.SetCurrentMeasurement(fST2829C.SweepParameters.StartValue);
+  end;
+  inherited EndMeasuring;
+end;
+
+function TST2829Dependence.MeasurementNumberDetermine: integer;
+begin
+ Result:=fST2829C.SweepParameters.PointCount;
+end;
+
+procedure TST2829Dependence.Measuring;
+begin
+ BeginMeasuring();
+ Cycle();
+ EndMeasuring();
+end;
+
+procedure TST2829Dependence.SeriesClear;
+begin
+  inherited SeriesClear;
+  if fST2829C.SweepParameters.DataType=st_sdBoth then
+      ForwLg.ParentChart.Axes.Left.Logarithmic:=False;
+  if fST2829C.SweepParameters.LogStep then
+   begin
+     ForwLg.ParentChart.Axes.Bottom.Logarithmic:=True;
+     ForwLg.ParentChart.Axes.Bottom.LogarithmicBase:=10;
+     ForwLine.ParentChart.Axes.Bottom.Logarithmic:=True;
+     ForwLine.ParentChart.Axes.Bottom.LogarithmicBase:=10;
+   end;
+
 end;
 
 initialization

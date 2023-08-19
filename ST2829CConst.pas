@@ -93,7 +93,7 @@ type
  TST2829C_TrigerSource=(st_tsInt,st_tsHold,st_tsBus);
 
  TST2829C_SweepParametr=(st_spBiasVolt,st_spBiasCurr,st_spFreq,
-                         sp_tpVrms,st_spIrms);
+                         st_spVrms,st_spIrms);
 
  TST2829C_SweepData=(st_sdPrim,st_sdSecon,st_sdBoth);
 

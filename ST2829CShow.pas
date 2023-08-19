@@ -947,7 +947,7 @@ begin
         fFinishShow := TDoubleParameterShow.Create(fSTFinish, fLFinish, 'Finish Freq, Hz:', 10000, 7);
         fFinishShow.Limits.SetLimits(ST2829C_FreqMeasLimits[lvMin], ST2829C_FreqMeasLimits[lvMax]);
       end;
-    sp_tpVrms:
+    st_spVrms:
       begin
         fStartShow := TDoubleParameterShow.Create(fSTStart, fLStart, 'Start Vrms, V:', 0.01, 5);
         fStartShow.Limits.SetLimits(ST2829C_VrmsMeasLimits[lvMin], ST2829C_VrmsMeasLimits[lvMax]);

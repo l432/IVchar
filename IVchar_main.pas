@@ -48,6 +48,7 @@ const
   MeasIscAndVocOnTime='Voc and Isc on time';
   MeasIVonTemper='IV char on temperature';
   MeasFastIVArd='Fast IV by Arduino';
+  MeasST2829='ST2829C dependence';
 
 
   IscVocTimeToWait=500;
@@ -953,6 +954,7 @@ type
     IVcharOnTemperature:TTemperatureDependence;
     ShowTempDep:TShowTemperatureDependence;
     TimeTwoDependenceTimer,IscVocOnTime:TTimeTwoDependenceTimer;
+    ST2829Dependence:TST2829Dependence;
     Dependencies:Array of TFastDependence;
     PID_Termostat,PID_Control:TPID;
     PID_Termostat_ParametersShow,PID_Control_ParametersShow:TPID_ParametersShow;
@@ -1194,6 +1196,9 @@ begin
                                                  STTemDepStep,STTemDepIsoInterval,STTemDepTolCoef,
                                                  LTemDepStart,LTemDepFinish,
                                                  LTemDepStep,LTemDepIsoInterval,LTemDepTolCoef);
+  ST2829Dependence:=TST2829Dependence.Create(ST_2829C,PBIV,BIVStop,IVResult,
+                                       ForwLine,ForwLg);
+
   ShowArray.Add(ShowTempDep);
 
   FastIVMeasuring.HookBeginMeasuring:=FastIVHookBegin;
@@ -1217,7 +1222,7 @@ begin
   ArduinoMeters.Add(FastArduinoIV.ArduinoCommunication);
 
 
-  SetLength(Dependencies,8);
+  SetLength(Dependencies,9);
   Dependencies[0]:=IVMeasuring;
   Dependencies[1]:=CalibrMeasuring;
   Dependencies[2]:=TimeDependence;
@@ -1226,6 +1231,7 @@ begin
   Dependencies[5]:=ControlParameterTime;
   Dependencies[6]:=TemperatureOnTime;
   Dependencies[7]:=IVcharOnTemperature;
+  Dependencies[8]:=ST2829Dependence;
 
 
   IVMeasuring.RangeFor:=IVCharRangeFor;
@@ -1466,7 +1472,7 @@ procedure TIVchar.HookBegin;
   if Key=MeasIV then  IVcharHookBegin;
   if Key=MeasFastIV then FastIVHookBegin;
   if Key=MeasFastIVArd then FastArduinoIVHookBegin;
-  
+
   if Key=MeasTimeD then MeasurementTimeParameterDetermination(TimeDependence);
   if Key=MeasTwoTimeD then  MeasurementTimeParameterDetermination(TimeTwoDependenceTimer);
   if Key=MeasIscAndVocOnTime then
@@ -2765,6 +2771,8 @@ begin
  if (Key=MeasTempOnTime)and (SBTAuto.Down)
      then  TemperatureOnTime.BeginMeasuring;
  if Key=MeasIVonTemper then IVcharOnTemperature.BeginMeasuring;
+
+ if Key=MeasST2829 then ST2829Dependence.Measuring;
 
 end;
 
@@ -4813,15 +4821,16 @@ begin
 
   CBMeasurements.Items.Clear;
   CBMeasurements.Items.Add(MeasFastIV);
-  CBMeasurements.Items.Add(MeasR2RCalib);
-  CBMeasurements.Items.Add(MeasTimeD);
-  CBMeasurements.Items.Add(MeasControlParametr);
   CBMeasurements.Items.Add(MeasTempOnTime);
-  CBMeasurements.Items.Add(MeasTwoTimeD);
   CBMeasurements.Items.Add(MeasIscAndVocOnTime);
   CBMeasurements.Items.Add(MeasIVonTemper);
+  CBMeasurements.Items.Add(MeasST2829);
+  CBMeasurements.Items.Add(MeasTimeD);
+  CBMeasurements.Items.Add(MeasTwoTimeD);
+  CBMeasurements.Items.Add(MeasR2RCalib);
+  CBMeasurements.Items.Add(MeasControlParametr);
   CBMeasurements.Items.Add(MeasIV);
-  CBMeasurements.Items.Add(MeasFastIVArd);
+//  CBMeasurements.Items.Add(MeasFastIVArd);
   CBMeasurements.ItemIndex:=0;
   Key:=CBMeasurements.Items[CBMeasurements.ItemIndex];
 
