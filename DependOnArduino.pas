@@ -215,7 +215,7 @@ procedure TFastArduinoIVDependence.ConvertReceivedData(Data: TArrByte;
                                  var isError, IsEnd: boolean);
  var TotalNumberByteInResult,i,k:integer;
 begin
-  if fIVMeasuringToStop then
+  if fMeasuringToStop then
    begin
     isError:=True;
     IsEnd:=True;
@@ -254,7 +254,7 @@ begin
 
     if (fVoltageMeasured=ErResult)or(fCurrentMeasured=ErResult) then
       begin
-       fIVMeasuringToStop:=true;
+       fMeasuringToStop:=true;
        isError:=True;
        IsEnd:=True;
        Exit;

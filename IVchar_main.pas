@@ -799,9 +799,11 @@ type
     procedure FastIVHookBegin;
     procedure Kt2450HookForTrig;
     procedure FastArduinoIVHookBegin;
+    procedure ST2829HookBegin;
     procedure FastIVHookEndBase(FastIVDep:TFastIVDependence);
     procedure FastIVHookEnd;
     procedure FastArduinoIVHookEnd;
+    procedure ST2829HookEnd;
     procedure TimeDHookFirstMeas;
     procedure TimeTwoDHookFirstMeas;
     procedure IscVocOnTimeHookFirstMeas;
@@ -830,7 +832,7 @@ type
     procedure CalibrHookFirstMeas;
     procedure IVCharHookDataSave;
     procedure CalibrHookDataSave;
-    procedure HookEnd;
+    procedure HookEndGeneral(Option:boolean;Count:integer);
     procedure CalibrSaveClick(Sender: TObject);
     procedure ParametersFileWork(Action: TSimpleEvent);
     procedure ET1255Create;
@@ -872,6 +874,9 @@ type
     procedure ComPort1Reload;
     procedure FormsTunning;
     procedure FormDock(FForm: TForm; TS: TTabSheet);
+    procedure ButtonMeasEnableFalse;
+    procedure TemperatureDetermination;
+//    procedure BIVSaveReadyToWork;
   public
     TestVar2:TINA226_Channel;
      TestVar:TSimpleFreeAndAiniObject;
@@ -948,7 +953,7 @@ type
 
     IVMeasuring,CalibrMeasuring:TIVDependence;
     CustomFastIVMeas,FastIVMeasuring:TFastIVDependence;
-    FastArduinoIV:TFastArduinoIVDependence;
+//    FastArduinoIV:TFastArduinoIVDependence;
     TimeDependence:TTimeDependenceTimer;
     ControlParameterTime,TemperatureOnTime:TTimeDependence;
     IVcharOnTemperature:TTemperatureDependence;
@@ -1129,7 +1134,8 @@ begin
 
  if (Key=MeasIV)or(Key=MeasR2RCalib) then HookEndReset;
 
- HookEnd();
+ HookEndGeneral(True,IVResult.HighNumber);
+
 
  if (Key=MeasIV) then
   begin
@@ -1171,7 +1177,7 @@ begin
                          IVResult,ForwLine,RevLine,ForwLg,RevLg);
 
   FastIVMeasuring:=TFastIVDependence.Create(BIVStop,ForwLine,RevLine,ForwLg,RevLg);
-  FastArduinoIV:=TFastArduinoIVDependence.Create(BIVStop,ForwLine,RevLine,ForwLg,RevLg);
+//  FastArduinoIV:=TFastArduinoIVDependence.Create(BIVStop,ForwLine,RevLine,ForwLg,RevLg);
 
   CalibrMeasuring:= TIVDependence.Create(CBForw,CBRev,PBIV,BIVStop,
                          IVResult,ForwLine,RevLine,ForwLg,RevLg);
@@ -1196,7 +1202,7 @@ begin
                                                  STTemDepStep,STTemDepIsoInterval,STTemDepTolCoef,
                                                  LTemDepStart,LTemDepFinish,
                                                  LTemDepStep,LTemDepIsoInterval,LTemDepTolCoef);
-  ST2829Dependence:=TST2829Dependence.Create(ST_2829C,PBIV,BIVStop,IVResult,
+  ST2829Dependence:=TST2829Dependence.Create(ST_2829C.SweepParameters,PBIV,BIVStop,{IVResult,}
                                        ForwLine,ForwLg);
 
   ShowArray.Add(ShowTempDep);
@@ -1216,13 +1222,16 @@ begin
 
   Kt_2450.HookForTrigDataObtain:=Kt2450HookForTrig;
 
-  FastArduinoIV.HookBeginMeasuring:=FastArduinoIVHookBegin;
-  FastArduinoIV.HookEndMeasuring:=FastArduinoIVHookEnd;
-  FastIVMeasuring.CopyDecorationTo(FastArduinoIV);
-  ArduinoMeters.Add(FastArduinoIV.ArduinoCommunication);
+//  FastArduinoIV.HookBeginMeasuring:=FastArduinoIVHookBegin;
+//  FastArduinoIV.HookEndMeasuring:=FastArduinoIVHookEnd;
+//  FastIVMeasuring.CopyDecorationTo(FastArduinoIV);
+//  ArduinoMeters.Add(FastArduinoIV.ArduinoCommunication);
+
+  ST2829Dependence.HookBeginMeasuring:=ST2829HookBegin;
+  ST2829Dependence.HookEndMeasuring:=ST2829HookEnd;
 
 
-  SetLength(Dependencies,9);
+  SetLength(Dependencies,8);
   Dependencies[0]:=IVMeasuring;
   Dependencies[1]:=CalibrMeasuring;
   Dependencies[2]:=TimeDependence;
@@ -1231,7 +1240,7 @@ begin
   Dependencies[5]:=ControlParameterTime;
   Dependencies[6]:=TemperatureOnTime;
   Dependencies[7]:=IVcharOnTemperature;
-  Dependencies[8]:=ST2829Dependence;
+//  Dependencies[8]:=ST2829Dependence;
 
 
   IVMeasuring.RangeFor:=IVCharRangeFor;
@@ -1463,15 +1472,10 @@ end;
 
 procedure TIVchar.HookBegin;
  begin
-  CBMeasurements.Enabled:=False;
-  BIVStart.Enabled := False;
-  BConnect.Enabled := False;
-  BIVSave.Enabled:=False;
-  BParamReceive.Enabled := False;
+  ButtonMeasEnableFalse;
+
 
   if Key=MeasIV then  IVcharHookBegin;
-  if Key=MeasFastIV then FastIVHookBegin;
-  if Key=MeasFastIVArd then FastArduinoIVHookBegin;
 
   if Key=MeasTimeD then MeasurementTimeParameterDetermination(TimeDependence);
   if Key=MeasTwoTimeD then  MeasurementTimeParameterDetermination(TimeTwoDependenceTimer);
@@ -2374,25 +2378,25 @@ begin
 
 end;
 
-procedure TIVchar.HookEnd;
+procedure TIVchar.HookEndGeneral(Option:boolean;Count:integer);
 begin
-  DecimalSeparator:='.';
-
-  CBMeasurements.Enabled:=True;
-  BIVStart.Enabled := True;
-  BConnect.Enabled := True;
-  BParamReceive.Enabled := True;
-  if IVResult.HighNumber > 0 then
+  if Option then
   begin
+    CBMeasurements.Enabled:=True;
+    BIVStart.Enabled := True;
+    BConnect.Enabled := True;
+    BParamReceive.Enabled := True;
+  if Count > 0 then
+   begin
     BIVSave.Enabled := True;
     BIVSave.Font.Style := BIVSave.Font.Style - [fsStrikeOut];
+   end;
   end;
-
 end;
 
 procedure TIVchar.ActionInSaveButton(Sender: TObject);
 begin
-
+  DecimalSeparator:='.';
   if Key=MeasR2RCalib then
   begin
     CalibrSaveClick(Sender);
@@ -2537,7 +2541,7 @@ end;
 
 procedure TIVchar.SaveIVMeasurementResults(FileName: string; DataVector:TVector);
 begin
-
+  DecimalSeparator:='.';
   if (Current_MD.ActiveInterface.Name='KT2450Meter')
       or(CBuseKT2450.Checked)
    then DataVector.WriteToFile(FileName,8)
@@ -2761,7 +2765,7 @@ begin
  if Key=MeasR2RCalib then CalibrMeasuring.Measuring;
  if Key=MeasIV then IVMeasuring.Measuring;
  if Key=MeasFastIV then FastIVMeasuring.Measuring;
- if Key=MeasFastIVArd then FastArduinoIV.Measuring;
+// if Key=MeasFastIVArd then FastArduinoIV.Measuring;
  if Key=MeasTimeD then TimeDependence.BeginMeasuring;
  if Key=MeasTwoTimeD then TimeTwoDependenceTimer.BeginMeasuring;
  if Key=MeasIscAndVocOnTime then IscVocOnTime.BeginMeasuring;
@@ -2864,66 +2868,10 @@ procedure TIVchar.Button1Click(Sender: TObject);
 begin
 showmessage(inttostr(ForwLine.Count));
 
-//  Vax:=TVector.Create;
-//  Vax.ReadFromFile('D:\Samples\DeepL\Project\SC116_A\2020_10_09\dark70.dat');
-//  showmessage(booltostr(IVisBad(Vax))+' true='+booltostr(true));
-//  Vax.Free;
 
-//   MCP3424.ValueToByteArray(0,ByteAr);
-//   showmessage(ByteArrayToString(ByteAr));
-//   MCP3424.ValueToByteArray(-0.5,ByteAr);
-//   showmessage(ByteArrayToString(ByteAr));
-//   MCP3424.ValueToByteArray(-1,ByteAr);
-//   showmessage(ByteArrayToString(ByteAr));
-//   MCP3424.ValueToByteArray(-2,ByteAr);
-//   showmessage(ByteArrayToString(ByteAr));
-
-
-//FastArduinoIV.Measuring;
-
-//  showmessage(FloatTostr(FastIVMeasuring.RangeRev.HighValue));
-// showmessage('$'+inttohex(($7F and byte(round(abs(-1.2)*10)))or $80,2));
-
-// showmessage(ForwSteps.XYtoString+RevSteps.XYtoString);
-//showmessage(inttostr(ShowTempDep.fToleranceCoef.Data));
-//showmessage(inttostr(IVcharOnTemperature.StartTemperature));
-
-//showmessage(inttostr(IVcharOnTemperature.ToleranceCoficient));
-
-//showmessage(inttostr(CalibrateA[2,2,2]));
 end;
 
 
-
-
-//procedure TIVchar.B_GDS806driveClick(Sender: TObject);
-//begin
-//  if not(Assigned(Form_GDS806)) then
-//   begin
-//    Form_GDS806:=TForm_GDS806.Create(nil);
-//    GDSShow_Create;
-//    GDS_806S_Show.ReadFromIniFile(ConfigFile);
-//   end;
-//
-//  Form_GDS806.Parent := IVchar.TS_GDS;
-//  Form_GDS806.BorderStyle:=bsNone;
-//  Form_GDS806.Align := alClient;
-//  Form_GDS806.BClose.Caption:='UnDock';
-//  Form_GDS806.Color:=clBtnFace;
-//  Form_GDS806.Height:=Form_GDS806.Height-20;
-//end;
-
-//procedure TIVchar.B_Kt2450driveClick(Sender: TObject);
-//begin
-////  KT2450Form.Show;
-//
-//  KT2450Form.Parent := IVchar.TS_Kt2450;
-//  KT2450Form.BorderStyle:=bsNone;
-//  KT2450Form.Align := alClient;
-//  KT2450Form.BClose.Caption:='UnDock';
-//  KT2450Form.Color:=clBtnFace;
-//  KT2450Form.Height:=KT2450Form.Height-20;
-//end;
 
 procedure TIVchar.BWriteTMClick(Sender: TObject);
  var SR : TSearchRec;
@@ -3078,46 +3026,25 @@ end;
 
 procedure TIVchar.FastArduinoIVHookBegin;
 begin
-   FastIVHookBeginBase(FastArduinoIV);
+//   FastIVHookBeginBase(FastArduinoIV);
 end;
 
 procedure TIVchar.FastArduinoIVHookEnd;
 begin
-  FastIVHookEndBase(FastArduinoIV);
+//  FastIVHookEndBase(FastArduinoIV);
 end;
 
 procedure TIVchar.FastIVHookBegin;
 begin
   FastIVHookBeginBase(FastIVMeasuring);
-
-//  if FastIVMeasuring.SingleMeasurement then
-//    begin
-//      CBMeasurements.Enabled:=False;
-//      BIVStart.Enabled := False;
-//      BConnect.Enabled := False;
-//      BIVSave.Enabled:=False;
-//      BParamReceive.Enabled := False;
-//    end;
-//
-// ThermoCuple.Measurement:=TermoCouple_MD.ActiveInterface;
-// FastIVMeasuring.Imax := MaxCurrentCS.Data;
-// FastIVMeasuring.Imin := MinCurrentCS.Data;
-// FastIVMeasuring.CurrentValueLimitEnable:=CBCurrentValue.Checked;
-// FastIVMeasuring.DragonBackTime:=Dragon_backTimeCS.Data;
 end;
 
 procedure TIVchar.FastIVHookBeginBase(FastIVDep: TFastIVDependence);
 begin
-  if FastIVDep.SingleMeasurement then
-    begin
-      CBMeasurements.Enabled:=False;
-      BIVStart.Enabled := False;
-      BConnect.Enabled := False;
-      BIVSave.Enabled:=False;
-      BParamReceive.Enabled := False;
-    end;
+ if FastIVDep.SingleMeasurement then ButtonMeasEnableFalse;
 
  ThermoCuple.Measurement:=TermoCouple_MD.ActiveInterface;
+
  FastIVDep.Imax := MaxCurrentCS.Data;
  FastIVDep.Imin := MinCurrentCS.Data;
  FastIVDep.CurrentValueLimitEnable:=CBCurrentValue.Checked;
@@ -3132,71 +3059,12 @@ end;
 procedure TIVchar.FastIVHookEnd;
 begin
  FastIVHookEndBase(FastIVMeasuring);
-
-//  DecimalSeparator:='.';
-// if FastIVMeasuring.SingleMeasurement then
-//    begin
-//      CBMeasurements.Enabled:=True;
-//      BIVStart.Enabled := True;
-//      BConnect.Enabled := True;
-//      BParamReceive.Enabled := True;
-//      if FastIVMeasuring.Results.HighNumber > 0 then
-//      begin
-//        BIVSave.Enabled := True;
-//        BIVSave.Font.Style := BIVSave.Font.Style - [fsStrikeOut];
-//      end;
-//    end;
-//
-//  if (SBTAuto.Down)and
-//     (Temperature_MD.ActiveInterface.NewData) then
-//      begin
-//       Temperature:=Temperature_MD.ActiveInterface.Value;
-////       Temperature_MD.ActiveInterface.NewData:=False;
-//      end                                     else
-//       Temperature:=Temperature_MD.GetMeasurementResult();
-//  if Temperature=ErResult
-//    then  Temperature:=Temperature_MD.GetMeasurementResult();
-//
-//
-// if FastIVMeasuring.SingleMeasurement
-//    then BIVSave.OnClick:=ActionInSaveButtonFastIV
-//    else SaveIVMeasurementResults(FastIVMeasuring.DatFileNameToSave,FastIVMeasuring.Results)
-
 end;
 
 procedure TIVchar.FastIVHookEndBase(FastIVDep: TFastIVDependence);
 begin
-  DecimalSeparator:='.';
- if FastIVDep.SingleMeasurement then
-    begin
-      CBMeasurements.Enabled:=True;
-      BIVStart.Enabled := True;
-      BConnect.Enabled := True;
-      BParamReceive.Enabled := True;
-      if FastIVDep.Results.HighNumber > 0 then
-      begin
-        BIVSave.Enabled := True;
-        BIVSave.Font.Style := BIVSave.Font.Style - [fsStrikeOut];
-      end;
-    end;
-
-  if (SBTAuto.Down)and
-     (Temperature_MD.ActiveInterface.NewData) then
-      begin
-//       HelpForMe('SBTAuto_True'+inttostr(MilliSecond));
-       Temperature:=Temperature_MD.ActiveInterface.Value;
-       Temperature_MD.ActiveInterface.NewData:=False;
-      end                                     else
-       begin
-//        HelpForMe('SBTAuto_False'+inttostr(MilliSecond));
-       Temperature:=Temperature_MD.GetMeasurementResult();
-       end;
-  if Temperature=ErResult
-    then
-     begin
-//      HelpForMe('Temperature_ErResult'+inttostr(MilliSecond));
-     Temperature:=Temperature_MD.GetMeasurementResult();
-     end;
+ HookEndGeneral(FastIVDep.SingleMeasurement,FastIVDep.Results.HighNumber);
+ TemperatureDetermination;
 
  CustomFastIVMeas:=FastIVDep;
  if FastIVDep.SingleMeasurement
@@ -3254,20 +3122,13 @@ begin
  ComPortsBegining;
 
 
-// RS232_MediatorTread:=TRS232_MediatorTread.Create(ComPort1,
-//                 [INA226_Module,ADS11115module,HTU21D,
-//                 DACR2R,V721A,V721_I,V721_II,DS18B20,
-//                 TMP102,
-//                 MLX90615,
-//                 D30_06,IscVocPinChanger,LEDOpenPinChanger,
-//                 MCP3424,AD9833,STS21,ADT74x0,MCP9808]);
  ArduinoSenders:=TArrIArduinoSender.Create([INA226_Module,ADS11115module,HTU21D,
                  DACR2R,V721A,V721_I,V721_II,DS18B20,
                  TMP102,
                  MLX90615,
                  D30_06,IscVocPinChanger,LEDOpenPinChanger,
                  MCP3424,AD9833,STS21,ADT74x0,MCP9808,
-                 AD5752_Modul,FastArduinoIV.ArduinoCommunication]);
+                 AD5752_Modul{,FastArduinoIV.ArduinoCommunication}]);
 
  AnyObjectArray.Add(ArduinoSenders);
  RS232_MediatorTread:=TRS232_MediatorTread.Create(ComPort1,ArduinoSenders);
@@ -3462,27 +3323,23 @@ begin
 end;
 
 
-//procedure TIVchar.ST2829CShow_Create;
-//begin
-// with ST2829Form do
-// begin
-//  ST2829C_Show := TST2829C_Show.Create(ST_2829C,
-//                                      B_ST2829C_Test);
-// end;
-// ShowArray.Add([ST2829C_Show]);
-//end;
-
-//procedure TIVchar.ST2829C_Create;
-//begin
-// ST_2829C := TST2829C.Create(ComPortST2829);
+procedure TIVchar.ST2829HookBegin;
+begin
+ if ST2829Dependence.SingleMeasurement then ButtonMeasEnableFalse;
+ ThermoCuple.Measurement:=TermoCouple_MD.ActiveInterface;
+end;
 
 
-// ST_2829C := TST2829C.Create();
-// AnyObjectArray.Add([ST_2829C]);
+procedure TIVchar.ST2829HookEnd;
+begin
+ HookEndGeneral(ST2829Dependence.SingleMeasurement,ST_2829C.SweepParameters.DataPrime.HighNumber);
+ TemperatureDetermination();
 
-// if Assigned(ST2829Form) then
-//   ST2829CShow_Create;
-//end;
+// CustomFastIVMeas:=FastIVDep;
+// if ST2829Dependence.SingleMeasurement
+//    then BIVSave.OnClick:=ActionInSaveButtonFastIV
+//    else SaveIVMeasurementResults(FastIVDep.DatFileNameToSave,FastIVDep.Results)
+end;
 
 procedure TIVchar.NameToLabel(LabelName: string; Name, NameValue: TLabel);
 begin
@@ -4170,7 +4027,8 @@ begin
   for I := 0 to High(Dependencies) do
     Dependencies[i].Free;
  FastIVMeasuring.Free;
- FastArduinoIV.Free;
+// FastArduinoIV.Free;
+ ST2829Dependence.Free;
 end;
 
 procedure TIVchar.DACCreate;
@@ -4552,6 +4410,32 @@ begin
  AnyObjectArray.Add([DMM_6500]);
  ShowArray.Add([DMM6500_IPAdressShow,DMM6500_Show]);
 
+end;
+
+procedure TIVchar.TemperatureDetermination;
+begin
+  if (SBTAuto.Down) and (Temperature_MD.ActiveInterface.NewData) then
+  begin
+    Temperature := Temperature_MD.ActiveInterface.Value;
+    Temperature_MD.ActiveInterface.NewData := False;
+  end                                                             else
+  begin
+    Temperature := Temperature_MD.GetMeasurementResult;
+  end;
+  if Temperature = ErResult then
+  begin
+    Temperature := Temperature_MD.GetMeasurementResult;
+  end;
+end;
+
+
+procedure TIVchar.ButtonMeasEnableFalse;
+begin
+  CBMeasurements.Enabled := False;
+  BIVStart.Enabled := False;
+  BConnect.Enabled := False;
+  BIVSave.Enabled := False;
+  BParamReceive.Enabled := False;
 end;
 
 procedure TIVchar.CorrectionLimit(var NewCorrection: Double);

@@ -3,7 +3,8 @@ unit ST2829C;
 interface
 
 uses
-  SCPI, CPort, RS232deviceNew, ST2829CConst, ExtCtrls, OlegTypePart2, IniFiles;
+  SCPI, CPort, RS232deviceNew, ST2829CConst, ExtCtrls, OlegTypePart2, IniFiles, 
+  OlegVector;
 
 type
 
@@ -250,6 +251,8 @@ type
  end;
 
 
+
+
 TST2829_Measurement=class(TMeasurementSimple)
  private
  protected
@@ -287,21 +290,39 @@ end;
 
 TST2829SweepParameters=class
  private
-//  fSweepType:TST2829C_SweepParametr;
-//  fStartValue:double;
-//  fFinishValue:double;
-//  fPointCount:integer;
-//  fLinearStep:boolean;
+  fParentModule: TST2829C;
+  fDataVector:TVector;
+  fSecondDataVector:TVector;
+  fOldValue:double;
+  fOldState:boolean;
+  fStepValue:double;
+  function GtMeasureType:TST2829C_MeasureType;
  public
-//  property SweepType:TST2829C_SweepParametr read fSweepType;
   SweepType:TST2829C_SweepParametr;
   StartValue:double;
   FinishValue:double;
   PointCount:integer;
   LogStep:boolean;
   DataType:TST2829C_SweepData;
-  constructor Create;
+  property DataPrime:TVector read fDataVector;
+  property DataSecond:TVector read fSecondDataVector;
+  property MeasureType:TST2829C_MeasureType read GtMeasureType;
+  constructor Create(ST2829C:TST2829C);
+  destructor Destroy; override;
   function ToString():string;
+  function Step:double;
+//  procedure StepDetermination;
+  procedure SaveDataToFile(FileName:string);
+  procedure BeforeMeasuring;
+  procedure EndMeasuring;
+  procedure ActionMeasurement(const Value:double);
+  procedure SetValue(Value:double);
+  procedure AddData;
+  function GetXData:double;
+  function GetXValueAtStep(StepNumber:integer):double;
+  {повертає значення величини, залежність
+  від якої вимірюється, на кроці з номером StepNumber;
+  StepNumber має змінюватися від 0 до (PointCount-1)}
 end;
 
 var
@@ -311,7 +332,7 @@ var
 implementation
 
 uses
-  SysUtils, Dialogs, OlegType, Math, StrUtils, OlegFunction, Forms;
+  SysUtils, Dialogs, OlegType, Math, StrUtils, OlegFunction, Forms, OlegGraph;
 
 { T2829C }
 
@@ -396,7 +417,7 @@ begin
  inherited Create('ST2829C');
  fMeterSec:=TST2829_MeterSecondary.Create(Self);
  fMeterPrim:=TST2829_MeterPrimary.Create(Self);
- fSweepParameters:=TST2829SweepParameters.Create();
+ fSweepParameters:=TST2829SweepParameters.Create(Self);
 end;
 
 
@@ -1694,16 +1715,230 @@ end;
 
 { TST2829SweepParameters }
 
-constructor TST2829SweepParameters.Create;
+procedure TST2829SweepParameters.ActionMeasurement(const Value:double);
+begin
+  SetValue(Value);
+  fParentModule.Trig;
+  case  SweepType of
+   st_spIrms:fParentModule.GetDataIrms();
+   st_spVrms:fParentModule.GetDataVrms();
+  end;
+end;
+
+procedure TST2829SweepParameters.AddData;
+begin
+  case DataType of
+    st_sdPrim:fDataVector.Add(GetXData(),fParentModule.DataPrimary);
+    st_sdSecon:fDataVector.Add(GetXData(),fParentModule.DataSecondary);
+    st_sdBoth:begin
+               fDataVector.Add(GetXData(),fParentModule.DataPrimary);
+               fSecondDataVector.Add(GetXData(),fParentModule.DataSecondary);
+              end;
+  end;
+end;
+
+procedure TST2829SweepParameters.BeforeMeasuring;
+begin
+  fDataVector.Clear;
+  fSecondDataVector.Clear;
+//  case SweepType of
+//   st_spBiasVolt:;
+//   st_spBiasCurr:;
+//   st_spFreq:;
+//   st_spVrms:;
+//   st_spIrms:;
+//  end;
+  case SweepType of
+   st_spBiasVolt:begin
+                  fOldValue:=fParentModule.BiasVoltageValue;
+                  fOldState:=fParentModule.BiasEnable;
+                 end;
+   st_spBiasCurr:begin
+                  fOldValue:=fParentModule.BiasCurrentValue;
+                  fOldState:=fParentModule.BiasEnable;
+                 end;
+   st_spFreq:fOldValue:=fParentModule.FreqMeas;
+   st_spVrms:begin
+              fOldValue:=fParentModule.VrmsMeas;
+              fOldState:=fParentModule.VrmsToMeasure;
+             end;
+   st_spIrms:begin
+              fOldValue:=fParentModule.IrmsMeas;
+              fOldState:=fParentModule.IrmsToMeasure;
+             end;
+  end;
+
+
+   case  SweepType of
+   st_spBiasVolt,
+   st_spBiasCurr: if not(fParentModule.BiasEnable)
+                     then fParentModule.SetBiasEnable(True);
+   st_spIrms:if not(fParentModule.IrmsToMeasure)
+                     then fParentModule.SetIrmsToMeasure(True);
+   st_spVrms:if not(fParentModule.VrmsToMeasure)
+                     then fParentModule.SetVrmsToMeasure(True);
+  end;
+
+ fStepValue:=Step();
+end;
+
+constructor TST2829SweepParameters.Create(ST2829C:TST2829C);
 begin
   inherited Create();
+  fParentModule:=ST2829C;
   SweepType:=st_spBiasVolt;
   StartValue:=0;
   FinishValue:=1;
   PointCount:=2;
   LogStep:=False;
   DataType:=st_sdPrim;
+  fDataVector:=TVector.Create;
+  fSecondDataVector:=TVector.Create;
 end;
+
+destructor TST2829SweepParameters.Destroy;
+begin
+  FreeAndNil(fDataVector);
+  FreeAndNil(fSecondDataVector);
+  inherited;
+end;
+
+procedure TST2829SweepParameters.EndMeasuring;
+begin
+  case  SweepType of
+   st_spBiasVolt,
+   st_spBiasCurr: if fParentModule.BiasEnable<>fOldState then
+                      fParentModule.SetBiasEnable(fOldState);
+   st_spIrms:if fParentModule.IrmsToMeasure<>fOldState then
+                      fParentModule.SetIrmsToMeasure(fOldState);
+   st_spVrms:if fParentModule.VrmsToMeasure<>fOldState then
+                      fParentModule.SetVrmsToMeasure(False);
+  end;
+  SetValue(fOldValue);
+end;
+
+function TST2829SweepParameters.GetXData: double;
+begin
+ case SweepType of
+    st_spBiasVolt:Result:=fParentModule.BiasVoltageValue;
+    st_spBiasCurr:Result:=fParentModule.BiasCurrentValue;
+    st_spFreq:Result:=fParentModule.FreqMeas;
+    st_spVrms:Result:=fParentModule.DataVrms;
+    else Result:=fParentModule.DataIrms;
+  end;
+end;
+
+function TST2829SweepParameters.GetXValueAtStep(StepNumber: integer): double;
+ var Mult:double;
+begin
+ Result:=0;
+ if (StepNumber<0)or(StepNumber>(PointCount-1))
+   then Exit;
+
+ Mult:=fStepValue*StepNumber;
+
+ if Mult=0 then
+   begin
+     Result:=StartValue;
+     Exit;
+   end;
+
+ if LogStep
+   then
+    begin
+     if FinishValue>=StartValue then
+       begin
+         if StartValue>0 then
+              Result:=Power(10,log10(StartValue)+Mult);
+         if StartValue=0 then
+              Result:=Power(10,Mult);
+         if StartValue<0 then
+           begin
+             if Mult<0 then Result:=-Power(10,log10(-StartValue)+Mult)
+                       else
+               begin
+               if Mult=log10(-StartValue) then Result:=0;
+               if Mult<log10(-StartValue)
+                then Result:=-Power(10,log10(-StartValue)-Mult);
+               if Mult>log10(-StartValue)
+                then Result:=Power(10,-log10(-StartValue)+Mult);
+               end;
+           end;
+       end                     else //FinishValue>=StartValue
+       begin
+         if FinishValue>=0 then
+           begin
+            if -Mult=log10(StartValue)
+              then Result:=0
+              else Result:=Power(10,log10(StartValue)+Mult);
+
+           end             else   //FinishValue>=0
+           begin
+            if StartValue=0 then Result:=-Power(10,Mult);
+            if StartValue>0 then
+              begin
+                if Mult=log10(StartValue) then Result:=0;
+                if Mult<log10(StartValue)
+                 then Result:=Power(10,log10(StartValue)-Mult);
+                if Mult>log10(StartValue)
+                 then Result:=-Power(10,-log10(StartValue)+Mult);
+              end;
+            if StartValue<0 then
+                Result:=-Power(10,log10(-StartValue)+Mult)
+           end;
+       end;
+    end
+   else Result:=StartValue+Mult;
+
+end;
+
+function TST2829SweepParameters.GtMeasureType: TST2829C_MeasureType;
+begin
+ Result:=fParentModule.MeasureType;
+end;
+
+procedure TST2829SweepParameters.SaveDataToFile(FileName: string);
+begin
+ if DataType=st_sdBoth
+   then ToFileFromTwoVector(FileName,fDataVector,fSecondDataVector,8)
+   else fDataVector.WriteToFile(FileName,8);
+end;
+
+procedure TST2829SweepParameters.SetValue(Value: double);
+begin
+  case SweepType of
+    st_spBiasVolt: fParentModule.SetBiasVoltage(Value);
+    st_spBiasCurr: fParentModule.SetBiasCurrent(Value);
+    st_spFreq: fParentModule.SetFrequancyMeasurement(Value);
+    st_spVrms: fParentModule.SetVoltageMeasurement(Value);
+    st_spIrms: fParentModule.SetCurrentMeasurement(Value);
+  end;
+end;
+
+function TST2829SweepParameters.Step: double;
+begin
+ Result:=0;
+ if (FinishValue=0)and(StartValue=0) then Exit;
+
+ if LogStep
+   then
+    begin
+     if FinishValue*StartValue>0
+       then  Result:=(log10(abs(FinishValue))-log10(abs(StartValue)))/(PointCount-1)
+       else
+        begin
+          if FinishValue*StartValue<0 then Result:=(log10(abs(FinishValue))+log10(abs(StartValue)))/(PointCount-1);
+          if FinishValue=0 then Result:=log10(abs(StartValue))/(PointCount-1);
+          if StartValue=0 then Result:=log10(abs(FinishValue))/(PointCount-1);
+        end;
+    end
+   else Result:=(FinishValue-StartValue)/(PointCount-1);
+end;
+
+//procedure TST2829SweepParameters.StepDetermination;
+//begin
+// fStepValue:=Step();
+//end;
 
 function TST2829SweepParameters.ToString: string;
 begin

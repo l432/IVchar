@@ -10,7 +10,7 @@ uses
 
 var EventToStopDependence:THandle;
   fItIsForward:boolean;
-  fIVMeasuringToStop:boolean;
+  fMeasuringToStop:boolean;
   Info:string;
 
 //    EventFastIVDone: THandle;
@@ -100,9 +100,14 @@ private
   procedure PeriodicMeasuring();virtual;
 end;
 
+
+
+
 TST2829Dependence=class(TDependence)
  private
-  fST2829C:TST2829C;
+  fSP:TST2829SweepParameters;
+  fPNumber:integer;
+  fXValue:double;
   procedure SeriesClear();override;
   procedure Cycle();
   function MeasurementNumberDetermine(): integer;override;
@@ -111,13 +116,18 @@ TST2829Dependence=class(TDependence)
   procedure ActionMeasurement();override;
   procedure DataSave();override;
  protected
+  fSingleMeasurement:boolean;
+  {якщо True, то треба заповнювати графіки,
+  інакше це просто вимірювання в ряді інших}
  public
- Constructor Create(ST2829C:TST2829C;
+ PrefixToFileName:string;
+ property SingleMeasurement:boolean read fSingleMeasurement write fSingleMeasurement;
+ Constructor Create(SweepParameters:TST2829SweepParameters;
                     PB:TProgressBar;
                     BS: TButton;
-                    Res:TVector;
+//                    Res:TVector;
                     FistPS,SecondPS:TPointSeries);
- procedure Measuring;
+ procedure Measuring(SingleMeasurement:boolean=True);
 end;
 
 TTimeDependence=class(TDependence)
@@ -544,7 +554,7 @@ begin
     HookFirstMeas();
     if ftempV=ErResult then
       begin
-       fIVMeasuringToStop:=True;
+       fMeasuringToStop:=True;
        Exit;
       end;
     if not(fSecondMeasIsDone)  then Continue;
@@ -553,7 +563,7 @@ begin
     HookSecondMeas();
     if ftempI=ErResult then
       begin
-       fIVMeasuringToStop:=True;
+       fMeasuringToStop:=True;
        Exit;
       end;
   until (fSecondMeasIsDone);
@@ -564,7 +574,7 @@ end;
 procedure TIVDependence.BeginMeasuring;
 begin
   inherited BeginMeasuring;
-  fIVMeasuringToStop:=False;
+  fMeasuringToStop:=False;
   CBForw.Enabled:=False;
   CBRev.Enabled:=False;
   RevLine.Clear;
@@ -573,7 +583,7 @@ end;
 
 procedure TIVDependence.ButtonStopClick(Sender: TObject);
 begin
- fIVMeasuringToStop:=True;
+ fMeasuringToStop:=True;
 end;
 
 constructor TIVDependence.Create(
@@ -635,7 +645,7 @@ begin
 
    repeat
      Application.ProcessMessages;
-     if fIVMeasuringToStop then Exit;
+     if fMeasuringToStop then Exit;
 
      DuringMeasuring(Action);
      HookStep();
@@ -648,7 +658,7 @@ end;
 procedure TIVDependence.DataSave;
 begin
   Application.ProcessMessages;
-  if fIVMeasuringToStop then Exit;
+  if fMeasuringToStop then Exit;
   HookDataSave();
   if ftempI=ErResult then Exit;
 
@@ -1159,7 +1169,7 @@ end;
 procedure TFastDependence.ButtonStopClick(Sender: TObject);
 begin
   SetEvent(EventToStopDependence);
-  fIVMeasuringToStop:=True;
+  fMeasuringToStop:=True;
 end;
 
 constructor TFastDependence.Create(BS: TButton; FLn, FLg: TPointSeries);
@@ -1313,7 +1323,7 @@ procedure TFastIVDependence.BeginMeasuring;
 begin
   inherited  BeginMeasuring;
 //  ResetEvent(EventToStopDependence);
-  fIVMeasuringToStop:=false;
+  fMeasuringToStop:=false;
 
   DiodOrientationVoltageFactorDetermination();
   fItIsLightIV:=False;
@@ -1465,7 +1475,7 @@ begin
    while (round(fAbsVoltageValue*1000)<=round(Finish*1000)) do
      begin
       DuringMeasuring(ActionMeasurement);
-      if fIVMeasuringToStop then Exit;
+      if fMeasuringToStop then Exit;
 //      if fTreadToMeasuring.IsTerminated then Exit;
       VoltageChange();
      end;
@@ -1475,7 +1485,7 @@ end;
 
 procedure TFastIVDependence.DataSave;
 begin
- if fIVMeasuringToStop then Exit;
+ if fMeasuringToStop then Exit;
 // if fTreadToMeasuring.IsTerminated then Exit;
 
  if FCurrentValueLimitEnable
@@ -1728,7 +1738,7 @@ end;
 
 function TFastIVDependence.ValueMeasuring(MD: TMeasuringDevice): double;
 begin
-  if fIVMeasuringToStop then
+  if fMeasuringToStop then
 //  if fTreadToMeasuring.IsTerminated then
    begin
     Result:=ErResult;
@@ -1742,7 +1752,7 @@ begin
   end;
   if Result=ErResult then
       begin
-       fIVMeasuringToStop:=true;
+       fMeasuringToStop:=true;
 //       SetEvent(EventToStopDependence);
 //       sleep(0);
        Exit;
@@ -1901,12 +1911,12 @@ end;
 
 class function TIVParameters.IVMeasuringToStop: boolean;
 begin
-  Result:=fIVMeasuringToStop;
+  Result:=fMeasuringToStop;
 end;
 
 class procedure TIVParameters.IVMeasuringToStopChange(Value: boolean);
 begin
-  fIVMeasuringToStop:=Value;
+  fMeasuringToStop:=Value;
 end;
 
 class procedure TIVParameters.SecondMeasIsDoneChange(Value: boolean);
@@ -2343,7 +2353,7 @@ end;
 procedure TOldFastIVstate.MeasuringState;
 begin
   fFastIV.Cycle(True);
-  if not(fIVMeasuringToStop)
+  if not(fMeasuringToStop)
      then fFastIV.Cycle(False);
 end;
 
@@ -2351,66 +2361,61 @@ end;
 
 procedure TST2829Dependence.ActionMeasurement;
 begin
-  case fST2829C.SweepParameters.SweepType of
-    st_spBiasVolt: fST2829C.SetBiasVoltage(fVoltageInput);
-    st_spBiasCurr: fST2829C.SetBiasCurrent(fVoltageInput);
-    st_spFreq: fST2829C.SetFrequancyMeasurement(fVoltageInput);
-    st_spVrms: fST2829C.SetVoltageMeasurement(fVoltageInput);
-    st_spIrms: fST2829C.SetCurrentMeasurement(fVoltageInput);
-  end;
-  fST2829C.Trig;
-
-  case  fST2829C.SweepParameters.SweepType of
-   st_spIrms:fST2829C.GetDataIrms();
-   st_spVrms:fST2829C.GetDataVrms();
-  end;
-
-
-  inherited ActionMeasurement;
+  fSP.ActionMeasurement(fXValue);
+  DataSave();
 end;
 
 procedure TST2829Dependence.BeginMeasuring;
 begin
-  inherited BeginMeasuring;
-  fIVMeasuringToStop:=False;
-  fVoltageInput:=fST2829C.SweepParameters.StartValue;
-  fVoltageStep:=(fST2829C.SweepParameters.FinishValue
-              -fST2829C.SweepParameters.StartValue)
-              /(fST2829C.SweepParameters.PointCount-1);
+  ProgressBar.Position := 0;
+  DecimalSeparator:='.';
+  fPNumber:=0;
 
-  case  fST2829C.SweepParameters.SweepType of
-   st_spBiasVolt,
-   st_spBiasCurr:fST2829C.SetBiasEnable(True);
-   st_spIrms:fST2829C.SetIrmsToMeasure(True);
-   st_spVrms:fST2829C.SetVrmsToMeasure(True);
-  end;
+  fSP.BeforeMeasuring();
+
+  if fSingleMeasurement then
+   begin
+      ProgressBar.Max := MeasurementNumberDetermine();
+      ProgressBar.Position := 0;
+      fMeasuringToStop:=False;
+      ButtonStop.OnClick := ButtonStopClick;
+      ButtonStop.Enabled:=True;
+      SeriesClear();
+   end;
+
+ HookBeginMeasuring();
 
  if IVtiming then
   begin
    secondmeter.Start();
-  end;  
+  end;
 
 end;
 
-constructor TST2829Dependence.Create(ST2829C: TST2829C; PB: TProgressBar;
-  BS: TButton; Res: TVector; FistPS, SecondPS: TPointSeries);
+constructor TST2829Dependence.Create(SweepParameters:TST2829SweepParameters; PB: TProgressBar;
+  BS: TButton; {Res: TVector; }FistPS, SecondPS: TPointSeries);
 begin
- fST2829C:=ST2829C;
- inherited Create(PB,BS,Res,FistPS,SecondPS);
+ fSP:=SweepParameters;
+ inherited Create(PB,BS,nil,FistPS,SecondPS);
 end;
 
 procedure TST2829Dependence.Cycle();
 begin
-
- repeat
+ while fPNumber<fSP.PointCount do
+  begin
      Application.ProcessMessages;
-     if fIVMeasuringToStop then Exit;
-
-     PeriodicMeasuring();
-//     DuringMeasuring(Action);
+     if fMeasuringToStop then Exit;
+     fXValue:=fSP.GetXValueAtStep(fPNumber);
+     HookAction();
+     ActionMeasurement();
+     inc(fPNumber);
+     if fSingleMeasurement then
+      begin
+      ProgressBar.Position := fPNumber;
+      MelodyShot();
+      end;
 //     HookStep();
-     fVoltageInput:=fVoltageInput+fVoltageStep;
-  until fPointNumber>=fST2829C.SweepParameters.PointCount;
+  end;
 end;
 
 procedure TST2829Dependence.DataSave;
@@ -2418,64 +2423,27 @@ begin
 
   Application.ProcessMessages;
   HookDataSave();
+  fSP.AddData;
 
-  case fST2829C.SweepParameters.DataType of
-    st_sdPrim:case fST2829C.SweepParameters.SweepType of
-                st_spBiasVolt,
-                st_spBiasCurr,
-                st_spFreq:begin
-                          ForwLine.AddXY(fVoltageInput, fST2829C.DataPrimary);
-                          ForwLg.AddXY(fVoltageInput, fST2829C.DataPrimary);
-                          end;
-                st_spVrms:begin
-                          ForwLine.AddXY(fST2829C.DataVrms, fST2829C.DataPrimary);
-                          ForwLg.AddXY(fST2829C.DataVrms, fST2829C.DataPrimary);
-                          end;
-                st_spIrms:begin
-                          ForwLine.AddXY(fST2829C.DataIrms, fST2829C.DataPrimary);
-                          ForwLg.AddXY(fST2829C.DataIrms, fST2829C.DataPrimary);
-                          end;
-              end;
-    st_sdSecon:case fST2829C.SweepParameters.SweepType of
-                st_spBiasVolt,
-                st_spBiasCurr,
-                st_spFreq:begin
-                          ForwLine.AddXY(fVoltageInput, fST2829C.DataSecondary);
-                          ForwLg.AddXY(fVoltageInput, fST2829C.DataSecondary);
-                          end;
-                st_spVrms:begin
-                          ForwLine.AddXY(fST2829C.DataVrms, fST2829C.DataSecondary);
-                          ForwLg.AddXY(fST2829C.DataVrms, fST2829C.DataSecondary);
-                          end;
-                st_spIrms:begin
-                          ForwLine.AddXY(fST2829C.DataIrms, fST2829C.DataSecondary);
-                          ForwLg.AddXY(fST2829C.DataIrms, fST2829C.DataSecondary);
-                          end;
-               end;
-    st_sdBoth:case fST2829C.SweepParameters.SweepType of
-                st_spBiasVolt,
-                st_spBiasCurr,
-                st_spFreq:begin
-                          ForwLine.AddXY(fVoltageInput, fST2829C.DataPrimary);
-                          ForwLg.AddXY(fVoltageInput, fST2829C.DataSecondary);
-                          end;
-                st_spVrms:begin
-                          ForwLine.AddXY(fST2829C.DataVrms, fST2829C.DataPrimary);
-                          ForwLg.AddXY(fST2829C.DataVrms, fST2829C.DataSecondary);
-                          end;
-                st_spIrms:begin
-                          ForwLine.AddXY(fST2829C.DataIrms, fST2829C.DataPrimary);
-                          ForwLg.AddXY(fST2829C.DataIrms, fST2829C.DataSecondary);
-                          end;
-              end;
-  end;
-
-  if (ForwLine.Count  mod 10) = 0 then
-     case fST2829C.SweepParameters.DataType of
+  if fSingleMeasurement then
+    case fSP.DataType of
       st_sdPrim,
-      st_sdSecon:Write_File_Series('zapas.dat',ForwLine,8);
-      st_sdBoth:ToFileFromTwoSeries('zapas.dat',ForwLine,ForwLg,8);
-     end;
+      st_sdSecon:begin
+                 ForwLine.AddXY(fSP.DataPrime.X[High(fSP.DataPrime.HighNumber)],
+                               abs(fSP.DataPrime.Y[High(fSP.DataPrime.HighNumber)]));
+                 ForwLg.AddXY(abs(fSP.DataPrime.X[High(fSP.DataPrime.HighNumber)]),
+                             abs(fSP.DataPrime.Y[High(fSP.DataPrime.HighNumber)]));
+                 end;
+      st_sdBoth:begin
+                 ForwLine.AddXY(fSP.DataPrime.X[High(fSP.DataPrime.HighNumber)],
+                               abs(fSP.DataPrime.Y[High(fSP.DataPrime.HighNumber)]));
+                 ForwLg.AddXY(fSP.DataSecond.X[High(fSP.DataSecond.HighNumber)],
+                             abs(fSP.DataSecond.Y[High(fSP.DataSecond.HighNumber)]));
+                 end;
+    end;
+
+  if (fSP.DataPrime.Count  mod 10) = 0
+    then  fSP.SaveDataToFile('zapas.dat');
 end;
 
 procedure TST2829Dependence.EndMeasuring;
@@ -2486,29 +2454,25 @@ begin
     helpforme('IVtime_'+floattostr(SecondMeter.Interval));
   end;
 
-  case  fST2829C.SweepParameters.SweepType of
-   st_spBiasVolt,
-   st_spBiasCurr:fST2829C.SetBiasEnable(False);
-   st_spIrms:fST2829C.SetIrmsToMeasure(False);
-   st_spVrms:fST2829C.SetVrmsToMeasure(False);
-  end;
-  case fST2829C.SweepParameters.SweepType of
-    st_spBiasVolt: fST2829C.SetBiasVoltage(fST2829C.SweepParameters.StartValue);
-    st_spBiasCurr: fST2829C.SetBiasCurrent(fST2829C.SweepParameters.StartValue);
-    st_spFreq: fST2829C.SetFrequancyMeasurement(fST2829C.SweepParameters.StartValue);
-    st_spVrms: fST2829C.SetVoltageMeasurement(fST2829C.SweepParameters.StartValue);
-    st_spIrms: fST2829C.SetCurrentMeasurement(fST2829C.SweepParameters.StartValue);
-  end;
-  inherited EndMeasuring;
+ fSP.EndMeasuring;
+ HookEndMeasuring();
+
+ if fSingleMeasurement then
+   begin
+   ButtonStop.Enabled := False;
+   MelodyLong();
+   end;
 end;
 
 function TST2829Dependence.MeasurementNumberDetermine: integer;
 begin
- Result:=fST2829C.SweepParameters.PointCount;
+ Result:=fSP.PointCount;
 end;
 
-procedure TST2829Dependence.Measuring;
+procedure TST2829Dependence.Measuring(SingleMeasurement:boolean);
 begin
+ fSingleMeasurement:=SingleMeasurement;
+ PrefixToFileName:=ST2829C_MeasureTypeCommands[fSP.MeasureType];
  BeginMeasuring();
  Cycle();
  EndMeasuring();
@@ -2517,9 +2481,9 @@ end;
 procedure TST2829Dependence.SeriesClear;
 begin
   inherited SeriesClear;
-  if fST2829C.SweepParameters.DataType=st_sdBoth then
+  if fSP.DataType=st_sdBoth then
       ForwLg.ParentChart.Axes.Left.Logarithmic:=False;
-  if fST2829C.SweepParameters.LogStep then
+  if fSP.LogStep then
    begin
      ForwLg.ParentChart.Axes.Bottom.Logarithmic:=True;
      ForwLg.ParentChart.Axes.Bottom.LogarithmicBase:=10;
