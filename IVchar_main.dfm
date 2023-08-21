@@ -37,7 +37,7 @@ object IVchar: TIVchar
     Top = 0
     Width = 788
     Height = 530
-    ActivePage = TS_Main
+    ActivePage = TS_ST2829
     Align = alTop
     Font.Charset = RUSSIAN_CHARSET
     Font.Color = clWindowText
@@ -51,10 +51,6 @@ object IVchar: TIVchar
     OnChanging = PCChanging
     object TS_Main: TTabSheet
       Caption = 'Main'
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object ChLine: TChart
         Left = 0
         Top = 0
@@ -286,7 +282,7 @@ object IVchar: TIVchar
           Top = 18
           Width = 194
           Height = 24
-          ItemHeight = 0
+          ItemHeight = 16
           TabOrder = 7
           OnChange = CBMeasurementsChange
         end
@@ -8576,10 +8572,6 @@ object IVchar: TIVchar
     object TS_ST2829: TTabSheet
       Caption = 'ST2829'
       ImageIndex = 18
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object B_ST2829drive: TButton
         Left = 16
         Top = 11

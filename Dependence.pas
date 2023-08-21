@@ -30,6 +30,8 @@ const
 
 type
 
+TDependenceTypes=(dt_IV,dt_ST2829);
+
 TFastDependence=class
 private
   fHookBeginMeasuring: TSimpleEvent;
@@ -102,32 +104,45 @@ end;
 
 
 
-
-TST2829Dependence=class(TDependence)
+TDependenceByDevice=class(TFastDependence)
  private
-  fSP:TST2829SweepParameters;
-  fPNumber:integer;
-  fXValue:double;
-  procedure SeriesClear();override;
-  procedure Cycle();
-  function MeasurementNumberDetermine(): integer;override;
-  procedure BeginMeasuring();override;
-  procedure EndMeasuring();override;
-  procedure ActionMeasurement();override;
-  procedure DataSave();override;
  protected
   fSingleMeasurement:boolean;
   {якщо True, то треба заповнювати графіки,
   інакше це просто вимірювання в ряді інших}
  public
- PrefixToFileName:string;
- property SingleMeasurement:boolean read fSingleMeasurement write fSingleMeasurement;
+  PrefixToFileName:string;
+  property SingleMeasurement:boolean read fSingleMeasurement write fSingleMeasurement;
+  function DatFileNameToSave:string;
+  class function DatFileNameForSave(Prefix:string=''):string;
+end;
+
+TST2829Dependence=class(TDependenceByDevice)
+ private
+  fProgBar: TProgressBar;
+  fSP:TST2829SweepParameters;
+  fPNumber:integer;
+  fXValue:double;
+  procedure SeriesClear();override;
+  procedure Cycle();
+//  function MeasurementNumberDetermine(): integer;override;
+  procedure BeginMeasuring();override;
+  procedure EndMeasuring();override;
+  procedure ActionMeasurement();override;
+  procedure DataSave();override;
+ protected
+//  fSingleMeasurement:boolean;
+//  {якщо True, то треба заповнювати графіки,
+//  інакше це просто вимірювання в ряді інших}
+ public
+// PrefixToFileName:string;
+// property SingleMeasurement:boolean read fSingleMeasurement write fSingleMeasurement;
  Constructor Create(SweepParameters:TST2829SweepParameters;
                     PB:TProgressBar;
                     BS: TButton;
 //                    Res:TVector;
                     FistPS,SecondPS:TPointSeries);
- procedure Measuring(SingleMeasurement:boolean=True);
+ procedure Measuring(SingleMeasurement:boolean=True;FilePrefix:string='');
 end;
 
 TTimeDependence=class(TDependence)
@@ -330,7 +345,8 @@ end;
 
 TFastIVstate=class;
 
-TFastIVDependence=class (TFastDependence)
+//TFastIVDependence=class (TFastDependence)
+TFastIVDependence=class (TDependenceByDevice)
   private
    fKt2450State:TFastIVstate;
    fOldState:TFastIVstate;
@@ -384,7 +400,7 @@ TFastIVDependence=class (TFastDependence)
    fItIsLightIV:boolean;
    fDragonBackTime:double;
    fDiodOrientationVoltageFactor:integer;
-   fSingleMeasurement:boolean;
+//   fSingleMeasurement:boolean;
    fVoc:double;
    fIsc:double;
 //   fKT2450Used:boolean;
@@ -401,7 +417,7 @@ TFastIVDependence=class (TFastDependence)
   SettingDevice:TSettingDevice;
   RGDiodOrientation: TRadioGroup;
   Voltage_MD,Current_MD:TMeasuringDevice;
-  PrefixToFileName:string;
+//  PrefixToFileName:string;
 
   property Imax:double read FImax write SetImax;
   property Imin:double read FImin write SetImin;
@@ -409,7 +425,7 @@ TFastIVDependence=class (TFastDependence)
   property ForwardBranch:boolean read fForwardBranch;
   property ToUseDragonBackTime:boolean read fToUseDragonBackTime write fToUseDragonBackTime;
   property DragonBackTime:double read fDragonBackTime write SetDragonBackTime;
-  property SingleMeasurement:boolean read fSingleMeasurement write fSingleMeasurement;
+//  property SingleMeasurement:boolean read fSingleMeasurement write fSingleMeasurement;
   property Voc:double read FVoc;
   property Isc:double read FIsc;
   property Kt2450:TKt_2450 read fKt_2450;
@@ -427,7 +443,7 @@ TFastIVDependence=class (TFastDependence)
   procedure Measuring(SingleMeasurement:boolean=true;FilePrefix:string='');virtual;
   procedure SetVoltage();
   procedure SetVoltageImitation();
-  function DatFileNameToSave:string;
+//  function DatFileNameToSave:string;
   procedure CopyDecorationTo(Target:TFastIVDependence);
   procedure VoltageValuesFilling;
 
@@ -1502,12 +1518,11 @@ begin
 
 end;
 
-function TFastIVDependence.DatFileNameToSave: string;
-begin
-//  helpforme(PrefixToFileName);
-  Result:=NextDATFileName(LastDATFileName(PrefixToFileName));
-  if Result='1.dat' then Result:=PrefixToFileName+Result;
-end;
+//function TFastIVDependence.DatFileNameToSave: string;
+//begin
+//  Result:=NextDATFileName(LastDATFileName(PrefixToFileName));
+//  if Result='1.dat' then Result:=PrefixToFileName+Result;
+//end;
 
 function TFastIVDependence.DerivateGrowth: boolean;
 begin
@@ -2367,7 +2382,7 @@ end;
 
 procedure TST2829Dependence.BeginMeasuring;
 begin
-  ProgressBar.Position := 0;
+  fProgBar.Position := 0;
   DecimalSeparator:='.';
   fPNumber:=0;
 
@@ -2375,8 +2390,8 @@ begin
 
   if fSingleMeasurement then
    begin
-      ProgressBar.Max := MeasurementNumberDetermine();
-      ProgressBar.Position := 0;
+      fProgBar.Max := fSP.PointCount;;
+      fProgBar.Position := 0;
       fMeasuringToStop:=False;
       ButtonStop.OnClick := ButtonStopClick;
       ButtonStop.Enabled:=True;
@@ -2396,7 +2411,8 @@ constructor TST2829Dependence.Create(SweepParameters:TST2829SweepParameters; PB:
   BS: TButton; {Res: TVector; }FistPS, SecondPS: TPointSeries);
 begin
  fSP:=SweepParameters;
- inherited Create(PB,BS,nil,FistPS,SecondPS);
+ fProgBar:=PB;
+ inherited Create({PB,}BS,nil,FistPS,SecondPS);
 end;
 
 procedure TST2829Dependence.Cycle();
@@ -2411,7 +2427,7 @@ begin
      inc(fPNumber);
      if fSingleMeasurement then
       begin
-      ProgressBar.Position := fPNumber;
+      fProgBar.Position := fPNumber;
       MelodyShot();
       end;
 //     HookStep();
@@ -2464,15 +2480,17 @@ begin
    end;
 end;
 
-function TST2829Dependence.MeasurementNumberDetermine: integer;
-begin
- Result:=fSP.PointCount;
-end;
+//function TST2829Dependence.MeasurementNumberDetermine: integer;
+//begin
+// Result:=fSP.PointCount;
+//end;
 
-procedure TST2829Dependence.Measuring(SingleMeasurement:boolean);
+procedure TST2829Dependence.Measuring(SingleMeasurement:boolean;FilePrefix:string);
 begin
  fSingleMeasurement:=SingleMeasurement;
- PrefixToFileName:=ST2829C_MeasureTypeCommands[fSP.MeasureType];
+ if FilePrefix=''
+   then PrefixToFileName:=ST2829C_MeasureTypeCommands[fSP.MeasureType]
+   else PrefixToFileName:=FilePrefix;
  BeginMeasuring();
  Cycle();
  EndMeasuring();
@@ -2491,6 +2509,19 @@ begin
      ForwLine.ParentChart.Axes.Bottom.LogarithmicBase:=10;
    end;
 
+end;
+
+{ TDependenceByDevice }
+
+class function TDependenceByDevice.DatFileNameForSave(Prefix: string): string;
+begin
+  Result:=NextDATFileName(LastDATFileName(Prefix));
+  if Result='1.dat' then Result:=Prefix+Result;
+end;
+
+function TDependenceByDevice.DatFileNameToSave: string;
+begin
+  result:=DatFileNameForSave(PrefixToFileName);
 end;
 
 initialization

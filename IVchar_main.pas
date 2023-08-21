@@ -782,7 +782,7 @@ type
     { Private declarations }
     procedure ConstantShowCreate;
     procedure PIDShowCreateAndFromIniFile;
-    procedure SaveCommentsFile(FileName: string);
+    procedure SaveCommentsFile(FileName: string;DT:TDependenceTypes=dt_IV);
     procedure DependenceMeasuringCreate;
     procedure IVCharHookCycle();
     procedure CalibrHookCycle();
@@ -798,11 +798,11 @@ type
     procedure FastIVHookBeginBase(FastIVDep:TFastIVDependence);
     procedure FastIVHookBegin;
     procedure Kt2450HookForTrig;
-    procedure FastArduinoIVHookBegin;
+//    procedure FastArduinoIVHookBegin;
     procedure ST2829HookBegin;
     procedure FastIVHookEndBase(FastIVDep:TFastIVDependence);
     procedure FastIVHookEnd;
-    procedure FastArduinoIVHookEnd;
+//    procedure FastArduinoIVHookEnd;
     procedure ST2829HookEnd;
     procedure TimeDHookFirstMeas;
     procedure TimeTwoDHookFirstMeas;
@@ -838,7 +838,7 @@ type
     procedure ET1255Create;
     procedure WMMyMeasure (var Mes : TMessage); message WM_MyMeasure;
     procedure HookEndReset;
-    procedure SaveDialogPrepare;
+    procedure SaveDialogPrepare(Prefix:string='');
     procedure MeasurementsLabelCaption(LabelNames:array of string);
     procedure NameToLabel(LabelName:string; Name,NameValue:TLabel);
     procedure MeasurementsLabelCaptionDefault;
@@ -849,6 +849,8 @@ type
     procedure ComPortsWriteSettings(ComPorts:array of TComPort);
     procedure ActionInSaveButton(Sender: TObject);
     procedure ActionInSaveButtonFastIV(Sender: TObject);
+    procedure ActionInSaveButtonST2829(Sender: TObject);
+
     function DiapazonIMeasurement(Measurement:IMeasurement):ShortInt;
     procedure CorrectionLimit(var NewCorrection: Double);
     procedure IVOldFactorDetermination(var Factor: Double);
@@ -863,6 +865,7 @@ type
     procedure IB6332_Create;
 
     procedure SaveIVMeasurementResults(FileName: string; DataVector:TVector);
+    procedure SaveST2829MeasurementResults(FileName: string);
     procedure DACReset;
     procedure FastIVMeasuringComplex(const FilePrefix: string);
     procedure LED_OpenIfCondition;
@@ -1088,7 +1091,7 @@ begin
   Control_MD.ActiveInterface.NewData:=False;
 end;
 
-procedure TIVchar.SaveCommentsFile(FileName: string);
+procedure TIVchar.SaveCommentsFile(FileName: string;DT:TDependenceTypes=dt_IV);
  var SR : TSearchRec;
      FF:TextFile;
      name, temp:string;
@@ -1102,27 +1105,31 @@ begin
     FindClose(SR);
     DateTimeToString(temp, 'd.m.yyyy', FileDateToDateTime(SR.Time));
 
-    if CBuseKT2450.Checked
-     then writeln(FF,Name,' - ',temp,'  :'+floattostr(Kt_2450.DataTimeVector.X[Kt_2450.DataTimeVector.HighNumber]))
-     else
-       begin
-          if (Current_MD.ActiveInterface.Name='KT2450Meter')
-                              then
-            begin
-             Kt_2450.BufferLastDataExtended(kt_rd_MT);
-             writeln(FF,Name,' - ',temp,'  :'+floattostr(Kt_2450.TimeValue));
-            end               else
-                if (Current_MD.ActiveInterface.Name='DMM6500Meter')
-                                  then
-                begin
-                 DMM_6500.BufferLastDataExtended(kt_rd_MT);
-                 writeln(FF,Name,' - ',temp,'  :'+floattostr(DMM_6500.TimeValue));
-                end               else
-                writeln(FF,Name,' - ',temp,'  :'+inttostr(SecondFromDayBegining(FileDateToDateTime(SR.Time))));
-       end;
+    case DT of
+      dt_IV:begin
+            if CBuseKT2450.Checked
+             then writeln(FF,Name,' - ',temp,'  :'+floattostr(Kt_2450.DataTimeVector.X[Kt_2450.DataTimeVector.HighNumber]))
+             else
+               begin
+                  if (Current_MD.ActiveInterface.Name='KT2450Meter')
+                                      then
+                    begin
+                     Kt_2450.BufferLastDataExtended(kt_rd_MT);
+                     writeln(FF,Name,' - ',temp,'  :'+floattostr(Kt_2450.TimeValue));
+                    end               else
+                        if (Current_MD.ActiveInterface.Name='DMM6500Meter')
+                                          then
+                        begin
+                         DMM_6500.BufferLastDataExtended(kt_rd_MT);
+                         writeln(FF,Name,' - ',temp,'  :'+floattostr(DMM_6500.TimeValue));
+                        end               else
+                        writeln(FF,Name,' - ',temp,'  :'+inttostr(SecondFromDayBegining(FileDateToDateTime(SR.Time))));
+               end;
+            end;
+      else writeln(FF,Name,' - ',temp,'  :'+inttostr(SecondFromDayBegining(FileDateToDateTime(SR.Time))));
+    end;
 
 
-    //    writeln(FF,Name,' - ',DateTimeToStr(FileDateToDateTime(DT)));
     write(FF,'T=',LTLastValue.Caption);
     writeln(FF);
     writeln(FF);
@@ -1229,7 +1236,6 @@ begin
 
   ST2829Dependence.HookBeginMeasuring:=ST2829HookBegin;
   ST2829Dependence.HookEndMeasuring:=ST2829HookEnd;
-
 
   SetLength(Dependencies,8);
   Dependencies[0]:=IVMeasuring;
@@ -2441,10 +2447,12 @@ end;
 
 procedure TIVchar.ActionInSaveButtonFastIV(Sender: TObject);
 begin
-  SaveDialog.FileName:=CustomFastIVMeas.DatFileNameToSave;
-  SaveDialog.Title := 'Last file - ' +
-      LastDATFileName(CustomFastIVMeas.PrefixToFileName) + '.dat';
-  SaveDialog.InitialDir := GetCurrentDir;
+//  SaveDialog.FileName:=CustomFastIVMeas.DatFileNameToSave;
+//  SaveDialog.Title := 'Last file - ' +
+//      LastDATFileName(CustomFastIVMeas.PrefixToFileName) + '.dat';
+//  SaveDialog.InitialDir := GetCurrentDir;
+
+  SaveDialogPrepare(CustomFastIVMeas.PrefixToFileName);
 
   if SaveDialog.Execute then
    begin
@@ -2452,6 +2460,22 @@ begin
      BIVSave.Font.Style:=BIVSave.Font.Style+[fsStrikeOut];
    end;
 
+end;
+
+procedure TIVchar.ActionInSaveButtonST2829(Sender: TObject);
+begin
+//  SaveDialog.FileName:=ST2829Dependence.DatFileNameToSave;
+//  SaveDialog.Title := 'Last file - ' +
+//      LastDATFileName(ST2829Dependence.PrefixToFileName) + '.dat';
+//  SaveDialog.InitialDir := GetCurrentDir;
+
+  SaveDialogPrepare(ST2829Dependence.PrefixToFileName);
+
+  if SaveDialog.Execute then
+   begin
+     SaveST2829MeasurementResults(SaveDialog.FileName);
+     BIVSave.Font.Style:=BIVSave.Font.Style+[fsStrikeOut];
+   end;
 end;
 
 procedure TIVchar.ADS1115Create;
@@ -2548,6 +2572,14 @@ begin
    else DataVector.WriteToFile(FileName,5);
   LTLastValue.Caption := FloatToStrF(Temperature, ffFixed, 5, 2);
   SaveCommentsFile(FileName);
+end;
+
+procedure TIVchar.SaveST2829MeasurementResults(FileName: string);
+begin
+  DecimalSeparator:='.';
+  ST_2829C.SweepParameters.SaveDataToFile(FileName);
+  LTLastValue.Caption := FloatToStrF(Temperature, ffFixed, 5, 2);
+  SaveCommentsFile(FileName,dt_ST2829);
 end;
 
 procedure TIVchar.DACReset;
@@ -3024,15 +3056,15 @@ begin
   end;
 end;
 
-procedure TIVchar.FastArduinoIVHookBegin;
-begin
+//procedure TIVchar.FastArduinoIVHookBegin;
+//begin
 //   FastIVHookBeginBase(FastArduinoIV);
-end;
-
-procedure TIVchar.FastArduinoIVHookEnd;
-begin
+//end;
+//
+//procedure TIVchar.FastArduinoIVHookEnd;
+//begin
 //  FastIVHookEndBase(FastArduinoIV);
-end;
+//end;
 
 procedure TIVchar.FastIVHookBegin;
 begin
@@ -3335,10 +3367,9 @@ begin
  HookEndGeneral(ST2829Dependence.SingleMeasurement,ST_2829C.SweepParameters.DataPrime.HighNumber);
  TemperatureDetermination();
 
-// CustomFastIVMeas:=FastIVDep;
-// if ST2829Dependence.SingleMeasurement
-//    then BIVSave.OnClick:=ActionInSaveButtonFastIV
-//    else SaveIVMeasurementResults(FastIVDep.DatFileNameToSave,FastIVDep.Results)
+ if ST2829Dependence.SingleMeasurement
+    then BIVSave.OnClick:=ActionInSaveButtonST2829
+    else SaveST2829MeasurementResults(ST2829Dependence.DatFileNameToSave)
 end;
 
 procedure TIVchar.NameToLabel(LabelName: string; Name, NameValue: TLabel);
@@ -4000,15 +4031,19 @@ begin
   sleep(1000);
 end;
 
-procedure TIVchar.SaveDialogPrepare;
+procedure TIVchar.SaveDialogPrepare(Prefix:string='');
 var
   last: string;
 begin
-  last := LastDATFileName;
+  last := LastDATFileName(Prefix);
   SaveDialog.FileName:=NextDATFileName(last);
+  if SaveDialog.FileName='1.dat'
+   then  SaveDialog.FileName:=Prefix+SaveDialog.FileName;
+
 
   SaveDialog.Title := 'Last file - ' + last + '.dat';
   SaveDialog.InitialDir := GetCurrentDir;
+
 end;
 
 procedure TIVchar.MeasurementsLabelCaption(LabelNames:array of string);

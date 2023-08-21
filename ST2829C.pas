@@ -30,6 +30,7 @@ type
   TST2829_MeterSecondary=class;
   TST2829_MeterPrimary=class;
   TST2829SweepParameters=class;
+  TST2829Corrections=class;
 
   TST2829_MeasureParameters=class
    public
@@ -75,6 +76,7 @@ type
    fMeterSec:TST2829_MeterSecondary;
    fMeterPrim:TST2829_MeterPrimary;
    fSweepParameters:TST2829SweepParameters;
+   fCorrections:TST2829Corrections;
 
    Procedure SetFreqMeas(Value:Double);
 //   procedure SetAutoLevelControl(const Value: boolean);
@@ -98,6 +100,8 @@ type
     procedure StMeasureSpeed(const Value: TST2829C_MeasureSpeed);
     procedure StMeasureType(const Value: TST2829C_MeasureType);
     procedure StOutputImpedance(const Value: TST2829C_OutputImpedance);
+    function GtCorCable: TST2829C_CorCable;
+    procedure StCorCable(const Value: TST2829C_CorCable);
   protected
    function GetRootNodeString():string;override;
    procedure DeviceCreate(Nm:string);override;
@@ -168,6 +172,7 @@ type
    property MeterPrim:TST2829_MeterPrimary read fMeterPrim;
    property MeterSecond:TST2829_MeterSecondary read fMeterSec;
    property SweepParameters:TST2829SweepParameters read fSweepParameters;
+   property CorectionCable:TST2829C_CorCable read GtCorCable write StCorCable;
    Constructor Create();
    destructor Destroy; override;
    function GetPattern(Action:Pointer):boolean;override;
@@ -248,6 +253,9 @@ type
    function  GetData():boolean;
    function  GetDataVrms():boolean;
    function  GetDataIrms():boolean;
+
+   procedure SetCorrectionCable(Cable:TST2829C_CorCable);
+   function  GetCorrectionCable():boolean;
  end;
 
 
@@ -288,9 +296,16 @@ TST2829_MeterPrimary=class(TST2829_Measurement)
   destructor Destroy; override;
 end;
 
-TST2829SweepParameters=class
+TST2829Part=class
  private
   fParentModule: TST2829C;
+ public
+  constructor Create(ST2829C:TST2829C);
+end;
+
+TST2829SweepParameters=class(TST2829Part)
+ private
+//  fParentModule: TST2829C;
   fDataVector:TVector;
   fSecondDataVector:TVector;
   fOldValue:double;
@@ -325,6 +340,14 @@ TST2829SweepParameters=class
   StepNumber ìàº çì³íþâàòèñÿ â³ä 0 äî (PointCount-1)}
 end;
 
+TST2829Corrections=class(TST2829Part)
+ private
+ protected
+ public
+  fCable:TST2829C_CorCable;
+  constructor Create(ST2829C:TST2829C);
+end;
+
 var
   ST_2829C:TST2829C;
   CF_ST_2829C:TIniFile;
@@ -353,6 +376,7 @@ begin
    st_aBiasCur:Result:=7;
    st_aTrigSource,
    st_aTrigDelay:Result:=ord(Action)-7;
+   st_aCorCable:Result:=16;
    else Result:=0;
  end;
 // showmessage('jjj '+inttostr(Result));
@@ -399,6 +423,7 @@ begin
    st_aGetMeasData,
    st_aGetVrms,
    st_aGetIrms:Result:=14;
+   st_aCorCable:Result:=15;
    else Result:=0;
  end;
 end;
@@ -418,6 +443,7 @@ begin
  fMeterSec:=TST2829_MeterSecondary.Create(Self);
  fMeterPrim:=TST2829_MeterPrimary.Create(Self);
  fSweepParameters:=TST2829SweepParameters.Create(Self);
+ fCorrections:=TST2829Corrections.Create(Self);
 end;
 
 
@@ -447,6 +473,7 @@ end;
 
 destructor TST2829C.Destroy;
 begin
+  FreeAndNil(fCorrections);
   FreeAndNil(fSweepParameters);
   FreeAndNil(fMeterSec);
   FreeAndNil(fMeterPrim);
@@ -493,6 +520,9 @@ begin
     st_aTrigDelay:fDelayTime:=round(fDevice.Value*1000);
     st_aGetVrms:fVrmsData:=fDevice.Value;
     st_aGetIrms:fIrmsData:=fDevice.Value*1000;
+    st_aCorCable:if fDevice.Value<3 then CorectionCable:=TST2829C_CorCable(round(fDevice.Value))
+                                    else CorectionCable:=TST2829C_CorCable(round(fDevice.Value)-1);
+
   end;
 end;
 
@@ -519,6 +549,11 @@ end;
 function TST2829C.GetBiasVoltage: boolean;
 begin
  Result:=GetPattern(Pointer(st_aBiasVol));
+end;
+
+function TST2829C.GetCorrectionCable: boolean;
+begin
+ Result:=GetPattern(Pointer(st_aCorCable));
 end;
 
 function TST2829C.GetCurrentMeasurement: boolean;
@@ -639,6 +674,11 @@ end;
 function TST2829C.GtAutoLevelControlEnable: boolean;
 begin
  Result:=fMPars.AutoLevelControlEnable;
+end;
+
+function TST2829C.GtCorCable: TST2829C_CorCable;
+begin
+  Result:=fCorrections.fCable;
 end;
 
 function TST2829C.GtFreqMeas: double;
@@ -772,18 +812,26 @@ begin
 // (fDevice as TST2829CDevice).SetStringToSend('BIAS:CURR?');
 // fDevice.GetData;
 
+  for I := 0 to ord(High(TST2829C_CorCable)) do
+   begin
+     SetCorrectionCable(TST2829C_CorCable(i));
+     if (GetCorrectionCable() and(i=ord(CorectionCable)))
+      then showmessage('Ura!!!');
+   end;
+
+//----------------------------------------------------
 //Trig();
 
 //  GetData();
 //  showmessage(floattostr(DataPrimary));
 //  showmessage(floattostr(DataSecondary));
 
-  SetVrmsToMeasure(True);
-  GetDataVrms();
- showmessage(floattostr(DataVrms));
-  SetIrmsToMeasure(True);
-  GetDataIrms();
- showmessage(floattostr(DataIrms));
+//  SetVrmsToMeasure(True);
+//  GetDataVrms();
+// showmessage(floattostr(DataVrms));
+//  SetIrmsToMeasure(True);
+//  GetDataIrms();
+// showmessage(floattostr(DataIrms));
 // tempDouble:=10;
 // SetDelayTime(round(tempDouble));
 // if GetDelayTime()  then
@@ -1104,6 +1152,9 @@ begin
             JoinToStringToSend(FirstNodeST2829C[fLeafNode]);
            end;
      end;
+  15:case fFirstLevelNode of
+      16:JoinToStringToSend(FirstNodeST2829C[fFirstLevelNode]);
+     end;
   end;
 end;
 
@@ -1141,6 +1192,9 @@ begin
       0:StrToData(Str);
       11: fDevice.Value:=SCPI_StringToValue(Str);
      end;
+   15:case fFirstLevelNode of
+       16:fDevice.Value:=StrToInt(Str);
+      end;
  end;
 end;
 
@@ -1200,6 +1254,12 @@ procedure TST2829C.SetBiasVoltage(V: double);
 begin
 //BIAS:VOLT <V>
  SetPattern([Pointer(st_aBiasVol),@V]);
+end;
+
+procedure TST2829C.SetCorrectionCable(Cable: TST2829C_CorCable);
+begin
+//“CORR:LENG <Cable>
+ SetPattern([Pointer(st_aCorCable),Pointer(Cable)]);
 end;
 
 procedure TST2829C.SetCurrentMeasurement(I: double);
@@ -1353,8 +1413,12 @@ begin
     st_aTrigDelay:begin
                    DelayTime:=PInteger(Ps[1])^;
                    fAdditionalString:=FloatToStrF(DelayTime/1000,ffGeneral,5,0);
-                  end
-   else;
+                  end;
+    st_aCorCable:begin
+                   CorectionCable:=TST2829C_CorCable(Ps[1]);
+                   fAdditionalString:=ST2829C_CorCableCommands[CorectionCable];
+                  end;
+  else;
  end;
 //
 //
@@ -1467,6 +1531,11 @@ procedure TST2829C.StBiasVoltageValue(const Value: double);
 begin
  fBiasVoltageValue:=NumberMap(Value,ST2829C_BiasVoltageLimits);
  fBiasVoltageValue:=ValueWithMinResolution(fBiasVoltageValue,5e-4);
+end;
+
+procedure TST2829C.StCorCable(const Value: TST2829C_CorCable);
+begin
+ fCorrections.fCable:=Value;
 end;
 
 procedure TST2829C.StDelayTime(const Value: integer);
@@ -1784,8 +1853,9 @@ end;
 
 constructor TST2829SweepParameters.Create(ST2829C:TST2829C);
 begin
-  inherited Create();
-  fParentModule:=ST2829C;
+//  inherited Create();
+//  fParentModule:=ST2829C;
+  inherited Create(ST2829C);
   SweepType:=st_spBiasVolt;
   StartValue:=0;
   FinishValue:=1;
@@ -1919,20 +1989,22 @@ function TST2829SweepParameters.Step: double;
 begin
  Result:=0;
  if (FinishValue=0)and(StartValue=0) then Exit;
-
+//  showmessage('LogStep='+booltostr(LogStep,True));
  if LogStep
    then
     begin
      if FinishValue*StartValue>0
-       then  Result:=(log10(abs(FinishValue))-log10(abs(StartValue)))/(PointCount-1)
+       then Result:=(log10(abs(FinishValue))-log10(abs(StartValue)))/(PointCount-1)
        else
         begin
+//          showmessage('NOT FinishValue*StartValue>0');
           if FinishValue*StartValue<0 then Result:=(log10(abs(FinishValue))+log10(abs(StartValue)))/(PointCount-1);
           if FinishValue=0 then Result:=log10(abs(StartValue))/(PointCount-1);
           if StartValue=0 then Result:=log10(abs(FinishValue))/(PointCount-1);
         end;
     end
    else Result:=(FinishValue-StartValue)/(PointCount-1);
+//   showmessage(floattostr(Result));
 end;
 
 //procedure TST2829SweepParameters.StepDetermination;
@@ -1948,6 +2020,22 @@ begin
         +'Finish='+floattostr(FinishValue)+#10#13
         +'Step Count='+inttostr(PointCount)+#10#13
         +'Log step='+booltostr(LogStep,True);
+end;
+
+{ TST2829Part }
+
+constructor TST2829Part.Create(ST2829C: TST2829C);
+begin
+  inherited Create();
+  fParentModule:=ST2829C;
+end;
+
+{ TST2829Corrections }
+
+constructor TST2829Corrections.Create(ST2829C: TST2829C);
+begin
+ inherited Create(ST2829C);
+ fCable:=st_cc0M;
 end;
 
 initialization

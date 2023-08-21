@@ -23,6 +23,7 @@ type
     GBST2829C_Bias: TGroupBox;
     GBST2829C_Setup: TGroupBox;
     GBST2829C_Sweep: TGroupBox;
+    GBST2829C_Corrections: TGroupBox;
     procedure BCloseClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
@@ -66,7 +67,8 @@ begin
                                       GBST2829C_Option,
                                       GBST2829C_Bias,
                                       GBST2829C_Setup,
-                                      GBST2829C_Sweep],
+                                      GBST2829C_Sweep,
+                                      GBST2829C_Corrections],
                                       LST2829CP_Meas,
                                       LST2829CP_MeasU,
                                       B_ST2829C_Meas,

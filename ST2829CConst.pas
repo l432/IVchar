@@ -17,11 +17,11 @@ const
    'bias','ores','func','aper','trig','fetc','corr');
 //   9      10     11     12     13     14     15
 
-  FirstNodeST2829C:array[0..15]of string=
+  FirstNodeST2829C:array[0..16]of string=
   (':load:stat',':stor:stat',':page',':rfon',':line',':stat',':volt',':curr',
 //     0             1           2      3      4        5        6      7
-  ':imp',':rang',':auto',':smon',':vac',':iac',':sour',':del');
-//   8      9       10      11     12     13      14     15
+  ':imp',':rang',':auto',':smon',':vac',':iac',':sour',':del',':leng');
+//   8      9       10      11     12     13      14     15     16
 
 
   SuffixST2829C:array[0..1]of string=('on','off');
@@ -43,8 +43,8 @@ type
 //                  12         13             14         15               16
                  st_aSpeedMeas,st_aAverTimes,st_aBiasCur,st_aTriger,st_aTrigSource,
 //                  17            18             19         20               21
-                 st_aTrigDelay,st_aGetMeasData,st_aGetVrms,st_aGetIrms);
-//                   22            23             24         25               26
+                 st_aTrigDelay,st_aGetMeasData,st_aGetVrms,st_aGetIrms,st_aCorCable);
+//                   22            23             24         25            26
 
  TST2829C_DisplayPage=(st_dpMeas, st_dpBNum, st_dpBCO,
                        st_dpList, st_dpMset, st_dpCset,
@@ -96,6 +96,9 @@ type
                          st_spVrms,st_spIrms);
 
  TST2829C_SweepData=(st_sdPrim,st_sdSecon,st_sdBoth);
+
+ TST2829C_CorCable=(st_cc0M,st_cc1M,st_cc2M,st_cc4M);
+
 
 const
  ST2829C_DisplayPageCommand:array [TST2829C_DisplayPage]
@@ -165,6 +168,10 @@ const
 
   ST2829C_SweepDataLabels:array[TST2829C_SweepData]of string=
         ('Primery','Secondary','Both');
+
+ ST2829C_CorCableCommands:array[TST2829C_CorCable]of string=
+        ('0M','1M','2M','4M');
+
 
  ST2829C_FreqMeasLimits:TLimitValues=(20,1000000);
  ST2829C_VrmsMeasLimits:TLimitValues=(0.005,10);

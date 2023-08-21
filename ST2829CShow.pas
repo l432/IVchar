@@ -141,6 +141,16 @@ TST2829C_MeterShow=class(TMeasurementShowSimple)
   procedure MetterDataShow();override;
 end;
 
+ TST2829CCorrectionShow=class(TST2829CElementAndParamShow)
+  private
+  protected
+   procedure CreateElements;override;
+   procedure CreateControls;override;
+   procedure DesignElements;override;
+  public
+//   procedure ObjectToSetting;override;
+ end;
+
   TST2829C_SweepParameterShow=class;
 
   TST2829C_Show=class(TRS232DeviceNew_Show)
@@ -153,6 +163,7 @@ end;
    fSetupParamShow:TST2829CSetupParamShow;
    fMeterShow:TST2829C_MeterShow;
    fSweepParameterShow:TST2829C_SweepParameterShow;
+   fCorrectionShow:TST2829CCorrectionShow;
    procedure MyTrainButtonClick(Sender:TObject);
   protected
 //   procedure ButtonsTune(Buttons: array of TButton);virtual;
@@ -266,6 +277,7 @@ begin
  fMeterShow:=TST2829C_MeterShow.Create(fST2829C.MeterPrim,DL,UL,MB,AB,DL2,UL2);
 
  fSweepParameterShow:=TST2829C_SweepParameterShow.Create(fST2829C,GBs[5]);
+ fCorrectionShow:=TST2829CCorrectionShow.Create(fST2829C,GBs[6]);
 
 end;
 
@@ -278,6 +290,7 @@ end;
 
 destructor TST2829C_Show.Destroy;
 begin
+  FreeAndNil(fCorrectionShow);
   FreeAndNil(fSweepParameterShow);
   FreeAndNil(fMeterShow);
   FreeAndNil(fSetupParamShow);
@@ -300,6 +313,7 @@ begin
  fMeasureParamShow.ObjectToSetting;
  fBiasParamShow.ObjectToSetting;
  fSetupParamShow.ObjectToSetting;
+ fCorrectionShow.ObjectToSetting;
 end;
 
 procedure TST2829C_Show.ReadFromIniFile(ConfigFile: TIniFile);
@@ -402,6 +416,8 @@ begin
      fST2829C.GetIrmsToMeasure();
      fST2829C.GetTrigerSource();
      fST2829C.GetDelayTime();
+
+     fST2829C.GetCorrectionCable();
     end;
 
   fST2829C_Show.ObjectToSetting();
@@ -741,11 +757,11 @@ begin
 
   fSBOnOff.Caption:='Bias Output';
   Resize(fSBOnOff);
-  fSBOnOff.Left:=BiasVoltageShow.STdata.Left;
-  fSBOnOff.Top:=BiasCurrentShow.STdata.Top+BiasCurrentShow.STdata.Height+3;
+  fSBOnOff.Left:=BiasCurrentShow.LCaption.Left+BiasCurrentShow.LCaption.Width+10;
+  fSBOnOff.Top:=BiasCurrentShow.LCaption.Top+15;
 
-  fParent.Width:=BiasCurrentShow.LCaption.Left+BiasCurrentShow.LCaption.Width+10;
-  fParent.Height:=fSBOnOff.Top+fSBOnOff.Height+10;
+  fParent.Width:=fSBOnOff.Left+fSBOnOff.Width+5;
+  fParent.Height:=BiasCurrentShow.STdata.Top+BiasCurrentShow.STdata.Height+5;
 
 //    showmessage(inttostr(fParent.Height));
 //  showmessage(inttostr(fParent.Width));
@@ -905,26 +921,7 @@ begin
   fST2829C.SweepParameters.SweepType := TST2829C_SweepParametr(fTypeShow.Data);
 
   DestroyShows();
-  
-  // case TST2829C_SweepParametr(fTypeShow.Data) of
-  //  st_tpBiasVolt:;
-  //  st_tpBiasCurr:;
-  //  st_tpFreq:;
-  //  st_tpVrms:;
-  //  st_tpIrms:;
-  // end;
-  // case TST2829C_SweepParametr(fTypeShow.Data) of
-  //  st_tpBiasVolt:begin
-  //                end;
-  //  st_tpBiasCurr:begin
-  //                end;
-  //  st_tpFreq:begin
-  //            end;
-  //  st_tpVrms:begin
-  //            end;
-  //  st_tpIrms:begin
-  //            end;
-  // end;
+
   case TST2829C_SweepParametr(fTypeShow.Data) of
     st_spBiasVolt:
       begin
@@ -980,9 +977,11 @@ begin
   StepClick;
 
   fCBLogStep.Name:='LogStep'+ST2829C_SweepParametrSalt[TST2829C_SweepParametr(fTypeShow.Data)];
-  AccurateCheckBoxCheckedChange(fCBLogStep,
-   CF_ST_2829C.ReadBool(fST2829C.Name,fCBLogStep.Name,False));
+//  AccurateCheckBoxCheckedChange(fCBLogStep,
+//   CF_ST_2829C.ReadBool(fST2829C.Name,fCBLogStep.Name,False));
 
+  fCBLogStep.Checked:=
+   CF_ST_2829C.ReadBool(fST2829C.Name,fCBLogStep.Name,False);
 end;
 
 procedure TST2829C_SweepParameterShow.DestroyShows;
@@ -993,23 +992,27 @@ begin
 
   if fStartShow <> nil then
   begin
-    fStartShow.WriteToIniFile(CF_ST_2829C);
+    CF_ST_2829C.WriteFloat(fStartShow.Name,fStartShow.ParametrCaption+fStartShow.IniNameSalt,fStartShow.Data);
+//    fStartShow.WriteToIniFile(CF_ST_2829C);
     FreeAndNil(fStartShow);
   end;
   if fFinishShow <> nil then
   begin
-    fFinishShow.WriteToIniFile(CF_ST_2829C);
+    CF_ST_2829C.WriteFloat(fFinishShow.Name,fFinishShow.ParametrCaption+fFinishShow.IniNameSalt,fFinishShow.Data);
+//    fFinishShow.WriteToIniFile(CF_ST_2829C);
     FreeAndNil(fFinishShow);
   end;
   if fStepsShow <> nil then
   begin
-    fStepsShow.WriteToIniFile(CF_ST_2829C);
+    CF_ST_2829C.WriteInteger(fStepsShow.Name,fStepsShow.ParametrCaption+fStepsShow.IniNameSalt,fStepsShow.Data);
+//    fStepsShow.WriteToIniFile(CF_ST_2829C);
     FreeAndNil(fStepsShow);
   end;
 end;
 
 procedure TST2829C_SweepParameterShow.FinishClick;
 begin
+ fLFinish.WordWrap:=False;
  RelativeLocation(fLFinish,fSTFinish,oCol,2);
  fST2829C.SweepParameters.FinishValue:=fFinishShow.Data;
 end;
@@ -1123,7 +1126,7 @@ begin
  fCBLogStep.Top:=fLSteps.Top;
  fCBLogStep.Left:=fSTSteps.Left+fSTSteps.Width+25;
 
- fParent.Width:=fRGDataUsed.Left+fRGDataUsed.Width+10;
+ fParent.Width:=fRGDataUsed.Left+fRGDataUsed.Width+5;
  fParent.Height:=fLSteps.Top+fLSteps.Height+MarginTop;
 
 //  showmessage(inttostr(fParent.Height));
@@ -1145,13 +1148,35 @@ end;
 
 procedure TST2829C_SweepParameterShow.StartClick;
 begin
+ fLStart.WordWrap:=False;
  RelativeLocation(fLStart,fSTStart,oCol,2);
  fST2829C.SweepParameters.StartValue:=fStartShow.Data;
 end;
 
 procedure TST2829C_SweepParameterShow.StepClick;
 begin
+// fLSteps.WordWrap:=False;
  fST2829C.SweepParameters.PointCount:=fStepsShow.Data;
+end;
+
+{ TST2829CCorrectionShow }
+
+procedure TST2829CCorrectionShow.CreateControls;
+begin
+  inherited;
+
+end;
+
+procedure TST2829CCorrectionShow.CreateElements;
+begin
+  inherited;
+
+end;
+
+procedure TST2829CCorrectionShow.DesignElements;
+begin
+  inherited;
+
 end;
 
 end.
