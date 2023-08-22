@@ -17,11 +17,13 @@ const
    'bias','ores','func','aper','trig','fetc','corr');
 //   9      10     11     12     13     14     15
 
-  FirstNodeST2829C:array[0..16]of string=
+  FirstNodeST2829C:array[0..19]of string=
   (':load:stat',':stor:stat',':page',':rfon',':line',':stat',':volt',':curr',
 //     0             1           2      3      4        5        6      7
-  ':imp',':rang',':auto',':smon',':vac',':iac',':sour',':del',':leng');
+  ':imp',':rang',':auto',':smon',':vac',':iac',':sour',':del',':leng',
 //   8      9       10      11     12     13      14     15     16
+  ':open',':shor','spot');
+//   17     18      19      20     21     22      23     24     25
 
 
   SuffixST2829C:array[0..1]of string=('on','off');
@@ -154,6 +156,9 @@ const
  ST2829C_MeasureSpeedCommands:array[TST2829C_MeasureSpeed]of string=
         ('slow','med','fast','fast+');
 
+ ST2829C_MeasureSpeedLabels:array[TST2829C_MeasureSpeed]of string=
+        ('slow (650 ms)','med (90 ms)','fast (13 ms)','fast+ (8 ms)');
+
  ST2829C_TrigerSourceCommands:array[TST2829C_TrigerSource]of string=
         ('int','hold','bus');
  ST2829C_TrigerSourceLabels:array[TST2829C_TrigerSource]of string=
@@ -170,7 +175,7 @@ const
         ('Primery','Secondary','Both');
 
  ST2829C_CorCableCommands:array[TST2829C_CorCable]of string=
-        ('0M','1M','2M','4M');
+        ('0m','1m','2m','4m');
 
 
  ST2829C_FreqMeasLimits:TLimitValues=(20,1000000);

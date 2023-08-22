@@ -32,6 +32,7 @@ type
 var
   Timer: THRTimer; // Глобальая переменная. Создаётся при запуске программы
   SecondMeter:TSecondMeter;
+  Info:string;
 
 
 { Фукнция высокоточной задержки.

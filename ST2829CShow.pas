@@ -417,7 +417,7 @@ begin
      fST2829C.GetTrigerSource();
      fST2829C.GetDelayTime();
 
-     fST2829C.GetCorrectionCable();
+//     fST2829C.GetCorrectionCable();
     end;
 
   fST2829C_Show.ObjectToSetting();
@@ -972,6 +972,7 @@ begin
   fStepsShow:=TIntegerParameterShow.Create(fSTSteps,fLSteps,'Step Count:',2);
   fStepsShow.Limits.SetLimits(2, 5000);
   fStepsShow.IniNameSalt:=ST2829C_SweepParametrSalt[TST2829C_SweepParametr(fTypeShow.Data)];
+  fStepsShow.ForUseInShowObject(fST2829C, False);
   fStepsShow.ReadFromIniFile(CF_ST_2829C);
   fStepsShow.HookParameterClick := StepClick;
   StepClick;
@@ -1004,6 +1005,7 @@ begin
   end;
   if fStepsShow <> nil then
   begin
+//    showmessage('ll');
     CF_ST_2829C.WriteInteger(fStepsShow.Name,fStepsShow.ParametrCaption+fStepsShow.IniNameSalt,fStepsShow.Data);
 //    fStepsShow.WriteToIniFile(CF_ST_2829C);
     FreeAndNil(fStepsShow);

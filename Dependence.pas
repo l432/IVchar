@@ -11,7 +11,7 @@ uses
 var EventToStopDependence:THandle;
   fItIsForward:boolean;
   fMeasuringToStop:boolean;
-  Info:string;
+//  Info:string;
 
 //    EventFastIVDone: THandle;
 //    EventFastIVCurrentMeasDone: THandle;
@@ -1288,11 +1288,11 @@ begin
        SetVoltage();
 
  if CollectInfo then secondmeter.Start();
-    
+
 
      VoltageMeasuring();
 
- 
+
 
  if CollectInfo then
   begin
@@ -2376,7 +2376,17 @@ end;
 
 procedure TST2829Dependence.ActionMeasurement;
 begin
+// if CollectInfo then secondmeter.Start();
+
+
   fSP.ActionMeasurement(fXValue);
+
+// if CollectInfo then
+//  begin
+//    secondmeter.Finish();
+//   Info:=Info+' '+ floattostr(SecondMeter.Interval);
+//  end;
+
   DataSave();
 end;
 
@@ -2445,16 +2455,16 @@ begin
     case fSP.DataType of
       st_sdPrim,
       st_sdSecon:begin
-                 ForwLine.AddXY(fSP.DataPrime.X[High(fSP.DataPrime.HighNumber)],
-                               abs(fSP.DataPrime.Y[High(fSP.DataPrime.HighNumber)]));
-                 ForwLg.AddXY(abs(fSP.DataPrime.X[High(fSP.DataPrime.HighNumber)]),
-                             abs(fSP.DataPrime.Y[High(fSP.DataPrime.HighNumber)]));
+                 ForwLine.AddXY(fSP.DataPrime.X[fSP.DataPrime.HighNumber],
+                               abs(fSP.DataPrime.Y[fSP.DataPrime.HighNumber]));
+                 ForwLg.AddXY(abs(fSP.DataPrime.X[fSP.DataPrime.HighNumber]),
+                             abs(fSP.DataPrime.Y[fSP.DataPrime.HighNumber]));
                  end;
       st_sdBoth:begin
-                 ForwLine.AddXY(fSP.DataPrime.X[High(fSP.DataPrime.HighNumber)],
-                               abs(fSP.DataPrime.Y[High(fSP.DataPrime.HighNumber)]));
-                 ForwLg.AddXY(fSP.DataSecond.X[High(fSP.DataSecond.HighNumber)],
-                             abs(fSP.DataSecond.Y[High(fSP.DataSecond.HighNumber)]));
+                 ForwLine.AddXY(fSP.DataPrime.X[fSP.DataPrime.HighNumber],
+                               abs(fSP.DataPrime.Y[fSP.DataPrime.HighNumber]));
+                 ForwLg.AddXY(fSP.DataSecond.X[fSP.DataSecond.HighNumber],
+                             abs(fSP.DataSecond.Y[fSP.DataSecond.HighNumber]));
                  end;
     end;
 
@@ -2473,6 +2483,8 @@ begin
  fSP.EndMeasuring;
  HookEndMeasuring();
 
+// Write_File_Series('11.dat',ForwLg);
+
  if fSingleMeasurement then
    begin
    ButtonStop.Enabled := False;
@@ -2487,6 +2499,8 @@ end;
 
 procedure TST2829Dependence.Measuring(SingleMeasurement:boolean;FilePrefix:string);
 begin
+// if CollectInfo then  Info:='';
+
  fSingleMeasurement:=SingleMeasurement;
  if FilePrefix=''
    then PrefixToFileName:=ST2829C_MeasureTypeCommands[fSP.MeasureType]
@@ -2494,6 +2508,8 @@ begin
  BeginMeasuring();
  Cycle();
  EndMeasuring();
+
+// if CollectInfo then helpforme(Info,'vv');
 end;
 
 procedure TST2829Dependence.SeriesClear;

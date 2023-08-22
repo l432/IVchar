@@ -6,6 +6,8 @@ uses
   SCPI, CPort, RS232deviceNew, ST2829CConst, ExtCtrls, OlegTypePart2, IniFiles, 
   OlegVector;
 
+//var   Info:string;
+
 type
 
   TRS232_ST2829C=class(TRS232_SCPI)
@@ -25,7 +27,10 @@ type
   protected
    procedure CreateDataSubject(CP:TComPort);override;
   public
+   Constructor Create(SCPInew:TSCPInew;Nm:string);
  end;
+
+
 
   TST2829_MeterSecondary=class;
   TST2829_MeterPrimary=class;
@@ -255,6 +260,13 @@ type
    function  GetDataIrms():boolean;
 
    procedure SetCorrectionCable(Cable:TST2829C_CorCable);
+   {реально прилад  віддалено можна переключити
+   лише в режим 0м; кнопками на панелі -
+   або 0м або 1м (пише нема даних);
+   чому дистанційно не можна переключити
+   в 1м незрозуміло; як наслідок -
+   не робив відповідних кнопок на вікнах,
+   хоча Show елемент підготував }
    function  GetCorrectionCable():boolean;
  end;
 
@@ -355,7 +367,8 @@ var
 implementation
 
 uses
-  SysUtils, Dialogs, OlegType, Math, StrUtils, OlegFunction, Forms, OlegGraph;
+  SysUtils, Dialogs, OlegType, Math, StrUtils, OlegFunction, Forms, OlegGraph, 
+  HighResolutionTimer;
 
 { T2829C }
 
@@ -520,8 +533,9 @@ begin
     st_aTrigDelay:fDelayTime:=round(fDevice.Value*1000);
     st_aGetVrms:fVrmsData:=fDevice.Value;
     st_aGetIrms:fIrmsData:=fDevice.Value*1000;
-    st_aCorCable:if fDevice.Value<3 then CorectionCable:=TST2829C_CorCable(round(fDevice.Value))
-                                    else CorectionCable:=TST2829C_CorCable(round(fDevice.Value)-1);
+    st_aCorCable:CorectionCable:=TST2829C_CorCable(round(fDevice.Value));
+//    if fDevice.Value<3 then CorectionCable:=TST2829C_CorCable(round(fDevice.Value))
+//                                    else CorectionCable:=TST2829C_CorCable(round(fDevice.Value)-1);
 
   end;
 end;
@@ -774,6 +788,9 @@ begin
      end;
   12:Result:=ord(High(TST2829C_MeasureSpeed));
   13:Result:=ord(High(TST2829C_TrigerSource));
+  15:case fFirstLevelNode of
+     16:Result:=ord(High(TST2829C_CorCable));
+     end;
  end;
 end;
 
@@ -792,6 +809,9 @@ begin
         then Result:=(Pos(ST2829C_MeasureSpeedCommands[TST2829C_MeasureSpeed(i)]+' ',Str)<>0)
         else Result:=(Pos(ST2829C_MeasureSpeedCommands[TST2829C_MeasureSpeed(i)],Str)<>0);
   13:Result:=(Pos(ST2829C_TrigerSourceCommands[TST2829C_TrigerSource(i)],Str)<>0);
+  15:case fFirstLevelNode of
+     16:Result:=(Pos(ST2829C_CorCableCommands[TST2829C_CorCable(i)],Str)<>0);
+     end;
  end;
 end;
 
@@ -809,15 +829,28 @@ procedure TST2829C.MyTraining;
 begin
 // (fDevice as TST2829CDevice).SetStringToSend('BIAS:CURR -0.1');
 // fDevice.Request;
-// (fDevice as TST2829CDevice).SetStringToSend('BIAS:CURR?');
+// (fDevice as TST2829CDevice).SetStringToSend('CORR:SHOR');
 // fDevice.GetData;
 
-  for I := 0 to ord(High(TST2829C_CorCable)) do
-   begin
-     SetCorrectionCable(TST2829C_CorCable(i));
-     if (GetCorrectionCable() and(i=ord(CorectionCable)))
-      then showmessage('Ura!!!');
-   end;
+
+
+//showmessage(inttostr(fDevice.MinDelayTime)+#10#13
+//            +inttostr(fDevice.DelayTimeStep)+#10#13
+//            +inttostr(fDevice.DelayTimeMax));
+//  fMinDelayTime:=0;
+//  fDelayTimeStep:=10;
+//  fDelayTimeMax:=130;
+//  GetCorrectionCable();
+//  SetCorrectionCable(st_cc1M);
+//  GetCorrectionCable();
+//  SetCorrectionCable(st_cc0M);
+
+//  for I := 0 to ord(High(TST2829C_CorCable)) do
+//   begin
+//     SetCorrectionCable(TST2829C_CorCable(i));
+//     if (GetCorrectionCable() and(i=ord(CorectionCable)))
+//      then showmessage('Ura!!!');
+//   end;
 
 //----------------------------------------------------
 //Trig();
@@ -1193,7 +1226,7 @@ begin
       11: fDevice.Value:=SCPI_StringToValue(Str);
      end;
    15:case fFirstLevelNode of
-       16:fDevice.Value:=StrToInt(Str);
+       16:StringToOrd(AnsiLowerCase(Str));
       end;
  end;
 end;
@@ -1634,6 +1667,17 @@ end;
 
 { TST2829CDevice }
 
+constructor TST2829CDevice.Create(SCPInew: TSCPInew; Nm: string);
+begin
+ inherited Create(SCPInew, Nm);
+  fMinDelayTime:=0;
+  fDelayTimeStep:=5;
+  fDelayTimeMax:=100;
+//   fMinDelayTime:=0;
+//  fDelayTimeStep:=10;
+//  fDelayTimeMax:=130;  
+end;
+
 procedure TST2829CDevice.CreateDataSubject(CP: TComPort);
 begin
  fDataSubject:=TDataSubject_ST2829C.Create(CP);
@@ -1787,15 +1831,28 @@ end;
 procedure TST2829SweepParameters.ActionMeasurement(const Value:double);
 begin
   SetValue(Value);
+
+ secondmeter.Start();
+
   fParentModule.Trig;
+
+    secondmeter.Finish();
+   Info:=Info+ floattostr(SecondMeter.Interval)+#13;
+
+// secondmeter.Start();
+
   case  SweepType of
    st_spIrms:fParentModule.GetDataIrms();
    st_spVrms:fParentModule.GetDataVrms();
   end;
+
+//    secondmeter.Finish();
+//   Info:=Info+ floattostr(SecondMeter.Interval)+#13;
 end;
 
 procedure TST2829SweepParameters.AddData;
 begin
+//  showmessage(floattostr(GetXData())+' '+floattostr(fParentModule.DataPrimary));
   case DataType of
     st_sdPrim:fDataVector.Add(GetXData(),fParentModule.DataPrimary);
     st_sdSecon:fDataVector.Add(GetXData(),fParentModule.DataSecondary);

@@ -70,6 +70,13 @@ TST2829C_TrigerSourceShow=class(TST2829C_StringParameterShow)
  public
   Constructor Create(ST2829C:TST2829C);
 end;
+
+TST2829C_CorrectionCabelShow=class(TST2829C_StringParameterShow)
+ protected
+ public
+  Constructor Create(ST2829C:TST2829C);
+end;
+
 //------------------------------------------------------------------
 
 TST2829C_AutoLevelShow=class(TST2829C_BoolParameterShow)
@@ -246,6 +253,7 @@ begin
     st_aSpeedMeas:Result:=ord((fSCPInew as TST2829C).MeasureSpeed);
     st_aTrigSource:Result:=ord((fSCPInew as TST2829C).TrigSource);
     st_aRange:Result:=ord((fSCPInew as TST2829C).MeasureRange);
+    st_aCorCable:Result:=ord((fSCPInew as TST2829C).CorectionCable);
     else Result:=255;
   end;
 end;
@@ -258,7 +266,7 @@ begin
   st_aRange:Result:=ord(High(TST2829C_Range));
   st_aSpeedMeas:Result:=ord(High(TST2829C_MeasureSpeed));
   st_aTrigSource:Result:=ord(High(TST2829C_TrigerSource));
-
+  st_aCorCable:Result:=ord(High(TST2829C_CorCable));
   else Result:=0;
  end;
 end;
@@ -269,8 +277,9 @@ begin
   st_aOutImp:Result:=ST2829C_OutputImpedanceLabels[TST2829C_OutputImpedance(i)];
   st_aSetMeasT:Result:=ST2829C_MeasureTypeLabels[TST2829C_MeasureType(i)];
   st_aRange:Result:=ST2829C_RangeLabels[TST2829C_Range(i)];
-  st_aSpeedMeas:Result:=ST2829C_MeasureSpeedCommands[TST2829C_MeasureSpeed(i)];
+  st_aSpeedMeas:Result:=ST2829C_MeasureSpeedLabels[TST2829C_MeasureSpeed(i)];
   st_aTrigSource:Result:=ST2829C_TrigerSourceLabels[TST2829C_TrigerSource(i)];
+  st_aCorCable:Result:=ST2829C_CorCableCommands[TST2829C_CorCable(i)];
   else Result:='';
  end;
 end;
@@ -366,6 +375,14 @@ begin
  inherited Create(ST2829C,Pointer(st_aTrigDelay),
                  'Delay Time, ms:','Lazy time bewbeen trigering and measuring, []=ms',0);
  SetLimits(ST2829C_DelayTime);
+end;
+
+{ TST2829C_CorrectionCabel }
+
+constructor TST2829C_CorrectionCabelShow.Create(ST2829C: TST2829C);
+begin
+  inherited Create(ST2829C,Pointer(st_aCorCable),
+                     'Cable:', True);
 end;
 
 end.
