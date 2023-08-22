@@ -148,6 +148,8 @@ end;
    procedure CreateControls;override;
    procedure DesignElements;override;
   public
+   OpenShow:TST2829C_OpenShow;
+   ShortShow:TST2829C_ShortShow;
 //   procedure ObjectToSetting;override;
  end;
 
@@ -418,6 +420,8 @@ begin
      fST2829C.GetDelayTime();
 
 //     fST2829C.GetCorrectionCable();
+     fST2829C.GetCorrectionOpenEnable();
+     fST2829C.GetCorrectionShortEnable();
     end;
 
   fST2829C_Show.ObjectToSetting();
@@ -970,10 +974,15 @@ begin
   FinishClick;
 
   fStepsShow:=TIntegerParameterShow.Create(fSTSteps,fLSteps,'Step Count:',2);
+//  fStepsShow.SetName(fST2829C.Name);
   fStepsShow.Limits.SetLimits(2, 5000);
   fStepsShow.IniNameSalt:=ST2829C_SweepParametrSalt[TST2829C_SweepParametr(fTypeShow.Data)];
-  fStepsShow.ForUseInShowObject(fST2829C, False);
-  fStepsShow.ReadFromIniFile(CF_ST_2829C);
+//  fStepsShow.ReadFromIniFile(CF_ST_2829C);
+  fStepsShow.Data:=CF_ST_2829C.ReadInteger(fST2829C.Name,fStepsShow.ParametrCaption+fStepsShow.IniNameSalt,2);
+   {довелося робити танці з бубном, бо дома на віртуалці
+   не хотіло ні виконувати fStepsShow.SetName,
+   ні fStepsShow.ForUseInShowObject}
+
   fStepsShow.HookParameterClick := StepClick;
   StepClick;
 
@@ -1005,8 +1014,7 @@ begin
   end;
   if fStepsShow <> nil then
   begin
-//    showmessage('ll');
-    CF_ST_2829C.WriteInteger(fStepsShow.Name,fStepsShow.ParametrCaption+fStepsShow.IniNameSalt,fStepsShow.Data);
+    CF_ST_2829C.WriteInteger(fST2829C.Name,fStepsShow.ParametrCaption+fStepsShow.IniNameSalt,fStepsShow.Data);
 //    fStepsShow.WriteToIniFile(CF_ST_2829C);
     FreeAndNil(fStepsShow);
   end;
@@ -1165,19 +1173,28 @@ end;
 
 procedure TST2829CCorrectionShow.CreateControls;
 begin
-  inherited;
-
+//  OpenShow:=TST2829C_OpenShow.Create(fST2829C);
+//  Add(OpenShow);
+//
+//  ShortShow:=TST2829C_ShortShow.Create(fST2829C);
+//  Add(ShortShow);
 end;
 
 procedure TST2829CCorrectionShow.CreateElements;
 begin
-  inherited;
+//  inherited;
 
 end;
 
 procedure TST2829CCorrectionShow.DesignElements;
 begin
-  inherited;
+  inherited DesignElements;
+  fParent.Caption:='Corrections';
+
+//  ShortShow.GroupBox.Left:=MarginLeft;
+//  ShortShow.GroupBox.Top:=MarginTop;
+//
+//  RelativeLocation(ShortShow.GroupBox,OpenShow.GroupBox,oCol,5);
 
 end;
 

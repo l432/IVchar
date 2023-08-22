@@ -3,7 +3,7 @@ unit ST2829CParamShow;
 interface
 
 uses
-  SCPIshow, ST2829C;
+  SCPIshow, ST2829C, StdCtrls, Controls;
 
 type
 
@@ -28,6 +28,25 @@ TST2829C_BoolParameterShow=class(TSCPI_BoolParameterShow)
  public
 end;
 
+TST2829C_BoolParameterAndButtonShow=class(TST2829C_BoolParameterShow)
+ {ще додаткова кнопка, на яку чіпляється дія;
+ і кнопка, і чек-бокс розміщуються у TGroupBox}
+ private
+  fButton:TButton;
+  fGB:TGroupBox;
+ protected
+  procedure DesignElements();
+  procedure ClickButton(Sender:TObject);
+  procedure RealAction();virtual;abstract;
+ public
+  property Button:TButton read fButton;
+  property GroupBox:TGroupBox read fGB;
+  Constructor Create(ST2829C:TST2829C;ActionType:Pointer;
+                     ParametrCaption: string; ButtonCaption:string;
+                     GroupBoxCaption:string);
+  destructor Destroy;override;
+  procedure ParentToElements(Parent:TWinControl);override;
+end;
 
 TST2829C_StringParameterShow=class(TSCPI_StringParameterShow)
  private
@@ -103,6 +122,34 @@ TST2829C_IrmsToMeasureShow=class(TST2829C_BoolParameterShow)
   Constructor Create(ST2829C:TST2829C);
 end;
 
+TST2829C_CorrectionOpenStateShow=class(TST2829C_BoolParameterShow)
+ protected
+ public
+  Constructor Create(ST2829C:TST2829C);
+end;
+
+TST2829C_CorrectionShotStateShow=class(TST2829C_BoolParameterShow)
+ protected
+ public
+  Constructor Create(ST2829C:TST2829C);
+end;
+
+//----------------------------------------------------
+
+ TST2829C_OpenShow=class(TST2829C_BoolParameterAndButtonShow)
+ protected
+  procedure RealAction();override;
+ public
+  Constructor Create(ST2829C:TST2829C);
+ end;
+
+ TST2829C_ShortShow=class(TST2829C_BoolParameterAndButtonShow)
+ protected
+  procedure RealAction();override;
+ public
+  Constructor Create(ST2829C:TST2829C);
+ end;
+
 //----------------------------------------------------
 
 TST2829C_FreqMeasShow=class(TST2829C_DoubleParameterShow)
@@ -153,7 +200,7 @@ end;
 implementation
 
 uses
-  ST2829CConst;
+  ST2829CConst, SysUtils, Dialogs;
 
 { TST2829C_DoubleParameterShow }
 
@@ -179,6 +226,8 @@ begin
     st_aBiasEn:Result:=(fSCPInew as TST2829C).BiasEnable;
     st_aVrmsToMeas:Result:=(fSCPInew as TST2829C).VrmsToMeasure;
     st_aIrmsToMeas:Result:=(fSCPInew as TST2829C).IrmsToMeasure;
+    st_aOpenState:Result:=(fSCPInew as TST2829C).CorectionOpenEnable;
+    st_aShortState:Result:=(fSCPInew as TST2829C).CorectionShortEnable;
     else Result:=False;
   end;
 end;
@@ -383,6 +432,94 @@ constructor TST2829C_CorrectionCabelShow.Create(ST2829C: TST2829C);
 begin
   inherited Create(ST2829C,Pointer(st_aCorCable),
                      'Cable:', True);
+end;
+
+{ TST2829C_CorrectionOpenStateShow }
+
+constructor TST2829C_CorrectionOpenStateShow.Create(ST2829C: TST2829C);
+begin
+  inherited Create(ST2829C,Pointer(st_aOpenState),'Enable');
+end;
+
+{ TST2829C_CorrectionShotStateShow }
+
+constructor TST2829C_CorrectionShotStateShow.Create(ST2829C: TST2829C);
+begin
+  inherited Create(ST2829C,Pointer(st_aShortState),'Enable');
+end;
+
+{ TST2829C_BoolParameterAndButtonShow }
+
+procedure TST2829C_BoolParameterAndButtonShow.ClickButton(Sender: TObject);
+ var Response: Integer;
+begin
+  Response := MessageDlg('Are you ready?', mtConfirmation, [mbYes, mbNo], 0);
+
+  if Response = mrYes then
+    RealAction()
+end;
+
+constructor TST2829C_BoolParameterAndButtonShow.Create(ST2829C: TST2829C;
+  ActionType: Pointer; ParametrCaption, ButtonCaption, GroupBoxCaption: string);
+begin
+ inherited Create(ST2829C,ActionType,ParametrCaption);
+  fButton:=TButton.Create(nil);
+  fGB:=TGroupBox.Create(nil);
+  fGB.Caption:=GroupBoxCaption;
+  fButton.Caption:=ButtonCaption;
+  CB.Parent:=fGB;
+  fButton.Parent:=fGB;
+  fButton.OnClick:=ClickButton;
+  DesignElements();
+end;
+
+procedure TST2829C_BoolParameterAndButtonShow.DesignElements;
+begin
+  CB.Left:=MarginLeft;
+  CB.Top:=10;
+  fButton.Top:=CB.Top;
+  fButton.Left:=CB.Left+CB.Width+10;
+  fGB.Width:=fButton.Left+fButton.Width+10;
+  fGB.Height:=fButton.Top+fButton.Height+10;
+end;
+
+destructor TST2829C_BoolParameterAndButtonShow.Destroy;
+begin
+  FreeAndNil(fButton);
+  FreeAndNil(fGB);
+  inherited;
+end;
+
+procedure TST2829C_BoolParameterAndButtonShow.ParentToElements(
+  Parent: TWinControl);
+begin
+ fGB.Parent:=Parent;
+end;
+
+{ TST2829C_OpenShow }
+
+constructor TST2829C_OpenShow.Create(ST2829C: TST2829C);
+begin
+ inherited Create(ST2829C,Pointer(st_aOpenState),'Enable',
+           'Measure','Open');
+end;
+
+procedure TST2829C_OpenShow.RealAction;
+begin
+  (fSCPInew as TST2829C).SetCorrectionOpenMeasuring;
+end;
+
+{ TST2829C_ShortShow }
+
+constructor TST2829C_ShortShow.Create(ST2829C: TST2829C);
+begin
+ inherited Create(ST2829C,Pointer(st_aShortState),'Enable',
+           'Measure','Short');
+end;
+
+procedure TST2829C_ShortShow.RealAction;
+begin
+ (fSCPInew as TST2829C).SetCorrectionShortMeasuring;
 end;
 
 end.

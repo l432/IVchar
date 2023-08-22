@@ -107,6 +107,10 @@ type
     procedure StOutputImpedance(const Value: TST2829C_OutputImpedance);
     function GtCorCable: TST2829C_CorCable;
     procedure StCorCable(const Value: TST2829C_CorCable);
+    function GtCorOpenEnable: boolean;
+    function GtCorShortEnable: boolean;
+    procedure StCorOpenEnable(const Value: boolean);
+    procedure StCorShortEnable(const Value: boolean);
   protected
    function GetRootNodeString():string;override;
    procedure DeviceCreate(Nm:string);override;
@@ -178,6 +182,9 @@ type
    property MeterSecond:TST2829_MeterSecondary read fMeterSec;
    property SweepParameters:TST2829SweepParameters read fSweepParameters;
    property CorectionCable:TST2829C_CorCable read GtCorCable write StCorCable;
+   property CorectionOpenEnable:boolean read GtCorOpenEnable write StCorOpenEnable;
+   property CorectionShortEnable:boolean read GtCorShortEnable write StCorShortEnable;
+
    Constructor Create();
    destructor Destroy; override;
    function GetPattern(Action:Pointer):boolean;override;
@@ -268,6 +275,23 @@ type
    не робив в≥дпов≥дних кнопок на в≥кнах,
    хоча Show елемент п≥дготував }
    function  GetCorrectionCable():boolean;
+
+   procedure SetCorrectionOpenMeasuring();
+   {вим≥рюванн€ Open-поправок в стандартному
+   частотному д≥апазон≥}
+
+   procedure SetCorrectionShortMeasuring();
+   {вим≥рюванн€ Short-поправок в стандартному
+   частотному д≥апазон≥}
+
+   procedure SetCorrectionOpenEnable(toOn: boolean);
+   {встановлюЇ, чи використовуютьс€ Open-поправки}
+   function  GetCorrectionOpenEnable():boolean;
+
+   procedure SetCorrectionShortEnable(toOn: boolean);
+   {встановлюЇ, чи використовуютьс€ Short-поправки}
+   function  GetCorrectionShortEnable():boolean;
+
  end;
 
 
@@ -357,6 +381,8 @@ TST2829Corrections=class(TST2829Part)
  protected
  public
   fCable:TST2829C_CorCable;
+  fOpenEnable:boolean;
+  fShortEnable:boolean;
   constructor Create(ST2829C:TST2829C);
 end;
 
@@ -390,6 +416,10 @@ begin
    st_aTrigSource,
    st_aTrigDelay:Result:=ord(Action)-7;
    st_aCorCable:Result:=16;
+   st_aOpenMeas,
+   st_aOpenState:Result:=17;
+   st_aShortMeas,
+   st_aShortState:Result:=18;
    else Result:=0;
  end;
 // showmessage('jjj '+inttostr(Result));
@@ -407,6 +437,8 @@ begin
    st_aGetVrms:Result:=12;
    st_aIrmsToMeas,
    st_aGetIrms:Result:=13;
+   st_aShortState,
+   st_aOpenState:Result:=5;
 //   else Result:=0;
  end;
 end;
@@ -436,7 +468,11 @@ begin
    st_aGetMeasData,
    st_aGetVrms,
    st_aGetIrms:Result:=14;
-   st_aCorCable:Result:=15;
+   st_aCorCable,
+   st_aOpenMeas,
+   st_aOpenState,
+   st_aShortMeas,
+   st_aShortState:Result:=15;
    else Result:=0;
  end;
 end;
@@ -444,7 +480,11 @@ end;
 function TST2829C.ActionToSyffix(Action: TST2829CAction): boolean;
 begin
  case Action of
-   st_aReset,st_aTrg,st_aTriger: Result:=False;
+   st_aReset,
+   st_aTrg,
+   st_aTriger,
+   st_aOpenMeas,
+   st_aShortMeas: Result:=False;
    else Result:=True;
  end;
 end;
@@ -536,7 +576,8 @@ begin
     st_aCorCable:CorectionCable:=TST2829C_CorCable(round(fDevice.Value));
 //    if fDevice.Value<3 then CorectionCable:=TST2829C_CorCable(round(fDevice.Value))
 //                                    else CorectionCable:=TST2829C_CorCable(round(fDevice.Value)-1);
-
+    st_aOpenState:CorectionOpenEnable:=(fDevice.Value=1);
+    st_aShortState:CorectionShortEnable:=(fDevice.Value=1);
   end;
 end;
 
@@ -568,6 +609,16 @@ end;
 function TST2829C.GetCorrectionCable: boolean;
 begin
  Result:=GetPattern(Pointer(st_aCorCable));
+end;
+
+function TST2829C.GetCorrectionOpenEnable: boolean;
+begin
+ Result:=GetPattern(Pointer(st_aOpenState));
+end;
+
+function TST2829C.GetCorrectionShortEnable: boolean;
+begin
+  Result:=GetPattern(Pointer(st_aShortState));
 end;
 
 function TST2829C.GetCurrentMeasurement: boolean;
@@ -693,6 +744,16 @@ end;
 function TST2829C.GtCorCable: TST2829C_CorCable;
 begin
   Result:=fCorrections.fCable;
+end;
+
+function TST2829C.GtCorOpenEnable: boolean;
+begin
+ Result:=fCorrections.fOpenEnable;
+end;
+
+function TST2829C.GtCorShortEnable: boolean;
+begin
+ Result:=fCorrections.fShortEnable;
 end;
 
 function TST2829C.GtFreqMeas: double;
@@ -831,6 +892,27 @@ begin
 // fDevice.Request;
 // (fDevice as TST2829CDevice).SetStringToSend('CORR:SHOR');
 // fDevice.GetData;
+
+
+
+  SetCorrectionOpenMeasuring();
+
+  SetCorrectionShortMeasuring();
+
+  SetCorrectionOpenEnable(True);
+ if GetCorrectionOpenEnable() then
+   showmessage(booltostr(BiasEnable,True));
+ SetCorrectionOpenEnable(False);
+ if GetCorrectionOpenEnable() then
+   showmessage(booltostr(BiasEnable,True));
+
+  SetCorrectionShortEnable(True);
+ if GetCorrectionShortEnable() then
+   showmessage(booltostr(BiasEnable,True));
+ SetCorrectionShortEnable(False);
+ if GetCorrectionShortEnable() then
+   showmessage(booltostr(BiasEnable,True));
+
 
 
 
@@ -1187,6 +1269,13 @@ begin
      end;
   15:case fFirstLevelNode of
       16:JoinToStringToSend(FirstNodeST2829C[fFirstLevelNode]);
+      17,18:case fLeafNode of
+            0:JoinToStringToSend(FirstNodeST2829C[fFirstLevelNode]);
+            5:begin
+              JoinToStringToSend(FirstNodeST2829C[fFirstLevelNode]);
+              JoinToStringToSend(FirstNodeST2829C[fLeafNode]);
+              end;
+            end;
      end;
   end;
 end;
@@ -1227,6 +1316,7 @@ begin
      end;
    15:case fFirstLevelNode of
        16:StringToOrd(AnsiLowerCase(Str));
+       17,18:fDevice.Value:=StrToInt(Str);
       end;
  end;
 end;
@@ -1293,6 +1383,30 @@ procedure TST2829C.SetCorrectionCable(Cable: TST2829C_CorCable);
 begin
 //УCORR:LENG <Cable>
  SetPattern([Pointer(st_aCorCable),Pointer(Cable)]);
+end;
+
+procedure TST2829C.SetCorrectionOpenEnable(toOn: boolean);
+begin
+//CORR:OPEN:STAT ON|OFF
+ SetPattern([Pointer(st_aOpenState),@toOn]);
+end;
+
+procedure TST2829C.SetCorrectionOpenMeasuring;
+begin
+//УCORR:OPEN
+ SetPattern([Pointer(st_aOpenMeas)]);
+end;
+
+procedure TST2829C.SetCorrectionShortEnable(toOn: boolean);
+begin
+//CORR:SHOT:STAT ON|OFF
+ SetPattern([Pointer(st_aShortState),@toOn]);
+end;
+
+procedure TST2829C.SetCorrectionShortMeasuring;
+begin
+//УCORR:SHOR
+ SetPattern([Pointer(st_aShortMeas)]);
 end;
 
 procedure TST2829C.SetCurrentMeasurement(I: double);
@@ -1451,6 +1565,14 @@ begin
                    CorectionCable:=TST2829C_CorCable(Ps[1]);
                    fAdditionalString:=ST2829C_CorCableCommands[CorectionCable];
                   end;
+    st_aOpenState:begin
+                   CorectionOpenEnable:=PBoolean(Ps[1])^;
+                   OnOffFromBool(CorectionOpenEnable);
+                  end;
+    st_aShortState:begin
+                   CorectionShortEnable:=PBoolean(Ps[1])^;
+                   OnOffFromBool(CorectionShortEnable);
+                  end;
   else;
  end;
 //
@@ -1569,6 +1691,16 @@ end;
 procedure TST2829C.StCorCable(const Value: TST2829C_CorCable);
 begin
  fCorrections.fCable:=Value;
+end;
+
+procedure TST2829C.StCorOpenEnable(const Value: boolean);
+begin
+ fCorrections.fOpenEnable:=Value;
+end;
+
+procedure TST2829C.StCorShortEnable(const Value: boolean);
+begin
+ fCorrections.fShortEnable:=Value;
 end;
 
 procedure TST2829C.StDelayTime(const Value: integer);
@@ -2093,6 +2225,8 @@ constructor TST2829Corrections.Create(ST2829C: TST2829C);
 begin
  inherited Create(ST2829C);
  fCable:=st_cc0M;
+ fOpenEnable:=False;
+ fShortEnable:=False;
 end;
 
 initialization

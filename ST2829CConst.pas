@@ -22,7 +22,7 @@ const
 //     0             1           2      3      4        5        6      7
   ':imp',':rang',':auto',':smon',':vac',':iac',':sour',':del',':leng',
 //   8      9       10      11     12     13      14     15     16
-  ':open',':shor','spot');
+  ':open',':shor',':spot');
 //   17     18      19      20     21     22      23     24     25
 
 
@@ -45,8 +45,10 @@ type
 //                  12         13             14         15               16
                  st_aSpeedMeas,st_aAverTimes,st_aBiasCur,st_aTriger,st_aTrigSource,
 //                  17            18             19         20               21
-                 st_aTrigDelay,st_aGetMeasData,st_aGetVrms,st_aGetIrms,st_aCorCable);
+                 st_aTrigDelay,st_aGetMeasData,st_aGetVrms,st_aGetIrms,st_aCorCable,
 //                   22            23             24         25            26
+                 st_aOpenMeas,st_aShortMeas,st_aOpenState,st_aShortState);
+//                   27            28             29         30            31
 
  TST2829C_DisplayPage=(st_dpMeas, st_dpBNum, st_dpBCO,
                        st_dpList, st_dpMset, st_dpCset,
