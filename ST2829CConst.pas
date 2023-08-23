@@ -34,6 +34,8 @@ type
  TST2829C_SetupMemoryRecord=0..39;
  {реально- до 39, але вікно з кнопками завелике}
 
+// TST2829C_SpotNumber=1..201;
+
  {що саме можна робити}
  TST2829CAction=(st_aReset,st_aTrg,st_aMemLoad,st_aMemSave,
 //                 0           1         2          3
@@ -47,8 +49,10 @@ type
 //                  17            18             19         20               21
                  st_aTrigDelay,st_aGetMeasData,st_aGetVrms,st_aGetIrms,st_aCorCable,
 //                   22            23             24         25            26
-                 st_aOpenMeas,st_aShortMeas,st_aOpenState,st_aShortState);
-//                   27            28             29         30            31
+                 st_aOpenMeas,st_aShortMeas,st_aOpenState,st_aShortState,st_aCorSpotState,
+//                   27            28             29         30               31
+                 st_aCorSpotFreq,st_aCorSpotShort,st_aCorSpotOpen);
+//                   32               33                34           35               36
 
  TST2829C_DisplayPage=(st_dpMeas, st_dpBNum, st_dpBCO,
                        st_dpList, st_dpMset, st_dpCset,
@@ -158,8 +162,10 @@ const
  ST2829C_MeasureSpeedCommands:array[TST2829C_MeasureSpeed]of string=
         ('slow','med','fast','fast+');
 
+// ST2829C_MeasureSpeedLabels:array[TST2829C_MeasureSpeed]of string=
+//        ('slow (650 ms)','med (90 ms)','fast (13 ms)','fast+ (8 ms)');
  ST2829C_MeasureSpeedLabels:array[TST2829C_MeasureSpeed]of string=
-        ('slow (650 ms)','med (90 ms)','fast (13 ms)','fast+ (8 ms)');
+        ('650 ms','90 ms','13 ms','8 ms');
 
  ST2829C_TrigerSourceCommands:array[TST2829C_TrigerSource]of string=
         ('int','hold','bus');
@@ -189,6 +195,7 @@ const
  ST2829C_BiasCurrentLimits:TLimitValues=(-100,100);
  ST2829C_AverTimes:TLimitValues=(1,255);
  ST2829C_DelayTime:TLimitValues=(0,60000);
+ ST2829C_SpotNumber:TLimitValues=(1,201);
 
  ST2829C_BiasOnOffButtonCaption:array [Boolean]
             of string=('Bias off', 'Bias on');

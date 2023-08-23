@@ -1173,16 +1173,16 @@ end;
 
 procedure TST2829CCorrectionShow.CreateControls;
 begin
-//  OpenShow:=TST2829C_OpenShow.Create(fST2829C);
-//  Add(OpenShow);
+  OpenShow:=TST2829C_OpenShow.Create(fST2829C,fParent);
+  Add(OpenShow);
 //
-//  ShortShow:=TST2829C_ShortShow.Create(fST2829C);
-//  Add(ShortShow);
+  ShortShow:=TST2829C_ShortShow.Create(fST2829C,fParent);
+  Add(ShortShow);
 end;
 
 procedure TST2829CCorrectionShow.CreateElements;
 begin
-//  inherited;
+//  inherited CreateElements;
 
 end;
 
@@ -1191,10 +1191,10 @@ begin
   inherited DesignElements;
   fParent.Caption:='Corrections';
 
-//  ShortShow.GroupBox.Left:=MarginLeft;
-//  ShortShow.GroupBox.Top:=MarginTop;
-//
-//  RelativeLocation(ShortShow.GroupBox,OpenShow.GroupBox,oCol,5);
+  OpenShow.GroupBox.Left:=5;
+  OpenShow.GroupBox.Top:=15;
+
+  RelativeLocation(OpenShow.GroupBox,ShortShow.GroupBox,oCol,3);
 
 end;
 

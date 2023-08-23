@@ -34,6 +34,7 @@ TST2829C_BoolParameterAndButtonShow=class(TST2829C_BoolParameterShow)
  private
   fButton:TButton;
   fGB:TGroupBox;
+  fLabel:Tlabel;
  protected
   procedure DesignElements();
   procedure ClickButton(Sender:TObject);
@@ -43,7 +44,8 @@ TST2829C_BoolParameterAndButtonShow=class(TST2829C_BoolParameterShow)
   property GroupBox:TGroupBox read fGB;
   Constructor Create(ST2829C:TST2829C;ActionType:Pointer;
                      ParametrCaption: string; ButtonCaption:string;
-                     GroupBoxCaption:string);
+                     GroupBoxCaption:string;
+                     Parent:TWinControl);
   destructor Destroy;override;
   procedure ParentToElements(Parent:TWinControl);override;
 end;
@@ -140,14 +142,16 @@ end;
  protected
   procedure RealAction();override;
  public
-  Constructor Create(ST2829C:TST2829C);
+  Constructor Create(ST2829C:TST2829C;
+                     Parent:TWinControl);
  end;
 
  TST2829C_ShortShow=class(TST2829C_BoolParameterAndButtonShow)
  protected
   procedure RealAction();override;
  public
-  Constructor Create(ST2829C:TST2829C);
+  Constructor Create(ST2829C:TST2829C;
+                     Parent:TWinControl);
  end;
 
 //----------------------------------------------------
@@ -453,19 +457,22 @@ end;
 procedure TST2829C_BoolParameterAndButtonShow.ClickButton(Sender: TObject);
  var Response: Integer;
 begin
-  Response := MessageDlg('Are you ready?', mtConfirmation, [mbYes, mbNo], 0);
+  Response := MessageDlg('Are you sure?', mtConfirmation, [mbYes, mbNo], 0);
 
   if Response = mrYes then
     RealAction()
 end;
 
 constructor TST2829C_BoolParameterAndButtonShow.Create(ST2829C: TST2829C;
-  ActionType: Pointer; ParametrCaption, ButtonCaption, GroupBoxCaption: string);
+  ActionType: Pointer; ParametrCaption, ButtonCaption, GroupBoxCaption: string;
+                     Parent:TWinControl);
 begin
  inherited Create(ST2829C,ActionType,ParametrCaption);
   fButton:=TButton.Create(nil);
+
   fGB:=TGroupBox.Create(nil);
   fGB.Caption:=GroupBoxCaption;
+  fGB.Parent:=Parent;
   fButton.Caption:=ButtonCaption;
   CB.Parent:=fGB;
   fButton.Parent:=fGB;
@@ -475,16 +482,24 @@ end;
 
 procedure TST2829C_BoolParameterAndButtonShow.DesignElements;
 begin
-  CB.Left:=MarginLeft;
-  CB.Top:=10;
-  fButton.Top:=CB.Top;
-  fButton.Left:=CB.Left+CB.Width+10;
-  fGB.Width:=fButton.Left+fButton.Width+10;
+  fLabel:=Tlabel.Create(fGB);
+  fLabel.Parent:=fGB;
+  CB.Left:=5;
+  CB.Top:=18;
+  CB.Width:=fLabel.Canvas.TextWidth(CB.Caption)+17;
+  fButton.Top:=CB.Top-3;
+  fButton.Left:=CB.Left+CB.Width;
+  fGB.Width:=fButton.Left+fButton.Width+5;
   fGB.Height:=fButton.Top+fButton.Height+10;
+  fLabel.Parent:=nil;
+  FreeAndNil(fLabel);
 end;
 
 destructor TST2829C_BoolParameterAndButtonShow.Destroy;
 begin
+  CB.Parent:=nil;
+  fButton:=Nil;
+  fGB.Parent:=nil;
   FreeAndNil(fButton);
   FreeAndNil(fGB);
   inherited;
@@ -493,15 +508,16 @@ end;
 procedure TST2829C_BoolParameterAndButtonShow.ParentToElements(
   Parent: TWinControl);
 begin
- fGB.Parent:=Parent;
+// fGB.Parent:=Parent;
 end;
 
 { TST2829C_OpenShow }
 
-constructor TST2829C_OpenShow.Create(ST2829C: TST2829C);
+constructor TST2829C_OpenShow.Create(ST2829C: TST2829C;
+                     Parent:TWinControl);
 begin
  inherited Create(ST2829C,Pointer(st_aOpenState),'Enable',
-           'Measure','Open');
+           'Measure','Open',Parent);
 end;
 
 procedure TST2829C_OpenShow.RealAction;
@@ -511,10 +527,11 @@ end;
 
 { TST2829C_ShortShow }
 
-constructor TST2829C_ShortShow.Create(ST2829C: TST2829C);
+constructor TST2829C_ShortShow.Create(ST2829C: TST2829C;
+                     Parent:TWinControl);
 begin
  inherited Create(ST2829C,Pointer(st_aShortState),'Enable',
-           'Measure','Short');
+           'Measure','Short',Parent);
 end;
 
 procedure TST2829C_ShortShow.RealAction;

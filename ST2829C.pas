@@ -292,6 +292,22 @@ type
    {встановлюЇ, чи використовуютьс€ Short-поправки}
    function  GetCorrectionShortEnable():boolean;
 
+   procedure SetCorrectionSpotState(SportNumber:byte;toOn: boolean);
+   {встановлюЇ використовуван≥сть частотного слоту}
+   function  GetCorrectionSpotState(SportNumber:byte):boolean;
+
+   procedure SetCorrectionSpotFreq(SportNumber:byte;Freq: double);
+   {встановлюЇ частоту частотного слоту}
+   function  GetCorrectionSpotFreq (SportNumber:byte):boolean;
+
+   procedure SetCorrectionSpotOpen(SportNumber:byte);
+   {≥ндукуЇ вим≥рюванн€ коректувальних Open-коеф≥ц≥Їнт≥в
+   дл€ частотного слоту}
+
+   procedure SetCorrectionSpotShort(SportNumber:byte);
+   {≥ндукуЇ вим≥рюванн€ коректувальних Short-коеф≥ц≥Їнт≥в
+   дл€ частотного слоту}
+
  end;
 
 
@@ -378,11 +394,18 @@ end;
 
 TST2829Corrections=class(TST2829Part)
  private
+  fSpotActiveNumber:byte;
+  fSpotActiveFreq:double;
+  procedure SetSpotActiveNumber(const Value: byte);
+  procedure SetSpotActiveFreq(const Value: double);
  protected
  public
   fCable:TST2829C_CorCable;
   fOpenEnable:boolean;
   fShortEnable:boolean;
+  fSpotActiveState:boolean;
+  property SpotActiveNumber:byte read fSpotActiveNumber write SetSpotActiveNumber;
+  property SpotActiveFreq:double read fSpotActiveFreq write SetSpotActiveFreq;
   constructor Create(ST2829C:TST2829C);
 end;
 
@@ -420,6 +443,10 @@ begin
    st_aOpenState:Result:=17;
    st_aShortMeas,
    st_aShortState:Result:=18;
+   st_aCorSpotState,
+   st_aCorSpotFreq,
+   st_aCorSpotShort,
+   st_aCorSpotOpen:Result:=19;
    else Result:=0;
  end;
 // showmessage('jjj '+inttostr(Result));
@@ -438,7 +465,11 @@ begin
    st_aIrmsToMeas,
    st_aGetIrms:Result:=13;
    st_aShortState,
-   st_aOpenState:Result:=5;
+   st_aOpenState,
+   st_aCorSpotState:Result:=5;
+   st_aCorSpotFreq:Result:=100;
+   st_aCorSpotShort:Result:=18;
+   st_aCorSpotOpen:Result:=17;
 //   else Result:=0;
  end;
 end;
@@ -472,7 +503,11 @@ begin
    st_aOpenMeas,
    st_aOpenState,
    st_aShortMeas,
-   st_aShortState:Result:=15;
+   st_aShortState,
+   st_aCorSpotState,
+   st_aCorSpotFreq,
+   st_aCorSpotShort,
+   st_aCorSpotOpen:Result:=15;
    else Result:=0;
  end;
 end;
@@ -484,7 +519,9 @@ begin
    st_aTrg,
    st_aTriger,
    st_aOpenMeas,
-   st_aShortMeas: Result:=False;
+   st_aShortMeas,
+   st_aCorSpotShort,
+   st_aCorSpotOpen: Result:=False;
    else Result:=True;
  end;
 end;
@@ -578,6 +615,8 @@ begin
 //                                    else CorectionCable:=TST2829C_CorCable(round(fDevice.Value)-1);
     st_aOpenState:CorectionOpenEnable:=(fDevice.Value=1);
     st_aShortState:CorectionShortEnable:=(fDevice.Value=1);
+    st_aCorSpotState:fCorrections.fSpotActiveState:=(fDevice.Value=1);
+    st_aCorSpotFreq:fCorrections.fSpotActiveFreq:=fDevice.Value;
   end;
 end;
 
@@ -619,6 +658,19 @@ end;
 function TST2829C.GetCorrectionShortEnable: boolean;
 begin
   Result:=GetPattern(Pointer(st_aShortState));
+end;
+
+function TST2829C.GetCorrectionSpotFreq(SportNumber: byte): boolean;
+begin
+ fCorrections.SpotActiveNumber:=SportNumber;
+ Result:=GetPattern(Pointer(st_aCorSpotFreq));
+end;
+
+function TST2829C.GetCorrectionSpotState(
+  SportNumber: byte): boolean;
+begin
+ fCorrections.SpotActiveNumber:=SportNumber;
+ Result:=GetPattern(Pointer(st_aCorSpotState));
 end;
 
 function TST2829C.GetCurrentMeasurement: boolean;
@@ -1276,6 +1328,13 @@ begin
               JoinToStringToSend(FirstNodeST2829C[fLeafNode]);
               end;
             end;
+      19:begin
+          JoinToStringToSend(FirstNodeST2829C[fFirstLevelNode]
+                            +IntTostr(fCorrections.SpotActiveNumber));
+          if fLeafNode=100
+            then JoinToStringToSend(':'+RootNodeST2829C[5])
+            else JoinToStringToSend(FirstNodeST2829C[fLeafNode]);
+         end;
      end;
   end;
 end;
@@ -1317,6 +1376,10 @@ begin
    15:case fFirstLevelNode of
        16:StringToOrd(AnsiLowerCase(Str));
        17,18:fDevice.Value:=StrToInt(Str);
+       19:case fLeafNode of
+           5:fDevice.Value:=StrToInt(Str);
+           100:fDevice.Value:=SCPI_StringToValue(Str);
+          end;
       end;
  end;
 end;
@@ -1407,6 +1470,31 @@ procedure TST2829C.SetCorrectionShortMeasuring;
 begin
 //УCORR:SHOR
  SetPattern([Pointer(st_aShortMeas)]);
+end;
+
+procedure TST2829C.SetCorrectionSpotFreq(SportNumber: byte; Freq: double);
+begin
+//CORR:SPTO<SportNumber>:FREQ <Freq>
+ SetPattern([Pointer(st_aCorSpotFreq),@SportNumber,@Freq]);
+end;
+
+procedure TST2829C.SetCorrectionSpotOpen(SportNumber: byte);
+begin
+//CORR:SPTO<SportNumber>:OPEN
+ SetPattern([Pointer(st_aCorSpotOpen),@SportNumber]);
+end;
+
+procedure TST2829C.SetCorrectionSpotShort(SportNumber: byte);
+begin
+//CORR:SPTO<SportNumber>:SHOR
+ SetPattern([Pointer(st_aCorSpotShort),@SportNumber]);
+end;
+
+procedure TST2829C.SetCorrectionSpotState(SportNumber: byte;
+  toOn: boolean);
+begin
+//CORR:SPTO<SportNumber>:STAT ON|OFF
+ SetPattern([Pointer(st_aCorSpotState),@SportNumber,@toOn]);
 end;
 
 procedure TST2829C.SetCurrentMeasurement(I: double);
@@ -1572,6 +1660,22 @@ begin
     st_aShortState:begin
                    CorectionShortEnable:=PBoolean(Ps[1])^;
                    OnOffFromBool(CorectionShortEnable);
+                  end;
+    st_aCorSpotState:begin
+                   fCorrections.SpotActiveNumber:=PByte(Ps[1])^;
+                   fCorrections.fSpotActiveState:=PBoolean(Ps[2])^;
+                   OnOffFromBool(fCorrections.fSpotActiveState);
+                  end;
+    st_aCorSpotFreq:begin
+                   fCorrections.SpotActiveNumber:=PByte(Ps[1])^;
+                   fCorrections.SpotActiveFreq:=PDouble(Ps[2])^;
+                   fAdditionalString:=FloatToStrF(fCorrections.SpotActiveFreq,ffGeneral,7,0)+'Hz';
+                  end;
+    st_aCorSpotShort:begin
+                   fCorrections.SpotActiveNumber:=PByte(Ps[1])^;
+                  end;
+    st_aCorSpotOpen:begin
+                   fCorrections.SpotActiveNumber:=PByte(Ps[1])^;
                   end;
   else;
  end;
@@ -1747,7 +1851,8 @@ function TST2829C.SuccessfulGet(Action: TST2829CAction): boolean;
 begin
   Result:=(fDevice.Value<>ErResult);
   case Action of
-    st_aFreqMeas: Result:=((fDevice.Value<>ErResult)and(fDevice.isReceived));
+    st_aFreqMeas,
+    st_aCorSpotFreq: Result:=((fDevice.Value<>ErResult)and(fDevice.isReceived));
 //    st_aRange:Result:=(round(fDevice.Value) in [0,1,10,30,100,300]);
 //                                        1000,3000]);
 //                                        ,10000,30000,
@@ -2227,6 +2332,21 @@ begin
  fCable:=st_cc0M;
  fOpenEnable:=False;
  fShortEnable:=False;
+ fSpotActiveNumber:=1;
+ fSpotActiveFreq:=20;
+ fSpotActiveState:=False;
+end;
+
+procedure TST2829Corrections.SetSpotActiveFreq(const Value: double);
+begin
+ fSpotActiveFreq:=TSCPInew.NumberMap(Value,ST2829C_FreqMeasLimits);
+ fSpotActiveFreq:=TSCPInew.ValueWithMinResolution(fSpotActiveFreq,1e-3);
+
+end;
+
+procedure TST2829Corrections.SetSpotActiveNumber(const Value: byte);
+begin
+  fSpotActiveNumber := TSCPInew.NumberMap(Value,ST2829C_SpotNumber);
 end;
 
 initialization
