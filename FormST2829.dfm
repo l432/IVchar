@@ -59,7 +59,7 @@ object ST2829Form: TST2829Form
   object GB_Setting: TGroupBox
     Tag = 110
     Left = 636
-    Top = 103
+    Top = 120
     Width = 128
     Height = 146
     Caption = 'Settings'
@@ -87,8 +87,8 @@ object ST2829Form: TST2829Form
     TabOrder = 4
   end
   object GB_ST2829C_Mes: TGroupBox
-    Left = 249
-    Top = 73
+    Left = 206
+    Top = 3
     Width = 279
     Height = 132
     Caption = 'Measurement'
@@ -195,10 +195,10 @@ object ST2829Form: TST2829Form
   end
   object GBST2829C_Bias: TGroupBox
     Tag = 110
-    Left = 201
-    Top = 205
-    Width = 244
-    Height = 67
+    Left = 479
+    Top = 172
+    Width = 139
+    Height = 94
     Caption = 'Bias'
     Font.Charset = RUSSIAN_CHARSET
     Font.Color = clMaroon
@@ -212,7 +212,7 @@ object ST2829Form: TST2829Form
     Tag = 110
     Left = 8
     Top = 272
-    Width = 285
+    Width = 250
     Height = 162
     Caption = 'Opt'
     Font.Charset = RUSSIAN_CHARSET
@@ -240,10 +240,10 @@ object ST2829Form: TST2829Form
   end
   object GBST2829C_Corrections: TGroupBox
     Tag = 110
-    Left = 299
-    Top = 272
-    Width = 174
-    Height = 165
+    Left = 272
+    Top = 221
+    Width = 186
+    Height = 216
     Caption = 'Corrections'
     Font.Charset = RUSSIAN_CHARSET
     Font.Color = clMaroon

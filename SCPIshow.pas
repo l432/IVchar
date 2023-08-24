@@ -4,7 +4,7 @@ interface
 
 uses
   OlegTypePart2, SCPI, StdCtrls, CPortCtl, Controls, IniFiles, ExtCtrls, 
-  ArduinoDeviceNew, OlegType, OlegShowTypes, Classes;
+  ArduinoDeviceNew, OlegType, OlegShowTypes, Classes, Forms;
 
 const MarginLeft=10;
       MarginRight=10;
@@ -16,9 +16,10 @@ type
 
 TGBwithControlElements=class
  private
-  fWinElements:array of TControl;
+//  fWinElements:array of TControl;
   procedure ParentToElements;virtual;
  protected
+  fWinElements:array of TControl;
   fParent:TGroupBox;
   procedure Add(WinElements:TControl);
   procedure CreateElements;virtual;//abstract;
@@ -90,9 +91,10 @@ end;
 
 TGBwithControlElementsAndParamShow=class(TGBwithControlElements)
  private
-  fShowElements:array of TSCPI_ParameterShowBase;
+//  fShowElements:array of TSCPI_ParameterShowBase;
   procedure ParentToElements;override;
  protected
+  fShowElements:array of TSCPI_ParameterShowBase;
   procedure Add(ShowElements:TSCPI_ParameterShowBase);overload;
   procedure DestroyControls();override;
   procedure DesignElements;override;
@@ -102,15 +104,32 @@ TGBwithControlElementsAndParamShow=class(TGBwithControlElements)
   procedure GetDataFromDeviceAndToSetting;
 end;
 
+TGBwithControlElementsAndParamAndWindowCreate=class(TGBwithControlElementsAndParamShow)
+ private
+  fShowForm:TForm;
+  fBOk:TButton;
+  fGBInFormShow:TGroupBox;
+//  procedure OptionButtonClick(Sender: TObject);virtual;abstract;
+  procedure CreateFormHeader(const FormName:string);
+  procedure CreateFormFooter(const bOkTop:integer);
+  procedure FormShowFooter;
+ protected
+  GBcontent:TGBwithControlElementsAndParamShow;
+  function FormCaption():string;virtual;
+  procedure GBcontentCreate(GB:TGroupBox);virtual;abstract;
+  procedure FormShow(Sender:TObject);
+end;
+
 
 TSCPI_BoolParameterShow=class(TSCPI_ParameterShowBase)
 {заготовка для керування логічним параметром
 за допомогою TCheckBox}
  private
   fCB:TCheckBox;
-  procedure Click(Sender:TObject);virtual;
+
 //  procedure SetValue(Value:Boolean);
  protected
+  procedure Click(Sender:TObject);virtual;
   function FuncForObjectToSetting:boolean;virtual;abstract;
   {як правило, повертає булевську властивість
   обё'єкту-пристрою, пов'язану з параметром;
@@ -214,11 +233,13 @@ end;
 
 Procedure DesignSettingPanel(P:TPanel;Caption:string);
 
+Function YesClicked(const quation:string):boolean;
+
 
 implementation
 
 uses
-  SysUtils, CPort, Forms, RS232deviceNew, Dialogs, Graphics, OlegFunction, 
+  SysUtils, CPort, RS232deviceNew, Dialogs, Graphics, OlegFunction, 
   Buttons;
 
 constructor TRS232DeviceNew_Show.Create(Device: TRS232DeviceNew; GB: TGroupBox);
@@ -245,7 +266,6 @@ begin
  inherited Create;
  fParent:=GB;
 
-//  showmessage('ll');
  CreateElements;
  CreateControls;
  DesignElements;
@@ -468,6 +488,10 @@ begin
  P.Cursor:=crHandPoint;
 end;
 
+Function YesClicked(const quation:string):boolean;
+begin
+  Result:=(mrYes = MessageDlg(quation, mtConfirmation, [mbYes, mbNo], 0));
+end;
 
 { TSCPI_SetupMemoryPins }
 
@@ -709,7 +733,7 @@ procedure TSCPI_DoubleParameterShow.Click;
 begin
  temp:=Data;
  fSCPInew.SetPattern([fActionType,@temp]);
- inherited;
+ inherited Click;
 end;
 
 constructor TSCPI_DoubleParameterShow.Create(SCPInew: TSCPInew;
@@ -787,6 +811,74 @@ begin
   inherited ParentToElements;
   for I := 0 to High(fShowElements)
    do  fShowElements[i].ParentToElements(fParent);
+end;
+
+{ TGBwithControlElementsAndParamAndWindowCreate }
+
+procedure TGBwithControlElementsAndParamAndWindowCreate.CreateFormFooter(
+  const bOkTop: integer);
+begin
+   fGBInFormShow.Top:=0;
+   fGBInFormShow.Left:=0;
+
+   fBOk.Parent:=fShowForm;
+   fBOk.Left:=round((fGBInFormShow.Width-fBOk.Width)/2);
+   fBOk.Top:=bOkTop;
+
+   fShowForm.Width:=fGBInFormShow.Width+25;
+   fShowForm.Height:=fBOk.Top+fBOk.Height+35;
+end;
+
+procedure TGBwithControlElementsAndParamAndWindowCreate.CreateFormHeader(
+  const FormName: string);
+begin
+  fShowForm := TForm.Create(Application);
+  fShowForm.Position := poMainFormCenter;
+  fShowForm.AutoScroll := True;
+  fShowForm.BorderIcons := [biSystemMenu];
+  fShowForm.ParentFont := True;
+  fShowForm.Font.Style := [fsBold];
+  fShowForm.Caption := FormName;
+  fShowForm.Color := clLtGray;
+
+  fBOk:=TButton.Create(fShowForm);
+  fBOk.ModalResult:=mrOK;
+  fBOk.Caption:='OK';
+
+  fGBInFormShow:=TGroupBox.Create(fShowForm);
+  fGBInFormShow.Parent:=fShowForm;
+end;
+
+function TGBwithControlElementsAndParamAndWindowCreate.FormCaption: string;
+begin
+ Result:='Form Caption';
+end;
+
+procedure TGBwithControlElementsAndParamAndWindowCreate.FormShow(
+  Sender: TObject);
+begin
+  CreateFormHeader(FormCaption());
+
+  GBcontentCreate(fGBInFormShow);
+  GBcontent.GetDataFromDeviceAndToSetting;
+
+  CreateFormFooter(fGBInFormShow.Height+5+fGBInFormShow.Top);
+  fShowForm.ShowModal;
+
+  FreeAndNil(GBcontent);
+  FormShowFooter;
+end;
+
+procedure TGBwithControlElementsAndParamAndWindowCreate.FormShowFooter;
+begin
+ fBOk.Parent:=nil;
+ fBOk.Free;
+
+ fGBInFormShow.Parent:=nil;
+ fGBInFormShow.Free;
+
+ fShowForm.Hide;
+ fShowForm.Release;
 end;
 
 end.

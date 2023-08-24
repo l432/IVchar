@@ -63,6 +63,14 @@ end;
                       GB: TGroupBox);
  end;
 
+ TST2829CElementParamWindow=class(TGBwithControlElementsAndParamAndWindowCreate)
+  private
+   fST2829C:TST2829C;
+  public
+   Constructor Create(ST2829C:TST2829C;
+                      GB: TGroupBox);
+ end;
+
  TST2829CMeasureParamShow=class(TST2829CElementAndParamShow)
   private
    fBVrmsNeasuring:TButton;
@@ -141,16 +149,27 @@ TST2829C_MeterShow=class(TMeasurementShowSimple)
   procedure MetterDataShow();override;
 end;
 
- TST2829CCorrectionShow=class(TST2829CElementAndParamShow)
+ TST2829C_SpotParameterShow=class;
+
+// TST2829CCorrectionShow=class(TST2829CElementAndParamShow)
+ TST2829CCorrectionShow=class(TST2829CElementParamWindow)
   private
+   fButton:TButton;
+   procedure ButtonClick(Sender:TObject);
   protected
    procedure CreateElements;override;
    procedure CreateControls;override;
    procedure DesignElements;override;
+//   procedure CreateForm();
+//   procedure FormShow();
+   function FormCaption():string;override;
+   procedure GBcontentCreate(GB:TGroupBox);override;
   public
    OpenShow:TST2829C_OpenShow;
    ShortShow:TST2829C_ShortShow;
    GroupBoxSpotTuning:TST2829C_GroupBoxSpotTuning;
+//   SpotParameterShow:TST2829C_SpotParameterShow;
+   destructor Destroy;override;
 //   procedure ObjectToSetting;override;
  end;
 
@@ -194,10 +213,11 @@ end;
  end;
 
 
-  TST2829C_SweepParameterShow=class(TGBwithControlElements)
+//  TST2829C_SweepParameterShow=class(TGBwithControlElements)
+  TST2829C_SweepParameterShow=class(TST2829CElement_Show)
    private
     fRGDataUsed:TRadioGroup;
-    fST2829C:TST2829C;
+//    fST2829C:TST2829C;
     fLType:TLabel;
     fSTType:TStaticText;
     fTypeShowSL:TStringList;
@@ -230,9 +250,31 @@ end;
     procedure StepClick;
     procedure LogStepClick(Sender:TObject);
    public
-    constructor Create(ST2829C:TST2829C;GB:TGroupBox);
+//    constructor Create(ST2829C:TST2829C;GB:TGroupBox);
   end;
 
+
+  TST2829C_SpotParameterShow=class(TST2829CElementAndParamShow)
+  private
+   fSpotNumber:byte;
+   fBOpenMeasure:TButton;
+   fBShortMeasure:TButton;
+//   procedure OnOffSpeedButtonClick(Sender: TObject);
+  protected
+   procedure CreateElements;override;
+   procedure CreateControls;override;
+   procedure DesignElements;override;
+   procedure OpenMeasureClick(Sender:TObject);
+   procedure ShortMeasureClick(Sender:TObject);
+   procedure StateShowClick();
+  public
+   StateShow:TST2829C_SpotStateShow;
+   FreqShow:TST2829C_SpotFreqShow;
+   Constructor Create(ST2829C:TST2829C;
+                      GB: TGroupBox;
+                      SpotNumber:byte);
+   procedure ObjectToSetting;override;
+  end;
 
 var
   ST2829C_Show:TST2829C_Show;
@@ -241,7 +283,7 @@ implementation
 
 uses
   OApproxShow, ST2829CConst, SysUtils, RS232deviceNew, Dialogs, Graphics, OlegType,
-  SCPI, OlegFunction;
+  SCPI, OlegFunction, Controls;
 
 { TST2829C_Show }
 
@@ -265,10 +307,11 @@ begin
 
  fMeasureTypeShow:=TST2829C_MeasureTypeShow.Create(fST2829C);
  fMeasureTypeShow.ParentToElements(GBs[0].Parent);
- fMeasureTypeShow.STdata.Top:=15;
+ fMeasureTypeShow.STdata.Top:=140;
  fMeasureTypeShow.STdata.Left:=220;
  fMeasureTypeShow.STdata.Font.Name:='Verdana';
  fMeasureTypeShow.STdata.Font.Height:=-23;
+ fMeasureTypeShow.STdata.Font.Color:=clLime;
  fMeasureTypeShow.STdata.Font.Style:=[fsBold];
 
  fMeasureParamShow:=TST2829CMeasureParamShow.Create(fST2829C,GBs[2]);
@@ -312,6 +355,7 @@ end;
 
 procedure TST2829C_Show.ObjectToSetting;
 begin
+ fCorrectionShow.ObjectToSetting;
  fMeasureTypeShow.ObjectToSetting;
  fMeasureParamShow.ObjectToSetting;
  fBiasParamShow.ObjectToSetting;
@@ -762,13 +806,17 @@ begin
 
   fSBOnOff.Caption:='Bias Output';
   Resize(fSBOnOff);
-  fSBOnOff.Left:=BiasCurrentShow.LCaption.Left+BiasCurrentShow.LCaption.Width+10;
-  fSBOnOff.Top:=BiasCurrentShow.LCaption.Top+15;
+//  fSBOnOff.Left:=BiasCurrentShow.LCaption.Left+BiasCurrentShow.LCaption.Width+10;
+//  fSBOnOff.Top:=BiasCurrentShow.LCaption.Top+15;
+  fSBOnOff.Left:=BiasVoltageShow.LCaption.Left+10;
+  fSBOnOff.Top:=BiasCurrentShow.STdata.Top+BiasCurrentShow.STdata.Height+5;
 
-  fParent.Width:=fSBOnOff.Left+fSBOnOff.Width+5;
-  fParent.Height:=BiasCurrentShow.STdata.Top+BiasCurrentShow.STdata.Height+5;
+//  fParent.Width:=fSBOnOff.Left+fSBOnOff.Width+5;
+//  fParent.Height:=BiasCurrentShow.STdata.Top+BiasCurrentShow.STdata.Height+5;
+  fParent.Width:=BiasCurrentShow.LCaption.Left+BiasCurrentShow.LCaption.Width+5;
+  fParent.Height:=fSBOnOff.Top+fSBOnOff.Height+5;
 
-//    showmessage(inttostr(fParent.Height));
+//  showmessage(inttostr(fParent.Height));
 //  showmessage(inttostr(fParent.Width));
 end;
 
@@ -914,12 +962,12 @@ end;
 
 { TST2829C_SweepParameterShow }
 
-constructor TST2829C_SweepParameterShow.Create(ST2829C:TST2829C;
-  GB: TGroupBox);
-begin
- fST2829C:=ST2829C;
- inherited Create(GB);
-end;
+//constructor TST2829C_SweepParameterShow.Create(ST2829C:TST2829C;
+//  GB: TGroupBox);
+//begin
+// fST2829C:=ST2829C;
+// inherited Create(GB);
+//end;
 
 procedure TST2829C_SweepParameterShow.CreateShows;
 begin
@@ -1172,6 +1220,37 @@ end;
 
 { TST2829CCorrectionShow }
 
+procedure TST2829CCorrectionShow.ButtonClick(Sender: TObject);
+ var //Response: Integer;
+     SpotNumber,CurrentSpotNumber:byte;
+     mess:string;
+begin
+//  Response := MessageDlg('Are you sure?', mtConfirmation, [mbYes, mbNo], 0);
+
+  if YesClicked('Are you sure?') then
+    begin
+     mess:='';
+     CurrentSpotNumber:=fST2829C.Corrections.SpotActiveNumber;
+     for SpotNumber := round(ST2829C_SpotNumber[lvMin]) to round(ST2829C_SpotNumber[lvMax]) do
+//     for SpotNumber := round(ST2829C_SpotNumber[lvMin]) to 3 do
+      begin
+        if (fST2829C.GetCorrectionSpotState(SpotNumber))
+           and (fST2829C.Corrections.fSpotActiveState)
+           then
+           begin
+            fST2829C.GetCorrectionSpotFreq(SpotNumber);
+            mess:=mess+inttostr(SpotNumber)
+               +'('+floattostr(fST2829C.Corrections.SpotActiveFreq)
+               +')'+#10#13;
+           end;
+      end;
+     if mess='' then showmessage('No used spot')
+                else Showmessage('The used spots:'+#10#13+mess);
+     fST2829C.Corrections.SpotActiveNumber:=CurrentSpotNumber;
+    end;
+
+end;
+
 procedure TST2829CCorrectionShow.CreateControls;
 begin
   OpenShow:=TST2829C_OpenShow.Create(fST2829C,fParent);
@@ -1179,21 +1258,28 @@ begin
 //
   ShortShow:=TST2829C_ShortShow.Create(fST2829C,fParent);
   Add(ShortShow);
+
+  fButton.OnClick:=ButtonClick;
+  GroupBoxSpotTuning.Button.OnClick:=FormShow;
 end;
 
 procedure TST2829CCorrectionShow.CreateElements;
 begin
 //  inherited CreateElements;
- GroupBoxSpotTuning:=TST2829C_GroupBoxSpotTuning.Create(fST2829C,fParent);
- Add(GroupBoxSpotTuning);
+ GroupBoxSpotTuning:=TST2829C_GroupBoxSpotTuning.Create({nil,}fST2829C,fParent);
+// Add(GroupBoxSpotTuning);
+
+ fButton:=TButton.Create(fParent);
+ Add(fButton);
 end;
+
 
 procedure TST2829CCorrectionShow.DesignElements;
 begin
   inherited DesignElements;
   fParent.Caption:='Corrections';
 
-  OpenShow.GroupBox.Left:=5;
+  OpenShow.GroupBox.Left:=15;
   OpenShow.GroupBox.Top:=15;
 
   RelativeLocation(OpenShow.GroupBox,ShortShow.GroupBox,oCol,3);
@@ -1201,6 +1287,123 @@ begin
   GroupBoxSpotTuning.Left:=5;
   GroupBoxSpotTuning.Top:=ShortShow.GroupBox.Top+ShortShow.GroupBox.Height+5;
 
+  fButton.Caption:='Show used spots';
+  Resize(fButton);
+  fButton.Left:=25;
+  fButton.Top:=GroupBoxSpotTuning.Top+GroupBoxSpotTuning.Height+10;
+
+  fParent.Width:=GroupBoxSpotTuning.Left+GroupBoxSpotTuning.Width+5;
+  fParent.Height:=fButton.Top+fButton.Height+10;
+
+//  showmessage(inttostr(fParent.Height));
+//  showmessage(inttostr(fParent.Width));
+
+end;
+
+destructor TST2829CCorrectionShow.Destroy;
+begin
+  FreeAndNil(GroupBoxSpotTuning);
+  inherited Destroy;
+end;
+
+
+function TST2829CCorrectionShow.FormCaption: string;
+begin
+ Result:='Parameters of spon number '+inttostr(GroupBoxSpotTuning.fActiveSpotShow.Data);
+end;
+
+procedure TST2829CCorrectionShow.GBcontentCreate(GB: TGroupBox);
+begin
+ GBcontent:=TST2829C_SpotParameterShow.Create(fST2829C,GB,GroupBoxSpotTuning.fActiveSpotShow.Data);
+end;
+
+{ TST2829CElementParamWindow }
+
+constructor TST2829CElementParamWindow.Create(ST2829C: TST2829C;
+                      GB: TGroupBox);
+begin
+ fST2829C:=ST2829C;
+ inherited Create(GB);
+end;
+
+{ TST2829C_SpotParameterShow }
+
+constructor TST2829C_SpotParameterShow.Create(ST2829C: TST2829C; GB: TGroupBox;
+  SpotNumber: byte);
+begin
+ fSpotNumber:=SpotNumber;
+ inherited Create(ST2829C,GB);
+end;
+
+procedure TST2829C_SpotParameterShow.CreateControls;
+begin
+ StateShow:=TST2829C_SpotStateShow.Create(fST2829C,fSpotNumber);
+ Add(StateShow);
+ StateShow.HookParameterClick:=StateShowClick;
+ FreqShow:=TST2829C_SpotFreqShow.Create(fST2829C,fSpotNumber);
+ Add(FreqShow);
+ fBOpenMeasure.OnClick:=OpenMeasureClick;
+ fBShortMeasure.OnClick:=ShortMeasureClick;
+end;
+
+procedure TST2829C_SpotParameterShow.CreateElements;
+begin
+  fBOpenMeasure:=TButton.Create(nil);
+  Add(fBOpenMeasure);
+  fBShortMeasure:=TButton.Create(nil);
+  Add(fBShortMeasure);
+end;
+
+procedure TST2829C_SpotParameterShow.DesignElements;
+begin
+ inherited DesignElements;
+
+ StateShow.CB.Left:=MarginLeft;
+ StateShow.CB.Top:=MarginTop;
+
+ FreqShow.LCaption.WordWrap:=False;
+// FreqShow.LCaption.Left:=MarginLeft;
+// FreqShow.LCaption.Top:=StateShow.CB.Top+StateShow.CB.Height+10;
+ FreqShow.LCaption.Left:=StateShow.CB.Left+StateShow.CB.Width+5;
+ FreqShow.LCaption.Top:=StateShow.CB.Top;
+ RelativeLocation(FreqShow.LCaption,FreqShow.STdata,oRow,3);
+ FreqShow.STdata.Top:=FreqShow.STdata.Top+2;
+
+ fBOpenMeasure.Caption:='to measure open';
+ Resize(fBOpenMeasure);
+ fBOpenMeasure.Left:=MarginLeft;
+ fBOpenMeasure.Top:=FreqShow.LCaption.Top+FreqShow.LCaption.Height+10;
+
+ fBShortMeasure.Caption:='to measure short';
+ Resize(fBShortMeasure);
+ RelativeLocation(fBOpenMeasure,fBShortMeasure,oRow,5);
+
+ fParent.Width:=fBShortMeasure.Left+fBShortMeasure.Width+MarginLeft;
+ fParent.Height:=fBShortMeasure.Top+fBShortMeasure.Height+MarginTop;
+
+end;
+
+procedure TST2829C_SpotParameterShow.ObjectToSetting;
+begin
+  inherited ObjectToSetting;
+  StateShowClick;
+end;
+
+procedure TST2829C_SpotParameterShow.OpenMeasureClick(Sender: TObject);
+begin
+  if YesClicked('Correction coefficient in open-circut will be mesured. Continue?')
+    then fST2829C.SetCorrectionSpotOpen(fSpotNumber);
+end;
+
+procedure TST2829C_SpotParameterShow.ShortMeasureClick(Sender: TObject);
+begin
+  if YesClicked('Correction coefficient in short-circut will be mesured. Continue?')
+    then fST2829C.SetCorrectionSpotShort(fSpotNumber);
+end;
+
+procedure TST2829C_SpotParameterShow.StateShowClick;
+begin
+  FreqShow.STdata.Enabled:=StateShow.CB.Checked;
 end;
 
 end.

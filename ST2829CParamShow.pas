@@ -3,7 +3,7 @@ unit ST2829CParamShow;
 interface
 
 uses
-  SCPIshow, ST2829C, StdCtrls, Controls;
+  SCPIshow, ST2829C, StdCtrls, Controls, Classes;
 
 type
 
@@ -136,6 +136,16 @@ TST2829C_CorrectionShotStateShow=class(TST2829C_BoolParameterShow)
   Constructor Create(ST2829C:TST2829C);
 end;
 
+ TST2829C_SpotStateShow=class(TST2829C_BoolParameterShow)
+  private
+   fSpotNumber:byte;
+  protected
+   procedure Click(Sender:TObject);override;
+  public
+   Constructor Create(ST2829C:TST2829C;SpotNumber:byte);
+   procedure GetDataFromDevice;override;
+ end;
+
 //----------------------------------------------------
 
  TST2829C_OpenShow=class(TST2829C_BoolParameterAndButtonShow)
@@ -154,6 +164,8 @@ end;
                      Parent:TWinControl);
  end;
 
+
+
 //----------------------------------------------------
 
 TST2829C_FreqMeasShow=class(TST2829C_DoubleParameterShow)
@@ -161,6 +173,16 @@ TST2829C_FreqMeasShow=class(TST2829C_DoubleParameterShow)
 //  procedure HookParameterClickFreqMeas;
  public
   Constructor Create(ST2829C:TST2829C);
+end;
+
+TST2829C_SpotFreqShow=class(TST2829C_DoubleParameterShow)
+  private
+   fSpotNumber:byte;
+  protected
+   procedure Click();override;
+  public
+   Constructor Create(ST2829C:TST2829C;SpotNumber:byte);
+//   procedure GetDataFromDevice;override;
 end;
 
 TST2829C_VMeasShow=class(TST2829C_DoubleParameterShow)
@@ -217,16 +239,17 @@ TST2829C_GroupBoxSpotTuning=class(TGroupBox)
   fButton:TButton;
 //  fGB:TGroupBox;
 //  fLabel:Tlabel;
-  fActiveSpotShow:TST2829C_ActiveSpotShow;
  protected
   procedure DesignElements();
-  procedure ClickButton(Sender:TObject);
+//  procedure ClickButton(Sender:TObject);
 //  procedure RealAction();virtual;abstract;
  public
+  fActiveSpotShow:TST2829C_ActiveSpotShow;
   property Button:TButton read fButton;
 //  property GroupBox:TGroupBox read fGB;
-  Constructor Create(ST2829C:TST2829C;
-                     Parent:TWinControl);
+  Constructor Create({AOwner: TComponent;}
+                     ST2829C:TST2829C;
+                     Parent:TWinControl);reintroduce;
   destructor Destroy;override;
 //  procedure ParentToElements(Parent:TWinControl);override;
 end;
@@ -248,12 +271,13 @@ begin
     st_aIMeas:Result:=(fSCPInew as TST2829C).IrmsMeas;
     st_aBiasVol:Result:=(fSCPInew as TST2829C).BiasVoltageValue;
     st_aBiasCur:Result:=(fSCPInew as TST2829C).BiasCurrentValue;
-
+    st_aCorSpotFreq:Result:=(fSCPInew as TST2829C).Corrections.SpotActiveFreq;
     else Result:=-1;
   end;
 end;
 
 { TST2829C_BoolParameterShow }
+
 
 function TST2829C_BoolParameterShow.FuncForObjectToSetting: boolean;
 begin
@@ -264,6 +288,7 @@ begin
     st_aIrmsToMeas:Result:=(fSCPInew as TST2829C).IrmsToMeasure;
     st_aOpenState:Result:=(fSCPInew as TST2829C).CorectionOpenEnable;
     st_aShortState:Result:=(fSCPInew as TST2829C).CorectionShortEnable;
+    st_aCorSpotState:Result:=(fSCPInew as TST2829C).Corrections.fSpotActiveState;
     else Result:=False;
   end;
 end;
@@ -459,7 +484,7 @@ end;
 constructor TST2829C_DelayTimeShow.Create(ST2829C: TST2829C);
 begin
  inherited Create(ST2829C,Pointer(st_aTrigDelay),
-                 'Delay Time, ms:','Lazy time bewbeen trigering and measuring, []=ms',0);
+                 'Delay, ms:','Lazy time bewbeen trigering and measuring, []=ms',0);
  SetLimits(ST2829C_DelayTime);
 end;
 
@@ -488,12 +513,14 @@ end;
 { TST2829C_BoolParameterAndButtonShow }
 
 procedure TST2829C_BoolParameterAndButtonShow.ClickButton(Sender: TObject);
- var Response: Integer;
+// var Response: Integer;
 begin
-  Response := MessageDlg('Are you sure?', mtConfirmation, [mbYes, mbNo], 0);
+  if YesClicked('Are you sure?') then RealAction();
 
-  if Response = mrYes then
-    RealAction()
+//  Response := MessageDlg('Are you sure?', mtConfirmation, [mbYes, mbNo], 0);
+//
+//  if Response = mrYes then
+//    RealAction()
 end;
 
 constructor TST2829C_BoolParameterAndButtonShow.Create(ST2829C: TST2829C;
@@ -594,24 +621,24 @@ end;
 
 { TST2829C_GroupBoxSpotTuning }
 
-procedure TST2829C_GroupBoxSpotTuning.ClickButton(Sender: TObject);
-begin
+//procedure TST2829C_GroupBoxSpotTuning.ClickButton(Sender: TObject);
+//begin
+//
+//end;
 
-end;
-
-constructor TST2829C_GroupBoxSpotTuning.Create(ST2829C: TST2829C;
-  Parent: TWinControl);
+constructor TST2829C_GroupBoxSpotTuning.Create({AOwner: TComponent;}
+                            ST2829C: TST2829C;
+                            Parent: TWinControl);
 begin
   inherited Create(nil);
   fST2829C:=ST2829C;
   fButton:=TButton.Create(nil);
-  
   Self.Parent:=Parent;
-  
+
   fButton.Parent:=Self;
   fActiveSpotShow:=TST2829C_ActiveSpotShow.Create(ST2829C);
   fActiveSpotShow.ParentToElements(Self);
-  fButton.OnClick:=ClickButton;
+//  fButton.OnClick:=ClickButton;
   DesignElements();
 end;
 
@@ -629,9 +656,53 @@ end;
 
 destructor TST2829C_GroupBoxSpotTuning.Destroy;
 begin
+//  Self.Parent:=nil;
+//  fButton.Parent:=nil;
+//  fActiveSpotShow.ParentToElements(nil);
   FreeAndNil(fActiveSpotShow);
   FreeAndNil(fButton);
   inherited;
 end;
+
+{ TST2829C_SpotStateShow }
+
+procedure TST2829C_SpotStateShow.Click(Sender: TObject);
+begin
+ (fSCPInew as TST2829C).SetCorrectionSpotState(fSpotNumber,CB.Checked);
+ fHookParameterClick;
+end;
+
+constructor TST2829C_SpotStateShow.Create(ST2829C: TST2829C; SpotNumber: byte);
+begin
+ fSpotNumber:=SpotNumber;
+ inherited Create(ST2829C,Pointer(st_aCorSpotState),'Used');
+end;
+
+procedure TST2829C_SpotStateShow.GetDataFromDevice;
+begin
+ (fSCPInew as TST2829C).GetCorrectionSpotState(fSpotNumber);
+end;
+
+{ TST2829C_SpotFreqShow }
+
+procedure TST2829C_SpotFreqShow.Click;
+begin
+  (fSCPInew as TST2829C).SetCorrectionSpotFreq(fSpotNumber,Data);
+  fHookParameterClick;
+end;
+
+constructor TST2829C_SpotFreqShow.Create(ST2829C: TST2829C; SpotNumber: byte);
+begin
+ fSpotNumber:=SpotNumber;
+ inherited Create(ST2829C,Pointer(st_aCorSpotFreq),
+                 'Freq, Hz:',1000,10);
+ SetLimits(ST2829C_FreqMeasLimits);
+end;
+
+//procedure TST2829C_SpotFreqShow.GetDataFromDevice;
+//begin
+//  inherited GetDataFromDevice;
+//  (fSCPInew as TST2829C).GetCorrectionSpotFreq(fSpotNumber);
+//end;
 
 end.

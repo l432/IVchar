@@ -293,19 +293,19 @@ type
    {встановлює, чи використовуються Short-поправки}
    function  GetCorrectionShortEnable():boolean;
 
-   procedure SetCorrectionSpotState(SportNumber:byte;toOn: boolean);
+   procedure SetCorrectionSpotState(SpotNumber:byte;toOn: boolean);
    {встановлює використовуваність частотного слоту}
-   function  GetCorrectionSpotState(SportNumber:byte):boolean;
+   function  GetCorrectionSpotState(SpotNumber:byte):boolean;
 
-   procedure SetCorrectionSpotFreq(SportNumber:byte;Freq: double);
+   procedure SetCorrectionSpotFreq(SpotNumber:byte;Freq: double);
    {встановлює частоту частотного слоту}
-   function  GetCorrectionSpotFreq (SportNumber:byte):boolean;
+   function  GetCorrectionSpotFreq (SpotNumber:byte):boolean;
 
-   procedure SetCorrectionSpotOpen(SportNumber:byte);
+   procedure SetCorrectionSpotOpen(SpotNumber:byte);
    {індукує вимірювання коректувальних Open-коефіцієнтів
    для частотного слоту}
 
-   procedure SetCorrectionSpotShort(SportNumber:byte);
+   procedure SetCorrectionSpotShort(SpotNumber:byte);
    {індукує вимірювання коректувальних Short-коефіцієнтів
    для частотного слоту}
 
@@ -661,16 +661,17 @@ begin
   Result:=GetPattern(Pointer(st_aShortState));
 end;
 
-function TST2829C.GetCorrectionSpotFreq(SportNumber: byte): boolean;
+function TST2829C.GetCorrectionSpotFreq(SpotNumber: byte): boolean;
 begin
- fCorrections.SpotActiveNumber:=SportNumber;
+ fCorrections.SpotActiveNumber:=SpotNumber;
+ fCorrections.fSpotActiveFreq:=0;
  Result:=GetPattern(Pointer(st_aCorSpotFreq));
 end;
 
 function TST2829C.GetCorrectionSpotState(
-  SportNumber: byte): boolean;
+  SpotNumber: byte): boolean;
 begin
- fCorrections.SpotActiveNumber:=SportNumber;
+ fCorrections.SpotActiveNumber:=SpotNumber;
  Result:=GetPattern(Pointer(st_aCorSpotState));
 end;
 
@@ -1493,29 +1494,29 @@ begin
  SetPattern([Pointer(st_aShortMeas)]);
 end;
 
-procedure TST2829C.SetCorrectionSpotFreq(SportNumber: byte; Freq: double);
+procedure TST2829C.SetCorrectionSpotFreq(SpotNumber: byte; Freq: double);
 begin
 //CORR:SPTO<SportNumber>:FREQ <Freq>
- SetPattern([Pointer(st_aCorSpotFreq),@SportNumber,@Freq]);
+ SetPattern([Pointer(st_aCorSpotFreq),@SpotNumber,@Freq]);
 end;
 
-procedure TST2829C.SetCorrectionSpotOpen(SportNumber: byte);
+procedure TST2829C.SetCorrectionSpotOpen(SpotNumber: byte);
 begin
 //CORR:SPTO<SportNumber>:OPEN
- SetPattern([Pointer(st_aCorSpotOpen),@SportNumber]);
+ SetPattern([Pointer(st_aCorSpotOpen),@SpotNumber]);
 end;
 
-procedure TST2829C.SetCorrectionSpotShort(SportNumber: byte);
+procedure TST2829C.SetCorrectionSpotShort(SpotNumber: byte);
 begin
 //CORR:SPTO<SportNumber>:SHOR
- SetPattern([Pointer(st_aCorSpotShort),@SportNumber]);
+ SetPattern([Pointer(st_aCorSpotShort),@SpotNumber]);
 end;
 
-procedure TST2829C.SetCorrectionSpotState(SportNumber: byte;
+procedure TST2829C.SetCorrectionSpotState(SpotNumber: byte;
   toOn: boolean);
 begin
 //CORR:SPTO<SportNumber>:STAT ON|OFF
- SetPattern([Pointer(st_aCorSpotState),@SportNumber,@toOn]);
+ SetPattern([Pointer(st_aCorSpotState),@SpotNumber,@toOn]);
 end;
 
 procedure TST2829C.SetCurrentMeasurement(I: double);

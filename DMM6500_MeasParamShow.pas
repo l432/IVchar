@@ -3565,35 +3565,13 @@ end;
 procedure TDMM6500ScanParameters.CreateForm();
 begin
   CreateFormHeader('Options of Scan');
-//  fShowForm := TForm.Create(Application);
-//  fShowForm.Position := poMainFormCenter;
-//  fShowForm.AutoScroll := True;
-//  fShowForm.BorderIcons := [biSystemMenu];
-//  fShowForm.ParentFont := True;
-//  fShowForm.Font.Style := [fsBold];
-//  fShowForm.Caption := 'Options of '+inttostr(ChanNumber)+' channel';
-//  fShowForm.Color := clLtGray;
-//
-//  fBOk:=TButton.Create(fShowForm);
-//  fBOk.ModalResult:=mrOK;
-//  fBOk.Caption:='OK';
-//
-//  fGBInFormShow:=TGroupBox.Create(fShowForm);
-//  fGBInFormShow.Parent:=fShowForm;
+
 
    fScanParametrWindowShow:=TDMM6500ScanParametrWindowShow.Create(fGBInFormShow,fDMM6500,Self);
    fScanParametrWindowShow.GetDataFromDeviceAndToSetting;
 
    CreateFormFooter(fGBInFormShow.Height+5+fGBInFormShow.Top);
-//   fGBInFormShow.Top:=0;
-//   fGBInFormShow.Left:=0;
-//
-//   fBOk.Parent:=fShowForm;
-//   fBOk.Left:=round((fGBInFormShow.Width-fBOk.Width)/2);
-//   fBOk.Top:=fSTDelayAfterClose.Height+5+fSTDelayAfterClose.Top;
-//
-//   fShowForm.Width:=fGBInFormShow.Width+25;
-//   fShowForm.Height:=fBOk.Top+fBOk.Height+35;
+
 end;
 
 procedure TDMM6500ScanParameters.DesignElements;
