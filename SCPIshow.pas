@@ -72,9 +72,9 @@ TSCPI_ParameterShowBase=class
 {базовий елемент для створення керуючих
 приладом об'єктів}
  private
+ protected
   fHookParameterClick: TSimpleEvent;
   {додаткова дія при натисканні на кнопку}
- protected
   fSCPInew:TSCPInew;
   fActionType:Pointer;
   {дія, що зв'язана з елементом,
@@ -602,7 +602,7 @@ procedure TSCPI_IntegerParameterShow.Click;
 begin
  temp:=Data;
  fSCPInew.SetPattern([fActionType,@temp]);
- inherited;
+ inherited Click;
 end;
 
 constructor TSCPI_IntegerParameterShow.Create(SCPInew: TSCPInew;

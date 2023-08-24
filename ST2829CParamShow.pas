@@ -198,13 +198,45 @@ TST2829C_DelayTimeShow=class(TST2829C_IntegerParameterShow)
  protected
  public
   Constructor Create(ST2829C:TST2829C);
+
 end;
+
+TST2829C_ActiveSpotShow=class(TST2829C_IntegerParameterShow)
+ protected
+  procedure Click();override;
+ public
+  Constructor Create(ST2829C:TST2829C);
+  procedure ObjectToSetting;override;
+end;
+
+TST2829C_GroupBoxSpotTuning=class(TGroupBox)
+ {ще додаткова кнопка, на яку чіпляється дія;
+ і кнопка, і чек-бокс розміщуються у TGroupBox}
+ private
+  fST2829C:TST2829C;
+  fButton:TButton;
+//  fGB:TGroupBox;
+//  fLabel:Tlabel;
+  fActiveSpotShow:TST2829C_ActiveSpotShow;
+ protected
+  procedure DesignElements();
+  procedure ClickButton(Sender:TObject);
+//  procedure RealAction();virtual;abstract;
+ public
+  property Button:TButton read fButton;
+//  property GroupBox:TGroupBox read fGB;
+  Constructor Create(ST2829C:TST2829C;
+                     Parent:TWinControl);
+  destructor Destroy;override;
+//  procedure ParentToElements(Parent:TWinControl);override;
+end;
+
 
 
 implementation
 
 uses
-  ST2829CConst, SysUtils, Dialogs;
+  ST2829CConst, SysUtils, Dialogs, OApproxShow;
 
 { TST2829C_DoubleParameterShow }
 
@@ -423,6 +455,7 @@ end;
 
 { TST2829C_DelayTimeShow }
 
+
 constructor TST2829C_DelayTimeShow.Create(ST2829C: TST2829C);
 begin
  inherited Create(ST2829C,Pointer(st_aTrigDelay),
@@ -537,6 +570,68 @@ end;
 procedure TST2829C_ShortShow.RealAction;
 begin
  (fSCPInew as TST2829C).SetCorrectionShortMeasuring;
+end;
+
+{ TST2829C_ActiveSpotShow }
+
+procedure TST2829C_ActiveSpotShow.Click;
+begin
+ (fSCPInew as TST2829C).Corrections.SpotActiveNumber:=Data;
+ fHookParameterClick;
+end;
+
+constructor TST2829C_ActiveSpotShow.Create(ST2829C: TST2829C);
+begin
+ inherited Create(ST2829C,Pointer(st_aCorSpotShort),
+                 'Number:',1);
+ SetLimits(ST2829C_SpotNumber);
+end;
+
+
+procedure TST2829C_ActiveSpotShow.ObjectToSetting;
+begin
+end;
+
+{ TST2829C_GroupBoxSpotTuning }
+
+procedure TST2829C_GroupBoxSpotTuning.ClickButton(Sender: TObject);
+begin
+
+end;
+
+constructor TST2829C_GroupBoxSpotTuning.Create(ST2829C: TST2829C;
+  Parent: TWinControl);
+begin
+  inherited Create(nil);
+  fST2829C:=ST2829C;
+  fButton:=TButton.Create(nil);
+  
+  Self.Parent:=Parent;
+  
+  fButton.Parent:=Self;
+  fActiveSpotShow:=TST2829C_ActiveSpotShow.Create(ST2829C);
+  fActiveSpotShow.ParentToElements(Self);
+  fButton.OnClick:=ClickButton;
+  DesignElements();
+end;
+
+procedure TST2829C_GroupBoxSpotTuning.DesignElements;
+begin
+  Self.Caption:='Spot control';
+  fButton.Caption:='Tuning';
+  fActiveSpotShow.LCaption.Left:=5;
+  fActiveSpotShow.LCaption.Top:=15;
+  RelativeLocation(fActiveSpotShow.LCaption,fActiveSpotShow.STdata,oRow,3);
+  RelativeLocation(fActiveSpotShow.STdata,fButton,oRow,10);
+  Height:=fButton.Top+fButton.Height+5;
+  Width:=fButton.Left+fButton.Width+5;
+end;
+
+destructor TST2829C_GroupBoxSpotTuning.Destroy;
+begin
+  FreeAndNil(fActiveSpotShow);
+  FreeAndNil(fButton);
+  inherited;
 end;
 
 end.

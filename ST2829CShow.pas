@@ -150,6 +150,7 @@ end;
   public
    OpenShow:TST2829C_OpenShow;
    ShortShow:TST2829C_ShortShow;
+   GroupBoxSpotTuning:TST2829C_GroupBoxSpotTuning;
 //   procedure ObjectToSetting;override;
  end;
 
@@ -1183,7 +1184,8 @@ end;
 procedure TST2829CCorrectionShow.CreateElements;
 begin
 //  inherited CreateElements;
-
+ GroupBoxSpotTuning:=TST2829C_GroupBoxSpotTuning.Create(fST2829C,fParent);
+ Add(GroupBoxSpotTuning);
 end;
 
 procedure TST2829CCorrectionShow.DesignElements;
@@ -1195,6 +1197,9 @@ begin
   OpenShow.GroupBox.Top:=15;
 
   RelativeLocation(OpenShow.GroupBox,ShortShow.GroupBox,oCol,3);
+
+  GroupBoxSpotTuning.Left:=5;
+  GroupBoxSpotTuning.Top:=ShortShow.GroupBox.Top+ShortShow.GroupBox.Height+5;
 
 end;
 

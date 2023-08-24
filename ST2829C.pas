@@ -184,6 +184,7 @@ type
    property CorectionCable:TST2829C_CorCable read GtCorCable write StCorCable;
    property CorectionOpenEnable:boolean read GtCorOpenEnable write StCorOpenEnable;
    property CorectionShortEnable:boolean read GtCorShortEnable write StCorShortEnable;
+   property Corrections:TST2829Corrections read fCorrections;
 
    Constructor Create();
    destructor Destroy; override;
@@ -945,25 +946,45 @@ begin
 // (fDevice as TST2829CDevice).SetStringToSend('CORR:SHOR');
 // fDevice.GetData;
 
+showmessage(inttostr(Corrections.SpotActiveNumber));
+
+//  SetCorrectionSpotState(1,True);
+// if GetCorrectionSpotState(1) then
+//   showmessage(booltostr(fCorrections.fSpotActiveState,True));
+// SetCorrectionSpotState(202,False);
+// if GetCorrectionSpotState(202) then
+//   showmessage(booltostr(fCorrections.fSpotActiveState,True));
+//
+//
+//  SetCorrectionSpotFreq(18,4.256e4);
+// if GetCorrectionSpotFreq(18) then
+//   showmessage(floattostr(fCorrections.fSpotActiveFreq));
+// SetCorrectionSpotFreq(20,1e7);
+// if GetCorrectionSpotFreq(20) then
+//   showmessage(floattostr(fCorrections.fSpotActiveFreq));
+//
+//   SetCorrectionSpotOpen(2);
+//   SetCorrectionSpotShort(3);
 
 
-  SetCorrectionOpenMeasuring();
 
-  SetCorrectionShortMeasuring();
-
-  SetCorrectionOpenEnable(True);
- if GetCorrectionOpenEnable() then
-   showmessage(booltostr(BiasEnable,True));
- SetCorrectionOpenEnable(False);
- if GetCorrectionOpenEnable() then
-   showmessage(booltostr(BiasEnable,True));
-
-  SetCorrectionShortEnable(True);
- if GetCorrectionShortEnable() then
-   showmessage(booltostr(BiasEnable,True));
- SetCorrectionShortEnable(False);
- if GetCorrectionShortEnable() then
-   showmessage(booltostr(BiasEnable,True));
+//  SetCorrectionOpenMeasuring();
+//
+//  SetCorrectionShortMeasuring();
+//
+//  SetCorrectionOpenEnable(True);
+// if GetCorrectionOpenEnable() then
+//   showmessage(booltostr(CorectionOpenEnable,True));
+// SetCorrectionOpenEnable(False);
+// if GetCorrectionOpenEnable() then
+//   showmessage(booltostr(CorectionOpenEnable,True));
+//
+//  SetCorrectionShortEnable(True);
+// if GetCorrectionShortEnable() then
+//   showmessage(booltostr(CorectionShortEnable,True));
+// SetCorrectionShortEnable(False);
+// if GetCorrectionShortEnable() then
+//   showmessage(booltostr(CorectionShortEnable,True));
 
 
 
