@@ -4,7 +4,8 @@ interface
 
 uses
   OlegTypePart2, ST2829C, StdCtrls, SCPIshow, ExtCtrls, ArduinoDeviceNew, 
-  IniFiles, ST2829CParamShow, Buttons, Measurement, OlegShowTypes, Classes;
+  IniFiles, ST2829CParamShow, Buttons, Measurement, OlegShowTypes, Classes, 
+  Controls;
 
 type
  TST2829C_Show=class;
@@ -149,7 +150,34 @@ TST2829C_MeterShow=class(TMeasurementShowSimple)
   procedure MetterDataShow();override;
 end;
 
+
+//TST2829C_GroupBoxSpotTuning=class(TGroupBox)
+TST2829C_GroupBoxSpotTun=class(TST2829CElementAndParamShow)
+ {ще додаткова кнопка, на яку чіпляється дія;
+ і кнопка, і чек-бокс розміщуються у TGroupBox}
+ private
+//  fST2829C:TST2829C;
+  fButton:TButton;
+  fGB:TGroupBox;
+ protected
+  procedure DesignElements();override;
+  procedure CreateElements;override;
+  procedure CreateControls;override;
+ public
+  fActiveSpotShow:TST2829C_ActiveSpotShow;
+  property Button:TButton read fButton;
+  property GroupBox:TGroupBox read fGB;
+// Constructor Create(ST2829C:TST2829C;
+//                      GB: TGroupBox);
+//  Constructor Create({AOwner: TComponent;}
+//                     ST2829C:TST2829C;
+//                     Parent:TWinControl);//reintroduce;
+  destructor Destroy;override;
+end;
+
+
  TST2829C_SpotParameterShow=class;
+
 
 // TST2829CCorrectionShow=class(TST2829CElementAndParamShow)
  TST2829CCorrectionShow=class(TST2829CElementParamWindow)
@@ -167,7 +195,8 @@ end;
   public
    OpenShow:TST2829C_OpenShow;
    ShortShow:TST2829C_ShortShow;
-   GroupBoxSpotTuning:TST2829C_GroupBoxSpotTuning;
+//   GroupBoxSpotTuning:TST2829C_GroupBoxSpotTuning;
+   GroupBoxSpotTuning:TST2829C_GroupBoxSpotTun;
 //   SpotParameterShow:TST2829C_SpotParameterShow;
    destructor Destroy;override;
 //   procedure ObjectToSetting;override;
@@ -283,7 +312,7 @@ implementation
 
 uses
   OApproxShow, ST2829CConst, SysUtils, RS232deviceNew, Dialogs, Graphics, OlegType,
-  SCPI, OlegFunction, Controls;
+  SCPI, OlegFunction;
 
 { TST2829C_Show }
 
@@ -311,7 +340,7 @@ begin
  fMeasureTypeShow.STdata.Left:=220;
  fMeasureTypeShow.STdata.Font.Name:='Verdana';
  fMeasureTypeShow.STdata.Font.Height:=-23;
- fMeasureTypeShow.STdata.Font.Color:=clLime;
+ fMeasureTypeShow.STdata.Font.Color:=clFuchsia;
  fMeasureTypeShow.STdata.Font.Style:=[fsBold];
 
  fMeasureParamShow:=TST2829CMeasureParamShow.Create(fST2829C,GBs[2]);
@@ -355,7 +384,6 @@ end;
 
 procedure TST2829C_Show.ObjectToSetting;
 begin
- fCorrectionShow.ObjectToSetting;
  fMeasureTypeShow.ObjectToSetting;
  fMeasureParamShow.ObjectToSetting;
  fBiasParamShow.ObjectToSetting;
@@ -1240,8 +1268,8 @@ begin
            begin
             fST2829C.GetCorrectionSpotFreq(SpotNumber);
             mess:=mess+inttostr(SpotNumber)
-               +'('+floattostr(fST2829C.Corrections.SpotActiveFreq)
-               +')'+#10#13;
+               +' ('+floattostr(fST2829C.Corrections.SpotActiveFreq)
+               +' Hz)'+#10#13;
            end;
       end;
      if mess='' then showmessage('No used spot')
@@ -1266,8 +1294,9 @@ end;
 procedure TST2829CCorrectionShow.CreateElements;
 begin
 //  inherited CreateElements;
- GroupBoxSpotTuning:=TST2829C_GroupBoxSpotTuning.Create({nil,}fST2829C,fParent);
-// Add(GroupBoxSpotTuning);
+
+// GroupBoxSpotTuning:=TST2829C_GroupBoxSpotTuning.Create({nil,}fST2829C,fParent);
+ GroupBoxSpotTuning:=TST2829C_GroupBoxSpotTun.Create(fST2829C,fParent);
 
  fButton:=TButton.Create(fParent);
  Add(fButton);
@@ -1284,15 +1313,20 @@ begin
 
   RelativeLocation(OpenShow.GroupBox,ShortShow.GroupBox,oCol,3);
 
-  GroupBoxSpotTuning.Left:=5;
-  GroupBoxSpotTuning.Top:=ShortShow.GroupBox.Top+ShortShow.GroupBox.Height+5;
+//  GroupBoxSpotTuning.Left:=5;
+//  GroupBoxSpotTuning.Top:=ShortShow.GroupBox.Top+ShortShow.GroupBox.Height+5;
+  GroupBoxSpotTuning.GroupBox.Left:=5;
+  GroupBoxSpotTuning.GroupBox.Top:=ShortShow.GroupBox.Top+ShortShow.GroupBox.Height+5;
+
 
   fButton.Caption:='Show used spots';
   Resize(fButton);
   fButton.Left:=25;
-  fButton.Top:=GroupBoxSpotTuning.Top+GroupBoxSpotTuning.Height+10;
+//  fButton.Top:=GroupBoxSpotTuning.Top+GroupBoxSpotTuning.Height+10;
+  fButton.Top:=GroupBoxSpotTuning.GroupBox.Top+GroupBoxSpotTuning.GroupBox.Height+10;
 
-  fParent.Width:=GroupBoxSpotTuning.Left+GroupBoxSpotTuning.Width+5;
+//  fParent.Width:=GroupBoxSpotTuning.Left+GroupBoxSpotTuning.Width+5;
+  fParent.Width:=GroupBoxSpotTuning.GroupBox.Left+GroupBoxSpotTuning.GroupBox.Width+5;
   fParent.Height:=fButton.Top+fButton.Height+10;
 
 //  showmessage(inttostr(fParent.Height));
@@ -1405,5 +1439,74 @@ procedure TST2829C_SpotParameterShow.StateShowClick;
 begin
   FreqShow.STdata.Enabled:=StateShow.CB.Checked;
 end;
+
+{ TST2829C_GroupBoxSpotTun }
+
+//constructor TST2829C_GroupBoxSpotTun.Create(ST2829C: TST2829C; GB: TGroupBox);
+//begin
+//
+//end;
+
+procedure TST2829C_GroupBoxSpotTun.CreateControls;
+begin
+
+  fActiveSpotShow:=TST2829C_ActiveSpotShow.Create(fST2829C);
+//  Add(fActiveSpotShow);
+  fActiveSpotShow.ParentToElements(fGB);
+
+end;
+
+procedure TST2829C_GroupBoxSpotTun.CreateElements;
+begin
+
+
+
+
+  fGB:=TGroupBox.Create(fParent);
+//  fGB.Parent:=fParent;
+  add(fGB);
+
+  fButton:=TButton.Create(fGB);
+//  Add(fButton);
+
+  fButton.Parent:=fGB;
+
+
+//  fActiveSpotShow:=TST2829C_ActiveSpotShow.Create(fST2829C);
+//  fActiveSpotShow.ParentToElements(fGB);
+
+end;
+
+procedure TST2829C_GroupBoxSpotTun.DesignElements;
+begin
+  inherited DesignElements;
+//fGB.Parent:=fParent;
+  fGB.Caption:='Spot control';
+  fButton.Caption:='Tuning';
+  fActiveSpotShow.LCaption.Left:=5;
+  fActiveSpotShow.LCaption.Top:=15;
+  RelativeLocation(fActiveSpotShow.LCaption,fActiveSpotShow.STdata,oRow,3);
+  RelativeLocation(fActiveSpotShow.STdata,fButton,oRow,10);
+  fGB.Height:=fButton.Top+fButton.Height+5;
+  fGB.Width:=fButton.Left+fButton.Width+5;
+end;
+
+
+destructor TST2829C_GroupBoxSpotTun.Destroy;
+begin
+//  fGB.Parent:=nil;
+  fButton.Parent:=nil;
+  fButton.Free;
+  fActiveSpotShow.ParentToElements(nil);
+  fActiveSpotShow.Free;
+//  fGB.Free;
+  inherited;
+end;
+
+//destructor TST2829C_GroupBoxSpotTun.Destroy;
+//begin
+//
+//  inherited Destroy;
+//end;
 
 end.

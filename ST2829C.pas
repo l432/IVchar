@@ -123,6 +123,7 @@ type
    величини параметру, що має тип перерахунок
    (приймає дискретні значення)}
    function GetRangePattern(Action:TST2829CAction):boolean;
+   procedure SetMeasuringTiming(Action:TST2829CAction);
 
    procedure PrepareStringByRootNode;override;
    function ActionToRootNodeNumber(Action:TST2829CAction):byte;
@@ -849,6 +850,8 @@ function TST2829C.GetPattern(Action: Pointer): boolean;
  var Act:TST2829CAction;
 begin
   Act:=TST2829CAction(Action);
+  SetMeasuringTiming(Act);
+
   Result:=False;
   if Act=st_aRange then
    begin
@@ -947,7 +950,7 @@ begin
 // (fDevice as TST2829CDevice).SetStringToSend('CORR:SHOR');
 // fDevice.GetData;
 
-showmessage(inttostr(Corrections.SpotActiveNumber));
+//showmessage(inttostr(Corrections.SpotActiveNumber));
 
 //  SetCorrectionSpotState(1,True);
 // if GetCorrectionSpotState(1) then
@@ -955,7 +958,7 @@ showmessage(inttostr(Corrections.SpotActiveNumber));
 // SetCorrectionSpotState(202,False);
 // if GetCorrectionSpotState(202) then
 //   showmessage(booltostr(fCorrections.fSpotActiveState,True));
-//
+////
 //
 //  SetCorrectionSpotFreq(18,4.256e4);
 // if GetCorrectionSpotFreq(18) then
@@ -990,9 +993,9 @@ showmessage(inttostr(Corrections.SpotActiveNumber));
 
 
 
-//showmessage(inttostr(fDevice.MinDelayTime)+#10#13
-//            +inttostr(fDevice.DelayTimeStep)+#10#13
-//            +inttostr(fDevice.DelayTimeMax));
+showmessage(inttostr(fDevice.MinDelayTime)+#10#13
+            +inttostr(fDevice.DelayTimeStep)+#10#13
+            +inttostr(fDevice.DelayTimeMax));
 //  fMinDelayTime:=0;
 //  fDelayTimeStep:=10;
 //  fDelayTimeMax:=130;
@@ -1579,6 +1582,16 @@ begin
  SetPattern([Pointer(st_aSpeedMeas),Pointer(Speed)]);
 end;
 
+procedure TST2829C.SetMeasuringTiming(Action: TST2829CAction);
+begin
+
+
+// GetPattern(Pointer(st_aTrg));
+//inttostr(fDevice.MinDelayTime)+#10#13
+//            +inttostr(fDevice.DelayTimeStep)+#10#13
+//            +inttostr(fDevice.DelayTimeMax)
+end;
+
 procedure TST2829C.SetOutputImpedance(OI: TST2829C_OutputImpedance);
 begin
 //ORES <OI>
@@ -2091,12 +2104,12 @@ procedure TST2829SweepParameters.ActionMeasurement(const Value:double);
 begin
   SetValue(Value);
 
- secondmeter.Start();
+// secondmeter.Start();
 
   fParentModule.Trig;
 
-    secondmeter.Finish();
-   Info:=Info+ floattostr(SecondMeter.Interval)+#13;
+//    secondmeter.Finish();
+//   Info:=Info+ floattostr(SecondMeter.Interval)+#13;
 
 // secondmeter.Start();
 

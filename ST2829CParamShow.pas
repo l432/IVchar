@@ -231,28 +231,24 @@ TST2829C_ActiveSpotShow=class(TST2829C_IntegerParameterShow)
   procedure ObjectToSetting;override;
 end;
 
-TST2829C_GroupBoxSpotTuning=class(TGroupBox)
- {ще додаткова кнопка, на яку чіпляється дія;
- і кнопка, і чек-бокс розміщуються у TGroupBox}
- private
-  fST2829C:TST2829C;
-  fButton:TButton;
-//  fGB:TGroupBox;
-//  fLabel:Tlabel;
- protected
-  procedure DesignElements();
-//  procedure ClickButton(Sender:TObject);
-//  procedure RealAction();virtual;abstract;
- public
-  fActiveSpotShow:TST2829C_ActiveSpotShow;
-  property Button:TButton read fButton;
-//  property GroupBox:TGroupBox read fGB;
-  Constructor Create({AOwner: TComponent;}
-                     ST2829C:TST2829C;
-                     Parent:TWinControl);reintroduce;
-  destructor Destroy;override;
-//  procedure ParentToElements(Parent:TWinControl);override;
-end;
+//TST2829C_GroupBoxSpotTuning=class(TGroupBox)
+////TST2829C_GroupBoxSpotTuning=class(TST2829CElementAndParamShow)
+// {ще додаткова кнопка, на яку чіпляється дія;
+// і кнопка, і чек-бокс розміщуються у TGroupBox}
+// private
+//  fST2829C:TST2829C;
+//  fButton:TButton;
+// protected
+//  procedure DesignElements();
+// public
+//  fActiveSpotShow:TST2829C_ActiveSpotShow;
+//  property Button:TButton read fButton;
+//  Constructor Create({AOwner: TComponent;}
+//                     ST2829C:TST2829C;
+//                     Parent:TWinControl);reintroduce;
+//  destructor Destroy;override;
+////  procedure ParentToElements(Parent:TWinControl);override;
+//end;
 
 
 
@@ -626,43 +622,44 @@ end;
 //
 //end;
 
-constructor TST2829C_GroupBoxSpotTuning.Create({AOwner: TComponent;}
-                            ST2829C: TST2829C;
-                            Parent: TWinControl);
-begin
-  inherited Create(nil);
-  fST2829C:=ST2829C;
-  fButton:=TButton.Create(nil);
-  Self.Parent:=Parent;
-
-  fButton.Parent:=Self;
-  fActiveSpotShow:=TST2829C_ActiveSpotShow.Create(ST2829C);
-  fActiveSpotShow.ParentToElements(Self);
-//  fButton.OnClick:=ClickButton;
-  DesignElements();
-end;
-
-procedure TST2829C_GroupBoxSpotTuning.DesignElements;
-begin
-  Self.Caption:='Spot control';
-  fButton.Caption:='Tuning';
-  fActiveSpotShow.LCaption.Left:=5;
-  fActiveSpotShow.LCaption.Top:=15;
-  RelativeLocation(fActiveSpotShow.LCaption,fActiveSpotShow.STdata,oRow,3);
-  RelativeLocation(fActiveSpotShow.STdata,fButton,oRow,10);
-  Height:=fButton.Top+fButton.Height+5;
-  Width:=fButton.Left+fButton.Width+5;
-end;
-
-destructor TST2829C_GroupBoxSpotTuning.Destroy;
-begin
-//  Self.Parent:=nil;
+//constructor TST2829C_GroupBoxSpotTuning.Create({AOwner: TComponent;}
+//                            ST2829C: TST2829C;
+//                            Parent: TWinControl);
+//begin
+//  inherited Create(nil);
+//  fST2829C:=ST2829C;
+//  fButton:=TButton.Create(Self);
+//  Self.Parent:=Parent;
+//
+//  fButton.Parent:=Self;
+//  fActiveSpotShow:=TST2829C_ActiveSpotShow.Create(ST2829C);
+//  fActiveSpotShow.ParentToElements(Self);
+//
+//
+//  DesignElements();
+//end;
+//
+//procedure TST2829C_GroupBoxSpotTuning.DesignElements;
+//begin
+//  Self.Caption:='Spot control';
+//  fButton.Caption:='Tuning';
+//  fActiveSpotShow.LCaption.Left:=5;
+//  fActiveSpotShow.LCaption.Top:=15;
+//  RelativeLocation(fActiveSpotShow.LCaption,fActiveSpotShow.STdata,oRow,3);
+//  RelativeLocation(fActiveSpotShow.STdata,fButton,oRow,10);
+//  Height:=fButton.Top+fButton.Height+5;
+//  Width:=fButton.Left+fButton.Width+5;
+//end;
+//
+//destructor TST2829C_GroupBoxSpotTuning.Destroy;
+//begin
 //  fButton.Parent:=nil;
+//  Self.Parent:=nil;
 //  fActiveSpotShow.ParentToElements(nil);
-  FreeAndNil(fActiveSpotShow);
-  FreeAndNil(fButton);
-  inherited;
-end;
+//  FreeAndNil(fActiveSpotShow);
+//  FreeAndNil(fButton);
+//  inherited Destroy;
+//end;
 
 { TST2829C_SpotStateShow }
 
