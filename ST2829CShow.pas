@@ -151,12 +151,10 @@ TST2829C_MeterShow=class(TMeasurementShowSimple)
 end;
 
 
-//TST2829C_GroupBoxSpotTuning=class(TGroupBox)
 TST2829C_GroupBoxSpotTun=class(TST2829CElementAndParamShow)
  {ще додаткова кнопка, на яку чіпляється дія;
  і кнопка, і чек-бокс розміщуються у TGroupBox}
  private
-//  fST2829C:TST2829C;
   fButton:TButton;
   fGB:TGroupBox;
  protected
@@ -167,11 +165,6 @@ TST2829C_GroupBoxSpotTun=class(TST2829CElementAndParamShow)
   fActiveSpotShow:TST2829C_ActiveSpotShow;
   property Button:TButton read fButton;
   property GroupBox:TGroupBox read fGB;
-// Constructor Create(ST2829C:TST2829C;
-//                      GB: TGroupBox);
-//  Constructor Create({AOwner: TComponent;}
-//                     ST2829C:TST2829C;
-//                     Parent:TWinControl);//reintroduce;
   destructor Destroy;override;
 end;
 
@@ -179,7 +172,6 @@ end;
  TST2829C_SpotParameterShow=class;
 
 
-// TST2829CCorrectionShow=class(TST2829CElementAndParamShow)
  TST2829CCorrectionShow=class(TST2829CElementParamWindow)
   private
    fButton:TButton;
@@ -188,18 +180,13 @@ end;
    procedure CreateElements;override;
    procedure CreateControls;override;
    procedure DesignElements;override;
-//   procedure CreateForm();
-//   procedure FormShow();
    function FormCaption():string;override;
    procedure GBcontentCreate(GB:TGroupBox);override;
   public
    OpenShow:TST2829C_OpenShow;
    ShortShow:TST2829C_ShortShow;
-//   GroupBoxSpotTuning:TST2829C_GroupBoxSpotTuning;
    GroupBoxSpotTuning:TST2829C_GroupBoxSpotTun;
-//   SpotParameterShow:TST2829C_SpotParameterShow;
    destructor Destroy;override;
-//   procedure ObjectToSetting;override;
  end;
 
   TST2829C_SweepParameterShow=class;
@@ -217,12 +204,7 @@ end;
    fCorrectionShow:TST2829CCorrectionShow;
    procedure MyTrainButtonClick(Sender:TObject);
   protected
-//   procedure ButtonsTune(Buttons: array of TButton);virtual;
-//   procedure ResetButtonClick(Sender:TObject);virtual;
-//   procedure GetSettingButtonClick(Sender:TObject);virtual;
   public
-//   Constructor Create(ST2829C:TST2829C;
-//                      ButTest:TButton);
    property ST2829C:TST2829C read fST2829C;
    Constructor Create(ST2829C:TST2829C;
                       GBs: array of TGroupBox;
@@ -231,10 +213,6 @@ end;
                       AB:TSpeedButton;
                       DL2,UL2:TLabel;
                       B_MyTrain:TButton);
-//                      Buttons:Array of TButton;
-//                      Panels:Array of TPanel;
-//                      STextsBrightness:TStaticText
-//                      );
   destructor Destroy;override;
   procedure ReadFromIniFile(ConfigFile:TIniFile);override;
   procedure WriteToIniFile(ConfigFile:TIniFile);override;
@@ -242,11 +220,9 @@ end;
  end;
 
 
-//  TST2829C_SweepParameterShow=class(TGBwithControlElements)
   TST2829C_SweepParameterShow=class(TST2829CElement_Show)
    private
     fRGDataUsed:TRadioGroup;
-//    fST2829C:TST2829C;
     fLType:TLabel;
     fSTType:TStaticText;
     fTypeShowSL:TStringList;
@@ -270,7 +246,6 @@ end;
    protected
     procedure CreateElements;override;
     procedure CreateControls;override;
-//    procedure DestroyElements;
     procedure DestroyControls;override;
     procedure DesignElements;override;
     procedure DataUsedClick(Sender:TObject);
@@ -279,7 +254,6 @@ end;
     procedure StepClick;
     procedure LogStepClick(Sender:TObject);
    public
-//    constructor Create(ST2829C:TST2829C;GB:TGroupBox);
   end;
 
 
@@ -288,7 +262,6 @@ end;
    fSpotNumber:byte;
    fBOpenMeasure:TButton;
    fBShortMeasure:TButton;
-//   procedure OnOffSpeedButtonClick(Sender: TObject);
   protected
    procedure CreateElements;override;
    procedure CreateControls;override;
@@ -316,7 +289,6 @@ uses
 
 { TST2829C_Show }
 
-//constructor TST2829C_Show.Create(ST2829C: TST2829C; ButTest: TButton);
 constructor TST2829C_Show.Create(ST2829C:TST2829C;
                      GBs: array of TGroupBox;
                      DL,UL:TLabel;
@@ -328,9 +300,6 @@ begin
  fST2829C:=ST2829C;
  DecimalSeparator:='.';
  inherited Create((ST2829C.Device as TST2829CDevice),GBs[0]);
-// showmessage('TST2829C_Show Create');
-// showmessage(fST2829C.Name);
-// showmessage(Self.fST2829C.Name);
  fSettingShow:=TST2829CSetting_Show.Create(Self,GBs[1]);
  B_MyTrain.OnClick:=MyTrainButtonClick;
 
@@ -356,13 +325,6 @@ begin
 
 end;
 
-//procedure TST2829C_Show.TestButtonClick(Sender: TObject);
-//begin
-//   if fST2829C.Test
-//     then (Sender as TButton).Caption:='Connection Test - Ok'
-//     else (Sender as TButton).Caption:='Connection Test - Failed';
-//end;
-
 destructor TST2829C_Show.Destroy;
 begin
   FreeAndNil(fCorrectionShow);
@@ -378,7 +340,6 @@ end;
 
 procedure TST2829C_Show.MyTrainButtonClick(Sender: TObject);
 begin
-//showmessage(fST2829C.SweepParameters.ToString);
  fST2829C.MyTraining();
 end;
 
@@ -422,9 +383,6 @@ end;
 
 procedure TST2829CSetting_Show.CreateControls;
 begin
-// showmessage('kk');
-// showmessage(fST2829C_Show.ST2829C.Name);
-// showmessage('kk1');
  fSetupMemoryShow:=TST2829C_SetupMemoryShow.Create(Self,fPSave,fPLoad);
  fBReset.OnClick := ResetButtonClick;
  fBGetParam.OnClick := GetSettingButtonClick;
@@ -445,14 +403,12 @@ end;
 
 procedure TST2829CSetting_Show.DesignElements;
 begin
-// inherited DesignElements;
  fParent.Caption:='Setting';
  DesignSettingPanel(fPSave,'Save Setup');
  DesignSettingPanel(fPLoad,'Load Setup');
  fPSave.Top:=MarginTop;
  fPSave.Left:=5;
  RelativeLocation(fPSave,fPLoad,oCol,3);
-// fBGetParam.Left:=3;
  fBGetParam.Caption:='Get from device';
  Resize(fBGetParam);
  fBReset.Caption:='Reset';
@@ -492,7 +448,6 @@ begin
      fST2829C.GetTrigerSource();
      fST2829C.GetDelayTime();
 
-//     fST2829C.GetCorrectionCable();
      fST2829C.GetCorrectionOpenEnable();
      fST2829C.GetCorrectionShortEnable();
     end;
@@ -528,8 +483,6 @@ constructor TST2829C_SetupMemoryShow.Create(
       PanelSave, PanelLoad: TPanel);
 begin
  fST2829CElement_Show:=ST2829CElement_Show;
-// fMemoryPins:=TKeitley_SetupMemoryPins.Create(fKeitley_Show.fKeitley.Name+'Pins');
-// showmessage(ST2829CElement_Show.fST2829C.Name);
  fMemoryPins:=TSCPI_SetupMemoryPins.Create(fST2829CElement_Show.fST2829C.Name+'Pins');
 
  inherited Create(fMemoryPins,[PanelSave, PanelLoad]);
@@ -682,7 +635,7 @@ begin
 
   fLIrmsData.Enabled:=False;
   IrmsDataToLabel;
-  
+
   fParent.Height:=fLVrmsData.Top+fLVrmsData.Height+10;
   fParent.Width:=fBIrmsNeasuring.Left+ fBIrmsNeasuring.Width+10;
 end;
@@ -703,7 +656,7 @@ begin
   if fST2829C.DataIrms = ErResult
     then fLIrmsData.Caption := 'ERROR'
     else fLIrmsData.Caption := FloatToStrF(fST2829C.DataIrms, ffGeneral, 5, 0)+' mA';
- RelativeLocation(fBIrmsNeasuring,fLIrmsData,oCol,5);    
+ RelativeLocation(fBIrmsNeasuring,fLIrmsData,oCol,5);
 end;
 
 procedure TST2829CMeasureParamShow.IrmsToMeasureClick;
@@ -756,12 +709,6 @@ procedure TST2829CMeasureParamShow.VrmsToMeasureClick;
 begin
  fBVrmsNeasuring.Enabled:=VrmsToMeasureShow.CB.Checked;
 end;
-
-//destructor TST2829CMeasureParamShow.Destroy;
-//begin
-//  FreeAndNil(OutputImpedanceShow);
-//  inherited;
-//end;
 
 { TST2829CBiasParamShow }
 
@@ -844,8 +791,6 @@ begin
   fParent.Width:=BiasCurrentShow.LCaption.Left+BiasCurrentShow.LCaption.Width+5;
   fParent.Height:=fSBOnOff.Top+fSBOnOff.Height+5;
 
-//  showmessage(inttostr(fParent.Height));
-//  showmessage(inttostr(fParent.Width));
 end;
 
 procedure TST2829CBiasParamShow.ObjectToSetting;
@@ -858,7 +803,6 @@ procedure TST2829CBiasParamShow.OnOffSpeedButtonClick(Sender: TObject);
 begin
  fST2829C.SetBiasEnable(fSBOnOff.Down);
  fSBOnOff.Caption:=ST2829C_BiasOnOffButtonCaption[fSBOnOff.Down];
-// fSourceShow.GetSourceValueShow.ColorToActive(fOutPutOnOff.Down);
 end;
 
 { TST2829CSetupParamShow }
@@ -912,7 +856,6 @@ begin
   AverTimesShow.LCaption.WordWrap:=False;
   RelativeLocation(MeasureSpeedShow.LCaption,AverTimesShow.LCaption,oRow,5);
   RelativeLocation(AverTimesShow.LCaption,AverTimesShow.STdata,oCol,2);
-//  AverTimesShow.STdata.Top:=AverTimesShow.STdata.Top+2;
   AverTimesShow.LCaption.Font.Color:=clNavy;
   AverTimesShow.STdata.Font.Color:=clNavy;
 
@@ -950,9 +893,6 @@ begin
   fParent.Height:=TrigerSourceShow.STdata.Top+TrigerSourceShow.STdata.Height+10;
   fParent.Width:=DelayTimeShow.LCaption.Left+ DelayTimeShow.LCaption.Width+10;
 
-//  showmessage(inttostr(fParent.Height));
-//  showmessage(inttostr(fParent.Width));
-
 end;
 
 { TST2829C_MeterShow }
@@ -970,7 +910,6 @@ end;
 procedure TST2829C_MeterShow.MetterDataShow;
 begin
   inherited MetterDataShow;
-//  if Meter.Value<>ErResult then
   if fST2829_MeterPrimary.ValueTwo<>ErResult then
      begin
        fUnitLabel2.Caption:=fST2829_MeterPrimary.MeasureModeLabelTwo;
@@ -989,13 +928,6 @@ begin
 end;
 
 { TST2829C_SweepParameterShow }
-
-//constructor TST2829C_SweepParameterShow.Create(ST2829C:TST2829C;
-//  GB: TGroupBox);
-//begin
-// fST2829C:=ST2829C;
-// inherited Create(GB);
-//end;
 
 procedure TST2829C_SweepParameterShow.CreateShows;
 begin
@@ -1051,10 +983,8 @@ begin
   FinishClick;
 
   fStepsShow:=TIntegerParameterShow.Create(fSTSteps,fLSteps,'Step Count:',2);
-//  fStepsShow.SetName(fST2829C.Name);
   fStepsShow.Limits.SetLimits(2, 5000);
   fStepsShow.IniNameSalt:=ST2829C_SweepParametrSalt[TST2829C_SweepParametr(fTypeShow.Data)];
-//  fStepsShow.ReadFromIniFile(CF_ST_2829C);
   fStepsShow.Data:=CF_ST_2829C.ReadInteger(fST2829C.Name,fStepsShow.ParametrCaption+fStepsShow.IniNameSalt,2);
    {довелося робити танці з бубном, бо дома на віртуалці
    не хотіло ні виконувати fStepsShow.SetName,
@@ -1064,8 +994,6 @@ begin
   StepClick;
 
   fCBLogStep.Name:='LogStep'+ST2829C_SweepParametrSalt[TST2829C_SweepParametr(fTypeShow.Data)];
-//  AccurateCheckBoxCheckedChange(fCBLogStep,
-//   CF_ST_2829C.ReadBool(fST2829C.Name,fCBLogStep.Name,False));
 
   fCBLogStep.Checked:=
    CF_ST_2829C.ReadBool(fST2829C.Name,fCBLogStep.Name,False);
@@ -1080,13 +1008,11 @@ begin
   if fStartShow <> nil then
   begin
     CF_ST_2829C.WriteFloat(fStartShow.Name,fStartShow.ParametrCaption+fStartShow.IniNameSalt,fStartShow.Data);
-//    fStartShow.WriteToIniFile(CF_ST_2829C);
     FreeAndNil(fStartShow);
   end;
   if fFinishShow <> nil then
   begin
     CF_ST_2829C.WriteFloat(fFinishShow.Name,fFinishShow.ParametrCaption+fFinishShow.IniNameSalt,fFinishShow.Data);
-//    fFinishShow.WriteToIniFile(CF_ST_2829C);
     FreeAndNil(fFinishShow);
   end;
   if fStepsShow <> nil then
@@ -1194,7 +1120,6 @@ begin
  fSTStart.Font.Color:=clBlue;
 
  fLFinish.WordWrap:=False;
-// RelativeLocation(fLStart,fLFinish,oRow,8);
  fLFinish.Left:=fLStart.Left+fLStart.Width+15;
  fLFinish.Top:=fLStart.Top;
  RelativeLocation(fLFinish,fSTFinish,oCol,2);
@@ -1216,8 +1141,6 @@ begin
  fParent.Width:=fRGDataUsed.Left+fRGDataUsed.Width+5;
  fParent.Height:=fLSteps.Top+fLSteps.Height+MarginTop;
 
-//  showmessage(inttostr(fParent.Height));
-//  showmessage(inttostr(fParent.Width));
 end;
 
 procedure TST2829C_SweepParameterShow.DestroyControls;
@@ -1242,25 +1165,20 @@ end;
 
 procedure TST2829C_SweepParameterShow.StepClick;
 begin
-// fLSteps.WordWrap:=False;
  fST2829C.SweepParameters.PointCount:=fStepsShow.Data;
 end;
 
 { TST2829CCorrectionShow }
 
 procedure TST2829CCorrectionShow.ButtonClick(Sender: TObject);
- var //Response: Integer;
-     SpotNumber,CurrentSpotNumber:byte;
+ var SpotNumber,CurrentSpotNumber:byte;
      mess:string;
 begin
-//  Response := MessageDlg('Are you sure?', mtConfirmation, [mbYes, mbNo], 0);
-
   if YesClicked('Are you sure?') then
     begin
      mess:='';
      CurrentSpotNumber:=fST2829C.Corrections.SpotActiveNumber;
      for SpotNumber := round(ST2829C_SpotNumber[lvMin]) to round(ST2829C_SpotNumber[lvMax]) do
-//     for SpotNumber := round(ST2829C_SpotNumber[lvMin]) to 3 do
       begin
         if (fST2829C.GetCorrectionSpotState(SpotNumber))
            and (fST2829C.Corrections.fSpotActiveState)
@@ -1293,9 +1211,6 @@ end;
 
 procedure TST2829CCorrectionShow.CreateElements;
 begin
-//  inherited CreateElements;
-
-// GroupBoxSpotTuning:=TST2829C_GroupBoxSpotTuning.Create({nil,}fST2829C,fParent);
  GroupBoxSpotTuning:=TST2829C_GroupBoxSpotTun.Create(fST2829C,fParent);
 
  fButton:=TButton.Create(fParent);
@@ -1313,8 +1228,6 @@ begin
 
   RelativeLocation(OpenShow.GroupBox,ShortShow.GroupBox,oCol,3);
 
-//  GroupBoxSpotTuning.Left:=5;
-//  GroupBoxSpotTuning.Top:=ShortShow.GroupBox.Top+ShortShow.GroupBox.Height+5;
   GroupBoxSpotTuning.GroupBox.Left:=5;
   GroupBoxSpotTuning.GroupBox.Top:=ShortShow.GroupBox.Top+ShortShow.GroupBox.Height+5;
 
@@ -1322,15 +1235,10 @@ begin
   fButton.Caption:='Show used spots';
   Resize(fButton);
   fButton.Left:=25;
-//  fButton.Top:=GroupBoxSpotTuning.Top+GroupBoxSpotTuning.Height+10;
   fButton.Top:=GroupBoxSpotTuning.GroupBox.Top+GroupBoxSpotTuning.GroupBox.Height+10;
 
-//  fParent.Width:=GroupBoxSpotTuning.Left+GroupBoxSpotTuning.Width+5;
   fParent.Width:=GroupBoxSpotTuning.GroupBox.Left+GroupBoxSpotTuning.GroupBox.Width+5;
   fParent.Height:=fButton.Top+fButton.Height+10;
-
-//  showmessage(inttostr(fParent.Height));
-//  showmessage(inttostr(fParent.Width));
 
 end;
 
@@ -1396,8 +1304,6 @@ begin
  StateShow.CB.Top:=MarginTop;
 
  FreqShow.LCaption.WordWrap:=False;
-// FreqShow.LCaption.Left:=MarginLeft;
-// FreqShow.LCaption.Top:=StateShow.CB.Top+StateShow.CB.Height+10;
  FreqShow.LCaption.Left:=StateShow.CB.Left+StateShow.CB.Width+5;
  FreqShow.LCaption.Top:=StateShow.CB.Top;
  RelativeLocation(FreqShow.LCaption,FreqShow.STdata,oRow,3);
@@ -1442,45 +1348,26 @@ end;
 
 { TST2829C_GroupBoxSpotTun }
 
-//constructor TST2829C_GroupBoxSpotTun.Create(ST2829C: TST2829C; GB: TGroupBox);
-//begin
-//
-//end;
 
 procedure TST2829C_GroupBoxSpotTun.CreateControls;
 begin
-
   fActiveSpotShow:=TST2829C_ActiveSpotShow.Create(fST2829C);
-//  Add(fActiveSpotShow);
   fActiveSpotShow.ParentToElements(fGB);
-
 end;
 
 procedure TST2829C_GroupBoxSpotTun.CreateElements;
 begin
-
-
-
-
   fGB:=TGroupBox.Create(fParent);
-//  fGB.Parent:=fParent;
   add(fGB);
 
   fButton:=TButton.Create(fGB);
-//  Add(fButton);
 
   fButton.Parent:=fGB;
-
-
-//  fActiveSpotShow:=TST2829C_ActiveSpotShow.Create(fST2829C);
-//  fActiveSpotShow.ParentToElements(fGB);
-
 end;
 
 procedure TST2829C_GroupBoxSpotTun.DesignElements;
 begin
   inherited DesignElements;
-//fGB.Parent:=fParent;
   fGB.Caption:='Spot control';
   fButton.Caption:='Tuning';
   fActiveSpotShow.LCaption.Left:=5;
@@ -1494,19 +1381,12 @@ end;
 
 destructor TST2829C_GroupBoxSpotTun.Destroy;
 begin
-//  fGB.Parent:=nil;
   fButton.Parent:=nil;
   fButton.Free;
   fActiveSpotShow.ParentToElements(nil);
   fActiveSpotShow.Free;
-//  fGB.Free;
   inherited;
 end;
 
-//destructor TST2829C_GroupBoxSpotTun.Destroy;
-//begin
-//
-//  inherited Destroy;
-//end;
 
 end.

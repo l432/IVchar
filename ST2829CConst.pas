@@ -78,17 +78,6 @@ type
                         st_mtZTd, st_mtZTr,st_mZQ,
                         st_mtGB, st_mtYTd, st_mtYTr, st_mtDCR);
 
-//                        st_mtRpQ,st_mtRsQ ?
-//CPD Set the function as Cp-D LPRP Set the function as Lp-Rp
-//CPQ Set the function as Cp-Q LSD Set the function as Ls-D
-//CPG Set the function as Cp-G LSQ Set the function as Ls-Q
-//CPRP Set the function as Cp-Rp LSRS Set the function as Ls-Rs
-//CSD Set the function as Cs-D RX Set the function as R-X
-//CSQ Set the function as Cs-Q ZTD Set the function as Z-θ
-//CSRS Set the function as Cs-Rs ZTR Set the function as Z-θr
-//LPQ Set the function as Lp-Q GB Set the function as G-B
-//LPD Set the funxtion as Lp-D YTD Set the function as Y-θ
-//LPG Set the function as Lp-G YTR Set the function as Y-θr
 
  TST2829C_OutputImpedance=({st_oi10,}st_oi30,st_oi50,st_oi100);
 
@@ -142,7 +131,6 @@ const
                      'rx','rpq','rsq',
                      'ztd', 'ztr','zq',
                      'gb', 'ytd', 'ytr', 'dcr');
-//               'rpq', 'rsq'
  ST2829C_MeasureTypeLabels:array [TST2829C_MeasureType]
           of string=('Cp-Dissipation', 'Cp-Quality', 'Cp-Conductance',
             'Cp-Rp','Cs-Dissipation','Cs-Quality','Cs-Rs',
@@ -152,7 +140,6 @@ const
             'Impedance-Phase(deg)', 'Impedance-Phase(rad)','Impedance-Quality',
             'Conductance-Admittance', 'Admittance-Phase(deg)',
             'Admittance-Phase(rad)', 'DC resistance');
-//             'Rs-Quality','Rp-Quality'
 
  ST2829C_RangeLabels:array[TST2829C_Range]of string=
          ('Auto','10 Ohm', '30 Ohm', '100 Ohm', '300 Ohm', '1 kOhm',

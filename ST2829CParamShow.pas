@@ -170,7 +170,6 @@ end;
 
 TST2829C_FreqMeasShow=class(TST2829C_DoubleParameterShow)
  protected
-//  procedure HookParameterClickFreqMeas;
  public
   Constructor Create(ST2829C:TST2829C);
 end;
@@ -182,7 +181,6 @@ TST2829C_SpotFreqShow=class(TST2829C_DoubleParameterShow)
    procedure Click();override;
   public
    Constructor Create(ST2829C:TST2829C;SpotNumber:byte);
-//   procedure GetDataFromDevice;override;
 end;
 
 TST2829C_VMeasShow=class(TST2829C_DoubleParameterShow)
@@ -230,27 +228,6 @@ TST2829C_ActiveSpotShow=class(TST2829C_IntegerParameterShow)
   Constructor Create(ST2829C:TST2829C);
   procedure ObjectToSetting;override;
 end;
-
-//TST2829C_GroupBoxSpotTuning=class(TGroupBox)
-////TST2829C_GroupBoxSpotTuning=class(TST2829CElementAndParamShow)
-// {ще додаткова кнопка, на яку чіпляється дія;
-// і кнопка, і чек-бокс розміщуються у TGroupBox}
-// private
-//  fST2829C:TST2829C;
-//  fButton:TButton;
-// protected
-//  procedure DesignElements();
-// public
-//  fActiveSpotShow:TST2829C_ActiveSpotShow;
-//  property Button:TButton read fButton;
-//  Constructor Create({AOwner: TComponent;}
-//                     ST2829C:TST2829C;
-//                     Parent:TWinControl);reintroduce;
-//  destructor Destroy;override;
-////  procedure ParentToElements(Parent:TWinControl);override;
-//end;
-
-
 
 implementation
 
@@ -307,11 +284,6 @@ begin
  HookParameterClick:=ObjectToSetting;
 end;
 
-//procedure TST2829C_FreqMeasShow.HookParameterClickFreqMeas;
-//begin
-//  ObjectToSetting;
-//end;
-
 { TST2829C_VMeasShow }
 
 constructor TST2829C_VMeasShow.Create(ST2829C: TST2829C);
@@ -319,7 +291,6 @@ begin
  inherited Create(ST2829C,Pointer(st_aVMeas),
                  'Vrms, V:',0.01,8);
  SetLimits(ST2829C_VrmsMeasLimits);
-// HookParameterClick:=ObjectToSetting;
 end;
 
 { TST2829C_IMeasShow }
@@ -463,7 +434,6 @@ begin
  inherited Create(ST2829C,Pointer(st_aBiasCur),
                  'Bias, mA:',0,7);
  SetLimits(ST2829C_BiasCurrentLimits);
-// HookParameterClick:=ObjectToSetting;
 end;
 
 { TST2829C_TrigerSourceShow }
@@ -509,14 +479,8 @@ end;
 { TST2829C_BoolParameterAndButtonShow }
 
 procedure TST2829C_BoolParameterAndButtonShow.ClickButton(Sender: TObject);
-// var Response: Integer;
 begin
   if YesClicked('Are you sure?') then RealAction();
-
-//  Response := MessageDlg('Are you sure?', mtConfirmation, [mbYes, mbNo], 0);
-//
-//  if Response = mrYes then
-//    RealAction()
 end;
 
 constructor TST2829C_BoolParameterAndButtonShow.Create(ST2829C: TST2829C;
@@ -615,51 +579,6 @@ procedure TST2829C_ActiveSpotShow.ObjectToSetting;
 begin
 end;
 
-{ TST2829C_GroupBoxSpotTuning }
-
-//procedure TST2829C_GroupBoxSpotTuning.ClickButton(Sender: TObject);
-//begin
-//
-//end;
-
-//constructor TST2829C_GroupBoxSpotTuning.Create({AOwner: TComponent;}
-//                            ST2829C: TST2829C;
-//                            Parent: TWinControl);
-//begin
-//  inherited Create(nil);
-//  fST2829C:=ST2829C;
-//  fButton:=TButton.Create(Self);
-//  Self.Parent:=Parent;
-//
-//  fButton.Parent:=Self;
-//  fActiveSpotShow:=TST2829C_ActiveSpotShow.Create(ST2829C);
-//  fActiveSpotShow.ParentToElements(Self);
-//
-//
-//  DesignElements();
-//end;
-//
-//procedure TST2829C_GroupBoxSpotTuning.DesignElements;
-//begin
-//  Self.Caption:='Spot control';
-//  fButton.Caption:='Tuning';
-//  fActiveSpotShow.LCaption.Left:=5;
-//  fActiveSpotShow.LCaption.Top:=15;
-//  RelativeLocation(fActiveSpotShow.LCaption,fActiveSpotShow.STdata,oRow,3);
-//  RelativeLocation(fActiveSpotShow.STdata,fButton,oRow,10);
-//  Height:=fButton.Top+fButton.Height+5;
-//  Width:=fButton.Left+fButton.Width+5;
-//end;
-//
-//destructor TST2829C_GroupBoxSpotTuning.Destroy;
-//begin
-//  fButton.Parent:=nil;
-//  Self.Parent:=nil;
-//  fActiveSpotShow.ParentToElements(nil);
-//  FreeAndNil(fActiveSpotShow);
-//  FreeAndNil(fButton);
-//  inherited Destroy;
-//end;
 
 { TST2829C_SpotStateShow }
 
@@ -695,11 +614,5 @@ begin
                  'Freq, Hz:',1000,10);
  SetLimits(ST2829C_FreqMeasLimits);
 end;
-
-//procedure TST2829C_SpotFreqShow.GetDataFromDevice;
-//begin
-//  inherited GetDataFromDevice;
-//  (fSCPInew as TST2829C).GetCorrectionSpotFreq(fSpotNumber);
-//end;
 
 end.

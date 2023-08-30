@@ -6,7 +6,6 @@ uses
   SCPI, CPort, RS232deviceNew, ST2829CConst, ExtCtrls, OlegTypePart2, IniFiles, 
   OlegVector;
 
-//var   Info:string;
 
 type
 
@@ -84,7 +83,6 @@ type
    fCorrections:TST2829Corrections;
 
    Procedure SetFreqMeas(Value:Double);
-//   procedure SetAutoLevelControl(const Value: boolean);
    procedure SetIrmsMeas(const Value: double);
    procedure SetVrmsMeas(const Value: double);
    procedure StBiasVoltageValue(const Value: double);
@@ -124,6 +122,9 @@ type
    (приймаЇ дискретн≥ значенн€)}
    function GetRangePattern(Action:TST2829CAction):boolean;
    procedure SetMeasuringTiming(Action:TST2829CAction);
+   function t_0():integer;
+   function t_meas():integer;
+   function N_meas():integer;
 
    procedure PrepareStringByRootNode;override;
    function ActionToRootNodeNumber(Action:TST2829CAction):byte;
@@ -144,16 +145,8 @@ type
    {визначаЇ критер≥й усп≥шного отриманн€ даних}
    procedure GetActionProcedure(Action:TST2829CAction);
    {д≥њ, що виконуютьс€ при усп≥шному отриманн≥}
-//   procedure SetShablon(Action:TST2829CAction;P:Pointer=nil);overload;
-//   procedure SetShablon(Action:TST2829CAction;Ps:array of Pointer);overload;
-//   procedure SetPrepareAction(Action:TST2829CAction;P:Pointer=nil);overload;
-
 
   public
-//   property FreqMeas:double read fFreqMeas write SetFreqMeas;
-//   property VrmsMeas:double read fVrmsMeas write SetVrmsMeas;
-//   property IrmsMeas:double read fIrmsMeas write SetIrmsMeas;
-//   property AutoLevelControlEnable:boolean read fAutoLevelControlEnable write SetAutoLevelControl;
    property FreqMeas:double read GtFreqMeas write SetFreqMeas;
    property VrmsMeas:double read GtVrmsMeas write SetVrmsMeas;
    property IrmsMeas:double read GtIrmsMeas write SetIrmsMeas;
@@ -161,10 +154,6 @@ type
    property BiasEnable:boolean read fBiasEnable write fBiasEnable;
    property BiasVoltageValue:double read fBiasVoltageValue write StBiasVoltageValue;
    property BiasCurrentValue:double read fBiasCurrentValue write StBiasCurrentValue;
-//   property OutputImpedance:TST2829C_OutputImpedance read fOutputImpedance write fOutputImpedance;
-//   property MeasureType:TST2829C_MeasureType read fMeasureType write fMeasureType;
-//   property MeasureRange:TST2829C_Range read fMeasureRange write fMeasureRange;
-//   property MeasureSpeed:TST2829C_MeasureSpeed read fMeasureSpeed write fMeasureSpeed;
    property OutputImpedance:TST2829C_OutputImpedance read GtOutputImpedance write StOutputImpedance;
    property MeasureType:TST2829C_MeasureType read GtMeasureType write StMeasureType;
    property MeasureRange:TST2829C_Range read GtMeasureRange write StMeasureRange;
@@ -359,7 +348,6 @@ end;
 
 TST2829SweepParameters=class(TST2829Part)
  private
-//  fParentModule: TST2829C;
   fDataVector:TVector;
   fSecondDataVector:TVector;
   fOldValue:double;
@@ -380,7 +368,6 @@ TST2829SweepParameters=class(TST2829Part)
   destructor Destroy; override;
   function ToString():string;
   function Step:double;
-//  procedure StepDetermination;
   procedure SaveDataToFile(FileName:string);
   procedure BeforeMeasuring;
   procedure EndMeasuring;
@@ -418,7 +405,7 @@ var
 implementation
 
 uses
-  SysUtils, Dialogs, OlegType, Math, StrUtils, OlegFunction, Forms, OlegGraph, 
+  SysUtils, Dialogs, OlegType, Math, StrUtils, OlegFunction, Forms, OlegGraph,
   HighResolutionTimer;
 
 { T2829C }
@@ -451,7 +438,6 @@ begin
    st_aCorSpotOpen:Result:=19;
    else Result:=0;
  end;
-// showmessage('jjj '+inttostr(Result));
 end;
 
 function TST2829C.ActionToLeafNode(Action: TST2829CAction): byte;
@@ -472,7 +458,6 @@ begin
    st_aCorSpotFreq:Result:=100;
    st_aCorSpotShort:Result:=18;
    st_aCorSpotOpen:Result:=17;
-//   else Result:=0;
  end;
 end;
 
@@ -613,8 +598,6 @@ begin
     st_aGetVrms:fVrmsData:=fDevice.Value;
     st_aGetIrms:fIrmsData:=fDevice.Value*1000;
     st_aCorCable:CorectionCable:=TST2829C_CorCable(round(fDevice.Value));
-//    if fDevice.Value<3 then CorectionCable:=TST2829C_CorCable(round(fDevice.Value))
-//                                    else CorectionCable:=TST2829C_CorCable(round(fDevice.Value)-1);
     st_aOpenState:CorectionOpenEnable:=(fDevice.Value=1);
     st_aShortState:CorectionShortEnable:=(fDevice.Value=1);
     st_aCorSpotState:fCorrections.fSpotActiveState:=(fDevice.Value=1);
@@ -749,7 +732,6 @@ begin
  QuireOperation(ActionToRootNodeNumber(Action),
                 ActionToFirstNode(Action),1);
  Result:=SuccessfulGet(Action);
-// if not(Result) then Exit;
 
  if fDevice.Value=1
    then fMPars.MeasureRange:=st_rAuto
@@ -862,7 +844,7 @@ begin
   try
     GetPrepareAction(Act);
     if not(PermitedGetAction(Act)) then Exit;
-    
+
     QuireOperation(ActionToRootNodeNumber(Act),
                    ActionToFirstNode(Act),
                    ActionToLeafNode(Act),
@@ -991,11 +973,13 @@ begin
 //   showmessage(booltostr(CorectionShortEnable,True));
 
 
+showmessage('t_0='+inttostr(t_0())+#10#13
+            +'t_m='+inttostr(t_meas())+#10#13
+            +'N='+inttostr(N_meas()));
 
-
-showmessage(inttostr(fDevice.MinDelayTime)+#10#13
-            +inttostr(fDevice.DelayTimeStep)+#10#13
-            +inttostr(fDevice.DelayTimeMax));
+//showmessage(inttostr(fDevice.MinDelayTime)+#10#13
+//            +inttostr(fDevice.DelayTimeStep)+#10#13
+//            +inttostr(fDevice.DelayTimeMax));
 //  fMinDelayTime:=0;
 //  fDelayTimeStep:=10;
 //  fDelayTimeMax:=130;
@@ -1289,6 +1273,16 @@ showmessage(inttostr(fDevice.MinDelayTime)+#10#13
 end;
 
 
+function TST2829C.N_meas: integer;
+begin
+ if (AverTimes=1)
+    and(MeasureSpeed in [st_msFast,st_msFastPlus])
+    and(FreqMeas<10000)
+   then Result:=0
+   else Result:=AverTimes;
+ if AutoLevelControlEnable then Result:=Result*2;
+end;
+
 procedure TST2829C.OnOffFromBool(toOn: boolean);
 begin
  if toOn then fAdditionalString:=SuffixST2829C[0]
@@ -1420,22 +1414,8 @@ procedure TST2829C.SaveSetup(RecordNumber: TST2829C_SetupMemoryRecord;RecordName
 begin
 // *MMEM:STOR:STAT <record number>,У<string>Ф
  SetPattern([Pointer(st_aMemSave),Pointer(RecordNumber),@RecordName]);
-
-// fAdditionalString:=inttostr(RecordNumber);
-// if Length(RecordName)>0 then
-//  begin
-//    if Length(RecordName)>ST2829C_MemFileMaxLength then SetLength(RecordName,ST2829C_MemFileMaxLength);
-//    fAdditionalString:=fAdditionalString+', '+StringToInvertedCommas(RecordName);
-//  end;
-//
-// SetupOperation(3,1);
 end;
 
-//procedure TST2829C.SetAutoLevelControl(const Value: boolean);
-//begin
-//  fMPars.AutoLevelControlEnable := Value and ValueInMap(fMPars.VrmsMeas,ST2829C_VmrsMeasLimitsForAL)
-//                                   and ValueInMap(fMPars.IrmsMeas,ST2829C_ImrsMeasLimitsForAL);
-//end;
 
 procedure TST2829C.SetAutoLevelEnable(toOn: boolean);
 begin
@@ -1584,13 +1564,22 @@ end;
 
 procedure TST2829C.SetMeasuringTiming(Action: TST2829CAction);
 begin
-
-
-// GetPattern(Pointer(st_aTrg));
-//inttostr(fDevice.MinDelayTime)+#10#13
-//            +inttostr(fDevice.DelayTimeStep)+#10#13
-//            +inttostr(fDevice.DelayTimeMax)
-end;
+ case Action of
+   st_aTrg: begin
+             fDevice.MinDelayTime:=t_0()+t_meas()*N_meas();
+             fDevice.DelayTimeStep:=max(5,round(fDevice.MinDelayTime*0.03));
+            end;
+   st_aGetVrms,
+   st_aGetIrms:begin
+                fDevice.MinDelayTime:=35;
+                fDevice.DelayTimeStep:=5;
+                end ;
+   else begin
+        fDevice.MinDelayTime:=0;
+        fDevice.DelayTimeStep:=5;
+        end;
+ end;
+  end;
 
 procedure TST2829C.SetOutputImpedance(OI: TST2829C_OutputImpedance);
 begin
@@ -1714,22 +1703,7 @@ begin
                   end;
   else;
  end;
-//
-//
-//
-//  case Action of
-//   st_aMemSave:begin
-//               fAdditionalString:=inttostr(TST2829C_SetupMemoryRecord(Ps[0]));
-//               tempstr:=PString(Ps[1])^;
-//               if Length(tempstr)>0 then
-//                begin
-//                  if Length(tempstr)>ST2829C_MemFileMaxLength then SetLength(tempstr,ST2829C_MemFileMaxLength);
-//                  fAdditionalString:=fAdditionalString+', '+StringToInvertedCommas(tempstr);
-//                end;
-//               end;
-//   st_aChangFont: ;
-//   else;
-// end;
+
 end;
 
 procedure TST2829C.SetRange(Range: TST2829C_Range);
@@ -1756,39 +1730,6 @@ begin
 //FUNC:SMON:VAC ON|OFF
  SetPattern([Pointer(st_aVrmsToMeas),@toOn]);
 end;
-
-//procedure TST2829C.SetPrepareAction(Action: TST2829CAction; P: Pointer);
-//begin
-//  case Action of
-//   st_aMemLoad: fAdditionalString:=inttostr(TST2829C_SetupMemoryRecord(P));
-//   st_aDispPage:fAdditionalString:=TST2829C_DisplayPageCommand[TST2829C_DisplayPage(P)] ;
-//   st_aChangFont:fAdditionalString:=TST2829C_FontCommand[TST2829C_Font(P)];
-//   st_aFreqMeas:begin
-//                FreqMeas:=PDouble(P)^;
-//                fAdditionalString:=FloatToStrF(FreqMeas,ffGeneral,7,0)+'Hz';
-//                end;
-//   st_aALE:begin
-//                AutoLevelControlEnable:=PBoolean(P)^;
-//                OnOffFromBool(AutoLevelControlEnable)
-//                end;
-//   st_aVMeas:begin
-//                VrmsMeas:=PDouble(P)^;
-//                fAdditionalString:=FloatToStrF(VrmsMeas,ffGeneral,7,0)+'V';
-//                end;
-//   st_aIMeas:begin
-//                IrmsMeas:=PDouble(P)^;
-//                fAdditionalString:=FloatToStrF(IrmsMeas,ffGeneral,7,0)+'mA';
-//                end;
-//   else;
-// end;
-//end;
-
-//procedure TST2829C.SetPattern(Action: TST2829CAction; Ps: array of Pointer);
-//begin
-// SetPrepareAction(Action,Ps);
-// SetupOperation(ActionToRootNodeNumber(Action),ActionToFirstNode(Action),
-//                ActionToLeafNode(Action),ActionToSyffix(Action));
-//end;
 
 procedure TST2829C.SetVoltageMeasurement(V: double);
 begin
@@ -1888,10 +1829,6 @@ begin
   case Action of
     st_aFreqMeas,
     st_aCorSpotFreq: Result:=((fDevice.Value<>ErResult)and(fDevice.isReceived));
-//    st_aRange:Result:=(round(fDevice.Value) in [0,1,10,30,100,300]);
-//                                        1000,3000]);
-//                                        ,10000,30000,
-//                                        100000,300000,1000000]);
   end;
 end;
 
@@ -1918,6 +1855,95 @@ procedure TST2829C.Trigger;
 begin
 // TRIG
  SetPattern([Pointer(st_aTriger)]);
+end;
+
+function TST2829C.t_0: integer;
+begin
+ if FreqMeas<100
+    then
+     begin
+      if AutoLevelControlEnable
+          then Result:=1696
+          else Result:=898;
+     end
+    else
+     begin
+     if FreqMeas<1000
+      then
+       begin
+        if AutoLevelControlEnable
+            then Result:=448
+            else Result:=257;
+       end
+      else
+       begin
+         if FreqMeas<10000
+          then
+           begin
+            if AutoLevelControlEnable
+                then Result:=140
+                else Result:=90;
+           end
+          else
+           begin
+            if MeasureSpeed=st_msFastPlus
+              then
+               begin
+                if AutoLevelControlEnable
+                    then Result:=90
+                    else Result:=80;
+               end
+             else
+               begin
+                if AutoLevelControlEnable
+                    then Result:=100
+                    else Result:=90;
+               end
+           end
+       end;
+     end;
+end;
+
+function TST2829C.t_meas: integer;
+begin
+ if FreqMeas<100
+  then
+   begin
+     if MeasureSpeed=st_msSlow
+      then Result:=1600
+      else Result:=800;
+   end
+  else
+   begin
+    if FreqMeas<1000
+     then
+      begin
+       if MeasureSpeed=st_msSlow
+        then Result:=840
+        else Result:=180;
+      end
+     else
+      begin
+       if FreqMeas<10000
+        then
+         begin
+          case MeasureSpeed of
+           st_msSlow:Result:=670;
+           st_msMed:Result:=97;
+           else Result:=24;
+          end;
+         end
+        else
+         begin
+          case MeasureSpeed of
+           st_msSlow:Result:=650;
+           st_msMed:Result:=85;
+           st_msFast:Result:=14;
+           else Result:=9;
+          end;
+         end;
+      end;
+   end;
 end;
 
 function TST2829C.ValueToOrd(Value: double; Action: TST2829CAction): integer;
@@ -1969,9 +1995,6 @@ end;
 constructor TRS232_ST2829C.Create(CP: TComPort);
 begin
  inherited Create(CP,250052,250052);
-// fComPort.DataBits:=dbEight;
-// fComPort.StopBits:=sbOneStopBit;
-// fComPort.Parity.Bits:=prNone;
 end;
 
 
@@ -2124,7 +2147,6 @@ end;
 
 procedure TST2829SweepParameters.AddData;
 begin
-//  showmessage(floattostr(GetXData())+' '+floattostr(fParentModule.DataPrimary));
   case DataType of
     st_sdPrim:fDataVector.Add(GetXData(),fParentModule.DataPrimary);
     st_sdSecon:fDataVector.Add(GetXData(),fParentModule.DataSecondary);
@@ -2139,13 +2161,7 @@ procedure TST2829SweepParameters.BeforeMeasuring;
 begin
   fDataVector.Clear;
   fSecondDataVector.Clear;
-//  case SweepType of
-//   st_spBiasVolt:;
-//   st_spBiasCurr:;
-//   st_spFreq:;
-//   st_spVrms:;
-//   st_spIrms:;
-//  end;
+
   case SweepType of
    st_spBiasVolt:begin
                   fOldValue:=fParentModule.BiasVoltageValue;
@@ -2182,8 +2198,6 @@ end;
 
 constructor TST2829SweepParameters.Create(ST2829C:TST2829C);
 begin
-//  inherited Create();
-//  fParentModule:=ST2829C;
   inherited Create(ST2829C);
   SweepType:=st_spBiasVolt;
   StartValue:=0;
@@ -2318,7 +2332,6 @@ function TST2829SweepParameters.Step: double;
 begin
  Result:=0;
  if (FinishValue=0)and(StartValue=0) then Exit;
-//  showmessage('LogStep='+booltostr(LogStep,True));
  if LogStep
    then
     begin
@@ -2326,20 +2339,14 @@ begin
        then Result:=(log10(abs(FinishValue))-log10(abs(StartValue)))/(PointCount-1)
        else
         begin
-//          showmessage('NOT FinishValue*StartValue>0');
           if FinishValue*StartValue<0 then Result:=(log10(abs(FinishValue))+log10(abs(StartValue)))/(PointCount-1);
           if FinishValue=0 then Result:=log10(abs(StartValue))/(PointCount-1);
           if StartValue=0 then Result:=log10(abs(FinishValue))/(PointCount-1);
         end;
     end
    else Result:=(FinishValue-StartValue)/(PointCount-1);
-//   showmessage(floattostr(Result));
 end;
 
-//procedure TST2829SweepParameters.StepDetermination;
-//begin
-// fStepValue:=Step();
-//end;
 
 function TST2829SweepParameters.ToString: string;
 begin
