@@ -1902,6 +1902,7 @@ begin
            end
        end;
      end;
+ Result:=Result+DelayTime;   
 end;
 
 function TST2829C.t_meas: integer;
