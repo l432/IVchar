@@ -4,7 +4,7 @@ interface
 
 uses
   Keithley, IdTelnet, ShowTypes,Keitley2450Const, DMM6500_Const, SCPI, 
-  OlegTypePart2, DMM6500_MeasParam;
+  OlegTypePart2, DMM6500_MeasParam, Measurement;
 
 type
  TDMM6500=class;
@@ -95,6 +95,8 @@ type
 
  end;
 
+ TDM6500_TemperatureMeter=class;
+
  TDMM6500=class(TKeitley)
   private
    fMeasureChanNumber:byte;
@@ -109,6 +111,7 @@ type
    fMeasParameters:array [TKeitley_Measure] of TDMM6500MeasPar_Base;
 //   fScanChans:array of byte;
    fScan:TDMM6500Scan;
+   fTemperatureMeter:TDM6500_TemperatureMeter;
    function GetMeasParameters:TDMM6500MeasPar_Base;
    procedure MeasParameterCreate(Measure:TKeitley_Measure);
    function ChanelToString(ChanNumber:byte):string;overload;
@@ -177,6 +180,7 @@ type
    property Scan:TDMM6500Scan read fScan;
    property FirstChannelInSlot:byte read fFirstChannelInSlot;
    property LastChannelInSlot:byte read fLastChannelInSlot;
+   property TemperatureMeter:TDM6500_TemperatureMeter read fTemperatureMeter;
    Constructor Create(Telnet:TIdTelnet;IPAdressShow: TIPAdressShow;
                Nm:string='DMM6500');
    destructor Destroy; override;
@@ -433,6 +437,26 @@ type
  end;
 
 //-------------------------------------------------
+
+TDM6500_TemperatureMeter=class(TNamedInterfacedObject,ITemperatureMeasurement)
+ private
+  fParentModule: TDMM6500;
+  fChanNumber: byte;
+  procedure SetChanNumber(const Value: byte);
+ protected
+  function GetNewData:boolean;
+  function GetValue:double;
+  function GetData:double;
+  function GetDeviceKod:byte;
+  procedure SetNewData(Value:boolean);
+  procedure GetDataThread(WPARAM: word; EventEnd:THandle);
+ public
+  property ChanNumber: byte read fChanNumber write SetChanNumber;
+  constructor Create(DMM6500:TDMM6500);
+  function GetTemperature:double;
+  procedure GetTemperatureThread(EventEnd:THandle);
+end;
+
 
 TDM6500_Meter=class(TKeitley_Meter)
  private
@@ -1361,6 +1385,7 @@ end;
 procedure TDMM6500.MeterCreate;
 begin
  fMeter:=TDM6500_Meter.Create(Self);
+ fTemperatureMeter:=TDM6500_TemperatureMeter.Create(Self);
 end;
 
 procedure TDMM6500.MeasureSimple;
@@ -3752,6 +3777,62 @@ begin
  SetLength(fScanChans,NumberOfSubstringInRow(Str));
  for I := 0 to High(fScanChans) do
   fScanChans[i]:=round(FloatDataFromRow(Str,i+1))
+
+end;
+
+{ TDM6500_TemperatureMeter }
+
+constructor TDM6500_TemperatureMeter.Create(DMM6500: TDMM6500);
+begin
+  fParentModule:=DMM6500;
+  fChanNumber:=0;
+  fName:=fParentModule.Name;
+end;
+
+function TDM6500_TemperatureMeter.GetData: double;
+begin
+
+end;
+
+procedure TDM6500_TemperatureMeter.GetDataThread(WPARAM: word;
+  EventEnd: THandle);
+begin
+
+end;
+
+function TDM6500_TemperatureMeter.GetDeviceKod: byte;
+begin
+
+end;
+
+function TDM6500_TemperatureMeter.GetNewData: boolean;
+begin
+
+end;
+
+function TDM6500_TemperatureMeter.GetTemperature: double;
+begin
+
+end;
+
+procedure TDM6500_TemperatureMeter.GetTemperatureThread(EventEnd: THandle);
+begin
+
+end;
+
+function TDM6500_TemperatureMeter.GetValue: double;
+begin
+
+end;
+
+procedure TDM6500_TemperatureMeter.SetChanNumber(const Value: byte);
+begin
+  if (Value=0) or (fParentModule.ChanelNumberIsCorrect(ChanNumber))
+    then fChanNumber := Value;
+end;
+
+procedure TDM6500_TemperatureMeter.SetNewData(Value: boolean);
+begin
 
 end;
 

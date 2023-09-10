@@ -4204,7 +4204,7 @@ begin
   TemperMeasurDevices:=TArrITempMeas.Create([Simulator,ThermoCuple,
                                   DS18B20,HTU21D,TMP102,ADT74x0,
                                   MLX90615,STS21,
-                                  MCP9808]);
+                                  MCP9808,DMM_6500.TemperatureMeter]);
   AnyObjectArray.Add(TemperMeasurDevices);
 
   Temperature_MD:=TTemperature_MD.Create(TemperMeasurDevices,
