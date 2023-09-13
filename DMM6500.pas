@@ -3791,7 +3791,7 @@ end;
 
 function TDM6500_TemperatureMeter.GetData: double;
 begin
-
+ Result:=GetTemperature;
 end;
 
 procedure TDM6500_TemperatureMeter.GetDataThread(WPARAM: word;
@@ -3802,17 +3802,25 @@ end;
 
 function TDM6500_TemperatureMeter.GetDeviceKod: byte;
 begin
-
+ Result:=fChanNumber;
 end;
 
 function TDM6500_TemperatureMeter.GetNewData: boolean;
 begin
-
+  Result:=fParentModule.Device.NewData;
 end;
 
 function TDM6500_TemperatureMeter.GetTemperature: double;
 begin
+ if fParentModule.MeasureFunction=kt_mTemp
+  then
+    begin
 
+    end
+  else
+   Result:=ErResult;  
+// Result:=Measurement.GetData;
+// if Result<>ErResult then  Result:=T_CuKo(Result);
 end;
 
 procedure TDM6500_TemperatureMeter.GetTemperatureThread(EventEnd: THandle);
@@ -3822,7 +3830,7 @@ end;
 
 function TDM6500_TemperatureMeter.GetValue: double;
 begin
-
+ Result:=fParentModule.Device.Value;
 end;
 
 procedure TDM6500_TemperatureMeter.SetChanNumber(const Value: byte);
@@ -3833,7 +3841,7 @@ end;
 
 procedure TDM6500_TemperatureMeter.SetNewData(Value: boolean);
 begin
-
+   fParentModule.Device.NewData:=Value;
 end;
 
 end.
