@@ -3815,17 +3815,21 @@ begin
  if fParentModule.MeasureFunction=kt_mTemp
   then
     begin
-
+     fParentModule.MeasureExtended;
+     Result:=fParentModule.Device.Value;
     end
   else
-   Result:=ErResult;  
+   begin
+   showmessage('aga!');
+   Result:=ErResult;
+   end;
 // Result:=Measurement.GetData;
 // if Result<>ErResult then  Result:=T_CuKo(Result);
 end;
 
 procedure TDM6500_TemperatureMeter.GetTemperatureThread(EventEnd: THandle);
 begin
-
+  showmessage('ugu!');
 end;
 
 function TDM6500_TemperatureMeter.GetValue: double;
