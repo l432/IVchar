@@ -3797,7 +3797,7 @@ end;
 procedure TDM6500_TemperatureMeter.GetDataThread(WPARAM: word;
   EventEnd: THandle);
 begin
-
+  fParentModule.Device.GetDataThread(WPARAM,EventEnd);
 end;
 
 function TDM6500_TemperatureMeter.GetDeviceKod: byte;
@@ -3820,7 +3820,6 @@ begin
     end
   else
    begin
-   showmessage('aga!');
    Result:=ErResult;
    end;
 // Result:=Measurement.GetData;
@@ -3829,7 +3828,7 @@ end;
 
 procedure TDM6500_TemperatureMeter.GetTemperatureThread(EventEnd: THandle);
 begin
-  showmessage('ugu!');
+  fParentModule.Device.GetDataThread(TemperMessage,EventEnd);
 end;
 
 function TDM6500_TemperatureMeter.GetValue: double;

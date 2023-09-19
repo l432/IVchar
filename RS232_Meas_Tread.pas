@@ -40,6 +40,16 @@ type
    procedure ExuteBegin;override;
   end;
 
+//  TTelnetMeasuringTread = class(TMeasuringTread)
+//  private
+////   fRS232Meter:TMeterDevice;
+////   procedure FalseStatement();
+//  protected
+////   procedure ExuteBegin;override;
+//  public
+////   constructor Create(Telnet_Meter:TMeterDevice;WPARAM: word; EventEnd: THandle);
+//  end;
+
 implementation
 
 uses

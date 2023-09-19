@@ -71,6 +71,8 @@ TTelnetMeterDeviceSingle=class(TMeterDevice)
   procedure ClearStringToSend;override;
   procedure JoinToStringToSend(AdditionalString:string);override;
   function GetData():double;override;
+//  procedure GetDataThread(WPARAM: word;EventEnd:THandle);override;
+
 end;
 
 var
@@ -213,7 +215,8 @@ begin
 //  fDataSubject:=TTelnetDataSubjectSingle.Create(Telnet,IPAdressShow);
   CreateDataSubject(Telnet,IPAdressShow);
   inherited Create(Nm);
-  fIDataSubject:=fDataSubject;
+  SetDataSubject(fDataSubject);
+//  fIDataSubject:=fDataSubject;
   fDataSubject.RegisterObserver(Self);
   CreateDataRequest;
 //  fMessageError:=fName+' on '+fDataSubject.fTelnet.Telnet.Host+ErrorMes;
@@ -261,6 +264,16 @@ begin
      showmessage(MessageError);
    end;
 end;
+
+//procedure TTelnetMeterDeviceSingle.GetDataThread(WPARAM: word;
+//  EventEnd: THandle);
+//begin
+// if DataSubject.PortConnected then
+//   begin
+//   fRS232MeasuringTread:=TRS232MeasuringTread.Create(Self,WPARAM,EventEnd);
+//
+//   end;
+//end;
 
 function TTelnetMeterDeviceSingle.GetIPAdressShow: TIPAdressShow;
 begin
