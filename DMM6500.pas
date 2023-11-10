@@ -3786,7 +3786,7 @@ constructor TDM6500_TemperatureMeter.Create(DMM6500: TDMM6500);
 begin
   fParentModule:=DMM6500;
   fChanNumber:=0;
-  fName:=fParentModule.Name;
+  fName:=fParentModule.Name+'Temp';
 end;
 
 function TDM6500_TemperatureMeter.GetData: double;
@@ -3828,6 +3828,7 @@ end;
 
 procedure TDM6500_TemperatureMeter.GetTemperatureThread(EventEnd: THandle);
 begin
+//  HelpForMe('kk'+inttostr(MilliSecond));
   fParentModule.Device.GetDataThread(TemperMessage,EventEnd);
 end;
 

@@ -37,7 +37,7 @@ object IVchar: TIVchar
     Top = 0
     Width = 788
     Height = 530
-    ActivePage = TS_Main
+    ActivePage = TS_Setting
     Align = alTop
     Font.Charset = RUSSIAN_CHARSET
     Font.Color = clWindowText
@@ -277,7 +277,7 @@ object IVchar: TIVchar
           Top = 18
           Width = 194
           Height = 24
-          ItemHeight = 16
+          ItemHeight = 0
           TabOrder = 7
           OnChange = CBMeasurementsChange
         end
@@ -1014,7 +1014,7 @@ object IVchar: TIVchar
           Font.Height = -15
           Font.Name = 'Verdana'
           Font.Style = [fsBold]
-          ItemHeight = 18
+          ItemHeight = 0
           ParentFont = False
           TabOrder = 2
         end
@@ -1140,7 +1140,7 @@ object IVchar: TIVchar
             Width = 111
             Height = 24
             Style = csDropDownList
-            ItemHeight = 16
+            ItemHeight = 0
             TabOrder = 2
           end
           object BMeasChA: TButton
@@ -1171,7 +1171,7 @@ object IVchar: TIVchar
         Font.Height = -21
         Font.Name = 'Arial'
         Font.Style = [fsBold]
-        ItemHeight = 24
+        ItemHeight = 0
         ParentFont = False
         TabOrder = 1
       end
@@ -1351,7 +1351,7 @@ object IVchar: TIVchar
           Font.Height = -15
           Font.Name = 'Verdana'
           Font.Style = [fsBold]
-          ItemHeight = 18
+          ItemHeight = 0
           ParentFont = False
           TabOrder = 2
         end
@@ -1477,7 +1477,7 @@ object IVchar: TIVchar
             Width = 111
             Height = 24
             Style = csDropDownList
-            ItemHeight = 16
+            ItemHeight = 0
             TabOrder = 2
           end
           object BMeasChB: TButton
@@ -1907,7 +1907,7 @@ object IVchar: TIVchar
             Font.Height = -13
             Font.Name = 'Arial'
             Font.Style = [fsBold]
-            ItemHeight = 16
+            ItemHeight = 0
             ParentFont = False
             TabOrder = 2
           end
@@ -2039,7 +2039,7 @@ object IVchar: TIVchar
             Font.Height = -13
             Font.Name = 'Arial'
             Font.Style = [fsBold]
-            ItemHeight = 16
+            ItemHeight = 0
             ParentFont = False
             TabOrder = 2
           end
@@ -2780,7 +2780,7 @@ object IVchar: TIVchar
           Font.Height = -13
           Font.Name = 'Arial'
           Font.Style = [fsBold]
-          ItemHeight = 16
+          ItemHeight = 0
           ParentFont = False
           TabOrder = 0
         end
@@ -2820,7 +2820,7 @@ object IVchar: TIVchar
           Font.Height = -13
           Font.Name = 'Arial'
           Font.Style = [fsBold]
-          ItemHeight = 16
+          ItemHeight = 0
           ParentFont = False
           TabOrder = 4
         end
@@ -2836,7 +2836,7 @@ object IVchar: TIVchar
           Font.Height = -13
           Font.Name = 'Arial'
           Font.Style = [fsBold]
-          ItemHeight = 16
+          ItemHeight = 0
           ParentFont = False
           TabOrder = 5
         end
@@ -3148,7 +3148,7 @@ object IVchar: TIVchar
         Font.Height = -13
         Font.Name = 'Arial'
         Font.Style = [fsBold]
-        ItemHeight = 16
+        ItemHeight = 0
         ParentFont = False
         TabOrder = 1
       end
@@ -3219,7 +3219,7 @@ object IVchar: TIVchar
           Font.Height = -13
           Font.Name = 'Arial'
           Font.Style = [fsBold]
-          ItemHeight = 16
+          ItemHeight = 0
           ParentFont = False
           TabOrder = 1
         end
@@ -3427,7 +3427,7 @@ object IVchar: TIVchar
           Font.Height = -13
           Font.Name = 'Arial'
           Font.Style = [fsBold]
-          ItemHeight = 16
+          ItemHeight = 0
           ParentFont = False
           TabOrder = 0
         end
@@ -4618,7 +4618,7 @@ object IVchar: TIVchar
               Font.Height = -13
               Font.Name = 'Arial'
               Font.Style = [fsBold]
-              ItemHeight = 16
+              ItemHeight = 0
               ParentFont = False
               TabOrder = 2
             end
@@ -4798,7 +4798,7 @@ object IVchar: TIVchar
               Font.Height = -13
               Font.Name = 'Arial'
               Font.Style = [fsBold]
-              ItemHeight = 16
+              ItemHeight = 0
               ParentFont = False
               TabOrder = 2
             end
@@ -4975,7 +4975,7 @@ object IVchar: TIVchar
               Font.Height = -13
               Font.Name = 'Arial'
               Font.Style = [fsBold]
-              ItemHeight = 16
+              ItemHeight = 0
               ParentFont = False
               TabOrder = 2
             end
@@ -5426,7 +5426,7 @@ object IVchar: TIVchar
         Font.Height = -13
         Font.Name = 'Arial'
         Font.Style = [fsBold]
-        ItemHeight = 16
+        ItemHeight = 0
         ParentFont = False
         TabOrder = 1
       end
@@ -5672,7 +5672,7 @@ object IVchar: TIVchar
           Font.Height = -13
           Font.Name = 'Arial'
           Font.Style = [fsBold]
-          ItemHeight = 16
+          ItemHeight = 0
           ParentFont = False
           TabOrder = 0
         end
@@ -5702,7 +5702,7 @@ object IVchar: TIVchar
           Font.Height = -13
           Font.Name = 'Arial'
           Font.Style = [fsBold]
-          ItemHeight = 16
+          ItemHeight = 0
           ParentFont = False
           TabOrder = 2
         end
@@ -5874,7 +5874,7 @@ object IVchar: TIVchar
         Font.Height = -13
         Font.Name = 'Arial'
         Font.Style = [fsBold]
-        ItemHeight = 16
+        ItemHeight = 0
         ParentFont = False
         TabOrder = 6
       end
@@ -5945,7 +5945,7 @@ object IVchar: TIVchar
           Font.Height = -13
           Font.Name = 'Arial'
           Font.Style = [fsBold]
-          ItemHeight = 16
+          ItemHeight = 0
           ParentFont = False
           TabOrder = 0
         end
@@ -5961,7 +5961,7 @@ object IVchar: TIVchar
           Font.Height = -13
           Font.Name = 'Arial'
           Font.Style = [fsBold]
-          ItemHeight = 16
+          ItemHeight = 0
           ParentFont = False
           TabOrder = 1
         end
@@ -6113,7 +6113,7 @@ object IVchar: TIVchar
             Font.Height = -13
             Font.Name = 'Arial'
             Font.Style = [fsBold]
-            ItemHeight = 16
+            ItemHeight = 0
             ParentFont = False
             TabOrder = 2
           end
@@ -6718,7 +6718,7 @@ object IVchar: TIVchar
               Font.Height = -13
               Font.Name = 'Arial'
               Font.Style = [fsBold]
-              ItemHeight = 16
+              ItemHeight = 0
               ParentFont = False
               TabOrder = 2
             end
@@ -6949,7 +6949,7 @@ object IVchar: TIVchar
               Font.Height = -13
               Font.Name = 'Arial'
               Font.Style = [fsBold]
-              ItemHeight = 16
+              ItemHeight = 0
               ParentFont = False
               TabOrder = 2
             end
@@ -8103,7 +8103,7 @@ object IVchar: TIVchar
             Font.Height = -13
             Font.Name = 'Arial'
             Font.Style = [fsBold]
-            ItemHeight = 16
+            ItemHeight = 0
             ParentFont = False
             TabOrder = 2
           end
@@ -8169,7 +8169,7 @@ object IVchar: TIVchar
             Font.Height = -13
             Font.Name = 'Arial'
             Font.Style = [fsBold]
-            ItemHeight = 16
+            ItemHeight = 0
             ParentFont = False
             TabOrder = 2
           end
@@ -8324,7 +8324,7 @@ object IVchar: TIVchar
             Font.Height = -13
             Font.Name = 'Arial'
             Font.Style = [fsBold]
-            ItemHeight = 16
+            ItemHeight = 0
             ParentFont = False
             TabOrder = 2
           end

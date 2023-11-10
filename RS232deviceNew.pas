@@ -1058,6 +1058,7 @@ end;
 
 procedure TMeterDevice.GetDataThread(WPARAM: word; EventEnd: THandle);
 begin
+//  HelpForMe(Self.ClassName+inttostr(MilliSecond));
  if DataSubject.PortConnected then
    begin
    fRS232MeasuringTread:=TRS232MeasuringTread.Create(Self,WPARAM,EventEnd);

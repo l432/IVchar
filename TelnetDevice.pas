@@ -158,6 +158,12 @@ end;
 function TTelnetDataSubjectSingle.PortConnected: boolean;
 begin
 //showmessage(fTelnet.fIdTelnet.Host);
+ if DeviceEthernetisAbsent then
+  begin
+    Result:=True;
+    Exit;
+  end;
+
  try
 //  if fTelnet.fIdTelnet.Connected then fTelnet.fIdTelnet.Disconnect();
 //  fTelnet.fIdTelnet.Connect;

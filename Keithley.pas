@@ -643,7 +643,7 @@ end;
 
 procedure TKeitley.DeviceCreate(Nm: string);
 begin
-  fDevice:=TKeitleyDevice.Create(Self,fTelnet,fIPAdressShow,Nm);
+  fDevice:=TKeitleyDevice.Create(Self,fTelnet,fIPAdressShow,Nm+'Dev');
 end;
 
 function TKeitley.GetCount: boolean;

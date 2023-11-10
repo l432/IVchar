@@ -53,7 +53,7 @@ type
 implementation
 
 uses
-  Windows, OlegType, Math, OlegMath, SysUtils, DateUtils, Forms;
+  Windows, OlegType, Math, OlegMath, SysUtils, DateUtils, Forms, OlegFunction;
 
 { RS232Measuring }
 
@@ -165,6 +165,7 @@ begin
   isFirst := True;
 start:
   Synchronize(FalseStatement);
+//  HelpForMe(fRS232Meter.Name);
   fRS232Meter.Request;
 //  sleep(fRS232Meter.MinDelayTime);
   _Sleep(fRS232Meter.MinDelayTime);
