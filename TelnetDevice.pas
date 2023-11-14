@@ -203,6 +203,7 @@ begin
     else
       begin
       if TestShowEthernet then showmessage('send:  '+fTelnet.fStringToSend);
+//     HelpForMe(fTelnet.fStringToSend,Self.ClassName+inttostr(MilliSecond));
       inherited Request;
       end;
 end;
@@ -248,6 +249,7 @@ end;
 
 function TTelnetMeterDeviceSingle.GetData: double;
 begin
+//  HelpForMe(fDataRequest.fTelnet.fStringToSend+inttostr(MilliSecond));
   Result:=ErResult;
 
 // if DeviceEthernetisAbsent
@@ -303,6 +305,7 @@ end;
 
 procedure TTelnetMeterDeviceSingle.Request;
 begin
+// HelpForMe(fDataRequest.ClassName+inttostr(MilliSecond));
  fDataRequest.Request;
 end;
 

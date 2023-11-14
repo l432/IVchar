@@ -149,6 +149,7 @@ uses
 constructor TRS232MeasuringTread.Create(RS_Meter: TMeterDevice;
   WPARAM: word; EventEnd: THandle);
 begin
+//  HelpForMe(RS_Meter.ClassName+inttostr(MilliSecond));
   inherited Create(RS_Meter,WPARAM,EventEnd);
   fRS232Meter := RS_Meter;
   fMeasurement:=fRS232Meter;
@@ -165,7 +166,8 @@ begin
   isFirst := True;
 start:
   Synchronize(FalseStatement);
-//  HelpForMe(fRS232Meter.Name);
+//  HelpForMe(fRS232Meter.ClassName+inttostr(MilliSecond));
+
   fRS232Meter.Request;
 //  sleep(fRS232Meter.MinDelayTime);
   _Sleep(fRS232Meter.MinDelayTime);

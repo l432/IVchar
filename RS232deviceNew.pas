@@ -1061,6 +1061,8 @@ begin
 //  HelpForMe(Self.ClassName+inttostr(MilliSecond));
  if DataSubject.PortConnected then
    begin
+//  HelpForMe(Self.ClassName+inttostr(MilliSecond));
+
    fRS232MeasuringTread:=TRS232MeasuringTread.Create(Self,WPARAM,EventEnd);
 
    end;

@@ -3815,7 +3815,8 @@ begin
  if fParentModule.MeasureFunction=kt_mTemp
   then
     begin
-     fParentModule.MeasureExtended;
+//     fParentModule.MeasureExtended;
+     fParentModule.MeasureSimple;
      Result:=fParentModule.Device.Value;
     end
   else
