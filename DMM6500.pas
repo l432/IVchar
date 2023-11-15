@@ -4,10 +4,21 @@ interface
 
 uses
   Keithley, IdTelnet, ShowTypes,Keitley2450Const, DMM6500_Const, SCPI, 
-  OlegTypePart2, DMM6500_MeasParam, Measurement;
+  OlegTypePart2, DMM6500_MeasParam, Measurement, RS232_Meas_Tread;
 
 type
  TDMM6500=class;
+
+// TKeitleyDevice=class(TTelnetMeterDeviceSingle)
+ TDMM6500Device=class(TKeitleyDevice)
+  private
+   fDMM6500:TDMM6500;
+  protected
+  public
+   Constructor Create(DMM6500:TDMM6500;Telnet:TIdTelnet;
+                      IPAdressShow: TIPAdressShow);
+   procedure MeasuringTreadCreate(WPARAM: word;EventEnd:THandle);override;
+ end;
 
  TDMM6500Channel=class
   private
@@ -155,6 +166,7 @@ type
 //   function StringToScanState(Str:string):boolean;
 //   procedure StringToScanMonitorMode(Str:string);
   protected
+   procedure DeviceCreate(Nm:string);override;
    procedure MeterCreate;override;
    procedure ProcessingStringByRootNode(Str:string);override;
    procedure PrepareString;override;
@@ -457,6 +469,17 @@ TDM6500_TemperatureMeter=class(TNamedInterfacedObject,ITemperatureMeasurement)
   procedure GetTemperatureThread(EventEnd:THandle);
 end;
 
+TDM6500_MeasuringSimpleTread= class(TRS232MeasuringTread)
+//TRS232MeasuringTread = class(TMeasuringTread)
+  private
+   fParentDMM6500: TDMM6500;
+//   procedure FalseStatement();
+   procedure PrepareStringTread();
+  protected
+   procedure ExuteBegin;override;
+  public
+   constructor Create(DMM6500:TDMM6500;WPARAM: word; EventEnd: THandle);
+  end;
 
 TDM6500_Meter=class(TKeitley_Meter)
  private
@@ -579,6 +602,11 @@ begin
   MeasParametersDestroy;
   ChansMeasureDestroy;
   inherited;
+end;
+
+procedure TDMM6500.DeviceCreate(Nm: string);
+begin
+  fDevice:=TDMM6500Device.Create(Self,fTelnet,fIPAdressShow);
 end;
 
 procedure TDMM6500.GetActionProcedureByMParam(FM: TKeitley_Measure;
@@ -3734,6 +3762,7 @@ begin
  fMonitorChannel:=1;
 end;
 
+
 function TDMM6500Scan.ScanStateToString: string;
 begin
  Result:=Keitley_TriggerStateCommand[fScanState]
@@ -3847,6 +3876,52 @@ end;
 procedure TDM6500_TemperatureMeter.SetNewData(Value: boolean);
 begin
    fParentModule.Device.NewData:=Value;
+end;
+
+{ TDM6500_MeasuringSimpleTread }
+
+constructor TDM6500_MeasuringSimpleTread.Create(DMM6500: TDMM6500; WPARAM: word;
+  EventEnd: THandle);
+begin
+ fParentDMM6500:=DMM6500;
+ inherited Create(fParentDMM6500.Device,WPARAM,EventEnd);
+end;
+
+procedure TDM6500_MeasuringSimpleTread.ExuteBegin;
+begin
+ Synchronize(PrepareStringTread);
+ inherited ExuteBegin;
+end;
+
+procedure TDM6500_MeasuringSimpleTread.PrepareStringTread;
+begin
+
+ (fParentDMM6500.Device as TTelnetMeterDeviceSingle).ClearReceivedString();
+// fDataSubject.fReceivedString:='';
+
+ if fParentDMM6500.MeasFuncByCN(fParentDMM6500.ClosedChannel)>kt_mVoltRat
+   then fParentDMM6500.SetFlags(21,23,0,True,True)
+   else fParentDMM6500.SetFlags(21,0,0,True,True);
+  fParentDMM6500.PrepareString();
+  fParentDMM6500.Device.Value:=ErResult;
+end;
+
+{ TDMM6500Device }
+
+
+{ TDMM6500Device }
+
+constructor TDMM6500Device.Create(DMM6500: TDMM6500; Telnet: TIdTelnet;
+  IPAdressShow: TIPAdressShow);
+begin
+ fDMM6500:=DMM6500;
+ inherited Create(DMM6500,Telnet,IPAdressShow,DMM6500.Name+'DevTT');
+
+end;
+
+procedure TDMM6500Device.MeasuringTreadCreate(WPARAM: word; EventEnd: THandle);
+begin
+ fRS232MeasuringTread:=TDM6500_MeasuringSimpleTread.Create(fDMM6500,WPARAM,EventEnd);
 end;
 
 end.

@@ -18,8 +18,8 @@ type
 
  TSCPInew=class(TNamedInterfacedObject)
    private
-    procedure SetFlags(RootNode,FirstLevelNode,LeafNode:byte;
-                  IsSuffix:boolean=True;isQuery:boolean=False);
+//    procedure SetFlags(RootNode,FirstLevelNode,LeafNode:byte;
+//                  IsSuffix:boolean=True;isQuery:boolean=False);
    protected
     fDevice:TMeterDevice;
     fRootNode:byte;
@@ -28,6 +28,8 @@ type
     fIsSuffix:boolean;
     fIsQuery:boolean;
     fAdditionalString:string;
+    procedure SetFlags(RootNode,FirstLevelNode,LeafNode:byte;
+                  IsSuffix:boolean=True;isQuery:boolean=False);
     procedure QuireOperation(RootNode:byte;FirstLevelNode:byte=0;LeafNode:byte=0;
                             isSyffix:boolean=True{;isQuery:boolean=False});
     procedure SetupOperation(RootNode:byte;FirstLevelNode:byte=0;LeafNode:byte=0;

@@ -321,10 +321,15 @@ procedure TKeitleyDevice.UpDate;
 begin
 // showmessage('recived');
  fIsReceived:=True;
+
+
  fSCPI.ProcessingString(fDataSubject.ReceivedString);
 // if fValue<>ErResult then
 //     fIsReceived:=True;
+
  if TestShowEthernet then showmessage('recived:  '+fDataSubject.ReceivedString);
+// if TestShowEthernet then HelpForMe(fDataSubject.ReceivedString,
+//           'Recived'+Self.ClassName+inttostr(MilliSecond));
 
 end;
 

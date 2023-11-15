@@ -69,6 +69,8 @@ TTelnetMeterDeviceSingle=class(TMeterDevice)
   Procedure Request();override;
   Procedure SetStringToSend(StringToSend:string);override;
   procedure ClearStringToSend;override;
+  procedure ClearReceivedString;
+
   procedure JoinToStringToSend(AdditionalString:string);override;
   function GetData():double;override;
 //  procedure GetDataThread(WPARAM: word;EventEnd:THandle);override;
@@ -122,6 +124,11 @@ begin
    then
     begin
      Result:=True;
+
+// HelpForMe(fStringToSend,
+//             'SendString'+Self.ClassName+inttostr(MilliSecond));
+
+
      for I := 1 to length(fStringToSend) do
        fIdTelnet.SendCh(char(fStringToSend[i]));
      fIdTelnet.SendCh(SCPI_PacketEndChar);
@@ -193,7 +200,14 @@ end;
 
 function TDataRequestTelnet.IsNoSuccessSend: Boolean;
 begin
+// HelpForMe(fTelnet.fStringToSend,
+//             'IsNoSuccessSend'+Self.ClassName+inttostr(MilliSecond));
+
  Result:=not(fTelnet.SendString());
+
+// HelpForMe(booltostr(Result),
+//             'IsNoSuccessSend'+Self.ClassName+inttostr(MilliSecond));
+
 end;
 
 procedure TDataRequestTelnet.Request;
@@ -203,12 +217,18 @@ begin
     else
       begin
       if TestShowEthernet then showmessage('send:  '+fTelnet.fStringToSend);
-//     HelpForMe(fTelnet.fStringToSend,Self.ClassName+inttostr(MilliSecond));
+//     if TestShowEthernet then HelpForMe(fTelnet.fStringToSend,
+//             'Send'+Self.ClassName+inttostr(MilliSecond));
       inherited Request;
       end;
 end;
 
 { TTelnetMeterDeviceSingle }
+
+procedure TTelnetMeterDeviceSingle.ClearReceivedString;
+begin
+ fDataSubject.fReceivedString:='';
+end;
 
 procedure TTelnetMeterDeviceSingle.ClearStringToSend;
 begin
@@ -259,7 +279,8 @@ begin
 //     Exit;
 //     end;
 
-  fDataSubject.fReceivedString:='';
+  ClearReceivedString();
+//  fDataSubject.fReceivedString:='';
 
   if DeviceEthernetisAbsent or fDataSubject.PortConnected then
    begin

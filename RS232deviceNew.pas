@@ -175,6 +175,7 @@ TMeterDevice=class(TCustomDevice,IMeasurement,IDataObserver)
    function GetData():double;virtual;
    procedure MeasurementBegin;
    procedure GetDataThread(WPARAM: word;EventEnd:THandle);virtual;
+   procedure MeasuringTreadCreate(WPARAM: word;EventEnd:THandle);virtual;
    procedure JoinToStringToSend(AdditionalString:string);virtual;
    procedure ClearStringToSend;virtual;
    Procedure SetStringToSend(StringToSend:string);virtual;
@@ -1063,7 +1064,8 @@ begin
    begin
 //  HelpForMe(Self.ClassName+inttostr(MilliSecond));
 
-   fRS232MeasuringTread:=TRS232MeasuringTread.Create(Self,WPARAM,EventEnd);
+   MeasuringTreadCreate(WPARAM,EventEnd);
+//   fRS232MeasuringTread:=TRS232MeasuringTread.Create(Self,WPARAM,EventEnd);
 
    end;
 end;
@@ -1129,6 +1131,11 @@ procedure TMeterDevice.MeasurementBegin;
 begin
   fIsReceived:=False;
   fError:=False;
+end;
+
+procedure TMeterDevice.MeasuringTreadCreate(WPARAM: word; EventEnd: THandle);
+begin
+  fRS232MeasuringTread:=TRS232MeasuringTread.Create(Self,WPARAM,EventEnd);
 end;
 
 procedure TMeterDevice.SetDataSubject(const Value: IDataSubject);

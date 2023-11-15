@@ -166,7 +166,8 @@ begin
   isFirst := True;
 start:
   Synchronize(FalseStatement);
-//  HelpForMe(fRS232Meter.ClassName+inttostr(MilliSecond));
+
+//  HelpForMe(fRS232Meter.Name+inttostr(MilliSecond));
 
   fRS232Meter.Request;
 //  sleep(fRS232Meter.MinDelayTime);
