@@ -306,10 +306,14 @@ begin
  fMeasureTypeShow:=TST2829C_MeasureTypeShow.Create(fST2829C);
  fMeasureTypeShow.ParentToElements(GBs[0].Parent);
  fMeasureTypeShow.STdata.Top:=140;
- fMeasureTypeShow.STdata.Left:=220;
+// fMeasureTypeShow.STdata.Left:=220;
+
+ fMeasureTypeShow.STdata.Left:=GBs[7].Left;
+ fMeasureTypeShow.STdata.Top:=GBs[7].Top+GBs[7].Height+10;
  fMeasureTypeShow.STdata.Font.Name:='Verdana';
  fMeasureTypeShow.STdata.Font.Height:=-23;
  fMeasureTypeShow.STdata.Font.Color:=clFuchsia;
+ fMeasureTypeShow.STdata.Font.Color:=clTeal;
  fMeasureTypeShow.STdata.Font.Style:=[fsBold];
 
  fMeasureParamShow:=TST2829CMeasureParamShow.Create(fST2829C,GBs[2]);
@@ -638,6 +642,9 @@ begin
 
   fParent.Height:=fLVrmsData.Top+fLVrmsData.Height+10;
   fParent.Width:=fBIrmsNeasuring.Left+ fBIrmsNeasuring.Width+10;
+  fParent.Width:=VrmsToMeasureShow.CB.Left+VrmsToMeasureShow.CB.Width+10;
+//  fBIrmsNeasuring.Left+ fBIrmsNeasuring.Width+10;
+
 end;
 
 procedure TST2829CMeasureParamShow.IMeasShowClick;
@@ -1138,7 +1145,8 @@ begin
  fCBLogStep.Top:=fLSteps.Top;
  fCBLogStep.Left:=fSTSteps.Left+fSTSteps.Width+25;
 
- fParent.Width:=fRGDataUsed.Left+fRGDataUsed.Width+5;
+// fParent.Width:=fRGDataUsed.Left+fRGDataUsed.Width+5;
+ fParent.Width:=fSTType.Left+fSTType.Width+10;
  fParent.Height:=fLSteps.Top+fLSteps.Height+MarginTop;
 
 end;
