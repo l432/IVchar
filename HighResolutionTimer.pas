@@ -28,7 +28,14 @@ type
      procedure Start();
      function Finish:double;
   end;
- 
+
+
+function MilliSecondFromDayBegining:Int64;overload;
+{повертає кількість мілісекунд з початку доби}
+
+function MilliSecondFromDayBegining(ttime: TDateTime):Int64;overload;
+
+
 var
   Timer: THRTimer; // Глобальая переменная. Создаётся при запуске программы
   SecondMeter:TSecondMeter;
@@ -45,6 +52,9 @@ var
 function HRDelay(const Milliseconds: Double): Double;
  
 implementation
+
+uses
+  SysUtils;
  
 function HRDelay(const Milliseconds: Double): Double;
 begin
@@ -100,6 +110,20 @@ end;
 procedure TSecondMeter.Start;
 begin
  QueryPerformanceCounter(fStartValue);
+end;
+
+
+function MilliSecondFromDayBegining:Int64;overload;
+{повертає кількість мілісекунд з початку доби}
+begin
+ Result:=MilliSecondFromDayBegining(Time);
+end;
+
+function MilliSecondFromDayBegining(ttime: TDateTime):Int64;overload;
+ var Hour,Min,Sec,MSec:word;
+begin
+ DecodeTime(ttime,Hour,Min,Sec,MSec);
+ Result:=MSec+1000*(Sec+60*(Min+60*Hour));
 end;
 
 initialization

@@ -1108,7 +1108,8 @@ begin
     case DT of
       dt_IV:begin
             if CBuseKT2450.Checked
-             then writeln(FF,Name,' - ',temp,'  :'+floattostr(Kt_2450.DataTimeVector.X[Kt_2450.DataTimeVector.HighNumber]))
+//             then writeln(FF,Name,' - ',temp,'  :'+floattostr(Kt_2450.DataTimeVector.X[Kt_2450.DataTimeVector.HighNumber]))
+             then writeln(FF,Name,' - ',temp,'  :'+inttostr(MilliSecondFromDayBegining(FileDateToDateTime(SR.Time))))
              else
                begin
                   if (Current_MD.ActiveInterface.Name='KT2450Meter')
@@ -1123,10 +1124,12 @@ begin
                          DMM_6500.BufferLastDataExtended(kt_rd_MT);
                          writeln(FF,Name,' - ',temp,'  :'+floattostr(DMM_6500.TimeValue));
                         end               else
-                        writeln(FF,Name,' - ',temp,'  :'+inttostr(SecondFromDayBegining(FileDateToDateTime(SR.Time))));
+//                        writeln(FF,Name,' - ',temp,'  :'+inttostr(SecondFromDayBegining(FileDateToDateTime(SR.Time))));
+                        writeln(FF,Name,' - ',temp,'  :'+inttostr(MilliSecondFromDayBegining(FileDateToDateTime(SR.Time))));
                end;
             end;
-      else writeln(FF,Name,' - ',temp,'  :'+inttostr(SecondFromDayBegining(FileDateToDateTime(SR.Time))));
+//      else writeln(FF,Name,' - ',temp,'  :'+inttostr(SecondFromDayBegining(FileDateToDateTime(SR.Time))));
+      else writeln(FF,Name,' - ',temp,'  :'+inttostr(MilliSecondFromDayBegining(FileDateToDateTime(SR.Time))));
     end;
 
 
@@ -2911,20 +2914,21 @@ procedure TIVchar.BWriteTMClick(Sender: TObject);
 begin
     AssignFile(FF,'comments.dat');
     if FindFirst('comments.dat',faAnyFile,SR)=0 then Append(FF) else ReWrite(FF);
-    if (CBuseKT2450.Checked)
-      then
-       begin
-        Kt_2450.OutPutChange(True);
-        Kt_2450.MeasureExtended(kt_rd_MT);
-        Kt_2450.OutPutChange(False);
-
-        if Kt_2450.Device.Value<>ErResult
-         then write(FF,'Time mark : ',floattostr(Kt_2450.TimeValue))
-         else
-          write(FF,'Time mark : ',inttostr(SecondFromDayBegining(Now())));
-       end
-      else
-        write(FF,'Time mark : ',inttostr(SecondFromDayBegining(Now())));
+//    if (CBuseKT2450.Checked)
+//      then
+//       begin
+//        Kt_2450.OutPutChange(True);
+//        Kt_2450.MeasureExtended(kt_rd_MT);
+//        Kt_2450.OutPutChange(False);
+//
+//        if Kt_2450.Device.Value<>ErResult
+//         then write(FF,'Time mark : ',floattostr(Kt_2450.TimeValue))
+//         else
+//          write(FF,'Time mark : ',inttostr(SecondFromDayBegining(Now())));
+//       end
+//      else
+//        write(FF,'Time mark : ',inttostr(SecondFromDayBegining(Now())));
+        write(FF,'Time mark : ',inttostr(MilliSecondFromDayBegining(Now())));
     writeln(FF);
     writeln(FF);
     CloseFile(FF);
