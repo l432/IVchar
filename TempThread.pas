@@ -32,12 +32,20 @@ type
     fEventEnd:THandle;
 //    fTemperatureMeasurement:ITemperatureMeasurement;
     fTemperatureMeasurement:Pointer;
-  protected
-    procedure DoSomething;override;
-  public
+//------------------------------------------
+   class var fTemperatureMeasuringThread:TTemperatureMeasuringThread;
    constructor Create(TemperatureMeasurement:ITemperatureMeasurement;
                       const Interval:double;
                       EventEnd:THandle);
+  protected
+    procedure DoSomething;override;
+  public
+    class function GetSingleton(TemperatureMeasurement:ITemperatureMeasurement;
+                      const Interval:double;
+                      EventEnd:THandle):TTemperatureMeasuringThread;
+//   constructor Create(TemperatureMeasurement:ITemperatureMeasurement;
+//                      const Interval:double;
+//                      EventEnd:THandle);
 
   end;
 
@@ -90,6 +98,16 @@ begin
 //  HelpForMe('Temp'+inttostr(MilliSecond));
   ITemperatureMeasurement(fTemperatureMeasurement).GetTemperatureThread(fEventEnd);
 //  HelpForMe('Temp'+inttostr(MilliSecond));
+end;
+
+class function TTemperatureMeasuringThread.GetSingleton(
+  TemperatureMeasurement: ITemperatureMeasurement; const Interval: double;
+  EventEnd: THandle): TTemperatureMeasuringThread;
+begin
+ if not(assigned(fTemperatureMeasuringThread))
+    then fTemperatureMeasuringThread:=TTemperatureMeasuringThread.Create(TemperatureMeasurement,Interval,EventEnd);
+
+ Result:=fTemperatureMeasuringThread;
 end;
 
 { TMeasuringThread }

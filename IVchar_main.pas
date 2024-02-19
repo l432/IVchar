@@ -1382,8 +1382,8 @@ repeat
 
        if assigned(TemperatureMeasuringThread) then
                  begin
-                  TemperatureThreadDestroy();
-//                 TemperatureMeasuringThread.Terminate;
+                  TemperatureMeasuringThread.Paused:=True;
+//                  TemperatureThreadDestroy();
                   TemperatureMeasuringThreadTerminated:=True;
                  end;
 
@@ -1407,7 +1407,10 @@ repeat
 //         if not(assigned(TemperatureMeasuringThread)) then
          if TemperatureMeasuringThreadTerminated then
                begin
-               TemperatureThreadCreate();
+               if assigned(TemperatureMeasuringThread)
+                 then TemperatureMeasuringThread.Paused:=False
+                 else
+                 TemperatureThreadCreate();
                TemperatureMeasuringThreadTerminated:=False;
                end;
       //----------------------------------------
@@ -3821,8 +3824,12 @@ procedure TIVchar.TemperatureThreadCreate;
 begin
 //  HelpForMe('TempThreadCreate'+inttostr(MilliSecond));
   ThermoCuple.Measurement:=TermoCouple_MD.ActiveInterface;
+//  TemperatureMeasuringThread:=
+//    TTemperatureMeasuringThread.Create(Temperature_MD.ActiveInterface,
+//                                       TemperatureMeasIntervalCS.Data,
+//                                       EventMeasuringEnd);
   TemperatureMeasuringThread:=
-    TTemperatureMeasuringThread.Create(Temperature_MD.ActiveInterface,
+    TTemperatureMeasuringThread.GetSingleton(Temperature_MD.ActiveInterface,
                                        TemperatureMeasIntervalCS.Data,
                                        EventMeasuringEnd);
 end;

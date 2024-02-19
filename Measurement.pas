@@ -4,7 +4,7 @@ interface
 
 uses
   StdCtrls, IniFiles, Messages, Classes, ExtCtrls,
-  Buttons, OlegTypePart2;
+  Buttons, OlegTypePart2, Windows, SyncObjs;
 
 Const
    WM_MyMeasure=WM_USER+1;
@@ -179,11 +179,17 @@ end;
  TTheadCycle = class(TTheadSleep)
   private
   protected
+    fEventPaused: TEvent;
+    fPaused: Boolean;
+//---------------------
     fInterval:int64;
     procedure DoSomething;virtual;
+    procedure SetPaused(const Value: Boolean);
   public
+    property Paused: Boolean read fPaused write SetPaused;
     constructor Create(Interval:double);
     procedure Execute; override;
+    destructor Destroy; override;
   end;
 
   TMeasuringTread=class(TTheadSleep)
@@ -204,7 +210,7 @@ end;
 implementation
 
 uses
-  SysUtils, OlegType,Dialogs, Graphics, Windows,
+  SysUtils, OlegType,Dialogs, Graphics,
   Forms, DateUtils, OlegFunction;
 
 { Simulator }
@@ -333,8 +339,24 @@ end;
 
 constructor TTheadCycle.Create(Interval: double);
 begin
+ fPaused := False;
+ fEventPaused := TEvent.Create(nil, true, not fPaused, '');
+
  inherited Create();
  fInterval:=abs(round(1000*Interval));
+end;
+
+destructor TTheadCycle.Destroy;
+begin
+  Terminate;
+  fEventPaused.SetEvent;
+//  fEventPaused.WaitFor;
+//  while not Self.Finished do // ждем, пока он завершится
+  while not Self.Terminated do // ждем, пока он завершится
+    Sleep(0);
+  FreeAndNil(fEventPaused);
+
+  inherited;
 end;
 
 procedure TTheadCycle.DoSomething;
@@ -349,6 +371,10 @@ var
 begin
   while (not Terminated) and (not Application.Terminated) do
   begin
+    fEventPaused.WaitFor(INFINITE);
+
+    if (not Terminated) and (not Application.Terminated) then
+    begin
     t := Now();
     DoSomething;
     k := fInterval - Round(MilliSecondSpan(Now(), t));
@@ -358,6 +384,17 @@ begin
 //       HelpForMe(inttostr(k)+'_'+inttostr(MilliSecond));
       _Sleep(k);
       end;
+    end;
+  end;
+end;
+
+procedure TTheadCycle.SetPaused(const Value: Boolean);
+begin
+  if (not Terminated) and (fPaused <> Value) then
+  begin
+    fPaused := Value;
+    if fPaused then fEventPaused.ResetEvent
+               else fEventPaused.SetEvent;
   end;
 end;
 
