@@ -1102,7 +1102,7 @@ begin
     if FindFirst(FileName,faAnyFile,SR)<>0 then Exit;
     name:=SR.Name;
 
-    FindClose(SR);
+//    FindClose(SR);
     DateTimeToString(temp, 'd.m.yyyy', FileDateToDateTime(SR.Time));
 
     case DT of
@@ -1132,6 +1132,7 @@ begin
       else writeln(FF,Name,' - ',temp,'  :'+inttostr(MilliSecondFromDayBegining(FileDateToDateTime(SR.Time))));
     end;
 
+    FindClose(SR);
 
     write(FF,'T=',LTLastValue.Caption);
     writeln(FF);
@@ -2931,7 +2932,8 @@ begin
 //       end
 //      else
 //        write(FF,'Time mark : ',inttostr(SecondFromDayBegining(Now())));
-        write(FF,'Time mark : ',inttostr(MilliSecondFromDayBegining(Now())));
+    write(FF,'Time mark : ',inttostr(MilliSecondFromDayBegining(Now())));
+
     writeln(FF);
     writeln(FF);
     CloseFile(FF);

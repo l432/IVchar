@@ -22,7 +22,7 @@ type
 //   constructor Create(RS_Meter:TRS232Meter;WPARAM: word; EventEnd: THandle);
 //  end;
 
-  TRS232MeasuringTread = class(TMeasuringTread)
+  TRS232MeasuringTread = class(TMeasuringTreadSleep)
   private
    fRS232Meter:TMeterDevice;
    procedure FalseStatement();

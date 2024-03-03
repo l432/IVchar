@@ -9,7 +9,7 @@ const VdiodMax=1.3;
 
 type
 
-  TMeasuringThread = class(TTheadCycle)
+  TMeasuringThreadCycle = class(TTheadCycle)
   private
     fEventEnd:THandle;
 //    fMeasurement:IMeasurement;
@@ -30,7 +30,6 @@ type
   TTemperatureMeasuringThread = class(TTheadCycle)
   private
     fEventEnd:THandle;
-//    fTemperatureMeasurement:ITemperatureMeasurement;
     fTemperatureMeasurement:Pointer;
 //------------------------------------------
    class var fTemperatureMeasuringThread:TTemperatureMeasuringThread;
@@ -46,7 +45,7 @@ type
 //   constructor Create(TemperatureMeasurement:ITemperatureMeasurement;
 //                      const Interval:double;
 //                      EventEnd:THandle);
-
+   destructor Destroy; override;
   end;
 
   TControllerThread = class(TTheadCycle)
@@ -86,10 +85,17 @@ constructor TTemperatureMeasuringThread.Create(TemperatureMeasurement:ITemperatu
                                                 EventEnd:THandle);
 begin
   inherited Create(Interval);
-//  fTemperatureMeasurement:=TemperatureMeasurement;
+//  HelpForMe('TemperatureMeasuringThreadCreate'+inttostr(MilliSecond));
   fTemperatureMeasurement:=Pointer(TemperatureMeasurement);
   fEventEnd:=EventEnd;
   Resume;
+end;
+
+destructor TTemperatureMeasuringThread.Destroy;
+begin
+//  HelpForMe('TemperatureMeasuringThreadDestroy'+inttostr(MilliSecond));
+  fTemperatureMeasuringThread:=nil;
+  inherited;
 end;
 
 procedure TTemperatureMeasuringThread.DoSomething;
@@ -112,7 +118,7 @@ end;
 
 { TMeasuringThread }
 
-constructor TMeasuringThread.Create(Measurement: IMeasurement; Interval: double;
+constructor TMeasuringThreadCycle.Create(Measurement: IMeasurement; Interval: double;
   WPARAM: word; EventEnd: THandle);
 begin
  inherited Create(Interval);
@@ -123,7 +129,7 @@ begin
  Resume;
 end;
 
-procedure TMeasuringThread.DoSomething;
+procedure TMeasuringThreadCycle.DoSomething;
 begin
 //  fMeasurement.GetDataThread(fWPARAM, fEventEnd);
   IMeasurement(fMeasurement).GetDataThread(fWPARAM, fEventEnd);

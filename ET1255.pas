@@ -195,7 +195,7 @@ TET1255_ADCChannel=class(TNamedInterfacedObject,IMeasurement)
   procedure ReadFromIniFile(ConfigFile:TIniFile);override;
 end;
 
-  TET1255_Chanel_MeasuringTread = class(TMeasuringTread)
+  TET1255_Chanel_MeasuringTread = class(TMeasuringTreadSleep)
   private
    fET1255_Chan:TET1255_ADCChannel;
    procedure ValueInitialization;

@@ -192,7 +192,7 @@ end;
     destructor Destroy; override;
   end;
 
-  TMeasuringTread=class(TTheadSleep)
+  TMeasuringTreadSleep=class(TTheadSleep)
   private
    fWPARAM: word;
    fEventEnd:THandle;
@@ -320,6 +320,7 @@ end;
 destructor TTheadSleep.Destroy;
 begin
   CloseHandle(FEventTerminate);
+//  HelpForMe('TheadSleepDestroy'+inttostr(MilliSecond));
   inherited;
 end;
 
@@ -400,7 +401,7 @@ end;
 
 { TMeasuringTread }
 
-constructor TMeasuringTread.Create(Meter: IMeasurement; WPARAM: word;
+constructor TMeasuringTreadSleep.Create(Meter: IMeasurement; WPARAM: word;
   EventEnd: THandle);
 begin
   inherited Create();
@@ -410,7 +411,7 @@ begin
   Resume;
 end;
 
-procedure TMeasuringTread.Execute;
+procedure TMeasuringTreadSleep.Execute;
 begin
  ExuteBegin;
  Synchronize(NewData);
@@ -418,7 +419,7 @@ begin
  SetEvent(fEventEnd);
 end;
 
-procedure TMeasuringTread.NewData;
+procedure TMeasuringTreadSleep.NewData;
 begin
   fMeasurement.NewData:=True;
 end;
