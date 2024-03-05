@@ -211,23 +211,6 @@ begin
 end;
 
 function LastDATFileName(prefix:string=''):string;
-// var SR : TSearchRec;
-//     tm:integer;
-//begin
-// Result:=NoFile;
-// if FindFirst(Mask, faAnyFile, SR) <> 0 then Exit;
-
-// while FindNext(SR) = 0 do
-//   begin
-//   if AnsiPos('comments',SR.name)<>0 then Continue;
-//   if tm<SR.time then
-//     begin
-//     Result:=SR.name;
-//     tm:=SR.time;
-//     end;
-//   end;
-// FindClose(SR);
-
  var temp:string;
      filenumber:integer;
 
@@ -241,7 +224,7 @@ begin
    filenumber:=StrToInt(temp);
    while FileExists(prefix+inttostr(filenumber+1)+'.dat') do
       inc(filenumber);
-   Result:=prefix+inttostr(filenumber)+'.dat';
+   Result:=prefix+inttostr(filenumber);
   except
   end;
 
