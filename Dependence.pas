@@ -2307,6 +2307,8 @@ begin
  until NumberInBuffer=fFastIV.Kt2450.DataVector.HighNumber+1;
 
  fFastIV.Kt2450.DataVector.CopyTo(fFastIV.Results);
+
+ fFastIV.Results.DeleteErResult;
  if fFastIV.fDiodOrientationVoltageFactor<1 then
    begin
     fFastIV.Results.SwapXY;

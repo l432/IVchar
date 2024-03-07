@@ -2152,10 +2152,15 @@ end;
 
 procedure TKt_2450.StringToArray(Str: string);
  var tempArray:TArrSingle;
+//     i:integer;
 begin
  DataVector.Clear;
  StrToNumberArray(tempArray,Str);
  DataVector.CopyFromXYArrays(tempArray,tempArray);
+// for I := 0 to DataVector.HighNumber do
+//   if (abs(DataVector.X[i])>1e35)
+//      or (abs(DataVector.Y[i])>1e35) then  DataVector.DeletePoint(i);
+//
  DataVector.DeleteErResult;
 end;
 

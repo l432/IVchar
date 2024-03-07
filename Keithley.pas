@@ -403,6 +403,7 @@ end;
 
 procedure TKeitley.BufferDataArrayExtended(SIndex, EIndex: integer;
   DataType: TKeitley_ReturnedData; BufName: string);
+  var i:integer;
 begin
 // :TRAC:DATA? <startIndex>, <endIndex>, "<bufferName>", <bufferElements>
  DataVector.Clear;
@@ -411,6 +412,16 @@ begin
  Buffer.StartIndex:=SIndex;
  Buffer.EndIndex:=EIndex;
  QuireOperation(19,33,ord(DataType),False);
+
+   for I := 0 to DataVector.HighNumber do
+   begin
+    if (abs(DataVector.X[i])>1e35) then DataVector.X[i]:=ErResult;
+    if (abs(DataVector.Y[i])>1e35) then DataVector.Y[i]:=ErResult;
+   end;
+//   DataVector.DeleteErResult;
+//       or (abs(DataVector.Y[i])>1e35)
+//       then ;//DataVector.DeletePoint(i);
+
 end;
 
 procedure TKeitley.BufferDelete(Name: string);
@@ -1266,6 +1277,11 @@ begin
   end;
  if DataVector.Count<>(Buffer.EndIndex-Buffer.StartIndex+1) then
     fDevice.Value:=ErResult;
+
+//  for I := 0 to DataVector.HighNumber do
+//   if (abs(DataVector.X[i])>1e35)
+//       or (abs(DataVector.Y[i])>1e35) then DataVector.DeletePoint(i);
+
 
 end;
 
