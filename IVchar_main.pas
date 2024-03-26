@@ -3826,14 +3826,14 @@ procedure TIVchar.TemperatureThreadCreate;
 begin
 //  HelpForMe('TempThreadCreate'+inttostr(MilliSecond));
   ThermoCuple.Measurement:=TermoCouple_MD.ActiveInterface;
-//  TemperatureMeasuringThread:=
-//    TTemperatureMeasuringThread.Create(Temperature_MD.ActiveInterface,
-//                                       TemperatureMeasIntervalCS.Data,
-//                                       EventMeasuringEnd);
   TemperatureMeasuringThread:=
-    TTemperatureMeasuringThread.GetSingleton(Temperature_MD.ActiveInterface,
+    TTemperatureMeasuringThread.Create(Temperature_MD.ActiveInterface,
                                        TemperatureMeasIntervalCS.Data,
                                        EventMeasuringEnd);
+//  TemperatureMeasuringThread:=
+//    TTemperatureMeasuringThread.GetSingleton(Temperature_MD.ActiveInterface,
+//                                       TemperatureMeasIntervalCS.Data,
+//                                       EventMeasuringEnd);
 end;
 
 

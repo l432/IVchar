@@ -338,7 +338,14 @@ begin
   begin
     L:=TLabel.Create(Control.Parent);
     L.Parent:=Control.Parent;
+//    L.WordWrap:=(Control as TButton).WordWrap;
+//    L.Caption:=(Control as TButton).Caption;
+//    Control.Width:=L.Canvas.TextWidth(L.Caption)+17;
+//    Control.Height:=L.Canvas.TextHeight(L.Caption)+10;
+
     Control.Width:=L.Canvas.TextWidth((Control as TButton).Caption)+17;
+//    Control.Height:=L.Canvas.TextHeight((Control as TButton).Caption)+10;
+
     FreeAndNil(L);
     Exit;
   end;
@@ -479,9 +486,10 @@ end;
 Procedure DesignSettingPanel(P:TPanel;Caption:string);
 begin
  P.Caption:=Caption;
- P.Height:=23;
- P.Width:=85;
+ P.Height:=20;
+ P.Width:=75;
  P.Font.Color:=clHotLight;
+ P.Font.Size:=9;
  P.BevelOuter:=bvLowered;
  P.ParentColor:=False;
  P.Color:=clSilver;

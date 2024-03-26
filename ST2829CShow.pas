@@ -414,8 +414,11 @@ begin
  fPSave.Left:=5;
  RelativeLocation(fPSave,fPLoad,oCol,3);
  fBGetParam.Caption:='Get from device';
- Resize(fBGetParam);
+ fBGetParam.WordWrap:=True;
+ fBGetParam.Height:=45;
+// Resize(fBGetParam);
  fBReset.Caption:='Reset';
+
  RelativeLocation(fPLoad,fBGetParam,oCol,3);
  fPSave.Left:=fPLoad.Left;
  RelativeLocation(fBGetParam,fBReset,oCol,3);
@@ -1147,7 +1150,7 @@ begin
 
 // fParent.Width:=fRGDataUsed.Left+fRGDataUsed.Width+5;
  fParent.Width:=fSTType.Left+fSTType.Width+10;
- fParent.Height:=fLSteps.Top+fLSteps.Height+MarginTop;
+ fParent.Height:=fLSteps.Top+fLSteps.Height+5;
 
 end;
 

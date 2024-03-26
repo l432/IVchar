@@ -35,8 +35,8 @@ object ST2829Form: TST2829Form
     OnClick = BCloseClick
   end
   object GB_ST2829C_Com: TGroupBox
-    Left = 557
-    Top = -2
+    Left = 558
+    Top = 3
     Width = 215
     Height = 99
     Caption = 'COM parameters'
@@ -58,9 +58,9 @@ object ST2829Form: TST2829Form
   end
   object GB_Setting: TGroupBox
     Tag = 110
-    Left = 636
-    Top = 120
-    Width = 128
+    Left = 472
+    Top = 3
+    Width = 79
     Height = 146
     Caption = 'Settings'
     Font.Charset = RUSSIAN_CHARSET
@@ -73,7 +73,7 @@ object ST2829Form: TST2829Form
   end
   object GBST2829C_Option: TGroupBox
     Tag = 110
-    Left = 5
+    Left = 2
     Top = 35
     Width = 190
     Height = 231
@@ -87,9 +87,9 @@ object ST2829Form: TST2829Form
     TabOrder = 4
   end
   object GB_ST2829C_Mes: TGroupBox
-    Left = 206
+    Left = 195
     Top = 3
-    Width = 279
+    Width = 275
     Height = 132
     Caption = 'Measurement'
     Font.Charset = RUSSIAN_CHARSET
@@ -116,7 +116,7 @@ object ST2829Form: TST2829Form
       ParentFont = False
     end
     object LST2829CP_MeasU: TLabel
-      Left = 211
+      Left = 209
       Top = 18
       Width = 62
       Height = 31
@@ -195,8 +195,8 @@ object ST2829Form: TST2829Form
   end
   object GBST2829C_Bias: TGroupBox
     Tag = 110
-    Left = 479
-    Top = 172
+    Left = 625
+    Top = 103
     Width = 139
     Height = 94
     Caption = 'Bias'
@@ -225,8 +225,8 @@ object ST2829Form: TST2829Form
   end
   object GBST2829C_Sweep: TGroupBox
     Tag = 110
-    Left = 479
-    Top = 272
+    Left = 472
+    Top = 198
     Width = 298
     Height = 165
     Caption = 'Sweep'
