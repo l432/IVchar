@@ -36,7 +36,7 @@ object ST2829Form: TST2829Form
   end
   object GB_ST2829C_Com: TGroupBox
     Left = 558
-    Top = 3
+    Top = 5
     Width = 215
     Height = 99
     Caption = 'COM parameters'
@@ -195,10 +195,10 @@ object ST2829Form: TST2829Form
   end
   object GBST2829C_Bias: TGroupBox
     Tag = 110
-    Left = 625
+    Left = 558
     Top = 103
     Width = 139
-    Height = 94
+    Height = 60
     Caption = 'Bias'
     Font.Charset = RUSSIAN_CHARSET
     Font.Color = clMaroon
@@ -226,9 +226,9 @@ object ST2829Form: TST2829Form
   object GBST2829C_Sweep: TGroupBox
     Tag = 110
     Left = 472
-    Top = 198
+    Top = 170
     Width = 298
-    Height = 165
+    Height = 131
     Caption = 'Sweep'
     Font.Charset = RUSSIAN_CHARSET
     Font.Color = clMaroon
@@ -252,5 +252,20 @@ object ST2829Form: TST2829Form
     Font.Style = [fsBold]
     ParentFont = False
     TabOrder = 9
+  end
+  object GBST2829C_MultiMeas: TGroupBox
+    Tag = 110
+    Left = 472
+    Top = 313
+    Width = 298
+    Height = 139
+    Caption = 'Multi Measurement'
+    Font.Charset = RUSSIAN_CHARSET
+    Font.Color = clMaroon
+    Font.Height = -13
+    Font.Name = 'Arial'
+    Font.Style = [fsBold]
+    ParentFont = False
+    TabOrder = 10
   end
 end

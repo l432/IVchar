@@ -34,6 +34,7 @@ type
   TST2829_MeterSecondary=class;
   TST2829_MeterPrimary=class;
   TST2829SweepParameters=class;
+  TST2829MultiMeasuremParameters=class;
   TST2829Corrections=class;
 
   TST2829_MeasureParameters=class
@@ -80,6 +81,7 @@ type
    fMeterSec:TST2829_MeterSecondary;
    fMeterPrim:TST2829_MeterPrimary;
    fSweepParameters:TST2829SweepParameters;
+   fMultiMeasurementParameters:TST2829MultiMeasuremParameters;
    fCorrections:TST2829Corrections;
 
    Procedure SetFreqMeas(Value:Double);
@@ -171,6 +173,7 @@ type
    property MeterPrim:TST2829_MeterPrimary read fMeterPrim;
    property MeterSecond:TST2829_MeterSecondary read fMeterSec;
    property SweepParameters:TST2829SweepParameters read fSweepParameters;
+   property MultiMeasurementParameters:TST2829MultiMeasuremParameters read fMultiMeasurementParameters;
    property CorectionCable:TST2829C_CorCable read GtCorCable write StCorCable;
    property CorectionOpenEnable:boolean read GtCorOpenEnable write StCorOpenEnable;
    property CorectionShortEnable:boolean read GtCorShortEnable write StCorShortEnable;
@@ -299,6 +302,12 @@ type
    {індукує вимірювання коректувальних Short-коефіцієнтів
    для частотного слоту}
 
+   function ParameterString():string;
+   {повертає рядок, який містить інформацію про
+   частоту вимірювання,
+   напругу та силу струму зміщення,
+   діючі напругу та силу струму вимірювання}
+
  end;
 
 
@@ -346,10 +355,15 @@ TST2829Part=class
   constructor Create(ST2829C:TST2829C);
 end;
 
-TST2829SweepParameters=class(TST2829Part)
+
+TST2829SweepParametersGeneral=class(TST2829Part)
+{загальний клас, на його основі базуються класи
+безпосередньо для вимірювання певної характеристики
+та клас для вимірювання набору характеристик при
+певних значеннях додаткових параметрів}
  private
-  fDataVector:TVector;
-  fSecondDataVector:TVector;
+//  fDataVector:TVector;
+//  fSecondDataVector:TVector;
   fOldValue:double;
   fOldState:boolean;
   fStepValue:double;
@@ -360,26 +374,73 @@ TST2829SweepParameters=class(TST2829Part)
   FinishValue:double;
   PointCount:integer;
   LogStep:boolean;
-  DataType:TST2829C_SweepData;
-  property DataPrime:TVector read fDataVector;
-  property DataSecond:TVector read fSecondDataVector;
+//  DataType:TST2829C_SweepData;
+//  property DataPrime:TVector read fDataVector;
+//  property DataSecond:TVector read fSecondDataVector;
   property MeasureType:TST2829C_MeasureType read GtMeasureType;
   constructor Create(ST2829C:TST2829C);
-  destructor Destroy; override;
-  function ToString():string;
+//  destructor Destroy; override;
+  function ToString():string;virtual;
   function Step:double;
-  procedure SaveDataToFile(FileName:string);
+//  procedure SaveDataToFile(FileName:string);
   procedure BeforeMeasuring;
   procedure EndMeasuring;
-  procedure ActionMeasurement(const Value:double);
+  procedure ActionMeasurement(const Value:double);virtual;abstract;
   procedure SetValue(Value:double);
-  procedure AddData;
+//  procedure AddData;
   function GetXData:double;
   function GetXValueAtStep(StepNumber:integer):double;
   {повертає значення величини, залежність
   від якої вимірюється, на кроці з номером StepNumber;
   StepNumber має змінюватися від 0 до (PointCount-1)}
 end;
+
+
+
+//TST2829SweepParameters=class(TST2829Part)
+TST2829SweepParameters=class(TST2829SweepParametersGeneral)
+ private
+  fDataVector:TVector;
+  fSecondDataVector:TVector;
+//  fOldValue:double;
+//  fOldState:boolean;
+//  fStepValue:double;
+//  function GtMeasureType:TST2829C_MeasureType;
+ public
+//  SweepType:TST2829C_SweepParametr;
+//  StartValue:double;
+//  FinishValue:double;
+//  PointCount:integer;
+//  LogStep:boolean;
+  DataType:TST2829C_SweepData;
+  property DataPrime:TVector read fDataVector;
+  property DataSecond:TVector read fSecondDataVector;
+//  property MeasureType:TST2829C_MeasureType read GtMeasureType;
+  constructor Create(ST2829C:TST2829C);
+  destructor Destroy; override;
+  function ToString():string;override;
+//  function Step:double;
+  procedure SaveDataToFile(FileName:string);
+  procedure BeforeMeasuring;
+//  procedure EndMeasuring;
+  procedure ActionMeasurement(const Value:double);override;
+//  procedure SetValue(Value:double);
+  procedure AddData;
+//  function GetXData:double;
+//  function GetXValueAtStep(StepNumber:integer):double;
+  {повертає значення величини, залежність
+  від якої вимірюється, на кроці з номером StepNumber;
+  StepNumber має змінюватися від 0 до (PointCount-1)}
+end;
+
+TST2829MultiMeasuremParameters=class(TST2829SweepParametersGeneral)
+//  fCurrentRepetionNumber:integer;
+ public
+  RepetionNumber:integer;
+  constructor Create(ST2829C:TST2829C);
+  procedure ActionMeasurement(const Value:double);override;
+end;
+
 
 TST2829Corrections=class(TST2829Part)
  private
@@ -520,6 +581,7 @@ begin
  fMeterSec:=TST2829_MeterSecondary.Create(Self);
  fMeterPrim:=TST2829_MeterPrimary.Create(Self);
  fSweepParameters:=TST2829SweepParameters.Create(Self);
+ fMultiMeasurementParameters:=TST2829MultiMeasuremParameters.Create(Self);
  fCorrections:=TST2829Corrections.Create(Self);
 end;
 
@@ -551,6 +613,7 @@ end;
 destructor TST2829C.Destroy;
 begin
   FreeAndNil(fCorrections);
+  FreeAndNil(fMultiMeasurementParameters);
   FreeAndNil(fSweepParameters);
   FreeAndNil(fMeterSec);
   FreeAndNil(fMeterPrim);
@@ -1287,6 +1350,25 @@ procedure TST2829C.OnOffFromBool(toOn: boolean);
 begin
  if toOn then fAdditionalString:=SuffixST2829C[0]
          else fAdditionalString:=SuffixST2829C[1];
+end;
+
+function TST2829C.ParameterString: string;
+begin
+Result:='f='+FloatToStrF(Self.FreqMeas,ffGeneral,10,2);
+if Self.BiasEnable then
+   begin
+     if Self.BiasVoltageValue<>0
+       then Result:=Result + ' Vb='
+         +FloatToStrF(Self.BiasVoltageValue,ffGeneral,7,2);
+     if Self.BiasCurrentValue<>0
+       then Result:=Result + ' Ib='
+        +FloatToStrF(Self.BiasCurrentValue,ffGeneral,7,2);
+   end;
+
+Result:=Result+' Vm='
+        +FloatToStrF(Self.VrmsMeas,ffGeneral,8,2)
+        +' Im='
+        +FloatToStrF(Self.IrmsMeas,ffGeneral,7,2);
 end;
 
 function TST2829C.PermitedAction(Action: TST2829CAction): boolean;
@@ -2163,6 +2245,249 @@ begin
   fDataVector.Clear;
   fSecondDataVector.Clear;
 
+  inherited BeforeMeasuring;
+//  case SweepType of
+//   st_spBiasVolt:begin
+//                  fOldValue:=fParentModule.BiasVoltageValue;
+//                  fOldState:=fParentModule.BiasEnable;
+//                 end;
+//   st_spBiasCurr:begin
+//                  fOldValue:=fParentModule.BiasCurrentValue;
+//                  fOldState:=fParentModule.BiasEnable;
+//                 end;
+//   st_spFreq:fOldValue:=fParentModule.FreqMeas;
+//   st_spVrms:begin
+//              fOldValue:=fParentModule.VrmsMeas;
+//              fOldState:=fParentModule.VrmsToMeasure;
+//             end;
+//   st_spIrms:begin
+//              fOldValue:=fParentModule.IrmsMeas;
+//              fOldState:=fParentModule.IrmsToMeasure;
+//             end;
+//  end;
+//
+//
+//   case  SweepType of
+//   st_spBiasVolt,
+//   st_spBiasCurr: if not(fParentModule.BiasEnable)
+//                     then fParentModule.SetBiasEnable(True);
+//   st_spIrms:if not(fParentModule.IrmsToMeasure)
+//                     then fParentModule.SetIrmsToMeasure(True);
+//   st_spVrms:if not(fParentModule.VrmsToMeasure)
+//                     then fParentModule.SetVrmsToMeasure(True);
+//  end;
+//
+// fStepValue:=Step();
+end;
+
+constructor TST2829SweepParameters.Create(ST2829C:TST2829C);
+begin
+  inherited Create(ST2829C);
+//  SweepType:=st_spBiasVolt;
+//  StartValue:=0;
+//  FinishValue:=1;
+//  PointCount:=2;
+//  LogStep:=False;
+  DataType:=st_sdPrim;
+  fDataVector:=TVector.Create;
+  fSecondDataVector:=TVector.Create;
+end;
+
+destructor TST2829SweepParameters.Destroy;
+begin
+  FreeAndNil(fDataVector);
+  FreeAndNil(fSecondDataVector);
+  inherited;
+end;
+
+//procedure TST2829SweepParameters.EndMeasuring;
+//begin
+//  case  SweepType of
+//   st_spBiasVolt,
+//   st_spBiasCurr: if fParentModule.BiasEnable<>fOldState then
+//                      fParentModule.SetBiasEnable(fOldState);
+//   st_spIrms:if fParentModule.IrmsToMeasure<>fOldState then
+//                      fParentModule.SetIrmsToMeasure(fOldState);
+//   st_spVrms:if fParentModule.VrmsToMeasure<>fOldState then
+//                      fParentModule.SetVrmsToMeasure(False);
+//  end;
+//  SetValue(fOldValue);
+//end;
+
+//function TST2829SweepParameters.GetXData: double;
+//begin
+// case SweepType of
+//    st_spBiasVolt:Result:=fParentModule.BiasVoltageValue;
+//    st_spBiasCurr:Result:=fParentModule.BiasCurrentValue;
+//    st_spFreq:Result:=fParentModule.FreqMeas;
+//    st_spVrms:Result:=fParentModule.DataVrms;
+//    else Result:=fParentModule.DataIrms;
+//  end;
+//end;
+
+//function TST2829SweepParameters.GetXValueAtStep(StepNumber: integer): double;
+// var Mult:double;
+//begin
+// Result:=0;
+// if (StepNumber<0)or(StepNumber>(PointCount-1))
+//   then Exit;
+//
+// Mult:=fStepValue*StepNumber;
+//
+// if Mult=0 then
+//   begin
+//     Result:=StartValue;
+//     Exit;
+//   end;
+//
+// if LogStep
+//   then
+//    begin
+//     if FinishValue>=StartValue then
+//       begin
+//         if StartValue>0 then
+//              Result:=Power(10,log10(StartValue)+Mult);
+//         if StartValue=0 then
+//              Result:=Power(10,Mult);
+//         if StartValue<0 then
+//           begin
+//             if Mult<0 then Result:=-Power(10,log10(-StartValue)+Mult)
+//                       else
+//               begin
+//               if Mult=log10(-StartValue) then Result:=0;
+//               if Mult<log10(-StartValue)
+//                then Result:=-Power(10,log10(-StartValue)-Mult);
+//               if Mult>log10(-StartValue)
+//                then Result:=Power(10,-log10(-StartValue)+Mult);
+//               end;
+//           end;
+//       end                     else //FinishValue>=StartValue
+//       begin
+//         if FinishValue>=0 then
+//           begin
+//            if -Mult=log10(StartValue)
+//              then Result:=0
+//              else Result:=Power(10,log10(StartValue)+Mult);
+//
+//           end             else   //FinishValue>=0
+//           begin
+//            if StartValue=0 then Result:=-Power(10,Mult);
+//            if StartValue>0 then
+//              begin
+//                if Mult=log10(StartValue) then Result:=0;
+//                if Mult<log10(StartValue)
+//                 then Result:=Power(10,log10(StartValue)-Mult);
+//                if Mult>log10(StartValue)
+//                 then Result:=-Power(10,-log10(StartValue)+Mult);
+//              end;
+//            if StartValue<0 then
+//                Result:=-Power(10,log10(-StartValue)+Mult)
+//           end;
+//       end;
+//    end
+//   else Result:=StartValue+Mult;
+//
+//end;
+
+//function TST2829SweepParameters.GtMeasureType: TST2829C_MeasureType;
+//begin
+// Result:=fParentModule.MeasureType;
+//end;
+
+procedure TST2829SweepParameters.SaveDataToFile(FileName: string);
+begin
+ if DataType=st_sdBoth
+   then ToFileFromTwoVector(FileName,fDataVector,fSecondDataVector,8)
+   else fDataVector.WriteToFile(FileName,8);
+end;
+
+function TST2829SweepParameters.ToString: string;
+begin
+ Result:=inherited ToString()
+          +#10#13+ST2829C_SweepDataLabels[DataType];
+end;
+
+//procedure TST2829SweepParameters.SetValue(Value: double);
+//begin
+//  case SweepType of
+//    st_spBiasVolt: fParentModule.SetBiasVoltage(Value);
+//    st_spBiasCurr: fParentModule.SetBiasCurrent(Value);
+//    st_spFreq: fParentModule.SetFrequancyMeasurement(Value);
+//    st_spVrms: fParentModule.SetVoltageMeasurement(Value);
+//    st_spIrms: fParentModule.SetCurrentMeasurement(Value);
+//  end;
+//end;
+
+//function TST2829SweepParameters.Step: double;
+//begin
+// Result:=0;
+// if (FinishValue=0)and(StartValue=0) then Exit;
+// if LogStep
+//   then
+//    begin
+//     if FinishValue*StartValue>0
+//       then Result:=(log10(abs(FinishValue))-log10(abs(StartValue)))/(PointCount-1)
+//       else
+//        begin
+//          if FinishValue*StartValue<0 then Result:=(log10(abs(FinishValue))+log10(abs(StartValue)))/(PointCount-1);
+//          if FinishValue=0 then Result:=log10(abs(StartValue))/(PointCount-1);
+//          if StartValue=0 then Result:=log10(abs(FinishValue))/(PointCount-1);
+//        end;
+//    end
+//   else Result:=(FinishValue-StartValue)/(PointCount-1);
+//end;
+
+
+//function TST2829SweepParameters.ToString: string;
+//begin
+// Result:=ST2829C_SweepParametrLabels[SweepType]+#10#13
+//        +ST2829C_SweepDataLabels[DataType]+#10#13
+//        +'Start='+floattostr(StartValue)+#10#13
+//        +'Finish='+floattostr(FinishValue)+#10#13
+//        +'Step Count='+inttostr(PointCount)+#10#13
+//        +'Log step='+booltostr(LogStep,True);
+//end;
+
+{ TST2829Part }
+
+constructor TST2829Part.Create(ST2829C: TST2829C);
+begin
+  inherited Create();
+  fParentModule:=ST2829C;
+end;
+
+{ TST2829Corrections }
+
+constructor TST2829Corrections.Create(ST2829C: TST2829C);
+begin
+ inherited Create(ST2829C);
+ fCable:=st_cc0M;
+ fOpenEnable:=False;
+ fShortEnable:=False;
+ fSpotActiveNumber:=1;
+ fSpotActiveFreq:=20;
+ fSpotActiveState:=False;
+end;
+
+procedure TST2829Corrections.SetSpotActiveFreq(const Value: double);
+begin
+ fSpotActiveFreq:=TSCPInew.NumberMap(Value,ST2829C_FreqMeasLimits);
+ fSpotActiveFreq:=TSCPInew.ValueWithMinResolution(fSpotActiveFreq,1e-3);
+
+end;
+
+procedure TST2829Corrections.SetSpotActiveNumber(const Value: byte);
+begin
+  fSpotActiveNumber := TSCPInew.NumberMap(Value,ST2829C_SpotNumber);
+end;
+
+{ TST2829SweepParametersGeneral }
+
+procedure TST2829SweepParametersGeneral.BeforeMeasuring;
+begin
+//  fDataVector.Clear;
+//  fSecondDataVector.Clear;
+
   case SweepType of
    st_spBiasVolt:begin
                   fOldValue:=fParentModule.BiasVoltageValue;
@@ -2197,7 +2522,7 @@ begin
  fStepValue:=Step();
 end;
 
-constructor TST2829SweepParameters.Create(ST2829C:TST2829C);
+constructor TST2829SweepParametersGeneral.Create(ST2829C: TST2829C);
 begin
   inherited Create(ST2829C);
   SweepType:=st_spBiasVolt;
@@ -2205,19 +2530,12 @@ begin
   FinishValue:=1;
   PointCount:=2;
   LogStep:=False;
-  DataType:=st_sdPrim;
-  fDataVector:=TVector.Create;
-  fSecondDataVector:=TVector.Create;
+//  DataType:=st_sdPrim;
+//  fDataVector:=TVector.Create;
+//  fSecondDataVector:=TVector.Create;
 end;
 
-destructor TST2829SweepParameters.Destroy;
-begin
-  FreeAndNil(fDataVector);
-  FreeAndNil(fSecondDataVector);
-  inherited;
-end;
-
-procedure TST2829SweepParameters.EndMeasuring;
+procedure TST2829SweepParametersGeneral.EndMeasuring;
 begin
   case  SweepType of
    st_spBiasVolt,
@@ -2231,7 +2549,7 @@ begin
   SetValue(fOldValue);
 end;
 
-function TST2829SweepParameters.GetXData: double;
+function TST2829SweepParametersGeneral.GetXData: double;
 begin
  case SweepType of
     st_spBiasVolt:Result:=fParentModule.BiasVoltageValue;
@@ -2242,7 +2560,8 @@ begin
   end;
 end;
 
-function TST2829SweepParameters.GetXValueAtStep(StepNumber: integer): double;
+function TST2829SweepParametersGeneral.GetXValueAtStep(
+  StepNumber: integer): double;
  var Mult:double;
 begin
  Result:=0;
@@ -2303,22 +2622,14 @@ begin
        end;
     end
    else Result:=StartValue+Mult;
-
 end;
 
-function TST2829SweepParameters.GtMeasureType: TST2829C_MeasureType;
+function TST2829SweepParametersGeneral.GtMeasureType: TST2829C_MeasureType;
 begin
  Result:=fParentModule.MeasureType;
 end;
 
-procedure TST2829SweepParameters.SaveDataToFile(FileName: string);
-begin
- if DataType=st_sdBoth
-   then ToFileFromTwoVector(FileName,fDataVector,fSecondDataVector,8)
-   else fDataVector.WriteToFile(FileName,8);
-end;
-
-procedure TST2829SweepParameters.SetValue(Value: double);
+procedure TST2829SweepParametersGeneral.SetValue(Value: double);
 begin
   case SweepType of
     st_spBiasVolt: fParentModule.SetBiasVoltage(Value);
@@ -2329,7 +2640,7 @@ begin
   end;
 end;
 
-function TST2829SweepParameters.Step: double;
+function TST2829SweepParametersGeneral.Step: double;
 begin
  Result:=0;
  if (FinishValue=0)and(StartValue=0) then Exit;
@@ -2348,48 +2659,32 @@ begin
    else Result:=(FinishValue-StartValue)/(PointCount-1);
 end;
 
-
-function TST2829SweepParameters.ToString: string;
+function TST2829SweepParametersGeneral.ToString: string;
 begin
  Result:=ST2829C_SweepParametrLabels[SweepType]+#10#13
-        +ST2829C_SweepDataLabels[DataType]+#10#13
+//        +ST2829C_SweepDataLabels[DataType]+#10#13
         +'Start='+floattostr(StartValue)+#10#13
         +'Finish='+floattostr(FinishValue)+#10#13
         +'Step Count='+inttostr(PointCount)+#10#13
         +'Log step='+booltostr(LogStep,True);
 end;
 
-{ TST2829Part }
+{ TST2829MultiMeasuremParameters }
 
-constructor TST2829Part.Create(ST2829C: TST2829C);
+procedure TST2829MultiMeasuremParameters.ActionMeasurement(const Value: double);
 begin
-  inherited Create();
-  fParentModule:=ST2829C;
+  SetValue(Value);
+
+  case  SweepType of
+   st_spIrms:fParentModule.GetDataIrms();
+   st_spVrms:fParentModule.GetDataVrms();
+  end;
 end;
 
-{ TST2829Corrections }
-
-constructor TST2829Corrections.Create(ST2829C: TST2829C);
+constructor TST2829MultiMeasuremParameters.Create(ST2829C: TST2829C);
 begin
- inherited Create(ST2829C);
- fCable:=st_cc0M;
- fOpenEnable:=False;
- fShortEnable:=False;
- fSpotActiveNumber:=1;
- fSpotActiveFreq:=20;
- fSpotActiveState:=False;
-end;
-
-procedure TST2829Corrections.SetSpotActiveFreq(const Value: double);
-begin
- fSpotActiveFreq:=TSCPInew.NumberMap(Value,ST2829C_FreqMeasLimits);
- fSpotActiveFreq:=TSCPInew.ValueWithMinResolution(fSpotActiveFreq,1e-3);
-
-end;
-
-procedure TST2829Corrections.SetSpotActiveNumber(const Value: byte);
-begin
-  fSpotActiveNumber := TSCPInew.NumberMap(Value,ST2829C_SpotNumber);
+ inherited;
+ RepetionNumber:=1;
 end;
 
 initialization

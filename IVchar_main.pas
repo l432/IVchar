@@ -1135,6 +1135,8 @@ begin
     FindClose(SR);
 
     write(FF,'T=',LTLastValue.Caption);
+    if DT=dt_ST2829 then write(FF,' ',ST_2829C.ParameterString);
+    
     writeln(FF);
     writeln(FF);
     CloseFile(FF);

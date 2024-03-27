@@ -8,8 +8,16 @@ uses
   Controls;
 
 type
- TST2829C_Show=class;
 
+
+ TST2829C_SweepType=(st_stOneMeasur,st_stMultiMeasur);
+
+const
+ ST2829C_IniSalt:array [TST2829C_SweepType]
+            of string=('', 'mm');
+
+type
+ TST2829C_Show=class;
 
  TST2829CElement_Show=class(TGBwithControlElements)
   private
@@ -190,6 +198,7 @@ end;
  end;
 
   TST2829C_SweepParameterShow=class;
+  TST2829C_MultiMeasParameterShow=class;
 
   TST2829C_Show=class(TRS232DeviceNew_Show)
   private
@@ -201,6 +210,7 @@ end;
    fSetupParamShow:TST2829CSetupParamShow;
    fMeterShow:TST2829C_MeterShow;
    fSweepParameterShow:TST2829C_SweepParameterShow;
+   fMultiMeasurSweepParameterShow:TST2829C_MultiMeasParameterShow;
    fCorrectionShow:TST2829CCorrectionShow;
    procedure MyTrainButtonClick(Sender:TObject);
   protected
@@ -220,9 +230,11 @@ end;
  end;
 
 
-  TST2829C_SweepParameterShow=class(TST2829CElement_Show)
+  TST2829C_SweepParameterShowBase=class(TST2829CElement_Show)
    private
-    fRGDataUsed:TRadioGroup;
+//    fRGDataUsed:TRadioGroup;
+    fSweepType:TST2829C_SweepType;
+
     fLType:TLabel;
     fSTType:TStaticText;
     fTypeShowSL:TStringList;
@@ -241,20 +253,77 @@ end;
 
     fCBLogStep:TCheckBox;
 
-    procedure DestroyShows;
-    procedure CreateShows;
+    procedure DestroyShows;virtual;
+    procedure CreateShows;virtual;
+    procedure SetfSweepType();virtual;abstract;
+   protected
+    procedure CreateElements;override;
+    procedure CreateControls;override;
+    procedure DestroyControls;override;
+    procedure DesignElements;override;
+//    procedure DataUsedClick(Sender:TObject);
+    procedure StartClick;
+    procedure FinishClick;
+    procedure StepClick;
+    procedure LogStepClick(Sender:TObject);
+   public
+   Constructor Create(ST2829C:TST2829C;
+                      GB: TGroupBox);
+  end;
+
+//  TST2829C_SweepParameterShow=class(TST2829CElement_Show)
+  TST2829C_SweepParameterShow=class(TST2829C_SweepParameterShowBase)
+   private
+    fRGDataUsed:TRadioGroup;
+//    fLType:TLabel;
+//    fSTType:TStaticText;
+//    fTypeShowSL:TStringList;
+//    fTypeShow:TStringParameterShow;
+//    fLStart:TLabel;
+//    fSTStart:TStaticText;
+//    fStartShow:TDoubleParameterShow;
+//
+//    fLFinish:TLabel;
+//    fSTFinish:TStaticText;
+//    fFinishShow:TDoubleParameterShow;
+//
+//    fLSteps:TLabel;
+//    fSTSteps:TStaticText;
+//    fStepsShow:TIntegerParameterShow;
+//
+//    fCBLogStep:TCheckBox;
+
+//    procedure DestroyShows;override;
+//    procedure CreateShows;override;
+    procedure SetfSweepType();override;
    protected
     procedure CreateElements;override;
     procedure CreateControls;override;
     procedure DestroyControls;override;
     procedure DesignElements;override;
     procedure DataUsedClick(Sender:TObject);
-    procedure StartClick;
-    procedure FinishClick;
-    procedure StepClick;
-    procedure LogStepClick(Sender:TObject);
+//    procedure StartClick;
+//    procedure FinishClick;
+//    procedure StepClick;
+//    procedure LogStepClick(Sender:TObject);override;
    public
   end;
+
+ TST2829C_MultiMeasParameterShow=class(TST2829C_SweepParameterShowBase)
+  private
+   fLRepetion:TLabel;
+   fSTRepetion:TStaticText;
+   fRepetionShow:TIntegerParameterShow;
+   procedure SetfSweepType();override;
+  protected
+   procedure CreateElements;override;
+   procedure CreateControls;override;
+   procedure DestroyControls;override;
+   procedure DesignElements;override;
+   procedure RepetClick;
+  public
+ end;
+
 
 
   TST2829C_SpotParameterShow=class(TST2829CElementAndParamShow)
@@ -285,7 +354,7 @@ implementation
 
 uses
   OApproxShow, ST2829CConst, SysUtils, RS232deviceNew, Dialogs, Graphics, OlegType,
-  SCPI, OlegFunction;
+  SCPI, OlegFunction, Math;
 
 { TST2829C_Show }
 
@@ -327,10 +396,13 @@ begin
  fSweepParameterShow:=TST2829C_SweepParameterShow.Create(fST2829C,GBs[5]);
  fCorrectionShow:=TST2829CCorrectionShow.Create(fST2829C,GBs[6]);
 
+ fMultiMeasurSweepParameterShow :=TST2829C_MultiMeasParameterShow.Create(fST2829C,GBs[8]);
+
 end;
 
 destructor TST2829C_Show.Destroy;
 begin
+  FreeAndNil(fMultiMeasurSweepParameterShow);
   FreeAndNil(fCorrectionShow);
   FreeAndNil(fSweepParameterShow);
   FreeAndNil(fMeterShow);
@@ -789,17 +861,21 @@ begin
   BiasCurrentShow.LCaption.Font.Color:=clBlue;
   BiasCurrentShow.STdata.Font.Color:=clBlue;
 
-  fSBOnOff.Caption:='Bias Output';
-  Resize(fSBOnOff);
-//  fSBOnOff.Left:=BiasCurrentShow.LCaption.Left+BiasCurrentShow.LCaption.Width+10;
-//  fSBOnOff.Top:=BiasCurrentShow.LCaption.Top+15;
-  fSBOnOff.Left:=BiasVoltageShow.LCaption.Left+10;
-  fSBOnOff.Top:=BiasCurrentShow.STdata.Top+BiasCurrentShow.STdata.Height+5;
+  fSBOnOff.Caption:='Bias'+#10+ 'Output';
+//  Resize(fSBOnOff);
+  fSBOnOff.Width:=70;
+  fSBOnOff.Height:=40;
 
-//  fParent.Width:=fSBOnOff.Left+fSBOnOff.Width+5;
-//  fParent.Height:=BiasCurrentShow.STdata.Top+BiasCurrentShow.STdata.Height+5;
-  fParent.Width:=BiasCurrentShow.LCaption.Left+BiasCurrentShow.LCaption.Width+5;
-  fParent.Height:=fSBOnOff.Top+fSBOnOff.Height+5;
+  fSBOnOff.Left:=BiasCurrentShow.LCaption.Left+BiasCurrentShow.LCaption.Width+10;
+  fSBOnOff.Top:=BiasCurrentShow.LCaption.Top;
+
+//  fSBOnOff.Left:=BiasVoltageShow.LCaption.Left+10;
+//  fSBOnOff.Top:=BiasCurrentShow.STdata.Top+BiasCurrentShow.STdata.Height+5;
+
+  fParent.Width:=fSBOnOff.Left+fSBOnOff.Width+5;
+  fParent.Height:=BiasCurrentShow.STdata.Top+BiasCurrentShow.STdata.Height+5;
+//  fParent.Width:=BiasCurrentShow.LCaption.Left+BiasCurrentShow.LCaption.Width+5;
+//  fParent.Height:=fSBOnOff.Top+fSBOnOff.Height+5;
 
 end;
 
@@ -939,114 +1015,114 @@ end;
 
 { TST2829C_SweepParameterShow }
 
-procedure TST2829C_SweepParameterShow.CreateShows;
-begin
-  fST2829C.SweepParameters.SweepType := TST2829C_SweepParametr(fTypeShow.Data);
+//procedure TST2829C_SweepParameterShow.CreateShows;
+//begin
+//  fST2829C.SweepParameters.SweepType := TST2829C_SweepParametr(fTypeShow.Data);
+//
+//  DestroyShows();
+//
+//  case TST2829C_SweepParametr(fTypeShow.Data) of
+//    st_spBiasVolt:
+//      begin
+//        fStartShow := TDoubleParameterShow.Create(fSTStart, fLStart, 'Start Vbias, V:', 0, 5);
+//        fStartShow.Limits.SetLimits(ST2829C_BiasVoltageLimits[lvMin], ST2829C_BiasVoltageLimits[lvMax]);
+//        fFinishShow := TDoubleParameterShow.Create(fSTFinish, fLFinish, 'Finish Vbias, V:', 1, 5);
+//        fFinishShow.Limits.SetLimits(ST2829C_BiasVoltageLimits[lvMin], ST2829C_BiasVoltageLimits[lvMax]);
+//      end;
+//    st_spBiasCurr:
+//      begin
+//        fStartShow := TDoubleParameterShow.Create(fSTStart, fLStart, 'Start Ibias, mA:', 0, 5);
+//        fStartShow.Limits.SetLimits(ST2829C_BiasCurrentLimits[lvMin], ST2829C_BiasCurrentLimits[lvMax]);
+//        fFinishShow := TDoubleParameterShow.Create(fSTFinish, fLFinish, 'Finish Ibias, mA:', 10, 5);
+//        fFinishShow.Limits.SetLimits(ST2829C_BiasCurrentLimits[lvMin], ST2829C_BiasCurrentLimits[lvMax]);
+//      end;
+//    st_spFreq:
+//      begin
+//        fStartShow := TDoubleParameterShow.Create(fSTStart, fLStart, 'Start Freq, Hz:', 20, 7);
+//        fStartShow.Limits.SetLimits(ST2829C_FreqMeasLimits[lvMin], ST2829C_FreqMeasLimits[lvMax]);
+//        fFinishShow := TDoubleParameterShow.Create(fSTFinish, fLFinish, 'Finish Freq, Hz:', 10000, 7);
+//        fFinishShow.Limits.SetLimits(ST2829C_FreqMeasLimits[lvMin], ST2829C_FreqMeasLimits[lvMax]);
+//      end;
+//    st_spVrms:
+//      begin
+//        fStartShow := TDoubleParameterShow.Create(fSTStart, fLStart, 'Start Vrms, V:', 0.01, 5);
+//        fStartShow.Limits.SetLimits(ST2829C_VrmsMeasLimits[lvMin], ST2829C_VrmsMeasLimits[lvMax]);
+//        fFinishShow := TDoubleParameterShow.Create(fSTFinish, fLFinish, 'Finish Vrms, V:', 1, 5);
+//        fFinishShow.Limits.SetLimits(ST2829C_VrmsMeasLimits[lvMin], ST2829C_VrmsMeasLimits[lvMax]);
+//      end;
+//    st_spIrms:
+//      begin
+//        fStartShow := TDoubleParameterShow.Create(fSTStart, fLStart, 'Start Irms, mA:', 0.1, 5);
+//        fStartShow.Limits.SetLimits(ST2829C_IrmsMeasLimits[lvMin], ST2829C_IrmsMeasLimits[lvMax]);
+//        fFinishShow := TDoubleParameterShow.Create(fSTFinish, fLFinish, 'Finish Irms, mA:', 10, 5);
+//        fFinishShow.Limits.SetLimits(ST2829C_IrmsMeasLimits[lvMin], ST2829C_IrmsMeasLimits[lvMax]);
+//      end;
+//  end;
+//  fStartShow.ForUseInShowObject(fST2829C, False);
+//  fStartShow.ReadFromIniFile(CF_ST_2829C);
+//  fStartShow.HookParameterClick := StartClick;
+//  StartClick;
+//
+//  fFinishShow.ForUseInShowObject(fST2829C, False);
+//  fFinishShow.ReadFromIniFile(CF_ST_2829C);
+//  fFinishShow.HookParameterClick := FinishClick;
+//  FinishClick;
+//
+//  fStepsShow:=TIntegerParameterShow.Create(fSTSteps,fLSteps,'Step Count:',2);
+//  fStepsShow.Limits.SetLimits(2, 5000);
+//  fStepsShow.IniNameSalt:=ST2829C_SweepParametrSalt[TST2829C_SweepParametr(fTypeShow.Data)];
+//  fStepsShow.Data:=CF_ST_2829C.ReadInteger(fST2829C.Name,fStepsShow.ParametrCaption+fStepsShow.IniNameSalt,2);
+//   {довелося робити танці з бубном, бо дома на віртуалці
+//   не хотіло ні виконувати fStepsShow.SetName,
+//   ні fStepsShow.ForUseInShowObject}
+//
+//  fStepsShow.HookParameterClick := StepClick;
+//  StepClick;
+//
+//  fCBLogStep.Name:='LogStep'+ST2829C_SweepParametrSalt[TST2829C_SweepParametr(fTypeShow.Data)];
+//
+//  fCBLogStep.Checked:=
+//   CF_ST_2829C.ReadBool(fST2829C.Name,fCBLogStep.Name,False);
+//end;
 
-  DestroyShows();
+//procedure TST2829C_SweepParameterShow.DestroyShows;
+//begin
+//
+//  if (fCBLogStep <> nil)and(fCBLogStep.Name<>'') then
+//   CF_ST_2829C.WriteBool(fST2829C.Name,fCBLogStep.Name,fCBLogStep.Checked);
+//
+//  if fStartShow <> nil then
+//  begin
+//    CF_ST_2829C.WriteFloat(fStartShow.Name,fStartShow.ParametrCaption+fStartShow.IniNameSalt,fStartShow.Data);
+//    FreeAndNil(fStartShow);
+//  end;
+//  if fFinishShow <> nil then
+//  begin
+//    CF_ST_2829C.WriteFloat(fFinishShow.Name,fFinishShow.ParametrCaption+fFinishShow.IniNameSalt,fFinishShow.Data);
+//    FreeAndNil(fFinishShow);
+//  end;
+//  if fStepsShow <> nil then
+//  begin
+//    CF_ST_2829C.WriteInteger(fST2829C.Name,fStepsShow.ParametrCaption+fStepsShow.IniNameSalt,fStepsShow.Data);
+////    fStepsShow.WriteToIniFile(CF_ST_2829C);
+//    FreeAndNil(fStepsShow);
+//  end;
+//end;
 
-  case TST2829C_SweepParametr(fTypeShow.Data) of
-    st_spBiasVolt:
-      begin
-        fStartShow := TDoubleParameterShow.Create(fSTStart, fLStart, 'Start Vbias, V:', 0, 5);
-        fStartShow.Limits.SetLimits(ST2829C_BiasVoltageLimits[lvMin], ST2829C_BiasVoltageLimits[lvMax]);
-        fFinishShow := TDoubleParameterShow.Create(fSTFinish, fLFinish, 'Finish Vbias, V:', 1, 5);
-        fFinishShow.Limits.SetLimits(ST2829C_BiasVoltageLimits[lvMin], ST2829C_BiasVoltageLimits[lvMax]);
-      end;
-    st_spBiasCurr:
-      begin
-        fStartShow := TDoubleParameterShow.Create(fSTStart, fLStart, 'Start Ibias, mA:', 0, 5);
-        fStartShow.Limits.SetLimits(ST2829C_BiasCurrentLimits[lvMin], ST2829C_BiasCurrentLimits[lvMax]);
-        fFinishShow := TDoubleParameterShow.Create(fSTFinish, fLFinish, 'Finish Ibias, mA:', 10, 5);
-        fFinishShow.Limits.SetLimits(ST2829C_BiasCurrentLimits[lvMin], ST2829C_BiasCurrentLimits[lvMax]);
-      end;
-    st_spFreq:
-      begin
-        fStartShow := TDoubleParameterShow.Create(fSTStart, fLStart, 'Start Freq, Hz:', 20, 7);
-        fStartShow.Limits.SetLimits(ST2829C_FreqMeasLimits[lvMin], ST2829C_FreqMeasLimits[lvMax]);
-        fFinishShow := TDoubleParameterShow.Create(fSTFinish, fLFinish, 'Finish Freq, Hz:', 10000, 7);
-        fFinishShow.Limits.SetLimits(ST2829C_FreqMeasLimits[lvMin], ST2829C_FreqMeasLimits[lvMax]);
-      end;
-    st_spVrms:
-      begin
-        fStartShow := TDoubleParameterShow.Create(fSTStart, fLStart, 'Start Vrms, V:', 0.01, 5);
-        fStartShow.Limits.SetLimits(ST2829C_VrmsMeasLimits[lvMin], ST2829C_VrmsMeasLimits[lvMax]);
-        fFinishShow := TDoubleParameterShow.Create(fSTFinish, fLFinish, 'Finish Vrms, V:', 1, 5);
-        fFinishShow.Limits.SetLimits(ST2829C_VrmsMeasLimits[lvMin], ST2829C_VrmsMeasLimits[lvMax]);
-      end;
-    st_spIrms:
-      begin
-        fStartShow := TDoubleParameterShow.Create(fSTStart, fLStart, 'Start Irms, mA:', 0.1, 5);
-        fStartShow.Limits.SetLimits(ST2829C_IrmsMeasLimits[lvMin], ST2829C_IrmsMeasLimits[lvMax]);
-        fFinishShow := TDoubleParameterShow.Create(fSTFinish, fLFinish, 'Finish Irms, mA:', 10, 5);
-        fFinishShow.Limits.SetLimits(ST2829C_IrmsMeasLimits[lvMin], ST2829C_IrmsMeasLimits[lvMax]);
-      end;
-  end;
-  fStartShow.ForUseInShowObject(fST2829C, False);
-  fStartShow.ReadFromIniFile(CF_ST_2829C);
-  fStartShow.HookParameterClick := StartClick;
-  StartClick;
+//procedure TST2829C_SweepParameterShow.FinishClick;
+//begin
+// fLFinish.WordWrap:=False;
+// RelativeLocation(fLFinish,fSTFinish,oCol,2);
+// fST2829C.SweepParameters.FinishValue:=fFinishShow.Data;
+//end;
 
-  fFinishShow.ForUseInShowObject(fST2829C, False);
-  fFinishShow.ReadFromIniFile(CF_ST_2829C);
-  fFinishShow.HookParameterClick := FinishClick;
-  FinishClick;
-
-  fStepsShow:=TIntegerParameterShow.Create(fSTSteps,fLSteps,'Step Count:',2);
-  fStepsShow.Limits.SetLimits(2, 5000);
-  fStepsShow.IniNameSalt:=ST2829C_SweepParametrSalt[TST2829C_SweepParametr(fTypeShow.Data)];
-  fStepsShow.Data:=CF_ST_2829C.ReadInteger(fST2829C.Name,fStepsShow.ParametrCaption+fStepsShow.IniNameSalt,2);
-   {довелося робити танці з бубном, бо дома на віртуалці
-   не хотіло ні виконувати fStepsShow.SetName,
-   ні fStepsShow.ForUseInShowObject}
-
-  fStepsShow.HookParameterClick := StepClick;
-  StepClick;
-
-  fCBLogStep.Name:='LogStep'+ST2829C_SweepParametrSalt[TST2829C_SweepParametr(fTypeShow.Data)];
-
-  fCBLogStep.Checked:=
-   CF_ST_2829C.ReadBool(fST2829C.Name,fCBLogStep.Name,False);
-end;
-
-procedure TST2829C_SweepParameterShow.DestroyShows;
-begin
-
-  if (fCBLogStep <> nil)and(fCBLogStep.Name<>'') then
-   CF_ST_2829C.WriteBool(fST2829C.Name,fCBLogStep.Name,fCBLogStep.Checked);
-
-  if fStartShow <> nil then
-  begin
-    CF_ST_2829C.WriteFloat(fStartShow.Name,fStartShow.ParametrCaption+fStartShow.IniNameSalt,fStartShow.Data);
-    FreeAndNil(fStartShow);
-  end;
-  if fFinishShow <> nil then
-  begin
-    CF_ST_2829C.WriteFloat(fFinishShow.Name,fFinishShow.ParametrCaption+fFinishShow.IniNameSalt,fFinishShow.Data);
-    FreeAndNil(fFinishShow);
-  end;
-  if fStepsShow <> nil then
-  begin
-    CF_ST_2829C.WriteInteger(fST2829C.Name,fStepsShow.ParametrCaption+fStepsShow.IniNameSalt,fStepsShow.Data);
-//    fStepsShow.WriteToIniFile(CF_ST_2829C);
-    FreeAndNil(fStepsShow);
-  end;
-end;
-
-procedure TST2829C_SweepParameterShow.FinishClick;
-begin
- fLFinish.WordWrap:=False;
- RelativeLocation(fLFinish,fSTFinish,oCol,2);
- fST2829C.SweepParameters.FinishValue:=fFinishShow.Data;
-end;
-
-procedure TST2829C_SweepParameterShow.LogStepClick(Sender: TObject);
-begin
- fST2829C.SweepParameters.LogStep:=fCBLogStep.Checked;
-end;
+//procedure TST2829C_SweepParameterShow.LogStepClick(Sender: TObject);
+//begin
+// fST2829C.SweepParameters.LogStep:=fCBLogStep.Checked;
+//end;
 
 procedure TST2829C_SweepParameterShow.CreateControls;
- var i:integer;
+// var i:integer;
 begin
  fRGDataUsed.Items.Add('Primary');
  fRGDataUsed.Items.Add('Secondary');
@@ -1056,47 +1132,49 @@ begin
  fRGDataUsed.OnClick:=DataUsedClick;
  DataUsedClick(nil);
 
- fTypeShowSL:=TStringList.Create;
- for I := 0 to ord(High(TST2829C_SweepParametr)) do
-    fTypeShowSL.Add(ST2829C_SweepParametrLabels[TST2829C_SweepParametr(i)]);
- fTypeShow:=TStringParameterShow.Create(fSTType,fLType,'Parameter to change:',fTypeShowSL);
- fTypeShow.ForUseInShowObject(fST2829C,False);
- fTypeShow.ReadFromIniFile(CF_ST_2829C);
- fTypeShow.HookParameterClick:=CreateShows;
+ inherited;
 
- fCBLogStep.OnClick:=LogStepClick;
-
- CreateShows;
+// fTypeShowSL:=TStringList.Create;
+// for I := 0 to ord(High(TST2829C_SweepParametr)) do
+//    fTypeShowSL.Add(ST2829C_SweepParametrLabels[TST2829C_SweepParametr(i)]);
+// fTypeShow:=TStringParameterShow.Create(fSTType,fLType,'Parameter to change:',fTypeShowSL);
+// fTypeShow.ForUseInShowObject(fST2829C,False);
+// fTypeShow.ReadFromIniFile(CF_ST_2829C);
+// fTypeShow.HookParameterClick:=CreateShows;
+//
+// fCBLogStep.OnClick:=LogStepClick;
+//
+// CreateShows;
 
 end;
 
 procedure TST2829C_SweepParameterShow.CreateElements;
 begin
-  fLType:=TLabel.Create(fParent);
-  Add(fLType);
-  fSTType:=TStaticText.Create(fParent);
-  Add(fSTType);
+//  fLType:=TLabel.Create(fParent);
+//  Add(fLType);
+//  fSTType:=TStaticText.Create(fParent);
+//  Add(fSTType);
 
   fRGDataUsed:=TRadioGroup.Create(fParent);
   Add(fRGDataUsed);
 
-  fLStart:=TLabel.Create(fParent);
-  Add(fLStart);
-  fSTStart:=TStaticText.Create(fParent);
-  Add(fSTStart);
-
-  fLSteps:=TLabel.Create(fParent);
-  Add(fLSteps);
-  fSTSteps:=TStaticText.Create(fParent);
-  Add(fSTSteps);
-
-  fLFinish:=TLabel.Create(fParent);
-  Add(fLFinish);
-  fSTFinish:=TStaticText.Create(fParent);
-  Add(fSTFinish);
-
-  fCBLogStep:=TCheckBox.Create(fParent);;
-  Add(fCBLogStep);
+//  fLStart:=TLabel.Create(fParent);
+//  Add(fLStart);
+//  fSTStart:=TStaticText.Create(fParent);
+//  Add(fSTStart);
+//
+//  fLSteps:=TLabel.Create(fParent);
+//  Add(fLSteps);
+//  fSTSteps:=TStaticText.Create(fParent);
+//  Add(fSTSteps);
+//
+//  fLFinish:=TLabel.Create(fParent);
+//  Add(fLFinish);
+//  fSTFinish:=TStaticText.Create(fParent);
+//  Add(fSTFinish);
+//
+//  fCBLogStep:=TCheckBox.Create(fParent);;
+//  Add(fCBLogStep);
   inherited CreateElements;
 end;
 
@@ -1107,77 +1185,93 @@ end;
 
 procedure TST2829C_SweepParameterShow.DesignElements;
 begin
- fParent.Caption:='Sweep tuning';
 
- fLType.WordWrap:=False;
- fLType.Left:=MarginLeft;
- fLType.Top:=MarginTop;
- RelativeLocation(fLType,fSTType,oRow,5);
- fSTType.Top:=fSTType.Top+2;
+
+// fLType.WordWrap:=False;
+// fLType.Left:=MarginLeft;
+// fLType.Top:=MarginTop;
+// RelativeLocation(fLType,fSTType,oRow,5);
+// fSTType.Top:=fSTType.Top+2;
+
+
+
+// fLStart.WordWrap:=False;
+// fLStart.Left:=MarginLeft;
+// fLStart.Top:=fRGDataUsed.Top+fRGDataUsed.Height+5;
+// RelativeLocation(fLStart,fSTStart,oCol,2);
+// fLStart.Font.Color:=clBlue;
+// fSTStart.Font.Color:=clBlue;
+//
+// fLFinish.WordWrap:=False;
+// fLFinish.Left:=fLStart.Left+fLStart.Width+15;
+// fLFinish.Top:=fLStart.Top;
+// RelativeLocation(fLFinish,fSTFinish,oCol,2);
+// fLFinish.Font.Color:=clNavy;
+// fSTFinish.Font.Color:=clNavy;
+//
+// fLSteps.WordWrap:=False;
+// fLSteps.Left:=MarginLeft;
+// fLSteps.Top:=fSTStart.Top+fSTStart.Height+5;
+// fSTSteps.Top:=fLSteps.Top;
+// fSTSteps.Left:=fLSteps.Left+fLSteps.Width+5;
+// fLSteps.Font.Color:=clGreen;
+// fSTSteps.Font.Color:=clGreen;
+//
+// fCBLogStep.Caption:='Log step';
+// fCBLogStep.Top:=fLSteps.Top;
+// fCBLogStep.Left:=fSTSteps.Left+fSTSteps.Width+25;
+
+// fParent.Width:=fRGDataUsed.Left+fRGDataUsed.Width+5;
+ inherited DesignElements;
 
  fRGDataUsed.Caption:='Data used';
  fRGDataUsed.Columns:=3;
  Resize(fRGDataUsed);
  fRGDataUsed.Width:=round(1.5*fRGDataUsed.Width);
  fRGDataUsed.Left:=10;
- fRGDataUsed.Top:=fLType.Top+fLType.Height+5;
+ fRGDataUsed.Top:=fCBLogStep.Top+fCBLogStep.Height+5;
 
- fLStart.WordWrap:=False;
- fLStart.Left:=MarginLeft;
- fLStart.Top:=fRGDataUsed.Top+fRGDataUsed.Height+5;
- RelativeLocation(fLStart,fSTStart,oCol,2);
- fLStart.Font.Color:=clBlue;
- fSTStart.Font.Color:=clBlue;
-
- fLFinish.WordWrap:=False;
- fLFinish.Left:=fLStart.Left+fLStart.Width+15;
- fLFinish.Top:=fLStart.Top;
- RelativeLocation(fLFinish,fSTFinish,oCol,2);
- fLFinish.Font.Color:=clNavy;
- fSTFinish.Font.Color:=clNavy;
-
- fLSteps.WordWrap:=False;
- fLSteps.Left:=MarginLeft;
- fLSteps.Top:=fSTStart.Top+fSTStart.Height+5;
- fSTSteps.Top:=fLSteps.Top;
- fSTSteps.Left:=fLSteps.Left+fLSteps.Width+5;
- fLSteps.Font.Color:=clGreen;
- fSTSteps.Font.Color:=clGreen;
-
- fCBLogStep.Caption:='Log step';
- fCBLogStep.Top:=fLSteps.Top;
- fCBLogStep.Left:=fSTSteps.Left+fSTSteps.Width+25;
+ fParent.Caption:='Sweep tuning';
 
 // fParent.Width:=fRGDataUsed.Left+fRGDataUsed.Width+5;
- fParent.Width:=fSTType.Left+fSTType.Width+10;
- fParent.Height:=fLSteps.Top+fLSteps.Height+5;
+ fParent.Width:=max(fSTType.Left+fSTType.Width+10,fRGDataUsed.Left+fRGDataUsed.Width+5);
+ fParent.Height:=fRGDataUsed.Top+fRGDataUsed.Height+5;
 
 end;
 
 procedure TST2829C_SweepParameterShow.DestroyControls;
 begin
 
- DestroyShows;
+// DestroyShows;
+//
+// fTypeShow.WriteToIniFile(CF_ST_2829C);
+// FreeAndNil(fTypeShow);
+// FreeAndNil(fTypeShowSL);
+
+ inherited;
 
  CF_ST_2829C.WriteInteger(fST2829C.Name,'Data used',
                   fRGDataUsed.ItemIndex);
 
- fTypeShow.WriteToIniFile(CF_ST_2829C);
- FreeAndNil(fTypeShow);
- FreeAndNil(fTypeShowSL);
+
 end;
 
-procedure TST2829C_SweepParameterShow.StartClick;
+procedure TST2829C_SweepParameterShow.SetfSweepType;
 begin
- fLStart.WordWrap:=False;
- RelativeLocation(fLStart,fSTStart,oCol,2);
- fST2829C.SweepParameters.StartValue:=fStartShow.Data;
+ fSweepType:=st_stOneMeasur;
 end;
 
-procedure TST2829C_SweepParameterShow.StepClick;
-begin
- fST2829C.SweepParameters.PointCount:=fStepsShow.Data;
-end;
+//procedure TST2829C_SweepParameterShow.StartClick;
+//begin
+// fLStart.WordWrap:=False;
+// RelativeLocation(fLStart,fSTStart,oCol,2);
+// fST2829C.SweepParameters.StartValue:=fStartShow.Data;
+//end;
+
+//procedure TST2829C_SweepParameterShow.StepClick;
+//begin
+// fST2829C.SweepParameters.PointCount:=fStepsShow.Data;
+//end;
 
 { TST2829CCorrectionShow }
 
@@ -1399,5 +1493,370 @@ begin
   inherited;
 end;
 
+
+{ TST2829C_SweepParameterShowBase }
+
+constructor TST2829C_SweepParameterShowBase.Create(ST2829C: TST2829C;
+  GB: TGroupBox);
+begin
+ SetfSweepType();
+// fSweepType:=st_stOneMeasur;
+ inherited;
+end;
+
+procedure TST2829C_SweepParameterShowBase.CreateControls;
+ var i:integer;
+begin
+// fRGDataUsed.Items.Add('Primary');
+// fRGDataUsed.Items.Add('Secondary');
+// fRGDataUsed.Items.Add('Both');
+// fRGDataUsed.ItemIndex:=
+//   CF_ST_2829C.ReadInteger(fST2829C.Name,'Data used',0);
+// fRGDataUsed.OnClick:=DataUsedClick;
+// DataUsedClick(nil);
+
+ fTypeShowSL:=TStringList.Create;
+ for I := 0 to ord(High(TST2829C_SweepParametr)) do
+    fTypeShowSL.Add(ST2829C_SweepParametrLabels[TST2829C_SweepParametr(i)]);
+ fTypeShow:=TStringParameterShow.Create(fSTType,fLType,'Parameter to change:',fTypeShowSL);
+ fTypeShow.IniNameSalt:=ST2829C_IniSalt[fSweepType];
+ fTypeShow.ForUseInShowObject(fST2829C,False);
+ fTypeShow.ReadFromIniFile(CF_ST_2829C);
+ fTypeShow.HookParameterClick:=CreateShows;
+
+ fCBLogStep.OnClick:=LogStepClick;
+
+ CreateShows;
+end;
+
+procedure TST2829C_SweepParameterShowBase.CreateElements;
+begin
+  fLType:=TLabel.Create(fParent);
+  Add(fLType);
+  fSTType:=TStaticText.Create(fParent);
+  Add(fSTType);
+
+  fLStart:=TLabel.Create(fParent);
+  Add(fLStart);
+  fSTStart:=TStaticText.Create(fParent);
+  Add(fSTStart);
+
+  fLSteps:=TLabel.Create(fParent);
+  Add(fLSteps);
+  fSTSteps:=TStaticText.Create(fParent);
+  Add(fSTSteps);
+
+  fLFinish:=TLabel.Create(fParent);
+  Add(fLFinish);
+  fSTFinish:=TStaticText.Create(fParent);
+  Add(fSTFinish);
+
+  fCBLogStep:=TCheckBox.Create(fParent);;
+  Add(fCBLogStep);
+  inherited CreateElements;
+end;
+
+procedure TST2829C_SweepParameterShowBase.CreateShows;
+begin
+  case fSweepType of
+    st_stOneMeasur:
+      fST2829C.SweepParameters.SweepType := TST2829C_SweepParametr(fTypeShow.Data);
+    st_stMultiMeasur:
+      fST2829C.MultiMeasurementParameters.SweepType := TST2829C_SweepParametr(fTypeShow.Data);
+  end;
+
+  DestroyShows();
+
+  case TST2829C_SweepParametr(fTypeShow.Data) of
+    st_spBiasVolt:
+      begin
+        fStartShow := TDoubleParameterShow.Create(fSTStart, fLStart, 'Start Vbias, V:', 0, 5);
+        fStartShow.Limits.SetLimits(ST2829C_BiasVoltageLimits[lvMin], ST2829C_BiasVoltageLimits[lvMax]);
+        fFinishShow := TDoubleParameterShow.Create(fSTFinish, fLFinish, 'Finish Vbias, V:', 1, 5);
+        fFinishShow.Limits.SetLimits(ST2829C_BiasVoltageLimits[lvMin], ST2829C_BiasVoltageLimits[lvMax]);
+      end;
+    st_spBiasCurr:
+      begin
+        fStartShow := TDoubleParameterShow.Create(fSTStart, fLStart, 'Start Ibias, mA:', 0, 5);
+        fStartShow.Limits.SetLimits(ST2829C_BiasCurrentLimits[lvMin], ST2829C_BiasCurrentLimits[lvMax]);
+        fFinishShow := TDoubleParameterShow.Create(fSTFinish, fLFinish, 'Finish Ibias, mA:', 10, 5);
+        fFinishShow.Limits.SetLimits(ST2829C_BiasCurrentLimits[lvMin], ST2829C_BiasCurrentLimits[lvMax]);
+      end;
+    st_spFreq:
+      begin
+        fStartShow := TDoubleParameterShow.Create(fSTStart, fLStart, 'Start Freq, Hz:', 20, 7);
+        fStartShow.Limits.SetLimits(ST2829C_FreqMeasLimits[lvMin], ST2829C_FreqMeasLimits[lvMax]);
+        fFinishShow := TDoubleParameterShow.Create(fSTFinish, fLFinish, 'Finish Freq, Hz:', 10000, 7);
+        fFinishShow.Limits.SetLimits(ST2829C_FreqMeasLimits[lvMin], ST2829C_FreqMeasLimits[lvMax]);
+      end;
+    st_spVrms:
+      begin
+        fStartShow := TDoubleParameterShow.Create(fSTStart, fLStart, 'Start Vrms, V:', 0.01, 5);
+        fStartShow.Limits.SetLimits(ST2829C_VrmsMeasLimits[lvMin], ST2829C_VrmsMeasLimits[lvMax]);
+        fFinishShow := TDoubleParameterShow.Create(fSTFinish, fLFinish, 'Finish Vrms, V:', 1, 5);
+        fFinishShow.Limits.SetLimits(ST2829C_VrmsMeasLimits[lvMin], ST2829C_VrmsMeasLimits[lvMax]);
+      end;
+    st_spIrms:
+      begin
+        fStartShow := TDoubleParameterShow.Create(fSTStart, fLStart, 'Start Irms, mA:', 0.1, 5);
+        fStartShow.Limits.SetLimits(ST2829C_IrmsMeasLimits[lvMin], ST2829C_IrmsMeasLimits[lvMax]);
+        fFinishShow := TDoubleParameterShow.Create(fSTFinish, fLFinish, 'Finish Irms, mA:', 10, 5);
+        fFinishShow.Limits.SetLimits(ST2829C_IrmsMeasLimits[lvMin], ST2829C_IrmsMeasLimits[lvMax]);
+      end;
+  end;
+  fStartShow.ForUseInShowObject(fST2829C, False);
+  fStartShow.IniNameSalt:=ST2829C_IniSalt[fSweepType];
+  fStartShow.ReadFromIniFile(CF_ST_2829C);
+  fStartShow.HookParameterClick := StartClick;
+  StartClick;
+
+  fFinishShow.ForUseInShowObject(fST2829C, False);
+  fFinishShow.IniNameSalt:=ST2829C_IniSalt[fSweepType];
+  fFinishShow.ReadFromIniFile(CF_ST_2829C);
+  fFinishShow.HookParameterClick := FinishClick;
+  FinishClick;
+
+  fStepsShow:=TIntegerParameterShow.Create(fSTSteps,fLSteps,'Step Count:',2);
+  fStepsShow.Limits.SetLimits(2, 5000);
+  fStepsShow.IniNameSalt:=ST2829C_SweepParametrSalt[TST2829C_SweepParametr(fTypeShow.Data)]
+                          +ST2829C_IniSalt[fSweepType];
+  fStepsShow.Data:=CF_ST_2829C.ReadInteger(fST2829C.Name,fStepsShow.ParametrCaption+fStepsShow.IniNameSalt,2);
+   {довелося робити танці з бубном, бо дома на віртуалці
+   не хотіло ні виконувати fStepsShow.SetName,
+   ні fStepsShow.ForUseInShowObject}
+
+  fStepsShow.HookParameterClick := StepClick;
+  StepClick;
+
+  fCBLogStep.Name:='LogStep'
+     +ST2829C_SweepParametrSalt[TST2829C_SweepParametr(fTypeShow.Data)]
+     +ST2829C_IniSalt[fSweepType];
+
+  fCBLogStep.Checked:=
+   CF_ST_2829C.ReadBool(fST2829C.Name,
+                        fCBLogStep.Name,
+                        False);
+
+end;
+
+procedure TST2829C_SweepParameterShowBase.DesignElements;
+begin
+// fParent.Caption:='Sweep tuning';
+
+ fLType.WordWrap:=False;
+ fLType.Left:=MarginLeft;
+ fLType.Top:=15;
+ RelativeLocation(fLType,fSTType,oRow,5);
+ fSTType.Top:=fSTType.Top+2;
+
+// fRGDataUsed.Caption:='Data used';
+// fRGDataUsed.Columns:=3;
+// Resize(fRGDataUsed);
+// fRGDataUsed.Width:=round(1.5*fRGDataUsed.Width);
+// fRGDataUsed.Left:=10;
+// fRGDataUsed.Top:=fLType.Top+fLType.Height+5;
+
+ fLStart.WordWrap:=False;
+ fLStart.Left:=MarginLeft;
+// fLStart.Top:=fRGDataUsed.Top+fRGDataUsed.Height+5;
+ fLStart.Top:=fLType.Top+fLType.Height+3;
+ RelativeLocation(fLStart,fSTStart,oCol,2);
+ fLStart.Font.Color:=clBlue;
+ fSTStart.Font.Color:=clBlue;
+
+ fLFinish.WordWrap:=False;
+ fLFinish.Left:=fLStart.Left+fLStart.Width+15;
+ fLFinish.Top:=fLStart.Top;
+ RelativeLocation(fLFinish,fSTFinish,oCol,2);
+ fLFinish.Font.Color:=clNavy;
+ fSTFinish.Font.Color:=clNavy;
+
+ fLSteps.WordWrap:=False;
+ fLSteps.Left:=MarginLeft;
+ fLSteps.Top:=fSTStart.Top+fSTStart.Height+3;
+ fSTSteps.Top:=fLSteps.Top;
+ fSTSteps.Left:=fLSteps.Left+fLSteps.Width+5;
+ fLSteps.Font.Color:=clGreen;
+ fSTSteps.Font.Color:=clGreen;
+
+ fCBLogStep.Caption:='Log step';
+ fCBLogStep.Top:=fLSteps.Top;
+ fCBLogStep.Left:=fSTSteps.Left+fSTSteps.Width+25;
+
+// fParent.Width:=fRGDataUsed.Left+fRGDataUsed.Width+5;
+// fParent.Width:=fSTType.Left+fSTType.Width+10;
+// fParent.Height:=fLSteps.Top+fLSteps.Height+5;
+
+
+end;
+
+procedure TST2829C_SweepParameterShowBase.DestroyControls;
+begin
+
+ DestroyShows;
+
+// CF_ST_2829C.WriteInteger(fST2829C.Name,'Data used',
+//                  fRGDataUsed.ItemIndex);
+//
+ fTypeShow.WriteToIniFile(CF_ST_2829C);
+ FreeAndNil(fTypeShow);
+ FreeAndNil(fTypeShowSL);
+
+end;
+
+procedure TST2829C_SweepParameterShowBase.DestroyShows;
+begin
+  if (fCBLogStep <> nil)and(fCBLogStep.Name<>'') then
+   CF_ST_2829C.WriteBool(fST2829C.Name,fCBLogStep.Name,fCBLogStep.Checked);
+
+  if fStartShow <> nil then
+  begin
+    CF_ST_2829C.WriteFloat(fStartShow.Name,fStartShow.ParametrCaption+fStartShow.IniNameSalt,fStartShow.Data);
+    FreeAndNil(fStartShow);
+  end;
+  if fFinishShow <> nil then
+  begin
+    CF_ST_2829C.WriteFloat(fFinishShow.Name,fFinishShow.ParametrCaption+fFinishShow.IniNameSalt,fFinishShow.Data);
+    FreeAndNil(fFinishShow);
+  end;
+  if fStepsShow <> nil then
+  begin
+    CF_ST_2829C.WriteInteger(fST2829C.Name,fStepsShow.ParametrCaption+fStepsShow.IniNameSalt,fStepsShow.Data);
+//    fStepsShow.WriteToIniFile(CF_ST_2829C);
+    FreeAndNil(fStepsShow);
+  end;
+end;
+
+procedure TST2829C_SweepParameterShowBase.FinishClick;
+begin
+ fLFinish.WordWrap:=False;
+ RelativeLocation(fLFinish,fSTFinish,oCol,2);
+ case fSweepType of
+   st_stOneMeasur:
+     fST2829C.SweepParameters.FinishValue:=fFinishShow.Data;
+   st_stMultiMeasur:
+     fST2829C.MultiMeasurementParameters.FinishValue:=fFinishShow.Data;
+ end;
+end;
+
+procedure TST2829C_SweepParameterShowBase.LogStepClick(Sender: TObject);
+begin
+ case fSweepType of
+   st_stOneMeasur:
+     fST2829C.SweepParameters.LogStep:=fCBLogStep.Checked;
+   st_stMultiMeasur:
+     fST2829C.MultiMeasurementParameters.LogStep:=fCBLogStep.Checked;
+ end;
+end;
+
+procedure TST2829C_SweepParameterShowBase.StartClick;
+begin
+ fLStart.WordWrap:=False;
+ RelativeLocation(fLStart,fSTStart,oCol,2);
+ case fSweepType of
+   st_stOneMeasur:
+     fST2829C.SweepParameters.StartValue:=fStartShow.Data;
+   st_stMultiMeasur:
+     fST2829C.MultiMeasurementParameters.StartValue:=fStartShow.Data;
+ end;
+end;
+
+procedure TST2829C_SweepParameterShowBase.StepClick;
+begin
+ case fSweepType of
+   st_stOneMeasur:
+     fST2829C.SweepParameters.PointCount:=fStepsShow.Data;
+   st_stMultiMeasur:
+     fST2829C.MultiMeasurementParameters.PointCount:=fStepsShow.Data;
+ end;
+end;
+
+{ TST2829C_MultiMeasParameterShow }
+
+procedure TST2829C_MultiMeasParameterShow.CreateControls;
+begin
+
+ fRepetionShow:=TIntegerParameterShow.Create(fSTRepetion,fLRepetion,
+                                 'Repetition Count:',1);
+ fRepetionShow.Limits.SetLimits(1, 100);
+ fRepetionShow.Data:=CF_ST_2829C.ReadInteger(fST2829C.Name,fRepetionShow.ParametrCaption,1);
+   {довелося робити танці з бубном, бо дома на віртуалці
+   не хотіло ні виконувати fStepsShow.SetName,
+   ні fStepsShow.ForUseInShowObject}
+
+ fRepetionShow.HookParameterClick := RepetClick;
+ RepetClick;
+
+
+ inherited;
+
+// fTypeShowSL:=TStringList.Create;
+// for I := 0 to ord(High(TST2829C_SweepParametr)) do
+//    fTypeShowSL.Add(ST2829C_SweepParametrLabels[TST2829C_SweepParametr(i)]);
+// fTypeShow:=TStringParameterShow.Create(fSTType,fLType,'Parameter to change:',fTypeShowSL);
+// fTypeShow.ForUseInShowObject(fST2829C,False);
+// fTypeShow.ReadFromIniFile(CF_ST_2829C);
+// fTypeShow.HookParameterClick:=CreateShows;
+//
+// fCBLogStep.OnClick:=LogStepClick;
+//
+// CreateShows;
+end;
+
+procedure TST2829C_MultiMeasParameterShow.CreateElements;
+begin
+  fLRepetion:=TLabel.Create(fParent);
+  Add(fLRepetion);
+  fSTRepetion:=TStaticText.Create(fParent);
+  Add(fSTRepetion);
+  inherited CreateElements;
+end;
+
+procedure TST2829C_MultiMeasParameterShow.DesignElements;
+begin
+ inherited DesignElements;
+ fLRepetion.WordWrap:=False;
+ fLRepetion.Left:=MarginLeft;
+ fLRepetion.Top:=fCBLogStep.Top+fCBLogStep.Height+3;
+ fSTRepetion.Top:=fLRepetion.Top;
+ fSTRepetion.Left:=fLRepetion.Left+fLRepetion.Width+5;
+ fLRepetion.Font.Color:=clOlive;
+ fSTRepetion.Font.Color:=clOlive;
+
+
+ fParent.Caption:='Multi measurement';
+ fParent.Font.Color:=clNavy;
+
+// fParent.Width:=fRGDataUsed.Left+fRGDataUsed.Width+5;
+ fParent.Width:=fSTType.Left+fSTType.Width+10;
+// fSTRepetion.Left+fSTRepetion.Width+10;
+ fParent.Height:=fSTRepetion.Top+fSTRepetion.Height+5;
+
+end;
+
+procedure TST2829C_MultiMeasParameterShow.DestroyControls;
+begin
+
+ inherited DestroyControls;
+
+  if fRepetionShow <> nil then
+  begin
+   CF_ST_2829C.WriteInteger(fST2829C.Name,
+       fRepetionShow.ParametrCaption,
+       fRepetionShow.Data);
+   FreeAndNil(fRepetionShow);
+  end;
+
+end;
+
+procedure TST2829C_MultiMeasParameterShow.RepetClick;
+begin
+ fST2829C.MultiMeasurementParameters.RepetionNumber:=fRepetionShow.Data;
+end;
+
+procedure TST2829C_MultiMeasParameterShow.SetfSweepType;
+begin
+ fSweepType:=st_stMultiMeasur;
+end;
 
 end.

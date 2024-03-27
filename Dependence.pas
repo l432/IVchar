@@ -145,6 +145,30 @@ TST2829Dependence=class(TDependenceByDevice)
  procedure Measuring(SingleMeasurement:boolean=True;FilePrefix:string='');
 end;
 
+
+TST2829MultiDependences=class(TDependenceByDevice)
+ private
+  fST2829C:TST2829C;
+  fST2829Dependence:TST2829Dependence;
+  fCurrentRepetionNumber:integer;
+  fPNumber:integer;
+  fXValue:double;
+  procedure BeginMeasuring();override;
+  procedure Cycle();
+  procedure EndMeasuring();override;
+  function PrefixFromXValue():string;
+  {повертає поточне значення змінного параметра
+  у вигляді, щоб записати у назву файлу}
+ public
+  Constructor Create(Device:TST2829C;
+                     Dependence:TST2829Dependence;
+                     BS: TButton);
+  procedure Measuring();
+
+
+end;
+
+
 TTimeDependence=class(TDependence)
 private
   fTreadToStop:TThread;
@@ -2507,6 +2531,8 @@ begin
  if FilePrefix=''
    then PrefixToFileName:=ST2829C_MeasureTypeCommands[fSP.MeasureType]
    else PrefixToFileName:=FilePrefix;
+ if PrefixToFileName='rx' then  PrefixToFileName:='rz';
+
  BeginMeasuring();
  Cycle();
  EndMeasuring();
@@ -2540,6 +2566,117 @@ end;
 function TDependenceByDevice.DatFileNameToSave: string;
 begin
   result:=DatFileNameForSave(PrefixToFileName);
+end;
+
+{ TST2829MultiDependences }
+
+procedure TST2829MultiDependences.BeginMeasuring;
+begin
+
+  DecimalSeparator:='.';
+  fPNumber:=0;
+
+  fST2829C.MultiMeasurementParameters.BeforeMeasuring();
+
+  if fSingleMeasurement then
+   begin
+//      fProgBar.Max := fSP.PointCount;;
+//      fProgBar.Position := 0;
+      fMeasuringToStop:=False;
+      ButtonStop.OnClick := ButtonStopClick;
+//      ButtonStop.Enabled:=True;
+//      SeriesClear();
+   end;
+
+// HookBeginMeasuring();
+
+
+end;
+
+constructor TST2829MultiDependences.Create(Device: TST2829C;
+  Dependence: TST2829Dependence; BS: TButton);
+begin
+ fST2829C:=Device;
+ fST2829Dependence:=Dependence;
+ inherited Create(BS,nil,nil,nil);
+end;
+
+procedure TST2829MultiDependences.Cycle;
+// var Prefix:string;
+begin
+ while fPNumber<fST2829C.MultiMeasurementParameters.PointCount do
+  begin
+     Application.ProcessMessages;
+     if fMeasuringToStop then Exit;
+     fXValue:=fST2829C.MultiMeasurementParameters.GetXValueAtStep(fPNumber);
+//     HookAction();
+
+//     ActionMeasurement();
+
+//     fST2829C.MultiMeasurementParameters.ActionMeasurement(fXValue)
+     fST2829C.MultiMeasurementParameters.SetValue(fXValue);
+     HRDelay(1000);
+
+     fCurrentRepetionNumber:=1;
+     repeat
+      Application.ProcessMessages;
+      if fMeasuringToStop then Exit;
+      fST2829Dependence.Measuring();
+      case  fST2829C.MultiMeasurementParameters.SweepType of
+       st_spIrms:fST2829C.GetDataIrms();
+       st_spVrms:fST2829C.GetDataVrms();
+      end;
+      PrefixToFileName:=fST2829Dependence.PrefixToFileName
+                        +PrefixFromXValue()
+                        +'n';
+      HookDataSave();
+      inc(fCurrentRepetionNumber);
+      HRDelay(3000);
+     until fCurrentRepetionNumber>fST2829C.MultiMeasurementParameters.RepetionNumber;
+
+     inc(fPNumber);
+     MelodyShot();
+  end;
+
+end;
+
+procedure TST2829MultiDependences.EndMeasuring;
+begin
+
+  fST2829C.MultiMeasurementParameters.EndMeasuring;
+ // HookEndMeasuring();
+
+
+  ButtonStop.Enabled := False;
+  MelodyLong();
+end;
+
+procedure TST2829MultiDependences.Measuring;
+begin
+ BeginMeasuring();
+ Cycle();
+ EndMeasuring();
+end;
+
+function TST2829MultiDependences.PrefixFromXValue: string;
+begin
+  case  fST2829C.MultiMeasurementParameters.SweepType of
+   st_spBiasVolt:begin
+                  Result:='Vb';
+                 end;
+   st_spBiasCurr:begin
+                  Result:='Ib';
+                 end;
+   st_spFreq:begin
+              Result:='f';
+             end;
+   st_spIrms:begin
+              Result:='Im';
+             end;
+   st_spVrms:begin
+              Result:='Vm';
+             end;
+  end;
 end;
 
 initialization

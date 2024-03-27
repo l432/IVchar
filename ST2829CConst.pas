@@ -94,7 +94,11 @@ type
 
  TST2829C_SweepData=(st_sdPrim,st_sdSecon,st_sdBoth);
 
+// TST2829C_SweepType=(st_stOneMeasur,st_stMultiMeasur);
+
  TST2829C_CorCable=(st_cc0M,st_cc1M,st_cc2M,st_cc4M);
+
+
 
 
 const
