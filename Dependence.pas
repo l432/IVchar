@@ -2659,24 +2659,37 @@ begin
 end;
 
 function TST2829MultiDependences.PrefixFromXValue: string;
+ var SweetTypeSyffix:string;
 begin
   case  fST2829C.MultiMeasurementParameters.SweepType of
-   st_spBiasVolt:begin
-                  Result:='Vb';
-                 end;
-   st_spBiasCurr:begin
-                  Result:='Ib';
-                 end;
-   st_spFreq:begin
-              Result:='f';
-             end;
-   st_spIrms:begin
-              Result:='Im';
-             end;
-   st_spVrms:begin
-              Result:='Vm';
-             end;
+   st_spBiasVolt:SweetTypeSyffix:='V';
+   st_spBiasCurr:SweetTypeSyffix:='I';
+   st_spFreq:SweetTypeSyffix:='f';
+   st_spIrms:SweetTypeSyffix:='Ir';
+   st_spVrms:SweetTypeSyffix:='Vr';
   end;
+
+  if fXValue<0 then Result:='m'
+               else Result:='';
+  case  fST2829C.MultiMeasurementParameters.SweepType of
+   st_spBiasVolt,
+   st_spBiasCurr,
+   st_spIrms,
+   st_spVrms:Result:=Result+floattostrF(abs(fXValue),ffGeneral,3,2);
+   st_spFreq:if round(fXValue)=1e6
+                then
+                 begin
+                 Result:='f1M';
+                 Exit;
+                 end
+                else
+                 Result:=floattostrF(fXValue/1000,ffGeneral,3,2);
+  end;
+
+  if Pos('.',Result)>0
+    then Result := StringReplace(Result, '.', SweetTypeSyffix, [])
+    else Result :=Result+SweetTypeSyffix;
+
 end;
 
 initialization

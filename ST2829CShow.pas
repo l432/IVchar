@@ -488,6 +488,7 @@ begin
  fBGetParam.Caption:='Get from device';
  fBGetParam.WordWrap:=True;
  fBGetParam.Height:=45;
+ fBGetParam.Width:=fPSave.Width;
 // Resize(fBGetParam);
  fBReset.Caption:='Reset';
 

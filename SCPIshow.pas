@@ -487,7 +487,7 @@ Procedure DesignSettingPanel(P:TPanel;Caption:string);
 begin
  P.Caption:=Caption;
  P.Height:=20;
- P.Width:=75;
+ P.Width:=80;
  P.Font.Color:=clHotLight;
  P.Font.Size:=9;
  P.BevelOuter:=bvLowered;

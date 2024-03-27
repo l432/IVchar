@@ -49,7 +49,7 @@ const
   MeasIVonTemper='IV char on temperature';
   MeasFastIVArd='Fast IV by Arduino';
   MeasST2829='ST2829C dependence';
-
+  MeasST2829Multi='ST2829C Multidependence';
 
   IscVocTimeToWait=500;
 
@@ -804,6 +804,8 @@ type
     procedure FastIVHookEnd;
 //    procedure FastArduinoIVHookEnd;
     procedure ST2829HookEnd;
+    procedure ST2829MultiDependencesHookDataSave;
+
     procedure TimeDHookFirstMeas;
     procedure TimeTwoDHookFirstMeas;
     procedure IscVocOnTimeHookFirstMeas;
@@ -963,6 +965,7 @@ type
     ShowTempDep:TShowTemperatureDependence;
     TimeTwoDependenceTimer,IscVocOnTime:TTimeTwoDependenceTimer;
     ST2829Dependence:TST2829Dependence;
+    ST2829MultiDependences:TST2829MultiDependences;
     Dependencies:Array of TFastDependence;
     PID_Termostat,PID_Control:TPID;
     PID_Termostat_ParametersShow,PID_Control_ParametersShow:TPID_ParametersShow;
@@ -1217,6 +1220,8 @@ begin
                                                  LTemDepStep,LTemDepIsoInterval,LTemDepTolCoef);
   ST2829Dependence:=TST2829Dependence.Create(ST_2829C.SweepParameters,PBIV,BIVStop,{IVResult,}
                                        ForwLine,ForwLg);
+  ST2829MultiDependences:=TST2829MultiDependences.Create(ST_2829C,ST2829Dependence,BIVStop);
+
 
   ShowArray.Add(ShowTempDep);
 
@@ -1242,6 +1247,8 @@ begin
 
   ST2829Dependence.HookBeginMeasuring:=ST2829HookBegin;
   ST2829Dependence.HookEndMeasuring:=ST2829HookEnd;
+  ST2829MultiDependences.HookDataSave:=ST2829MultiDependencesHookDataSave;
+
 
   SetLength(Dependencies,8);
   Dependencies[0]:=IVMeasuring;
@@ -2818,6 +2825,7 @@ begin
  if Key=MeasIVonTemper then IVcharOnTemperature.BeginMeasuring;
 
  if Key=MeasST2829 then ST2829Dependence.Measuring;
+ if Key=MeasST2829Multi then ST2829MultiDependences.Measuring;
 
 end;
 
@@ -2907,9 +2915,10 @@ procedure TIVchar.Button1Click(Sender: TObject);
 //  var ByteAr:TArrByte;
 //   var Vax:TVector;
 begin
-showmessage(inttostr(ForwLine.Count));
 
-
+ showmessage(floattostrF(100.235,ffGeneral,3,2));
+ showmessage(floattostrF(10,ffGeneral,3,2));
+ showmessage(floattostrF(1,ffGeneral,3,2));
 end;
 
 
@@ -3381,6 +3390,12 @@ begin
  if ST2829Dependence.SingleMeasurement
     then BIVSave.OnClick:=ActionInSaveButtonST2829
     else SaveST2829MeasurementResults(ST2829Dependence.DatFileNameToSave)
+end;
+
+procedure TIVchar.ST2829MultiDependencesHookDataSave;
+begin
+// SaveST2829MeasurementResults(ST2829MultiDependences.PrefixToFileName);
+ SaveST2829MeasurementResults(ST2829MultiDependences.DatFileNameForSave(ST2829MultiDependences.PrefixToFileName));
 end;
 
 procedure TIVchar.NameToLabel(LabelName: string; Name, NameValue: TLabel);
@@ -4078,6 +4093,7 @@ begin
     Dependencies[i].Free;
  FastIVMeasuring.Free;
 // FastArduinoIV.Free;
+ ST2829MultiDependences.Free;
  ST2829Dependence.Free;
 end;
 
@@ -4759,6 +4775,7 @@ begin
   CBMeasurements.Items.Add(MeasIscAndVocOnTime);
   CBMeasurements.Items.Add(MeasIVonTemper);
   CBMeasurements.Items.Add(MeasST2829);
+  CBMeasurements.Items.Add(MeasST2829Multi);
   CBMeasurements.Items.Add(MeasTimeD);
   CBMeasurements.Items.Add(MeasTwoTimeD);
   CBMeasurements.Items.Add(MeasR2RCalib);
