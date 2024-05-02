@@ -98,12 +98,10 @@ TKT2450_SourceDevice=class;
    fSourceDelayAuto:TKt2450_SourceBool;
    fMeasureTime:TKt2450_MeasureDouble;
    fDisplayDN:TKt2450_MeasureDisplayDN;
-//   fCount:integer;
    fSourceMeasuredValue:double;
    fDigitLineType:TKt2450_DigLineTypes;
    fDigitLineDirec:TKt2450_DigLineDirections;
    fDLActive:TKt2450_DigLines;
-//   fMeter:TKT2450_Meter;
    fSourceMeter:TKT2450_SourceMeter;
    fSourceDevice:TKT2450_SourceDevice;
    fHookForTrigDataObtain: TSimpleEvent;
@@ -113,7 +111,6 @@ TKT2450_SourceDevice=class;
    fImin:double;
    FCurrentValueLimitEnable:boolean;
    fSweepWasCreated:boolean;
-//   procedure OnOffFromBool(toOn:boolean);
    function StringToVoltageProtection(Str:string;var vp:TKt_2450_VoltageProtection):boolean;
    function StringToSourceType(Str:string):boolean;
    function StringToOutPutState(Str:string):boolean;
@@ -127,7 +124,6 @@ TKT2450_SourceDevice=class;
    function VoltageRangeToString(Range:TKt2450VoltageRange):string;
    function ValueToCurrentRange(Value:double):TKt2450CurrentRange;
    function CurrentRangeToString(Range:TKt2450CurrentRange):string;
-//   procedure SetCountNumber(Value:integer);
    procedure TrigIVLoop(i: Integer);
   protected
    procedure MeterCreate;override;
@@ -163,11 +159,9 @@ TKT2450_SourceDevice=class;
    property SourceDelayAuto:TKt2450_SourceBool read fSourceDelayAuto;
    property DisplayDN:TKt2450_MeasureDisplayDN read fDisplayDN;
    property MeasureTime:TKt2450_MeasureDouble read fMeasureTime;
-//   property Count:integer read fCount write SetCountNumber;
    property SourceMeasuredValue:double read fSourceMeasuredValue;
    property DigitLineType:TKt2450_DigLineTypes read fDigitLineType;
    property DigitLineTypeDirec:TKt2450_DigLineDirections read fDigitLineDirec;
-//   property Meter:TKT2450_Meter read fMeter;
    property SourceMeter:TKT2450_SourceMeter read fSourceMeter;
    property SourceDevice:TKT2450_SourceDevice read fSourceDevice;
    property DragonBackTime:double read fDragonBackTime write fDragonBackTime;
@@ -364,9 +358,6 @@ TKT2450_SourceDevice=class;
    procedure SwepListCreate(StartIndex:word=1);
    procedure SwepLogStepCreate();
 
-//   procedure SetCount(Cnt:integer);
-//   {кількість повторних вимірювань, коли прилад просять поміряти}
-//   function GetCount():boolean;
 
    procedure SetDigLineMode(LineNumber:TKt2450_DigLines;
                             LineType:TKt2450_DigLineType;
@@ -417,6 +408,13 @@ TKT2450_SourceDevice=class;
 
    Procedure TrigForIVCreate;
    Procedure TrigOutPutChange(toOn:boolean);
+
+   Procedure TrigForIMeasurement;
+   {записується програмка в прилад, яка
+   передбачає однократне вимірювання (того, що
+   встановлено на приладі, з параметрами, які
+   там встановлені) та наступне вимикання виходу}
+
  end;
 
 //TKeitley_Measurement=class(TMeasurementSimple)
@@ -1609,15 +1607,6 @@ begin
            JoinToStringToSend(FirstNodeKt_2450[fLeafNode]);
           end;
     end;  // fRootNode=5
-//  6:case fFirstLevelNode of
-//      30,0,1,2,3:;
-//      12,13,14:
-//        begin
-//        JoinToStringToSend(RootNodeKeitley[fFirstLevelNode]);
-//        JoinToStringToSend(FirstNodeKt_2450[fLeafNode]);
-//        end;
-//      else JoinToStringToSend(FirstNodeKt_2450[fFirstLevelNode]);
-//     end;  // fRootNode=6
   11:case fFirstLevelNode of
        12..13:case fLeafNode of
                 0:JoinToStringToSend(RootNodeKeitley[fFirstLevelNode]);
@@ -1657,32 +1646,18 @@ begin
            end;
      end;// fRootNode=11
   12..14:
-//       begin
-//         JoinToStringToSend(FirstNodeKt_2450[fFirstLevelNode]);
          case fLeafNode of
           18,19:JoinToStringToSend(FirstNodeKt_2450[fLeafNode]);
          end;
-//       end; // fRootNode=12..14
   19:begin
-//       JoinToStringToSend(FirstNodeKt_2450[fFirstLevelNode]);
        case fFirstLevelNode of
-//        31:if fLeafNode=1 then JoinToStringToSend(Buffer.Get)
-//                           else fAdditionalString:=Buffer.ReSize;
-//        32:if fLeafNode=1 then JoinToStringToSend(Buffer.Get)
-//                           else fAdditionalString:=Buffer.FillModeChange;
         33:JoinToStringToSend(Buffer.DataDemandArray(TKeitley_ReturnedData(fLeafNode)));
-//        35:case fLeafNode of
-//            1:JoinToStringToSend(Buffer.Get);
-//            2:JoinToStringToSend(Buffer.LimitIndexies)
-//           end;
        end;
       end; // fRootNode=19
   21:case fFirstLevelNode of
-//       1:JoinToStringToSend(Buffer.Get);
        2..5:JoinToStringToSend(Buffer.DataDemand(TKeitley_ReturnedData(fFirstLevelNode-2)))
      end; // fRootNode=21
   22:case fFirstLevelNode of
-//       1:JoinToStringToSend(Buffer.Get);
        2..5:JoinToStringToSend(Buffer.DataDemand(TKeitley_ReturnedData(fFirstLevelNode-2)))
      end; // fRootNode=22
   23:case fFirstLevelNode of
@@ -2286,6 +2261,20 @@ begin
     TrigMeasureResultTransition(kt_tlt_outside, -Imax, Imax, fTrigBlockNumber + 3);
   inc(fTrigBlockNumber);
   TrigCounterTransition(i, LoopTransitionNumber);
+end;
+
+procedure TKt_2450.TrigForIMeasurement;
+begin
+// HookForTrigDataObtainIMesurement();
+//заглушку зробив, але навіть у privat та property не вносив
+
+// OutPutChange(False);
+
+ TrigNewCreate();
+// TrigOutPutChange(True);
+ TrigMeasure;
+ TrigOutPutChange(False);
+
 end;
 
 procedure TKt_2450.TrigForIVCreate;

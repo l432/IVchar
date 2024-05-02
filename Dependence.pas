@@ -300,8 +300,6 @@ TTimeTwoDependenceTimer=class(TTimeDependenceTimer)
                      FLn,FLg:TPointSeries;
                      Tim:TTimer);
   procedure BeginMeasuring();override;
-//  class function SecondValue:double;
-//  class procedure SecondValueChange(Value: double);
 end;
 
 

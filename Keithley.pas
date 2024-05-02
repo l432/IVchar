@@ -848,13 +848,6 @@ end;
 procedure TKeitley.PrepareStringByRootNode;
 begin
  case fRootNode of
-//  5:case fFirstLevelNode of
-//     5: JoinToStringToSend(FirstNodeKt_2450[fFirstLevelNode]);
-//     0..1:begin
-//           JoinToStringToSend(RootNoodKt_2450[12+fFirstLevelNode]);
-//           JoinToStringToSend(FirstNodeKt_2450[fLeafNode]);
-//          end;
-//    end;  // fRootNode=5
   6:case fFirstLevelNode of
      0..3:JoinToStringToSend(FirstNodeKt_2450[fFirstLevelNode]);
      230: JoinToStringToSend(FirstNodeKt_2450[fFirstLevelNode-200]);
@@ -866,51 +859,8 @@ begin
       else JoinToStringToSend(FirstNodeKt_2450[fFirstLevelNode]);
      end;  // fRootNode=6
   7,9:JoinToStringToSend(FirstNodeKt_2450[fFirstLevelNode]);
-//  11:case fFirstLevelNode of
-//       12..13:case fLeafNode of
-//                0:JoinToStringToSend(RootNoodKt_2450[fFirstLevelNode]);
-//                else
-//                   begin
-//                    JoinToStringToSend(RootNoodKt_2450[fFirstLevelNode]);
-//                    JoinToStringToSend(FirstNodeKt_2450[fLeafNode]);
-//                    if fIsTripped then JoinToStringToSend(FirstNodeKt_2450[11]);
-//                   end;
-//              end;
-//       155:JoinToStringToSend(RootNoodKt_2450[15]);
-//       23:case fLeafNode of
-//             179,180:begin
-//                   JoinToStringToSend(FirstNodeKt_2450[fFirstLevelNode]);
-//                   JoinToStringToSend(RootNoodKt_2450[fLeafNode-79+12]);
-//                   JoinToStringToSend(FirstNodeKt_2450[24]);
-//                   end;
-//             else
-//                 begin
-//                 JoinToStringToSend(FirstNodeKt_2450[fFirstLevelNode]);
-//                 JoinToStringToSend(RootNoodKt_2450[fLeafNode]);
-//                 end;
-//          end;
-//        24:begin
-//            JoinToStringToSend(RootNoodKt_2450[fFirstLevelNode]);
-//            JoinToStringToSend(FirstNodeKt_2450[23]);
-//            JoinToStringToSend(ConfLeafNodeKt_2450[fLeafNode]);
-//           end;
-//        25:begin
-//            JoinToStringToSend(FirstNodeKt_2450[fFirstLevelNode]);
-//            case fLeafNode of
-//              1:JoinToStringToSend(SweepParameters[fSourceType].Lin);
-//              2:JoinToStringToSend(SweepParameters[fSourceType].LinStep);
-//              3:JoinToStringToSend(SweepParameters[fSourceType].List);
-//              4:JoinToStringToSend(SweepParameters[fSourceType].Log);
-//            end;
-//           end;
-//     end;// fRootNode=11
   12..14,28..39:
-//       begin
          JoinToStringToSend(FirstNodeKt_2450[fFirstLevelNode]);
-//         case fLeafNode of
-//          18,19:JoinToStringToSend(FirstNodeKt_2450[fLeafNode]);
-//         end;
-//       end; // fRootNode=12..14
   17:if fFirstLevelNode=1 then JoinToStringToSend(fAdditionalString);
   19:begin
        JoinToStringToSend(FirstNodeKt_2450[fFirstLevelNode]);
@@ -919,7 +869,6 @@ begin
                            else fAdditionalString:=Buffer.ReSize;
         32:if fLeafNode=1 then JoinToStringToSend(Buffer.Get)
                            else fAdditionalString:=Buffer.FillModeChange;
-//        33:JoinToStringToSend(Buffer.DataDemandArray(TKeitley_ReturnedData(fLeafNode)));
         35:case fLeafNode of
             1:JoinToStringToSend(Buffer.Get);
             2:JoinToStringToSend(Buffer.LimitIndexies)
@@ -928,14 +877,12 @@ begin
       end; // fRootNode=19
   21:case fFirstLevelNode of
        1:JoinToStringToSend(Buffer.Get);
-//       2..5:JoinToStringToSend(Buffer.DataDemand(TKeitley_ReturnedData(fFirstLevelNode-2)))
      end; // fRootNode=21
   22:case fFirstLevelNode of
        1:JoinToStringToSend(Buffer.Get);
      end; // fRootNode=22
   23:case fFirstLevelNode of
           15,20:JoinToStringToSend (RootNodeKeitley[fFirstLevelNode]);
-//        36,37:JoinToStringToSend(AnsiReplaceStr(FirstNodeKt_2450[fFirstLevelNode],'#',inttostr(fDLActive)));
      end; // fRootNode=23
   24:begin
         JoinToStringToSend(FirstNodeKt_2450[fFirstLevelNode]);

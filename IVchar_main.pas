@@ -50,6 +50,7 @@ const
   MeasFastIVArd='Fast IV by Arduino';
   MeasST2829='ST2829C dependence';
   MeasST2829Multi='ST2829C Multidependence';
+  MeasKT2450onTime='KT2450 on time';
 
   IscVocTimeToWait=500;
 
@@ -732,14 +733,10 @@ type
     procedure BWriteTMClick(Sender: TObject);
     procedure BComReloadClick(Sender: TObject);
     procedure B_IT6332_TestClick(Sender: TObject);
-//    procedure FormPaint(Sender: TObject);
     procedure FormShow(Sender: TObject);
     procedure BBCloseClick(Sender: TObject);
-//    procedure B_Kt2450driveClick(Sender: TObject);
     procedure CBuseKT2450Click(Sender: TObject);
-//    procedure B_DM6500driveClick(Sender: TObject);
     procedure CBTelnetStrShowClick(Sender: TObject);
-//    procedure B_GDS806driveClick(Sender: TObject);
     procedure B_driveClick(Sender: TObject);
   private
     procedure ComponentView;
@@ -765,9 +762,7 @@ type
     procedure VoltmetrsCreate;
     procedure ObjectsFree;
     procedure DACCreate;
-//    procedure DACFree;
     procedure DACReadFromIniFileAndToForm;
-//    procedure DACWriteToIniFile;
     procedure TestVarCreate;
     procedure TestVarFree;
     procedure DevicesCreate;
@@ -798,11 +793,9 @@ type
     procedure FastIVHookBeginBase(FastIVDep:TFastIVDependence);
     procedure FastIVHookBegin;
     procedure Kt2450HookForTrig;
-//    procedure FastArduinoIVHookBegin;
     procedure ST2829HookBegin;
     procedure FastIVHookEndBase(FastIVDep:TFastIVDependence);
     procedure FastIVHookEnd;
-//    procedure FastArduinoIVHookEnd;
     procedure ST2829HookEnd;
     procedure ST2829MultiDependencesHookDataSave;
 
@@ -881,7 +874,6 @@ type
     procedure FormDock(FForm: TForm; TS: TTabSheet);
     procedure ButtonMeasEnableFalse;
     procedure TemperatureDetermination;
-//    procedure BIVSaveReadyToWork;
   public
     TestVar2:TINA226_Channel;
      TestVar:TSimpleFreeAndAiniObject;
@@ -958,12 +950,12 @@ type
 
     IVMeasuring,CalibrMeasuring:TIVDependence;
     CustomFastIVMeas,FastIVMeasuring:TFastIVDependence;
-//    FastArduinoIV:TFastArduinoIVDependence;
     TimeDependence:TTimeDependenceTimer;
     ControlParameterTime,TemperatureOnTime:TTimeDependence;
     IVcharOnTemperature:TTemperatureDependence;
     ShowTempDep:TShowTemperatureDependence;
-    TimeTwoDependenceTimer,IscVocOnTime:TTimeTwoDependenceTimer;
+    TimeTwoDependenceTimer,IscVocOnTime,
+    KT2450onTime:TTimeTwoDependenceTimer;
     ST2829Dependence:TST2829Dependence;
     ST2829MultiDependences:TST2829MultiDependences;
     Dependencies:Array of TFastDependence;
@@ -4778,6 +4770,7 @@ begin
   CBMeasurements.Items.Add(MeasST2829Multi);
   CBMeasurements.Items.Add(MeasTimeD);
   CBMeasurements.Items.Add(MeasTwoTimeD);
+
   CBMeasurements.Items.Add(MeasR2RCalib);
   CBMeasurements.Items.Add(MeasControlParametr);
   CBMeasurements.Items.Add(MeasIV);
