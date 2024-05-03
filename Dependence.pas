@@ -6,7 +6,7 @@ uses
   StdCtrls, ComCtrls, OlegType, Series, ShowTypes,
   ExtCtrls, Classes, OlegTypePart2, MDevice, HighResolutionTimer, 
   OlegShowTypes, IniFiles, OlegVector, OlegVectorManipulation, Keithley2450, 
-  ST2829C;
+  ST2829C, Buttons;
 
 var EventToStopDependence:THandle;
   fItIsForward:boolean;
@@ -183,6 +183,9 @@ private
   function TimeFrom(BeginTime:TDateTime):single;
 end;
 
+
+
+
 TTimeDependenceTread = class(TThread)
   private
     { Private declarations }
@@ -266,11 +269,13 @@ private
   Timer:TTimer;
   FInterval: integer;
   FDuration: int64;
+  fOwnTimerIsUsed:boolean;
   procedure SetDuration(const Value: int64);
   procedure SetInterval(const Value: integer);
   procedure TimerOnTime(Sender: TObject);
   procedure ActionMeasurement();override;
   function MeasurementNumberDetermine(): integer;override;
+  procedure Initiation;
  public
   property Interval:integer read FInterval write SetInterval;
   property Duration:int64 read FDuration write SetDuration;
@@ -278,7 +283,12 @@ private
                      BS: TButton;
                      Res:TVector;
                      FLn,FLg:TPointSeries;
-                     Tim:TTimer);
+                     Tim:TTimer);overload;
+  Constructor Create(PB:TProgressBar;
+                     BS: TButton;
+                     Res:TVector;
+                     FLn,FLg:TPointSeries);overload;
+  destructor Destroy; override;
   procedure BeginMeasuring();override;
   procedure EndMeasuring();override;
   procedure PauseMeasuring();
@@ -300,6 +310,8 @@ TTimeTwoDependenceTimer=class(TTimeDependenceTimer)
                      FLn,FLg:TPointSeries;
                      Tim:TTimer);
   procedure BeginMeasuring();override;
+//  class function SecondValue:double;
+//  class procedure SecondValueChange(Value: double);
 end;
 
 
@@ -472,6 +484,25 @@ TFastIVDependence=class (TDependenceByDevice)
 end;
 
 
+TIVonTimeDependence=class(TTimeDependenceTimer)
+{вимірювання ВАХ через певні проміжки часу, причому
+кожна ВАХ на екрані}
+ private
+//  fTimer:TTimer;
+  fDep: TFastIVDependence;
+  fBPause:TSpeedButton;
+  procedure ActionMeasurement();override;
+ public
+  Constructor Create(PB:TProgressBar;
+                     BStop: TButton;
+                     BPause: TSpeedButton;
+                     Dependence:TFastIVDependence);
+ procedure BeginMeasuring();override;
+ procedure EndMeasuring();override;
+
+end;
+
+
 TFastIVstate=class
  private
   fFastIV:TFastIVDependence;
@@ -568,7 +599,7 @@ implementation
 uses
   SysUtils, Forms, Windows, Math, DateUtils,
   Dialogs, OlegGraph, OlegFunction, 
-  OlegMath, Measurement, Buttons, Keitley2450Const, ST2829CConst;
+  OlegMath, Measurement, Keitley2450Const, ST2829CConst;
 
 var
 //  fItIsForward:boolean;
@@ -579,7 +610,7 @@ var
   fVoltageStep:double;
   fVoltageCorrection:double;
   ftempV,ftempI,fSecondValue:double;
-  fPointNumber:word;
+  fPointNumber:integer;
   fDelayTime:integer;
 
 { TIVDependence }
@@ -780,6 +811,23 @@ begin
   Timer.Enabled:=True;
 end;
 
+constructor TTimeDependenceTimer.Create(PB: TProgressBar; BS: TButton;
+  Res: TVector; FLn, FLg: TPointSeries);
+begin
+ inherited Create(PB,BS,Res,FLn, FLg);
+
+ Timer:=TTimer.Create(nil);
+ Timer.Enabled:=False;
+ fOwnTimerIsUsed:=True;
+ Initiation();
+end;
+
+destructor TTimeDependenceTimer.Destroy;
+begin
+ if fOwnTimerIsUsed then FreeAndNil(Timer);
+ inherited;
+end;
+
 constructor TTimeDependenceTimer.Create(PB: TProgressBar;
                                    BS: TButton;
                                    Res: TVector;
@@ -789,8 +837,8 @@ begin
  inherited Create(PB,BS,Res,FLn, FLg);
 
  Timer:=Tim;
- FInterval:=15;
- FDuration:=0;
+ fOwnTimerIsUsed:=False;
+ Initiation();
 end;
 
 procedure TTimeDependenceTimer.EndMeasuring;
@@ -842,6 +890,12 @@ begin
     end;
   end;
 
+end;
+
+procedure TTimeDependenceTimer.Initiation;
+begin
+  FInterval := 15;
+  FDuration := 0;
 end;
 
 procedure TTimeDependenceTimer.TimerOnTime(Sender: TObject);
@@ -918,10 +972,11 @@ end;
 procedure TDependence.BeginMeasuring;
 begin
 //  fIVMeasuringToStop:=False;
-  ProgressBar.Max := MeasurementNumberDetermine();
-  ProgressBar.Position := 0;
+
   FisActive:=True;
   inherited  BeginMeasuring();
+  ProgressBar.Max := MeasurementNumberDetermine();
+  ProgressBar.Position := 0;
 end;
 
 constructor TDependence.Create(PB: TProgressBar;
@@ -1193,7 +1248,8 @@ begin
 //  fIVMeasuringToStop:=False;
   DecimalSeparator:='.';
   fPointNumber:=0;
-  Results.SetLenVector(fPointNumber);
+  if Assigned(Results) then
+    Results.SetLenVector(fPointNumber);
   ButtonStop.OnClick := ButtonStopClick;
   ButtonStop.Enabled:=True;
 //-----------------
@@ -1232,10 +1288,13 @@ procedure TFastDependence.DataSave;
 begin
   HookDataSave();
 
-  Results.Add(ftempV, ftempI);
+  if assigned(Results) then
+     begin
+      Results.Add(ftempV, ftempI);
 
-  if (Results.Count  mod 10) = 0 then
-     Results.WriteToFile('zapas.dat',6);
+      if (Results.Count  mod 10) = 0 then
+         Results.WriteToFile('zapas.dat',6);
+     end;
 
 end;
 
@@ -1293,12 +1352,18 @@ end;
 
 procedure TFastDependence.SeriesClear;
 begin
-  ForwLine.Clear;
-  ForwLg.Clear;
-  ForwLg.ParentChart.Axes.Left.Logarithmic:=True;
-  ForwLg.ParentChart.Axes.Left.LogarithmicBase:=10;
-  ForwLg.ParentChart.Axes.Bottom.Logarithmic:=False;
-  ForwLine.ParentChart.Axes.Bottom.Logarithmic:=False;
+  if assigned(ForwLine) then
+    begin
+     ForwLine.Clear;
+     ForwLine.ParentChart.Axes.Bottom.Logarithmic:=False;
+    end;
+  if assigned(ForwLg) then
+    begin
+      ForwLg.Clear;
+      ForwLg.ParentChart.Axes.Left.Logarithmic:=True;
+      ForwLg.ParentChart.Axes.Left.LogarithmicBase:=10;
+      ForwLg.ParentChart.Axes.Bottom.Logarithmic:=False;
+    end;
 end;
 
 { TFastIVDependenceNew }
@@ -2529,7 +2594,7 @@ begin
  if FilePrefix=''
    then PrefixToFileName:=ST2829C_MeasureTypeCommands[fSP.MeasureType]
    else PrefixToFileName:=FilePrefix;
- if PrefixToFileName='rx' then  PrefixToFileName:='rz';
+ if PrefixToFileName='rx' then  PrefixToFileName:='rr';
 
  BeginMeasuring();
  Cycle();
@@ -2688,6 +2753,62 @@ begin
     then Result := StringReplace(Result, '.', SweetTypeSyffix, [])
     else Result :=Result+SweetTypeSyffix;
 
+end;
+
+{ TIVonTimeDependence }
+
+procedure TIVonTimeDependence.ActionMeasurement;
+begin
+//  HookFirstMeas();
+
+//  HookSecondMeas();
+
+  fDep.Measuring(True,'i');
+
+  ButtonStop.Enabled:=True;
+
+  if fPointNumber>=ProgressBar.Max-1
+    then ProgressBar.Max :=2*ProgressBar.Max;
+
+  ProgressBar.Position := fPointNumber;
+
+  if (FDuration>0)and(TimeFromBegin()>FDuration) then SetEvent(EventToStopDependence);
+
+  MelodyShot();
+
+  HRDelay(1000);
+
+  HookDataSave;
+
+end;
+
+procedure TIVonTimeDependence.BeginMeasuring;
+begin
+  inherited BeginMeasuring;
+  fBPause.Enabled:=True;
+  fBPause.OnClick:=SpBattonClick;
+end;
+
+constructor TIVonTimeDependence.Create(PB:TProgressBar;
+                     BStop: TButton;
+                     BPause: TSpeedButton;
+                     Dependence:TFastIVDependence);
+begin
+// fTimer:=TTimer.Create(nil);
+// fTimer.Enabled:=False;
+ fDep:=Dependence;
+ fBPause:=BPause;
+ inherited Create(PB,BStop,nil,nil,nil);
+
+end;
+
+
+
+procedure TIVonTimeDependence.EndMeasuring;
+begin
+  inherited EndMeasuring;
+  fBPause.Enabled:=False;
+  fBPause.OnClick:=nil;
 end;
 
 initialization

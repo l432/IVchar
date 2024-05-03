@@ -2269,11 +2269,13 @@ begin
 //заглушку зробив, але навіть у privat та property не вносив
 
 // OutPutChange(False);
+ AzeroOnce();
 
  TrigNewCreate();
 // TrigOutPutChange(True);
  TrigMeasure;
  TrigOutPutChange(False);
+ SweepWasCreated:=False;
 
 end;
 

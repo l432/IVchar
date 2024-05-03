@@ -50,6 +50,7 @@ const
   MeasFastIVArd='Fast IV by Arduino';
   MeasST2829='ST2829C dependence';
   MeasST2829Multi='ST2829C Multidependence';
+  MeasIVonTime='IV characteristic on time';
   MeasKT2450onTime='KT2450 on time';
 
   IscVocTimeToWait=500;
@@ -733,10 +734,14 @@ type
     procedure BWriteTMClick(Sender: TObject);
     procedure BComReloadClick(Sender: TObject);
     procedure B_IT6332_TestClick(Sender: TObject);
+//    procedure FormPaint(Sender: TObject);
     procedure FormShow(Sender: TObject);
     procedure BBCloseClick(Sender: TObject);
+//    procedure B_Kt2450driveClick(Sender: TObject);
     procedure CBuseKT2450Click(Sender: TObject);
+//    procedure B_DM6500driveClick(Sender: TObject);
     procedure CBTelnetStrShowClick(Sender: TObject);
+//    procedure B_GDS806driveClick(Sender: TObject);
     procedure B_driveClick(Sender: TObject);
   private
     procedure ComponentView;
@@ -762,7 +767,9 @@ type
     procedure VoltmetrsCreate;
     procedure ObjectsFree;
     procedure DACCreate;
+//    procedure DACFree;
     procedure DACReadFromIniFileAndToForm;
+//    procedure DACWriteToIniFile;
     procedure TestVarCreate;
     procedure TestVarFree;
     procedure DevicesCreate;
@@ -793,19 +800,25 @@ type
     procedure FastIVHookBeginBase(FastIVDep:TFastIVDependence);
     procedure FastIVHookBegin;
     procedure Kt2450HookForTrig;
+//    procedure FastArduinoIVHookBegin;
     procedure ST2829HookBegin;
     procedure FastIVHookEndBase(FastIVDep:TFastIVDependence);
     procedure FastIVHookEnd;
+//    procedure FastArduinoIVHookEnd;
     procedure ST2829HookEnd;
     procedure ST2829MultiDependencesHookDataSave;
+    procedure IVonTimeHookBegin;
+    procedure IVonTimeHookDataSave;
 
     procedure TimeDHookFirstMeas;
     procedure TimeTwoDHookFirstMeas;
+    procedure KT2450onTimeHookFirstMeas;
     procedure IscVocOnTimeHookFirstMeas;
     procedure ControlTimeFirstMeas;
     procedure TemperatureOnTimeFirstMeas;
     procedure TimeDHookSecondMeas;
     procedure TimeTwoDHookSecondMeas;
+    procedure KT2450onTimeHookSecondMeas;
     procedure IscVocOnTimeHookSecondMeas;
     procedure IVCharHookSetVoltage;
     procedure IVCharHookAction;
@@ -874,6 +887,8 @@ type
     procedure FormDock(FForm: TForm; TS: TTabSheet);
     procedure ButtonMeasEnableFalse;
     procedure TemperatureDetermination;
+    procedure TimeParametrToDependence(Dependence: TTimeDependenceTimer);
+//    procedure BIVSaveReadyToWork;
   public
     TestVar2:TINA226_Channel;
      TestVar:TSimpleFreeAndAiniObject;
@@ -950,6 +965,7 @@ type
 
     IVMeasuring,CalibrMeasuring:TIVDependence;
     CustomFastIVMeas,FastIVMeasuring:TFastIVDependence;
+//    FastArduinoIV:TFastArduinoIVDependence;
     TimeDependence:TTimeDependenceTimer;
     ControlParameterTime,TemperatureOnTime:TTimeDependence;
     IVcharOnTemperature:TTemperatureDependence;
@@ -958,6 +974,7 @@ type
     KT2450onTime:TTimeTwoDependenceTimer;
     ST2829Dependence:TST2829Dependence;
     ST2829MultiDependences:TST2829MultiDependences;
+    IVonTimeDependence:TIVonTimeDependence;
     Dependencies:Array of TFastDependence;
     PID_Termostat,PID_Control:TPID;
     PID_Termostat_ParametersShow,PID_Control_ParametersShow:TPID_ParametersShow;
@@ -1196,6 +1213,10 @@ begin
                                        ForwLine,ForwLg,DependTimer);
   TimeTwoDependenceTimer.isTwoValueOnTime:=not(CBFvsS.Checked);
 
+  KT2450onTime:=TTimeTwoDependenceTimer.Create(PBIV,BIVStop,IVResult,
+                                       ForwLine,ForwLg,DependTimer);
+  KT2450onTime.isTwoValueOnTime:=True;
+
   IscVocOnTime:=TTimeTwoDependenceTimer.Create(PBIV,BIVStop,IVResult,
                                        ForwLine,ForwLg,DependTimer);
 
@@ -1210,12 +1231,17 @@ begin
                                                  STTemDepStep,STTemDepIsoInterval,STTemDepTolCoef,
                                                  LTemDepStart,LTemDepFinish,
                                                  LTemDepStep,LTemDepIsoInterval,LTemDepTolCoef);
+  ShowArray.Add(ShowTempDep);
+
   ST2829Dependence:=TST2829Dependence.Create(ST_2829C.SweepParameters,PBIV,BIVStop,{IVResult,}
                                        ForwLine,ForwLg);
   ST2829MultiDependences:=TST2829MultiDependences.Create(ST_2829C,ST2829Dependence,BIVStop);
 
+  IVonTimeDependence:=TIVonTimeDependence.Create(PBIV,BIVStop,
+                                                 SBIVPause,FastIVMeasuring);
 
-  ShowArray.Add(ShowTempDep);
+  IVonTimeDependence.HookBeginMeasuring:=IVonTimeHookBegin;
+  IVonTimeDependence.HookDataSave:=IVonTimeHookDataSave;
 
   FastIVMeasuring.HookBeginMeasuring:=FastIVHookBegin;
   FastIVMeasuring.HookEndMeasuring:=FastIVHookEnd;
@@ -1242,7 +1268,7 @@ begin
   ST2829MultiDependences.HookDataSave:=ST2829MultiDependencesHookDataSave;
 
 
-  SetLength(Dependencies,8);
+  SetLength(Dependencies,9);
   Dependencies[0]:=IVMeasuring;
   Dependencies[1]:=CalibrMeasuring;
   Dependencies[2]:=TimeDependence;
@@ -1251,7 +1277,7 @@ begin
   Dependencies[5]:=ControlParameterTime;
   Dependencies[6]:=TemperatureOnTime;
   Dependencies[7]:=IVcharOnTemperature;
-//  Dependencies[8]:=ST2829Dependence;
+  Dependencies[8]:=KT2450onTime;
 
 
   IVMeasuring.RangeFor:=IVCharRangeFor;
@@ -1284,6 +1310,7 @@ begin
   CalibrMeasuring.HookSecondMeas:=CalibrHookSecondMeas;
   TimeDependence.HookSecondMeas:=TimeDHookSecondMeas;
   TimeTwoDependenceTimer.HookSecondMeas:=TimeTwoDHookSecondMeas;
+  KT2450onTime.HookSecondMeas:=KT2450onTimeHookSecondMeas;
   IscVocOnTime.HookSecondMeas:=IscVocOnTimeHookSecondMeas;
   ControlParameterTime.HookSecondMeas:=TimeDHookSecondMeas;
   TemperatureOnTime.HookSecondMeas:=TimeDHookSecondMeas;
@@ -1294,6 +1321,7 @@ begin
   CalibrMeasuring.HookFirstMeas:=CalibrHookFirstMeas;
   TimeDependence.HookFirstMeas:=TimeDHookFirstMeas;
   TimeTwoDependenceTimer.HookFirstMeas:=TimeTwoDHookFirstMeas;
+  KT2450onTime.HookFirstMeas:=KT2450onTimeHookFirstMeas;
   IscVocOnTime.HookFirstMeas:=IscVocOnTimeHookFirstMeas;
   ControlParameterTime.HookFirstMeas:=ControlTimeFirstMeas;
   TemperatureOnTime.HookFirstMeas:=TemperatureOnTimeFirstMeas;
@@ -1493,6 +1521,12 @@ procedure TIVchar.HookBegin;
 
   if Key=MeasTimeD then MeasurementTimeParameterDetermination(TimeDependence);
   if Key=MeasTwoTimeD then  MeasurementTimeParameterDetermination(TimeTwoDependenceTimer);
+  if Key=MeasKT2450onTime then
+    begin
+     MeasurementTimeParameterDetermination(KT2450onTime);
+     Kt_2450.TrigForIMeasurement();
+    end;
+
   if Key=MeasIscAndVocOnTime then
    begin
    MeasurementTimeParameterDetermination(IscVocOnTime);
@@ -1917,6 +1951,9 @@ begin
       if TimeTwoDependenceTimer.isTwoValueOnTime
         then MeasurementsLabelCaption(['1-st value', 'Time', '2-nd value'])
         else MeasurementsLabelCaption(['1-st value', '2-nd value', '']);
+
+ if Key=MeasKT2450onTime
+  then MeasurementsLabelCaption(['I (A)', 'Time', 'T (K)']);
 
  if Key=MeasIscAndVocOnTime
      then MeasurementsLabelCaption(['Voc', 'Time', 'Isc']);
@@ -2442,6 +2479,9 @@ begin
           else IVResult.WriteToFile(SaveDialog.FileName,9);
      end;
 
+   if Key=MeasKT2450onTime then
+      ToFileFromTwoSeries(SaveDialog.FileName,ForwLine,ForwLg,9);
+
     if (Key=MeasIscAndVocOnTime) then
       begin
       ToFileFromTwoSeries(SaveDialog.FileName,ForwLine,ForwLg,6);
@@ -2808,6 +2848,9 @@ begin
 // if Key=MeasFastIVArd then FastArduinoIV.Measuring;
  if Key=MeasTimeD then TimeDependence.BeginMeasuring;
  if Key=MeasTwoTimeD then TimeTwoDependenceTimer.BeginMeasuring;
+ if Key=MeasKT2450onTime then KT2450onTime.BeginMeasuring;
+
+
  if Key=MeasIscAndVocOnTime then IscVocOnTime.BeginMeasuring;
 
  if (Key=MeasControlParametr)and (SBControlBegin.Down)
@@ -2818,6 +2861,7 @@ begin
 
  if Key=MeasST2829 then ST2829Dependence.Measuring;
  if Key=MeasST2829Multi then ST2829MultiDependences.Measuring;
+ if Key=MeasIVonTime then IVonTimeDependence.BeginMeasuring;
 
 end;
 
@@ -3412,8 +3456,7 @@ end;
 
 procedure TIVchar.MeasurementTimeParameterDetermination(Dependence:TTimeDependenceTimer);
 begin
-  Dependence.Duration := MeasurementDurationCS.Data;
-  Dependence.Interval := MeasurementIntervalCS.Data;
+  TimeParametrToDependence(Dependence);
   SBIVPause.Enabled:=True;
   SBIVPause.OnClick:=Dependence.SpBattonClick;
 end;
@@ -4085,6 +4128,7 @@ begin
     Dependencies[i].Free;
  FastIVMeasuring.Free;
 // FastArduinoIV.Free;
+ IVonTimeDependence.Free;
  ST2829MultiDependences.Free;
  ST2829Dependence.Free;
 end;
@@ -4470,6 +4514,12 @@ begin
 
 end;
 
+procedure TIVchar.TimeParametrToDependence(Dependence: TTimeDependenceTimer);
+begin
+  Dependence.Duration := MeasurementDurationCS.Data;
+  Dependence.Interval := MeasurementIntervalCS.Data;
+end;
+
 procedure TIVchar.TemperatureDetermination;
 begin
   if (SBTAuto.Down) and (Temperature_MD.ActiveInterface.NewData) then
@@ -4518,6 +4568,17 @@ begin
        else Factor := 0.8;
 end;
 
+procedure TIVchar.IVonTimeHookBegin;
+begin
+ TimeParametrToDependence(IVonTimeDependence);
+end;
+
+procedure TIVchar.IVonTimeHookDataSave;
+begin
+  SaveIVMeasurementResults(FastIVMeasuring.DatFileNameToSave,
+                           FastIVMeasuring.Results)
+end;
+
 procedure TIVchar.IVVoltageInputSignDetermine;
 begin
   if TIVParameters.ItIsForward then
@@ -4536,6 +4597,26 @@ begin
  Kt_2450.CurrentValueLimitEnable:=FastIVMeasuring.CurrentValueLimitEnable;
 
 // FastIVMeasuring.Results.CopyTo(Kt_2450.DataVector);
+end;
+
+procedure TIVchar.KT2450onTimeHookFirstMeas;
+begin
+// Kt_2450.AzeroOnce();
+ Kt_2450.Init;
+// Kt_2450.Wait;
+ Kt_2450.MeasureExtended(kt_rd_MST);
+
+ TDependence.tempIChange(Kt_2450.Device.Value);
+ TDependence.tempVChange(Kt_2450.TimeValue);
+ LADVoltageValue.Caption:=FloatToStrF(TDependence.tempI,ffExponent, 4, 3);
+end;
+
+procedure TIVchar.KT2450onTimeHookSecondMeas;
+begin
+ TTimeTwoDependenceTimer.SecondValueChange(TimeD_MD2.ActiveInterface.GetData);
+ LADInputVoltageValue.Caption:=FloatToStrF(TTimeTwoDependenceTimer.SecondValue,ffExponent, 4, 3);
+ KT2450onTime.SecondMeasurementTime:=Kt_2450.TimeValue;
+ TimeDHookSecondMeas;
 end;
 
 procedure TIVchar.Kt2450_Create;
@@ -4766,11 +4847,11 @@ begin
   CBMeasurements.Items.Add(MeasTempOnTime);
   CBMeasurements.Items.Add(MeasIscAndVocOnTime);
   CBMeasurements.Items.Add(MeasIVonTemper);
+  CBMeasurements.Items.Add(MeasIVonTime);
   CBMeasurements.Items.Add(MeasST2829);
   CBMeasurements.Items.Add(MeasST2829Multi);
   CBMeasurements.Items.Add(MeasTimeD);
   CBMeasurements.Items.Add(MeasTwoTimeD);
-
   CBMeasurements.Items.Add(MeasR2RCalib);
   CBMeasurements.Items.Add(MeasControlParametr);
   CBMeasurements.Items.Add(MeasIV);
