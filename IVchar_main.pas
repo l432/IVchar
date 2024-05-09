@@ -4603,19 +4603,21 @@ procedure TIVchar.KT2450onTimeHookFirstMeas;
 begin
 // Kt_2450.AzeroOnce();
  Kt_2450.Init;
-// Kt_2450.Wait;
- Kt_2450.MeasureExtended(kt_rd_MST);
+ Kt_2450.Wait;
+// Kt_2450.MeasureExtended(kt_rd_MST);
+ Kt_2450.BufferLastDataExtended(kt_rd_MST);
 
  TDependence.tempIChange(Kt_2450.Device.Value);
- TDependence.tempVChange(Kt_2450.TimeValue);
+// showmessage(floattostr(Kt_2450.TimeValue));
+ TDependence.tempVChange(Kt_2450.TimeValue/1000);
  LADVoltageValue.Caption:=FloatToStrF(TDependence.tempI,ffExponent, 4, 3);
 end;
 
 procedure TIVchar.KT2450onTimeHookSecondMeas;
 begin
  TTimeTwoDependenceTimer.SecondValueChange(TimeD_MD2.ActiveInterface.GetData);
- LADInputVoltageValue.Caption:=FloatToStrF(TTimeTwoDependenceTimer.SecondValue,ffExponent, 4, 3);
- KT2450onTime.SecondMeasurementTime:=Kt_2450.TimeValue;
+ LADInputVoltageValue.Caption:=FloatToStrF(TTimeTwoDependenceTimer.SecondValue,ffGeneral,4,3);
+ KT2450onTime.SecondMeasurementTime:=Kt_2450.TimeValue/1000;
  TimeDHookSecondMeas;
 end;
 
@@ -4852,6 +4854,7 @@ begin
   CBMeasurements.Items.Add(MeasST2829Multi);
   CBMeasurements.Items.Add(MeasTimeD);
   CBMeasurements.Items.Add(MeasTwoTimeD);
+  CBMeasurements.Items.Add(MeasKT2450onTime);
   CBMeasurements.Items.Add(MeasR2RCalib);
   CBMeasurements.Items.Add(MeasControlParametr);
   CBMeasurements.Items.Add(MeasIV);

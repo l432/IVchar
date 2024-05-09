@@ -2270,11 +2270,14 @@ begin
 
 // OutPutChange(False);
  AzeroOnce();
+ BufferClear();
 
  TrigNewCreate();
-// TrigOutPutChange(True);
+// TrigBufferClear();
+ TrigOutPutChange(True);
  TrigMeasure;
  TrigOutPutChange(False);
+
  SweepWasCreated:=False;
 
 end;
