@@ -29,6 +29,16 @@ type
    Constructor Create(SCPInew:TSCPInew;Nm:string);
  end;
 
+//  TST2829_ParamMeasurCondition = class(TSimpleFreeAndAiniObject)
+//  private
+////   fLimitValues: array of T;
+//   fMeasureSpeed: array of TST2829C_MeasureSpeed;
+//   fAverTimes: array of byte;
+//  public
+////    procedure AddElement(Element: T);
+////    function GetElement(Index: Integer): T;
+////    function Count: Integer;
+//  end;
 
 
   TST2829_MeterSecondary=class;
