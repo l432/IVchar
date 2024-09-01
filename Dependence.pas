@@ -125,22 +125,16 @@ TST2829Dependence=class(TDependenceByDevice)
   fXValue:double;
   procedure SeriesClear();override;
   procedure Cycle();
-//  function MeasurementNumberDetermine(): integer;override;
   procedure BeginMeasuring();override;
   procedure EndMeasuring();override;
   procedure ActionMeasurement();override;
   procedure DataSave();override;
  protected
-//  fSingleMeasurement:boolean;
-//  {якщо True, то треба заповнювати графіки,
-//  інакше це просто вимірювання в ряді інших}
+
  public
-// PrefixToFileName:string;
-// property SingleMeasurement:boolean read fSingleMeasurement write fSingleMeasurement;
  Constructor Create(SweepParameters:TST2829SweepParameters;
                     PB:TProgressBar;
                     BS: TButton;
-//                    Res:TVector;
                     FistPS,SecondPS:TPointSeries);
  procedure Measuring(SingleMeasurement:boolean=True;FilePrefix:string='');
 end;

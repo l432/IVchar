@@ -2512,10 +2512,6 @@ end;
 
 procedure TIVchar.ActionInSaveButtonST2829(Sender: TObject);
 begin
-//  SaveDialog.FileName:=ST2829Dependence.DatFileNameToSave;
-//  SaveDialog.Title := 'Last file - ' +
-//      LastDATFileName(ST2829Dependence.PrefixToFileName) + '.dat';
-//  SaveDialog.InitialDir := GetCurrentDir;
 
   SaveDialogPrepare(ST2829Dependence.PrefixToFileName);
 
