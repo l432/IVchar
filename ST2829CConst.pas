@@ -10,6 +10,8 @@ const
   ST2829C_Test='SOURCETRONIC, ST2829C,Ver 2.0.0';
   ST2829C_MemFileMaxLength=16;
 
+  ST2829CName='ST2829C';
+
 
   RootNodeST2829C:array[0..15]of string=
   ('*idn?','*rst','*trg', 'mmem', 'disp','freq','ampl:alc','volt','curr',

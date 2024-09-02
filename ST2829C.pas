@@ -29,16 +29,7 @@ type
    Constructor Create(SCPInew:TSCPInew;Nm:string);
  end;
 
-//  TST2829_ParamMeasurCondition = class(TSimpleFreeAndAiniObject)
-//  private
-////   fLimitValues: array of T;
-//   fMeasureSpeed: array of TST2829C_MeasureSpeed;
-//   fAverTimes: array of byte;
-//  public
-////    procedure AddElement(Element: T);
-////    function GetElement(Index: Integer): T;
-////    function Count: Integer;
-//  end;
+
 
 
   TST2829_MeterSecondary=class;
@@ -46,6 +37,8 @@ type
   TST2829SweepParameters=class;
   TST2829MultiMeasuremParameters=class;
   TST2829Corrections=class;
+
+
 
   TST2829_MeasureParameters=class
    public
@@ -375,13 +368,16 @@ TST2829SweepParametersGeneral=class(TST2829Part)
   fOldValue:double;
   fOldState:boolean;
   fStepValue:double;
+  fSweepType:TST2829C_SweepParametr;
   function GtMeasureType:TST2829C_MeasureType;
+  procedure SetSweepType(const Value: TST2829C_SweepParametr);virtual;
  public
-  SweepType:TST2829C_SweepParametr;
+//  SweepType:TST2829C_SweepParametr;
   StartValue:double;
   FinishValue:double;
   PointCount:integer;
   LogStep:boolean;
+  property SweepType:TST2829C_SweepParametr read fSweepType write SetSweepType;
   property MeasureType:TST2829C_MeasureType read GtMeasureType;
   constructor Create(ST2829C:TST2829C);
   function ToString():string;virtual;
@@ -398,12 +394,14 @@ TST2829SweepParametersGeneral=class(TST2829Part)
 end;
 
 
-
+TST2829_SweepMeasuringCondition = class;
 
 TST2829SweepParameters=class(TST2829SweepParametersGeneral)
  private
   fDataVector:TVector;
   fSecondDataVector:TVector;
+  fSweepMeasuringCondition:TST2829_SweepMeasuringCondition;
+  procedure SetSweepType(const Value: TST2829C_SweepParametr);override;
  public
   DataType:TST2829C_SweepData;
   property DataPrime:TVector read fDataVector;
@@ -423,6 +421,26 @@ TST2829MultiMeasuremParameters=class(TST2829SweepParametersGeneral)
   constructor Create(ST2829C:TST2829C);
   procedure ActionMeasurement(const Value:double);override;
 end;
+
+//TST2829_SweepMeasuringCondition = class(TSimpleFreeAndAiniObject)
+TST2829_SweepMeasuringCondition = class
+ private
+  fParentSP: TST2829SweepParameters;
+  fMeasureSpeed:TVector;
+  fAverTimes:TVector;
+//   fLimitValues: array of T;
+//   fMeasureSpeed: array of TST2829C_MeasureSpeed;
+//   fAverTimes: array of byte;
+   function SectionName:string;
+  public
+   constructor Create(ST2829SweepParameters:TST2829SweepParameters);
+   destructor Destroy; override;
+   procedure ReadFromIniFile;
+   procedure WriteToIniFile;
+//    procedure AddElement(Element: T);
+//    function GetElement(Index: Integer): T;
+   function Count: Integer;
+  end;
 
 
 TST2829Corrections=class(TST2829Part)
@@ -560,7 +578,7 @@ end;
 constructor TST2829C.Create();
 begin
  fMPars:=TST2829_MeasureParameters.Create;
- inherited Create('ST2829C');
+ inherited Create(ST2829CName);
  fMeterSec:=TST2829_MeterSecondary.Create(Self);
  fMeterPrim:=TST2829_MeterPrimary.Create(Self);
  fSweepParameters:=TST2829SweepParameters.Create(Self);
@@ -2238,10 +2256,12 @@ begin
   DataType:=st_sdPrim;
   fDataVector:=TVector.Create;
   fSecondDataVector:=TVector.Create;
+  fSweepMeasuringCondition:=TST2829_SweepMeasuringCondition.Create(self);
 end;
 
 destructor TST2829SweepParameters.Destroy;
 begin
+  FreeAndNil(fSweepMeasuringCondition);
   FreeAndNil(fDataVector);
   FreeAndNil(fSecondDataVector);
   inherited;
@@ -2346,6 +2366,13 @@ begin
  if DataType=st_sdBoth
    then ToFileFromTwoVector(FileName,fDataVector,fSecondDataVector,8)
    else fDataVector.WriteToFile(FileName,8);
+end;
+
+procedure TST2829SweepParameters.SetSweepType(
+  const Value: TST2829C_SweepParametr);
+begin
+  inherited SetSweepType(Value);
+  fSweepMeasuringCondition.ReadFromIniFile;
 end;
 
 function TST2829SweepParameters.ToString: string;
@@ -2573,6 +2600,12 @@ begin
  Result:=fParentModule.MeasureType;
 end;
 
+procedure TST2829SweepParametersGeneral.SetSweepType(
+  const Value: TST2829C_SweepParametr);
+begin
+  fSweepType := Value;
+end;
+
 procedure TST2829SweepParametersGeneral.SetValue(Value: double);
 begin
   case SweepType of
@@ -2629,6 +2662,71 @@ constructor TST2829MultiMeasuremParameters.Create(ST2829C: TST2829C);
 begin
  inherited;
  RepetionNumber:=1;
+end;
+
+{ TST2829_SweepMeasuringCondition }
+
+function TST2829_SweepMeasuringCondition.Count: Integer;
+begin
+ Result:=fMeasureSpeed.Count;
+end;
+
+constructor TST2829_SweepMeasuringCondition.Create(
+  ST2829SweepParameters: TST2829SweepParameters);
+begin
+ inherited Create;
+ fParentSP:=ST2829SweepParameters;
+ fMeasureSpeed.Create;
+ fAverTimes.Create;
+ ReadFromIniFile;
+end;
+
+destructor TST2829_SweepMeasuringCondition.Destroy;
+begin
+  FreeAndNil(fAverTimes);
+  FreeAndNil(fMeasureSpeed);
+  inherited;
+end;
+
+procedure TST2829_SweepMeasuringCondition.ReadFromIniFile;
+ var Count:integer;
+     Section:string;
+     i:integer;
+begin
+ Section:=SectionName;
+ Count:=CF_ST_2829C.ReadInteger(Section,'Count',0);
+ fMeasureSpeed.SetLenVector(Count);
+ fAverTimes.SetLenVector(Count);
+ for I := 0 to Count - 1 do
+  begin
+   fMeasureSpeed.X[i]:=CF_ST_2829C.ReadFloat(Section,'LimVal'+inttostr(i),1);
+   fAverTimes.X[i]:=fMeasureSpeed.X[i];
+   fMeasureSpeed.Y[i]:=CF_ST_2829C.ReadInteger(Section,'MeasureSpeed'+inttostr(i),3);
+   fAverTimes.Y[i]:=CF_ST_2829C.ReadInteger(Section,'MAverTimes'+inttostr(i),1);
+  end;
+end;
+
+function TST2829_SweepMeasuringCondition.SectionName: string;
+begin
+ Result:=ST2829CName+' ';
+ Result:=Result+ST2829C_SweepParametrLabels[fParentSP.SweepType]+' MC';
+end;
+
+procedure TST2829_SweepMeasuringCondition.WriteToIniFile;
+ var
+     Section:string;
+     i:integer;
+begin
+ Section:=SectionName;
+ if CF_ST_2829C.SectionExists(Section)
+  then  CF_ST_2829C.EraseSection(Section);
+ CF_ST_2829C.WriteInteger(Section,'Count',Count());
+ for I := 0 to Count() - 1 do
+  begin
+   CF_ST_2829C.WriteFloat(Section,'LimVal'+inttostr(i),fMeasureSpeed.X[i]);
+   CF_ST_2829C.WriteInteger(Section,'MeasureSpeed'+inttostr(i),round(fMeasureSpeed.Y[i]));
+   CF_ST_2829C.WriteInteger(Section,'MAverTimes'+inttostr(i),round(fAverTimes.Y[i]));
+  end;
 end;
 
 initialization
