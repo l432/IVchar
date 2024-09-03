@@ -13,6 +13,8 @@ const
   ST2829CName='ST2829C';
 
 
+
+
   RootNodeST2829C:array[0..15]of string=
   ('*idn?','*rst','*trg', 'mmem', 'disp','freq','ampl:alc','volt','curr',
 //   0       1       2      3       4       5       6       7       8
@@ -102,6 +104,8 @@ type
 
 
 const
+ ST2829CMeasureSpeedDefault=st_msFast;
+
  ST2829C_DisplayPageCommand:array [TST2829C_DisplayPage]
             of string=('meas', 'bnum', 'bco',
                        'list', 'mset', 'cset',
@@ -185,6 +189,7 @@ const
  ST2829C_BiasVoltageLimits:TLimitValues=(-10,10);
  ST2829C_BiasCurrentLimits:TLimitValues=(-100,100);
  ST2829C_AverTimes:TLimitValues=(1,255);
+ ST2829CAverTimeDefault=1;
  ST2829C_DelayTime:TLimitValues=(0,60000);
  ST2829C_SpotNumber:TLimitValues=(1,201);
 

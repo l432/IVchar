@@ -311,6 +311,15 @@ type
    напругу та силу струму зміщення,
    діючі напругу та силу струму вимірювання}
 
+   class Function CorrectFreqValue(const Value:double):double;
+    {повертається число, яке є можливим значенням частоти вимірювання}
+   class Function CorrectBiasVoltValue(const Value:double):double;
+   class Function CorrectBiasCurrValue(const Value:double):double;
+    {повертається число, яке є можливим значенням напруги
+    (сили струму) зміщення}
+   class Function CorrectMeasVoltValue(const Value:double):double;
+   class Function CorrectMeasCurrValue(const Value:double):double;
+
  end;
 
 
@@ -382,8 +391,8 @@ TST2829SweepParametersGeneral=class(TST2829Part)
   constructor Create(ST2829C:TST2829C);
   function ToString():string;virtual;
   function Step:double;
-  procedure BeforeMeasuring;
-  procedure EndMeasuring;
+  procedure BeforeMeasuring;virtual;
+  procedure EndMeasuring;virtual;
   procedure ActionMeasurement(const Value:double);virtual;abstract;
   procedure SetValue(Value:double);
   function GetXData:double;
@@ -398,19 +407,26 @@ TST2829_SweepMeasuringCondition = class;
 
 TST2829SweepParameters=class(TST2829SweepParametersGeneral)
  private
+  fMeasureSpeedOld:TST2829C_MeasureSpeed;
+//  fMeasureSpeedCurrent:TST2829C_MeasureSpeed;
+  fAverTimeOld:byte;
+//  fAverTimeCurrent:byte;
   fDataVector:TVector;
   fSecondDataVector:TVector;
   fSweepMeasuringCondition:TST2829_SweepMeasuringCondition;
+  fSMCUsed:boolean;
   procedure SetSweepType(const Value: TST2829C_SweepParametr);override;
  public
   DataType:TST2829C_SweepData;
   property DataPrime:TVector read fDataVector;
   property DataSecond:TVector read fSecondDataVector;
+  property SMCUsed:boolean read fSMCUsed write fSMCUsed;
   constructor Create(ST2829C:TST2829C);
   destructor Destroy; override;
   function ToString():string;override;
   procedure SaveDataToFile(FileName:string);
-  procedure BeforeMeasuring;
+  procedure BeforeMeasuring;override;
+  procedure EndMeasuring;override;
   procedure ActionMeasurement(const Value:double);override;
   procedure AddData;
 end;
@@ -428,19 +444,22 @@ TST2829_SweepMeasuringCondition = class
   fParentSP: TST2829SweepParameters;
   fMeasureSpeed:TVector;
   fAverTimes:TVector;
-//   fLimitValues: array of T;
-//   fMeasureSpeed: array of TST2829C_MeasureSpeed;
-//   fAverTimes: array of byte;
-   function SectionName:string;
-  public
-   constructor Create(ST2829SweepParameters:TST2829SweepParameters);
-   destructor Destroy; override;
-   procedure ReadFromIniFile;
-   procedure WriteToIniFile;
-//    procedure AddElement(Element: T);
-//    function GetElement(Index: Integer): T;
-   function Count: Integer;
-  end;
+  function SectionName:string;
+ public
+  constructor Create(ST2829SweepParameters:TST2829SweepParameters);
+  destructor Destroy; override;
+  procedure ReadFromIniFile;
+  procedure WriteToIniFile;
+  function Count: Integer;
+  Procedure AddLimitValue(const Value:double);
+  Procedure AddConditionsValue(const Index:integer;
+                               const MS:TST2829C_MeasureSpeed;
+                               const AT:byte);
+  {вносить значення умов вимірювання в запис з номером Index}
+  function GetMeasureSpeed(Index:integer):TST2829C_MeasureSpeed;
+  function GetAverTime(Index:integer):byte;
+  function GetIndex(const LimitValue:double):integer;
+ end;
 
 
 TST2829Corrections=class(TST2829Part)
@@ -573,6 +592,31 @@ begin
    st_aCorSpotOpen: Result:=False;
    else Result:=True;
  end;
+end;
+
+class function TST2829C.CorrectBiasCurrValue(const Value: double): double;
+begin
+ Result:=ValueWithMinResolution(NumberMap(Value,ST2829C_BiasCurrentLimits),5e-3);
+end;
+
+class function TST2829C.CorrectBiasVoltValue(const Value: double): double;
+begin
+ Result:=ValueWithMinResolution(NumberMap(Value,ST2829C_BiasVoltageLimits),5e-4);
+end;
+
+class function TST2829C.CorrectFreqValue(const Value: double): double;
+begin
+ Result:=ValueWithMinResolution(NumberMap(Value,ST2829C_FreqMeasLimits),1e-3);
+end;
+
+class function TST2829C.CorrectMeasCurrValue(const Value: double): double;
+begin
+ Result:=ValueWithMinResolution(NumberMap(Value,ST2829C_IrmsMeasLimits),1e-4);
+end;
+
+class function TST2829C.CorrectMeasVoltValue(const Value: double): double;
+begin
+ Result:=ValueWithMinResolution(NumberMap(Value,ST2829C_VrmsMeasLimits),1e-3);
 end;
 
 constructor TST2829C.Create();
@@ -1615,8 +1659,9 @@ end;
 
 procedure TST2829C.SetFreqMeas(Value: Double);
 begin
- fMPars.FreqMeas:=NumberMap(Value,ST2829C_FreqMeasLimits);
- fMPars.FreqMeas:=ValueWithMinResolution(fMPars.FreqMeas,1e-3);
+ fMPars.FreqMeas:=CorrectFreqValue(Value);
+// fMPars.FreqMeas:=NumberMap(Value,ST2829C_FreqMeasLimits);
+// fMPars.FreqMeas:=ValueWithMinResolution(fMPars.FreqMeas,1e-3);
 end;
 
 procedure TST2829C.SetFrequancyMeasurement(Freq: double);
@@ -1627,10 +1672,11 @@ end;
 
 procedure TST2829C.SetIrmsMeas(const Value: double);
 begin
- fMPars.IrmsMeas:=NumberMap(Value,ST2829C_IrmsMeasLimits);
+ fMPars.IrmsMeas:=CorrectMeasCurrValue(Value);
+// fMPars.IrmsMeas:=NumberMap(Value,ST2829C_IrmsMeasLimits);
  if not(ValueInMap(fMPars.IrmsMeas,ST2829C_ImrsMeasLimitsForAL))
    then fMPars.AutoLevelControlEnable:=False;
- fMPars.IrmsMeas:=ValueWithMinResolution(fMPars.IrmsMeas,1e-4);
+// fMPars.IrmsMeas:=ValueWithMinResolution(fMPars.IrmsMeas,1e-4);
 end;
 
 procedure TST2829C.SetMeasureFunction(MF: TST2829C_MeasureType);
@@ -1822,10 +1868,11 @@ end;
 
 procedure TST2829C.SetVrmsMeas(const Value: double);
 begin
- fMPars.VrmsMeas:=NumberMap(Value,ST2829C_VrmsMeasLimits);
+ fMPars.VrmsMeas:=CorrectMeasVoltValue(Value);
+// fMPars.VrmsMeas:=NumberMap(Value,ST2829C_VrmsMeasLimits);
  if not(ValueInMap(fMPars.VrmsMeas,ST2829C_VmrsMeasLimitsForAL))
    then fMPars.AutoLevelControlEnable:=False;
- fMPars.VrmsMeas:=ValueWithMinResolution(fMPars.VrmsMeas,1e-3);
+// fMPars.VrmsMeas:=ValueWithMinResolution(fMPars.VrmsMeas,1e-3);
 end;
 
 procedure TST2829C.StAutoLevelControl(const Value: boolean);
@@ -1841,14 +1888,16 @@ end;
 
 procedure TST2829C.StBiasCurrentValue(const Value: double);
 begin
- fBiasCurrentValue:=NumberMap(Value,ST2829C_BiasCurrentLimits);
- fBiasCurrentValue:=ValueWithMinResolution(fBiasCurrentValue,5e-3);
+ fBiasCurrentValue:=CorrectBiasCurrValue(Value);
+// fBiasCurrentValue:=NumberMap(Value,ST2829C_BiasCurrentLimits);
+// fBiasCurrentValue:=ValueWithMinResolution(fBiasCurrentValue,5e-3);
 end;
 
 procedure TST2829C.StBiasVoltageValue(const Value: double);
 begin
- fBiasVoltageValue:=NumberMap(Value,ST2829C_BiasVoltageLimits);
- fBiasVoltageValue:=ValueWithMinResolution(fBiasVoltageValue,5e-4);
+ fBiasVoltageValue:=CorrectBiasVoltValue(Value);
+// fBiasVoltageValue:=NumberMap(Value,ST2829C_BiasVoltageLimits);
+// fBiasVoltageValue:=ValueWithMinResolution(fBiasVoltageValue,5e-4);
 end;
 
 procedure TST2829C.StCorCable(const Value: TST2829C_CorCable);
@@ -2208,10 +2257,29 @@ end;
 { TST2829SweepParameters }
 
 procedure TST2829SweepParameters.ActionMeasurement(const Value:double);
+ var Index:integer;
+      tempMeasureSpeed:TST2829C_MeasureSpeed;
+      tempAverTime:byte;
 begin
   SetValue(Value);
 
+
+
 // secondmeter.Start();
+
+  if fSMCUsed then
+    begin
+      Index:=fSweepMeasuringCondition.GetIndex(Value);
+      if Index>-1 then
+       begin
+         tempMeasureSpeed:=fSweepMeasuringCondition.GetMeasureSpeed(Index);
+         if tempMeasureSpeed<>fParentModule.MeasureSpeed
+           then fParentModule.SetMeasureSpeed(tempMeasureSpeed);
+         tempAverTime:=fSweepMeasuringCondition.GetAverTime(Index);
+         if tempAverTime<>fParentModule.AverTimes
+           then fParentModule.SetAverTime(tempAverTime);
+       end;
+    end;
 
   fParentModule.Trig;
 
@@ -2247,16 +2315,29 @@ begin
   fSecondDataVector.Clear;
 
   inherited BeforeMeasuring;
+
+  if fSMCUsed then
+    begin
+      fMeasureSpeedOld:=fParentModule.MeasureSpeed;
+      fAverTimeOld:=fParentModule.AverTimes;
+//      fMeasureSpeedCurrent:=fMeasureSpeedOld;
+//      fAverTimeCurrent:=fAverTimeOld;
+    end;
+
 end;
 
 constructor TST2829SweepParameters.Create(ST2829C:TST2829C);
 begin
   inherited Create(ST2829C);
-
   DataType:=st_sdPrim;
   fDataVector:=TVector.Create;
   fSecondDataVector:=TVector.Create;
   fSweepMeasuringCondition:=TST2829_SweepMeasuringCondition.Create(self);
+  fSMCUsed:=False;
+  fMeasureSpeedOld:=ST2829CMeasureSpeedDefault;
+//  fMeasureSpeedCurrent:=ST2829CMeasureSpeedDefault;
+  fAverTimeOld:=ST2829CAverTimeDefault;
+//  fAverTimeCurrent:=ST2829CAverTimeDefault;
 end;
 
 destructor TST2829SweepParameters.Destroy;
@@ -2265,6 +2346,21 @@ begin
   FreeAndNil(fDataVector);
   FreeAndNil(fSecondDataVector);
   inherited;
+end;
+
+procedure TST2829SweepParameters.EndMeasuring;
+begin
+
+  if fSMCUsed then
+    begin
+      if fMeasureSpeedOld<>fParentModule.MeasureSpeed
+         then fParentModule.SetMeasureSpeed(fMeasureSpeedOld);
+      if fAverTimeOld<>fParentModule.AverTimes
+         then fParentModule.SetAverTime(fAverTimeOld);
+    end;
+
+  inherited EndMeasuring;
+
 end;
 
 //procedure TST2829SweepParameters.EndMeasuring;
@@ -2372,7 +2468,8 @@ procedure TST2829SweepParameters.SetSweepType(
   const Value: TST2829C_SweepParametr);
 begin
   inherited SetSweepType(Value);
-  fSweepMeasuringCondition.ReadFromIniFile;
+  if assigned(fSweepMeasuringCondition) then
+    fSweepMeasuringCondition.ReadFromIniFile;
 end;
 
 function TST2829SweepParameters.ToString: string;
@@ -2666,6 +2763,36 @@ end;
 
 { TST2829_SweepMeasuringCondition }
 
+procedure TST2829_SweepMeasuringCondition.AddConditionsValue(
+  const Index: integer; const MS: TST2829C_MeasureSpeed; const AT: byte);
+begin
+ if (Index>-1) and (Index<=fAverTimes.HighNumber) then
+  begin
+   fAverTimes.Y[Index]:=TSCPInew.NumberMap(AT,ST2829C_AverTimes);
+   fMeasureSpeed.Y[Index]:=ord(MS);
+  end;
+ WriteToIniFile;
+end;
+
+procedure TST2829_SweepMeasuringCondition.AddLimitValue(const Value: double);
+ var tempValue:double;
+begin
+ case fParentSP.SweepType of
+   st_spBiasVolt: tempValue:=TST2829C.CorrectBiasVoltValue(Value);
+   st_spBiasCurr: tempValue:=TST2829C.CorrectBiasCurrValue(Value);
+   st_spFreq: tempValue:=TST2829C.CorrectFreqValue(Value);
+   st_spVrms: tempValue:=TST2829C.CorrectMeasVoltValue(Value);
+   else tempValue:=TST2829C.CorrectMeasCurrValue(Value);
+ end;
+ fAverTimes.Add(tempValue,ST2829CAverTimeDefault);
+ fAverTimes.DeleteDuplicate;
+ fAverTimes.Sorting();
+ fMeasureSpeed.Add(tempValue,ord(ST2829CMeasureSpeedDefault));
+ fMeasureSpeed.DeleteDuplicate;
+ fMeasureSpeed.Sorting();
+ WriteToIniFile;
+end;
+
 function TST2829_SweepMeasuringCondition.Count: Integer;
 begin
  Result:=fMeasureSpeed.Count;
@@ -2676,8 +2803,8 @@ constructor TST2829_SweepMeasuringCondition.Create(
 begin
  inherited Create;
  fParentSP:=ST2829SweepParameters;
- fMeasureSpeed.Create;
- fAverTimes.Create;
+ fMeasureSpeed:=TVector.Create;
+ fAverTimes:=TVector.Create;
  ReadFromIniFile;
 end;
 
@@ -2688,22 +2815,65 @@ begin
   inherited;
 end;
 
+function TST2829_SweepMeasuringCondition.GetAverTime(Index: integer): byte;
+begin
+ if (Index>-1) and (Index<=fAverTimes.HighNumber)
+  then Result:=round(fAverTimes.Y[Index])
+  else  Result:=ST2829CAverTimeDefault;
+end;
+
+function TST2829_SweepMeasuringCondition.GetIndex(
+  const LimitValue: double): integer;
+  var i:integer;
+begin
+ if fAverTimes.Count<1
+  then
+   begin
+    Result:=-1;
+    Exit;
+   end;
+ if LimitValue > fAverTimes.X[fAverTimes.HighNumber]
+  then
+   begin
+    Result:=fAverTimes.HighNumber;
+    Exit;
+   end;
+ for I := 0 to fAverTimes.HighNumber do
+   if LimitValue<=fAverTimes.X[i]
+     then Result:=i
+     else Break;
+end;
+
+function TST2829_SweepMeasuringCondition.GetMeasureSpeed(
+  Index: integer): TST2829C_MeasureSpeed;
+begin
+ if (Index>-1) and (Index<=fAverTimes.HighNumber)
+  then Result:=TST2829C_MeasureSpeed(round(fMeasureSpeed.Y[Index]))
+  else Result:=ST2829CMeasureSpeedDefault;
+end;
+
 procedure TST2829_SweepMeasuringCondition.ReadFromIniFile;
  var Count:integer;
      Section:string;
      i:integer;
+     CF_ST:TIniFile;
 begin
  Section:=SectionName;
- Count:=CF_ST_2829C.ReadInteger(Section,'Count',0);
+ CF_ST:=TIniFile.Create(ExtractFilePath(Application.ExeName)+'IVChar.ini');
+
+ Count:=CF_ST.ReadInteger(Section,'Count',0);
  fMeasureSpeed.SetLenVector(Count);
  fAverTimes.SetLenVector(Count);
  for I := 0 to Count - 1 do
   begin
-   fMeasureSpeed.X[i]:=CF_ST_2829C.ReadFloat(Section,'LimVal'+inttostr(i),1);
+   fMeasureSpeed.X[i]:=CF_ST.ReadFloat(Section,'LimVal'+inttostr(i),
+                                     ST2829CAverTimeDefault);
    fAverTimes.X[i]:=fMeasureSpeed.X[i];
-   fMeasureSpeed.Y[i]:=CF_ST_2829C.ReadInteger(Section,'MeasureSpeed'+inttostr(i),3);
-   fAverTimes.Y[i]:=CF_ST_2829C.ReadInteger(Section,'MAverTimes'+inttostr(i),1);
+   fMeasureSpeed.Y[i]:=CF_ST.ReadInteger(Section,'MeasureSpeed'+inttostr(i),
+                               ord(ST2829CMeasureSpeedDefault));
+   fAverTimes.Y[i]:=CF_ST.ReadInteger(Section,'MAverTimes'+inttostr(i),1);
   end;
+ FreeAndNil(CF_ST);
 end;
 
 function TST2829_SweepMeasuringCondition.SectionName: string;
@@ -2730,6 +2900,7 @@ begin
 end;
 
 initialization
+//  HelpForMe('aaa');
   ST_2829C := TST2829C.Create();
   CF_ST_2829C:=TIniFile.Create(ExtractFilePath(Application.ExeName)+'IVChar.ini');
 
