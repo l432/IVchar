@@ -225,7 +225,7 @@ object ST2829Form: TST2829Form
   end
   object GBST2829C_Sweep: TGroupBox
     Tag = 110
-    Left = 472
+    Left = 453
     Top = 170
     Width = 298
     Height = 131
@@ -240,7 +240,7 @@ object ST2829Form: TST2829Form
   end
   object GBST2829C_Corrections: TGroupBox
     Tag = 110
-    Left = 272
+    Left = 262
     Top = 221
     Width = 186
     Height = 216

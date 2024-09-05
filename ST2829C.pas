@@ -421,6 +421,7 @@ TST2829SweepParameters=class(TST2829SweepParametersGeneral)
   property DataPrime:TVector read fDataVector;
   property DataSecond:TVector read fSecondDataVector;
   property SMCUsed:boolean read fSMCUsed write fSMCUsed;
+  property SMCondition:TST2829_SweepMeasuringCondition read fSweepMeasuringCondition;
   constructor Create(ST2829C:TST2829C);
   destructor Destroy; override;
   function ToString():string;override;
@@ -440,25 +441,37 @@ end;
 
 //TST2829_SweepMeasuringCondition = class(TSimpleFreeAndAiniObject)
 TST2829_SweepMeasuringCondition = class
+{клас для того, щоб можна було міняти час виміру
+та кількість накопичень під час 
+вимірювань у певному діапазоні}
  private
   fParentSP: TST2829SweepParameters;
   fMeasureSpeed:TVector;
   fAverTimes:TVector;
   function SectionName:string;
  public
+  property MeasureSpeed:TVector read fMeasureSpeed;
+  property verTimes:TVector read fAverTimes;
   constructor Create(ST2829SweepParameters:TST2829SweepParameters);
   destructor Destroy; override;
   procedure ReadFromIniFile;
   procedure WriteToIniFile;
   function Count: Integer;
   Procedure AddLimitValue(const Value:double);
+  Procedure DeleteLimitValue(const Index:integer);
   Procedure AddConditionsValue(const Index:integer;
                                const MS:TST2829C_MeasureSpeed;
                                const AT:byte);
   {вносить значення умов вимірювання в запис з номером Index}
+  Procedure AddMeasureSpeedValue(const Index:integer;
+                               const MS:TST2829C_MeasureSpeed);
+  Procedure AddAverTimesValue(const Index:integer;
+                               const AT:byte);
   function GetMeasureSpeed(Index:integer):TST2829C_MeasureSpeed;
   function GetAverTime(Index:integer):byte;
   function GetIndex(const LimitValue:double):integer;
+//  Procedure EditLimitValue(const Value:double);
+
  end;
 
 
@@ -2763,6 +2776,14 @@ end;
 
 { TST2829_SweepMeasuringCondition }
 
+procedure TST2829_SweepMeasuringCondition.AddAverTimesValue(
+  const Index: integer; const AT: byte);
+begin
+ if (Index>-1) and (Index<=fAverTimes.HighNumber) then
+   fAverTimes.Y[Index]:=TSCPInew.NumberMap(AT,ST2829C_AverTimes);
+ WriteToIniFile;
+end;
+
 procedure TST2829_SweepMeasuringCondition.AddConditionsValue(
   const Index: integer; const MS: TST2829C_MeasureSpeed; const AT: byte);
 begin
@@ -2793,6 +2814,14 @@ begin
  WriteToIniFile;
 end;
 
+procedure TST2829_SweepMeasuringCondition.AddMeasureSpeedValue(
+  const Index: integer; const MS: TST2829C_MeasureSpeed);
+begin
+ if (Index>-1) and (Index<=fAverTimes.HighNumber) then
+   fMeasureSpeed.Y[Index]:=ord(MS);
+ WriteToIniFile;
+end;
+
 function TST2829_SweepMeasuringCondition.Count: Integer;
 begin
  Result:=fMeasureSpeed.Count;
@@ -2806,6 +2835,14 @@ begin
  fMeasureSpeed:=TVector.Create;
  fAverTimes:=TVector.Create;
  ReadFromIniFile;
+end;
+
+procedure TST2829_SweepMeasuringCondition.DeleteLimitValue(
+  const Index: integer);
+begin
+ fAverTimes.DeletePoint(Index);
+ fMeasureSpeed.DeletePoint(Index);
+ WriteToIniFile;
 end;
 
 destructor TST2829_SweepMeasuringCondition.Destroy;
@@ -2879,7 +2916,7 @@ end;
 function TST2829_SweepMeasuringCondition.SectionName: string;
 begin
  Result:=ST2829CName+' ';
- Result:=Result+ST2829C_SweepParametrLabels[fParentSP.SweepType]+' MC';
+ Result:=Result+ST2829C_SweepParametrSalt[fParentSP.SweepType]+'_MeasCond';
 end;
 
 procedure TST2829_SweepMeasuringCondition.WriteToIniFile;

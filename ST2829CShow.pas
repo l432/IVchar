@@ -5,7 +5,7 @@ interface
 uses
   OlegTypePart2, ST2829C, StdCtrls, SCPIshow, ExtCtrls, ArduinoDeviceNew, 
   IniFiles, ST2829CParamShow, Buttons, Measurement, OlegShowTypes, Classes, 
-  Controls;
+  Controls, Grids;
 
 type
 
@@ -269,9 +269,59 @@ end;
                       GB: TGroupBox);
   end;
 
+TST2829CSweepMeasuringConditionShow=class(TST2829CElementAndParamShow)
+  private
+   fSMCond:TST2829_SweepMeasuringCondition;
+   fBDelete:TButton;
+   fBAdd:TButton;
+   fBEdit:TButton;
+   fSGData: TStringGrid;
+//   fBTrig:TButton;
+//   procedure BTrigClick(Sender:TObject);
+  protected
+   procedure CreateElements;override;
+   procedure CreateControls;override;
+   procedure DesignElements;override;
+  public
+   Constructor Create(ST2829C:TST2829C;
+                      GB: TGroupBox);
+//   OutputImpedanceShow:TST2829C_OutputImpedanceShow;
+//   RangeShow:TST2829C_RangeShow;
+//   MeasureSpeedShow:TST2829C_MeasureSpeedShow;
+//   AverTimesShow:TST2829C_AverTimesShow;
+//   TrigerSourceShow:TST2829C_TrigerSourceShow;
+//   DelayTimeShow:TST2829C_DelayTimeShow;
+ end;
+
+
+//TST2829C_GroupBoxSweepMeasuringConditionTun=class(TST2829CElementAndParamShow)
+TST2829C_GroupBoxSweepMeasuringConditionTun=class(TST2829CElementParamWindow)
+ {ще додаткова кнопка, на яку чіпляється дія
+ та чек-бокс щодо доцільності;
+ і кнопка, і чек-бокс розміщуються у TGroupBox}
+ private
+  fButton:TButton;
+  fGB:TGroupBox;
+  fUseSweepMeasurCond:TCheckBox;
+ protected
+  procedure DesignElements();override;
+  procedure CreateElements;override;
+  procedure CreateControls;override;
+  procedure GBcontentCreate(GB:TGroupBox);override;
+  function FormCaption():string;override;
+
+ public
+//  fUseSweepMeasurCond:TCheckBox;
+  property UseSweepMeasurCond:TCheckBox read FUseSweepMeasurCond;
+  property Button:TButton read fButton;
+  property GroupBox:TGroupBox read fGB;
+  destructor Destroy;override;
+end;
+
   TST2829C_SweepParameterShow=class(TST2829C_SweepParameterShowBase)
    private
     fRGDataUsed:TRadioGroup;
+    fGBSweepMeasuringConditionTun:TST2829C_GroupBoxSweepMeasuringConditionTun;
 
     procedure SetfSweepType();override;
    protected
@@ -280,8 +330,10 @@ end;
     procedure DestroyControls;override;
     procedure DesignElements;override;
     procedure DataUsedClick(Sender:TObject);
-
+    procedure UseMeasCondClick(Sender:TObject);
    public
+    destructor Destroy;override;
+
   end;
 
  TST2829C_MultiMeasParameterShow=class(TST2829C_SweepParameterShowBase)
@@ -1002,12 +1054,16 @@ begin
  fRGDataUsed.OnClick:=DataUsedClick;
  DataUsedClick(nil);
 
- inherited;
+ fGBSweepMeasuringConditionTun.fUseSweepMeasurCond.OnClick:=UseMeasCondClick;
+ UseMeasCondClick(nil);
+
+ inherited CreateControls;
 
 end;
 
 procedure TST2829C_SweepParameterShow.CreateElements;
 begin
+  fGBSweepMeasuringConditionTun:=TST2829C_GroupBoxSweepMeasuringConditionTun.Create(fST2829C,fParent);
 
   fRGDataUsed:=TRadioGroup.Create(fParent);
   Add(fRGDataUsed);
@@ -1034,10 +1090,29 @@ begin
 
  fParent.Caption:='Sweep tuning';
 
+ fGBSweepMeasuringConditionTun.GroupBox.Left:=fLFinish.Left+fLFinish.Width+5;
+ fGBSweepMeasuringConditionTun.GroupBox.Top:=fLFinish.Top-2;
+ // RelativeLocation(fSTType,GBSweepMeasuringConditionTun.GroupBox,oRow,20);
+
+//  GBSweepMeasuringConditionTun.GroupBox.Left:=5;
+//  GroupBoxSpotTuning.GroupBox.Top:=ShortShow.GroupBox.Top+ShortShow.GroupBox.Height+5;
+
 // fParent.Width:=fRGDataUsed.Left+fRGDataUsed.Width+5;
- fParent.Width:=max(fSTType.Left+fSTType.Width+10,fRGDataUsed.Left+fRGDataUsed.Width+5);
+
+// fParent.Width:=max(fSTType.Left+fSTType.Width+10,fRGDataUsed.Left+fRGDataUsed.Width+5);
+// fParent.Height:=fRGDataUsed.Top+fRGDataUsed.Height+5;
+
+ fParent.Width:=fGBSweepMeasuringConditionTun.GroupBox.Left
+                +fGBSweepMeasuringConditionTun.GroupBox.Width
+                +5;
  fParent.Height:=fRGDataUsed.Top+fRGDataUsed.Height+5;
 
+end;
+
+destructor TST2829C_SweepParameterShow.Destroy;
+begin
+  FreeAndNil(fGBSweepMeasuringConditionTun);
+  inherited Destroy;
 end;
 
 procedure TST2829C_SweepParameterShow.DestroyControls;
@@ -1055,6 +1130,11 @@ end;
 procedure TST2829C_SweepParameterShow.SetfSweepType;
 begin
  fSweepType:=st_stOneMeasur;
+end;
+
+procedure TST2829C_SweepParameterShow.UseMeasCondClick(Sender: TObject);
+begin
+ fST2829C.SweepParameters.SMCUsed:=fGBSweepMeasuringConditionTun.fUseSweepMeasurCond.Checked;
 end;
 
 { TST2829CCorrectionShow }
@@ -1420,7 +1500,7 @@ begin
 // fParent.Caption:='Sweep tuning';
 
  fLType.WordWrap:=False;
- fLType.Left:=MarginLeft;
+ fLType.Left:=MarginLeftShot;
  fLType.Top:=15;
  RelativeLocation(fLType,fSTType,oRow,5);
  fSTType.Top:=fSTType.Top+2;
@@ -1433,7 +1513,7 @@ begin
 // fRGDataUsed.Top:=fLType.Top+fLType.Height+5;
 
  fLStart.WordWrap:=False;
- fLStart.Left:=MarginLeft;
+ fLStart.Left:=MarginLeftShot;
 // fLStart.Top:=fRGDataUsed.Top+fRGDataUsed.Height+5;
  fLStart.Top:=fLType.Top+fLType.Height+3;
  RelativeLocation(fLStart,fSTStart,oCol,2);
@@ -1448,7 +1528,7 @@ begin
  fSTFinish.Font.Color:=clNavy;
 
  fLSteps.WordWrap:=False;
- fLSteps.Left:=MarginLeft;
+ fLSteps.Left:=MarginLeftShot;
  fLSteps.Top:=fSTStart.Top+fSTStart.Height+3;
  fSTSteps.Top:=fLSteps.Top;
  fSTSteps.Left:=fLSteps.Left+fLSteps.Width+5;
@@ -1457,7 +1537,7 @@ begin
 
  fCBLogStep.Caption:='Log step';
  fCBLogStep.Top:=fLSteps.Top;
- fCBLogStep.Left:=fSTSteps.Left+fSTSteps.Width+25;
+ fCBLogStep.Left:=fSTSteps.Left+fSTSteps.Width+20;
 
 // fParent.Width:=fRGDataUsed.Left+fRGDataUsed.Width+5;
 // fParent.Width:=fSTType.Left+fSTType.Width+10;
@@ -1621,6 +1701,121 @@ end;
 procedure TST2829C_MultiMeasParameterShow.SetfSweepType;
 begin
  fSweepType:=st_stMultiMeasur;
+end;
+
+{ TST2829C_GroupBoxSweepMeasuringConditionTun }
+
+procedure TST2829C_GroupBoxSweepMeasuringConditionTun.CreateControls;
+begin
+   fUseSweepMeasurCond.Checked:=
+   CF_ST_2829C.ReadBool(fST2829C.Name,
+                        'ToUseSweepMeasurCond',
+                        False);
+  fButton.OnClick:=FormShow;
+end;
+
+procedure TST2829C_GroupBoxSweepMeasuringConditionTun.CreateElements;
+begin
+  fGB:=TGroupBox.Create(fParent);
+  add(fGB);
+
+  fButton:=TButton.Create(fGB);
+  fButton.Parent:=fGB;
+
+
+  fUseSweepMeasurCond:=TCheckBox.Create(fGB);
+  fUseSweepMeasurCond.Parent:=fGB;
+end;
+
+procedure TST2829C_GroupBoxSweepMeasuringConditionTun.DesignElements;
+begin
+  inherited DesignElements;
+  fGB.Caption:='Conditions';
+  fButton.Caption:='Tuning';
+  fUseSweepMeasurCond.Caption:='Use';
+  fUseSweepMeasurCond.Left:=25;
+  fUseSweepMeasurCond.Top:=15;
+  fUseSweepMeasurCond.Font.Color:=clOlive;
+  Resize(fUseSweepMeasurCond);
+  fButton.Left:=5;
+  fButton.Top:=fUseSweepMeasurCond.Top+
+               fUseSweepMeasurCond.Height+5;
+//  RelativeLocation(fUseSweepMeasurCond,fButton,oCol,10);
+  fGB.Height:=fButton.Top+fButton.Height+5;
+  fGB.Width:=fButton.Left+fButton.Width+5;
+  fGB.Font.Color:=clPurple;
+end;
+
+destructor TST2829C_GroupBoxSweepMeasuringConditionTun.Destroy;
+begin
+
+   CF_ST_2829C.WriteBool(fST2829C.Name,
+                        'ToUseSweepMeasurCond',
+                        fUseSweepMeasurCond.Checked);
+
+  fButton.Parent:=nil;
+  fButton.Free;
+  fUseSweepMeasurCond.Parent:=nil;
+  fUseSweepMeasurCond.Free;
+  inherited;
+end;
+
+
+
+function TST2829C_GroupBoxSweepMeasuringConditionTun.FormCaption: string;
+begin
+ Result:='Measurement condition tuning';
+end;
+
+procedure TST2829C_GroupBoxSweepMeasuringConditionTun.GBcontentCreate(
+  GB: TGroupBox);
+begin
+  GBcontent:=TST2829CSweepMeasuringConditionShow.Create(fST2829C,GB);
+end;
+
+{ TST2829CSweepMeasuringConditionShow }
+
+constructor TST2829CSweepMeasuringConditionShow.Create(ST2829C: TST2829C;
+  GB: TGroupBox);
+begin
+ fSMCond:=ST2829C.SweepParameters.SMCondition;
+ inherited Create(ST2829C,GB);
+end;
+
+procedure TST2829CSweepMeasuringConditionShow.CreateControls;
+begin
+//  inherited;
+
+end;
+
+procedure TST2829CSweepMeasuringConditionShow.CreateElements;
+begin
+ fBDelete:=TButton.Create(fParent);
+ Add(fBDelete);
+ fBAdd:=TButton.Create(fParent);
+ Add(fBAdd);
+ fBEdit:=TButton.Create(fParent);
+ Add(fBEdit);
+ fSGData:=TStringGrid.Create(fParent);;
+ Add(fSGData);
+// inherited CreateElements;
+end;
+
+procedure TST2829CSweepMeasuringConditionShow.DesignElements;
+begin
+ inherited DesignElements;
+
+ fBDelete.Caption:='Delete';
+ fBAdd.Caption:='Add';
+ fBEdit.Caption:='Edit';
+
+ fSGData.ColCount:=3;
+ fSGData.FixedCols:=0;
+ fSGData.FixedRows:=1;
+ fSGData.ScrollBars:=ssVertical;
+
+//  inherited;
+
 end;
 
 end.
