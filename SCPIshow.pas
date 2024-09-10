@@ -148,11 +148,13 @@ end;
 TSCPI_ParameterShow=class(TSCPI_ParameterShowBase)
 {заготовка для використання різних TParameterShowNew}
  private
-  fParamShow:TParameterShowNew;
-  {має створитися у нащадках}
+//  fParamShow:TParameterShowNew;
+//  {має створитися у нащадках}
   fST:TStaticText;
   fLab:TLabel;
  protected
+  fParamShow:TParameterShowNew;
+  {має створитися у нащадках}
   procedure Click();virtual;
   procedure SetLimits(LimitV:TLimitValues);overload;
   procedure SetLimits(LowLimit:double=ErResult;HighLimit:double=ErResult);overload;

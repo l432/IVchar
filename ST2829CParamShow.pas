@@ -86,6 +86,13 @@ TST2829C_MeasureSpeedShow=class(TST2829C_StringParameterShow)
   Constructor Create(ST2829C:TST2829C);
 end;
 
+TST2829C_MeasureSpeedShowPassive=class(TST2829C_MeasureSpeedShow)
+ protected
+ public
+  Constructor Create();
+end;
+
+
 TST2829C_TrigerSourceShow=class(TST2829C_StringParameterShow)
  protected
  public
@@ -214,6 +221,12 @@ TST2829C_AverTimesShow=class(TST2829C_IntegerParameterShow)
   Constructor Create(ST2829C:TST2829C);
 end;
 
+TST2829C_AverTimesShowPassive=class(TST2829C_AverTimesShow)
+ protected
+ public
+  Constructor Create();
+end;
+
 TST2829C_DelayTimeShow=class(TST2829C_IntegerParameterShow)
  protected
  public
@@ -232,7 +245,7 @@ end;
 implementation
 
 uses
-  ST2829CConst, SysUtils, Dialogs, OApproxShow;
+  ST2829CConst, SysUtils, Dialogs, OApproxShow, OlegType;
 
 { TST2829C_DoubleParameterShow }
 
@@ -390,7 +403,7 @@ end;
 constructor TST2829C_MeasureSpeedShow.Create(ST2829C: TST2829C);
 begin
   inherited Create(ST2829C,Pointer(st_aSpeedMeas),
-                     'Speed:', True);
+                     ST2829CNameSpeed, True);
 end;
 
 { TST2829C_IntegerParameterShow }
@@ -409,7 +422,7 @@ end;
 constructor TST2829C_AverTimesShow.Create(ST2829C: TST2829C);
 begin
  inherited Create(ST2829C,Pointer(st_aAverTimes),
-                 'Average Count:',1);
+                 ST2829CNameAverCount,1);
  SetLimits(ST2829C_AverTimes);
 end;
 
@@ -613,6 +626,22 @@ begin
  inherited Create(ST2829C,Pointer(st_aCorSpotFreq),
                  'Freq, Hz:',1000,10);
  SetLimits(ST2829C_FreqMeasLimits);
+end;
+
+{ TST2829C_MeasureSpeedShowPassive }
+
+constructor TST2829C_MeasureSpeedShowPassive.Create;
+begin
+ inherited Create(nil);
+ fParamShow.HookParameterClick:=TSimpleClass.EmptyProcedure;
+end;
+
+{ TST2829C_AverTimesPassive }
+
+constructor TST2829C_AverTimesShowPassive.Create;
+begin
+ inherited Create (nil);
+ fParamShow.HookParameterClick:=TSimpleClass.EmptyProcedure;
 end;
 
 end.

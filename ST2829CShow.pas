@@ -5,7 +5,7 @@ interface
 uses
   OlegTypePart2, ST2829C, StdCtrls, SCPIshow, ExtCtrls, ArduinoDeviceNew, 
   IniFiles, ST2829CParamShow, Buttons, Measurement, OlegShowTypes, Classes, 
-  Controls, Grids;
+  Controls, Grids, Windows;
 
 type
 
@@ -265,41 +265,56 @@ end;
     procedure StepClick;
     procedure LogStepClick(Sender:TObject);
    public
-   Constructor Create(ST2829C:TST2829C;
+    property STStartParameterValue:TStaticText read fSTStart;
+    property StartShow:TDoubleParameterShow read fStartShow;
+    Constructor Create(ST2829C:TST2829C;
                       GB: TGroupBox);
   end;
 
 TST2829CSweepMeasuringConditionShow=class(TST2829CElementAndParamShow)
   private
+   fSTLimitValue:TStaticText;
+   fLimitValueShow:TDoubleParameterShow;
+   fValueToSave:double;
+
+   fMeasureSpeedShowPassive:TST2829C_MeasureSpeedShowPassive;
+   fAverTimesShowPassive:TST2829C_AverTimesShowPassive;
+
    fSMCond:TST2829_SweepMeasuringCondition;
    fBDelete:TButton;
    fBAdd:TButton;
    fBEdit:TButton;
    fSGData: TStringGrid;
-//   fBTrig:TButton;
-//   procedure BTrigClick(Sender:TObject);
+   procedure DrawCell(Sender: TObject; ACol, ARow: Integer;
+                Rect: TRect; State: TGridDrawState);
+   procedure AutoResizeCol(ACol, ARow: Integer);
+   procedure ResizeStringGridToColumns;
+   procedure DataToStringGrid();
+   function GetLimitValueString(const Index:integer):string;
+   procedure AddClick(Sender: TObject);
+   procedure DeleteClick(Sender: TObject);
+   procedure EditClick(Sender: TObject);
+   procedure SGDataClick(Sender: TObject);
+   function CorrectCellSelected:boolean;
   protected
    procedure CreateElements;override;
    procedure CreateControls;override;
    procedure DesignElements;override;
   public
    Constructor Create(ST2829C:TST2829C;
-                      GB: TGroupBox);
-//   OutputImpedanceShow:TST2829C_OutputImpedanceShow;
-//   RangeShow:TST2829C_RangeShow;
-//   MeasureSpeedShow:TST2829C_MeasureSpeedShow;
-//   AverTimesShow:TST2829C_AverTimesShow;
-//   TrigerSourceShow:TST2829C_TrigerSourceShow;
-//   DelayTimeShow:TST2829C_DelayTimeShow;
+                      GB: TGroupBox;
+                      STLimitValue:TStaticText;
+                      LimitValueShow:TDoubleParameterShow);
+   destructor Destroy;override;
  end;
 
 
-//TST2829C_GroupBoxSweepMeasuringConditionTun=class(TST2829CElementAndParamShow)
 TST2829C_GroupBoxSweepMeasuringConditionTun=class(TST2829CElementParamWindow)
  {ще додаткова кнопка, на яку чіпляється дія
  та чек-бокс щодо доцільності;
  і кнопка, і чек-бокс розміщуються у TGroupBox}
  private
+  fSweepParameterShow:TST2829C_SweepParameterShow;
   fButton:TButton;
   fGB:TGroupBox;
   fUseSweepMeasurCond:TCheckBox;
@@ -309,12 +324,13 @@ TST2829C_GroupBoxSweepMeasuringConditionTun=class(TST2829CElementParamWindow)
   procedure CreateControls;override;
   procedure GBcontentCreate(GB:TGroupBox);override;
   function FormCaption():string;override;
-
  public
-//  fUseSweepMeasurCond:TCheckBox;
   property UseSweepMeasurCond:TCheckBox read FUseSweepMeasurCond;
   property Button:TButton read fButton;
   property GroupBox:TGroupBox read fGB;
+  Constructor Create(ST2829C:TST2829C;
+                      GB: TGroupBox;
+                      SweepParameterShow:TST2829C_SweepParameterShow);
   destructor Destroy;override;
 end;
 
@@ -746,7 +762,6 @@ begin
   fParent.Height:=fLVrmsData.Top+fLVrmsData.Height+10;
   fParent.Width:=fBIrmsNeasuring.Left+ fBIrmsNeasuring.Width+10;
   fParent.Width:=VrmsToMeasureShow.CB.Left+VrmsToMeasureShow.CB.Width+10;
-//  fBIrmsNeasuring.Left+ fBIrmsNeasuring.Width+10;
 
 end;
 
@@ -1045,10 +1060,16 @@ end;
 
 
 procedure TST2829C_SweepParameterShow.CreateControls;
+ var i:TST2829C_SweepData;
 begin
- fRGDataUsed.Items.Add('Primary');
- fRGDataUsed.Items.Add('Secondary');
- fRGDataUsed.Items.Add('Both');
+ for I := Low(TST2829C_SweepData) to High(TST2829C_SweepData) do
+  fRGDataUsed.Items.Add(ST2829C_SweepDataLabels[i]);
+
+// fRGDataUsed.Items.Add('Primary');
+// fRGDataUsed.Items.Add('Secondary');
+// fRGDataUsed.Items.Add('Both');
+
+
  fRGDataUsed.ItemIndex:=
    CF_ST_2829C.ReadInteger(fST2829C.Name,'Data used',0);
  fRGDataUsed.OnClick:=DataUsedClick;
@@ -1063,7 +1084,7 @@ end;
 
 procedure TST2829C_SweepParameterShow.CreateElements;
 begin
-  fGBSweepMeasuringConditionTun:=TST2829C_GroupBoxSweepMeasuringConditionTun.Create(fST2829C,fParent);
+  fGBSweepMeasuringConditionTun:=TST2829C_GroupBoxSweepMeasuringConditionTun.Create(fST2829C,fParent,self);
 
   fRGDataUsed:=TRadioGroup.Create(fParent);
   Add(fRGDataUsed);
@@ -1135,6 +1156,7 @@ end;
 procedure TST2829C_SweepParameterShow.UseMeasCondClick(Sender: TObject);
 begin
  fST2829C.SweepParameters.SMCUsed:=fGBSweepMeasuringConditionTun.fUseSweepMeasurCond.Checked;
+ fGBSweepMeasuringConditionTun.fButton.Enabled:=fGBSweepMeasuringConditionTun.fUseSweepMeasurCond.Checked;
 end;
 
 { TST2829CCorrectionShow }
@@ -1220,7 +1242,7 @@ end;
 
 function TST2829CCorrectionShow.FormCaption: string;
 begin
- Result:='Parameters of spon number '+inttostr(GroupBoxSpotTuning.fActiveSpotShow.Data);
+ Result:='Parameters of spot number '+inttostr(GroupBoxSpotTuning.fActiveSpotShow.Data);
 end;
 
 procedure TST2829CCorrectionShow.GBcontentCreate(GB: TGroupBox);
@@ -1426,37 +1448,47 @@ begin
   case TST2829C_SweepParametr(fTypeShow.Data) of
     st_spBiasVolt:
       begin
-        fStartShow := TDoubleParameterShow.Create(fSTStart, fLStart, 'Start Vbias, V:', 0, 5);
+        fStartShow := TDoubleParameterShow.Create(fSTStart, fLStart,
+           'Start Vbias'+ST2829C_SweepParametrUnitLabels[TST2829C_SweepParametr(fTypeShow.Data)], 0, 5);
         fStartShow.Limits.SetLimits(ST2829C_BiasVoltageLimits[lvMin], ST2829C_BiasVoltageLimits[lvMax]);
-        fFinishShow := TDoubleParameterShow.Create(fSTFinish, fLFinish, 'Finish Vbias, V:', 1, 5);
+        fFinishShow := TDoubleParameterShow.Create(fSTFinish, fLFinish,
+           'Finish Vbias'+ST2829C_SweepParametrUnitLabels[TST2829C_SweepParametr(fTypeShow.Data)], 1, 5);
         fFinishShow.Limits.SetLimits(ST2829C_BiasVoltageLimits[lvMin], ST2829C_BiasVoltageLimits[lvMax]);
       end;
     st_spBiasCurr:
       begin
-        fStartShow := TDoubleParameterShow.Create(fSTStart, fLStart, 'Start Ibias, mA:', 0, 5);
+        fStartShow := TDoubleParameterShow.Create(fSTStart, fLStart,
+           'Start Ibias'+ST2829C_SweepParametrUnitLabels[TST2829C_SweepParametr(fTypeShow.Data)], 0, 5);
         fStartShow.Limits.SetLimits(ST2829C_BiasCurrentLimits[lvMin], ST2829C_BiasCurrentLimits[lvMax]);
-        fFinishShow := TDoubleParameterShow.Create(fSTFinish, fLFinish, 'Finish Ibias, mA:', 10, 5);
+        fFinishShow := TDoubleParameterShow.Create(fSTFinish, fLFinish,
+           'Finish Ibias'+ST2829C_SweepParametrUnitLabels[TST2829C_SweepParametr(fTypeShow.Data)], 10, 5);
         fFinishShow.Limits.SetLimits(ST2829C_BiasCurrentLimits[lvMin], ST2829C_BiasCurrentLimits[lvMax]);
       end;
     st_spFreq:
       begin
-        fStartShow := TDoubleParameterShow.Create(fSTStart, fLStart, 'Start Freq, Hz:', 20, 7);
+        fStartShow := TDoubleParameterShow.Create(fSTStart, fLStart,
+           'Start Freq'+ST2829C_SweepParametrUnitLabels[TST2829C_SweepParametr(fTypeShow.Data)], 20, 7);
         fStartShow.Limits.SetLimits(ST2829C_FreqMeasLimits[lvMin], ST2829C_FreqMeasLimits[lvMax]);
-        fFinishShow := TDoubleParameterShow.Create(fSTFinish, fLFinish, 'Finish Freq, Hz:', 10000, 7);
+        fFinishShow := TDoubleParameterShow.Create(fSTFinish, fLFinish,
+          'Finish Freq'+ST2829C_SweepParametrUnitLabels[TST2829C_SweepParametr(fTypeShow.Data)], 10000, 7);
         fFinishShow.Limits.SetLimits(ST2829C_FreqMeasLimits[lvMin], ST2829C_FreqMeasLimits[lvMax]);
       end;
     st_spVrms:
       begin
-        fStartShow := TDoubleParameterShow.Create(fSTStart, fLStart, 'Start Vrms, V:', 0.01, 5);
+        fStartShow := TDoubleParameterShow.Create(fSTStart, fLStart,
+          'Start Vrms'+ST2829C_SweepParametrUnitLabels[TST2829C_SweepParametr(fTypeShow.Data)], 0.01, 5);
         fStartShow.Limits.SetLimits(ST2829C_VrmsMeasLimits[lvMin], ST2829C_VrmsMeasLimits[lvMax]);
-        fFinishShow := TDoubleParameterShow.Create(fSTFinish, fLFinish, 'Finish Vrms, V:', 1, 5);
+        fFinishShow := TDoubleParameterShow.Create(fSTFinish, fLFinish,
+          'Finish Vrms'+ST2829C_SweepParametrUnitLabels[TST2829C_SweepParametr(fTypeShow.Data)], 1, 5);
         fFinishShow.Limits.SetLimits(ST2829C_VrmsMeasLimits[lvMin], ST2829C_VrmsMeasLimits[lvMax]);
       end;
     st_spIrms:
       begin
-        fStartShow := TDoubleParameterShow.Create(fSTStart, fLStart, 'Start Irms, mA:', 0.1, 5);
+        fStartShow := TDoubleParameterShow.Create(fSTStart, fLStart,
+         'Start Irms'+ST2829C_SweepParametrUnitLabels[TST2829C_SweepParametr(fTypeShow.Data)], 0.1, 5);
         fStartShow.Limits.SetLimits(ST2829C_IrmsMeasLimits[lvMin], ST2829C_IrmsMeasLimits[lvMax]);
-        fFinishShow := TDoubleParameterShow.Create(fSTFinish, fLFinish, 'Finish Irms, mA:', 10, 5);
+        fFinishShow := TDoubleParameterShow.Create(fSTFinish, fLFinish,
+          'Finish Irms'+ST2829C_SweepParametrUnitLabels[TST2829C_SweepParametr(fTypeShow.Data)], 10, 5);
         fFinishShow.Limits.SetLimits(ST2829C_IrmsMeasLimits[lvMin], ST2829C_IrmsMeasLimits[lvMax]);
       end;
   end;
@@ -1538,6 +1570,7 @@ begin
  fCBLogStep.Caption:='Log step';
  fCBLogStep.Top:=fLSteps.Top;
  fCBLogStep.Left:=fSTSteps.Left+fSTSteps.Width+20;
+ Resize(fCBLogStep);
 
 // fParent.Width:=fRGDataUsed.Left+fRGDataUsed.Width+5;
 // fParent.Width:=fSTType.Left+fSTType.Width+10;
@@ -1705,6 +1738,14 @@ end;
 
 { TST2829C_GroupBoxSweepMeasuringConditionTun }
 
+constructor TST2829C_GroupBoxSweepMeasuringConditionTun.Create(
+  ST2829C: TST2829C; GB: TGroupBox;
+  SweepParameterShow: TST2829C_SweepParameterShow);
+begin
+ fSweepParameterShow:=SweepParameterShow;
+ inherited Create(ST2829C,GB);
+end;
+
 procedure TST2829C_GroupBoxSweepMeasuringConditionTun.CreateControls;
 begin
    fUseSweepMeasurCond.Checked:=
@@ -1744,6 +1785,7 @@ begin
   fGB.Height:=fButton.Top+fButton.Height+5;
   fGB.Width:=fButton.Left+fButton.Width+5;
   fGB.Font.Color:=clPurple;
+//  fUseSweepMeasurCond.OnClick(nil);
 end;
 
 destructor TST2829C_GroupBoxSweepMeasuringConditionTun.Destroy;
@@ -1770,22 +1812,62 @@ end;
 procedure TST2829C_GroupBoxSweepMeasuringConditionTun.GBcontentCreate(
   GB: TGroupBox);
 begin
-  GBcontent:=TST2829CSweepMeasuringConditionShow.Create(fST2829C,GB);
+  GBcontent:=TST2829CSweepMeasuringConditionShow.Create(fST2829C,GB,
+                         fSweepParameterShow.STStartParameterValue,
+                         fSweepParameterShow.StartShow);
 end;
+
 
 { TST2829CSweepMeasuringConditionShow }
 
-constructor TST2829CSweepMeasuringConditionShow.Create(ST2829C: TST2829C;
-  GB: TGroupBox);
+procedure TST2829CSweepMeasuringConditionShow.AddClick(Sender: TObject);
 begin
+ fSTLimitValue.OnClick(Sender);
+ fSMCond.AddLimitValue(fLimitValueShow.Data);
+ DataToStringGrid();
+end;
+
+procedure TST2829CSweepMeasuringConditionShow.AutoResizeCol(ACol,
+  ARow: Integer);
+ var TextWidth:integer;
+begin
+  TextWidth:=fSGData.Canvas.TextWidth(fSGData.Cells[ACol,ARow]);
+  fSGData.ColWidths[ACol]:=TextWidth+30;
+end;
+
+function TST2829CSweepMeasuringConditionShow.CorrectCellSelected: boolean;
+begin
+ Result:= (fSGData.Row>0)
+     and (fSGData.Row<fSGData.RowCount-1)
+     and (fSGData.Col<fSGData.ColCount)
+     and (fSGData.Col>=0);
+end;
+
+constructor TST2829CSweepMeasuringConditionShow.Create(ST2829C: TST2829C;
+                GB: TGroupBox;
+                STLimitValue:TStaticText;
+               LimitValueShow:TDoubleParameterShow);
+begin
+ fSTLimitValue:=STLimitValue;
+ fLimitValueShow:=LimitValueShow;
+ fValueToSave:=fLimitValueShow.Data;
  fSMCond:=ST2829C.SweepParameters.SMCondition;
+ fMeasureSpeedShowPassive:=TST2829C_MeasureSpeedShowPassive.Create;
+ fAverTimesShowPassive:=TST2829C_AverTimesShowPassive.Create;
  inherited Create(ST2829C,GB);
 end;
 
 procedure TST2829CSweepMeasuringConditionShow.CreateControls;
 begin
 //  inherited;
+ fSGData.OnDrawCell:=DrawCell;
+// fSGData.OnSetEditText:=SetEditText;
+ fSGData.OnClick:=SGDataClick;
+ fSGData.OnDblClick:=EditClick;
 
+ fBAdd.OnClick:=AddClick;
+ fBDelete.OnClick:=DeleteClick;
+ fBEdit.OnClick:=EditClick;
 end;
 
 procedure TST2829CSweepMeasuringConditionShow.CreateElements;
@@ -1801,6 +1883,29 @@ begin
 // inherited CreateElements;
 end;
 
+procedure TST2829CSweepMeasuringConditionShow.DataToStringGrid;
+ var i:integer;
+begin
+  fSGData.RowCount := fSMCond.Count + 2;
+  for I := 0 to fSMCond.Count-1 do
+   begin
+     fSGData.Cells[0,i+1]:=GetLimitValueString(i);
+     fSGData.Cells[1,i+1]:=ST2829C_MeasureSpeedLabels[TST2829C_MeasureSpeed(round(fSMCond.MeasureSpeed.Y[i]))];
+     fSGData.Cells[2,i+1]:=IntToStr(round(fSMCond.AverTimes.Y[i]));
+   end;
+  for I := 0 to fSGData.ColCount - 1 do
+    fSGData.Cells[i,fSGData.RowCount-1]:='';
+
+  fSGData.Invalidate;
+
+end;
+
+procedure TST2829CSweepMeasuringConditionShow.DeleteClick(Sender: TObject);
+begin
+ fSMCond.DeleteLimitValue(fSGData.Row-1);
+ DataToStringGrid();
+end;
+
 procedure TST2829CSweepMeasuringConditionShow.DesignElements;
 begin
  inherited DesignElements;
@@ -1814,8 +1919,111 @@ begin
  fSGData.FixedRows:=1;
  fSGData.ScrollBars:=ssVertical;
 
-//  inherited;
+ fSGData.Top:=MarginTop;
+ fSGData.Left:=MarginLeft;
 
+ fSGData.Cells[0,0]:='Limit '
+     +ST2829C_SweepParametrLabels[fSMCond.SweepType]
+     +ST2829C_SweepParametrUnitLabels[fSMCond.SweepType] ;
+ AutoResizeCol(0,0);
+ fSGData.Cells[1,0]:='Measure '+ST2829CNameSpeed;
+ AutoResizeCol(1,0);
+ fSGData.Cells[2,0]:=ST2829CNameAverCount;
+ AutoResizeCol(2,0);
+
+// fSGData.OnSetEditText(nil,0,0,'j');
+// fSGData.Invalidate;
+ ResizeStringGridToColumns;
+
+ fSGData.Selection:=TGridRect(Rect(-1,-1,-1,-1));
+ fSGData.OnClick(nil);
+
+ DataToStringGrid();
+
+ fBAdd.Top:=MarginTop;
+ fBAdd.Left:=fSGData.Left+fSGData.Width+Marginbetween;
+ RelativeLocation(fBAdd,fBEdit,oCol,MarginLeftShot);
+ RelativeLocation(fBEdit,fBDelete,oCol,MarginLeftShot);
+
+ fParent.Width:=fBDelete.Left+fBDelete.Width+Marginbetween;
+ fParent.Height:=max(fSGData.Top+fSGData.Height,
+                    fBDelete.Top+fBDelete.Height)+MarginTop;
+
+end;
+
+destructor TST2829CSweepMeasuringConditionShow.Destroy;
+begin
+  FreeAndNil(fAverTimesShowPassive);
+  FreeAndNil(fMeasureSpeedShowPassive);
+  fLimitValueShow.Data:=fValueToSave;
+  inherited;
+end;
+
+procedure TST2829CSweepMeasuringConditionShow.DrawCell(Sender: TObject;
+  ACol, ARow: Integer; Rect: TRect; State: TGridDrawState);
+ var TextTemp:string;
+begin
+ if (ARow>1)and(not(odd(Arow))) then
+     fSGData.Canvas.Brush.Color:=RGB(218,240,254);
+ TextTemp:=fSGData.Cells[Acol,ARow];
+ fSGData.Canvas.FillRect(Rect);
+ DrawText(fSGData.Canvas.Handle,PChar(TextTemp),Length(TextTemp),
+    Rect,DT_Center or DT_VCENTER or DT_SINGLELINE);
+end;
+
+procedure TST2829CSweepMeasuringConditionShow.EditClick(Sender: TObject);
+begin
+ if not(CorrectCellSelected) then Exit;
+
+ if fSGData.Col=0 then
+  begin
+   fLimitValueShow.Data:=fSMCond.AverTimes.X[fSGData.Row-1];
+   fSTLimitValue.OnClick(Sender);
+   fSMCond.EditLimitValue(fLimitValueShow.Data,fSGData.Row-1);
+  end;
+
+ if fSGData.Col=1 then
+  begin
+   fMeasureSpeedShowPassive.Data:=round(fSMCond.MeasureSpeed.Y[fSGData.Row-1]);
+   fMeasureSpeedShowPassive.STdata.OnClick(Sender);
+   fSMCond.AddMeasureSpeedValue(fSGData.Row-1,TST2829C_MeasureSpeed(fMeasureSpeedShowPassive.Data));
+  end;
+
+ if fSGData.Col=2 then
+  begin
+   fAverTimesShowPassive.Data:=round(fSMCond.AverTimes.Y[fSGData.Row-1]);
+   fAverTimesShowPassive.STdata.OnClick(Sender);
+   fSMCond.AddAverTimesValue(fSGData.Row-1,fAverTimesShowPassive.Data);
+  end;
+
+  DataToStringGrid();
+end;
+
+function TST2829CSweepMeasuringConditionShow.GetLimitValueString(
+  const Index: integer): string;
+begin
+ fLimitValueShow.Data:=fSMCond.AverTimes.X[Index];
+ Result:=fSTLimitValue.Caption;
+end;
+
+procedure TST2829CSweepMeasuringConditionShow.ResizeStringGridToColumns;
+ var TotalWidth, i:integer;
+begin
+ TotalWidth:=0;
+ for I := 0 to fSGData.ColCount - 1 do
+  TotalWidth:=TotalWidth+fSGData.ColWidths[i];
+ TotalWidth:=TotalWidth+fSGData.GridLineWidth*(fSGData.ColCount+1);
+ if fSGData.RowCount>fSGData.VisibleRowCount then
+    TotalWidth:=TotalWidth+GetSystemMetrics(SM_CXVSCROLL);
+
+ fSGData.Width:=TotalWidth+5;
+end;
+
+
+procedure TST2829CSweepMeasuringConditionShow.SGDataClick(Sender: TObject);
+begin
+ fBDelete.Enabled:=CorrectCellSelected();
+ fBEdit.Enabled:=fBDelete.Enabled;
 end;
 
 end.

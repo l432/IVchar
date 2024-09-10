@@ -449,9 +449,13 @@ TST2829_SweepMeasuringCondition = class
   fMeasureSpeed:TVector;
   fAverTimes:TVector;
   function SectionName:string;
+  Function CorrecLimitValue(const Value: Double):Double;
+  procedure TuneToNewLimitValue;
+  function  GetSweepType:TST2829C_SweepParametr;
  public
+  property SweepType:TST2829C_SweepParametr read GetSweepType;
   property MeasureSpeed:TVector read fMeasureSpeed;
-  property verTimes:TVector read fAverTimes;
+  property AverTimes:TVector read fAverTimes;
   constructor Create(ST2829SweepParameters:TST2829SweepParameters);
   destructor Destroy; override;
   procedure ReadFromIniFile;
@@ -470,7 +474,7 @@ TST2829_SweepMeasuringCondition = class
   function GetMeasureSpeed(Index:integer):TST2829C_MeasureSpeed;
   function GetAverTime(Index:integer):byte;
   function GetIndex(const LimitValue:double):integer;
-//  Procedure EditLimitValue(const Value:double);
+  Procedure EditLimitValue(const NewValue:double;const Index:integer);
 
  end;
 
@@ -2798,20 +2802,10 @@ end;
 procedure TST2829_SweepMeasuringCondition.AddLimitValue(const Value: double);
  var tempValue:double;
 begin
- case fParentSP.SweepType of
-   st_spBiasVolt: tempValue:=TST2829C.CorrectBiasVoltValue(Value);
-   st_spBiasCurr: tempValue:=TST2829C.CorrectBiasCurrValue(Value);
-   st_spFreq: tempValue:=TST2829C.CorrectFreqValue(Value);
-   st_spVrms: tempValue:=TST2829C.CorrectMeasVoltValue(Value);
-   else tempValue:=TST2829C.CorrectMeasCurrValue(Value);
- end;
+ tempValue:=CorrecLimitValue(Value);
  fAverTimes.Add(tempValue,ST2829CAverTimeDefault);
- fAverTimes.DeleteDuplicate;
- fAverTimes.Sorting();
  fMeasureSpeed.Add(tempValue,ord(ST2829CMeasureSpeedDefault));
- fMeasureSpeed.DeleteDuplicate;
- fMeasureSpeed.Sorting();
- WriteToIniFile;
+ TuneToNewLimitValue;
 end;
 
 procedure TST2829_SweepMeasuringCondition.AddMeasureSpeedValue(
@@ -2852,6 +2846,16 @@ begin
   inherited;
 end;
 
+procedure TST2829_SweepMeasuringCondition.EditLimitValue(const NewValue: double;
+  const Index: integer);
+  var tempValue:Double;
+begin
+ tempValue:=CorrecLimitValue(NewValue);
+ fAverTimes.X[Index]:=tempValue;
+ fMeasureSpeed.X[Index]:=tempValue;
+ TuneToNewLimitValue;
+end;
+
 function TST2829_SweepMeasuringCondition.GetAverTime(Index: integer): byte;
 begin
  if (Index>-1) and (Index<=fAverTimes.HighNumber)
@@ -2881,6 +2885,31 @@ begin
      else Break;
 end;
 
+procedure TST2829_SweepMeasuringCondition.TuneToNewLimitValue;
+begin
+  fAverTimes.DeleteDuplicate;
+  fAverTimes.Sorting;
+  fMeasureSpeed.DeleteDuplicate;
+  fMeasureSpeed.Sorting;
+  WriteToIniFile;
+end;
+
+Function TST2829_SweepMeasuringCondition.CorrecLimitValue(const Value: Double):double;
+begin
+  case fParentSP.SweepType of
+    st_spBiasVolt:
+      Result := TST2829C.CorrectBiasVoltValue(Value);
+    st_spBiasCurr:
+      Result := TST2829C.CorrectBiasCurrValue(Value);
+    st_spFreq:
+      Result := TST2829C.CorrectFreqValue(Value);
+    st_spVrms:
+      Result := TST2829C.CorrectMeasVoltValue(Value);
+  else
+    Result := TST2829C.CorrectMeasCurrValue(Value);
+  end;
+end;
+
 function TST2829_SweepMeasuringCondition.GetMeasureSpeed(
   Index: integer): TST2829C_MeasureSpeed;
 begin
@@ -2889,12 +2918,18 @@ begin
   else Result:=ST2829CMeasureSpeedDefault;
 end;
 
+function TST2829_SweepMeasuringCondition.GetSweepType: TST2829C_SweepParametr;
+begin
+ Result:=fParentSP.SweepType;
+end;
+
 procedure TST2829_SweepMeasuringCondition.ReadFromIniFile;
  var Count:integer;
      Section:string;
      i:integer;
      CF_ST:TIniFile;
 begin
+ DecimalSeparator:='.';
  Section:=SectionName;
  CF_ST:=TIniFile.Create(ExtractFilePath(Application.ExeName)+'IVChar.ini');
 
@@ -2924,6 +2959,7 @@ procedure TST2829_SweepMeasuringCondition.WriteToIniFile;
      Section:string;
      i:integer;
 begin
+ DecimalSeparator:='.';
  Section:=SectionName;
  if CF_ST_2829C.SectionExists(Section)
   then  CF_ST_2829C.EraseSection(Section);

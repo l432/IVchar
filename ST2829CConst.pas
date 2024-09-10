@@ -11,7 +11,8 @@ const
   ST2829C_MemFileMaxLength=16;
 
   ST2829CName='ST2829C';
-
+  ST2829CNameSpeed='Speed:';
+  ST2829CNameAverCount='Average Count:';
 
 
 
@@ -170,6 +171,8 @@ const
  ST2829C_SweepParametrLabels:array[TST2829C_SweepParametr]of string=
         ('Bias Voltage','Bias Current','Frequancy',
         'Measure Voltage','Measure Current');
+ ST2829C_SweepParametrUnitLabels:array[TST2829C_SweepParametr]of string=
+        (', V:',', mA:',', Hz:',', V:',', mA:');
 
  ST2829C_SweepParametrSalt:array[TST2829C_SweepParametr]of string=
         ('BV','BC','Fr', 'MV','MC');
