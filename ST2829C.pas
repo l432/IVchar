@@ -448,6 +448,7 @@ TST2829_SweepMeasuringCondition = class
   fParentSP: TST2829SweepParameters;
   fMeasureSpeed:TVector;
   fAverTimes:TVector;
+  fDelayTime:TVector;
   function SectionName:string;
   Function CorrecLimitValue(const Value: Double):Double;
   procedure TuneToNewLimitValue;
@@ -456,6 +457,8 @@ TST2829_SweepMeasuringCondition = class
   property SweepType:TST2829C_SweepParametr read GetSweepType;
   property MeasureSpeed:TVector read fMeasureSpeed;
   property AverTimes:TVector read fAverTimes;
+  property DelayTime:TVector read fDelayTime;
+
   constructor Create(ST2829SweepParameters:TST2829SweepParameters);
   destructor Destroy; override;
   procedure ReadFromIniFile;
@@ -465,14 +468,20 @@ TST2829_SweepMeasuringCondition = class
   Procedure DeleteLimitValue(const Index:integer);
   Procedure AddConditionsValue(const Index:integer;
                                const MS:TST2829C_MeasureSpeed;
-                               const AT:byte);
+                               const AT:byte;
+                               const DT:integer);
   {вносить значення умов вимірювання в запис з номером Index}
   Procedure AddMeasureSpeedValue(const Index:integer;
                                const MS:TST2829C_MeasureSpeed);
   Procedure AddAverTimesValue(const Index:integer;
                                const AT:byte);
+  Procedure AddDelayTimeValue(const Index:integer;
+                               const DT:integer);
+
   function GetMeasureSpeed(Index:integer):TST2829C_MeasureSpeed;
   function GetAverTime(Index:integer):byte;
+  function GetDelayTime(Index:integer):integer;
+
   function GetIndex(const LimitValue:double):integer;
   Procedure EditLimitValue(const NewValue:double;const Index:integer);
 
@@ -2277,6 +2286,7 @@ procedure TST2829SweepParameters.ActionMeasurement(const Value:double);
  var Index:integer;
       tempMeasureSpeed:TST2829C_MeasureSpeed;
       tempAverTime:byte;
+      tempDelayTime:integer;
 begin
   SetValue(Value);
 
@@ -2287,14 +2297,28 @@ begin
   if fSMCUsed then
     begin
       Index:=fSweepMeasuringCondition.GetIndex(Value);
+//      showmessage('freq='+floattostr(Value)
+//       +' Index='+inttostr(Index));
       if Index>-1 then
        begin
          tempMeasureSpeed:=fSweepMeasuringCondition.GetMeasureSpeed(Index);
+//          showmessage('desire speed='
+//                     +ST2829C_MeasureSpeedLabels[tempMeasureSpeed]
+//                     +' real speed='
+//                     + ST2829C_MeasureSpeedLabels[fParentModule.MeasureSpeed]);
          if tempMeasureSpeed<>fParentModule.MeasureSpeed
            then fParentModule.SetMeasureSpeed(tempMeasureSpeed);
          tempAverTime:=fSweepMeasuringCondition.GetAverTime(Index);
+//          showmessage('desire count='
+//                     +inttostr(tempAverTime)
+//                     +' real count='
+//                     +inttostr(fParentModule.AverTimes));
          if tempAverTime<>fParentModule.AverTimes
            then fParentModule.SetAverTime(tempAverTime);
+
+         tempDelayTime:=fSweepMeasuringCondition.GetDelayTime(Index);
+         if tempDelayTime<>fParentModule.DelayTime
+           then fParentModule.SetDelayTime(tempDelayTime);
        end;
     end;
 
@@ -2789,13 +2813,24 @@ begin
 end;
 
 procedure TST2829_SweepMeasuringCondition.AddConditionsValue(
-  const Index: integer; const MS: TST2829C_MeasureSpeed; const AT: byte);
+  const Index: integer; const MS: TST2829C_MeasureSpeed;
+  const AT: byte;
+  const DT:integer);
 begin
  if (Index>-1) and (Index<=fAverTimes.HighNumber) then
   begin
    fAverTimes.Y[Index]:=TSCPInew.NumberMap(AT,ST2829C_AverTimes);
    fMeasureSpeed.Y[Index]:=ord(MS);
+   fDelayTime.Y[Index]:=TSCPInew.NumberMap(DT,ST2829C_DelayTime);
   end;
+ WriteToIniFile;
+end;
+
+procedure TST2829_SweepMeasuringCondition.AddDelayTimeValue(const Index,
+  DT: integer);
+begin
+ if (Index>-1) and (Index<=fAverTimes.HighNumber) then
+   fDelayTime.Y[Index]:=TSCPInew.NumberMap(DT,ST2829C_DelayTime);
  WriteToIniFile;
 end;
 
@@ -2805,6 +2840,7 @@ begin
  tempValue:=CorrecLimitValue(Value);
  fAverTimes.Add(tempValue,ST2829CAverTimeDefault);
  fMeasureSpeed.Add(tempValue,ord(ST2829CMeasureSpeedDefault));
+ fDelayTime.Add(tempValue,ST2829CDelayTimeDefault);
  TuneToNewLimitValue;
 end;
 
@@ -2828,6 +2864,7 @@ begin
  fParentSP:=ST2829SweepParameters;
  fMeasureSpeed:=TVector.Create;
  fAverTimes:=TVector.Create;
+ fDelayTime:=TVector.Create;
  ReadFromIniFile;
 end;
 
@@ -2836,11 +2873,13 @@ procedure TST2829_SweepMeasuringCondition.DeleteLimitValue(
 begin
  fAverTimes.DeletePoint(Index);
  fMeasureSpeed.DeletePoint(Index);
+ fDelayTime.DeletePoint(Index);
  WriteToIniFile;
 end;
 
 destructor TST2829_SweepMeasuringCondition.Destroy;
 begin
+  FreeAndNil(fDelayTime);
   FreeAndNil(fAverTimes);
   FreeAndNil(fMeasureSpeed);
   inherited;
@@ -2863,6 +2902,13 @@ begin
   else  Result:=ST2829CAverTimeDefault;
 end;
 
+function TST2829_SweepMeasuringCondition.GetDelayTime(Index: integer): integer;
+begin
+ if (Index>-1) and (Index<=fAverTimes.HighNumber)
+  then Result:=round(fDelayTime.Y[Index])
+  else  Result:=ST2829CDelayTimeDefault;
+end;
+
 function TST2829_SweepMeasuringCondition.GetIndex(
   const LimitValue: double): integer;
   var i:integer;
@@ -2881,8 +2927,11 @@ begin
    end;
  for I := 0 to fAverTimes.HighNumber do
    if LimitValue<=fAverTimes.X[i]
-     then Result:=i
-     else Break;
+     then
+      begin
+      Result:=i;
+      Break;
+      end;
 end;
 
 procedure TST2829_SweepMeasuringCondition.TuneToNewLimitValue;
@@ -2891,6 +2940,8 @@ begin
   fAverTimes.Sorting;
   fMeasureSpeed.DeleteDuplicate;
   fMeasureSpeed.Sorting;
+  fDelayTime.DeleteDuplicate;
+  fDelayTime.Sorting;
   WriteToIniFile;
 end;
 
@@ -2936,14 +2987,17 @@ begin
  Count:=CF_ST.ReadInteger(Section,'Count',0);
  fMeasureSpeed.SetLenVector(Count);
  fAverTimes.SetLenVector(Count);
+ fDelayTime.SetLenVector(Count);
  for I := 0 to Count - 1 do
   begin
    fMeasureSpeed.X[i]:=CF_ST.ReadFloat(Section,'LimVal'+inttostr(i),
                                      ST2829CAverTimeDefault);
    fAverTimes.X[i]:=fMeasureSpeed.X[i];
+   fDelayTime.X[i]:=fMeasureSpeed.X[i];
    fMeasureSpeed.Y[i]:=CF_ST.ReadInteger(Section,'MeasureSpeed'+inttostr(i),
                                ord(ST2829CMeasureSpeedDefault));
-   fAverTimes.Y[i]:=CF_ST.ReadInteger(Section,'MAverTimes'+inttostr(i),1);
+   fAverTimes.Y[i]:=CF_ST.ReadInteger(Section,'MAverTimes'+inttostr(i),ST2829CAverTimeDefault);
+   fDelayTime.Y[i]:=CF_ST.ReadInteger(Section,'MDelayTimes'+inttostr(i),ST2829CDelayTimeDefault);
   end;
  FreeAndNil(CF_ST);
 end;
@@ -2969,6 +3023,7 @@ begin
    CF_ST_2829C.WriteFloat(Section,'LimVal'+inttostr(i),fMeasureSpeed.X[i]);
    CF_ST_2829C.WriteInteger(Section,'MeasureSpeed'+inttostr(i),round(fMeasureSpeed.Y[i]));
    CF_ST_2829C.WriteInteger(Section,'MAverTimes'+inttostr(i),round(fAverTimes.Y[i]));
+   CF_ST_2829C.WriteInteger(Section,'MDelayTimes'+inttostr(i),round(fDelayTime.Y[i]));
   end;
 end;
 

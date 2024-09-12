@@ -279,6 +279,7 @@ TST2829CSweepMeasuringConditionShow=class(TST2829CElementAndParamShow)
 
    fMeasureSpeedShowPassive:TST2829C_MeasureSpeedShowPassive;
    fAverTimesShowPassive:TST2829C_AverTimesShowPassive;
+   fDelayTimeShowPassive:TST2829C_DelayTimeShowPassive;
 
    fSMCond:TST2829_SweepMeasuringCondition;
    fBDelete:TButton;
@@ -1532,7 +1533,7 @@ begin
 // fParent.Caption:='Sweep tuning';
 
  fLType.WordWrap:=False;
- fLType.Left:=MarginLeftShot;
+ fLType.Left:=10;
  fLType.Top:=15;
  RelativeLocation(fLType,fSTType,oRow,5);
  fSTType.Top:=fSTType.Top+2;
@@ -1545,7 +1546,7 @@ begin
 // fRGDataUsed.Top:=fLType.Top+fLType.Height+5;
 
  fLStart.WordWrap:=False;
- fLStart.Left:=MarginLeftShot;
+ fLStart.Left:=10;
 // fLStart.Top:=fRGDataUsed.Top+fRGDataUsed.Height+5;
  fLStart.Top:=fLType.Top+fLType.Height+3;
  RelativeLocation(fLStart,fSTStart,oCol,2);
@@ -1560,7 +1561,7 @@ begin
  fSTFinish.Font.Color:=clNavy;
 
  fLSteps.WordWrap:=False;
- fLSteps.Left:=MarginLeftShot;
+ fLSteps.Left:=10;
  fLSteps.Top:=fSTStart.Top+fSTStart.Height+3;
  fSTSteps.Top:=fLSteps.Top;
  fSTSteps.Left:=fLSteps.Left+fLSteps.Width+5;
@@ -1571,6 +1572,7 @@ begin
  fCBLogStep.Top:=fLSteps.Top;
  fCBLogStep.Left:=fSTSteps.Left+fSTSteps.Width+20;
  Resize(fCBLogStep);
+// fCBLogStep.Width:=fCBLogStep.Width+5;
 
 // fParent.Width:=fRGDataUsed.Left+fRGDataUsed.Width+5;
 // fParent.Width:=fSTType.Left+fSTType.Width+10;
@@ -1774,10 +1776,11 @@ begin
   fGB.Caption:='Conditions';
   fButton.Caption:='Tuning';
   fUseSweepMeasurCond.Caption:='Use';
-  fUseSweepMeasurCond.Left:=25;
-  fUseSweepMeasurCond.Top:=15;
+  fUseSweepMeasurCond.Left:=15;
+  fUseSweepMeasurCond.Top:=20;
   fUseSweepMeasurCond.Font.Color:=clOlive;
   Resize(fUseSweepMeasurCond);
+//  fUseSweepMeasurCond.Width:=fUseSweepMeasurCond.Width+5;
   fButton.Left:=5;
   fButton.Top:=fUseSweepMeasurCond.Top+
                fUseSweepMeasurCond.Height+5;
@@ -1854,6 +1857,7 @@ begin
  fSMCond:=ST2829C.SweepParameters.SMCondition;
  fMeasureSpeedShowPassive:=TST2829C_MeasureSpeedShowPassive.Create;
  fAverTimesShowPassive:=TST2829C_AverTimesShowPassive.Create;
+ fDelayTimeShowPassive:=TST2829C_DelayTimeShowPassive.Create;
  inherited Create(ST2829C,GB);
 end;
 
@@ -1892,6 +1896,7 @@ begin
      fSGData.Cells[0,i+1]:=GetLimitValueString(i);
      fSGData.Cells[1,i+1]:=ST2829C_MeasureSpeedLabels[TST2829C_MeasureSpeed(round(fSMCond.MeasureSpeed.Y[i]))];
      fSGData.Cells[2,i+1]:=IntToStr(round(fSMCond.AverTimes.Y[i]));
+     fSGData.Cells[3,i+1]:=IntToStr(round(fSMCond.DelayTime.Y[i]));
    end;
   for I := 0 to fSGData.ColCount - 1 do
     fSGData.Cells[i,fSGData.RowCount-1]:='';
@@ -1914,7 +1919,7 @@ begin
  fBAdd.Caption:='Add';
  fBEdit.Caption:='Edit';
 
- fSGData.ColCount:=3;
+ fSGData.ColCount:=4;
  fSGData.FixedCols:=0;
  fSGData.FixedRows:=1;
  fSGData.ScrollBars:=ssVertical;
@@ -1930,6 +1935,8 @@ begin
  AutoResizeCol(1,0);
  fSGData.Cells[2,0]:=ST2829CNameAverCount;
  AutoResizeCol(2,0);
+ fSGData.Cells[3,0]:=ST2829CNameDelay;
+ AutoResizeCol(3,0);
 
 // fSGData.OnSetEditText(nil,0,0,'j');
 // fSGData.Invalidate;
@@ -1942,8 +1949,8 @@ begin
 
  fBAdd.Top:=MarginTop;
  fBAdd.Left:=fSGData.Left+fSGData.Width+Marginbetween;
- RelativeLocation(fBAdd,fBEdit,oCol,MarginLeftShot);
- RelativeLocation(fBEdit,fBDelete,oCol,MarginLeftShot);
+ RelativeLocation(fBAdd,fBEdit,oCol,10);
+ RelativeLocation(fBEdit,fBDelete,oCol,10);
 
  fParent.Width:=fBDelete.Left+fBDelete.Width+Marginbetween;
  fParent.Height:=max(fSGData.Top+fSGData.Height,
@@ -1953,9 +1960,11 @@ end;
 
 destructor TST2829CSweepMeasuringConditionShow.Destroy;
 begin
+  FreeAndNil(fDelayTimeShowPassive);
   FreeAndNil(fAverTimesShowPassive);
   FreeAndNil(fMeasureSpeedShowPassive);
   fLimitValueShow.Data:=fValueToSave;
+  fLimitValueShow.HookParameterClick;
   inherited;
 end;
 
@@ -1994,6 +2003,13 @@ begin
    fAverTimesShowPassive.Data:=round(fSMCond.AverTimes.Y[fSGData.Row-1]);
    fAverTimesShowPassive.STdata.OnClick(Sender);
    fSMCond.AddAverTimesValue(fSGData.Row-1,fAverTimesShowPassive.Data);
+  end;
+
+ if fSGData.Col=3 then
+  begin
+   fDelayTimeShowPassive.Data:=round(fSMCond.DelayTime.Y[fSGData.Row-1]);
+   fDelayTimeShowPassive.STdata.OnClick(Sender);
+   fSMCond.AddAverTimesValue(fSGData.Row-1,fDelayTimeShowPassive.Data);
   end;
 
   DataToStringGrid();

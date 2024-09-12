@@ -13,6 +13,7 @@ const
   ST2829CName='ST2829C';
   ST2829CNameSpeed='Speed:';
   ST2829CNameAverCount='Average Count:';
+  ST2829CNameDelay='Delay, ms:';
 
 
 
@@ -194,6 +195,7 @@ const
  ST2829C_AverTimes:TLimitValues=(1,255);
  ST2829CAverTimeDefault=1;
  ST2829C_DelayTime:TLimitValues=(0,60000);
+ ST2829CDelayTimeDefault=10;
  ST2829C_SpotNumber:TLimitValues=(1,201);
 
  ST2829C_BiasOnOffButtonCaption:array [Boolean]

@@ -331,7 +331,7 @@ begin
   begin
     L:=TLabel.Create(Control.Parent);
     L.Parent:=Control.Parent;
-    Control.Width:=L.Canvas.TextWidth((Control as TCheckBox).Caption)+17;
+    Control.Width:=L.Canvas.TextWidth((Control as TCheckBox).Caption)+22;
 //    Control.Height:=L.Canvas.TextHeight((Control as TCheckBox).Caption);
     FreeAndNil(L);
     Exit;

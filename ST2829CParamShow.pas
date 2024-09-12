@@ -231,8 +231,14 @@ TST2829C_DelayTimeShow=class(TST2829C_IntegerParameterShow)
  protected
  public
   Constructor Create(ST2829C:TST2829C);
-
 end;
+
+TST2829C_DelayTimeShowPassive=class(TST2829C_DelayTimeShow)
+ protected
+ public
+  Constructor Create();
+end;
+
 
 TST2829C_ActiveSpotShow=class(TST2829C_IntegerParameterShow)
  protected
@@ -463,7 +469,7 @@ end;
 constructor TST2829C_DelayTimeShow.Create(ST2829C: TST2829C);
 begin
  inherited Create(ST2829C,Pointer(st_aTrigDelay),
-                 'Delay, ms:','Lazy time bewbeen trigering and measuring, []=ms',0);
+                 ST2829CNameDelay,'Lazy time bewbeen trigering and measuring, []=ms',0);
  SetLimits(ST2829C_DelayTime);
 end;
 
@@ -639,6 +645,14 @@ end;
 { TST2829C_AverTimesPassive }
 
 constructor TST2829C_AverTimesShowPassive.Create;
+begin
+ inherited Create (nil);
+ fParamShow.HookParameterClick:=TSimpleClass.EmptyProcedure;
+end;
+
+{ TST2829C_DelayTimeShowPassive }
+
+constructor TST2829C_DelayTimeShowPassive.Create;
 begin
  inherited Create (nil);
  fParamShow.HookParameterClick:=TSimpleClass.EmptyProcedure;
