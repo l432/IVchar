@@ -2009,7 +2009,7 @@ begin
   begin
    fDelayTimeShowPassive.Data:=round(fSMCond.DelayTime.Y[fSGData.Row-1]);
    fDelayTimeShowPassive.STdata.OnClick(Sender);
-   fSMCond.AddAverTimesValue(fSGData.Row-1,fDelayTimeShowPassive.Data);
+   fSMCond.AddDelayTimeValue(fSGData.Row-1,fDelayTimeShowPassive.Data);
   end;
 
   DataToStringGrid();
