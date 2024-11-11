@@ -1854,10 +1854,17 @@ end;
 procedure TKt_2450_SweetShow.WriteToIniFile(ConfigFile: TIniFile);
  var i:TKt2450_SweepSettings;
 begin
+// ConfigFile.EraseSection(fKt_2450.Name);
  for i := Low(fSettingsShow) to High(fSettingsShow) do
+   begin
+   ConfigFile.DeleteKey(fKt_2450.Name,
+     fSettingsShow[i].ParametrCaption+fSettingsShow[i].IniNameSalt);
    fSettingsShow[i].WriteToIniFile(ConfigFile);
-
+   end;
+ ConfigFile.DeleteKey(fKt_2450.Name,
+    'SW_Mode'+Kt2450_SourceName[fKt_2450.SourceType]);
  WriteIniDef(ConfigFile, fKt_2450.Name, 'SW_Mode'+Kt2450_SourceName[fKt_2450.SourceType], fMode.ItemIndex, 0);
+
  ConfigFile.WriteInteger(fKt_2450.Name, 'SW_Select', fSelect.ItemIndex);
 // WriteIniDef(ConfigFile, fKt_2450.Name, 'SW_Select', fSelect.ItemIndex, 0);
 // WriteIniDef(ConfigFile, fKt_2450.Name, 'SW_Dual'+Kt2450_SourceName[fKt_2450.SourceType], fDualCB.Checked, False);

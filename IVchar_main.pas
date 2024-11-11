@@ -4602,6 +4602,7 @@ begin
  Kt_2450.Wait;
 // Kt_2450.MeasureExtended(kt_rd_MST);
  Kt_2450.BufferLastDataExtended(kt_rd_MST);
+// Kt_2450.OutPutChange(False);
 
  TDependence.tempIChange(Kt_2450.Device.Value);
 // showmessage(floattostr(Kt_2450.TimeValue));
@@ -4611,8 +4612,15 @@ end;
 
 procedure TIVchar.KT2450onTimeHookSecondMeas;
 begin
+
  TTimeTwoDependenceTimer.SecondValueChange(TimeD_MD2.ActiveInterface.GetData);
+// showmessage(TimeD_MD2.ActiveInterface.Name);
+ if Pos('KT2450',UpperCase(TimeD_MD2.ActiveInterface.Name))>0
+   then Kt_2450.OutPutChange(False);
+
  LADInputVoltageValue.Caption:=FloatToStrF(TTimeTwoDependenceTimer.SecondValue,ffGeneral,4,3);
+// Kt_2450.OutPutChange(False);
+
  KT2450onTime.SecondMeasurementTime:=Kt_2450.TimeValue/1000;
  TimeDHookSecondMeas;
 end;
